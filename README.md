@@ -12,7 +12,8 @@ modifica un valore, doppio click tira il dado**.
 - Selettore Normale / Vantaggio / Svantaggio valido per ogni tiro di d20.
 - Import automatico della scheda da PDF tramite l'API Anthropic, ed esempio
   precaricato (Flyora) per provare subito.
-- La scheda è salvata in `localStorage`: resta sul tuo browser.
+- La scheda è salvata in `localStorage`: resta sul tuo browser. Con
+  **Esporta/Importa JSON** puoi salvarla come file e portarla ovunque.
 
 ## Avvio
 

@@ -563,9 +563,16 @@ function normalizeImported(dati) {
     ? dati.incantatore.caratteristica
     : '';
 
+  const clampTs = (v) => Math.max(0, Math.min(3, num(v, 0)));
   const pfMax = num(dati.pfMax, base.pfMax);
   return {
     ...base,
+    pfTemp: num(dati.pfTemp, 0),
+    ispirazione: Boolean(dati.ispirazione),
+    tsMorte: {
+      successi: clampTs(dati.tsMorte?.successi),
+      fallimenti: clampTs(dati.tsMorte?.fallimenti),
+    },
     nome: str(dati.nome, base.nome) || base.nome,
     background: str(dati.background),
     classe: str(dati.classe),
@@ -693,6 +700,7 @@ export default function App() {
   const [erroreImport, setErroreImport] = useState('');
   const intervalRef = useRef(null);
   const fileRef = useRef(null);
+  const jsonRef = useRef(null);
 
   useEffect(() => {
     saveState(scheda);
@@ -800,6 +808,35 @@ export default function App() {
       critico: false,
       guarigione: true,
     });
+  }
+
+  /** Scarica la scheda corrente come file JSON. */
+  function esportaJson() {
+    const nomeFile = (scheda.nome || 'scheda')
+      .toLowerCase()
+      .replace(/[^a-z0-9àèéìòù]+/gi, '-')
+      .replace(/^-+|-+$/g, '') || 'scheda';
+    const blob = new Blob([JSON.stringify(scheda, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${nomeFile}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  /** Carica una scheda da file JSON (esportato dall'app o compatibile). */
+  async function importaJson(evento) {
+    const file = evento.target.files?.[0];
+    evento.target.value = '';
+    if (!file) return;
+    setErroreImport('');
+    try {
+      const dati = JSON.parse(await file.text());
+      setScheda(normalizeImported(dati));
+    } catch {
+      setErroreImport('File JSON non valido: usa un file esportato da Tavolo dei Dadi.');
+    }
   }
 
   async function importaPdf(evento) {
@@ -1251,17 +1288,25 @@ export default function App() {
               </div>
             </section>
 
-            {/* Import PDF */}
+            {/* Import / export */}
             <section style={styles.panel}>
-              <h2 style={styles.panelTitle}>Importa scheda</h2>
+              <h2 style={styles.panelTitle}>Importa / esporta scheda</h2>
               <p style={styles.detail}>
-                Carica la scheda del personaggio in PDF: verrà trascritta automaticamente
-                (serve il server con la chiave API configurata).
+                Importa da PDF (trascrizione automatica: serve il server con la chiave API),
+                oppure salva e ricarica la scheda come file JSON per portarla su un altro
+                dispositivo o tenerne una copia.
               </p>
               <input ref={fileRef} type="file" accept="application/pdf" style={{ display: 'none' }} onChange={importaPdf} />
+              <input ref={jsonRef} type="file" accept="application/json,.json" style={{ display: 'none' }} onChange={importaJson} />
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <button style={styles.buttonPrimary} disabled={importInCorso} onClick={() => fileRef.current?.click()}>
                   {importInCorso ? 'Trascrizione in corso…' : '📜 Importa scheda PDF'}
+                </button>
+                <button style={styles.button} onClick={esportaJson}>
+                  💾 Esporta JSON
+                </button>
+                <button style={styles.button} onClick={() => jsonRef.current?.click()}>
+                  📂 Importa JSON
                 </button>
                 <button
                   style={styles.button}

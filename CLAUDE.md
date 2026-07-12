@@ -69,5 +69,4 @@ Tiratore di dadi D&D 5e con scheda del personaggio integrata.
 ## TODO futuri (non farli senza richiesta esplicita)
 
 - Selettore dado libero (d4, d6, d8, d10, d12, d100).
-- Export/import della scheda in JSON.
 - Versione PWA offline.
