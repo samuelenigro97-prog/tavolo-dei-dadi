@@ -10,6 +10,9 @@ modifica un valore, doppio click tira il dado**.
   (sul critico i dadi raddoppiano, il modificatore no), attacco con
   incantesimo (con CD calcolata), dadi vita, TS contro morte.
 - Selettore Normale / Vantaggio / Svantaggio valido per ogni tiro di d20.
+- Dado libero (d4–d100) ed espressioni a piacere tipo `3d6+2`.
+- PWA installabile: dopo la prima visita funziona anche offline
+  (tranne l'import PDF, che richiede il server).
 - Import automatico della scheda da PDF tramite l'API Anthropic, ed esempio
   precaricato (Flyora) per provare subito.
 - La scheda è salvata in `localStorage`: resta sul tuo browser. Con

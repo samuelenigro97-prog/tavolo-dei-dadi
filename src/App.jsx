@@ -698,6 +698,8 @@ export default function App() {
   const [danni, setDanni] = useState(null);
   const [importInCorso, setImportInCorso] = useState(false);
   const [erroreImport, setErroreImport] = useState('');
+  const [espressioneLibera, setEspressioneLibera] = useState('');
+  const [erroreEspressione, setErroreEspressione] = useState(false);
   const intervalRef = useRef(null);
   const fileRef = useRef(null);
   const jsonRef = useRef(null);
@@ -810,6 +812,32 @@ export default function App() {
     });
   }
 
+  /** Tiro libero di un singolo dado (il d20 passa dal tiro animato). */
+  function tiroLibero(facce) {
+    if (facce === 20) return lanciaD20('Tiro libero d20', 0);
+    const valore = tiraDado(facce);
+    clearInterval(intervalRef.current);
+    setTiro(null);
+    setDanni({ etichetta: 'Tiro libero', totale: valore, dettaglio: `1d${facce} [${valore}]`, libero: true });
+  }
+
+  /** Tiro libero di un'espressione qualsiasi (es. "3d6+2"). */
+  function tiroEspressione() {
+    const parsata = parseEspressioneDado(espressioneLibera);
+    if (!parsata) {
+      setErroreEspressione(true);
+      return;
+    }
+    setErroreEspressione(false);
+    clearInterval(intervalRef.current);
+    setTiro(null);
+    setDanni({
+      etichetta: `Tiro libero: ${espressioneLibera.trim()}`,
+      ...tiraDanni(parsata, false),
+      libero: true,
+    });
+  }
+
   /** Scarica la scheda corrente come file JSON. */
   function esportaJson() {
     const nomeFile = (scheda.nome || 'scheda')
@@ -906,8 +934,9 @@ export default function App() {
             ) : null}
             {danni && (
               <div style={{ marginTop: tiro ? 6 : 0 }}>
-                <div style={{ fontSize: 20, color: danni.guarigione ? C.green : C.red }}>
-                  {danni.guarigione ? '✚' : '💥'} {danni.totale} {danni.guarigione ? 'PF recuperati' : 'danni'}
+                <div style={{ fontSize: 20, color: danni.libero ? C.goldLight : danni.guarigione ? C.green : C.red }}>
+                  {danni.libero ? '🎲' : danni.guarigione ? '✚' : '💥'} {danni.totale}
+                  {danni.libero ? '' : danni.guarigione ? ' PF recuperati' : ' danni'}
                   {danni.critico ? ' (critico!)' : ''}
                 </div>
                 <div style={styles.detail}>
@@ -924,6 +953,36 @@ export default function App() {
             ))}
           </div>
         </div>
+
+        {/* Dado libero */}
+        <section style={{ ...styles.panel, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: '10px 16px' }}>
+          <span style={{ ...styles.detail, marginRight: 4 }}>Dado libero:</span>
+          {[4, 6, 8, 10, 12, 20, 100].map((facce) => (
+            <button key={facce} style={styles.button} onClick={() => tiroLibero(facce)}>
+              d{facce}
+            </button>
+          ))}
+          <span style={{ flex: 1 }} />
+          <input
+            style={{
+              ...styles.inlineInput,
+              width: 110,
+              padding: '6px 8px',
+              ...(erroreEspressione ? { borderColor: C.red } : {}),
+            }}
+            placeholder="es. 3d6+2"
+            value={espressioneLibera}
+            onChange={(e) => {
+              setEspressioneLibera(e.target.value);
+              setErroreEspressione(false);
+            }}
+            onKeyDown={(e) => e.key === 'Enter' && tiroEspressione()}
+          />
+          <button style={styles.button} onClick={tiroEspressione}>
+            Tira
+          </button>
+          {erroreEspressione && <span style={{ color: C.red, fontSize: 13 }}>Espressione non valida</span>}
+        </section>
 
         {/* Intestazione scheda */}
         <section style={styles.panel}>

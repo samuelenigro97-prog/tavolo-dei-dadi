@@ -28,6 +28,9 @@ Tiratore di dadi D&D 5e con scheda del personaggio integrata.
   incantesimo, dadi vita (guarigione), TS contro morte.
 - Click sul **pallino** = ciclo competenza: abilità 0 → 1 (competenza) → 2
   (maestria) → 0; tiri salvezza on/off.
+- **Dado libero**: pannello sotto la barra del tiro con d4–d100 (1 click) e
+  campo espressione libera (es. `3d6+2`); il d20 libero passa dal tiro
+  animato e rispetta vantaggio/svantaggio.
 - Selettore **Normale / Vantaggio / Svantaggio** nella barra del tiro: vale
   per tutti i tiri di d20 (2d20, tieni il migliore/peggiore).
 
@@ -66,7 +69,12 @@ Tiratore di dadi D&D 5e con scheda del personaggio integrata.
   modello.
 - Non fare refactor non richiesti.
 
+## PWA
+
+L'app è una PWA installabile e offline (vite-plugin-pwa, `registerType:
+'autoUpdate'`): manifest e service worker sono generati alla build; le
+richieste `/api` sono escluse dalla cache. Icone in `public/icona-*.png`.
+
 ## TODO futuri (non farli senza richiesta esplicita)
 
-- Selettore dado libero (d4, d6, d8, d10, d12, d100).
-- Versione PWA offline.
+- (lista vuota — proporre nuove idee all'utente prima di implementarle)
