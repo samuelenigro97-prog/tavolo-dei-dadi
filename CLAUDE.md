@@ -4,9 +4,12 @@ Tiratore di dadi D&D 5e con scheda del personaggio integrata.
 
 ## Stack
 
-- **Frontend:** React 18 + Vite. Tutta la UI vive in `src/App.jsx` (componenti
-  `App`, `PlayTab`, `SheetTab`), stili inline nell'oggetto `styles` con la
-  palette `C`. Niente CSS framework, niente TypeScript.
+- **Frontend:** React 18 + Vite. Tutta la UI vive in `src/App.jsx`: la scheda
+  interattiva È l'interfaccia (formato della scheda ufficiale D&D 2024), con la
+  barra del tiro sticky in alto. Componenti principali: `App`, `Editable`
+  (1 click = modifica inline, doppio click = tiro se `onRoll` è definito),
+  `Rollable` (solo doppio click = tiro). Stili inline nell'oggetto `styles`
+  con la palette `C`. Niente CSS framework, niente TypeScript.
 - **Backend:** Express (`server/index.js`) su porta 3001, fa solo da proxy
   all'API Anthropic per la trascrizione delle schede PDF
   (`POST /api/transcribe`). Richiede `ANTHROPIC_API_KEY` (file `.env`).
@@ -16,9 +19,30 @@ Tiratore di dadi D&D 5e con scheda del personaggio integrata.
   `src/App.jsx`. **Non modificare** `loadState`, `saveState` né la logica di
   `transcribePdf`.
 
+## Interazione (convenzione centrale della UI)
+
+- **1 click** su un valore = modifica inline (componente `Editable`).
+- **Doppio click** su un elemento tirabile = tiro del dado nella barra in alto:
+  prove di caratteristica, tiri salvezza, abilità, attacchi (nome/bonus),
+  danni (cella danno = solo danni, mai critico), iniziativa, attacco con
+  incantesimo, dadi vita (guarigione), TS contro morte.
+- Click sul **pallino** = ciclo competenza: abilità 0 → 1 (competenza) → 2
+  (maestria) → 0; tiri salvezza on/off.
+- Selettore **Normale / Vantaggio / Svantaggio** nella barra del tiro: vale
+  per tutti i tiri di d20 (2d20, tieni il migliore/peggiore).
+
 ## Regole di dominio D&D 5e
 
 - Modificatore di caratteristica: `floor((punteggio − 10) / 2)`.
+- Abilità: `mod caratteristica + livello competenza × bonus competenza`
+  (livello 0/1/2, dove 2 = maestria). Tiro salvezza: `mod + bonus competenza`
+  se competente. Percezione passiva: `10 + bonus Percezione` (calcolata).
+- Iniziativa: `mod Destrezza`. CD incantesimi: `8 + competenza + mod
+  incantatore`; attacco con incantesimo: `competenza + mod incantatore`.
+- TS contro morte: d20 secco; ≥10 successo, <10 fallimento, 1 naturale = 2
+  fallimenti, 20 naturale = torni a 1 PF; 3 successi = stabile, 3 fallimenti
+  = morte.
+- Dado vita (guarigione): 1 dado del tipo indicato + mod Costituzione.
 - Tiro per colpire: `d20 + bonus`. Un **20 naturale è un critico**, un 1
   naturale è un fallimento critico (il totale non conta).
 - **Critico sui danni:** raddoppiano SOLO i dadi dell'espressione di danno

@@ -2,12 +2,16 @@
 
 Tiratore di dadi per D&D 5a edizione con scheda del personaggio integrata.
 
-- **Gioco:** tira gli attacchi (d20 + bonus, con critico sul 20 naturale e
-  fallimento sull'1), tira i danni con il dettaglio dei dadi (sul critico i
-  dadi raddoppiano, il modificatore no) e fai prove di caratteristica.
-- **Scheda:** dati base, caratteristiche ed editor degli attacchi (nome, bonus
-  per colpire e stringa di danno tipo `2d6+3` o `1d10+1d6+2`), con import
-  automatico da PDF tramite l'API Anthropic.
+La scheda È l'interfaccia, nel formato della scheda ufficiale: **1 click
+modifica un valore, doppio click tira il dado**.
+
+- Tutti i tiri 5e: prove di caratteristica, tiri salvezza, 18 abilità (con
+  competenza e maestria), iniziativa, attacchi e danni con dettaglio dei dadi
+  (sul critico i dadi raddoppiano, il modificatore no), attacco con
+  incantesimo (con CD calcolata), dadi vita, TS contro morte.
+- Selettore Normale / Vantaggio / Svantaggio valido per ogni tiro di d20.
+- Import automatico della scheda da PDF tramite l'API Anthropic, ed esempio
+  precaricato (Flyora) per provare subito.
 - La scheda è salvata in `localStorage`: resta sul tuo browser.
 
 ## Avvio
