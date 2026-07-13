@@ -1,6 +1,13 @@
-# Tavolo dei Dadi — contesto per lo sviluppo
+# Scheda Interattiva — contesto per lo sviluppo
 
-Tiratore di dadi D&D 5e con scheda del personaggio integrata.
+Scheda D&D 5e interattiva con tiratore di dadi integrato (nome storico del
+repo: tavolo-dei-dadi; il nome utente-visibile dell'app è "Scheda
+Interattiva"). Layout ispirato alla scheda ufficiale D&D 2024 italiana.
+Tema chiaro "foglio di carta" (bianco), pulsanti dei dadi colorati per tipo
+(`COLORE_DADO`). Deve funzionare bene sia su desktop sia su mobile touch
+(doppio tap = doppio click grazie a `touch-action: manipulation`; grid che
+collassa a una colonna sotto 820px; input ≥16px su mobile per evitare lo
+zoom di iOS).
 
 ## Stack
 
@@ -16,8 +23,12 @@ Tiratore di dadi D&D 5e con scheda del personaggio integrata.
 - **Dev:** `npm run dev` avvia Vite (5173, con proxy `/api` → 3001) e il server
   insieme via concurrently.
 - **Persistenza:** `localStorage` tramite `loadState`/`saveState` in
-  `src/App.jsx`. **Non modificare** `loadState`, `saveState` né la logica di
-  `transcribePdf`.
+  `src/App.jsx`. Il formato è un **roster multi-personaggio**
+  `{ attivo, personaggi: {id: scheda} }` (chiave `scheda-interattiva:v1`,
+  con migrazione automatica dalla vecchia chiave a scheda singola).
+  **Non modificare** la logica di `transcribePdf`; toccare
+  `loadState`/`saveState` solo preservando la retrocompatibilità dei dati
+  salvati.
 
 ## Interazione (convenzione centrale della UI)
 

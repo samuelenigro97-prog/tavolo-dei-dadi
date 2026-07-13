@@ -51,7 +51,16 @@ Rispondi SOLO con un oggetto JSON valido, senza testo prima o dopo, con questo s
       "note": "string"
     }
   ],
-  "incantatore": { "caratteristica": "forza|destrezza|costituzione|intelligenza|saggezza|carisma oppure stringa vuota se non incantatore" }
+  "incantatore": { "caratteristica": "forza|destrezza|costituzione|intelligenza|saggezza|carisma oppure stringa vuota se non incantatore" },
+  "slotIncantesimo": { "1": number, "2": number, "3": number, "4": number, "5": number, "6": number, "7": number, "8": number, "9": number },
+  "incantesimiLista": [
+    { "livello": number, "nome": "string", "tempo": "string — es. \\"AZ\\", \\"REAZ\\", \\"AZ BONUS\\"", "gittata": "string", "note": "string" }
+  ],
+  "privilegi": "string — privilegi di classe e tratti della specie, riassunti in testo semplice",
+  "talenti": "string",
+  "equipaggiamento": "string",
+  "lingue": "string — es. \\"Comune, Elfico\\"",
+  "denari": { "mr": number, "ma": number, "me": number, "mo": number, "mp": number }
 }
 
 Regole:

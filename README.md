@@ -1,6 +1,8 @@
-# 🎲 Tavolo dei Dadi
+# 🎲 Scheda Interattiva
 
-Tiratore di dadi per D&D 5a edizione con scheda del personaggio integrata.
+Scheda del personaggio D&D 5e interattiva con tiratore di dadi integrato,
+nel formato della scheda ufficiale 2024. Provala online:
+<https://samuelenigro97-prog.github.io/tavolo-dei-dadi/>.
 
 La scheda È l'interfaccia, nel formato della scheda ufficiale: **1 click
 modifica un valore, doppio click tira il dado**.
@@ -15,8 +17,14 @@ modifica un valore, doppio click tira il dado**.
   (tranne l'import PDF, che richiede il server).
 - Import automatico della scheda da PDF tramite l'API Anthropic, ed esempio
   precaricato (Flyora) per provare subito.
-- La scheda è salvata in `localStorage`: resta sul tuo browser. Con
-  **Esporta/Importa JSON** puoi salvarla come file e portarla ovunque.
+- **Più personaggi**: selettore in alto con Nuovo / Duplica / Elimina; ogni
+  PG si salva da solo in `localStorage` e lo riapri dal menu.
+- Sezioni complete: slot incantesimo cliccabili, lista di trucchetti e
+  incantesimi preparati, privilegi e tratti, talenti, equipaggiamento,
+  lingue, denari, note.
+- Ottimizzata per desktop e mobile touch (doppio tap = tiro).
+- Con **Esporta/Importa JSON** porti una scheda su un altro dispositivo o ne
+  tieni una copia.
 
 ## Avvio
 

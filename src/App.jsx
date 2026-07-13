@@ -4,25 +4,35 @@ import { useEffect, useRef, useState } from 'react';
 // Palette e stili
 // ---------------------------------------------------------------------------
 
-// Palette "taverna": legno scuro, pergamena, oro e rosso drago.
+// Tema chiaro "foglio di carta": bianco, inchiostro scuro, accenti sobri.
 const C = {
-  bg: '#1b1410',
-  panel: '#251b13',
-  panelLight: '#31241a',
-  border: '#46331f',
-  ink: '#ecdfc3',
-  inkDim: '#a8946e',
-  gold: '#c9a227',
-  goldLight: '#eaca6b',
+  bg: '#f4f1ea',
+  panel: '#ffffff',
+  panelLight: '#f7f4ee',
+  border: '#ddd5c6',
+  ink: '#2b2620',
+  inkDim: '#8d8272',
+  gold: '#b8860b',
+  goldDark: '#8a6508',
   red: '#b03a2e',
-  redDark: '#7c261d',
-  green: '#5f8f4e',
+  green: '#3e7d32',
+};
+
+// Un colore per ogni tipo di dado.
+const COLORE_DADO = {
+  4: '#2e8b57',
+  6: '#1f6fb2',
+  8: '#7d4cb0',
+  10: '#c0392b',
+  12: '#d97b12',
+  20: '#b8860b',
+  100: '#5b6770',
 };
 
 const styles = {
   app: {
     minHeight: '100vh',
-    background: `radial-gradient(ellipse at top, #2a1f16 0%, ${C.bg} 60%)`,
+    background: C.bg,
     color: C.ink,
     fontFamily: "Georgia, 'Times New Roman', serif",
     padding: '0 16px 48px',
@@ -30,16 +40,10 @@ const styles = {
   header: {
     maxWidth: 1080,
     margin: '0 auto',
-    padding: '22px 0 6px',
+    padding: '20px 0 6px',
     textAlign: 'center',
   },
-  title: {
-    margin: 0,
-    fontSize: 30,
-    letterSpacing: 2,
-    color: C.goldLight,
-    textShadow: '0 2px 8px rgba(0,0,0,0.6)',
-  },
+  title: { margin: 0, fontSize: 30, letterSpacing: 1, color: '#9e2b25' },
   hint: { margin: '6px 0 0', color: C.inkDim, fontStyle: 'italic', fontSize: 14 },
   main: { maxWidth: 1080, margin: '0 auto' },
   panel: {
@@ -48,12 +52,12 @@ const styles = {
     borderRadius: 12,
     padding: 16,
     marginBottom: 14,
-    boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+    boxShadow: '0 1px 4px rgba(60,50,30,0.08)',
   },
   panelTitle: {
     margin: '0 0 10px',
     fontSize: 17,
-    color: C.goldLight,
+    color: '#9e2b25',
     borderBottom: `1px solid ${C.border}`,
     paddingBottom: 6,
     letterSpacing: 1,
@@ -63,8 +67,8 @@ const styles = {
     position: 'sticky',
     top: 8,
     zIndex: 10,
-    background: `linear-gradient(180deg, ${C.panelLight}, ${C.panel})`,
-    border: `1px solid ${C.gold}`,
+    background: C.panel,
+    border: `2px solid ${C.gold}`,
     borderRadius: 12,
     padding: '10px 16px',
     marginBottom: 14,
@@ -72,7 +76,7 @@ const styles = {
     alignItems: 'center',
     gap: 16,
     flexWrap: 'wrap',
-    boxShadow: '0 6px 18px rgba(0,0,0,0.55)',
+    boxShadow: '0 4px 12px rgba(60,50,30,0.18)',
     minHeight: 64,
   },
   d20: (rolling, crit, fumble) => ({
@@ -84,9 +88,9 @@ const styles = {
     justifyContent: 'center',
     fontSize: 26,
     fontWeight: 'bold',
-    color: crit ? C.goldLight : fumble ? C.red : C.ink,
-    background: `linear-gradient(145deg, ${C.panelLight}, ${C.bg})`,
-    border: `2px solid ${crit ? C.goldLight : fumble ? C.red : C.gold}`,
+    color: crit ? C.goldDark : fumble ? C.red : C.ink,
+    background: C.panelLight,
+    border: `3px solid ${crit ? C.gold : fumble ? C.red : COLORE_DADO[20]}`,
     clipPath: 'polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)',
     animation: rolling ? 'd20-spin 0.5s linear infinite' : 'd20-settle 0.35s ease-out',
     userSelect: 'none',
@@ -105,9 +109,9 @@ const styles = {
   button: {
     padding: '7px 14px',
     background: C.panelLight,
-    border: `1px solid ${C.gold}`,
+    border: `1px solid ${C.border}`,
     borderRadius: 8,
-    color: C.goldLight,
+    color: C.ink,
     fontFamily: 'inherit',
     fontSize: 14,
     cursor: 'pointer',
@@ -115,9 +119,9 @@ const styles = {
   buttonPrimary: {
     padding: '8px 18px',
     background: C.gold,
-    border: `1px solid ${C.goldLight}`,
+    border: 'none',
     borderRadius: 8,
-    color: C.bg,
+    color: '#fff',
     fontFamily: 'inherit',
     fontSize: 15,
     fontWeight: 'bold',
@@ -133,18 +137,27 @@ const styles = {
     fontSize: 12,
     cursor: 'pointer',
   },
+  buttonDado: (facce) => ({
+    padding: '7px 13px',
+    background: COLORE_DADO[facce],
+    border: 'none',
+    borderRadius: 8,
+    color: '#fff',
+    fontFamily: 'inherit',
+    fontSize: 14,
+    fontWeight: 'bold',
+    cursor: 'pointer',
+  }),
   modeButton: (active) => ({
     padding: '5px 12px',
-    background: active ? C.gold : 'transparent',
-    border: `1px solid ${active ? C.goldLight : C.border}`,
+    background: active ? C.ink : 'transparent',
+    border: `1px solid ${active ? C.ink : C.border}`,
     borderRadius: 6,
-    color: active ? C.bg : C.inkDim,
+    color: active ? '#fff' : C.inkDim,
     fontFamily: 'inherit',
     fontSize: 13,
     cursor: 'pointer',
   }),
-  // Layout scheda
-  sheetGrid: { display: 'grid', gridTemplateColumns: '300px 1fr', gap: 14, alignItems: 'start' },
   vitalsGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(108px, 1fr))',
@@ -164,13 +177,14 @@ const styles = {
     textTransform: 'uppercase',
     marginBottom: 3,
   },
-  vitalValue: { fontSize: 21, color: C.goldLight },
+  vitalValue: { fontSize: 21, color: C.ink },
   abilityBlock: {
-    background: C.panelLight,
+    background: C.panel,
     border: `1px solid ${C.border}`,
     borderRadius: 10,
     padding: '10px 12px',
     marginBottom: 12,
+    boxShadow: '0 1px 4px rgba(60,50,30,0.08)',
   },
   abilityHead: {
     display: 'flex',
@@ -181,7 +195,7 @@ const styles = {
   abilityMod: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: C.goldLight,
+    color: C.goldDark,
     cursor: 'pointer',
     padding: '0 8px',
     borderRadius: 8,
@@ -200,8 +214,8 @@ const styles = {
     height: 13,
     flexShrink: 0,
     borderRadius: '50%',
-    border: `2px solid ${livello > 0 ? C.goldLight : C.inkDim}`,
-    background: livello === 2 ? C.goldLight : livello === 1 ? C.gold : 'transparent',
+    border: `2px solid ${livello > 0 ? C.goldDark : C.inkDim}`,
+    background: livello === 2 ? C.goldDark : livello === 1 ? C.gold : 'transparent',
     cursor: 'pointer',
   }),
   editable: {
@@ -211,13 +225,25 @@ const styles = {
     display: 'inline-block',
   },
   inlineInput: {
-    background: C.bg,
+    background: '#fff',
     border: `1px solid ${C.gold}`,
     borderRadius: 4,
     color: C.ink,
     fontFamily: 'inherit',
     fontSize: 'inherit',
     padding: '1px 4px',
+  },
+  textarea: {
+    width: '100%',
+    boxSizing: 'border-box',
+    background: C.panelLight,
+    border: `1px solid ${C.border}`,
+    borderRadius: 6,
+    color: C.ink,
+    fontFamily: 'inherit',
+    fontSize: 14,
+    padding: 8,
+    resize: 'vertical',
   },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: 14 },
   th: {
@@ -243,7 +269,23 @@ const styles = {
   }),
 };
 
-const KEYFRAMES = `
+const GLOBAL_CSS = `
+html, body { margin: 0; padding: 0; background: ${C.bg}; }
+/* touch: il doppio tap deve tirare il dado, non zoomare la pagina */
+* { touch-action: manipulation; }
+.griglia-scheda {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+@media (max-width: 820px) {
+  .griglia-scheda { grid-template-columns: 1fr; }
+}
+/* su mobile i campi con font < 16px fanno zoomare iOS al focus */
+@media (max-width: 820px) {
+  input, select, textarea { font-size: 16px !important; }
+}
 @keyframes d20-spin {
   0% { transform: rotate(0deg) scale(1); }
   50% { transform: rotate(180deg) scale(1.12); }
@@ -289,6 +331,14 @@ const ABILITA = [
   { key: 'religione', label: 'Religione', car: 'intelligenza' },
   { key: 'sopravvivenza', label: 'Sopravvivenza', car: 'saggezza' },
   { key: 'storia', label: 'Storia', car: 'intelligenza' },
+];
+
+const DENARI = [
+  { key: 'mr', label: 'MR' },
+  { key: 'ma', label: 'MA' },
+  { key: 'me', label: 'ME' },
+  { key: 'mo', label: 'MO' },
+  { key: 'mp', label: 'MP' },
 ];
 
 function modificatore(punteggio) {
@@ -390,6 +440,7 @@ function schedaVuota() {
     specie: '',
     allineamento: '',
     livello: 1,
+    pe: 0,
     ca: 10,
     pfMax: 10,
     pfAttuali: 10,
@@ -421,6 +472,17 @@ function schedaVuota() {
     abilita: Object.fromEntries(ABILITA.map((a) => [a.key, 0])),
     attacchi: [{ id: 1, nome: 'Spada lunga', bonus: 5, danno: '1d8+3', tipoDanno: 'Tagliente', note: '' }],
     incantatore: { caratteristica: '' }, // '' = non incantatore
+    slotIncantesimo: Object.fromEntries(
+      Array.from({ length: 9 }, (_, i) => [i + 1, { totale: 0, spesi: 0 }])
+    ),
+    // trucchetti (livello 0) e incantesimi preparati
+    incantesimiLista: [],
+    privilegi: '',
+    talenti: '',
+    equipaggiamento: '',
+    lingue: '',
+    note: '',
+    denari: { mr: 0, ma: 0, me: 0, mo: 0, mp: 0 },
   };
 }
 
@@ -469,28 +531,77 @@ const ESEMPIO_FLYORA = {
     { id: 4, nome: 'Bastone Ferrato (2 mani)', bonus: 3, danno: '1d8+1', tipoDanno: 'Contundente', note: 'Versatile' },
   ],
   incantatore: { caratteristica: 'carisma' },
+  slotIncantesimo: { 1: { totale: 4, spesi: 0 }, 2: { totale: 3, spesi: 0 } },
+  incantesimiLista: [
+    { livello: 0, nome: 'Interdizione alle Lame', tempo: 'AZ', gittata: '', note: '' },
+    { livello: 0, nome: 'Messaggio', tempo: 'AZ', gittata: '36m', note: '' },
+    { livello: 0, nome: 'Morsa del Gelo', tempo: 'AZ', gittata: '18m', note: '' },
+    { livello: 0, nome: 'Prestidigitazione', tempo: 'AZ', gittata: '3m', note: 'Razza' },
+    { livello: 0, nome: 'Vampa', tempo: 'AZ', gittata: '18m', note: '' },
+    { livello: 1, nome: 'Caduta Morbida', tempo: 'REAZ', gittata: '18m', note: '' },
+    { livello: 1, nome: 'Individuazione del Magico', tempo: 'AZ', gittata: '9m', note: 'Razza, rituale' },
+    { livello: 1, nome: 'Onda Tonante', tempo: 'AZ', gittata: 'cubo 4,5m', note: '' },
+    { livello: 1, nome: 'Scudo', tempo: 'REAZ', gittata: '', note: '' },
+    { livello: 1, nome: 'Dardo Incantato', tempo: 'AZ', gittata: '36m', note: '' },
+    { livello: 2, nome: 'Frantumare', tempo: 'AZ', gittata: '18m', note: '' },
+    { livello: 2, nome: 'Immagine Speculare', tempo: 'AZ', gittata: '', note: '' },
+    { livello: 2, nome: 'Passo Velato', tempo: 'AZ BONUS', gittata: '', note: '' },
+  ],
+  privilegi:
+    'STREGONERIA INNATA: 2 volte al giorno, AZ. BONUS: la CD del TS aumenta di 1 e hai VANT ai TS per colpire con gli incantesimi lanciati.\n' +
+    'FONTE DI MAGIA: recuperi Punti Stregoneria a ogni Riposo Lungo.\n' +
+    'METAMAGIA: Incantesimo Celato (costa 1), Incantesimo Preciso (costa 1).\n' +
+    'ONDE DI CAOS e Impulsi di Magia Selvaggia.',
+  talenti: 'Guerramaga (War Caster): vantaggio ai TS di Concentrazione; componenti somatiche anche a mani occupate; incantesimo al posto di un attacco di opportunità.',
+  equipaggiamento: 'Borsa da erborista, giaciglio, libro (filosofia), dotazione da avventuriero, abiti da viaggiatore',
+  lingue: 'Elfico, Comune, Sottocomune',
+  denari: { mo: 74 },
 };
 
 // ---------------------------------------------------------------------------
-// Persistenza su localStorage — NON MODIFICARE loadState/saveState
+// Persistenza su localStorage: roster di personaggi { attivo, personaggi }
 // ---------------------------------------------------------------------------
 
-const STORAGE_KEY = 'tavolo-dei-dadi:scheda:v1';
+const STORAGE_KEY = 'scheda-interattiva:v1';
+const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
+
+function nuovoId() {
+  return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+function rosterVuoto() {
+  const id = nuovoId();
+  return { attivo: id, personaggi: { [id]: schedaVuota() } };
+}
 
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return schedaVuota();
-    const parsed = JSON.parse(raw);
-    return { ...schedaVuota(), ...parsed };
+    if (raw) {
+      const roster = JSON.parse(raw);
+      if (roster?.personaggi && roster.attivo && roster.personaggi[roster.attivo]) {
+        // completa i campi eventualmente mancanti con i default correnti
+        for (const id of Object.keys(roster.personaggi)) {
+          roster.personaggi[id] = { ...schedaVuota(), ...roster.personaggi[id] };
+        }
+        return roster;
+      }
+    }
+    // migrazione dal vecchio formato a scheda singola
+    const vecchio = localStorage.getItem(STORAGE_KEY_LEGACY);
+    if (vecchio) {
+      const id = nuovoId();
+      return { attivo: id, personaggi: { [id]: { ...schedaVuota(), ...JSON.parse(vecchio) } } };
+    }
   } catch {
-    return schedaVuota();
+    // dati corrotti: riparti da zero
   }
+  return rosterVuoto();
 }
 
-function saveState(scheda) {
+function saveState(roster) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(scheda));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(roster));
   } catch {
     // storage pieno o non disponibile: ignora
   }
@@ -520,7 +631,7 @@ async function transcribePdf(file) {
   return risposta.json();
 }
 
-/** Normalizza i dati importati dal PDF (o dall'esempio) nel modello della scheda. */
+/** Normalizza i dati importati dal PDF (o da JSON/esempio) nel modello della scheda. */
 function normalizeImported(dati) {
   const base = schedaVuota();
   if (!dati || typeof dati !== 'object') return base;
@@ -563,6 +674,33 @@ function normalizeImported(dati) {
     ? dati.incantatore.caratteristica
     : '';
 
+  const slot = { ...base.slotIncantesimo };
+  for (let liv = 1; liv <= 9; liv++) {
+    const v = dati.slotIncantesimo?.[liv];
+    const totale = Math.max(0, Math.min(9, num(typeof v === 'object' ? v?.totale : v, 0)));
+    const spesi = Math.max(0, Math.min(totale, num(typeof v === 'object' ? v?.spesi : 0, 0)));
+    slot[liv] = { totale, spesi };
+  }
+
+  const denari = { ...base.denari };
+  for (const { key } of DENARI) {
+    denari[key] = Math.max(0, num(dati.denari?.[key], 0));
+  }
+
+  const incantesimiLista = Array.isArray(dati.incantesimiLista)
+    ? dati.incantesimiLista
+        .filter((s) => s && typeof s === 'object' && s.nome)
+        .slice(0, 60)
+        .map((s, i) => ({
+          id: Date.now() + i,
+          livello: Math.max(0, Math.min(9, num(s.livello, 0))),
+          nome: String(s.nome),
+          tempo: str(s.tempo),
+          gittata: str(s.gittata),
+          note: str(s.note),
+        }))
+    : [];
+
   const clampTs = (v) => Math.max(0, Math.min(3, num(v, 0)));
   const pfMax = num(dati.pfMax, base.pfMax);
   return {
@@ -580,6 +718,7 @@ function normalizeImported(dati) {
     specie: str(dati.specie),
     allineamento: str(dati.allineamento),
     livello: num(dati.livello, base.livello),
+    pe: num(dati.pe, 0),
     ca: num(dati.ca, base.ca),
     pfMax,
     pfAttuali: num(dati.pfAttuali, pfMax),
@@ -592,6 +731,14 @@ function normalizeImported(dati) {
     abilita,
     attacchi: attacchi.length ? attacchi : base.attacchi,
     incantatore: { caratteristica: carIncantatore },
+    slotIncantesimo: slot,
+    incantesimiLista,
+    privilegi: str(dati.privilegi),
+    talenti: str(dati.talenti),
+    equipaggiamento: str(dati.equipaggiamento),
+    lingue: str(dati.lingue),
+    note: str(dati.note),
+    denari,
   };
 }
 
@@ -685,12 +832,25 @@ function Rollable({ onRoll, children, style, title }) {
   );
 }
 
+/** Area di testo per le sezioni descrittive della scheda. */
+function AreaTesto({ value, onChange, righe = 4, placeholder }) {
+  return (
+    <textarea
+      style={styles.textarea}
+      rows={righe}
+      value={value}
+      placeholder={placeholder}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  );
+}
+
 // ---------------------------------------------------------------------------
 // App
 // ---------------------------------------------------------------------------
 
 export default function App() {
-  const [scheda, setScheda] = useState(loadState);
+  const [roster, setRoster] = useState(loadState);
   const [modalita, setModalita] = useState('normale'); // normale | vantaggio | svantaggio
   const [rolling, setRolling] = useState(false);
   const [faccia, setFaccia] = useState(20);
@@ -704,15 +864,52 @@ export default function App() {
   const fileRef = useRef(null);
   const jsonRef = useRef(null);
 
+  const scheda = roster.personaggi[roster.attivo];
+
   useEffect(() => {
-    saveState(scheda);
-  }, [scheda]);
+    saveState(roster);
+  }, [roster]);
 
   useEffect(() => () => clearInterval(intervalRef.current), []);
+
+  /** Aggiorna la scheda del personaggio attivo. */
+  function setScheda(valore) {
+    setRoster((r) => ({
+      ...r,
+      personaggi: {
+        ...r.personaggi,
+        [r.attivo]: typeof valore === 'function' ? valore(r.personaggi[r.attivo]) : valore,
+      },
+    }));
+  }
 
   function aggiorna(patch) {
     setScheda((s) => ({ ...s, ...patch }));
   }
+
+  // --- gestione roster ---
+
+  function nuovoPersonaggio(dati = schedaVuota()) {
+    const id = nuovoId();
+    setRoster((r) => ({ attivo: id, personaggi: { ...r.personaggi, [id]: dati } }));
+  }
+
+  function duplicaPersonaggio() {
+    nuovoPersonaggio({ ...scheda, nome: `${scheda.nome} (copia)` });
+  }
+
+  function eliminaPersonaggio() {
+    if (!window.confirm(`Eliminare "${scheda.nome}"? L'operazione non si può annullare.`)) return;
+    setRoster((r) => {
+      const personaggi = { ...r.personaggi };
+      delete personaggi[r.attivo];
+      const ids = Object.keys(personaggi);
+      if (ids.length === 0) return rosterVuoto();
+      return { attivo: ids[0], personaggi };
+    });
+  }
+
+  // --- tiri ---
 
   /** Tiro di d20 generico con animazione. `extra` finisce nello stato del tiro. */
   function lanciaD20(etichetta, bonus, extra = {}) {
@@ -838,6 +1035,8 @@ export default function App() {
     });
   }
 
+  // --- import / export ---
+
   /** Scarica la scheda corrente come file JSON. */
   function esportaJson() {
     const nomeFile = (scheda.nome || 'scheda')
@@ -853,7 +1052,7 @@ export default function App() {
     URL.revokeObjectURL(url);
   }
 
-  /** Carica una scheda da file JSON (esportato dall'app o compatibile). */
+  /** Carica una scheda da file JSON come nuovo personaggio. */
   async function importaJson(evento) {
     const file = evento.target.files?.[0];
     evento.target.value = '';
@@ -861,9 +1060,9 @@ export default function App() {
     setErroreImport('');
     try {
       const dati = JSON.parse(await file.text());
-      setScheda(normalizeImported(dati));
+      nuovoPersonaggio(normalizeImported(dati));
     } catch {
-      setErroreImport('File JSON non valido: usa un file esportato da Tavolo dei Dadi.');
+      setErroreImport('File JSON non valido: usa un file esportato da Scheda Interattiva.');
     }
   }
 
@@ -875,7 +1074,7 @@ export default function App() {
     setImportInCorso(true);
     try {
       const dati = await transcribePdf(file);
-      setScheda(normalizeImported(dati));
+      nuovoPersonaggio(normalizeImported(dati));
     } catch (err) {
       setErroreImport(err.message || 'Import fallito');
     } finally {
@@ -893,9 +1092,9 @@ export default function App() {
 
   return (
     <div style={styles.app}>
-      <style>{KEYFRAMES}</style>
+      <style>{GLOBAL_CSS}</style>
       <header style={styles.header}>
-        <h1 style={styles.title}>⚄ Tavolo dei Dadi ⚄</h1>
+        <h1 style={styles.title}>🎲 Scheda Interattiva</h1>
         <p style={styles.hint}>1 click per modificare · doppio click per tirare il dado</p>
       </header>
 
@@ -910,11 +1109,11 @@ export default function App() {
                   {tiro.etichetta}
                   {tiro.dadi.length > 1 && ` · ${tiro.modalita} [${tiro.dadi.join(', ')}] → ${tiro.naturale}`}
                 </div>
-                <div style={{ fontSize: 22, color: C.goldLight }}>
-                  {tiro.naturale} {tiro.bonus !== 0 && `${conSegno(tiro.bonus)} `}= {tiro.totale}
-                  {critico && <span style={styles.badge(C.goldLight)}>⚔ CRITICO!</span>}
+                <div style={{ fontSize: 22, color: C.ink }}>
+                  {tiro.naturale} {tiro.bonus !== 0 && `${conSegno(tiro.bonus)} `}= <strong>{tiro.totale}</strong>
+                  {critico && <span style={styles.badge(C.goldDark)}>⚔ CRITICO!</span>}
                   {fallimento && <span style={styles.badge(C.red)}>💀 Fallimento critico</span>}
-                  {tiro.esito && <span style={styles.badge(C.goldLight)}>{tiro.esito}</span>}
+                  {tiro.esito && <span style={styles.badge(C.goldDark)}>{tiro.esito}</span>}
                 </div>
                 {tiro.attacco && (
                   dannoAttaccoValido ? (
@@ -934,8 +1133,8 @@ export default function App() {
             ) : null}
             {danni && (
               <div style={{ marginTop: tiro ? 6 : 0 }}>
-                <div style={{ fontSize: 20, color: danni.libero ? C.goldLight : danni.guarigione ? C.green : C.red }}>
-                  {danni.libero ? '🎲' : danni.guarigione ? '✚' : '💥'} {danni.totale}
+                <div style={{ fontSize: 20, color: danni.libero ? C.goldDark : danni.guarigione ? C.green : C.red }}>
+                  {danni.libero ? '🎲' : danni.guarigione ? '✚' : '💥'} <strong>{danni.totale}</strong>
                   {danni.libero ? '' : danni.guarigione ? ' PF recuperati' : ' danni'}
                   {danni.critico ? ' (critico!)' : ''}
                 </div>
@@ -958,7 +1157,7 @@ export default function App() {
         <section style={{ ...styles.panel, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: '10px 16px' }}>
           <span style={{ ...styles.detail, marginRight: 4 }}>Dado libero:</span>
           {[4, 6, 8, 10, 12, 20, 100].map((facce) => (
-            <button key={facce} style={styles.button} onClick={() => tiroLibero(facce)}>
+            <button key={facce} style={styles.buttonDado(facce)} onClick={() => tiroLibero(facce)}>
               d{facce}
             </button>
           ))}
@@ -984,10 +1183,32 @@ export default function App() {
           {erroreEspressione && <span style={{ color: C.red, fontSize: 13 }}>Espressione non valida</span>}
         </section>
 
+        {/* Personaggi */}
+        <section style={{ ...styles.panel, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: '10px 16px' }}>
+          <span style={styles.detail}>Personaggio:</span>
+          <select
+            style={{ ...styles.inlineInput, padding: '6px 8px', maxWidth: 260 }}
+            value={roster.attivo}
+            onChange={(e) => setRoster((r) => ({ ...r, attivo: e.target.value }))}
+          >
+            {Object.entries(roster.personaggi).map(([id, p]) => (
+              <option key={id} value={id}>
+                {p.nome}{p.classe ? ` (${p.classe} ${p.livello})` : ''}
+              </option>
+            ))}
+          </select>
+          <button style={styles.button} onClick={() => nuovoPersonaggio()}>＋ Nuovo</button>
+          <button style={styles.button} onClick={duplicaPersonaggio}>⧉ Duplica</button>
+          <button style={styles.buttonDanger} onClick={eliminaPersonaggio}>🗑 Elimina</button>
+          <span style={styles.detail}>
+            Ogni personaggio si salva da solo su questo browser: dal menu lo riapri quando vuoi.
+          </span>
+        </section>
+
         {/* Intestazione scheda */}
         <section style={styles.panel}>
           <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'baseline' }}>
-            <div style={{ fontSize: 24, color: C.goldLight }}>
+            <div style={{ fontSize: 24, color: C.ink }}>
               <Editable value={scheda.nome} onChange={(v) => aggiorna({ nome: v })} width={260} />
             </div>
             <div style={styles.detail}>
@@ -995,6 +1216,8 @@ export default function App() {
               <Editable value={scheda.sottoclasse} onChange={(v) => aggiorna({ sottoclasse: v })} width={130} />
               {' · liv. '}
               <Editable value={scheda.livello} tipo="numero" onChange={(v) => aggiorna({ livello: v })} width={40} />
+              {' · PE '}
+              <Editable value={scheda.pe} tipo="numero" onChange={(v) => aggiorna({ pe: v })} width={56} />
             </div>
             <div style={styles.detail}>
               <Editable value={scheda.specie} onChange={(v) => aggiorna({ specie: v })} width={100} />
@@ -1134,7 +1357,7 @@ export default function App() {
         </section>
 
         {/* Corpo scheda: caratteristiche a sinistra, resto a destra */}
-        <div style={styles.sheetGrid}>
+        <div className="griglia-scheda">
           <div>
             {CARATTERISTICHE.map(({ key, label, abbr }) => {
               const mod = modificatore(scheda.caratteristiche[key]);
@@ -1202,7 +1425,7 @@ export default function App() {
                         <strong style={{ width: 32 }}>{conSegno(bonus)}</strong>
                         <span>
                           {a.label}
-                          {liv === 2 && <span style={{ color: C.goldLight }}> ✶</span>}
+                          {liv === 2 && <span style={{ color: C.goldDark }}> ✶</span>}
                         </span>
                       </div>
                     );
@@ -1216,6 +1439,7 @@ export default function App() {
             {/* Armi e attacchi */}
             <section style={styles.panel}>
               <h2 style={styles.panelTitle}>Armi e trucchetti da combattimento</h2>
+              <div style={{ overflowX: 'auto' }}>
               <table style={styles.table}>
                 <thead>
                   <tr>
@@ -1281,7 +1505,8 @@ export default function App() {
                   })}
                 </tbody>
               </table>
-              <div style={{ marginTop: 10, display: 'flex', gap: 10, alignItems: 'center' }}>
+              </div>
+              <div style={{ marginTop: 10, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
                 <button
                   style={styles.button}
                   onClick={() =>
@@ -1304,7 +1529,7 @@ export default function App() {
             {/* Incantesimi */}
             <section style={styles.panel}>
               <h2 style={styles.panelTitle}>Incantesimi</h2>
-              <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
                 <label style={styles.detail}>
                   Caratteristica da incantatore:{' '}
                   <select
@@ -1345,6 +1570,172 @@ export default function App() {
                   </>
                 )}
               </div>
+
+              {/* Slot incantesimo: totale modificabile, rombi cliccabili per gli slot spesi */}
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                {Array.from({ length: 9 }, (_, i) => i + 1).map((liv) => {
+                  const slot = scheda.slotIncantesimo[liv] || { totale: 0, spesi: 0 };
+                  const aggiornaSlot = (patch) =>
+                    aggiorna({
+                      slotIncantesimo: { ...scheda.slotIncantesimo, [liv]: { ...slot, ...patch } },
+                    });
+                  return (
+                    <div key={liv} style={{ ...styles.vitalBox, minWidth: 88 }}>
+                      <div style={styles.vitalLabel}>Slot liv. {liv}</div>
+                      <div>
+                        <Editable
+                          value={slot.totale}
+                          tipo="numero"
+                          width={34}
+                          onChange={(v) =>
+                            aggiornaSlot({ totale: Math.max(0, Math.min(9, v)), spesi: Math.min(slot.spesi, Math.max(0, v)) })
+                          }
+                          title="Slot totali del livello"
+                        />
+                      </div>
+                      <div style={{ marginTop: 4, minHeight: 16 }}>
+                        {Array.from({ length: slot.totale }, (_, i) => i + 1).map((i) => (
+                          <span
+                            key={i}
+                            style={styles.pip(slot.spesi >= i, COLORE_DADO[6])}
+                            title={`Spesi: ${slot.spesi}/${slot.totale} (click per segnare)`}
+                            onClick={() => aggiornaSlot({ spesi: slot.spesi >= i ? i - 1 : i })}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Trucchetti e incantesimi preparati */}
+              <h3 style={{ ...styles.panelTitle, fontSize: 15, marginTop: 14 }}>
+                Trucchetti e incantesimi preparati
+              </h3>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={styles.table}>
+                  <thead>
+                    <tr>
+                      <th style={styles.th}>Liv.</th>
+                      <th style={styles.th}>Nome</th>
+                      <th style={styles.th}>Tempo</th>
+                      <th style={styles.th}>Gittata</th>
+                      <th style={styles.th}>Note</th>
+                      <th style={styles.th} />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...scheda.incantesimiLista]
+                      .sort((a, b) => a.livello - b.livello)
+                      .map((s) => {
+                        const aggiornaIncantesimo = (patch) =>
+                          aggiorna({
+                            incantesimiLista: scheda.incantesimiLista.map((x) =>
+                              x.id === s.id ? { ...x, ...patch } : x
+                            ),
+                          });
+                        return (
+                          <tr key={s.id}>
+                            <td style={styles.td}>
+                              <Editable value={s.livello} tipo="numero" width={34} onChange={(v) => aggiornaIncantesimo({ livello: Math.max(0, Math.min(9, v)) })} />
+                            </td>
+                            <td style={styles.td}>
+                              <Editable value={s.nome} width={170} onChange={(v) => aggiornaIncantesimo({ nome: v })} />
+                            </td>
+                            <td style={styles.td}>
+                              <Editable value={s.tempo} width={70} onChange={(v) => aggiornaIncantesimo({ tempo: v })} />
+                            </td>
+                            <td style={styles.td}>
+                              <Editable value={s.gittata} width={70} onChange={(v) => aggiornaIncantesimo({ gittata: v })} />
+                            </td>
+                            <td style={styles.td}>
+                              <Editable value={s.note} width={120} onChange={(v) => aggiornaIncantesimo({ note: v })} />
+                            </td>
+                            <td style={{ ...styles.td, textAlign: 'right' }}>
+                              <button
+                                style={styles.buttonDanger}
+                                onClick={() =>
+                                  aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })
+                                }
+                              >
+                                ×
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </table>
+              </div>
+              <button
+                style={{ ...styles.button, marginTop: 10 }}
+                onClick={() =>
+                  aggiorna({
+                    incantesimiLista: [
+                      ...scheda.incantesimiLista,
+                      { id: Date.now(), livello: 0, nome: 'Nuovo incantesimo', tempo: 'AZ', gittata: '', note: '' },
+                    ],
+                  })
+                }
+              >
+                + Aggiungi incantesimo
+              </button>
+            </section>
+
+            {/* Privilegi, talenti, equipaggiamento */}
+            <section style={styles.panel}>
+              <h2 style={styles.panelTitle}>Privilegi di classe e tratti della specie</h2>
+              <AreaTesto
+                value={scheda.privilegi}
+                righe={5}
+                placeholder="Es. Stregoneria innata, Scurovisione, Trance…"
+                onChange={(v) => aggiorna({ privilegi: v })}
+              />
+              <h2 style={{ ...styles.panelTitle, marginTop: 14 }}>Talenti</h2>
+              <AreaTesto
+                value={scheda.talenti}
+                righe={3}
+                placeholder="Es. Guerramaga (War Caster): vantaggio ai TS di Concentrazione…"
+                onChange={(v) => aggiorna({ talenti: v })}
+              />
+            </section>
+
+            <section style={styles.panel}>
+              <h2 style={styles.panelTitle}>Equipaggiamento e lingue</h2>
+              <AreaTesto
+                value={scheda.equipaggiamento}
+                righe={4}
+                placeholder="Zaino, corda, razioni…"
+                onChange={(v) => aggiorna({ equipaggiamento: v })}
+              />
+              <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', marginTop: 10 }}>
+                <span style={styles.detail}>
+                  Lingue:{' '}
+                  <Editable value={scheda.lingue} onChange={(v) => aggiorna({ lingue: v })} width={240} />
+                </span>
+                <span style={{ flex: 1 }} />
+                {DENARI.map(({ key, label }) => (
+                  <span key={key} style={styles.detail}>
+                    {label}{' '}
+                    <Editable
+                      value={scheda.denari[key]}
+                      tipo="numero"
+                      width={48}
+                      onChange={(v) => aggiorna({ denari: { ...scheda.denari, [key]: Math.max(0, v) } })}
+                    />
+                  </span>
+                ))}
+              </div>
+            </section>
+
+            <section style={styles.panel}>
+              <h2 style={styles.panelTitle}>Note, storia e aspetto</h2>
+              <AreaTesto
+                value={scheda.note}
+                righe={5}
+                placeholder="Storia del personaggio, tratti caratteriali, alleati, appunti di sessione…"
+                onChange={(v) => aggiorna({ note: v })}
+              />
             </section>
 
             {/* Import / export */}
@@ -1353,7 +1744,7 @@ export default function App() {
               <p style={styles.detail}>
                 Importa da PDF (trascrizione automatica: serve il server con la chiave API),
                 oppure salva e ricarica la scheda come file JSON per portarla su un altro
-                dispositivo o tenerne una copia.
+                dispositivo o tenerne una copia. Gli import creano un nuovo personaggio.
               </p>
               <input ref={fileRef} type="file" accept="application/pdf" style={{ display: 'none' }} onChange={importaPdf} />
               <input ref={jsonRef} type="file" accept="application/json,.json" style={{ display: 'none' }} onChange={importaJson} />
@@ -1369,16 +1760,10 @@ export default function App() {
                 </button>
                 <button
                   style={styles.button}
-                  onClick={() => setScheda(normalizeImported(ESEMPIO_FLYORA))}
+                  onClick={() => nuovoPersonaggio(normalizeImported(ESEMPIO_FLYORA))}
                   title="Carica la scheda di esempio (Flyora delle Acque Nere)"
                 >
                   ✨ Carica esempio: Flyora
-                </button>
-                <button
-                  style={styles.buttonDanger}
-                  onClick={() => window.confirm('Ripartire da una scheda vuota?') && setScheda(schedaVuota())}
-                >
-                  Nuova scheda vuota
                 </button>
               </div>
               {erroreImport && <div style={{ color: C.red, marginTop: 8 }}>{erroreImport}</div>}

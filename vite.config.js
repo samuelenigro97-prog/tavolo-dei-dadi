@@ -12,13 +12,13 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['icona-192.png', 'icona-512.png', 'icona-maskable-512.png'],
       manifest: {
-        name: 'Tavolo dei Dadi',
-        short_name: 'Tavolo Dadi',
-        description: 'Tiratore di dadi D&D 5e con scheda del personaggio integrata',
+        name: 'Scheda Interattiva',
+        short_name: 'Scheda',
+        description: 'Scheda D&D 5e interattiva: un click modifica, doppio click tira i dadi',
         lang: 'it',
         display: 'standalone',
-        background_color: '#1b1410',
-        theme_color: '#1b1410',
+        background_color: '#f4f1ea',
+        theme_color: '#f4f1ea',
         icons: [
           { src: 'icona-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icona-512.png', sizes: '512x512', type: 'image/png' },
