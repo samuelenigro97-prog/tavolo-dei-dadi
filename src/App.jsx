@@ -49,18 +49,44 @@ const styles = {
   panel: {
     background: C.panel,
     border: `1px solid ${C.border}`,
-    borderRadius: 12,
+    outline: `1px solid ${C.border}`,
+    outlineOffset: 3,
+    borderRadius: 6,
     padding: 16,
-    marginBottom: 14,
+    marginBottom: 16,
     boxShadow: '0 1px 4px rgba(60,50,30,0.08)',
   },
   panelTitle: {
     margin: '0 0 10px',
-    fontSize: 17,
-    color: '#9e2b25',
-    borderBottom: `1px solid ${C.border}`,
-    paddingBottom: 6,
+    fontSize: 14,
+    color: C.ink,
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    fontWeight: 'bold',
+    borderBottom: `2px solid ${C.ink}`,
+    paddingBottom: 5,
+    letterSpacing: 1.5,
+  },
+  // campo in stile modulo: valore su riga con etichetta sotto
+  moduloLabel: {
+    fontSize: 9,
+    color: C.inkDim,
     letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginTop: 2,
+  },
+  moduloCampo: { borderBottom: `1px solid ${C.ink}`, minHeight: 22, paddingBottom: 1 },
+  scudo: {
+    width: 76,
+    height: 84,
+    margin: '0 auto',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    background: C.panelLight,
+    clipPath: 'polygon(0% 0%, 100% 0%, 100% 62%, 50% 100%, 0% 62%)',
+    border: `1px solid ${C.border}`,
   },
   // Barra del tiro (sticky in alto)
   rollBar: {
@@ -158,17 +184,16 @@ const styles = {
     fontSize: 13,
     cursor: 'pointer',
   }),
-  vitalsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(108px, 1fr))',
-    gap: 10,
-  },
   vitalBox: {
     textAlign: 'center',
     background: C.panelLight,
     border: `1px solid ${C.border}`,
     borderRadius: 8,
     padding: '8px 6px',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    minHeight: 62,
   },
   vitalLabel: {
     fontSize: 11,
@@ -279,8 +304,15 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
   gap: 14px;
   align-items: start;
 }
+.testata { display: grid; grid-template-columns: 2.1fr 0.8fr 0.9fr 1.5fr 1fr 1.1fr; gap: 12px; align-items: stretch; }
+.vitali-stat { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+@media (max-width: 900px) {
+  .testata { grid-template-columns: repeat(2, 1fr); }
+  .testata .anagrafica { grid-column: 1 / -1; }
+}
 @media (max-width: 820px) {
   .griglia-scheda { grid-template-columns: 1fr; }
+  .vitali-stat { grid-template-columns: repeat(3, 1fr); }
 }
 /* su mobile i campi con font < 16px fanno zoomare iOS al focus */
 @media (max-width: 820px) {
@@ -295,6 +327,13 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
   0% { transform: scale(1.25); }
   60% { transform: scale(0.95); }
   100% { transform: scale(1); }
+}
+/* elemento "in carica" mentre tieni premuto: trema come un dado in mano */
+.carica { animation: carica-dado 0.4s ease-in-out infinite; color: ${C.goldDark} !important; }
+@keyframes carica-dado {
+  0% { transform: rotate(-4deg) scale(1.08); }
+  50% { transform: rotate(4deg) scale(1.14); }
+  100% { transform: rotate(-4deg) scale(1.08); }
 }
 `;
 
@@ -446,6 +485,7 @@ function schedaVuota() {
     pfAttuali: 10,
     pfTemp: 0,
     dadiVita: '1d8',
+    dadiVitaSpesi: 0,
     velocita: 9,
     taglia: 'Media',
     bonusCompetenza: 2,
@@ -480,8 +520,15 @@ function schedaVuota() {
     privilegi: '',
     talenti: '',
     equipaggiamento: '',
+    sintonia: '',
     lingue: '',
+    aspetto: '',
     note: '',
+    addestramento: {
+      armature: { leggera: false, media: false, pesante: false, scudi: false },
+      armi: '',
+      strumenti: '',
+    },
     denari: { mr: 0, ma: 0, me: 0, mo: 0, mp: 0 },
   };
 }
@@ -555,6 +602,11 @@ const ESEMPIO_FLYORA = {
   talenti: 'Guerramaga (War Caster): vantaggio ai TS di Concentrazione; componenti somatiche anche a mani occupate; incantesimo al posto di un attacco di opportunità.',
   equipaggiamento: 'Borsa da erborista, giaciglio, libro (filosofia), dotazione da avventuriero, abiti da viaggiatore',
   lingue: 'Elfico, Comune, Sottocomune',
+  addestramento: { armature: {}, armi: 'Armi semplici', strumenti: 'Borsa da erborista' },
+  note:
+    'Il personaggio ha trascorso i suoi primi anni rinchiuso in una capanna o un monastero molto distante da qualsiasi insediamento abitato. ' +
+    'I suoi unici compagni erano le creature della foresta e coloro che di tanto in tanto gli facevano visita per portargli notizie dal mondo esterno e provviste. ' +
+    'La solitudine gli ha consentito di trascorrere ore a riflettere sui misteri della creazione.',
   denari: { mo: 74 },
 };
 
@@ -723,6 +775,7 @@ function normalizeImported(dati) {
     pfMax,
     pfAttuali: num(dati.pfAttuali, pfMax),
     dadiVita: typeof dati.dadiVita === 'string' && parseEspressioneDado(dati.dadiVita) ? dati.dadiVita : base.dadiVita,
+    dadiVitaSpesi: Math.max(0, num(dati.dadiVitaSpesi, 0)),
     velocita: num(dati.velocita, base.velocita),
     taglia: str(dati.taglia, base.taglia) || base.taglia,
     bonusCompetenza: num(dati.bonusCompetenza, base.bonusCompetenza),
@@ -736,8 +789,20 @@ function normalizeImported(dati) {
     privilegi: str(dati.privilegi),
     talenti: str(dati.talenti),
     equipaggiamento: str(dati.equipaggiamento),
+    sintonia: str(dati.sintonia),
     lingue: str(dati.lingue),
+    aspetto: str(dati.aspetto),
     note: str(dati.note),
+    addestramento: {
+      armature: {
+        leggera: Boolean(dati.addestramento?.armature?.leggera),
+        media: Boolean(dati.addestramento?.armature?.media),
+        pesante: Boolean(dati.addestramento?.armature?.pesante),
+        scudi: Boolean(dati.addestramento?.armature?.scudi),
+      },
+      armi: str(dati.addestramento?.armi),
+      strumenti: str(dati.addestramento?.strumenti),
+    },
     denari,
   };
 }
@@ -754,17 +819,57 @@ function normalizeImported(dati) {
 function Editable({ value, onChange, onRoll, tipo = 'testo', width, style, title }) {
   const [editing, setEditing] = useState(false);
   const [bozza, setBozza] = useState('');
+  const [carica, setCarica] = useState(false);
   const timerRef = useRef(null);
+  const holdRef = useRef(null);
+  const caricato = useRef(false);
+  const ignoraClick = useRef(false);
 
-  useEffect(() => () => clearTimeout(timerRef.current), []);
+  useEffect(() => () => {
+    clearTimeout(timerRef.current);
+    clearTimeout(holdRef.current);
+  }, []);
 
   function apriEditor() {
     setBozza(String(value ?? ''));
     setEditing(true);
   }
 
+  // tieni premuto → carica → rilascia → tiro (solo se l'elemento è tirabile)
+  function pointerDown(e) {
+    if (!onRoll || e.button > 0) return;
+    caricato.current = false;
+    clearTimeout(holdRef.current);
+    holdRef.current = setTimeout(() => {
+      caricato.current = true;
+      setCarica(true);
+    }, SOGLIA_CARICA_MS);
+  }
+
+  function pointerUp() {
+    if (!onRoll) return;
+    clearTimeout(holdRef.current);
+    if (caricato.current) {
+      caricato.current = false;
+      setCarica(false);
+      ignoraClick.current = true; // il click che segue non deve aprire l'editor
+      clearTimeout(timerRef.current);
+      onRoll();
+    }
+  }
+
+  function pointerAnnulla() {
+    clearTimeout(holdRef.current);
+    caricato.current = false;
+    setCarica(false);
+  }
+
   function handleClick(e) {
     e.stopPropagation();
+    if (ignoraClick.current) {
+      ignoraClick.current = false;
+      return;
+    }
     if (!onRoll) return apriEditor();
     clearTimeout(timerRef.current);
     timerRef.current = setTimeout(apriEditor, 260);
@@ -816,19 +921,77 @@ function Editable({ value, onChange, onRoll, tipo = 'testo', width, style, title
   );
 }
 
-/** Elemento solo-tiro: doppio click per tirare (il click singolo non fa nulla). */
-function Rollable({ onRoll, children, style, title }) {
+/**
+ * Elemento tirabile stile Fantasy Grounds: tieni premuto (il valore "si
+ * carica" e trema), rilascia e il dado parte. Il doppio click resta come
+ * scorciatoia. `as` permette di renderizzare un div (es. righe abilità).
+ */
+const SOGLIA_CARICA_MS = 280;
+
+function Rollable({ onRoll, children, style, title, as: Tag = 'span' }) {
+  const [carica, setCarica] = useState(false);
+  const timerRef = useRef(null);
+  const caricato = useRef(false);
+
+  useEffect(() => () => clearTimeout(timerRef.current), []);
+
+  function inizia(e) {
+    if (e.button > 0) return;
+    caricato.current = false;
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      caricato.current = true;
+      setCarica(true);
+    }, SOGLIA_CARICA_MS);
+  }
+
+  function rilascia() {
+    clearTimeout(timerRef.current);
+    if (caricato.current) {
+      caricato.current = false;
+      setCarica(false);
+      onRoll();
+    }
+  }
+
+  function annulla() {
+    clearTimeout(timerRef.current);
+    caricato.current = false;
+    setCarica(false);
+  }
+
   return (
-    <span
-      style={{ cursor: 'pointer', ...style }}
-      title={title || 'Doppio click: tira'}
+    <Tag
+      className={carica ? 'carica' : undefined}
+      style={{
+        cursor: 'pointer',
+        userSelect: 'none',
+        WebkitTouchCallout: 'none',
+        display: Tag === 'span' ? 'inline-block' : undefined,
+        ...style,
+      }}
+      title={title || 'Tieni premuto e rilascia (o doppio click): tira'}
+      onPointerDown={inizia}
+      onPointerUp={rilascia}
+      onPointerLeave={annulla}
+      onPointerCancel={annulla}
       onDoubleClick={(e) => {
         e.stopPropagation();
         onRoll();
       }}
     >
       {children}
-    </span>
+    </Tag>
+  );
+}
+
+/** Campo in stile modulo ufficiale: valore su riga, etichetta minuscola sotto. */
+function CampoModulo({ label, children, style }) {
+  return (
+    <div style={style}>
+      <div style={styles.moduloCampo}>{children}</div>
+      <div style={styles.moduloLabel}>{label}</div>
+    </div>
   );
 }
 
@@ -1095,7 +1258,9 @@ export default function App() {
       <style>{GLOBAL_CSS}</style>
       <header style={styles.header}>
         <h1 style={styles.title}>🎲 Scheda Interattiva</h1>
-        <p style={styles.hint}>1 click per modificare · doppio click per tirare il dado</p>
+        <p style={styles.hint}>
+          1 click per modificare · tieni premuto e rilascia (o doppio click) per tirare il dado
+        </p>
       </header>
 
       <main style={styles.main}>
@@ -1127,8 +1292,8 @@ export default function App() {
               </>
             ) : !rolling && !danni ? (
               <div style={styles.detail}>
-                Doppio click su caratteristiche, tiri salvezza, abilità, attacchi, iniziativa…
-                e il dado rotola qui.
+                Tieni premuto un valore (caratteristiche, tiri salvezza, abilità, attacchi,
+                iniziativa…), rilascia e il dado rotola qui. Funziona anche il doppio click.
               </div>
             ) : null}
             {danni && (
@@ -1205,39 +1370,50 @@ export default function App() {
           </span>
         </section>
 
-        {/* Intestazione scheda */}
+        {/* Testata in stile scheda ufficiale */}
         <section style={styles.panel}>
-          <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'baseline' }}>
-            <div style={{ fontSize: 24, color: C.ink }}>
-              <Editable value={scheda.nome} onChange={(v) => aggiorna({ nome: v })} width={260} />
-            </div>
-            <div style={styles.detail}>
-              <Editable value={scheda.classe} onChange={(v) => aggiorna({ classe: v })} width={110} />{' '}
-              <Editable value={scheda.sottoclasse} onChange={(v) => aggiorna({ sottoclasse: v })} width={130} />
-              {' · liv. '}
-              <Editable value={scheda.livello} tipo="numero" onChange={(v) => aggiorna({ livello: v })} width={40} />
-              {' · PE '}
-              <Editable value={scheda.pe} tipo="numero" onChange={(v) => aggiorna({ pe: v })} width={56} />
-            </div>
-            <div style={styles.detail}>
-              <Editable value={scheda.specie} onChange={(v) => aggiorna({ specie: v })} width={100} />
-              {' · '}
-              <Editable value={scheda.background} onChange={(v) => aggiorna({ background: v })} width={100} />
-              {' · '}
-              <Editable value={scheda.allineamento} onChange={(v) => aggiorna({ allineamento: v })} width={90} />
-            </div>
-          </div>
-        </section>
-
-        {/* Vitals */}
-        <section style={styles.panel}>
-          <div style={styles.vitalsGrid}>
-            <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>Classe Armatura</div>
-              <div style={styles.vitalValue}>
-                <Editable value={scheda.ca} tipo="numero" onChange={(v) => aggiorna({ ca: v })} width={46} />
+          <div className="testata">
+            <div className="anagrafica">
+              <CampoModulo label="Nome del personaggio">
+                <span style={{ fontSize: 22 }}>
+                  <Editable value={scheda.nome} onChange={(v) => aggiorna({ nome: v })} width={240} style={{ borderBottom: 'none' }} />
+                </span>
+              </CampoModulo>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 14px', marginTop: 10 }}>
+                <CampoModulo label="Background">
+                  <Editable value={scheda.background} onChange={(v) => aggiorna({ background: v })} width={110} style={{ borderBottom: 'none' }} />
+                </CampoModulo>
+                <CampoModulo label="Classe">
+                  <Editable value={scheda.classe} onChange={(v) => aggiorna({ classe: v })} width={110} style={{ borderBottom: 'none' }} />
+                </CampoModulo>
+                <CampoModulo label="Specie">
+                  <Editable value={scheda.specie} onChange={(v) => aggiorna({ specie: v })} width={110} style={{ borderBottom: 'none' }} />
+                </CampoModulo>
+                <CampoModulo label="Sottoclasse">
+                  <Editable value={scheda.sottoclasse} onChange={(v) => aggiorna({ sottoclasse: v })} width={110} style={{ borderBottom: 'none' }} />
+                </CampoModulo>
               </div>
             </div>
+
+            <div style={styles.vitalBox}>
+              <div style={styles.vitalLabel}>Livello</div>
+              <div style={styles.vitalValue}>
+                <Editable value={scheda.livello} tipo="numero" onChange={(v) => aggiorna({ livello: v })} width={40} />
+              </div>
+              <div style={styles.detail}>
+                PE <Editable value={scheda.pe} tipo="numero" onChange={(v) => aggiorna({ pe: v })} width={52} />
+              </div>
+            </div>
+
+            <div style={{ textAlign: 'center' }}>
+              <div style={styles.scudo}>
+                <div style={{ fontSize: 26, fontWeight: 'bold' }}>
+                  <Editable value={scheda.ca} tipo="numero" onChange={(v) => aggiorna({ ca: v })} width={44} style={{ borderBottom: 'none' }} />
+                </div>
+              </div>
+              <div style={styles.vitalLabel}>Classe Armatura</div>
+            </div>
+
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>Punti Ferita</div>
               <div style={styles.vitalValue}>
@@ -1251,6 +1427,7 @@ export default function App() {
                 temp: <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={36} />
               </div>
             </div>
+
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>Dadi Vita</div>
               <div style={styles.vitalValue}>
@@ -1259,17 +1436,23 @@ export default function App() {
                   onChange={(v) => aggiorna({ dadiVita: v })}
                   onRoll={tiraDadoVita}
                   width={56}
-                />
+                  title="1 click: modifica · tieni premuto e rilascia: guarigione (1 dado + COS)"
+                />{' '}
+                🎲
               </div>
-              <div style={styles.detail}>doppio click: guarigione</div>
+              <div style={styles.detail}>
+                spesi: <Editable value={scheda.dadiVitaSpesi} tipo="numero" onChange={(v) => aggiorna({ dadiVitaSpesi: Math.max(0, v) })} width={34} />
+              </div>
             </div>
+
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>
-                <Rollable onRoll={tiroSalvezzaMorte} title="Doppio click: TS contro morte">
+                <Rollable onRoll={tiroSalvezzaMorte} title="Doppio click: tira il TS contro morte">
                   TS Morte 🎲
                 </Rollable>
               </div>
-              <div>
+              <div style={{ whiteSpace: 'nowrap', fontSize: 12, color: C.inkDim }}>
+                S{' '}
                 {[1, 2, 3].map((i) => (
                   <span
                     key={`s${i}`}
@@ -1285,7 +1468,9 @@ export default function App() {
                     }
                   />
                 ))}
-                <span style={{ margin: '0 4px', color: C.inkDim }}>·</span>
+              </div>
+              <div style={{ whiteSpace: 'nowrap', fontSize: 12, color: C.inkDim, marginTop: 3 }}>
+                F{' '}
                 {[1, 2, 3].map((i) => (
                   <span
                     key={`f${i}`}
@@ -1303,8 +1488,11 @@ export default function App() {
                 ))}
               </div>
             </div>
+          </div>
+
+          <div className="vitali-stat">
             <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>Bonus Competenza</div>
+              <div style={styles.vitalLabel}>Bonus Comp.</div>
               <div style={styles.vitalValue}>
                 <Editable
                   value={scheda.bonusCompetenza}
@@ -1340,7 +1528,7 @@ export default function App() {
               </div>
             </div>
             <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>Percezione Passiva</div>
+              <div style={styles.vitalLabel}>Perc. Passiva</div>
               <div style={styles.vitalValue}>{percezionePassiva}</div>
             </div>
             <div style={styles.vitalBox}>
@@ -1389,13 +1577,15 @@ export default function App() {
                     </Rollable>
                   </div>
 
-                  <div
+                  <Rollable
+                    as="div"
                     style={styles.skillRow(true)}
-                    title={`Doppio click: tiro salvezza di ${label} · click sul pallino: competenza`}
-                    onDoubleClick={() => lanciaD20(`Tiro salvezza: ${label}`, bonusTS)}
+                    title={`Tieni premuto e rilascia: tiro salvezza di ${label} · click sul pallino: competenza`}
+                    onRoll={() => lanciaD20(`Tiro salvezza: ${label}`, bonusTS)}
                   >
                     <span
                       style={styles.dot(scheda.tiriSalvezza[key] ? 1 : 0)}
+                      onPointerDown={(e) => e.stopPropagation()}
                       onClick={(e) => {
                         e.stopPropagation();
                         aggiorna({ tiriSalvezza: { ...scheda.tiriSalvezza, [key]: !scheda.tiriSalvezza[key] } });
@@ -1403,20 +1593,22 @@ export default function App() {
                     />
                     <strong style={{ width: 32 }}>{conSegno(bonusTS)}</strong>
                     <em>Tiro salvezza</em>
-                  </div>
+                  </Rollable>
 
                   {abilitaDellaCar.map((a) => {
                     const bonus = bonusAbilita(scheda, a.key);
                     const liv = scheda.abilita[a.key] || 0;
                     return (
-                      <div
+                      <Rollable
+                        as="div"
                         key={a.key}
                         style={styles.skillRow(true)}
-                        title={`Doppio click: prova di ${a.label} · click sul pallino: competenza/maestria`}
-                        onDoubleClick={() => lanciaD20(`${a.label} (${abbr})`, bonus)}
+                        title={`Tieni premuto e rilascia: prova di ${a.label} · click sul pallino: competenza/maestria`}
+                        onRoll={() => lanciaD20(`${a.label} (${abbr})`, bonus)}
                       >
                         <span
                           style={styles.dot(liv)}
+                          onPointerDown={(e) => e.stopPropagation()}
                           onClick={(e) => {
                             e.stopPropagation();
                             aggiorna({ abilita: { ...scheda.abilita, [a.key]: (liv + 1) % 3 } });
@@ -1427,7 +1619,7 @@ export default function App() {
                           {a.label}
                           {liv === 2 && <span style={{ color: C.goldDark }}> ✶</span>}
                         </span>
-                      </div>
+                      </Rollable>
                     );
                   })}
                 </div>
@@ -1700,6 +1892,58 @@ export default function App() {
               />
             </section>
 
+            {/* Addestramento e competenze nell'equipaggiamento */}
+            <section style={styles.panel}>
+              <h2 style={styles.panelTitle}>Addestramento e competenze nell'equipaggiamento</h2>
+              <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
+                <span style={styles.detail}>Competenza nelle armature:</span>
+                {[
+                  ['leggera', 'leggera'],
+                  ['media', 'media'],
+                  ['pesante', 'pesante'],
+                  ['scudi', 'scudi'],
+                ].map(([key, label]) => (
+                  <span
+                    key={key}
+                    style={{ ...styles.detail, cursor: 'pointer', userSelect: 'none' }}
+                    onClick={() =>
+                      aggiorna({
+                        addestramento: {
+                          ...scheda.addestramento,
+                          armature: {
+                            ...scheda.addestramento.armature,
+                            [key]: !scheda.addestramento.armature[key],
+                          },
+                        },
+                      })
+                    }
+                  >
+                    <span style={styles.pip(scheda.addestramento.armature[key], C.goldDark)} /> {label}
+                  </span>
+                ))}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div>
+                  <div style={styles.moduloLabel}>Armi</div>
+                  <AreaTesto
+                    value={scheda.addestramento.armi}
+                    righe={2}
+                    placeholder="Es. armi semplici, spade lunghe…"
+                    onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, armi: v } })}
+                  />
+                </div>
+                <div>
+                  <div style={styles.moduloLabel}>Strumenti</div>
+                  <AreaTesto
+                    value={scheda.addestramento.strumenti}
+                    righe={2}
+                    placeholder="Es. borsa da erborista, arnesi da scasso…"
+                    onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, strumenti: v } })}
+                  />
+                </div>
+              </div>
+            </section>
+
             <section style={styles.panel}>
               <h2 style={styles.panelTitle}>Equipaggiamento e lingue</h2>
               <AreaTesto
@@ -1708,6 +1952,12 @@ export default function App() {
                 placeholder="Zaino, corda, razioni…"
                 onChange={(v) => aggiorna({ equipaggiamento: v })}
               />
+              <div style={{ marginTop: 10 }}>
+                <span style={styles.detail}>
+                  Sintonia con un oggetto magico:{' '}
+                  <Editable value={scheda.sintonia} onChange={(v) => aggiorna({ sintonia: v })} width={300} />
+                </span>
+              </div>
               <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', marginTop: 10 }}>
                 <span style={styles.detail}>
                   Lingue:{' '}
@@ -1729,13 +1979,26 @@ export default function App() {
             </section>
 
             <section style={styles.panel}>
-              <h2 style={styles.panelTitle}>Note, storia e aspetto</h2>
+              <h2 style={styles.panelTitle}>Aspetto</h2>
+              <AreaTesto
+                value={scheda.aspetto}
+                righe={3}
+                placeholder="Aspetto fisico del personaggio…"
+                onChange={(v) => aggiorna({ aspetto: v })}
+              />
+              <h2 style={{ ...styles.panelTitle, marginTop: 14 }}>Storia e tratti caratteriali</h2>
               <AreaTesto
                 value={scheda.note}
                 righe={5}
                 placeholder="Storia del personaggio, tratti caratteriali, alleati, appunti di sessione…"
                 onChange={(v) => aggiorna({ note: v })}
               />
+              <div style={{ marginTop: 8 }}>
+                <span style={styles.detail}>
+                  Allineamento:{' '}
+                  <Editable value={scheda.allineamento} onChange={(v) => aggiorna({ allineamento: v })} width={140} />
+                </span>
+              </div>
             </section>
 
             {/* Import / export */}

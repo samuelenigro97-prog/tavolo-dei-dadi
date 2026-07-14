@@ -33,7 +33,11 @@ zoom di iOS).
 ## Interazione (convenzione centrale della UI)
 
 - **1 click** su un valore = modifica inline (componente `Editable`).
-- **Doppio click** su un elemento tirabile = tiro del dado nella barra in alto:
+- **Tieni premuto e rilascia** (stile Fantasy Grounds) su un elemento
+  tirabile = tiro del dado: dopo ~280 ms l'elemento "si carica" (classe CSS
+  `carica`, trema), al rilascio parte il tiro. Implementato in `Rollable`
+  (anche `as="div"` per le righe abilità) e in `Editable` quando ha `onRoll`.
+- **Doppio click/doppio tap** = stessa cosa, come scorciatoia:
   prove di caratteristica, tiri salvezza, abilità, attacchi (nome/bonus),
   danni (cella danno = solo danni, mai critico), iniziativa, attacco con
   incantesimo, dadi vita (guarigione), TS contro morte.

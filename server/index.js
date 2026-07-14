@@ -59,7 +59,15 @@ Rispondi SOLO con un oggetto JSON valido, senza testo prima o dopo, con questo s
   "privilegi": "string — privilegi di classe e tratti della specie, riassunti in testo semplice",
   "talenti": "string",
   "equipaggiamento": "string",
+  "sintonia": "string — oggetti magici in sintonia, se presenti",
   "lingue": "string — es. \\"Comune, Elfico\\"",
+  "aspetto": "string — descrizione dell'aspetto, se presente",
+  "note": "string — storia e tratti caratteriali, se presenti",
+  "addestramento": {
+    "armature": { "leggera": boolean, "media": boolean, "pesante": boolean, "scudi": boolean },
+    "armi": "string",
+    "strumenti": "string"
+  },
   "denari": { "mr": number, "ma": number, "me": number, "mo": number, "mp": number }
 }
 
