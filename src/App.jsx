@@ -76,6 +76,20 @@ const styles = {
     marginTop: 2,
   },
   moduloCampo: { borderBottom: `1px solid ${C.ink}`, minHeight: 22, paddingBottom: 1 },
+  ritratto: {
+    width: 92,
+    height: 92,
+    flexShrink: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    background: C.panelLight,
+    border: `1px solid ${C.border}`,
+    borderRadius: 8,
+    cursor: 'pointer',
+    overflow: 'hidden',
+    userSelect: 'none',
+  },
   scudo: {
     width: 76,
     height: 84,
@@ -473,6 +487,7 @@ function tiraD20(modalita) {
 function schedaVuota() {
   return {
     nome: 'Avventuriero senza nome',
+    ritratto: '', // immagine del personaggio come data URL (jpeg ridimensionato)
     background: '',
     classe: '',
     sottoclasse: '',
@@ -764,6 +779,12 @@ function normalizeImported(dati) {
       fallimenti: clampTs(dati.tsMorte?.fallimenti),
     },
     nome: str(dati.nome, base.nome) || base.nome,
+    ritratto:
+      typeof dati.ritratto === 'string' &&
+      dati.ritratto.startsWith('data:image/') &&
+      dati.ritratto.length < 800000
+        ? dati.ritratto
+        : '',
     background: str(dati.background),
     classe: str(dati.classe),
     sottoclasse: str(dati.sottoclasse),
@@ -1026,6 +1047,7 @@ export default function App() {
   const intervalRef = useRef(null);
   const fileRef = useRef(null);
   const jsonRef = useRef(null);
+  const ritrattoRef = useRef(null);
 
   const scheda = roster.personaggi[roster.attivo];
 
@@ -1196,6 +1218,30 @@ export default function App() {
       ...tiraDanni(parsata, false),
       libero: true,
     });
+  }
+
+  /** Carica l'immagine del personaggio: ridimensionata e salvata nella scheda. */
+  function caricaRitratto(evento) {
+    const file = evento.target.files?.[0];
+    evento.target.value = '';
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 512;
+      const scala = Math.min(1, MAX / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(img.width * scala));
+      canvas.height = Math.max(1, Math.round(img.height * scala));
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      aggiorna({ ritratto: canvas.toDataURL('image/jpeg', 0.85) });
+      URL.revokeObjectURL(url);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      setErroreImport('Immagine non riconosciuta: usa un file JPG o PNG.');
+    };
+    img.src = url;
   }
 
   // --- import / export ---
@@ -1373,7 +1419,38 @@ export default function App() {
         {/* Testata in stile scheda ufficiale */}
         <section style={styles.panel}>
           <div className="testata">
-            <div className="anagrafica">
+            <div className="anagrafica" style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+              <div style={{ position: 'relative' }}>
+                <div
+                  style={styles.ritratto}
+                  title={scheda.ritratto ? 'Click: cambia immagine' : 'Click: carica l’immagine del personaggio'}
+                  onClick={() => ritrattoRef.current?.click()}
+                >
+                  {scheda.ritratto ? (
+                    <img
+                      src={scheda.ritratto}
+                      alt={`Ritratto di ${scheda.nome}`}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <div style={{ textAlign: 'center', color: C.inkDim }}>
+                      <div style={{ fontSize: 26 }}>🖼</div>
+                      <div style={{ fontSize: 9, letterSpacing: 1 }}>RITRATTO</div>
+                    </div>
+                  )}
+                </div>
+                {scheda.ritratto && (
+                  <button
+                    style={{ ...styles.buttonDanger, position: 'absolute', top: -8, right: -8, padding: '0 6px', background: C.panel }}
+                    title="Rimuovi immagine"
+                    onClick={() => aggiorna({ ritratto: '' })}
+                  >
+                    ×
+                  </button>
+                )}
+                <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
+              </div>
+              <div style={{ flex: 1 }}>
               <CampoModulo label="Nome del personaggio">
                 <span style={{ fontSize: 22 }}>
                   <Editable value={scheda.nome} onChange={(v) => aggiorna({ nome: v })} width={240} style={{ borderBottom: 'none' }} />
@@ -1392,6 +1469,7 @@ export default function App() {
                 <CampoModulo label="Sottoclasse">
                   <Editable value={scheda.sottoclasse} onChange={(v) => aggiorna({ sottoclasse: v })} width={110} style={{ borderBottom: 'none' }} />
                 </CampoModulo>
+              </div>
               </div>
             </div>
 
