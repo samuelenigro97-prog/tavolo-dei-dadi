@@ -6,16 +6,16 @@ import { useEffect, useRef, useState } from 'react';
 
 // Tema chiaro "foglio di carta": bianco, inchiostro scuro, accenti sobri.
 const C = {
-  bg: '#f4f1ea',
-  panel: '#ffffff',
-  panelLight: '#f7f4ee',
-  border: '#ddd5c6',
-  ink: '#2b2620',
-  inkDim: '#8d8272',
-  gold: '#b8860b',
-  goldDark: '#8a6508',
-  red: '#b03a2e',
-  green: '#3e7d32',
+  bg: 'var(--c-bg)',
+  panel: 'var(--c-panel)',
+  panelLight: 'var(--c-panel-light)',
+  border: 'var(--c-border)',
+  ink: 'var(--c-ink)',
+  inkDim: 'var(--c-ink-dim)',
+  gold: 'var(--c-gold)',
+  goldDark: 'var(--c-gold-dark)',
+  red: 'var(--c-red)',
+  green: 'var(--c-green)',
 };
 
 // Un colore per ogni tipo di dado.
@@ -43,7 +43,7 @@ const styles = {
     padding: '10px 0 2px',
     textAlign: 'center',
   },
-  title: { margin: 0, fontSize: 24, letterSpacing: 1, color: '#9e2b25' },
+  title: { margin: 0, fontSize: 24, letterSpacing: 1, color: 'var(--c-title)' },
   hint: { margin: '6px 0 0', color: C.inkDim, fontStyle: 'italic', fontSize: 14 },
   main: { maxWidth: 1080, margin: '0 auto' },
   panel: {
@@ -193,7 +193,7 @@ const styles = {
     background: active ? C.ink : 'transparent',
     border: `1px solid ${active ? C.ink : C.border}`,
     borderRadius: 6,
-    color: active ? '#fff' : C.inkDim,
+    color: active ? C.bg : C.inkDim,
     fontFamily: 'inherit',
     fontSize: 13,
     cursor: 'pointer',
@@ -264,7 +264,7 @@ const styles = {
     display: 'inline-block',
   },
   inlineInput: {
-    background: '#fff',
+    background: C.panel,
     border: `1px solid ${C.gold}`,
     borderRadius: 4,
     color: C.ink,
@@ -309,6 +309,26 @@ const styles = {
 };
 
 const GLOBAL_CSS = `
+:root {
+  --c-bg: #f4f1ea; --c-panel: #ffffff; --c-panel-light: #f7f4ee;
+  --c-border: #ddd5c6; --c-ink: #2b2620; --c-ink-dim: #8d8272;
+  --c-gold: #b8860b; --c-gold-dark: #8a6508; --c-red: #b03a2e;
+  --c-green: #3e7d32; --c-title: #9e2b25;
+}
+:root[data-tema="scuro"] {
+  --c-bg: #171310; --c-panel: #211b16; --c-panel-light: #2a231c;
+  --c-border: #46392b; --c-ink: #e9dfcd; --c-ink-dim: #a0937f;
+  --c-gold: #c9a227; --c-gold-dark: #dcb84f; --c-red: #d0685a;
+  --c-green: #7fb069; --c-title: #de8f88;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="chiaro"]) {
+    --c-bg: #171310; --c-panel: #211b16; --c-panel-light: #2a231c;
+    --c-border: #46392b; --c-ink: #e9dfcd; --c-ink-dim: #a0937f;
+    --c-gold: #c9a227; --c-gold-dark: #dcb84f; --c-red: #d0685a;
+    --c-green: #7fb069; --c-title: #de8f88;
+  }
+}
 html, body { margin: 0; padding: 0; background: ${C.bg}; }
 /* touch: il doppio tap deve tirare il dado, non zoomare la pagina */
 * { touch-action: manipulation; }
@@ -318,15 +338,20 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
   gap: 10px;
   align-items: start;
 }
+/* consente alle colonne della griglia di stringersi (niente overflow orizzontale) */
+.griglia-scheda > * { min-width: 0; }
 .testata { display: grid; grid-template-columns: 2.1fr 0.8fr 0.9fr 1.5fr 1fr 1.1fr; gap: 10px; align-items: stretch; }
-.vitali-stat { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.vitali-stat { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
 @media (max-width: 900px) {
   .testata { grid-template-columns: repeat(2, 1fr); }
   .testata .anagrafica { grid-column: 1 / -1; }
+  .testata > :last-child { grid-column: 1 / -1; }
 }
 @media (max-width: 820px) {
   .griglia-scheda { grid-template-columns: 1fr; }
   .vitali-stat { grid-template-columns: repeat(3, 1fr); }
+  /* blocchi caratteristica stretti e centrati, senza vuoti in mezzo */
+  .blocco-car { max-width: 340px; margin-left: auto !important; margin-right: auto !important; }
 }
 /* su mobile i campi con font < 16px fanno zoomare iOS al focus */
 @media (max-width: 820px) {
@@ -1094,6 +1119,18 @@ export default function App() {
   const [erroreEspressione, setErroreEspressione] = useState(false);
   const [storico, setStorico] = useState([]);
   const [storicoAperto, setStoricoAperto] = useState(false);
+  // tema: 'auto' segue il sistema (scuro di notte se il telefono lo fa), oppure forzato
+  const [tema, setTema] = useState(() => localStorage.getItem('scheda-interattiva:tema') || 'auto');
+
+  useEffect(() => {
+    if (tema === 'auto') delete document.documentElement.dataset.tema;
+    else document.documentElement.dataset.tema = tema;
+    try {
+      localStorage.setItem('scheda-interattiva:tema', tema);
+    } catch {
+      // storage non disponibile: pazienza
+    }
+  }, [tema]);
   const intervalRef = useRef(null);
   const fileRef = useRef(null);
   const jsonRef = useRef(null);
@@ -1407,11 +1444,18 @@ export default function App() {
   return (
     <div style={styles.app}>
       <style>{GLOBAL_CSS}</style>
-      <header style={styles.header}>
+      <header style={{ ...styles.header, position: 'relative' }}>
         <h1 style={styles.title}>🎲 Scheda Interattiva</h1>
         <p style={styles.hint}>
           1 click per modificare · tieni premuto e rilascia (o doppio click) per tirare il dado
         </p>
+        <button
+          style={{ ...styles.modeButton(false), position: 'absolute', right: 0, top: 12 }}
+          title="Tema: auto segue il sistema (scuro di notte se il dispositivo cambia da solo)"
+          onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}
+        >
+          {tema === 'auto' ? '🌗 Auto' : tema === 'chiaro' ? '☀️ Chiaro' : '🌙 Scuro'}
+        </button>
       </header>
 
       <main style={styles.main}>
@@ -1578,6 +1622,11 @@ export default function App() {
                   </button>
                 )}
                 <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
+                <div style={{ marginTop: 10 }}>
+                  <CampoModulo label="Taglia">
+                    <Editable value={scheda.taglia} onChange={(v) => aggiorna({ taglia: v })} width={74} style={{ borderBottom: 'none' }} />
+                  </CampoModulo>
+                </div>
               </div>
               <div style={{ flex: 1 }}>
               <CampoModulo label="Nome del personaggio">
@@ -1665,7 +1714,6 @@ export default function App() {
                 </Rollable>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, height: 18 }}>
-                <span style={{ fontSize: 11, color: C.inkDim, width: 9 }}>S</span>
                 {[1, 2, 3].map((i) => (
                   <span
                     key={`s${i}`}
@@ -1683,7 +1731,6 @@ export default function App() {
                 ))}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, height: 18, marginTop: 4 }}>
-                <span style={{ fontSize: 11, color: C.inkDim, width: 9 }}>F</span>
                 {[1, 2, 3].map((i) => (
                   <span
                     key={`f${i}`}
@@ -1733,13 +1780,6 @@ export default function App() {
                 <Editable value={scheda.velocita} tipo="numero" onChange={(v) => aggiorna({ velocita: v })} width={40} />
                 <span style={{ fontSize: 13, color: C.inkDim }}> m</span>
               </div>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '0 4px' }}>
-              <CampoModulo label="Taglia">
-                <span style={{ fontSize: 18 }}>
-                  <Editable value={scheda.taglia} onChange={(v) => aggiorna({ taglia: v })} width={80} style={{ borderBottom: 'none' }} />
-                </span>
-              </CampoModulo>
             </div>
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>Perc. Passiva</div>
@@ -1792,7 +1832,7 @@ export default function App() {
               const bonusTS = bonusTiroSalvezza(scheda, key);
               const abilitaDellaCar = ABILITA.filter((a) => a.car === key);
               return (
-                <div key={key} style={styles.abilityBlock}>
+                <div key={key} className="blocco-car" style={styles.abilityBlock}>
                   <div style={styles.abilityHead}>
                     <div>
                       <div style={{ fontSize: 13, color: C.inkDim, letterSpacing: 1 }}>{label.toUpperCase()}</div>
@@ -2202,8 +2242,8 @@ export default function App() {
             {/* Addestramento e competenze nell'equipaggiamento */}
             <section style={styles.panel}>
               <h2 style={styles.panelTitle}>Addestramento e competenze nell'equipaggiamento</h2>
-              <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
-                <span style={styles.detail}>Competenza nelle armature:</span>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
+                <span style={styles.detail}>Armature:</span>
                 {[
                   ['leggera', 'leggera'],
                   ['media', 'media'],
@@ -2212,7 +2252,7 @@ export default function App() {
                 ].map(([key, label]) => (
                   <span
                     key={key}
-                    style={{ ...styles.detail, cursor: 'pointer', userSelect: 'none' }}
+                    style={{ ...styles.detail, fontSize: 12, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
                     onClick={() =>
                       aggiorna({
                         addestramento: {
