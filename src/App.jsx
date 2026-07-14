@@ -341,17 +341,14 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
 /* consente alle colonne della griglia di stringersi (niente overflow orizzontale) */
 .griglia-scheda > * { min-width: 0; }
 .testata { display: grid; grid-template-columns: 2.1fr 0.8fr 0.9fr 1.5fr 1fr 1.1fr; gap: 10px; align-items: stretch; }
-.vitali-stat { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.vitali-stat { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
 @media (max-width: 900px) {
   .testata { grid-template-columns: repeat(2, 1fr); }
   .testata .anagrafica { grid-column: 1 / -1; }
-  .testata > :last-child { grid-column: 1 / -1; }
 }
 @media (max-width: 820px) {
   .griglia-scheda { grid-template-columns: 1fr; }
   .vitali-stat { grid-template-columns: repeat(3, 1fr); }
-  /* blocchi caratteristica stretti e centrati, senza vuoti in mezzo */
-  .blocco-car { max-width: 340px; margin-left: auto !important; margin-right: auto !important; }
 }
 /* su mobile i campi con font < 16px fanno zoomare iOS al focus */
 @media (max-width: 820px) {
@@ -625,64 +622,70 @@ function bonusTiroSalvezza(scheda, car) {
 }
 
 // Esempio pronto all'uso: Flyora delle Acque Nere (scheda PDF di riferimento).
-const ESEMPIO_FLYORA = {
-  nome: 'Flyora delle Acque Nere',
-  background: 'Eremita',
-  classe: 'Stregone',
-  sottoclasse: 'della Magia Selva',
-  specie: 'Elfo Alto',
-  allineamento: 'Neutrale',
-  livello: 4,
+const ESEMPIO_GNOMO = {
+  nome: 'Boddynock Folgorio',
+  background: 'Sapiente',
+  classe: 'Mago',
+  sottoclasse: "Scuola dell'Invocazione",
+  specie: 'Gnomo delle Rocce',
+  allineamento: 'Caotico Buono',
+  livello: 10,
+  pe: 64000,
   ca: 12,
-  pfMax: 30,
-  pfAttuali: 30,
+  armatura: { nome: '', tipo: 'nessuna', base: 11, scudo: false, bonus: 0 },
+  pfMax: 62,
+  pfAttuali: 62,
   pfTemp: 0,
-  dadiVita: '4d6',
-  velocita: 9,
-  taglia: 'Media',
-  bonusCompetenza: 2,
-  caratteristiche: { forza: 12, destrezza: 15, costituzione: 16, intelligenza: 14, saggezza: 15, carisma: 18 },
-  tiriSalvezza: { forza: false, destrezza: false, costituzione: true, intelligenza: false, saggezza: false, carisma: true },
-  abilita: {
-    arcano: 1, religione: 1, intuizione: 1, medicina: 1, percezione: 1, sopravvivenza: 1, persuasione: 1,
-  },
+  dadiVita: '10d6',
+  dadiVitaSpesi: 0,
+  velocita: 7.5,
+  taglia: 'Piccola',
+  bonusCompetenza: 4,
+  caratteristiche: { forza: 8, destrezza: 14, costituzione: 14, intelligenza: 20, saggezza: 12, carisma: 10 },
+  tiriSalvezza: { forza: false, destrezza: false, costituzione: false, intelligenza: true, saggezza: true, carisma: false },
+  abilita: { arcano: 1, storia: 1, indagare: 1, religione: 1 },
   attacchi: [
-    { id: 1, nome: 'Spada', bonus: 4, danno: '1d6+2', tipoDanno: 'Perforante', note: 'Accurata, Leggera' },
-    { id: 2, nome: 'Pugnale x2', bonus: 4, danno: '1d4+2', tipoDanno: 'Perforante', note: '6/18m Accurata, Leggera, Lancio' },
-    { id: 3, nome: 'Bastone Ferrato (1 mano)', bonus: 3, danno: '1d6+1', tipoDanno: 'Contundente', note: 'Versatile' },
-    { id: 4, nome: 'Bastone Ferrato (2 mani)', bonus: 3, danno: '1d8+1', tipoDanno: 'Contundente', note: 'Versatile' },
+    { id: 1, nome: 'Dardo di Fuoco', bonus: 9, danno: '2d10', tipoDanno: 'Fuoco', note: 'Trucchetto, 36m' },
+    { id: 2, nome: 'Raggio di Gelo', bonus: 9, danno: '2d8', tipoDanno: 'Freddo', note: 'Trucchetto, 18m, -3m velocità' },
+    { id: 3, nome: 'Pugnale', bonus: 6, danno: '1d4+2', tipoDanno: 'Perforante', note: 'Accurata, Leggera, Lancio 6/18m' },
   ],
-  incantatore: { caratteristica: 'carisma' },
-  slotIncantesimo: { 1: { totale: 4, spesi: 0 }, 2: { totale: 3, spesi: 0 } },
+  incantatore: { caratteristica: 'intelligenza' },
+  slotIncantesimo: {
+    1: { totale: 4, spesi: 0 }, 2: { totale: 3, spesi: 0 }, 3: { totale: 3, spesi: 0 },
+    4: { totale: 3, spesi: 0 }, 5: { totale: 2, spesi: 0 },
+  },
   incantesimiLista: [
-    { livello: 0, nome: 'Interdizione alle Lame', tempo: 'AZ', gittata: '', note: '' },
-    { livello: 0, nome: 'Messaggio', tempo: 'AZ', gittata: '36m', note: '' },
-    { livello: 0, nome: 'Morsa del Gelo', tempo: 'AZ', gittata: '18m', note: '' },
-    { livello: 0, nome: 'Prestidigitazione', tempo: 'AZ', gittata: '3m', note: 'Razza' },
-    { livello: 0, nome: 'Vampa', tempo: 'AZ', gittata: '18m', note: '' },
-    { livello: 1, nome: 'Caduta Morbida', tempo: 'REAZ', gittata: '18m', note: '' },
-    { livello: 1, nome: 'Individuazione del Magico', tempo: 'AZ', gittata: '9m', note: 'Razza, rituale' },
-    { livello: 1, nome: 'Onda Tonante', tempo: 'AZ', gittata: 'cubo 4,5m', note: '' },
+    { livello: 0, nome: 'Dardo di Fuoco', tempo: 'AZ', gittata: '36m', note: '' },
+    { livello: 0, nome: 'Raggio di Gelo', tempo: 'AZ', gittata: '18m', note: '' },
+    { livello: 0, nome: 'Luce', tempo: 'AZ', gittata: 'contatto', note: '' },
+    { livello: 0, nome: 'Mano Magica', tempo: 'AZ', gittata: '9m', note: '' },
+    { livello: 0, nome: 'Prestidigitazione', tempo: 'AZ', gittata: '3m', note: '' },
     { livello: 1, nome: 'Scudo', tempo: 'REAZ', gittata: '', note: '' },
     { livello: 1, nome: 'Dardo Incantato', tempo: 'AZ', gittata: '36m', note: '' },
-    { livello: 2, nome: 'Frantumare', tempo: 'AZ', gittata: '18m', note: '' },
+    { livello: 1, nome: 'Individuazione del Magico', tempo: 'AZ', gittata: '9m', note: 'Rituale' },
     { livello: 2, nome: 'Immagine Speculare', tempo: 'AZ', gittata: '', note: '' },
     { livello: 2, nome: 'Passo Velato', tempo: 'AZ BONUS', gittata: '', note: '' },
+    { livello: 3, nome: 'Palla di Fuoco', tempo: 'AZ', gittata: '45m', note: '8d6, TS DES' },
+    { livello: 3, nome: 'Controincantesimo', tempo: 'REAZ', gittata: '18m', note: '' },
+    { livello: 3, nome: 'Volare', tempo: 'AZ', gittata: 'contatto', note: 'Concentrazione' },
+    { livello: 4, nome: 'Invisibilità Superiore', tempo: 'AZ', gittata: 'contatto', note: 'Concentrazione' },
+    { livello: 5, nome: 'Cono di Freddo', tempo: 'AZ', gittata: 'cono 18m', note: '8d8, TS COS' },
   ],
   privilegi:
-    'STREGONERIA INNATA: 2 volte al giorno, AZ. BONUS: la CD del TS aumenta di 1 e hai VANT ai TS per colpire con gli incantesimi lanciati.\n' +
-    'FONTE DI MAGIA: recuperi Punti Stregoneria a ogni Riposo Lungo.\n' +
-    'METAMAGIA: Incantesimo Celato (costa 1), Incantesimo Preciso (costa 1).\n' +
-    'ONDE DI CAOS e Impulsi di Magia Selvaggia.',
-  talenti: 'Guerramaga (War Caster): vantaggio ai TS di Concentrazione; componenti somatiche anche a mani occupate; incantesimo al posto di un attacco di opportunità.',
-  equipaggiamento: 'Borsa da erborista, giaciglio, libro (filosofia), dotazione da avventuriero, abiti da viaggiatore',
-  lingue: 'Elfico, Comune, Sottocomune',
-  addestramento: { armature: {}, armi: 'Armi semplici', strumenti: 'Borsa da erborista' },
+    'RECUPERO ARCANO: 1 volta al giorno, con un riposo breve recuperi slot per un totale di 5 livelli.\n' +
+    'PLASMARE INCANTESIMI: crei varchi sicuri nelle aree dei tuoi incantesimi di invocazione.\n' +
+    'INCANTESIMO POTENZIATO: aggiungi INT ai danni degli incantesimi di invocazione.\n' +
+    'ASTUZIA GNOMESCA: vantaggio ai TS di INT, SAG e CAR contro la magia. Scurovisione 18m.',
+  talenti: 'Adepto Elementale (fuoco): i tuoi incantesimi ignorano la resistenza al fuoco; gli 1 sui dadi di danno da fuoco contano come 2.',
+  equipaggiamento: 'Libro degli incantesimi, bacchetta (focus arcano), dotazione da studioso, pozione di guarigione x2',
+  sintonia: 'Bacchetta della Guerra Magica (+1 ai tiri per colpire con incantesimo)',
+  lingue: 'Comune, Gnomesco, Draconico',
+  aspetto: 'Gnomo minuto dai capelli argentei sparati in ogni direzione, occhiali spessi e dita macchiate di inchiostro.',
   note:
-    'Il personaggio ha trascorso i suoi primi anni rinchiuso in una capanna o un monastero molto distante da qualsiasi insediamento abitato. ' +
-    'I suoi unici compagni erano le creature della foresta e coloro che di tanto in tanto gli facevano visita per portargli notizie dal mondo esterno e provviste. ' +
-    'La solitudine gli ha consentito di trascorrere ore a riflettere sui misteri della creazione.',
-  denari: { mo: 74 },
+    "Boddynock ha passato quarant'anni negli archivi di Candlekeep prima che un esperimento di invocazione andato storto gli incendiasse la barba e la carriera. " +
+    'Da allora gira il mondo per dimostrare che la teoria, se ben applicata, esplode meglio della pratica.',
+  addestramento: { armature: {}, armi: 'Pugnali, dardi, fionde, bastoni ferrati, balestre leggere', strumenti: '' },
+  denari: { mo: 120 },
 };
 
 // ---------------------------------------------------------------------------
@@ -1181,6 +1184,15 @@ export default function App() {
     });
   }
 
+  /** Azzera la scheda del personaggio attivo, mantenendolo nel roster. */
+  function resetScheda() {
+    if (!window.confirm(`Azzerare tutti i campi di "${scheda.nome}"? Il personaggio resta nella lista ma torna vuoto.`)) return;
+    setScheda(schedaVuota());
+    setTiro(null);
+    setDanni(null);
+    setStorico([]);
+  }
+
   /** Registra una voce nello storico dei tiri della sessione. */
   function registra(voce) {
     setStorico((s) => [voce, ...s].slice(0, 30));
@@ -1583,6 +1595,7 @@ export default function App() {
           </select>
           <button style={styles.button} onClick={() => nuovoPersonaggio()}>＋ Nuovo</button>
           <button style={styles.button} onClick={duplicaPersonaggio}>⧉ Duplica</button>
+          <button style={styles.button} onClick={resetScheda} title="Azzera tutti i campi del personaggio attivo">↺ Reset</button>
           <button style={styles.buttonDanger} onClick={eliminaPersonaggio}>🗑 Elimina</button>
           <span style={styles.detail}>
             Ogni personaggio si salva da solo su questo browser: dal menu lo riapri quando vuoi.
@@ -1622,11 +1635,6 @@ export default function App() {
                   </button>
                 )}
                 <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
-                <div style={{ marginTop: 10 }}>
-                  <CampoModulo label="Taglia">
-                    <Editable value={scheda.taglia} onChange={(v) => aggiorna({ taglia: v })} width={74} style={{ borderBottom: 'none' }} />
-                  </CampoModulo>
-                </div>
               </div>
               <div style={{ flex: 1 }}>
               <CampoModulo label="Nome del personaggio">
@@ -1646,6 +1654,12 @@ export default function App() {
                 </CampoModulo>
                 <CampoModulo label="Sottoclasse">
                   <Editable value={scheda.sottoclasse} onChange={(v) => aggiorna({ sottoclasse: v })} width={110} style={{ borderBottom: 'none' }} />
+                </CampoModulo>
+                <CampoModulo label="Taglia">
+                  <Editable value={scheda.taglia} onChange={(v) => aggiorna({ taglia: v })} width={110} style={{ borderBottom: 'none' }} />
+                </CampoModulo>
+                <CampoModulo label="Allineamento">
+                  <Editable value={scheda.allineamento} onChange={(v) => aggiorna({ allineamento: v })} width={110} style={{ borderBottom: 'none' }} />
                 </CampoModulo>
               </div>
               </div>
@@ -1674,6 +1688,48 @@ export default function App() {
                 </div>
               </div>
               <div style={styles.vitalLabel}>Classe Armatura</div>
+              <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center' }}>
+                <select
+                  style={{ ...styles.inlineInput, fontSize: 11, padding: '2px 4px', maxWidth: 132 }}
+                  value={scheda.armatura.tipo}
+                  onChange={(e) => aggiorna({ armatura: { ...scheda.armatura, tipo: e.target.value } })}
+                >
+                  {TIPI_ARMATURA.map((t) => (
+                    <option key={t.key} value={t.key}>{t.label}</option>
+                  ))}
+                </select>
+                {scheda.armatura.tipo !== 'manuale' && (
+                  <div style={{ fontSize: 11, color: C.inkDim, display: 'flex', gap: 6, alignItems: 'center' }}>
+                    {scheda.armatura.tipo !== 'nessuna' && (
+                      <span>
+                        base{' '}
+                        <Editable
+                          value={scheda.armatura.base}
+                          tipo="numero"
+                          width={30}
+                          onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, base: Math.max(0, v) } })}
+                        />
+                      </span>
+                    )}
+                    <span
+                      style={{ cursor: 'pointer', userSelect: 'none' }}
+                      title="Scudo: +2 alla CA"
+                      onClick={() => aggiorna({ armatura: { ...scheda.armatura, scudo: !scheda.armatura.scudo } })}
+                    >
+                      <span style={styles.pip(scheda.armatura.scudo, C.goldDark)} /> scudo
+                    </span>
+                    <span>
+                      +{' '}
+                      <Editable
+                        value={scheda.armatura.bonus}
+                        tipo="numero"
+                        width={26}
+                        onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, bonus: v } })}
+                      />
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div style={styles.vitalBox}>
@@ -1707,6 +1763,9 @@ export default function App() {
               </div>
             </div>
 
+          </div>
+
+          <div className="vitali-stat">
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>
                 <Rollable onRoll={tiroSalvezzaMorte} title="Doppio click: tira il TS contro morte">
@@ -1748,9 +1807,6 @@ export default function App() {
                 ))}
               </div>
             </div>
-          </div>
-
-          <div className="vitali-stat">
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>Bonus Comp.</div>
               <div style={styles.vitalValue}>
@@ -1833,7 +1889,14 @@ export default function App() {
               const abilitaDellaCar = ABILITA.filter((a) => a.car === key);
               return (
                 <div key={key} className="blocco-car" style={styles.abilityBlock}>
-                  <div style={styles.abilityHead}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                    <Rollable
+                      onRoll={() => lanciaD20(`Prova di ${label}`, mod)}
+                      style={styles.abilityMod}
+                      title={`Tieni premuto e rilascia: prova di ${label}`}
+                    >
+                      {conSegno(mod)}
+                    </Rollable>
                     <div>
                       <div style={{ fontSize: 13, color: C.inkDim, letterSpacing: 1 }}>{label.toUpperCase()}</div>
                       <div style={styles.detail}>
@@ -1848,13 +1911,6 @@ export default function App() {
                         />
                       </div>
                     </div>
-                    <Rollable
-                      onRoll={() => lanciaD20(`Prova di ${label}`, mod)}
-                      style={styles.abilityMod}
-                      title={`Doppio click: prova di ${label}`}
-                    >
-                      {conSegno(mod)}
-                    </Rollable>
                   </div>
 
                   <Rollable
@@ -1910,65 +1966,7 @@ export default function App() {
           <div>
             {/* Armi e attacchi */}
             <section style={styles.panel}>
-              <h2 style={styles.panelTitle}>Difesa e armatura</h2>
-              <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginBottom: 4 }}>
-                <span style={styles.detail}>
-                  Armatura:{' '}
-                  <Editable
-                    value={scheda.armatura.nome}
-                    width={130}
-                    onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, nome: v } })}
-                  />
-                </span>
-                <select
-                  style={{ ...styles.inlineInput, padding: '4px 6px' }}
-                  value={scheda.armatura.tipo}
-                  onChange={(e) => aggiorna({ armatura: { ...scheda.armatura, tipo: e.target.value } })}
-                >
-                  {TIPI_ARMATURA.map((t) => (
-                    <option key={t.key} value={t.key}>{t.label}</option>
-                  ))}
-                </select>
-                {scheda.armatura.tipo !== 'manuale' && scheda.armatura.tipo !== 'nessuna' && (
-                  <span style={styles.detail}>
-                    CA armatura:{' '}
-                    <Editable
-                      value={scheda.armatura.base}
-                      tipo="numero"
-                      width={40}
-                      onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, base: Math.max(0, v) } })}
-                    />
-                  </span>
-                )}
-                {scheda.armatura.tipo !== 'manuale' && (
-                  <>
-                    <span
-                      style={{ ...styles.detail, cursor: 'pointer', userSelect: 'none' }}
-                      title="Scudo: +2 alla CA"
-                      onClick={() => aggiorna({ armatura: { ...scheda.armatura, scudo: !scheda.armatura.scudo } })}
-                    >
-                      <span style={styles.pip(scheda.armatura.scudo, C.goldDark)} /> scudo (+2)
-                    </span>
-                    <span style={styles.detail}>
-                      bonus:{' '}
-                      <Editable
-                        value={scheda.armatura.bonus}
-                        tipo="numero"
-                        width={36}
-                        onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, bonus: v } })}
-                      />
-                    </span>
-                    <strong style={{ color: C.goldDark }}>→ CA totale: {caTotale(scheda)}</strong>
-                  </>
-                )}
-                {scheda.armatura.tipo === 'manuale' && (
-                  <span style={styles.detail}>
-                    (CA scritta a mano nello scudo in alto; scegli un tipo di armatura per il calcolo automatico)
-                  </span>
-                )}
-              </div>
-
-              <h2 style={{ ...styles.panelTitle, marginTop: 12 }}>Armi e trucchetti da combattimento</h2>
+              <h2 style={styles.panelTitle}>Armi e trucchetti da combattimento</h2>
               <div style={{ overflowX: 'auto' }}>
               <table style={styles.table}>
                 <thead>
@@ -2340,12 +2338,6 @@ export default function App() {
                 placeholder="Storia del personaggio, tratti caratteriali, alleati, appunti di sessione…"
                 onChange={(v) => aggiorna({ note: v })}
               />
-              <div style={{ marginTop: 8 }}>
-                <span style={styles.detail}>
-                  Allineamento:{' '}
-                  <Editable value={scheda.allineamento} onChange={(v) => aggiorna({ allineamento: v })} width={140} />
-                </span>
-              </div>
             </section>
 
             {/* Import / export */}
@@ -2370,10 +2362,10 @@ export default function App() {
                 </button>
                 <button
                   style={styles.button}
-                  onClick={() => nuovoPersonaggio(normalizeImported(ESEMPIO_FLYORA))}
-                  title="Carica la scheda di esempio (Flyora delle Acque Nere)"
+                  onClick={() => nuovoPersonaggio(normalizeImported(ESEMPIO_GNOMO))}
+                  title="Carica la scheda di esempio (Boddynock, gnomo mago di livello 10)"
                 >
-                  ✨ Carica esempio: Flyora
+                  ✨ Carica esempio: Gnomo Mago
                 </button>
               </div>
               {erroreImport && <div style={{ color: C.red, marginTop: 8 }}>{erroreImport}</div>}

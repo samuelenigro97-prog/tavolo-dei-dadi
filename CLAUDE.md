@@ -91,6 +91,13 @@ zoom di iOS).
   modello.
 - Non fare refactor non richiesti.
 
+## Roster e reset
+
+- `nuovoPersonaggio`/`duplicaPersonaggio`/`eliminaPersonaggio` gestiscono il
+  roster; `resetScheda` azzera il PG attivo (torna a `schedaVuota`) senza
+  toglierlo dalla lista. Import PDF/JSON creano sempre un nuovo personaggio.
+- Esempio precaricato: `ESEMPIO_GNOMO` (Boddynock, gnomo mago liv. 10).
+
 ## PWA
 
 L'app è una PWA installabile e offline (vite-plugin-pwa, `registerType:
