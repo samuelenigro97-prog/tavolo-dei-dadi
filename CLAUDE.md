@@ -62,7 +62,14 @@ zoom di iOS).
   = morte.
 - Dado vita (guarigione): 1 dado del tipo indicato + mod Costituzione.
 - Tiro per colpire: `d20 + bonus`. Un **20 naturale è un critico**, un 1
-  naturale è un fallimento critico (il totale non conta).
+  naturale è un fallimento critico (il totale non conta MAI: si guarda solo
+  la faccia del dado, `tiro.naturale`).
+- CA da equipaggiamento (`caTotale`): manuale = campo `ca`; nessuna 10+DES;
+  leggera base+DES; media base+min(DES,2); pesante base fissa; scudo +2,
+  più bonus. Riposo lungo: PF al massimo, slot recuperati, metà dadi vita
+  (min 1). Il dado vita speso applica la guarigione ai PF e incrementa
+  `dadiVitaSpesi`. Condizioni 5e come chip toggle; storico ultimi 30 tiri
+  in memoria (non persistito).
 - **Critico sui danni:** raddoppiano SOLO i dadi dell'espressione di danno
   (es. `2d6+3` → `4d6+3`); i modificatori fissi NON si raddoppiano.
 - Espressioni di danno: formato `NdM±K` con più termini sommati

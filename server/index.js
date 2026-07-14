@@ -21,6 +21,13 @@ Rispondi SOLO con un oggetto JSON valido, senza testo prima o dopo, con questo s
   "allineamento": "string",
   "livello": number,
   "ca": number,
+  "armatura": {
+    "nome": "string — es. \\"Armatura di cuoio\\"",
+    "tipo": "manuale|nessuna|leggera|media|pesante — usa \\"manuale\\" se non deducibile",
+    "base": number,
+    "scudo": boolean,
+    "bonus": number
+  },
   "pfMax": number,
   "dadiVita": "string — es. \\"4d6\\"",
   "velocita": number,

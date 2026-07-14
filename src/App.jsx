@@ -40,10 +40,10 @@ const styles = {
   header: {
     maxWidth: 1080,
     margin: '0 auto',
-    padding: '20px 0 6px',
+    padding: '10px 0 2px',
     textAlign: 'center',
   },
-  title: { margin: 0, fontSize: 30, letterSpacing: 1, color: '#9e2b25' },
+  title: { margin: 0, fontSize: 24, letterSpacing: 1, color: '#9e2b25' },
   hint: { margin: '6px 0 0', color: C.inkDim, fontStyle: 'italic', fontSize: 14 },
   main: { maxWidth: 1080, margin: '0 auto' },
   panel: {
@@ -52,8 +52,8 @@ const styles = {
     outline: `1px solid ${C.border}`,
     outlineOffset: 3,
     borderRadius: 6,
-    padding: 16,
-    marginBottom: 16,
+    padding: 12,
+    marginBottom: 10,
     boxShadow: '0 1px 4px rgba(60,50,30,0.08)',
   },
   panelTitle: {
@@ -110,14 +110,14 @@ const styles = {
     background: C.panel,
     border: `2px solid ${C.gold}`,
     borderRadius: 12,
-    padding: '10px 16px',
-    marginBottom: 14,
+    padding: '8px 12px',
+    marginBottom: 10,
     display: 'flex',
     alignItems: 'center',
     gap: 16,
     flexWrap: 'wrap',
     boxShadow: '0 4px 12px rgba(60,50,30,0.18)',
-    minHeight: 64,
+    minHeight: 54,
   },
   d20: (rolling, crit, fumble) => ({
     width: 64,
@@ -203,11 +203,11 @@ const styles = {
     background: C.panelLight,
     border: `1px solid ${C.border}`,
     borderRadius: 8,
-    padding: '8px 6px',
+    padding: '5px 4px',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
-    minHeight: 62,
+    minHeight: 48,
   },
   vitalLabel: {
     fontSize: 11,
@@ -216,13 +216,13 @@ const styles = {
     textTransform: 'uppercase',
     marginBottom: 3,
   },
-  vitalValue: { fontSize: 21, color: C.ink },
+  vitalValue: { fontSize: 19, color: C.ink },
   abilityBlock: {
     background: C.panel,
     border: `1px solid ${C.border}`,
     borderRadius: 10,
-    padding: '10px 12px',
-    marginBottom: 12,
+    padding: '8px 10px',
+    marginBottom: 8,
     boxShadow: '0 1px 4px rgba(60,50,30,0.08)',
   },
   abilityHead: {
@@ -243,7 +243,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: 8,
-    padding: '3px 4px',
+    padding: '2px 4px',
     borderRadius: 6,
     cursor: rollable ? 'pointer' : 'default',
     fontSize: 14,
@@ -315,11 +315,11 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
 .griglia-scheda {
   display: grid;
   grid-template-columns: 300px 1fr;
-  gap: 14px;
+  gap: 10px;
   align-items: start;
 }
-.testata { display: grid; grid-template-columns: 2.1fr 0.8fr 0.9fr 1.5fr 1fr 1.1fr; gap: 12px; align-items: stretch; }
-.vitali-stat { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+.testata { display: grid; grid-template-columns: 2.1fr 0.8fr 0.9fr 1.5fr 1fr 1.1fr; gap: 10px; align-items: stretch; }
+.vitali-stat { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
 @media (max-width: 900px) {
   .testata { grid-template-columns: repeat(2, 1fr); }
   .testata .anagrafica { grid-column: 1 / -1; }
@@ -514,6 +514,10 @@ function schedaVuota() {
       saggezza: 10,
       carisma: 10,
     },
+    // armatura indossata: con tipo 'manuale' vale il campo `ca`, altrimenti
+    // la CA è calcolata (vedi caTotale)
+    armatura: { nome: '', tipo: 'manuale', base: 11, scudo: false, bonus: 0 },
+    condizioni: [],
     // true = competente nel tiro salvezza
     tiriSalvezza: {
       forza: false,
@@ -546,6 +550,37 @@ function schedaVuota() {
     },
     denari: { mr: 0, ma: 0, me: 0, mo: 0, mp: 0 },
   };
+}
+
+const TIPI_ARMATURA = [
+  { key: 'manuale', label: 'CA a mano' },
+  { key: 'nessuna', label: 'Senza armatura' },
+  { key: 'leggera', label: 'Leggera (+DES)' },
+  { key: 'media', label: 'Media (+DES max 2)' },
+  { key: 'pesante', label: 'Pesante (fissa)' },
+];
+
+const CONDIZIONI_5E = [
+  'Accecato', 'Affascinato', 'Afferrato', 'Assordato', 'Avvelenato',
+  'Incapacitato', 'Invisibile', 'Paralizzato', 'Pietrificato',
+  'Privo di sensi', 'Prono', 'Spaventato', 'Stordito', 'Trattenuto',
+];
+
+/**
+ * CA totale in base all'equipaggiamento (regole 5e):
+ * nessuna 10+DES · leggera base+DES · media base+min(DES,2) · pesante base;
+ * scudo +2, più eventuale bonus. Con tipo 'manuale' vale il campo `ca`.
+ */
+function caTotale(scheda) {
+  const a = scheda.armatura;
+  if (!a || a.tipo === 'manuale') return scheda.ca;
+  const des = modificatore(scheda.caratteristiche.destrezza);
+  let ca;
+  if (a.tipo === 'nessuna') ca = 10 + des;
+  else if (a.tipo === 'leggera') ca = a.base + des;
+  else if (a.tipo === 'media') ca = a.base + Math.min(des, 2);
+  else ca = a.base; // pesante
+  return ca + (a.scudo ? 2 : 0) + (Number(a.bonus) || 0);
 }
 
 /** Bonus di un'abilità: mod caratteristica + competenza (1x o 2x per maestria). */
@@ -754,6 +789,17 @@ function normalizeImported(dati) {
     denari[key] = Math.max(0, num(dati.denari?.[key], 0));
   }
 
+  const armatura = {
+    nome: str(dati.armatura?.nome),
+    tipo: TIPI_ARMATURA.some((t) => t.key === dati.armatura?.tipo) ? dati.armatura.tipo : 'manuale',
+    base: Math.max(0, num(dati.armatura?.base, 11)),
+    scudo: Boolean(dati.armatura?.scudo),
+    bonus: num(dati.armatura?.bonus, 0),
+  };
+  const condizioni = Array.isArray(dati.condizioni)
+    ? dati.condizioni.filter((c) => CONDIZIONI_5E.includes(c))
+    : [];
+
   const incantesimiLista = Array.isArray(dati.incantesimiLista)
     ? dati.incantesimiLista
         .filter((s) => s && typeof s === 'object' && s.nome)
@@ -793,6 +839,8 @@ function normalizeImported(dati) {
     livello: num(dati.livello, base.livello),
     pe: num(dati.pe, 0),
     ca: num(dati.ca, base.ca),
+    armatura,
+    condizioni,
     pfMax,
     pfAttuali: num(dati.pfAttuali, pfMax),
     dadiVita: typeof dati.dadiVita === 'string' && parseEspressioneDado(dati.dadiVita) ? dati.dadiVita : base.dadiVita,
@@ -1044,6 +1092,8 @@ export default function App() {
   const [erroreImport, setErroreImport] = useState('');
   const [espressioneLibera, setEspressioneLibera] = useState('');
   const [erroreEspressione, setErroreEspressione] = useState(false);
+  const [storico, setStorico] = useState([]);
+  const [storicoAperto, setStoricoAperto] = useState(false);
   const intervalRef = useRef(null);
   const fileRef = useRef(null);
   const jsonRef = useRef(null);
@@ -1094,6 +1144,11 @@ export default function App() {
     });
   }
 
+  /** Registra una voce nello storico dei tiri della sessione. */
+  function registra(voce) {
+    setStorico((s) => [voce, ...s].slice(0, 30));
+  }
+
   // --- tiri ---
 
   /** Tiro di d20 generico con animazione. `extra` finisce nello stato del tiro. */
@@ -1110,6 +1165,10 @@ export default function App() {
       setFaccia(naturale);
       setRolling(false);
       setTiro({ etichetta, naturale, dadi, bonus, totale: naturale + bonus, modalita, ...extra });
+      registra(
+        `${etichetta}: ${naturale}${bonus ? ` ${conSegno(bonus)}` : ''} = ${naturale + bonus}` +
+          (naturale === 20 ? ' ⚔ critico' : naturale === 1 ? ' 💀' : '')
+      );
     }, 850);
   }
 
@@ -1119,7 +1178,9 @@ export default function App() {
     if (!parsata) return;
     clearInterval(intervalRef.current);
     setTiro(null);
-    setDanni({ etichetta, ...tiraDanni(parsata, false), critico: false });
+    const esito = tiraDanni(parsata, false);
+    setDanni({ etichetta, ...esito, critico: false });
+    registra(`${etichetta}: ${esito.totale} (${esito.dettaglio})`);
   }
 
   /** Danni dell'attacco corrente (dal tiro per colpire in corso). */
@@ -1128,7 +1189,9 @@ export default function App() {
     const parsata = parseEspressioneDado(tiro.attacco.danno);
     if (!parsata) return;
     const critico = tiro.naturale === 20;
-    setDanni({ etichetta: `Danni: ${tiro.attacco.nome}`, ...tiraDanni(parsata, critico), critico });
+    const esito = tiraDanni(parsata, critico);
+    setDanni({ etichetta: `Danni: ${tiro.attacco.nome}`, ...esito, critico });
+    registra(`Danni ${tiro.attacco.nome}: ${esito.totale}${critico ? ' ⚔ critico' : ''} (${esito.dettaglio})`);
   }
 
   /** Tiro salvezza contro morte: regole 5e complete. */
@@ -1177,20 +1240,59 @@ export default function App() {
     }, 850);
   }
 
-  /** Tira un dado vita (1 dado del tipo indicato + mod COS). */
+  /**
+   * Spende un dado vita: tira 1 dado + mod COS, applica la guarigione ai PF
+   * (fino al massimo) e segna il dado come speso.
+   */
   function tiraDadoVita() {
     const parsata = parseEspressioneDado(scheda.dadiVita);
-    const facce = parsata?.termini.find((t) => t.tipo === 'dado')?.facce;
-    if (!facce) return;
-    const dado = tiraDado(facce);
+    const dadoTermine = parsata?.termini.find((t) => t.tipo === 'dado');
+    if (!dadoTermine) return;
+    if (scheda.dadiVitaSpesi >= dadoTermine.quantita) {
+      setTiro(null);
+      setDanni({
+        etichetta: 'Dadi vita',
+        totale: 0,
+        dettaglio: 'hai già speso tutti i dadi vita (recuperi con un riposo lungo)',
+        guarigione: true,
+      });
+      return;
+    }
+    const dado = tiraDado(dadoTermine.facce);
     const mod = modificatore(scheda.caratteristiche.costituzione);
+    const recupero = Math.max(0, dado + mod);
+    setScheda((s) => ({
+      ...s,
+      pfAttuali: Math.min(s.pfMax, s.pfAttuali + recupero),
+      dadiVitaSpesi: s.dadiVitaSpesi + 1,
+    }));
     setTiro(null);
     setDanni({
-      etichetta: 'Dado vita (guarigione)',
-      totale: Math.max(0, dado + mod),
-      dettaglio: `1d${facce} [${dado}] ${conSegno(mod)}`,
+      etichetta: 'Dado vita speso (PF applicati)',
+      totale: recupero,
+      dettaglio: `1d${dadoTermine.facce} [${dado}] ${conSegno(mod)}`,
       critico: false,
       guarigione: true,
+    });
+    registra(`Dado vita: +${recupero} PF`);
+  }
+
+  /** Riposo lungo 5e: PF al massimo, slot recuperati, metà dei dadi vita. */
+  function riposoLungo() {
+    if (!window.confirm('Riposo lungo: PF al massimo, slot incantesimo recuperati, metà dei dadi vita restituiti. Procedere?')) return;
+    setScheda((s) => {
+      const slot = Object.fromEntries(
+        Object.entries(s.slotIncantesimo).map(([liv, v]) => [liv, { ...v, spesi: 0 }])
+      );
+      const recuperoDadi = Math.max(1, Math.floor((s.livello || 1) / 2));
+      return {
+        ...s,
+        pfAttuali: s.pfMax,
+        pfTemp: 0,
+        tsMorte: { successi: 0, fallimenti: 0 },
+        slotIncantesimo: slot,
+        dadiVitaSpesi: Math.max(0, s.dadiVitaSpesi - recuperoDadi),
+      };
     });
   }
 
@@ -1201,6 +1303,7 @@ export default function App() {
     clearInterval(intervalRef.current);
     setTiro(null);
     setDanni({ etichetta: 'Tiro libero', totale: valore, dettaglio: `1d${facce} [${valore}]`, libero: true });
+    registra(`d${facce}: ${valore}`);
   }
 
   /** Tiro libero di un'espressione qualsiasi (es. "3d6+2"). */
@@ -1213,11 +1316,13 @@ export default function App() {
     setErroreEspressione(false);
     clearInterval(intervalRef.current);
     setTiro(null);
+    const esito = tiraDanni(parsata, false);
     setDanni({
       etichetta: `Tiro libero: ${espressioneLibera.trim()}`,
-      ...tiraDanni(parsata, false),
+      ...esito,
       libero: true,
     });
+    registra(`${espressioneLibera.trim()}: ${esito.totale} (${esito.dettaglio})`);
   }
 
   /** Carica l'immagine del personaggio: ridimensionata e salvata nella scheda. */
@@ -1322,8 +1427,8 @@ export default function App() {
                 </div>
                 <div style={{ fontSize: 22, color: C.ink }}>
                   {tiro.naturale} {tiro.bonus !== 0 && `${conSegno(tiro.bonus)} `}= <strong>{tiro.totale}</strong>
-                  {critico && <span style={styles.badge(C.goldDark)}>⚔ CRITICO!</span>}
-                  {fallimento && <span style={styles.badge(C.red)}>💀 Fallimento critico</span>}
+                  {critico && <span style={styles.badge(C.goldDark)}>⚔ CRITICO! 20 naturale</span>}
+                  {fallimento && <span style={styles.badge(C.red)}>💀 1 naturale</span>}
                   {tiro.esito && <span style={styles.badge(C.goldDark)}>{tiro.esito}</span>}
                 </div>
                 {tiro.attacco && (
@@ -1355,14 +1460,38 @@ export default function App() {
               </div>
             )}
           </div>
-          <div style={{ display: 'flex', gap: 6 }}>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
             {['normale', 'vantaggio', 'svantaggio'].map((m) => (
               <button key={m} style={styles.modeButton(modalita === m)} onClick={() => setModalita(m)}>
                 {m === 'normale' ? 'Normale' : m === 'vantaggio' ? 'Vantaggio' : 'Svantaggio'}
               </button>
             ))}
+            <button
+              style={styles.modeButton(storicoAperto)}
+              title="Storico dei tiri della sessione"
+              onClick={() => setStoricoAperto(!storicoAperto)}
+            >
+              📜
+            </button>
           </div>
         </div>
+
+        {storicoAperto && (
+          <section style={{ ...styles.panel, padding: '10px 16px' }}>
+            <h2 style={{ ...styles.panelTitle, fontSize: 13 }}>Storico dei tiri</h2>
+            {storico.length === 0 ? (
+              <div style={styles.detail}>Ancora nessun tiro in questa sessione.</div>
+            ) : (
+              <ol style={{ margin: 0, paddingLeft: 20, fontSize: 13, color: C.ink }}>
+                {storico.map((voce, i) => (
+                  <li key={`${i}-${voce}`} style={{ padding: '1px 0', color: i === 0 ? C.ink : C.inkDim }}>
+                    {voce}
+                  </li>
+                ))}
+              </ol>
+            )}
+          </section>
+        )}
 
         {/* Dado libero */}
         <section style={{ ...styles.panel, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: '10px 16px' }}>
@@ -1486,7 +1615,13 @@ export default function App() {
             <div style={{ textAlign: 'center' }}>
               <div style={styles.scudo}>
                 <div style={{ fontSize: 26, fontWeight: 'bold' }}>
-                  <Editable value={scheda.ca} tipo="numero" onChange={(v) => aggiorna({ ca: v })} width={44} style={{ borderBottom: 'none' }} />
+                  {scheda.armatura.tipo === 'manuale' ? (
+                    <Editable value={scheda.ca} tipo="numero" onChange={(v) => aggiorna({ ca: v })} width={44} style={{ borderBottom: 'none' }} />
+                  ) : (
+                    <span title="CA calcolata dall'armatura indossata (vedi sezione Armi)">
+                      {caTotale(scheda)}
+                    </span>
+                  )}
                 </div>
               </div>
               <div style={styles.vitalLabel}>Classe Armatura</div>
@@ -1529,8 +1664,8 @@ export default function App() {
                   TS Morte 🎲
                 </Rollable>
               </div>
-              <div style={{ whiteSpace: 'nowrap', fontSize: 12, color: C.inkDim }}>
-                S{' '}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, height: 18 }}>
+                <span style={{ fontSize: 11, color: C.inkDim, width: 9 }}>S</span>
                 {[1, 2, 3].map((i) => (
                   <span
                     key={`s${i}`}
@@ -1547,8 +1682,8 @@ export default function App() {
                   />
                 ))}
               </div>
-              <div style={{ whiteSpace: 'nowrap', fontSize: 12, color: C.inkDim, marginTop: 3 }}>
-                F{' '}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, height: 18, marginTop: 4 }}>
+                <span style={{ fontSize: 11, color: C.inkDim, width: 9 }}>F</span>
                 {[1, 2, 3].map((i) => (
                   <span
                     key={`f${i}`}
@@ -1599,11 +1734,12 @@ export default function App() {
                 <span style={{ fontSize: 13, color: C.inkDim }}> m</span>
               </div>
             </div>
-            <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>Taglia</div>
-              <div style={styles.vitalValue}>
-                <Editable value={scheda.taglia} onChange={(v) => aggiorna({ taglia: v })} width={70} />
-              </div>
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '0 4px' }}>
+              <CampoModulo label="Taglia">
+                <span style={{ fontSize: 18 }}>
+                  <Editable value={scheda.taglia} onChange={(v) => aggiorna({ taglia: v })} width={80} style={{ borderBottom: 'none' }} />
+                </span>
+              </CampoModulo>
             </div>
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>Perc. Passiva</div>
@@ -1619,6 +1755,32 @@ export default function App() {
                 {scheda.ispirazione ? '★' : '☆'}
               </div>
             </div>
+          </div>
+
+          {/* riposo e condizioni */}
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 12 }}>
+            <button style={styles.button} onClick={riposoLungo} title="PF al massimo, slot recuperati, metà dadi vita">
+              🌙 Riposo lungo
+            </button>
+            <span style={{ ...styles.detail, marginLeft: 8 }}>Condizioni:</span>
+            {CONDIZIONI_5E.map((c) => {
+              const attiva = scheda.condizioni.includes(c);
+              return (
+                <button
+                  key={c}
+                  style={{ ...styles.modeButton(attiva), fontSize: 11, padding: '3px 8px' }}
+                  onClick={() =>
+                    aggiorna({
+                      condizioni: attiva
+                        ? scheda.condizioni.filter((x) => x !== c)
+                        : [...scheda.condizioni, c],
+                    })
+                  }
+                >
+                  {c}
+                </button>
+              );
+            })}
           </div>
         </section>
 
@@ -1708,7 +1870,65 @@ export default function App() {
           <div>
             {/* Armi e attacchi */}
             <section style={styles.panel}>
-              <h2 style={styles.panelTitle}>Armi e trucchetti da combattimento</h2>
+              <h2 style={styles.panelTitle}>Difesa e armatura</h2>
+              <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginBottom: 4 }}>
+                <span style={styles.detail}>
+                  Armatura:{' '}
+                  <Editable
+                    value={scheda.armatura.nome}
+                    width={130}
+                    onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, nome: v } })}
+                  />
+                </span>
+                <select
+                  style={{ ...styles.inlineInput, padding: '4px 6px' }}
+                  value={scheda.armatura.tipo}
+                  onChange={(e) => aggiorna({ armatura: { ...scheda.armatura, tipo: e.target.value } })}
+                >
+                  {TIPI_ARMATURA.map((t) => (
+                    <option key={t.key} value={t.key}>{t.label}</option>
+                  ))}
+                </select>
+                {scheda.armatura.tipo !== 'manuale' && scheda.armatura.tipo !== 'nessuna' && (
+                  <span style={styles.detail}>
+                    CA armatura:{' '}
+                    <Editable
+                      value={scheda.armatura.base}
+                      tipo="numero"
+                      width={40}
+                      onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, base: Math.max(0, v) } })}
+                    />
+                  </span>
+                )}
+                {scheda.armatura.tipo !== 'manuale' && (
+                  <>
+                    <span
+                      style={{ ...styles.detail, cursor: 'pointer', userSelect: 'none' }}
+                      title="Scudo: +2 alla CA"
+                      onClick={() => aggiorna({ armatura: { ...scheda.armatura, scudo: !scheda.armatura.scudo } })}
+                    >
+                      <span style={styles.pip(scheda.armatura.scudo, C.goldDark)} /> scudo (+2)
+                    </span>
+                    <span style={styles.detail}>
+                      bonus:{' '}
+                      <Editable
+                        value={scheda.armatura.bonus}
+                        tipo="numero"
+                        width={36}
+                        onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, bonus: v } })}
+                      />
+                    </span>
+                    <strong style={{ color: C.goldDark }}>→ CA totale: {caTotale(scheda)}</strong>
+                  </>
+                )}
+                {scheda.armatura.tipo === 'manuale' && (
+                  <span style={styles.detail}>
+                    (CA scritta a mano nello scudo in alto; scegli un tipo di armatura per il calcolo automatico)
+                  </span>
+                )}
+              </div>
+
+              <h2 style={{ ...styles.panelTitle, marginTop: 12 }}>Armi e trucchetti da combattimento</h2>
               <div style={{ overflowX: 'auto' }}>
               <table style={styles.table}>
                 <thead>
@@ -1841,8 +2061,9 @@ export default function App() {
                 )}
               </div>
 
-              {/* Slot incantesimo: totale modificabile, rombi cliccabili per gli slot spesi */}
-              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              {/* Slot incantesimo compatti: totale modificabile, rombi per gli spesi */}
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                <span style={{ ...styles.detail, marginRight: 2 }}>Slot:</span>
                 {Array.from({ length: 9 }, (_, i) => i + 1).map((liv) => {
                   const slot = scheda.slotIncantesimo[liv] || { totale: 0, spesi: 0 };
                   const aggiornaSlot = (patch) =>
@@ -1850,29 +2071,37 @@ export default function App() {
                       slotIncantesimo: { ...scheda.slotIncantesimo, [liv]: { ...slot, ...patch } },
                     });
                   return (
-                    <div key={liv} style={{ ...styles.vitalBox, minWidth: 88 }}>
-                      <div style={styles.vitalLabel}>Slot liv. {liv}</div>
-                      <div>
-                        <Editable
-                          value={slot.totale}
-                          tipo="numero"
-                          width={34}
-                          onChange={(v) =>
-                            aggiornaSlot({ totale: Math.max(0, Math.min(9, v)), spesi: Math.min(slot.spesi, Math.max(0, v)) })
-                          }
-                          title="Slot totali del livello"
+                    <div
+                      key={liv}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 5,
+                        border: `1px solid ${C.border}`,
+                        borderRadius: 6,
+                        padding: '2px 7px',
+                        background: C.panelLight,
+                        opacity: slot.totale > 0 ? 1 : 0.55,
+                      }}
+                    >
+                      <span style={{ fontSize: 11, color: C.inkDim }}>L{liv}</span>
+                      <Editable
+                        value={slot.totale}
+                        tipo="numero"
+                        width={26}
+                        onChange={(v) =>
+                          aggiornaSlot({ totale: Math.max(0, Math.min(9, v)), spesi: Math.min(slot.spesi, Math.max(0, v)) })
+                        }
+                        title="Slot totali del livello"
+                      />
+                      {Array.from({ length: slot.totale }, (_, i) => i + 1).map((i) => (
+                        <span
+                          key={i}
+                          style={styles.pip(slot.spesi >= i, COLORE_DADO[6])}
+                          title={`Spesi: ${slot.spesi}/${slot.totale} (click per segnare)`}
+                          onClick={() => aggiornaSlot({ spesi: slot.spesi >= i ? i - 1 : i })}
                         />
-                      </div>
-                      <div style={{ marginTop: 4, minHeight: 16 }}>
-                        {Array.from({ length: slot.totale }, (_, i) => i + 1).map((i) => (
-                          <span
-                            key={i}
-                            style={styles.pip(slot.spesi >= i, COLORE_DADO[6])}
-                            title={`Spesi: ${slot.spesi}/${slot.totale} (click per segnare)`}
-                            onClick={() => aggiornaSlot({ spesi: slot.spesi >= i ? i - 1 : i })}
-                          />
-                        ))}
-                      </div>
+                      ))}
                     </div>
                   );
                 })}
