@@ -104,6 +104,9 @@ const DANNI_5E = [
 ];
 const SENSI_5E = ['Scurovisione', 'Vista cieca', 'Percezione tremorsensitiva', 'Vista vera'];
 
+// Ordine di default delle sezioni collassabili (riordinabili via drag).
+const ORDINE_SEZIONI_DEFAULT = ['risorse', 'privilegi', 'talenti', 'addestramento', 'equipaggiamento', 'aspetto', 'import'];
+
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 function coloreClasse(classe) {
   if (typeof classe !== 'string' || !classe) return null;
@@ -1368,11 +1371,23 @@ function AreaTesto({ value, onChange, righe = 2, placeholder }) {
 /**
  * Pannello con titolo collassabile (details/summary nativo). Di default aperto;
  * cliccando il titolo si richiude per risparmiare spazio verticale.
+ * Con `manigliaProps` mostra un segnalino ⠿ per trascinare e riordinare.
  */
-function Sezione({ titolo, children, aperto = true }) {
+function Sezione({ titolo, children, aperto = true, manigliaProps, trascinando, style, innerRef }) {
   return (
-    <details open={aperto} style={styles.panel} className="sezione">
-      <summary style={{ ...styles.panelTitle, cursor: 'pointer', listStyle: 'none', marginBottom: 0, userSelect: 'none' }}>
+    <details ref={innerRef} open={aperto} style={{ ...styles.panel, opacity: trascinando ? 0.4 : 1, ...style }} className="sezione">
+      <summary style={{ ...styles.panelTitle, cursor: 'pointer', listStyle: 'none', marginBottom: 0, userSelect: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
+        {manigliaProps && (
+          <span
+            className="tirabile"
+            title="Trascina per riordinare le sezioni"
+            style={{ cursor: 'grab', color: C.inkDim, fontSize: 15, lineHeight: 1, touchAction: 'none' }}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            {...manigliaProps}
+          >
+            ⠿
+          </span>
+        )}
         <span className="freccia">▾</span> {titolo}
       </summary>
       <div style={{ marginTop: 10 }}>{children}</div>
@@ -1403,6 +1418,74 @@ export default function App() {
     () => typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches
   );
   const [oraTick, setOraTick] = useState(0); // forza il ricalcolo quando cambia la fascia oraria
+
+  // ordine (personalizzabile via drag) delle sezioni collassabili
+  const [ordineSezioni, setOrdineSezioni] = useState(() => {
+    try {
+      const s = JSON.parse(localStorage.getItem('scheda-interattiva:ordine-sezioni'));
+      if (Array.isArray(s)) return s;
+    } catch {
+      /* niente */
+    }
+    return ORDINE_SEZIONI_DEFAULT;
+  });
+  const [sezTrascinata, setSezTrascinata] = useState(null);
+  const ordineRef = useRef(ordineSezioni);
+  ordineRef.current = ordineSezioni;
+  const nodiSezioni = useRef({}); // id sezione → elemento DOM
+  const dragSezione = useRef(null);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('scheda-interattiva:ordine-sezioni', JSON.stringify(ordineSezioni));
+    } catch {
+      /* niente */
+    }
+  }, [ordineSezioni]);
+
+  function iniziaTrascinamento(e, id) {
+    e.preventDefault();
+    e.stopPropagation();
+    dragSezione.current = id;
+    setSezTrascinata(id);
+    window.addEventListener('pointermove', duranteTrascinamento);
+    window.addEventListener('pointerup', fineTrascinamento, { once: true });
+  }
+
+  function duranteTrascinamento(e) {
+    const id = dragSezione.current;
+    if (!id) return;
+    const ord = ordineRef.current;
+    const y = e.clientY;
+    let to = ord.length;
+    for (let i = 0; i < ord.length; i++) {
+      const el = nodiSezioni.current[ord[i]];
+      if (!el) continue;
+      const r = el.getBoundingClientRect();
+      if (y < r.top + r.height / 2) { to = i; break; }
+    }
+    const from = ord.indexOf(id);
+    const nuovo = ord.filter((x) => x !== id);
+    nuovo.splice(to > from ? to - 1 : to, 0, id);
+    if (nuovo.join('|') !== ord.join('|')) setOrdineSezioni(nuovo);
+  }
+
+  function fineTrascinamento() {
+    dragSezione.current = null;
+    setSezTrascinata(null);
+    window.removeEventListener('pointermove', duranteTrascinamento);
+  }
+
+  /** Props per rendere una Sezione riordinabile via drag (maniglia + ordine). */
+  const propsSez = (id) => ({
+    style: { order: ordineSezioni.indexOf(id) },
+    innerRef: (el) => {
+      if (el) nodiSezioni.current[id] = el;
+      else delete nodiSezioni.current[id];
+    },
+    manigliaProps: { onPointerDown: (e) => iniziaTrascinamento(e, id) },
+    trascinando: sezTrascinata === id,
+  });
 
   // ascolta il cambio di tema di sistema e ricontrolla l'orario ogni 5 minuti
   useEffect(() => {
@@ -2234,41 +2317,39 @@ export default function App() {
             </span>
           </div>
 
-          {/* difese e sensi: campo libero + tendina "＋" per aggiungere dalla lista */}
+          {/* difese, sensi e condizioni: tutto su una riga per sfruttare lo spazio */}
           <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
             <span style={styles.detail}>Resistenze / immunità:{' '}
-              <CampoConTendina value={scheda.resistenze} opzioni={DANNI_5E} onChange={(v) => aggiorna({ resistenze: v })} width={210} title="Resistenze, immunità e vulnerabilità ai danni" />
+              <CampoConTendina value={scheda.resistenze} opzioni={DANNI_5E} onChange={(v) => aggiorna({ resistenze: v })} width={180} title="Resistenze, immunità e vulnerabilità ai danni" />
             </span>
             <span style={styles.detail}>Sensi:{' '}
-              <CampoConTendina value={scheda.sensi} opzioni={SENSI_5E} onChange={(v) => aggiorna({ sensi: v })} width={180} title="Scurovisione, percezione tremorsensitiva, ecc." />
+              <CampoConTendina value={scheda.sensi} opzioni={SENSI_5E} onChange={(v) => aggiorna({ sensi: v })} width={160} title="Scurovisione, percezione tremorsensitiva, ecc." />
             </span>
-          </div>
-
-          {/* condizioni: chip attive (click per togliere) + tendina per aggiungere */}
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 10 }}>
-            <span style={styles.detail}>Condizioni:</span>
-            {scheda.condizioni.map((c) => (
-              <button
-                key={c}
-                className="tirabile"
-                style={{ ...styles.modeButton(true), fontSize: 11, padding: '3px 8px' }}
-                title="Click per rimuovere"
-                onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
-              >
-                {c} ✕
-              </button>
-            ))}
-            <select
-              value=""
-              onChange={(e) => { if (e.target.value) aggiorna({ condizioni: [...scheda.condizioni, e.target.value] }); }}
-              style={{ ...styles.inlineInput, fontSize: 12, padding: '2px 4px' }}
-              title="Aggiungi una condizione"
-            >
-              <option value="">＋ aggiungi</option>
-              {CONDIZIONI_5E.filter((c) => !scheda.condizioni.includes(c)).map((c) => (
-                <option key={c} value={c}>{c}</option>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+              <span style={styles.detail}>Condizioni:</span>
+              {scheda.condizioni.map((c) => (
+                <button
+                  key={c}
+                  className="tirabile"
+                  style={{ ...styles.modeButton(true), fontSize: 11, padding: '3px 8px' }}
+                  title="Click per rimuovere"
+                  onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
+                >
+                  {c} ✕
+                </button>
               ))}
-            </select>
+              <select
+                value=""
+                onChange={(e) => { if (e.target.value) aggiorna({ condizioni: [...scheda.condizioni, e.target.value] }); }}
+                style={{ ...styles.inlineInput, fontSize: 12, padding: '2px 4px' }}
+                title="Aggiungi una condizione"
+              >
+                <option value="">＋ aggiungi</option>
+                {CONDIZIONI_5E.filter((c) => !scheda.condizioni.includes(c)).map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </span>
           </div>
         </section>
 
@@ -2355,9 +2436,9 @@ export default function App() {
             })}
           </div>
 
-          <div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
             {/* Armi e attacchi */}
-            <section style={styles.panel}>
+            <section style={{ ...styles.panel, order: -2 }}>
               <h2 style={styles.panelTitle}>Armi e trucchetti da combattimento</h2>
               <div style={{ overflowX: 'auto' }}>
               <table style={styles.table}>
@@ -2447,7 +2528,7 @@ export default function App() {
             </section>
 
             {/* Incantesimi */}
-            <section style={styles.panel}>
+            <section style={{ ...styles.panel, order: -1 }}>
               <h2 style={styles.panelTitle}>Incantesimi</h2>
               <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
                 <label style={styles.detail}>
@@ -2612,7 +2693,7 @@ export default function App() {
             </section>
 
             {/* Risorse di classe: contatori con reset a riposo breve/lungo */}
-            <Sezione titolo="Risorse di classe">
+            <Sezione titolo="Risorse di classe" {...propsSez('risorse')}>
               {scheda.risorse.length === 0 && (
                 <p style={{ ...styles.detail, marginTop: 0 }}>
                   Nessuna risorsa. Aggiungine una per tracciare Ki, punti stregoneria, ira, ispirazione bardica, usi dei privilegi…
@@ -2661,7 +2742,7 @@ export default function App() {
             </Sezione>
 
             {/* Privilegi, talenti, equipaggiamento — collassabili */}
-            <Sezione titolo="Privilegi di classe e tratti della specie">
+            <Sezione titolo="Privilegi di classe e tratti della specie" {...propsSez('privilegi')}>
               <AreaTesto
                 value={scheda.privilegi}
                 placeholder="Es. Stregoneria innata, Scurovisione, Trance…"
@@ -2669,7 +2750,7 @@ export default function App() {
               />
             </Sezione>
 
-            <Sezione titolo="Talenti">
+            <Sezione titolo="Talenti" {...propsSez('talenti')}>
               <AreaTesto
                 value={scheda.talenti}
                 placeholder="Es. Guerramaga (War Caster): vantaggio ai TS di Concentrazione…"
@@ -2677,7 +2758,7 @@ export default function App() {
               />
             </Sezione>
 
-            <Sezione titolo="Addestramento e competenze nell'equipaggiamento" aperto={false}>
+            <Sezione titolo="Addestramento e competenze nell'equipaggiamento" aperto={false} {...propsSez('addestramento')}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
                 <span style={styles.detail}>Armature:</span>
                 {[
@@ -2728,7 +2809,7 @@ export default function App() {
               </div>
             </Sezione>
 
-            <Sezione titolo="Equipaggiamento e lingue">
+            <Sezione titolo="Equipaggiamento e lingue" {...propsSez('equipaggiamento')}>
               <AreaTesto
                 value={scheda.equipaggiamento}
                 placeholder="Zaino, corda, razioni…"
@@ -2760,7 +2841,7 @@ export default function App() {
               </div>
             </Sezione>
 
-            <Sezione titolo="Aspetto, storia e tratti" aperto={false}>
+            <Sezione titolo="Aspetto, storia e tratti" aperto={false} {...propsSez('aspetto')}>
               <div style={styles.moduloLabel}>Aspetto</div>
               <AreaTesto
                 value={scheda.aspetto}
@@ -2776,7 +2857,7 @@ export default function App() {
             </Sezione>
 
             {/* Import / export */}
-            <Sezione titolo="Importa / esporta scheda" aperto={false}>
+            <Sezione titolo="Importa / esporta scheda" aperto={false} {...propsSez('import')}>
               <p style={{ ...styles.detail, marginTop: 0 }}>
                 Importa da PDF (trascrizione automatica: serve il server con la chiave API),
                 oppure salva e ricarica la scheda come file JSON per portarla su un altro

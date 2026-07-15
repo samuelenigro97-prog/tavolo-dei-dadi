@@ -113,6 +113,14 @@ minuti per la fascia oraria. Chiaro/Scuro forzano il modo.
   animata, `.sezione` in CSS). Le sezioni descrittive (privilegi, talenti,
   addestramento, equipaggiamento, aspetto/storia, import/export) sono
   collassabili; alcune partono chiuse (`aperto={false}`) per compattezza.
+- Le sezioni sono **riordinabili via drag** (maniglia ⠿ nel titolo,
+  `manigliaProps`/`iniziaTrascinamento`): l'ordine è gestito con il CSS
+  `order` su una colonna flex (nessun JSX spostato), stato `ordineSezioni`
+  persistito in `localStorage` (`scheda-interattiva:ordine-sezioni`).
+  Le sezioni combattimento/incantesimi restano fisse in alto (`order` −2/−1).
+- I campi anagrafica sono menù a tendina (`CampoTendina`, con "Altro…");
+  resistenze/sensi usano `CampoConTendina` (testo libero + "＋" da lista);
+  le condizioni sono chip removibili + tendina, sulla stessa riga di sensi.
 - `AreaTesto` cresce con il contenuto (auto-resize su `scrollHeight`, niente
   altezza fissa né spazio morto).
 
