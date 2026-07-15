@@ -2168,12 +2168,12 @@ export default function App() {
 
         {/* Personaggi: il nome vive qui (modificabile); a fianco lo switcher se >1 PG */}
         <section style={{ ...styles.panel, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'nowrap', padding: '6px 12px' }}>
-          <span style={{ flex: 1, minWidth: 0, fontSize: 18, fontWeight: 'bold', color: 'var(--c-title)' }}>
-            <Editable value={scheda.nome} onChange={(v) => aggiorna({ nome: v })} width={260} title="Nome del personaggio (1 click per modificare)" />
+          <span style={{ flex: 1, minWidth: 0, fontSize: 18, fontWeight: 'bold', color: 'var(--c-title)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', display: 'block' }}>
+            <Editable value={scheda.nome} onChange={(v) => aggiorna({ nome: v })} width="100%" title="Nome del personaggio (1 click per modificare)" />
           </span>
           {Object.keys(roster.personaggi).length > 1 && (
             <select
-              style={{ ...styles.inlineInput, padding: '5px 6px', maxWidth: 170 }}
+              style={{ ...styles.inlineInput, padding: '5px 4px', width: 52, flexShrink: 0 }}
               value={roster.attivo}
               onChange={(e) => setRoster((r) => ({ ...r, attivo: e.target.value }))}
               title="Cambia personaggio"
