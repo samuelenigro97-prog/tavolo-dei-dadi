@@ -40,11 +40,11 @@ const styles = {
   header: {
     maxWidth: 1080,
     margin: '0 auto',
-    padding: '10px 0 2px',
+    padding: '8px 0 2px',
     textAlign: 'center',
   },
-  title: { margin: 0, fontSize: 24, letterSpacing: 1, color: 'var(--c-title)' },
-  hint: { margin: '6px 0 0', color: C.inkDim, fontStyle: 'italic', fontSize: 14 },
+  title: { margin: 0, fontSize: 21, letterSpacing: 1, color: 'var(--c-title)' },
+  hint: { margin: '3px 0 0', color: C.inkDim, fontStyle: 'italic', fontSize: 12 },
   main: { maxWidth: 1080, margin: '0 auto' },
   panel: {
     background: C.panel,
@@ -52,8 +52,8 @@ const styles = {
     outline: `1px solid ${C.border}`,
     outlineOffset: 3,
     borderRadius: 6,
-    padding: 12,
-    marginBottom: 10,
+    padding: 11,
+    marginBottom: 8,
     boxShadow: '0 1px 4px rgba(60,50,30,0.08)',
   },
   panelTitle: {
@@ -117,7 +117,7 @@ const styles = {
     gap: 16,
     flexWrap: 'wrap',
     boxShadow: '0 4px 12px rgba(60,50,30,0.18)',
-    minHeight: 54,
+    minHeight: 48,
   },
   d20: (rolling, crit, fumble) => ({
     width: 64,
@@ -177,8 +177,20 @@ const styles = {
     fontSize: 12,
     cursor: 'pointer',
   },
+  buttonMini: {
+    padding: '5px 9px',
+    background: C.panelLight,
+    border: `1px solid ${C.border}`,
+    borderRadius: 6,
+    color: C.ink,
+    fontFamily: 'inherit',
+    fontSize: 14,
+    lineHeight: 1,
+    cursor: 'pointer',
+    flexShrink: 0,
+  },
   buttonDado: (facce) => ({
-    padding: '7px 13px',
+    padding: '5px 10px',
     background: COLORE_DADO[facce],
     border: 'none',
     borderRadius: 8,
@@ -207,16 +219,16 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
-    minHeight: 48,
+    minHeight: 42,
   },
   vitalLabel: {
-    fontSize: 11,
+    fontSize: 10,
     color: C.inkDim,
     letterSpacing: 1,
     textTransform: 'uppercase',
     marginBottom: 3,
   },
-  vitalValue: { fontSize: 19, color: C.ink },
+  vitalValue: { fontSize: 18, color: C.ink },
   abilityBlock: {
     background: C.panel,
     border: `1px solid ${C.border}`,
@@ -1581,8 +1593,8 @@ export default function App() {
         )}
 
         {/* Dado libero */}
-        <section style={{ ...styles.panel, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: '10px 16px' }}>
-          <span style={{ ...styles.detail, marginRight: 4 }}>Dado libero:</span>
+        <section style={{ ...styles.panel, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', padding: '6px 12px' }}>
+          <span style={{ ...styles.detail, marginRight: 2 }}>Dado:</span>
           {[4, 6, 8, 10, 12, 20, 100].map((facce) => (
             <button key={facce} style={styles.buttonDado(facce)} onClick={() => tiroLibero(facce)}>
               d{facce}
@@ -1610,13 +1622,13 @@ export default function App() {
           {erroreEspressione && <span style={{ color: C.red, fontSize: 13 }}>Espressione non valida</span>}
         </section>
 
-        {/* Personaggi */}
-        <section style={{ ...styles.panel, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: '10px 16px' }}>
-          <span style={styles.detail}>Personaggio:</span>
+        {/* Personaggi: riga compatta, icone con tooltip */}
+        <section style={{ ...styles.panel, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'nowrap', padding: '6px 12px' }}>
           <select
-            style={{ ...styles.inlineInput, padding: '6px 8px', maxWidth: 260 }}
+            style={{ ...styles.inlineInput, padding: '5px 6px', flex: 1, minWidth: 0 }}
             value={roster.attivo}
             onChange={(e) => setRoster((r) => ({ ...r, attivo: e.target.value }))}
+            title="Personaggio attivo"
           >
             {Object.entries(roster.personaggi).map(([id, p]) => (
               <option key={id} value={id}>
@@ -1624,13 +1636,10 @@ export default function App() {
               </option>
             ))}
           </select>
-          <button style={styles.button} onClick={() => nuovoPersonaggio()}>＋ Nuovo</button>
-          <button style={styles.button} onClick={duplicaPersonaggio}>⧉ Duplica</button>
-          <button style={styles.button} onClick={resetScheda} title="Azzera tutti i campi del personaggio attivo">↺ Reset</button>
-          <button style={styles.buttonDanger} onClick={eliminaPersonaggio}>🗑 Elimina</button>
-          <span style={styles.detail}>
-            Ogni personaggio si salva da solo su questo browser: dal menu lo riapri quando vuoi.
-          </span>
+          <button style={styles.buttonMini} onClick={() => nuovoPersonaggio()} title="Nuovo personaggio">＋</button>
+          <button style={styles.buttonMini} onClick={duplicaPersonaggio} title="Duplica il personaggio attivo">⧉</button>
+          <button style={styles.buttonMini} onClick={resetScheda} title="Azzera i campi del personaggio attivo">↺</button>
+          <button style={{ ...styles.buttonMini, borderColor: C.red, color: C.red }} onClick={eliminaPersonaggio} title="Elimina il personaggio attivo">🗑</button>
         </section>
 
         {/* Testata in stile scheda ufficiale */}
