@@ -494,6 +494,22 @@ export function parseEspressioneDado(espressione) {
   return { termini };
 }
 
+// --- Dadi vita ------------------------------------------------------------
+// In 5e il NUMERO di dadi vita è sempre pari al livello del personaggio; il
+// TIPO di dado (d6…d12) dipende dalla classe. Ricaviamo le facce dalla stringa
+// salvata e teniamo la quantità agganciata al livello.
+const FACCE_DADO_VITA = [6, 8, 10, 12];
+
+function facceDadoVita(espressione) {
+  const dado = parseEspressioneDado(espressione)?.termini.find((t) => t.tipo === 'dado');
+  return dado ? dado.facce : 8;
+}
+
+/** Espressione dei dadi vita coerente col livello, es. livello 3 + d8 → "3d8". */
+function esprDadiVita(livello, facce) {
+  return `${Math.max(1, Math.floor(livello) || 1)}d${facce}`;
+}
+
 /**
  * Tira un'espressione di danno già parsata.
  * Regola del critico 5e: con `critico` = true raddoppiano SOLO i dadi
@@ -737,7 +753,10 @@ function loadState() {
       if (roster?.personaggi && roster.attivo && roster.personaggi[roster.attivo]) {
         // completa i campi eventualmente mancanti con i default correnti
         for (const id of Object.keys(roster.personaggi)) {
-          roster.personaggi[id] = { ...schedaVuota(), ...roster.personaggi[id] };
+          const s = { ...schedaVuota(), ...roster.personaggi[id] };
+          // i dadi vita seguono sempre il livello (numero = livello, tipo dalla classe)
+          s.dadiVita = esprDadiVita(s.livello, facceDadoVita(s.dadiVita));
+          roster.personaggi[id] = s;
         }
         return roster;
       }
@@ -896,7 +915,7 @@ function normalizeImported(dati) {
     condizioni,
     pfMax,
     pfAttuali: num(dati.pfAttuali, pfMax),
-    dadiVita: typeof dati.dadiVita === 'string' && parseEspressioneDado(dati.dadiVita) ? dati.dadiVita : base.dadiVita,
+    dadiVita: esprDadiVita(num(dati.livello, base.livello), facceDadoVita(typeof dati.dadiVita === 'string' ? dati.dadiVita : base.dadiVita)),
     dadiVitaSpesi: Math.max(0, num(dati.dadiVitaSpesi, 0)),
     velocita: num(dati.velocita, base.velocita),
     taglia: str(dati.taglia, base.taglia) || base.taglia,
@@ -1371,10 +1390,9 @@ export default function App() {
    * (fino al massimo) e segna il dado come speso.
    */
   function tiraDadoVita() {
-    const parsata = parseEspressioneDado(scheda.dadiVita);
-    const dadoTermine = parsata?.termini.find((t) => t.tipo === 'dado');
-    if (!dadoTermine) return;
-    if (scheda.dadiVitaSpesi >= dadoTermine.quantita) {
+    const facce = facceDadoVita(scheda.dadiVita);
+    const totali = Math.max(1, scheda.livello || 1); // in 5e i dadi vita = livello
+    if (scheda.dadiVitaSpesi >= totali) {
       setTiro(null);
       setDanni({
         etichetta: 'Dadi vita',
@@ -1384,7 +1402,7 @@ export default function App() {
       });
       return;
     }
-    const dado = tiraDado(dadoTermine.facce);
+    const dado = tiraDado(facce);
     const mod = modificatore(scheda.caratteristiche.costituzione);
     const recupero = Math.max(0, dado + mod);
     conAnimazione(() => {
@@ -1396,7 +1414,7 @@ export default function App() {
       setDanni({
         etichetta: 'Dado vita speso (PF applicati)',
         totale: recupero,
-        dettaglio: `1d${dadoTermine.facce} [${dado}] ${conSegno(mod)}`,
+        dettaglio: `1d${facce} [${dado}] ${conSegno(mod)}`,
         critico: false,
         guarigione: true,
       });
@@ -1714,7 +1732,7 @@ export default function App() {
                   <Editable value={scheda.nome} onChange={(v) => aggiorna({ nome: v })} width={220} />
                 </span>
                 <span style={{ ...styles.detail, whiteSpace: 'nowrap' }}>
-                  liv. <Editable value={scheda.livello} tipo="numero" onChange={(v) => aggiorna({ livello: v })} width={32} />
+                  liv. <Editable value={scheda.livello} tipo="numero" onChange={(v) => aggiorna({ livello: v, dadiVita: esprDadiVita(v, facceDadoVita(scheda.dadiVita)), dadiVitaSpesi: Math.min(scheda.dadiVitaSpesi, Math.max(1, v)) })} width={32} />
                   {' · PE '}
                   <Editable value={scheda.pe} tipo="numero" onChange={(v) => aggiorna({ pe: v })} width={56} />
                 </span>
@@ -1790,17 +1808,29 @@ export default function App() {
                 </span>
               </div>
               <div style={{ ...styles.detail, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: 2 }}>
-                <span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                   Dadi vita{' '}
-                  <Editable
-                    value={scheda.dadiVita}
-                    onChange={(v) => aggiorna({ dadiVita: v })}
-                    onRoll={tiraDadoVita}
-                    width={48}
-                    title="Tieni premuto e rilascia: spendi un dado vita (guarigione = 1 dado + COS)"
-                  />{' '}
+                  <Rollable onRoll={tiraDadoVita} title="Tieni premuto e rilascia: spendi un dado vita (guarigione = 1 dado + COS)">
+                    <strong>{Math.max(1, scheda.livello || 1)}</strong>d
+                  </Rollable>
+                  <select
+                    style={{ ...styles.inlineInput, fontSize: 12, padding: '1px 2px' }}
+                    value={facceDadoVita(scheda.dadiVita)}
+                    onChange={(e) => aggiorna({ dadiVita: esprDadiVita(scheda.livello, Number(e.target.value)) })}
+                    title="Tipo di dado vita (dalla classe)"
+                  >
+                    {FACCE_DADO_VITA.map((f) => (
+                      <option key={f} value={f}>{f}</option>
+                    ))}
+                  </select>
                   🎲 · spesi{' '}
-                  <Editable value={scheda.dadiVitaSpesi} tipo="numero" onChange={(v) => aggiorna({ dadiVitaSpesi: Math.max(0, v) })} width={26} />
+                  <Editable
+                    value={scheda.dadiVitaSpesi}
+                    tipo="numero"
+                    onChange={(v) => aggiorna({ dadiVitaSpesi: Math.min(Math.max(1, scheda.livello || 1), Math.max(0, v)) })}
+                    width={26}
+                  />
+                  <span style={{ color: C.inkDim }}>/ {Math.max(1, scheda.livello || 1)}</span>
                 </span>
                 <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px' }} onClick={tiraDadoVita} title="Riposo breve: spendi un dado vita per curarti">
                   🔥 Riposo breve
