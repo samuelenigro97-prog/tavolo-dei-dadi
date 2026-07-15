@@ -29,6 +29,55 @@ const COLORE_DADO = {
   100: '#5b6770',
 };
 
+// Valori base del tema (devono combaciare con le variabili in GLOBAL_CSS):
+// da qui il tema viene ricostruito in JS per poterlo tingere in base alla classe.
+const BASE_TEMA = {
+  chiaro: { bg: '#f4f1ea', panel: '#ffffff', panelLight: '#f7f4ee', border: '#ddd5c6', ink: '#2b2620', inkDim: '#8d8272', gold: '#b8860b', goldDark: '#8a6508', red: '#b03a2e', green: '#3e7d32', title: '#9e2b25' },
+  scuro: { bg: '#171310', panel: '#211b16', panelLight: '#2a231c', border: '#46392b', ink: '#e9dfcd', inkDim: '#a0937f', gold: '#c9a227', goldDark: '#dcb84f', red: '#d0685a', green: '#7fb069', title: '#de8f88' },
+};
+
+// Colore identità per ogni classe (variante chiara e scura per restare leggibile).
+// `match` = sottostringhe riconosciute nel campo classe (italiano + inglese).
+const CLASSI = [
+  { match: ['barbaro', 'barbarian'], chiaro: '#a8321f', scuro: '#e0745f' },
+  { match: ['bardo', 'bard'], chiaro: '#9c2f9c', scuro: '#d67fd6' },
+  { match: ['chierico', 'cleric'], chiaro: '#b8860b', scuro: '#dcb84f' },
+  { match: ['druido', 'druid'], chiaro: '#3e7d32', scuro: '#7fb069' },
+  { match: ['guerriero', 'fighter'], chiaro: '#3f5d7a', scuro: '#7fa8cc' },
+  { match: ['ladro', 'rogue'], chiaro: '#556070', scuro: '#9aa6b4' },
+  { match: ['mago', 'wizard'], chiaro: '#1f6fb2', scuro: '#5fa8e0' },
+  { match: ['monaco', 'monk'], chiaro: '#1f8f80', scuro: '#5fd0c0' },
+  { match: ['paladino', 'paladin'], chiaro: '#b08900', scuro: '#e6c34d' },
+  { match: ['ranger'], chiaro: '#2e6b4f', scuro: '#68b08c' },
+  { match: ['stregone', 'sorcerer'], chiaro: '#c0392b', scuro: '#e8776a' },
+  { match: ['warlock', 'patto'], chiaro: '#6c3fa0', scuro: '#a67fd6' },
+];
+
+/** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
+function coloreClasse(classe) {
+  if (typeof classe !== 'string' || !classe) return null;
+  const c = classe.toLowerCase();
+  return CLASSI.find((x) => x.match.some((m) => c.includes(m))) || null;
+}
+
+function hexToRgb(h) {
+  const s = h.replace('#', '');
+  return { r: parseInt(s.slice(0, 2), 16), g: parseInt(s.slice(2, 4), 16), b: parseInt(s.slice(4, 6), 16) };
+}
+
+/** Mescola due colori esadecimali: t=0 → a, t=1 → b. */
+function mescola(a, b, t) {
+  const x = hexToRgb(a), y = hexToRgb(b);
+  const canale = (u, v) => Math.round(u + (v - u) * t).toString(16).padStart(2, '0');
+  return `#${canale(x.r, y.r)}${canale(x.g, y.g)}${canale(x.b, y.b)}`;
+}
+
+/** È notte? (dalle 20:00 alle 06:59). Serve al tema automatico per orario. */
+function eNotte(d = new Date()) {
+  const h = d.getHours();
+  return h >= 20 || h < 7;
+}
+
 const styles = {
   app: {
     minHeight: '100vh',
@@ -1230,18 +1279,59 @@ export default function App() {
   const [erroreEspressione, setErroreEspressione] = useState(false);
   const [storico, setStorico] = useState([]);
   const [storicoAperto, setStoricoAperto] = useState(false);
-  // tema: 'auto' segue il sistema (scuro di notte se il telefono lo fa), oppure forzato
+  // tema: 'auto' = scuro se è notte OPPURE se il sistema è in scuro; oppure forzato
   const [tema, setTema] = useState(() => localStorage.getItem('scheda-interattiva:tema') || 'auto');
+  const [sistemaScuro, setSistemaScuro] = useState(
+    () => typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches
+  );
+  const [oraTick, setOraTick] = useState(0); // forza il ricalcolo quando cambia la fascia oraria
 
+  // ascolta il cambio di tema di sistema e ricontrolla l'orario ogni 5 minuti
   useEffect(() => {
-    if (tema === 'auto') delete document.documentElement.dataset.tema;
-    else document.documentElement.dataset.tema = tema;
+    const mq = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: dark)') : null;
+    const onSistema = (e) => setSistemaScuro(e.matches);
+    mq?.addEventListener?.('change', onSistema);
+    const timer = setInterval(() => setOraTick((n) => n + 1), 5 * 60 * 1000);
+    const onVisibile = () => setOraTick((n) => n + 1);
+    document.addEventListener('visibilitychange', onVisibile);
+    return () => {
+      mq?.removeEventListener?.('change', onSistema);
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisibile);
+    };
+  }, []);
+
+  // scuro effettivo + tinta della classe → variabili CSS su :root
+  const classeAttiva = roster.personaggi[roster.attivo]?.classe;
+  useEffect(() => {
+    const scuroEff =
+      tema === 'scuro' || (tema === 'auto' && (sistemaScuro || eNotte()));
+    const modo = scuroEff ? 'scuro' : 'chiaro';
+    const t = { ...BASE_TEMA[modo] };
+    const acc = coloreClasse(classeAttiva);
+    if (acc) {
+      const colore = acc[modo];
+      t.title = colore;
+      t.gold = colore;
+      t.goldDark = colore;
+      // tonalità: sfondo, pannelli e bordi virano leggermente verso il colore classe
+      t.bg = mescola(t.bg, colore, scuroEff ? 0.07 : 0.05);
+      t.panelLight = mescola(t.panelLight, colore, scuroEff ? 0.1 : 0.06);
+      t.border = mescola(t.border, colore, 0.2);
+    }
+    const root = document.documentElement;
+    root.dataset.tema = modo;
+    const set = (k, v) => root.style.setProperty(k, v);
+    set('--c-bg', t.bg); set('--c-panel', t.panel); set('--c-panel-light', t.panelLight);
+    set('--c-border', t.border); set('--c-ink', t.ink); set('--c-ink-dim', t.inkDim);
+    set('--c-gold', t.gold); set('--c-gold-dark', t.goldDark); set('--c-red', t.red);
+    set('--c-green', t.green); set('--c-title', t.title);
     try {
       localStorage.setItem('scheda-interattiva:tema', tema);
     } catch {
       // storage non disponibile: pazienza
     }
-  }, [tema]);
+  }, [tema, sistemaScuro, oraTick, classeAttiva]);
   const intervalRef = useRef(null);
   const fileRef = useRef(null);
   const jsonRef = useRef(null);
@@ -1608,7 +1698,7 @@ export default function App() {
         </p>
         <button
           style={{ ...styles.modeButton(false), position: 'absolute', right: 0, top: 12 }}
-          title="Tema: auto segue il sistema (scuro di notte se il dispositivo cambia da solo)"
+          title="Tema: Auto diventa scuro di notte o se il sistema è in modalità scura. I colori della scheda seguono la classe del personaggio."
           onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}
         >
           {tema === 'auto' ? '🌗 Auto' : tema === 'chiaro' ? '☀️ Chiaro' : '🌙 Scuro'}

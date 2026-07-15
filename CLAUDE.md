@@ -9,6 +9,14 @@ Tema chiaro "foglio di carta" (bianco), pulsanti dei dadi colorati per tipo
 collassa a una colonna sotto 820px; input ≥16px su mobile per evitare lo
 zoom di iOS).
 
+**Tema dinamico:** le variabili CSS del tema vengono ricostruite in JS da
+`BASE_TEMA` così da poterle tingere in base alla **classe** del personaggio
+(`CLASSI` → `coloreClasse`, variante chiara e scura; `mescola` tinge sfondo,
+pannelli e bordi). Il selettore Auto/Chiaro/Scuro: in **Auto** il tema è
+scuro se è **notte** (`eNotte`, 20:00–06:59) **oppure** se il sistema è in
+modalità scura (`matchMedia`); si aggiorna al cambio di sistema e ogni 5
+minuti per la fascia oraria. Chiaro/Scuro forzano il modo.
+
 ## Stack
 
 - **Frontend:** React 18 + Vite. Tutta la UI vive in `src/App.jsx`: la scheda
