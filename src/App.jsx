@@ -1136,10 +1136,14 @@ function Editable({ value, onChange, onRoll, tipo = 'testo', width, style, title
 
   return (
     <span
-      className={onRoll ? 'tirabile' : undefined}
+      className={[onRoll ? 'tirabile' : '', carica ? 'carica' : ''].filter(Boolean).join(' ') || undefined}
       style={{ ...styles.editable, ...style }}
-      title={title || (onRoll ? '1 click: modifica · doppio click: tira' : '1 click: modifica')}
+      title={title || (onRoll ? '1 click: modifica · tieni premuto o doppio click: tira' : '1 click: modifica')}
       onSelectStart={onRoll ? (e) => e.preventDefault() : undefined}
+      onPointerDown={onRoll ? pointerDown : undefined}
+      onPointerUp={onRoll ? pointerUp : undefined}
+      onPointerLeave={onRoll ? pointerAnnulla : undefined}
+      onPointerCancel={onRoll ? pointerAnnulla : undefined}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
     >
@@ -1439,6 +1443,11 @@ export default function App() {
           (penSfinimento ? ` (sfinimento −${penSfinimento})` : '') +
           (naturale === 20 ? ' ⚔ critico' : naturale === 1 ? ' 💀' : '')
       );
+      // Critico automatico: un attacco che fa 20 naturale colpisce sempre e
+      // tira subito i danni con i dadi raddoppiati.
+      if (extra.attacco && naturale === 20 && parseEspressioneDado(extra.attacco.danno || '')) {
+        setTimeout(() => tiraDanniPerAttacco(extra.attacco, true), 650);
+      }
     }, 850);
   }
 
@@ -1453,18 +1462,22 @@ export default function App() {
     }, esito.totale);
   }
 
-  /** Danni dell'attacco corrente (dal tiro per colpire in corso). */
-  function lanciaDanniAttacco() {
-    if (!tiro?.attacco) return;
-    const parsata = parseEspressioneDado(tiro.attacco.danno);
+  /** Tira i danni di un attacco (con eventuale critico), indipendente dallo stato. */
+  function tiraDanniPerAttacco(attacco, critico) {
+    const parsata = parseEspressioneDado(attacco?.danno || '');
     if (!parsata) return;
-    const critico = tiro.naturale === 20;
-    const nome = tiro.attacco.nome;
+    const nome = attacco.nome;
     const esito = tiraDanni(parsata, critico);
     conAnimazione(() => {
       setDanni({ etichetta: `Danni: ${nome}`, ...esito, critico });
       registra(`Danni ${nome}: ${esito.totale}${critico ? ' ⚔ critico' : ''} (${esito.dettaglio})`);
     }, esito.totale);
+  }
+
+  /** Danni dell'attacco corrente (dal tiro per colpire in corso). */
+  function lanciaDanniAttacco() {
+    if (!tiro?.attacco) return;
+    tiraDanniPerAttacco(tiro.attacco, tiro.naturale === 20);
   }
 
   /** Tiro salvezza contro morte: regole 5e complete. */
@@ -1724,9 +1737,15 @@ export default function App() {
                 </div>
                 {tiro.attacco && (
                   dannoAttaccoValido ? (
-                    <button style={{ ...styles.buttonPrimary, marginTop: 6 }} onClick={lanciaDanniAttacco}>
-                      🗡 Tira danni ({tiro.attacco.danno}{critico ? ', dadi raddoppiati' : ''})
-                    </button>
+                    critico ? (
+                      <div style={{ ...styles.detail, marginTop: 6, color: C.goldDark, fontWeight: 'bold' }}>
+                        ⚔ Critico! Tiro i danni raddoppiati…
+                      </div>
+                    ) : (
+                      <button style={{ ...styles.buttonPrimary, marginTop: 6 }} onClick={lanciaDanniAttacco}>
+                        🗡 Tira danni ({tiro.attacco.danno})
+                      </button>
+                    )
                   ) : (
                     <div style={styles.detail}>Danno non impostato o non valido per questo attacco.</div>
                   )
