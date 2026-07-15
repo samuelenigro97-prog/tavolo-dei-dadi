@@ -53,6 +53,12 @@ const CLASSI = [
   { match: ['warlock', 'patto'], chiaro: '#6c3fa0', scuro: '#a67fd6' },
 ];
 
+// Le 12 classi base (2024), per il menù a tendina della classe.
+const NOMI_CLASSI = [
+  'Barbaro', 'Bardo', 'Chierico', 'Druido', 'Guerriero', 'Ladro',
+  'Mago', 'Monaco', 'Paladino', 'Ranger', 'Stregone', 'Warlock',
+];
+
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 function coloreClasse(classe) {
   if (typeof classe !== 'string' || !classe) return null;
@@ -1920,7 +1926,34 @@ export default function App() {
                   <Editable value={scheda.background} onChange={(v) => aggiorna({ background: v })} width={110} style={{ borderBottom: 'none' }} />
                 </CampoModulo>
                 <CampoModulo label="Classe">
-                  <Editable value={scheda.classe} onChange={(v) => aggiorna({ classe: v })} width={110} style={{ borderBottom: 'none' }} />
+                  {(() => {
+                    const classeStd = NOMI_CLASSI.includes(scheda.classe);
+                    return (
+                      <>
+                        <select
+                          style={{ ...styles.inlineInput, fontSize: 13, padding: '1px 3px', maxWidth: '100%' }}
+                          value={classeStd ? scheda.classe : scheda.classe ? '__altro' : ''}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            if (v === '__altro') aggiorna({ classe: classeStd || !scheda.classe ? 'Personalizzata' : scheda.classe });
+                            else aggiorna({ classe: v });
+                          }}
+                          title="Scegli la classe (cambia i colori della scheda)"
+                        >
+                          <option value="">— scegli —</option>
+                          {NOMI_CLASSI.map((n) => (
+                            <option key={n} value={n}>{n}</option>
+                          ))}
+                          <option value="__altro">Altro…</option>
+                        </select>
+                        {!classeStd && scheda.classe !== '' && (
+                          <div style={{ marginTop: 2 }}>
+                            <Editable value={scheda.classe} onChange={(v) => aggiorna({ classe: v })} width={100} style={{ borderBottom: 'none' }} title="Nome classe personalizzata" />
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </CampoModulo>
                 <CampoModulo label="Sottoclasse">
                   <Editable value={scheda.sottoclasse} onChange={(v) => aggiorna({ sottoclasse: v })} width={110} style={{ borderBottom: 'none' }} />
