@@ -109,6 +109,43 @@ function caratteristicaIncantatorePerClasse(classe) {
   return (c && CARATT_INCANTATORE[c.match[0]]) || '';
 }
 
+// Priorità delle caratteristiche per classe (dalla più importante alla meno).
+// Serve per assegnare i tiri più alti alle caratteristiche giuste.
+const PRIORITA_CARATT = {
+  barbaro: ['forza', 'costituzione', 'destrezza', 'saggezza', 'carisma', 'intelligenza'],
+  bardo: ['carisma', 'destrezza', 'costituzione', 'saggezza', 'intelligenza', 'forza'],
+  chierico: ['saggezza', 'costituzione', 'forza', 'destrezza', 'carisma', 'intelligenza'],
+  druido: ['saggezza', 'costituzione', 'destrezza', 'intelligenza', 'carisma', 'forza'],
+  guerriero: ['forza', 'costituzione', 'destrezza', 'saggezza', 'carisma', 'intelligenza'],
+  ladro: ['destrezza', 'costituzione', 'saggezza', 'intelligenza', 'carisma', 'forza'],
+  mago: ['intelligenza', 'costituzione', 'destrezza', 'saggezza', 'carisma', 'forza'],
+  monaco: ['destrezza', 'saggezza', 'costituzione', 'forza', 'intelligenza', 'carisma'],
+  paladino: ['forza', 'carisma', 'costituzione', 'saggezza', 'destrezza', 'intelligenza'],
+  ranger: ['destrezza', 'saggezza', 'costituzione', 'forza', 'intelligenza', 'carisma'],
+  stregone: ['carisma', 'costituzione', 'destrezza', 'saggezza', 'intelligenza', 'forza'],
+  warlock: ['carisma', 'costituzione', 'destrezza', 'saggezza', 'intelligenza', 'forza'],
+};
+
+/** Tira 4d6 e scarta il dado più basso (metodo classico per le caratteristiche). */
+function tira4d6ScartaMinimo() {
+  const dadi = [tiraDado(6), tiraDado(6), tiraDado(6), tiraDado(6)].sort((a, b) => a - b);
+  return dadi[1] + dadi[2] + dadi[3];
+}
+
+/**
+ * Genera le 6 caratteristiche (4d6 scarta il minimo) e le assegna: il valore
+ * più alto alla caratteristica più importante per la classe scelta.
+ */
+function generaCaratteristiche(classe) {
+  const valori = Array.from({ length: 6 }, tira4d6ScartaMinimo).sort((a, b) => b - a);
+  const c = coloreClasse(classe);
+  const ordine = (c && PRIORITA_CARATT[c.match[0]]) ||
+    ['forza', 'destrezza', 'costituzione', 'intelligenza', 'saggezza', 'carisma'];
+  const risultato = {};
+  ordine.forEach((car, i) => { risultato[car] = valori[i]; });
+  return risultato;
+}
+
 // Tipi di danno (per resistenze/immunità/vulnerabilità) e sensi comuni.
 const DANNI_5E = [
   'Acido', 'Contundente', 'Freddo', 'Fuoco', 'Fulmine', 'Necrotico',
@@ -117,7 +154,8 @@ const DANNI_5E = [
 const SENSI_5E = ['Scurovisione', 'Vista cieca', 'Percezione tremorsensitiva', 'Vista vera'];
 
 // Ordine di default delle sezioni collassabili (riordinabili via drag).
-const ORDINE_SEZIONI_DEFAULT = ['risorse', 'privilegi', 'trattiSpecie', 'talenti', 'addestramento', 'equipaggiamento', 'aspetto', 'import'];
+// Sezioni riordinabili via drag. 'import' NON è qui: resta sempre fissa in fondo.
+const ORDINE_SEZIONI_DEFAULT = ['risorse', 'privilegi', 'trattiSpecie', 'talenti', 'addestramento', 'equipaggiamento', 'aspetto'];
 
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 function coloreClasse(classe) {
@@ -877,6 +915,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
+const APP_VERSION = '1.1.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1350,7 +1389,7 @@ function CampoTendina({ value, opzioni, onChange, title }) {
         }}
         title={title}
       >
-        <option value="">— scegli —</option>
+        <option value="">Scegli…</option>
         {opzioni.map((o) => (
           <option key={o} value={o}>{o}</option>
         ))}
@@ -1456,6 +1495,7 @@ export default function App() {
     return ordinato;
   });
   const [sezTrascinata, setSezTrascinata] = useState(null);
+  const [mostraMenu, setMostraMenu] = useState(true); // menu iniziale (nuovo / carica PG)
   const ordineRef = useRef(ordineSezioni);
   ordineRef.current = ordineSezioni;
   const nodiSezioni = useRef({}); // id sezione → elemento DOM
@@ -1607,6 +1647,15 @@ export default function App() {
       if (ids.length === 0) return rosterVuoto();
       return { attivo: ids[0], personaggi };
     });
+  }
+
+  /** Tira le caratteristiche (4d6 scarta il minimo) e le assegna per la classe. */
+  function tiraCaratteristiche() {
+    const qualcheValore = Object.values(scheda.caratteristiche).some((v) => v !== 10);
+    if (qualcheValore && !window.confirm('Tirare nuove caratteristiche (4d6, scarta il più basso)? Sovrascrive quelle attuali.')) return;
+    const nuove = generaCaratteristiche(scheda.classe);
+    aggiorna({ caratteristiche: nuove });
+    registra(`Caratteristiche tirate (4d6): ${Object.entries(nuove).map(([k, v]) => `${k.slice(0, 3).toUpperCase()} ${v}`).join(', ')}`);
   }
 
   /** Azzera la scheda del personaggio attivo, mantenendolo nel roster. */
@@ -1895,6 +1944,7 @@ export default function App() {
     try {
       const dati = JSON.parse(await file.text());
       nuovoPersonaggio(normalizeImported(dati));
+      setMostraMenu(false);
     } catch {
       setErroreImport('File JSON non valido: usa un file esportato da Scheda Interattiva.');
     }
@@ -1909,6 +1959,7 @@ export default function App() {
     try {
       const dati = await transcribePdf(file);
       nuovoPersonaggio(normalizeImported(dati));
+      setMostraMenu(false);
     } catch (err) {
       setErroreImport(err.message || 'Import fallito');
     } finally {
@@ -1927,11 +1978,70 @@ export default function App() {
   return (
     <div style={styles.app}>
       <style>{GLOBAL_CSS}</style>
+
+      {mostraMenu && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1000, padding: 16,
+            background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setMostraMenu(false); }}
+        >
+          <div style={{ ...styles.panel, maxWidth: 460, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
+            <h1 style={{ ...styles.title, marginBottom: 2 }}>🎲 Scheda Interattiva</h1>
+            <div style={{ ...styles.detail, textAlign: 'center', marginBottom: 16 }}>versione {APP_VERSION}</div>
+
+            <button
+              style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 14 }}
+              onClick={() => { nuovoPersonaggio(); setMostraMenu(false); }}
+            >
+              ➕ Nuovo personaggio
+            </button>
+
+            <div style={{ ...styles.detail, marginBottom: 6, fontWeight: 'bold' }}>Carica un personaggio</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
+              {Object.entries(roster.personaggi).map(([id, p]) => (
+                <button
+                  key={id}
+                  style={{ ...styles.button, display: 'flex', justifyContent: 'space-between', gap: 10, textAlign: 'left' }}
+                  onClick={() => { setRoster((r) => ({ ...r, attivo: id })); setMostraMenu(false); }}
+                >
+                  <span>{p.nome || 'Senza nome'}</span>
+                  <span style={styles.detail}>{p.classe ? `${p.classe} liv. ${p.livello}` : '—'}</span>
+                </button>
+              ))}
+              {Object.keys(roster.personaggi).length === 0 && (
+                <span style={styles.detail}>Nessun personaggio salvato.</span>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button style={styles.button} onClick={() => jsonRef.current?.click()}>📂 Da file JSON</button>
+              <button style={styles.button} onClick={() => fileRef.current?.click()}>📜 Da PDF</button>
+              <button
+                style={styles.button}
+                onClick={() => { nuovoPersonaggio(normalizeImported(ESEMPIO_GNOMO)); setMostraMenu(false); }}
+              >
+                ✨ Esempio
+              </button>
+            </div>
+            {erroreImport && <div style={{ color: C.red, marginTop: 10 }}>{erroreImport}</div>}
+          </div>
+        </div>
+      )}
+
       <header style={{ ...styles.header, position: 'relative' }}>
         <h1 style={styles.title}>🎲 Scheda Interattiva</h1>
         <p style={styles.hint}>
           1 click per modificare · tieni premuto e rilascia (o doppio click) per tirare il dado
         </p>
+        <button
+          style={{ ...styles.modeButton(false), position: 'absolute', left: 0, top: 12 }}
+          title="Menu iniziale: nuovo personaggio, carica, versione"
+          onClick={() => setMostraMenu(true)}
+        >
+          🏠 Menu
+        </button>
         <button
           style={{ ...styles.modeButton(false), position: 'absolute', right: 0, top: 12 }}
           title="Tema: Auto diventa scuro di notte o se il sistema è in modalità scura. I colori della scheda seguono la classe del personaggio."
@@ -2395,6 +2505,13 @@ export default function App() {
         {/* Corpo scheda: caratteristiche a sinistra, resto a destra */}
         <div className="griglia-scheda">
           <div>
+            <button
+              style={{ ...styles.button, width: '100%', marginBottom: 8 }}
+              onClick={tiraCaratteristiche}
+              title="Tira 4d6 e scarta il dado più basso per ogni caratteristica; i valori più alti vanno alle caratteristiche più importanti per la classe scelta"
+            >
+              🎲 Tira caratteristiche (4d6){coloreClasse(scheda.classe) ? ` · ordinate per ${scheda.classe}` : ''}
+            </button>
             {CARATTERISTICHE.map(({ key, label, abbr }) => {
               const mod = modificatore(scheda.caratteristiche[key]);
               const bonusTS = bonusTiroSalvezza(scheda, key);
@@ -2904,7 +3021,7 @@ export default function App() {
             </Sezione>
 
             {/* Import / export */}
-            <Sezione titolo="Importa / esporta scheda" aperto={false} {...propsSez('import')}>
+            <Sezione titolo="Importa / esporta scheda" aperto={false} style={{ order: 999 }}>
               <p style={{ ...styles.detail, marginTop: 0 }}>
                 Importa da PDF (trascrizione automatica: serve il server con la chiave API),
                 oppure salva e ricarica la scheda come file JSON per portarla su un altro
