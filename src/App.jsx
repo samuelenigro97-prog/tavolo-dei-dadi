@@ -329,21 +329,21 @@ const styles = {
     textAlign: 'center',
     background: C.panelLight,
     border: `1px solid ${C.border}`,
-    borderRadius: 8,
-    padding: '5px 4px',
+    borderRadius: 7,
+    padding: '4px 3px',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
-    minHeight: 42,
+    minHeight: 36,
   },
   vitalLabel: {
-    fontSize: 10,
+    fontSize: 9,
     color: C.inkDim,
-    letterSpacing: 1,
+    letterSpacing: 0.5,
     textTransform: 'uppercase',
-    marginBottom: 3,
+    marginBottom: 2,
   },
-  vitalValue: { fontSize: 18, color: C.ink },
+  vitalValue: { fontSize: 16, color: C.ink },
   abilityBlock: {
     background: C.panel,
     border: `1px solid ${C.border}`,
@@ -472,7 +472,13 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
 /* consente alle colonne della griglia di stringersi (niente overflow orizzontale) */
 .griglia-scheda > * { min-width: 0; }
 /* riquadri vitali: griglia uniforme che si adatta, tutti stessa altezza */
-.vitali { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 8px; align-items: stretch; }
+.vitali { display: grid; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 6px; align-items: stretch; }
+/* consente ai riquadri di stringersi sotto la larghezza del contenuto (niente overflow) */
+.vitali > * { min-width: 0; }
+.vitali > * > * { min-width: 0; }
+/* i campi anagrafica (con le tendine) devono stringersi su mobile */
+.campi-anagrafica > * { min-width: 0; }
+.campi-anagrafica select { max-width: 100%; }
 @media (max-width: 820px) {
   .griglia-scheda { grid-template-columns: 1fr; }
 }
@@ -2132,7 +2138,7 @@ export default function App() {
                   {scheda.ispirazione ? '★' : '☆'} Ispirazione
                 </span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px 12px', marginTop: 8 }}>
+              <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px 12px', marginTop: 8 }}>
                 <CampoModulo label="Background">
                   <CampoTendina value={scheda.background} opzioni={BACKGROUND_5E} onChange={(v) => aggiorna({ background: v })} title="Scegli un background" />
                 </CampoModulo>
@@ -2225,7 +2231,7 @@ export default function App() {
                 );
               })()}
               <div style={{ ...styles.detail, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: 4 }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
                   Dadi vita{' '}
                   <Rollable onRoll={tiraDadoVita} title="Tieni premuto e rilascia: spendi un dado vita (guarigione = 1 dado + COS)">
                     <strong>{Math.max(1, scheda.livello || 1)}</strong>d
@@ -2249,11 +2255,18 @@ export default function App() {
                   />
                   <span style={{ color: C.inkDim }}>/ {Math.max(1, scheda.livello || 1)}</span>
                 </span>
-                <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px' }} onClick={riposoBreve} title="Riposo breve: ricarica le risorse brevi e spendi un dado vita">
-                  🔥 Riposo breve
+              </div>
+            </div>
+
+            {/* Riposo: box dedicato con i due pulsanti */}
+            <div style={styles.vitalBox}>
+              <div style={styles.vitalLabel}>Riposo</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 4px' }} onClick={riposoBreve} title="Riposo breve: ricarica le risorse brevi e spendi un dado vita">
+                  🔥 Breve
                 </button>
-                <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px' }} onClick={riposoLungo} title="Riposo lungo: PF al massimo, slot recuperati, metà dadi vita">
-                  🌙 Riposo lungo
+                <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 4px' }} onClick={riposoLungo} title="Riposo lungo: PF al massimo, slot recuperati, metà dadi vita">
+                  🌙 Lungo
                 </button>
               </div>
             </div>
