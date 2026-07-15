@@ -1878,6 +1878,23 @@ export default function App() {
                   {' · PE '}
                   <Editable value={scheda.pe} tipo="numero" onChange={(v) => aggiorna({ pe: v })} width={56} />
                 </span>
+                {/* Ispirazione: casellina compatta nell'angolo in alto a destra */}
+                <span
+                  className="tirabile"
+                  style={{
+                    marginLeft: 'auto',
+                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                    padding: '3px 11px', borderRadius: 999, cursor: 'pointer',
+                    fontSize: 12, letterSpacing: 0.5, whiteSpace: 'nowrap',
+                    background: scheda.ispirazione ? C.panelLight : 'transparent',
+                    border: `1px solid ${scheda.ispirazione ? C.goldDark : C.border}`,
+                    color: scheda.ispirazione ? C.goldDark : C.inkDim,
+                  }}
+                  title="Ispirazione (eroica): click per attivare/disattivare"
+                  onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
+                >
+                  {scheda.ispirazione ? '★' : '☆'} Ispirazione
+                </span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px 12px', marginTop: 8 }}>
                 <CampoModulo label="Background">
@@ -2059,15 +2076,6 @@ export default function App() {
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>Perc. Passiva</div>
               <div style={styles.vitalValue}>{percezionePassiva}</div>
-            </div>
-
-            {/* Ispirazione */}
-            <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>Ispirazione</div>
-              <div style={{ ...styles.vitalValue, cursor: 'pointer' }} title="Click per attivare/disattivare"
-                onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}>
-                {scheda.ispirazione ? '★' : '☆'}
-              </div>
             </div>
           </div>
 
