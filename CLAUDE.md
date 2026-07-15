@@ -12,7 +12,13 @@ zoom di iOS).
 **Tema dinamico:** le variabili CSS del tema vengono ricostruite in JS da
 `BASE_TEMA` così da poterle tingere in base alla **classe** del personaggio
 (`CLASSI` → `coloreClasse`, variante chiara e scura; `mescola` tinge sfondo,
-pannelli e bordi). Il selettore Auto/Chiaro/Scuro: in **Auto** il tema è
+pannelli e bordi). Lo **sfondo della pagina** (`document.body.style.background`)
+è un gradiente radiale tematico che cambia con la classe (app trasparente sopra).
+
+**Versione delle regole:** toggle 5.5 (2024, default) / 5.0 (2014) in alto a
+sinistra e nel menu (`regoleVersione`, in `localStorage`). Incide sullo
+**sfinimento**: nella 2024 `−2 × livello` ai d20 (in `lanciaD20`), nella 2014
+nessuna penalità fissa ma si mostra l'effetto del livello (`SFINIMENTO_2014`). Il selettore Auto/Chiaro/Scuro: in **Auto** il tema è
 scuro se è **notte** (`eNotte`, 20:00–06:59) **oppure** se il sistema è in
 modalità scura (`matchMedia`); si aggiorna al cambio di sistema e ogni 5
 minuti per la fascia oraria. Chiaro/Scuro forzano il modo.

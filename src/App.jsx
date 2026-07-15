@@ -153,6 +153,18 @@ const DANNI_5E = [
 ];
 const SENSI_5E = ['Scurovisione', 'Vista cieca', 'Percezione tremorsensitiva', 'Vista vera'];
 
+// Sfinimento: nella 5.0 (2014) sono 6 livelli con effetti crescenti; nella 5.5
+// (2024) ogni livello dà −2 a tutti i tiri di d20. Testo degli effetti 2014:
+const SFINIMENTO_2014 = [
+  '',
+  'Svantaggio alle prove di caratteristica',
+  'Velocità dimezzata',
+  'Svantaggio a tiri per colpire e tiri salvezza',
+  'Massimo dei PF dimezzato',
+  'Velocità ridotta a 0',
+  'Morte',
+];
+
 // Ordine di default delle sezioni collassabili (riordinabili via drag).
 // Sezioni riordinabili via drag. 'import' NON è qui: resta sempre fissa in fondo.
 const ORDINE_SEZIONI_DEFAULT = ['risorse', 'privilegi', 'trattiSpecie', 'talenti', 'addestramento', 'equipaggiamento', 'aspetto'];
@@ -185,7 +197,7 @@ function eNotte(d = new Date()) {
 const styles = {
   app: {
     minHeight: '100vh',
-    background: C.bg,
+    background: 'transparent', // lo sfondo tematico è sul body (cambia con la classe)
     color: C.ink,
     fontFamily: "Georgia, 'Times New Roman', serif",
     padding: '0 16px 48px',
@@ -1496,6 +1508,11 @@ export default function App() {
   });
   const [sezTrascinata, setSezTrascinata] = useState(null);
   const [mostraMenu, setMostraMenu] = useState(true); // menu iniziale (nuovo / carica PG)
+  // versione delle regole: '2024' (5.5, default) o '2014' (5.0)
+  const [regoleVersione, setRegoleVersione] = useState(() => localStorage.getItem('scheda-interattiva:versione') || '2024');
+  useEffect(() => {
+    try { localStorage.setItem('scheda-interattiva:versione', regoleVersione); } catch { /* niente */ }
+  }, [regoleVersione]);
   const ordineRef = useRef(ordineSezioni);
   ordineRef.current = ordineSezioni;
   const nodiSezioni = useRef({}); // id sezione → elemento DOM
@@ -1593,6 +1610,12 @@ export default function App() {
     set('--c-border', t.border); set('--c-ink', t.ink); set('--c-ink-dim', t.inkDim);
     set('--c-gold', t.gold); set('--c-gold-dark', t.goldDark); set('--c-red', t.red);
     set('--c-green', t.green); set('--c-title', t.title);
+    // sfondo della scheda: alone tematico che cambia con la classe selezionata
+    const sfondo = acc
+      ? `radial-gradient(130% 90% at 50% -12%, ${mescola(t.bg, acc[modo], scuroEff ? 0.22 : 0.16)}, ${t.bg} 58%)`
+      : t.bg;
+    document.body.style.background = sfondo;
+    document.body.style.backgroundAttachment = 'fixed';
     try {
       localStorage.setItem('scheda-interattiva:tema', tema);
     } catch {
@@ -1701,8 +1724,9 @@ export default function App() {
     setRolling(true);
     intervalRef.current = setInterval(() => setFaccia(tiraDado(20)), 70);
 
-    // Sfinimento (regole 2024): −2 a ogni tiro di d20 per livello di sfinimento.
-    const penSfinimento = 2 * scheda.sfinimento;
+    // Sfinimento: nella 5.5 (2024) −2 a ogni tiro di d20 per livello; nella
+    // 5.0 (2014) gli effetti sono condizionali (nessuna penalità fissa qui).
+    const penSfinimento = regoleVersione === '2024' ? 2 * scheda.sfinimento : 0;
     const bonusEff = bonus - penSfinimento;
     const { naturale, dadi } = tiraD20(modalita);
     setTimeout(() => {
@@ -1989,7 +2013,20 @@ export default function App() {
         >
           <div style={{ ...styles.panel, maxWidth: 460, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
             <h1 style={{ ...styles.title, marginBottom: 2 }}>🎲 Scheda Interattiva</h1>
-            <div style={{ ...styles.detail, textAlign: 'center', marginBottom: 16 }}>versione {APP_VERSION}</div>
+            <div style={{ ...styles.detail, textAlign: 'center', marginBottom: 12 }}>versione app {APP_VERSION}</div>
+            <div style={{ display: 'flex', gap: 6, justifyContent: 'center', alignItems: 'center', marginBottom: 16 }}>
+              <span style={styles.detail}>Regole D&D:</span>
+              {['2024', '2014'].map((v) => (
+                <button
+                  key={v}
+                  style={{ ...styles.modeButton(regoleVersione === v), fontSize: 12, padding: '3px 10px' }}
+                  onClick={() => setRegoleVersione(v)}
+                  title={v === '2024' ? '5.5 (2024): sfinimento −2 ai tiri per livello' : '5.0 (2014): sfinimento a effetti crescenti'}
+                >
+                  {v === '2024' ? '5.5 (2024)' : '5.0 (2014)'}
+                </button>
+              ))}
+            </div>
 
             <button
               style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 14 }}
@@ -2035,13 +2072,24 @@ export default function App() {
         <p style={styles.hint}>
           1 click per modificare · tieni premuto e rilascia (o doppio click) per tirare il dado
         </p>
-        <button
-          style={{ ...styles.modeButton(false), position: 'absolute', left: 0, top: 12 }}
-          title="Menu iniziale: nuovo personaggio, carica, versione"
-          onClick={() => setMostraMenu(true)}
-        >
-          🏠 Menu
-        </button>
+        <div style={{ position: 'absolute', left: 0, top: 12, display: 'flex', gap: 6 }}>
+          <button
+            style={styles.modeButton(false)}
+            title="Menu iniziale: nuovo personaggio, carica, versione"
+            onClick={() => setMostraMenu(true)}
+          >
+            🏠 Menu
+          </button>
+          <button
+            style={styles.modeButton(false)}
+            title={regoleVersione === '2024'
+              ? 'Regole D&D 5.5 (2024). Clicca per passare alla 5.0 (2014): cambia il funzionamento dello sfinimento.'
+              : 'Regole D&D 5.0 (2014). Clicca per passare alla 5.5 (2024): sfinimento −2 ai tiri per livello.'}
+            onClick={() => setRegoleVersione(regoleVersione === '2024' ? '2014' : '2024')}
+          >
+            📖 {regoleVersione === '2024' ? '5.5' : '5.0'}
+          </button>
+        </div>
         <button
           style={{ ...styles.modeButton(false), position: 'absolute', right: 0, top: 12 }}
           title="Tema: Auto diventa scuro di notte o se il sistema è in modalità scura. I colori della scheda seguono la classe del personaggio."
@@ -2466,7 +2514,11 @@ export default function App() {
               <button style={{ ...styles.buttonMini, padding: '1px 8px' }} onClick={() => aggiorna({ sfinimento: Math.max(0, scheda.sfinimento - 1) })} title="Diminuisci">−</button>
               <strong style={{ color: scheda.sfinimento ? C.red : C.ink, minWidth: 14, textAlign: 'center', display: 'inline-block' }}>{scheda.sfinimento}</strong>
               <button style={{ ...styles.buttonMini, padding: '1px 8px' }} onClick={() => aggiorna({ sfinimento: Math.min(6, scheda.sfinimento + 1) })} title="Aumenta">+</button>
-              {scheda.sfinimento > 0 && <span style={{ ...styles.detail, color: C.red }}>−{scheda.sfinimento * 2} ai tiri</span>}
+              {scheda.sfinimento > 0 && (
+                <span style={{ ...styles.detail, color: C.red }} title={regoleVersione === '2024' ? 'Regole 2024: −2 ai tiri di d20 per livello' : `Regole 2014: ${SFINIMENTO_2014[scheda.sfinimento]}`}>
+                  {regoleVersione === '2024' ? `−${scheda.sfinimento * 2} ai tiri` : SFINIMENTO_2014[scheda.sfinimento]}
+                </span>
+              )}
             </span>
             <span style={styles.detail}>Resistenze / immunità:{' '}
               <CampoConTendina value={scheda.resistenze} opzioni={DANNI_5E} onChange={(v) => aggiorna({ resistenze: v })} width={180} title="Resistenze, immunità e vulnerabilità ai danni" />
