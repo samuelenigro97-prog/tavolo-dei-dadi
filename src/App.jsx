@@ -165,6 +165,52 @@ function generaCaratteristiche(classe) {
   return risultato;
 }
 
+// Tipo di dado vita per classe (chiave = primo alias in CLASSI).
+const DADO_VITA_CLASSE = {
+  barbaro: 12,
+  guerriero: 10, paladino: 10, ranger: 10,
+  bardo: 8, chierico: 8, druido: 8, ladro: 8, monaco: 8, stregone: 8, warlock: 8,
+  mago: 6,
+};
+function dadoVitaClasse(classe) {
+  const c = coloreClasse(classe);
+  return (c && DADO_VITA_CLASSE[c.match[0]]) || 8;
+}
+
+// Le 3 caratteristiche potenziabili da ogni background (regole 2024).
+const BACKGROUND_CARATT = {
+  Accolito: ['intelligenza', 'saggezza', 'carisma'],
+  Artigiano: ['forza', 'destrezza', 'intelligenza'],
+  Ciarlatano: ['destrezza', 'costituzione', 'carisma'],
+  Contadino: ['forza', 'costituzione', 'saggezza'],
+  Criminale: ['destrezza', 'costituzione', 'intelligenza'],
+  Eremita: ['costituzione', 'saggezza', 'carisma'],
+  Guardia: ['forza', 'intelligenza', 'saggezza'],
+  Guida: ['destrezza', 'costituzione', 'saggezza'],
+  Intrattenitore: ['forza', 'destrezza', 'carisma'],
+  Marinaio: ['forza', 'destrezza', 'saggezza'],
+  Mercante: ['costituzione', 'intelligenza', 'carisma'],
+  Nobile: ['forza', 'intelligenza', 'carisma'],
+  Saggio: ['costituzione', 'intelligenza', 'saggezza'],
+  Scriba: ['destrezza', 'intelligenza', 'saggezza'],
+  Soldato: ['forza', 'destrezza', 'costituzione'],
+  Viandante: ['destrezza', 'saggezza', 'carisma'],
+};
+
+/**
+ * Bonus alle caratteristiche dal background (2024): +2 e +1 alle due
+ * caratteristiche più utili per la classe fra le tre concesse.
+ * Ritorna [chiavePiù2, chiavePiù1] (o [] se background ignoto).
+ */
+function bonusCaratteristicheBackground(bg, classe) {
+  const opzioni = BACKGROUND_CARATT[bg];
+  if (!opzioni) return [];
+  const prio = (coloreClasse(classe) && PRIORITA_CARATT[coloreClasse(classe).match[0]]) || [];
+  const rank = (k) => (prio.indexOf(k) === -1 ? 99 : prio.indexOf(k));
+  const ordinate = [...opzioni].sort((a, b) => rank(a) - rank(b));
+  return [ordinate[0], ordinate[1]];
+}
+
 // Tipi di danno (per resistenze/immunità/vulnerabilità) e sensi comuni.
 const DANNI_5E = [
   'Acido', 'Contundente', 'Freddo', 'Fuoco', 'Fulmine', 'Necrotico',
@@ -1564,6 +1610,8 @@ export default function App() {
   const [sezTrascinata, setSezTrascinata] = useState(null);
   const [mostraMenu, setMostraMenu] = useState(true); // menu iniziale (nuovo / carica PG)
   const [rinominando, setRinominando] = useState(false); // rinomina inline del PG attivo
+  const [mostraCrea, setMostraCrea] = useState(false); // schermata di creazione guidata
+  const [bozzaCrea, setBozzaCrea] = useState({ nome: '', classe: '', specie: '', background: '', tira: true });
   // versione delle regole: '2024' (5.5, default) o '2014' (5.0)
   const [regoleVersione, setRegoleVersione] = useState(() => localStorage.getItem('scheda-interattiva:versione') || '2024');
   useEffect(() => {
@@ -1730,6 +1778,34 @@ export default function App() {
   function nuovoPersonaggio(dati = schedaVuota()) {
     const id = nuovoId();
     setRoster((r) => ({ attivo: id, personaggi: { ...r.personaggi, [id]: dati } }));
+  }
+
+  /** Genera un personaggio coerente da classe/specie/background (creazione guidata). */
+  function creaPersonaggio({ nome, classe, specie, background, tira }) {
+    const s = schedaVuota();
+    s.nome = nome?.trim() || 'Nuovo personaggio';
+    s.classe = classe;
+    s.specie = specie;
+    s.background = background;
+    // caratteristica da incantatore e dado vita dalla classe
+    const car = caratteristicaIncantatorePerClasse(classe);
+    if (car) s.incantatore = { caratteristica: car };
+    s.dadiVita = esprDadiVita(s.livello, dadoVitaClasse(classe));
+    // caratteristiche: tirate (4d6, ordinate per classe) o array base
+    if (tira) s.caratteristiche = generaCaratteristiche(classe);
+    // background: competenze nelle abilità
+    (BACKGROUND_COMPETENZE[background] || []).forEach((k) => { s.abilita[k] = Math.max(s.abilita[k] || 0, 1); });
+    // background: bonus alle caratteristiche (solo regole 2024)
+    if (regoleVersione === '2024') {
+      const [piu2, piu1] = bonusCaratteristicheBackground(background, classe);
+      if (piu2) s.caratteristiche[piu2] = (s.caratteristiche[piu2] || 10) + 2;
+      if (piu1) s.caratteristiche[piu1] = (s.caratteristiche[piu1] || 10) + 1;
+    }
+    // avatar e chiusura schermate
+    s.ritratto = generaAvatar(classe, specie);
+    nuovoPersonaggio(s);
+    setMostraCrea(false);
+    setMostraMenu(false);
   }
 
   function duplicaPersonaggio() {
@@ -2105,7 +2181,7 @@ export default function App() {
 
             <button
               style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 14 }}
-              onClick={() => { nuovoPersonaggio(); setMostraMenu(false); }}
+              onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', tira: true }); setMostraCrea(true); }}
             >
               ➕ Nuovo personaggio
             </button>
@@ -2141,6 +2217,68 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {mostraCrea && (() => {
+        const setB = (patch) => setBozzaCrea((b) => ({ ...b, ...patch }));
+        const stileSelect = { ...styles.inlineInput, width: '100%', padding: '6px 8px', fontSize: 15 };
+        const bonusBg = regoleVersione === '2024' ? bonusCaratteristicheBackground(bozzaCrea.background, bozzaCrea.classe) : [];
+        return (
+          <div
+            style={{ position: 'fixed', inset: 0, zIndex: 1001, padding: 16, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            onClick={(e) => { if (e.target === e.currentTarget) setMostraCrea(false); }}
+          >
+            <div style={{ ...styles.panel, maxWidth: 460, width: '100%', maxHeight: '88vh', overflowY: 'auto' }}>
+              <h1 style={{ ...styles.title, marginBottom: 12 }}>➕ Nuovo personaggio</h1>
+
+              <div style={{ display: 'flex', gap: 6, justifyContent: 'center', alignItems: 'center', marginBottom: 14 }}>
+                <span style={styles.detail}>Versione:</span>
+                {['2024', '2014'].map((v) => (
+                  <button key={v} style={{ ...styles.modeButton(regoleVersione === v), fontSize: 12, padding: '3px 10px' }} onClick={() => setRegoleVersione(v)}>
+                    {v === '2024' ? 'D&D 5.5' : 'D&D 5.0'}
+                  </button>
+                ))}
+              </div>
+
+              <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>Nome</label>
+              <input style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.nome} placeholder="Nome del personaggio" onChange={(e) => setB({ nome: e.target.value })} />
+
+              <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>Classe</label>
+              <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.classe} onChange={(e) => setB({ classe: e.target.value })}>
+                <option value="">Scegli…</option>
+                {NOMI_CLASSI.map((n) => <option key={n} value={n}>{n}</option>)}
+              </select>
+
+              <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>Specie</label>
+              <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.specie} onChange={(e) => setB({ specie: e.target.value })}>
+                <option value="">Scegli…</option>
+                {SPECIE_5E.map((n) => <option key={n} value={n}>{n}</option>)}
+              </select>
+
+              <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>Background</label>
+              <select style={{ ...stileSelect, marginBottom: 6 }} value={bozzaCrea.background} onChange={(e) => setB({ background: e.target.value })}>
+                <option value="">Scegli…</option>
+                {BACKGROUND_5E.map((n) => <option key={n} value={n}>{n}</option>)}
+              </select>
+              {bozzaCrea.background && (
+                <div style={{ ...styles.detail, marginBottom: 12, fontSize: 11 }}>
+                  Competenze: {(BACKGROUND_COMPETENZE[bozzaCrea.background] || []).map((k) => ABILITA.find((a) => a.key === k)?.label).join(', ')}
+                  {bonusBg.length > 0 && ` · Caratteristiche: +2 ${bonusBg[0]?.slice(0, 3).toUpperCase()}, +1 ${bonusBg[1]?.slice(0, 3).toUpperCase()}`}
+                </div>
+              )}
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, cursor: 'pointer' }}>
+                <input type="checkbox" checked={bozzaCrea.tira} onChange={(e) => setB({ tira: e.target.checked })} />
+                <span style={styles.detail}>Tira le caratteristiche (4d6, scarta il più basso, ordinate per classe)</span>
+              </label>
+
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button style={{ ...styles.buttonPrimary, flex: 1 }} onClick={() => creaPersonaggio(bozzaCrea)}>Crea personaggio</button>
+                <button style={styles.button} onClick={() => setMostraCrea(false)}>Annulla</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       <header style={{ ...styles.header, position: 'relative' }}>
         <h1 style={styles.title}>🎲 Scheda Interattiva</h1>
@@ -2315,7 +2453,7 @@ export default function App() {
             </select>
           )}
           <button style={styles.buttonMini} onClick={() => setRinominando(!rinominando)} title="Rinomina il personaggio">✎</button>
-          <button style={styles.buttonMini} onClick={() => nuovoPersonaggio()} title="Nuovo personaggio">＋</button>
+          <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', tira: true }); setMostraCrea(true); }} title="Nuovo personaggio">＋</button>
           <button style={styles.buttonMini} onClick={duplicaPersonaggio} title="Duplica il personaggio attivo">⧉</button>
           <button style={styles.buttonMini} onClick={resetScheda} title="Azzera i campi del personaggio attivo">↺</button>
           <button style={{ ...styles.buttonMini, borderColor: C.red, color: C.red }} onClick={eliminaPersonaggio} title="Elimina il personaggio attivo">🗑</button>
