@@ -97,6 +97,13 @@ function sottoclassiPerClasse(classe) {
   return (c && SOTTOCLASSI_5E[c.match[0]]) || [];
 }
 
+// Tipi di danno (per resistenze/immunità/vulnerabilità) e sensi comuni.
+const DANNI_5E = [
+  'Acido', 'Contundente', 'Freddo', 'Fuoco', 'Fulmine', 'Necrotico',
+  'Perforante', 'Psichico', 'Radiante', 'Tagliente', 'Tuono', 'Veleno',
+];
+const SENSI_5E = ['Scurovisione', 'Vista cieca', 'Percezione tremorsensitiva', 'Vista vera'];
+
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 function coloreClasse(classe) {
   if (typeof classe !== 'string' || !classe) return null;
@@ -1271,6 +1278,35 @@ function CampoModulo({ label, children, style }) {
 }
 
 /**
+ * Campo di testo libero (elementi separati da virgola) con un menù a tendina
+ * "＋" per aggiungere velocemente voci da una lista, senza perdere il testo.
+ */
+function CampoConTendina({ value, opzioni, onChange, width, title }) {
+  const aggiungi = (v) => {
+    if (!v) return;
+    const attuali = value.split(',').map((s) => s.trim()).filter(Boolean);
+    if (attuali.some((x) => x.toLowerCase() === v.toLowerCase())) return;
+    onChange([...attuali, v].join(', '));
+  };
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+      <Editable value={value} onChange={onChange} width={width} title={title} />
+      <select
+        value=""
+        onChange={(e) => aggiungi(e.target.value)}
+        style={{ ...styles.inlineInput, fontSize: 12, padding: '1px 2px' }}
+        title="Aggiungi dalla lista"
+      >
+        <option value="">＋</option>
+        {opzioni.map((o) => (
+          <option key={o} value={o}>{o}</option>
+        ))}
+      </select>
+    </span>
+  );
+}
+
+/**
  * Menù a tendina con opzioni predefinite più "Altro…" per un valore libero.
  * Se il valore corrente non è tra le opzioni, mostra sotto un campo di testo
  * così i valori personalizzati/importati non vanno persi.
@@ -2198,37 +2234,41 @@ export default function App() {
             </span>
           </div>
 
-          {/* difese e sensi */}
+          {/* difese e sensi: campo libero + tendina "＋" per aggiungere dalla lista */}
           <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
             <span style={styles.detail}>Resistenze / immunità:{' '}
-              <Editable value={scheda.resistenze} onChange={(v) => aggiorna({ resistenze: v })} width={230} title="Resistenze, immunità e vulnerabilità ai danni" />
+              <CampoConTendina value={scheda.resistenze} opzioni={DANNI_5E} onChange={(v) => aggiorna({ resistenze: v })} width={210} title="Resistenze, immunità e vulnerabilità ai danni" />
             </span>
             <span style={styles.detail}>Sensi:{' '}
-              <Editable value={scheda.sensi} onChange={(v) => aggiorna({ sensi: v })} width={200} title="Scurovisione, percezione tremorsensitiva, ecc." />
+              <CampoConTendina value={scheda.sensi} opzioni={SENSI_5E} onChange={(v) => aggiorna({ sensi: v })} width={180} title="Scurovisione, percezione tremorsensitiva, ecc." />
             </span>
           </div>
 
-          {/* condizioni */}
+          {/* condizioni: chip attive (click per togliere) + tendina per aggiungere */}
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 10 }}>
             <span style={styles.detail}>Condizioni:</span>
-            {CONDIZIONI_5E.map((c) => {
-              const attiva = scheda.condizioni.includes(c);
-              return (
-                <button
-                  key={c}
-                  style={{ ...styles.modeButton(attiva), fontSize: 11, padding: '3px 8px' }}
-                  onClick={() =>
-                    aggiorna({
-                      condizioni: attiva
-                        ? scheda.condizioni.filter((x) => x !== c)
-                        : [...scheda.condizioni, c],
-                    })
-                  }
-                >
-                  {c}
-                </button>
-              );
-            })}
+            {scheda.condizioni.map((c) => (
+              <button
+                key={c}
+                className="tirabile"
+                style={{ ...styles.modeButton(true), fontSize: 11, padding: '3px 8px' }}
+                title="Click per rimuovere"
+                onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
+              >
+                {c} ✕
+              </button>
+            ))}
+            <select
+              value=""
+              onChange={(e) => { if (e.target.value) aggiorna({ condizioni: [...scheda.condizioni, e.target.value] }); }}
+              style={{ ...styles.inlineInput, fontSize: 12, padding: '2px 4px' }}
+              title="Aggiungi una condizione"
+            >
+              <option value="">＋ aggiungi</option>
+              {CONDIZIONI_5E.filter((c) => !scheda.condizioni.includes(c)).map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
           </div>
         </section>
 
