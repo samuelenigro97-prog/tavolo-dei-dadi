@@ -59,6 +59,44 @@ const NOMI_CLASSI = [
   'Mago', 'Monaco', 'Paladino', 'Ranger', 'Stregone', 'Warlock',
 ];
 
+// Opzioni per i menù a tendina dell'anagrafica (liste 2024; sempre con "Altro…").
+const BACKGROUND_5E = [
+  'Accolito', 'Artigiano', 'Ciarlatano', 'Contadino', 'Criminale', 'Eremita',
+  'Guardia', 'Guida', 'Intrattenitore', 'Marinaio', 'Mercante', 'Nobile',
+  'Saggio', 'Scriba', 'Soldato', 'Viandante',
+];
+const SPECIE_5E = [
+  'Aasimar', 'Dragonide', 'Elfo', 'Gnomo', 'Goliath', 'Halfling',
+  'Nano', 'Orco', 'Tiefling', 'Umano',
+];
+const TAGLIE_5E = ['Minuscola', 'Piccola', 'Media', 'Grande', 'Enorme', 'Mastodontica'];
+const ALLINEAMENTI_5E = [
+  'Legale Buono', 'Neutrale Buono', 'Caotico Buono',
+  'Legale Neutrale', 'Neutrale', 'Caotico Neutrale',
+  'Legale Malvagio', 'Neutrale Malvagio', 'Caotico Malvagio',
+];
+// Sottoclassi per classe (chiave = primo alias in CLASSI, es. 'mago').
+const SOTTOCLASSI_5E = {
+  barbaro: ['Berserker', 'Cuore Selvaggio', 'Albero del Mondo', 'Zelota'],
+  bardo: ['Collegio della Danza', 'Collegio dello Splendore', 'Collegio del Sapere', 'Collegio del Valore'],
+  chierico: ['Dominio della Vita', 'Dominio della Luce', 'Dominio dell’Inganno', 'Dominio della Guerra'],
+  druido: ['Circolo della Terra', 'Circolo della Luna', 'Circolo del Mare', 'Circolo delle Stelle'],
+  guerriero: ['Campione', 'Maestro di Battaglia', 'Cavaliere Mistico', 'Soldato Psionico'],
+  ladro: ['Assassino', 'Furfante', 'Anima Lama', 'Ladro Arcano'],
+  mago: ['Abiuratore', 'Divinatore', 'Invocatore', 'Illusionista'],
+  monaco: ['Mano Aperta', 'Misericordia', 'Elementi', 'Ombra'],
+  paladino: ['Giuramento della Devozione', 'Giuramento della Gloria', 'Giuramento degli Antichi', 'Giuramento della Vendetta'],
+  ranger: ['Cacciatore', 'Signore delle Bestie', 'Vagabondo Fatato', 'Errante Cupo'],
+  stregone: ['Stregoneria Aberrante', 'Anima Meccanica', 'Stirpe Draconica', 'Magia Selvaggia'],
+  warlock: ['Immondo', 'Arcifata', 'Grande Antico', 'Celestiale'],
+};
+
+/** Sottoclassi disponibili per la classe indicata (o [] se non riconosciuta). */
+function sottoclassiPerClasse(classe) {
+  const c = coloreClasse(classe);
+  return (c && SOTTOCLASSI_5E[c.match[0]]) || [];
+}
+
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 function coloreClasse(classe) {
   if (typeof classe !== 'string' || !classe) return null;
@@ -733,7 +771,7 @@ const ESEMPIO_GNOMO = {
   nome: 'Boddynock Folgorio',
   background: 'Sapiente',
   classe: 'Mago',
-  sottoclasse: "Scuola dell'Invocazione",
+  sottoclasse: 'Invocatore',
   specie: 'Gnomo delle Rocce',
   allineamento: 'Caotico Buono',
   livello: 10,
@@ -1229,6 +1267,40 @@ function CampoModulo({ label, children, style }) {
       <div style={styles.moduloCampo}>{children}</div>
       <div style={styles.moduloLabel}>{label}</div>
     </div>
+  );
+}
+
+/**
+ * Menù a tendina con opzioni predefinite più "Altro…" per un valore libero.
+ * Se il valore corrente non è tra le opzioni, mostra sotto un campo di testo
+ * così i valori personalizzati/importati non vanno persi.
+ */
+function CampoTendina({ value, opzioni, onChange, title }) {
+  const std = opzioni.includes(value);
+  return (
+    <>
+      <select
+        style={{ ...styles.inlineInput, fontSize: 13, padding: '1px 3px', maxWidth: '100%' }}
+        value={std ? value : value ? '__altro' : ''}
+        onChange={(e) => {
+          const v = e.target.value;
+          if (v === '__altro') onChange(std || !value ? 'Personalizzato' : value);
+          else onChange(v);
+        }}
+        title={title}
+      >
+        <option value="">— scegli —</option>
+        {opzioni.map((o) => (
+          <option key={o} value={o}>{o}</option>
+        ))}
+        <option value="__altro">Altro…</option>
+      </select>
+      {!std && value !== '' && (
+        <div style={{ marginTop: 2 }}>
+          <Editable value={value} onChange={onChange} width={100} style={{ borderBottom: 'none' }} title="Valore personalizzato" />
+        </div>
+      )}
+    </>
   );
 }
 
@@ -1923,49 +1995,22 @@ export default function App() {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px 12px', marginTop: 8 }}>
                 <CampoModulo label="Background">
-                  <Editable value={scheda.background} onChange={(v) => aggiorna({ background: v })} width={110} style={{ borderBottom: 'none' }} />
+                  <CampoTendina value={scheda.background} opzioni={BACKGROUND_5E} onChange={(v) => aggiorna({ background: v })} title="Scegli un background" />
                 </CampoModulo>
                 <CampoModulo label="Classe">
-                  {(() => {
-                    const classeStd = NOMI_CLASSI.includes(scheda.classe);
-                    return (
-                      <>
-                        <select
-                          style={{ ...styles.inlineInput, fontSize: 13, padding: '1px 3px', maxWidth: '100%' }}
-                          value={classeStd ? scheda.classe : scheda.classe ? '__altro' : ''}
-                          onChange={(e) => {
-                            const v = e.target.value;
-                            if (v === '__altro') aggiorna({ classe: classeStd || !scheda.classe ? 'Personalizzata' : scheda.classe });
-                            else aggiorna({ classe: v });
-                          }}
-                          title="Scegli la classe (cambia i colori della scheda)"
-                        >
-                          <option value="">— scegli —</option>
-                          {NOMI_CLASSI.map((n) => (
-                            <option key={n} value={n}>{n}</option>
-                          ))}
-                          <option value="__altro">Altro…</option>
-                        </select>
-                        {!classeStd && scheda.classe !== '' && (
-                          <div style={{ marginTop: 2 }}>
-                            <Editable value={scheda.classe} onChange={(v) => aggiorna({ classe: v })} width={100} style={{ borderBottom: 'none' }} title="Nome classe personalizzata" />
-                          </div>
-                        )}
-                      </>
-                    );
-                  })()}
+                  <CampoTendina value={scheda.classe} opzioni={NOMI_CLASSI} onChange={(v) => aggiorna({ classe: v })} title="Scegli la classe (cambia i colori della scheda)" />
                 </CampoModulo>
                 <CampoModulo label="Sottoclasse">
-                  <Editable value={scheda.sottoclasse} onChange={(v) => aggiorna({ sottoclasse: v })} width={110} style={{ borderBottom: 'none' }} />
+                  <CampoTendina value={scheda.sottoclasse} opzioni={sottoclassiPerClasse(scheda.classe)} onChange={(v) => aggiorna({ sottoclasse: v })} title="Sottoclasse (opzioni in base alla classe)" />
                 </CampoModulo>
                 <CampoModulo label="Specie">
-                  <Editable value={scheda.specie} onChange={(v) => aggiorna({ specie: v })} width={110} style={{ borderBottom: 'none' }} />
+                  <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => aggiorna({ specie: v })} title="Scegli la specie" />
                 </CampoModulo>
                 <CampoModulo label="Taglia">
-                  <Editable value={scheda.taglia} onChange={(v) => aggiorna({ taglia: v })} width={110} style={{ borderBottom: 'none' }} />
+                  <CampoTendina value={scheda.taglia} opzioni={TAGLIE_5E} onChange={(v) => aggiorna({ taglia: v })} title="Scegli la taglia" />
                 </CampoModulo>
                 <CampoModulo label="Allineamento">
-                  <Editable value={scheda.allineamento} onChange={(v) => aggiorna({ allineamento: v })} width={110} style={{ borderBottom: 'none' }} />
+                  <CampoTendina value={scheda.allineamento} opzioni={ALLINEAMENTI_5E} onChange={(v) => aggiorna({ allineamento: v })} title="Scegli l'allineamento" />
                 </CampoModulo>
               </div>
             </div>
