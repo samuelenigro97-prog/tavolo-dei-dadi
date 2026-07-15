@@ -378,6 +378,16 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
   60% { transform: scale(0.95); }
   100% { transform: scale(1); }
 }
+/* elementi tirabili: tenendo premuto NON deve partire la selezione del testo
+   (React non aggiunge i prefissi, Safari iOS/Mac richiede -webkit-user-select) */
+.tirabile {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
 /* elemento "in carica" mentre tieni premuto: trema come un dado in mano */
 .carica { animation: carica-dado 0.4s ease-in-out infinite; color: ${C.goldDark} !important; }
 @keyframes carica-dado {
@@ -1023,8 +1033,10 @@ function Editable({ value, onChange, onRoll, tipo = 'testo', width, style, title
 
   return (
     <span
+      className={onRoll ? 'tirabile' : undefined}
       style={{ ...styles.editable, ...style }}
       title={title || (onRoll ? '1 click: modifica · doppio click: tira' : '1 click: modifica')}
+      onSelectStart={onRoll ? (e) => e.preventDefault() : undefined}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
     >
@@ -1074,15 +1086,14 @@ function Rollable({ onRoll, children, style, title, as: Tag = 'span' }) {
 
   return (
     <Tag
-      className={carica ? 'carica' : undefined}
+      className={carica ? 'tirabile carica' : 'tirabile'}
       style={{
         cursor: 'pointer',
-        userSelect: 'none',
-        WebkitTouchCallout: 'none',
         display: Tag === 'span' ? 'inline-block' : undefined,
         ...style,
       }}
       title={title || 'Tieni premuto e rilascia (o doppio click): tira'}
+      onSelectStart={(e) => e.preventDefault()}
       onPointerDown={inizia}
       onPointerUp={rilascia}
       onPointerLeave={annulla}
