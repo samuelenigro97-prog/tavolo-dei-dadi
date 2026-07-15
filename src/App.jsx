@@ -356,15 +356,13 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
 }
 /* consente alle colonne della griglia di stringersi (niente overflow orizzontale) */
 .griglia-scheda > * { min-width: 0; }
-.testata { display: grid; grid-template-columns: 2.1fr 0.8fr 0.9fr 1.5fr 1fr 1.1fr; gap: 10px; align-items: stretch; }
-.vitali-stat { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
-@media (max-width: 900px) {
-  .testata { grid-template-columns: repeat(2, 1fr); }
-  .testata .anagrafica { grid-column: 1 / -1; }
-}
+/* riquadri vitali: griglia uniforme che si adatta, tutti stessa altezza */
+.vitali { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 8px; align-items: stretch; }
 @media (max-width: 820px) {
   .griglia-scheda { grid-template-columns: 1fr; }
-  .vitali-stat { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 560px) {
+  .anagrafica > div:last-child > div:last-child { grid-template-columns: repeat(2, 1fr) !important; }
 }
 /* su mobile i campi con font < 16px fanno zoomare iOS al focus */
 @media (max-width: 820px) {
@@ -1236,6 +1234,25 @@ export default function App() {
     setStorico([]);
   }
 
+  /**
+   * Anima il d20 (facce che girano) per una breve durata, poi esegue `alFine`.
+   * Usato da TUTTI i tiri così il dado "rotola" sempre, anche per danni,
+   * dado libero, espressioni e dado vita.
+   */
+  function conAnimazione(alFine, facciaFinale) {
+    clearInterval(intervalRef.current);
+    setTiro(null);
+    setDanni(null);
+    setRolling(true);
+    intervalRef.current = setInterval(() => setFaccia(tiraDado(20)), 70);
+    setTimeout(() => {
+      clearInterval(intervalRef.current);
+      setRolling(false);
+      if (facciaFinale !== undefined) setFaccia(facciaFinale);
+      alFine();
+    }, 700);
+  }
+
   /** Registra una voce nello storico dei tiri della sessione. */
   function registra(voce) {
     setStorico((s) => [voce, ...s].slice(0, 30));
@@ -1268,11 +1285,11 @@ export default function App() {
   function lanciaDanniDiretti(etichetta, espressione) {
     const parsata = parseEspressioneDado(espressione);
     if (!parsata) return;
-    clearInterval(intervalRef.current);
-    setTiro(null);
     const esito = tiraDanni(parsata, false);
-    setDanni({ etichetta, ...esito, critico: false });
-    registra(`${etichetta}: ${esito.totale} (${esito.dettaglio})`);
+    conAnimazione(() => {
+      setDanni({ etichetta, ...esito, critico: false });
+      registra(`${etichetta}: ${esito.totale} (${esito.dettaglio})`);
+    }, esito.totale);
   }
 
   /** Danni dell'attacco corrente (dal tiro per colpire in corso). */
@@ -1281,9 +1298,12 @@ export default function App() {
     const parsata = parseEspressioneDado(tiro.attacco.danno);
     if (!parsata) return;
     const critico = tiro.naturale === 20;
+    const nome = tiro.attacco.nome;
     const esito = tiraDanni(parsata, critico);
-    setDanni({ etichetta: `Danni: ${tiro.attacco.nome}`, ...esito, critico });
-    registra(`Danni ${tiro.attacco.nome}: ${esito.totale}${critico ? ' ⚔ critico' : ''} (${esito.dettaglio})`);
+    conAnimazione(() => {
+      setDanni({ etichetta: `Danni: ${nome}`, ...esito, critico });
+      registra(`Danni ${nome}: ${esito.totale}${critico ? ' ⚔ critico' : ''} (${esito.dettaglio})`);
+    }, esito.totale);
   }
 
   /** Tiro salvezza contro morte: regole 5e complete. */
@@ -1353,20 +1373,21 @@ export default function App() {
     const dado = tiraDado(dadoTermine.facce);
     const mod = modificatore(scheda.caratteristiche.costituzione);
     const recupero = Math.max(0, dado + mod);
-    setScheda((s) => ({
-      ...s,
-      pfAttuali: Math.min(s.pfMax, s.pfAttuali + recupero),
-      dadiVitaSpesi: s.dadiVitaSpesi + 1,
-    }));
-    setTiro(null);
-    setDanni({
-      etichetta: 'Dado vita speso (PF applicati)',
-      totale: recupero,
-      dettaglio: `1d${dadoTermine.facce} [${dado}] ${conSegno(mod)}`,
-      critico: false,
-      guarigione: true,
-    });
-    registra(`Dado vita: +${recupero} PF`);
+    conAnimazione(() => {
+      setScheda((s) => ({
+        ...s,
+        pfAttuali: Math.min(s.pfMax, s.pfAttuali + recupero),
+        dadiVitaSpesi: s.dadiVitaSpesi + 1,
+      }));
+      setDanni({
+        etichetta: 'Dado vita speso (PF applicati)',
+        totale: recupero,
+        dettaglio: `1d${dadoTermine.facce} [${dado}] ${conSegno(mod)}`,
+        critico: false,
+        guarigione: true,
+      });
+      registra(`Dado vita: +${recupero} PF`);
+    }, dado);
   }
 
   /** Riposo lungo 5e: PF al massimo, slot recuperati, metà dei dadi vita. */
@@ -1392,10 +1413,10 @@ export default function App() {
   function tiroLibero(facce) {
     if (facce === 20) return lanciaD20('Tiro libero d20', 0);
     const valore = tiraDado(facce);
-    clearInterval(intervalRef.current);
-    setTiro(null);
-    setDanni({ etichetta: 'Tiro libero', totale: valore, dettaglio: `1d${facce} [${valore}]`, libero: true });
-    registra(`d${facce}: ${valore}`);
+    conAnimazione(() => {
+      setDanni({ etichetta: 'Tiro libero', totale: valore, dettaglio: `1d${facce} [${valore}]`, libero: true });
+      registra(`d${facce}: ${valore}`);
+    }, valore);
   }
 
   /** Tiro libero di un'espressione qualsiasi (es. "3d6+2"). */
@@ -1406,15 +1427,12 @@ export default function App() {
       return;
     }
     setErroreEspressione(false);
-    clearInterval(intervalRef.current);
-    setTiro(null);
+    const testo = espressioneLibera.trim();
     const esito = tiraDanni(parsata, false);
-    setDanni({
-      etichetta: `Tiro libero: ${espressioneLibera.trim()}`,
-      ...esito,
-      libero: true,
-    });
-    registra(`${espressioneLibera.trim()}: ${esito.totale} (${esito.dettaglio})`);
+    conAnimazione(() => {
+      setDanni({ etichetta: `Tiro libero: ${testo}`, ...esito, libero: true });
+      registra(`${testo}: ${esito.totale} (${esito.dettaglio})`);
+    }, esito.totale);
   }
 
   /** Carica l'immagine del personaggio: ridimensionata e salvata nella scheda. */
@@ -1642,58 +1660,63 @@ export default function App() {
           <button style={{ ...styles.buttonMini, borderColor: C.red, color: C.red }} onClick={eliminaPersonaggio} title="Elimina il personaggio attivo">🗑</button>
         </section>
 
-        {/* Testata in stile scheda ufficiale */}
+        {/* Testata: anagrafica + riquadri vitali uniformi */}
         <section style={styles.panel}>
-          <div className="testata">
-            <div className="anagrafica" style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-              <div style={{ position: 'relative' }}>
-                <div
-                  style={styles.ritratto}
-                  title={scheda.ritratto ? 'Click: cambia immagine' : 'Click: carica l’immagine del personaggio'}
-                  onClick={() => ritrattoRef.current?.click()}
-                >
-                  {scheda.ritratto ? (
-                    <img
-                      src={scheda.ritratto}
-                      alt={`Ritratto di ${scheda.nome}`}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                  ) : (
-                    <div style={{ textAlign: 'center', color: C.inkDim }}>
-                      <div style={{ fontSize: 26 }}>🖼</div>
-                      <div style={{ fontSize: 9, letterSpacing: 1 }}>RITRATTO</div>
-                    </div>
-                  )}
-                </div>
-                {scheda.ritratto && (
-                  <button
-                    style={{ ...styles.buttonDanger, position: 'absolute', top: -8, right: -8, padding: '0 6px', background: C.panel }}
-                    title="Rimuovi immagine"
-                    onClick={() => aggiorna({ ritratto: '' })}
-                  >
-                    ×
-                  </button>
+          <div className="anagrafica" style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 10 }}>
+            <div style={{ position: 'relative' }}>
+              <div
+                style={styles.ritratto}
+                title={scheda.ritratto ? 'Click: cambia immagine' : 'Click: carica l’immagine del personaggio'}
+                onClick={() => ritrattoRef.current?.click()}
+              >
+                {scheda.ritratto ? (
+                  <img
+                    src={scheda.ritratto}
+                    alt={`Ritratto di ${scheda.nome}`}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <div style={{ textAlign: 'center', color: C.inkDim }}>
+                    <div style={{ fontSize: 24 }}>🖼</div>
+                    <div style={{ fontSize: 9, letterSpacing: 1 }}>RITRATTO</div>
+                  </div>
                 )}
-                <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
               </div>
-              <div style={{ flex: 1 }}>
-              <CampoModulo label="Nome del personaggio">
+              {scheda.ritratto && (
+                <button
+                  style={{ ...styles.buttonDanger, position: 'absolute', top: -8, right: -8, padding: '0 6px', background: C.panel }}
+                  title="Rimuovi immagine"
+                  onClick={() => aggiorna({ ritratto: '' })}
+                >
+                  ×
+                </button>
+              )}
+              <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              {/* Nome + livello/PE sulla stessa riga */}
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 22 }}>
-                  <Editable value={scheda.nome} onChange={(v) => aggiorna({ nome: v })} width={240} style={{ borderBottom: 'none' }} />
+                  <Editable value={scheda.nome} onChange={(v) => aggiorna({ nome: v })} width={220} />
                 </span>
-              </CampoModulo>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 14px', marginTop: 10 }}>
+                <span style={{ ...styles.detail, whiteSpace: 'nowrap' }}>
+                  liv. <Editable value={scheda.livello} tipo="numero" onChange={(v) => aggiorna({ livello: v })} width={32} />
+                  {' · PE '}
+                  <Editable value={scheda.pe} tipo="numero" onChange={(v) => aggiorna({ pe: v })} width={56} />
+                </span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px 12px', marginTop: 8 }}>
                 <CampoModulo label="Background">
                   <Editable value={scheda.background} onChange={(v) => aggiorna({ background: v })} width={110} style={{ borderBottom: 'none' }} />
                 </CampoModulo>
                 <CampoModulo label="Classe">
                   <Editable value={scheda.classe} onChange={(v) => aggiorna({ classe: v })} width={110} style={{ borderBottom: 'none' }} />
                 </CampoModulo>
-                <CampoModulo label="Specie">
-                  <Editable value={scheda.specie} onChange={(v) => aggiorna({ specie: v })} width={110} style={{ borderBottom: 'none' }} />
-                </CampoModulo>
                 <CampoModulo label="Sottoclasse">
                   <Editable value={scheda.sottoclasse} onChange={(v) => aggiorna({ sottoclasse: v })} width={110} style={{ borderBottom: 'none' }} />
+                </CampoModulo>
+                <CampoModulo label="Specie">
+                  <Editable value={scheda.specie} onChange={(v) => aggiorna({ specie: v })} width={110} style={{ borderBottom: 'none' }} />
                 </CampoModulo>
                 <CampoModulo label="Taglia">
                   <Editable value={scheda.taglia} onChange={(v) => aggiorna({ taglia: v })} width={110} style={{ borderBottom: 'none' }} />
@@ -1702,90 +1725,60 @@ export default function App() {
                   <Editable value={scheda.allineamento} onChange={(v) => aggiorna({ allineamento: v })} width={110} style={{ borderBottom: 'none' }} />
                 </CampoModulo>
               </div>
-              </div>
             </div>
+          </div>
 
+          <div className="vitali">
+            {/* Classe Armatura */}
             <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>Livello</div>
-              <div style={styles.vitalValue}>
-                <Editable value={scheda.livello} tipo="numero" onChange={(v) => aggiorna({ livello: v })} width={40} />
-              </div>
-              <div style={styles.detail}>
-                PE <Editable value={scheda.pe} tipo="numero" onChange={(v) => aggiorna({ pe: v })} width={52} />
-              </div>
-            </div>
-
-            <div style={{ textAlign: 'center' }}>
-              <div style={styles.scudo}>
-                <div style={{ fontSize: 26, fontWeight: 'bold' }}>
-                  {scheda.armatura.tipo === 'manuale' ? (
-                    <Editable value={scheda.ca} tipo="numero" onChange={(v) => aggiorna({ ca: v })} width={44} style={{ borderBottom: 'none' }} />
-                  ) : (
-                    <span title="CA calcolata dall'armatura indossata (vedi sezione Armi)">
-                      {caTotale(scheda)}
-                    </span>
-                  )}
-                </div>
-              </div>
               <div style={styles.vitalLabel}>Classe Armatura</div>
-              <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center' }}>
-                <select
-                  style={{ ...styles.inlineInput, fontSize: 11, padding: '2px 4px', maxWidth: 132 }}
-                  value={scheda.armatura.tipo}
-                  onChange={(e) => aggiorna({ armatura: { ...scheda.armatura, tipo: e.target.value } })}
-                >
-                  {TIPI_ARMATURA.map((t) => (
-                    <option key={t.key} value={t.key}>{t.label}</option>
-                  ))}
-                </select>
-                {scheda.armatura.tipo !== 'manuale' && (
-                  <div style={{ fontSize: 11, color: C.inkDim, display: 'flex', gap: 6, alignItems: 'center' }}>
-                    {scheda.armatura.tipo !== 'nessuna' && (
-                      <span>
-                        base{' '}
-                        <Editable
-                          value={scheda.armatura.base}
-                          tipo="numero"
-                          width={30}
-                          onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, base: Math.max(0, v) } })}
-                        />
-                      </span>
-                    )}
-                    <span
-                      style={{ cursor: 'pointer', userSelect: 'none' }}
-                      title="Scudo: +2 alla CA"
-                      onClick={() => aggiorna({ armatura: { ...scheda.armatura, scudo: !scheda.armatura.scudo } })}
-                    >
-                      <span style={styles.pip(scheda.armatura.scudo, C.goldDark)} /> scudo
-                    </span>
-                    <span>
-                      +{' '}
-                      <Editable
-                        value={scheda.armatura.bonus}
-                        tipo="numero"
-                        width={26}
-                        onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, bonus: v } })}
-                      />
-                    </span>
-                  </div>
+              <div style={styles.vitalValue}>
+                {scheda.armatura.tipo === 'manuale' ? (
+                  <Editable value={scheda.ca} tipo="numero" onChange={(v) => aggiorna({ ca: v })} width={40} />
+                ) : (
+                  <span title="CA calcolata dall'armatura indossata">{caTotale(scheda)}</span>
                 )}
               </div>
+              <select
+                style={{ ...styles.inlineInput, fontSize: 10, padding: '1px 3px', maxWidth: '100%', marginTop: 2 }}
+                value={scheda.armatura.tipo}
+                onChange={(e) => aggiorna({ armatura: { ...scheda.armatura, tipo: e.target.value } })}
+              >
+                {TIPI_ARMATURA.map((t) => (
+                  <option key={t.key} value={t.key}>{t.label}</option>
+                ))}
+              </select>
+              {scheda.armatura.tipo !== 'manuale' && (
+                <div style={{ fontSize: 10, color: C.inkDim, display: 'flex', gap: 5, alignItems: 'center', justifyContent: 'center', marginTop: 2, flexWrap: 'wrap' }}>
+                  {scheda.armatura.tipo !== 'nessuna' && (
+                    <span>
+                      base <Editable value={scheda.armatura.base} tipo="numero" width={26} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, base: Math.max(0, v) } })} />
+                    </span>
+                  )}
+                  <span style={{ cursor: 'pointer', userSelect: 'none' }} title="Scudo: +2 alla CA" onClick={() => aggiorna({ armatura: { ...scheda.armatura, scudo: !scheda.armatura.scudo } })}>
+                    <span style={styles.pip(scheda.armatura.scudo, C.goldDark)} /> scudo
+                  </span>
+                  <span>+ <Editable value={scheda.armatura.bonus} tipo="numero" width={24} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, bonus: v } })} /></span>
+                </div>
+              )}
             </div>
 
+            {/* Punti Ferita */}
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>Punti Ferita</div>
               <div style={styles.vitalValue}>
-                <Editable value={scheda.pfAttuali} tipo="numero" onChange={(v) => aggiorna({ pfAttuali: v })} width={44} />
-                <span style={{ color: C.inkDim, fontSize: 15 }}>
+                <Editable value={scheda.pfAttuali} tipo="numero" onChange={(v) => aggiorna({ pfAttuali: v })} width={40} />
+                <span style={{ color: C.inkDim, fontSize: 14 }}>
                   {' / '}
-                  <Editable value={scheda.pfMax} tipo="numero" onChange={(v) => aggiorna({ pfMax: v })} width={44} />
+                  <Editable value={scheda.pfMax} tipo="numero" onChange={(v) => aggiorna({ pfMax: v })} width={40} />
                 </span>
               </div>
               <div style={styles.detail}>
-                temp: <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={36} />
+                temp: <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={32} />
               </div>
             </div>
 
+            {/* Dadi Vita */}
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>Dadi Vita</div>
               <div style={styles.vitalValue}>
@@ -1793,101 +1786,75 @@ export default function App() {
                   value={scheda.dadiVita}
                   onChange={(v) => aggiorna({ dadiVita: v })}
                   onRoll={tiraDadoVita}
-                  width={56}
+                  width={52}
                   title="1 click: modifica · tieni premuto e rilascia: guarigione (1 dado + COS)"
                 />{' '}
                 🎲
               </div>
               <div style={styles.detail}>
-                spesi: <Editable value={scheda.dadiVitaSpesi} tipo="numero" onChange={(v) => aggiorna({ dadiVitaSpesi: Math.max(0, v) })} width={34} />
+                spesi: <Editable value={scheda.dadiVitaSpesi} tipo="numero" onChange={(v) => aggiorna({ dadiVitaSpesi: Math.max(0, v) })} width={30} />
               </div>
             </div>
 
-          </div>
-
-          <div className="vitali-stat">
+            {/* TS contro morte */}
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>
-                <Rollable onRoll={tiroSalvezzaMorte} title="Doppio click: tira il TS contro morte">
+                <Rollable onRoll={tiroSalvezzaMorte} title="Tieni premuto e rilascia: TS contro morte">
                   TS Morte 🎲
                 </Rollable>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, height: 18 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, height: 16 }}>
                 {[1, 2, 3].map((i) => (
-                  <span
-                    key={`s${i}`}
-                    style={styles.pip(scheda.tsMorte.successi >= i, C.green)}
-                    title={`Successi: ${scheda.tsMorte.successi}`}
-                    onClick={() =>
-                      aggiorna({
-                        tsMorte: {
-                          ...scheda.tsMorte,
-                          successi: scheda.tsMorte.successi >= i ? i - 1 : i,
-                        },
-                      })
-                    }
-                  />
+                  <span key={`s${i}`} style={styles.pip(scheda.tsMorte.successi >= i, C.green)} title={`Successi: ${scheda.tsMorte.successi}`}
+                    onClick={() => aggiorna({ tsMorte: { ...scheda.tsMorte, successi: scheda.tsMorte.successi >= i ? i - 1 : i } })} />
                 ))}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, height: 18, marginTop: 4 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, height: 16, marginTop: 3 }}>
                 {[1, 2, 3].map((i) => (
-                  <span
-                    key={`f${i}`}
-                    style={styles.pip(scheda.tsMorte.fallimenti >= i, C.red)}
-                    title={`Fallimenti: ${scheda.tsMorte.fallimenti}`}
-                    onClick={() =>
-                      aggiorna({
-                        tsMorte: {
-                          ...scheda.tsMorte,
-                          fallimenti: scheda.tsMorte.fallimenti >= i ? i - 1 : i,
-                        },
-                      })
-                    }
-                  />
+                  <span key={`f${i}`} style={styles.pip(scheda.tsMorte.fallimenti >= i, C.red)} title={`Fallimenti: ${scheda.tsMorte.fallimenti}`}
+                    onClick={() => aggiorna({ tsMorte: { ...scheda.tsMorte, fallimenti: scheda.tsMorte.fallimenti >= i ? i - 1 : i } })} />
                 ))}
               </div>
             </div>
+
+            {/* Bonus Competenza */}
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>Bonus Comp.</div>
               <div style={styles.vitalValue}>
-                <Editable
-                  value={scheda.bonusCompetenza}
-                  tipo="numero"
-                  onChange={(v) => aggiorna({ bonusCompetenza: v })}
-                  width={40}
-                />
+                <Editable value={scheda.bonusCompetenza} tipo="numero" onChange={(v) => aggiorna({ bonusCompetenza: v })} width={38} />
               </div>
             </div>
+
+            {/* Iniziativa */}
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>Iniziativa</div>
               <div style={styles.vitalValue}>
-                <Rollable
-                  onRoll={() =>
-                    lanciaD20('Iniziativa', modificatore(scheda.caratteristiche.destrezza))
-                  }
-                >
+                <Rollable onRoll={() => lanciaD20('Iniziativa', modificatore(scheda.caratteristiche.destrezza))}>
                   {conSegno(modificatore(scheda.caratteristiche.destrezza))} 🎲
                 </Rollable>
               </div>
             </div>
+
+            {/* Velocità */}
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>Velocità</div>
               <div style={styles.vitalValue}>
-                <Editable value={scheda.velocita} tipo="numero" onChange={(v) => aggiorna({ velocita: v })} width={40} />
-                <span style={{ fontSize: 13, color: C.inkDim }}> m</span>
+                <Editable value={scheda.velocita} tipo="numero" onChange={(v) => aggiorna({ velocita: v })} width={38} />
+                <span style={{ fontSize: 12, color: C.inkDim }}> m</span>
               </div>
             </div>
+
+            {/* Percezione passiva */}
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>Perc. Passiva</div>
               <div style={styles.vitalValue}>{percezionePassiva}</div>
             </div>
+
+            {/* Ispirazione */}
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>Ispirazione</div>
-              <div
-                style={{ ...styles.vitalValue, cursor: 'pointer' }}
-                title="Click per attivare/disattivare"
-                onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
-              >
+              <div style={{ ...styles.vitalValue, cursor: 'pointer' }} title="Click per attivare/disattivare"
+                onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}>
                 {scheda.ispirazione ? '★' : '☆'}
               </div>
             </div>
