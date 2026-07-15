@@ -965,6 +965,7 @@ function Editable({ value, onChange, onRoll, tipo = 'testo', width, style, title
     holdRef.current = setTimeout(() => {
       caricato.current = true;
       setCarica(true);
+      navigator.vibrate?.(12); // feedback aptico su mobile: il dado è "in mano"
     }, SOGLIA_CARICA_MS);
   }
 
@@ -1066,6 +1067,7 @@ function Rollable({ onRoll, children, style, title, as: Tag = 'span' }) {
     timerRef.current = setTimeout(() => {
       caricato.current = true;
       setCarica(true);
+      navigator.vibrate?.(12); // feedback aptico su mobile: il dado è "in mano"
     }, SOGLIA_CARICA_MS);
   }
 
@@ -1766,7 +1768,7 @@ export default function App() {
                     base <Editable value={scheda.armatura.base} tipo="numero" width={24} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, base: Math.max(0, v) } })} />
                   </span>
                 )}
-                <span style={{ cursor: 'pointer', userSelect: 'none' }} title="Scudo: +2 alla CA" onClick={() => aggiorna({ armatura: { ...scheda.armatura, scudo: !scheda.armatura.scudo } })}>
+                <span className="tirabile" style={{ cursor: 'pointer' }} title="Scudo: +2 alla CA" onClick={() => aggiorna({ armatura: { ...scheda.armatura, scudo: !scheda.armatura.scudo } })}>
                   <span style={styles.pip(scheda.armatura.scudo, C.goldDark)} /> scudo
                 </span>
                 <span>+ <Editable value={scheda.armatura.bonus} tipo="numero" width={22} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, bonus: v } })} /></span>
@@ -2264,7 +2266,8 @@ export default function App() {
                 ].map(([key, label]) => (
                   <span
                     key={key}
-                    style={{ ...styles.detail, fontSize: 12, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                    className="tirabile"
+                    style={{ ...styles.detail, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}
                     onClick={() =>
                       aggiorna({
                         addestramento: {
