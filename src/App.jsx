@@ -2056,20 +2056,25 @@ export default function App() {
           {erroreEspressione && <span style={{ color: C.red, fontSize: 13 }}>Espressione non valida</span>}
         </section>
 
-        {/* Personaggi: riga compatta, icone con tooltip */}
+        {/* Personaggi: il nome vive qui (modificabile); a fianco lo switcher se >1 PG */}
         <section style={{ ...styles.panel, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'nowrap', padding: '6px 12px' }}>
-          <select
-            style={{ ...styles.inlineInput, padding: '5px 6px', flex: 1, minWidth: 0 }}
-            value={roster.attivo}
-            onChange={(e) => setRoster((r) => ({ ...r, attivo: e.target.value }))}
-            title="Personaggio attivo"
-          >
-            {Object.entries(roster.personaggi).map(([id, p]) => (
-              <option key={id} value={id}>
-                {p.nome}{p.classe ? ` (${p.classe} ${p.livello})` : ''}
-              </option>
-            ))}
-          </select>
+          <span style={{ flex: 1, minWidth: 0, fontSize: 18, fontWeight: 'bold', color: 'var(--c-title)' }}>
+            <Editable value={scheda.nome} onChange={(v) => aggiorna({ nome: v })} width={260} title="Nome del personaggio (1 click per modificare)" />
+          </span>
+          {Object.keys(roster.personaggi).length > 1 && (
+            <select
+              style={{ ...styles.inlineInput, padding: '5px 6px', maxWidth: 170 }}
+              value={roster.attivo}
+              onChange={(e) => setRoster((r) => ({ ...r, attivo: e.target.value }))}
+              title="Cambia personaggio"
+            >
+              {Object.entries(roster.personaggi).map(([id, p]) => (
+                <option key={id} value={id}>
+                  {p.nome}{p.classe ? ` (${p.classe} ${p.livello})` : ''}
+                </option>
+              ))}
+            </select>
+          )}
           <button style={styles.buttonMini} onClick={() => nuovoPersonaggio()} title="Nuovo personaggio">＋</button>
           <button style={styles.buttonMini} onClick={duplicaPersonaggio} title="Duplica il personaggio attivo">⧉</button>
           <button style={styles.buttonMini} onClick={resetScheda} title="Azzera i campi del personaggio attivo">↺</button>
@@ -2110,12 +2115,9 @@ export default function App() {
               <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              {/* Nome + livello/PE sulla stessa riga */}
+              {/* Livello/PE + ispirazione (il nome vive nel rettangolo in alto) */}
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 22 }}>
-                  <Editable value={scheda.nome} onChange={(v) => aggiorna({ nome: v })} width={220} />
-                </span>
-                <span style={{ ...styles.detail, whiteSpace: 'nowrap' }}>
+                <span style={{ ...styles.detail, whiteSpace: 'nowrap', fontSize: 14 }}>
                   liv. <Editable value={scheda.livello} tipo="numero" onChange={(v) => aggiorna({ livello: v, dadiVita: esprDadiVita(v, facceDadoVita(scheda.dadiVita)), dadiVitaSpesi: Math.min(scheda.dadiVitaSpesi, Math.max(1, v)) })} width={32} />
                   {' · PE '}
                   <Editable value={scheda.pe} tipo="numero" onChange={(v) => aggiorna({ pe: v })} width={56} />
