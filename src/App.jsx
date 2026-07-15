@@ -604,18 +604,19 @@ const CONDIZIONI_5E = [
 
 /**
  * CA totale in base all'equipaggiamento (regole 5e):
- * nessuna 10+DES · leggera base+DES · media base+min(DES,2) · pesante base;
- * scudo +2, più eventuale bonus. Con tipo 'manuale' vale il campo `ca`.
+ * a mano = valore scritto · nessuna 10+DES · leggera base+DES ·
+ * media base+min(DES,2) · pesante base. In tutti i casi si sommano
+ * scudo (+2) ed eventuale bonus magico.
  */
 function caTotale(scheda) {
-  const a = scheda.armatura;
-  if (!a || a.tipo === 'manuale') return scheda.ca;
+  const a = scheda.armatura || {};
   const des = modificatore(scheda.caratteristiche.destrezza);
   let ca;
   if (a.tipo === 'nessuna') ca = 10 + des;
-  else if (a.tipo === 'leggera') ca = a.base + des;
-  else if (a.tipo === 'media') ca = a.base + Math.min(des, 2);
-  else ca = a.base; // pesante
+  else if (a.tipo === 'leggera') ca = (a.base || 0) + des;
+  else if (a.tipo === 'media') ca = (a.base || 0) + Math.min(des, 2);
+  else if (a.tipo === 'pesante') ca = a.base || 0;
+  else ca = Number(scheda.ca) || 0; // 'manuale': valore scritto a mano
   return ca + (a.scudo ? 2 : 0) + (Number(a.bonus) || 0);
 }
 
@@ -1729,14 +1730,14 @@ export default function App() {
           </div>
 
           <div className="vitali">
-            {/* Classe Armatura */}
+            {/* Classe Armatura — scudo e bonus sempre disponibili */}
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>Classe Armatura</div>
               <div style={styles.vitalValue}>
-                {scheda.armatura.tipo === 'manuale' ? (
+                {scheda.armatura.tipo === 'manuale' && !scheda.armatura.scudo && !scheda.armatura.bonus ? (
                   <Editable value={scheda.ca} tipo="numero" onChange={(v) => aggiorna({ ca: v })} width={40} />
                 ) : (
-                  <span title="CA calcolata dall'armatura indossata">{caTotale(scheda)}</span>
+                  <span title="CA calcolata da armatura, scudo e bonus">{caTotale(scheda)}</span>
                 )}
               </div>
               <select
@@ -1748,51 +1749,49 @@ export default function App() {
                   <option key={t.key} value={t.key}>{t.label}</option>
                 ))}
               </select>
-              {scheda.armatura.tipo !== 'manuale' && (
-                <div style={{ fontSize: 10, color: C.inkDim, display: 'flex', gap: 5, alignItems: 'center', justifyContent: 'center', marginTop: 2, flexWrap: 'wrap' }}>
-                  {scheda.armatura.tipo !== 'nessuna' && (
-                    <span>
-                      base <Editable value={scheda.armatura.base} tipo="numero" width={26} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, base: Math.max(0, v) } })} />
-                    </span>
-                  )}
-                  <span style={{ cursor: 'pointer', userSelect: 'none' }} title="Scudo: +2 alla CA" onClick={() => aggiorna({ armatura: { ...scheda.armatura, scudo: !scheda.armatura.scudo } })}>
-                    <span style={styles.pip(scheda.armatura.scudo, C.goldDark)} /> scudo
+              <div style={{ fontSize: 10, color: C.inkDim, display: 'flex', gap: 5, alignItems: 'center', justifyContent: 'center', marginTop: 3, flexWrap: 'wrap' }}>
+                {(scheda.armatura.tipo === 'leggera' || scheda.armatura.tipo === 'media' || scheda.armatura.tipo === 'pesante') && (
+                  <span>
+                    base <Editable value={scheda.armatura.base} tipo="numero" width={24} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, base: Math.max(0, v) } })} />
                   </span>
-                  <span>+ <Editable value={scheda.armatura.bonus} tipo="numero" width={24} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, bonus: v } })} /></span>
-                </div>
-              )}
+                )}
+                <span style={{ cursor: 'pointer', userSelect: 'none' }} title="Scudo: +2 alla CA" onClick={() => aggiorna({ armatura: { ...scheda.armatura, scudo: !scheda.armatura.scudo } })}>
+                  <span style={styles.pip(scheda.armatura.scudo, C.goldDark)} /> scudo
+                </span>
+                <span>+ <Editable value={scheda.armatura.bonus} tipo="numero" width={22} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, bonus: v } })} /></span>
+              </div>
             </div>
 
-            {/* Punti Ferita */}
-            <div style={styles.vitalBox}>
+            {/* Punti Ferita + Dadi Vita insieme */}
+            <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
               <div style={styles.vitalLabel}>Punti Ferita</div>
               <div style={styles.vitalValue}>
-                <Editable value={scheda.pfAttuali} tipo="numero" onChange={(v) => aggiorna({ pfAttuali: v })} width={40} />
+                <Editable value={scheda.pfAttuali} tipo="numero" onChange={(v) => aggiorna({ pfAttuali: v })} width={44} />
                 <span style={{ color: C.inkDim, fontSize: 14 }}>
                   {' / '}
-                  <Editable value={scheda.pfMax} tipo="numero" onChange={(v) => aggiorna({ pfMax: v })} width={40} />
+                  <Editable value={scheda.pfMax} tipo="numero" onChange={(v) => aggiorna({ pfMax: v })} width={44} />
+                </span>
+                <span style={{ color: C.inkDim, fontSize: 13 }}>
+                  {'  temp '}
+                  <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={30} />
                 </span>
               </div>
-              <div style={styles.detail}>
-                temp: <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={32} />
-              </div>
-            </div>
-
-            {/* Dadi Vita */}
-            <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>Dadi Vita</div>
-              <div style={styles.vitalValue}>
-                <Editable
-                  value={scheda.dadiVita}
-                  onChange={(v) => aggiorna({ dadiVita: v })}
-                  onRoll={tiraDadoVita}
-                  width={52}
-                  title="1 click: modifica · tieni premuto e rilascia: guarigione (1 dado + COS)"
-                />{' '}
-                🎲
-              </div>
-              <div style={styles.detail}>
-                spesi: <Editable value={scheda.dadiVitaSpesi} tipo="numero" onChange={(v) => aggiorna({ dadiVitaSpesi: Math.max(0, v) })} width={30} />
+              <div style={{ ...styles.detail, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: 2 }}>
+                <span>
+                  Dadi vita{' '}
+                  <Editable
+                    value={scheda.dadiVita}
+                    onChange={(v) => aggiorna({ dadiVita: v })}
+                    onRoll={tiraDadoVita}
+                    width={48}
+                    title="Tieni premuto e rilascia: spendi un dado vita (guarigione = 1 dado + COS)"
+                  />{' '}
+                  🎲 · spesi{' '}
+                  <Editable value={scheda.dadiVitaSpesi} tipo="numero" onChange={(v) => aggiorna({ dadiVitaSpesi: Math.max(0, v) })} width={26} />
+                </span>
+                <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px' }} onClick={tiraDadoVita} title="Riposo breve: spendi un dado vita per curarti">
+                  🔥 Riposo breve
+                </button>
               </div>
             </div>
 
