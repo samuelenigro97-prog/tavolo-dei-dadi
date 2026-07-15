@@ -1890,10 +1890,9 @@ export default function App() {
           (penSfinimento ? ` (sfinimento −${penSfinimento})` : '') +
           (naturale === 20 ? ' ⚔ critico' : naturale === 1 ? ' 💀' : '')
       );
-      // Critico automatico: un attacco che fa 20 naturale colpisce sempre e
-      // tira subito i danni con i dadi raddoppiati.
-      if (extra.attacco && naturale === 20 && parseEspressioneDado(extra.attacco.danno || '')) {
-        setTimeout(() => tiraDanniPerAttacco(extra.attacco, true), 650);
+      // Tira automaticamente i danni dopo il tiro a colpire, tranne se il d20 fa 1 (fallimento critico)
+      if (extra.attacco && naturale !== 1 && parseEspressioneDado(extra.attacco.danno || '')) {
+        setTimeout(() => tiraDanniPerAttacco(extra.attacco, naturale === 20), 650);
       }
     }, 850);
   }
@@ -2329,7 +2328,7 @@ export default function App() {
                   {fallimento && <span style={styles.badge(C.red)}>💀 1 naturale</span>}
                   {tiro.esito && <span style={styles.badge(C.goldDark)}>{tiro.esito}</span>}
                 </div>
-                {tiro.attacco && (
+                {tiro.attacco && !fallimento && (
                   dannoAttaccoValido ? (
                     critico ? (
                       <div style={{ ...styles.detail, marginTop: 6, color: C.goldDark, fontWeight: 'bold' }}>
