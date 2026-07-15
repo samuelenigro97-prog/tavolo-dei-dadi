@@ -322,13 +322,13 @@ const styles = {
   },
   // campo in stile modulo: valore su riga con etichetta sotto
   moduloLabel: {
-    fontSize: 9,
+    fontSize: 8,
     color: C.inkDim,
-    letterSpacing: 1,
+    letterSpacing: 0.5,
     textTransform: 'uppercase',
-    marginTop: 2,
+    marginTop: 1,
   },
-  moduloCampo: { borderBottom: `1px solid ${C.ink}`, minHeight: 22, paddingBottom: 1, width: 'fit-content', maxWidth: '100%' },
+  moduloCampo: { borderBottom: `1px solid ${C.border}`, minHeight: 18, paddingBottom: 0, width: '100%', display: 'flex', alignItems: 'center' },
   ritratto: {
     width: 132,
     height: 132,
@@ -1480,7 +1480,17 @@ function CampoTendina({ value, opzioni, onChange, title }) {
   return (
     <>
       <select
-        style={{ ...styles.inlineInput, fontSize: 13, padding: '1px 3px', maxWidth: '100%' }}
+        style={{
+          background: 'transparent',
+          border: 'none',
+          color: C.ink,
+          fontFamily: 'inherit',
+          fontSize: 12,
+          padding: '0 2px 0 0',
+          width: '100%',
+          outline: 'none',
+          cursor: 'pointer',
+        }}
         value={std ? value : value ? '__altro' : ''}
         onChange={(e) => {
           const v = e.target.value;
@@ -1489,15 +1499,15 @@ function CampoTendina({ value, opzioni, onChange, title }) {
         }}
         title={title}
       >
-        <option value="">Scegli…</option>
+        <option value="" style={{ background: C.panel }}>Scegli…</option>
         {opzioni.map((o) => (
-          <option key={o} value={o}>{o}</option>
+          <option key={o} value={o} style={{ background: C.panel }}>{o}</option>
         ))}
-        <option value="__altro">Altro…</option>
+        <option value="__altro" style={{ background: C.panel }}>Altro…</option>
       </select>
       {!std && value !== '' && (
-        <div style={{ marginTop: 2 }}>
-          <Editable value={value} onChange={onChange} width={100} style={{ borderBottom: 'none' }} title="Valore personalizzato" />
+        <div style={{ marginTop: 1 }}>
+          <Editable value={value} onChange={onChange} width={80} style={{ fontSize: 12, borderBottom: 'none' }} title="Valore personalizzato" />
         </div>
       )}
     </>
@@ -2234,7 +2244,7 @@ export default function App() {
                 {NOMI_CLASSI.map((n) => <option key={n} value={n}>{n}</option>)}
               </select>
 
-              <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>Specie</label>
+              <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{regoleVersione === '2024' ? 'Specie' : 'Razza'}</label>
               <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.specie} onChange={(e) => setB({ specie: e.target.value })}>
                 <option value="">Scegli…</option>
                 {SPECIE_5E.map((n) => <option key={n} value={n}>{n}</option>)}
@@ -2516,7 +2526,7 @@ export default function App() {
                   {scheda.ispirazione ? '★' : '☆'} Ispirazione
                 </span>
               </div>
-              <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px 12px', marginTop: 8 }}>
+              <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px 10px', marginTop: 6 }}>
                 <CampoModulo label="Background">
                   <CampoTendina value={scheda.background} opzioni={BACKGROUND_5E} onChange={(v) => aggiorna({ background: v, ...abilitaConBackground(v) })} title="Scegli un background (imposta le competenze nelle abilità)" />
                 </CampoModulo>
@@ -2534,7 +2544,7 @@ export default function App() {
                 <CampoModulo label="Sottoclasse">
                   <CampoTendina value={scheda.sottoclasse} opzioni={sottoclassiPerClasse(scheda.classe)} onChange={(v) => aggiorna({ sottoclasse: v })} title="Sottoclasse (opzioni in base alla classe)" />
                 </CampoModulo>
-                <CampoModulo label="Specie">
+                <CampoModulo label={regoleVersione === '2024' ? 'Specie' : 'Razza'}>
                   <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => aggiorna({ specie: v, ...ritrattoAuto(scheda.classe, v, scheda.nome) })} title="Scegli la specie (aggiorna l'avatar)" />
                 </CampoModulo>
                 <CampoModulo label="Taglia">
