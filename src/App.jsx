@@ -610,6 +610,12 @@ function schedaVuota() {
     lingue: '',
     aspetto: '',
     note: '',
+    // stato di gioco
+    risorse: [], // { id, nome, attuali, max, reset: 'breve' | 'lungo' | '' }
+    sfinimento: 0, // livelli di sfinimento 0–6 (regole 2024)
+    concentrazione: '', // incantesimo su cui ci si concentra ('' = niente)
+    resistenze: '', // resistenze / immunità / vulnerabilità ai danni
+    sensi: '', // scurovisione, percezione tremorsensitiva, ecc.
     addestramento: {
       armature: { leggera: false, media: false, pesante: false, scudi: false },
       armi: '',
@@ -732,6 +738,13 @@ const ESEMPIO_GNOMO = {
     'Da allora gira il mondo per dimostrare che la teoria, se ben applicata, esplode meglio della pratica.',
   addestramento: { armature: {}, armi: 'Pugnali, dardi, fionde, bastoni ferrati, balestre leggere', strumenti: '' },
   denari: { mo: 120 },
+  risorse: [
+    { id: 1, nome: 'Recupero arcano', attuali: 1, max: 1, reset: 'lungo' },
+  ],
+  sensi: 'Scurovisione 18 m',
+  resistenze: '',
+  sfinimento: 0,
+  concentrazione: '',
 };
 
 // ---------------------------------------------------------------------------
@@ -939,6 +952,22 @@ function normalizeImported(dati) {
     lingue: str(dati.lingue),
     aspetto: str(dati.aspetto),
     note: str(dati.note),
+    risorse: Array.isArray(dati.risorse)
+      ? dati.risorse
+          .filter((r) => r && typeof r === 'object')
+          .slice(0, 20)
+          .map((r, i) => ({
+            id: Date.now() + i,
+            nome: str(r.nome, 'Risorsa') || 'Risorsa',
+            max: Math.max(0, num(r.max, 0)),
+            attuali: Math.max(0, Math.min(Math.max(0, num(r.max, 0)), num(r.attuali, num(r.max, 0)))),
+            reset: ['breve', 'lungo'].includes(r.reset) ? r.reset : '',
+          }))
+      : [],
+    sfinimento: Math.max(0, Math.min(6, num(dati.sfinimento, 0))),
+    concentrazione: str(dati.concentrazione),
+    resistenze: str(dati.resistenze),
+    sensi: str(dati.sensi),
     addestramento: {
       armature: {
         leggera: Boolean(dati.addestramento?.armature?.leggera),
@@ -1306,14 +1335,18 @@ export default function App() {
     setRolling(true);
     intervalRef.current = setInterval(() => setFaccia(tiraDado(20)), 70);
 
+    // Sfinimento (regole 2024): −2 a ogni tiro di d20 per livello di sfinimento.
+    const penSfinimento = 2 * scheda.sfinimento;
+    const bonusEff = bonus - penSfinimento;
     const { naturale, dadi } = tiraD20(modalita);
     setTimeout(() => {
       clearInterval(intervalRef.current);
       setFaccia(naturale);
       setRolling(false);
-      setTiro({ etichetta, naturale, dadi, bonus, totale: naturale + bonus, modalita, ...extra });
+      setTiro({ etichetta, naturale, dadi, bonus: bonusEff, totale: naturale + bonusEff, modalita, sfinimento: penSfinimento, ...extra });
       registra(
-        `${etichetta}: ${naturale}${bonus ? ` ${conSegno(bonus)}` : ''} = ${naturale + bonus}` +
+        `${etichetta}: ${naturale}${bonusEff ? ` ${conSegno(bonusEff)}` : ''} = ${naturale + bonusEff}` +
+          (penSfinimento ? ` (sfinimento −${penSfinimento})` : '') +
           (naturale === 20 ? ' ⚔ critico' : naturale === 1 ? ' 💀' : '')
       );
     }, 850);
@@ -1427,9 +1460,12 @@ export default function App() {
     }, dado);
   }
 
-  /** Riposo lungo 5e: PF al massimo, slot recuperati, metà dei dadi vita. */
+  /**
+   * Riposo lungo 5e: PF al massimo, slot recuperati, metà dei dadi vita,
+   * risorse (breve e lungo) ricaricate, uno sfinimento in meno.
+   */
   function riposoLungo() {
-    if (!window.confirm('Riposo lungo: PF al massimo, slot incantesimo recuperati, metà dei dadi vita restituiti. Procedere?')) return;
+    if (!window.confirm('Riposo lungo: PF al massimo, slot incantesimo recuperati, metà dei dadi vita, risorse ricaricate e uno sfinimento in meno. Procedere?')) return;
     setScheda((s) => {
       const slot = Object.fromEntries(
         Object.entries(s.slotIncantesimo).map(([liv, v]) => [liv, { ...v, spesi: 0 }])
@@ -1442,8 +1478,19 @@ export default function App() {
         tsMorte: { successi: 0, fallimenti: 0 },
         slotIncantesimo: slot,
         dadiVitaSpesi: Math.max(0, s.dadiVitaSpesi - recuperoDadi),
+        risorse: s.risorse.map((r) => (r.reset ? { ...r, attuali: r.max } : r)),
+        sfinimento: Math.max(0, s.sfinimento - 1),
       };
     });
+  }
+
+  /** Riposo breve: ricarica le risorse "brevi" e spende un dado vita per curarti. */
+  function riposoBreve() {
+    setScheda((s) => ({
+      ...s,
+      risorse: s.risorse.map((r) => (r.reset === 'breve' ? { ...r, attuali: r.max } : r)),
+    }));
+    tiraDadoVita();
   }
 
   /** Tiro libero di un singolo dado (il d20 passa dal tiro animato). */
@@ -1851,7 +1898,7 @@ export default function App() {
                   />
                   <span style={{ color: C.inkDim }}>/ {Math.max(1, scheda.livello || 1)}</span>
                 </span>
-                <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px' }} onClick={tiraDadoVita} title="Riposo breve: spendi un dado vita per curarti">
+                <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px' }} onClick={riposoBreve} title="Riposo breve: ricarica le risorse brevi e spendi un dado vita">
                   🔥 Riposo breve
                 </button>
                 <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px' }} onClick={riposoLungo} title="Riposo lungo: PF al massimo, slot recuperati, metà dadi vita">
@@ -1934,8 +1981,40 @@ export default function App() {
             </div>
           </div>
 
+          {/* stato di gioco: concentrazione + sfinimento */}
+          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center', marginTop: 12 }}>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6, padding: '2px 8px', borderRadius: 6,
+              background: scheda.concentrazione ? C.panelLight : 'transparent',
+              border: `1px solid ${scheda.concentrazione ? C.goldDark : C.border}`,
+            }}>
+              🧠 <span style={styles.detail}>Concentrazione:</span>
+              <Editable value={scheda.concentrazione} onChange={(v) => aggiorna({ concentrazione: v })} width={150} title="Incantesimo su cui ti concentri" />
+              {scheda.concentrazione && (
+                <span className="tirabile" style={{ cursor: 'pointer', color: C.red }} title="Termina la concentrazione" onClick={() => aggiorna({ concentrazione: '' })}>✕</span>
+              )}
+            </span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <span style={styles.detail}>Sfinimento</span>
+              <button style={{ ...styles.buttonMini, padding: '1px 8px' }} onClick={() => aggiorna({ sfinimento: Math.max(0, scheda.sfinimento - 1) })} title="Diminuisci">−</button>
+              <strong style={{ color: scheda.sfinimento ? C.red : C.ink, minWidth: 14, textAlign: 'center', display: 'inline-block' }}>{scheda.sfinimento}</strong>
+              <button style={{ ...styles.buttonMini, padding: '1px 8px' }} onClick={() => aggiorna({ sfinimento: Math.min(6, scheda.sfinimento + 1) })} title="Aumenta">+</button>
+              {scheda.sfinimento > 0 && <span style={{ ...styles.detail, color: C.red }}>−{scheda.sfinimento * 2} ai tiri</span>}
+            </span>
+          </div>
+
+          {/* difese e sensi */}
+          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
+            <span style={styles.detail}>Resistenze / immunità:{' '}
+              <Editable value={scheda.resistenze} onChange={(v) => aggiorna({ resistenze: v })} width={230} title="Resistenze, immunità e vulnerabilità ai danni" />
+            </span>
+            <span style={styles.detail}>Sensi:{' '}
+              <Editable value={scheda.sensi} onChange={(v) => aggiorna({ sensi: v })} width={200} title="Scurovisione, percezione tremorsensitiva, ecc." />
+            </span>
+          </div>
+
           {/* condizioni */}
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 12 }}>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 10 }}>
             <span style={styles.detail}>Condizioni:</span>
             {CONDIZIONI_5E.map((c) => {
               const attiva = scheda.condizioni.includes(c);
@@ -2296,6 +2375,55 @@ export default function App() {
                 + Aggiungi incantesimo
               </button>
             </section>
+
+            {/* Risorse di classe: contatori con reset a riposo breve/lungo */}
+            <Sezione titolo="Risorse di classe">
+              {scheda.risorse.length === 0 && (
+                <p style={{ ...styles.detail, marginTop: 0 }}>
+                  Nessuna risorsa. Aggiungine una per tracciare Ki, punti stregoneria, ira, ispirazione bardica, usi dei privilegi…
+                </p>
+              )}
+              {scheda.risorse.map((r) => {
+                const modifica = (patch) =>
+                  aggiorna({ risorse: scheda.risorse.map((x) => (x.id === r.id ? { ...x, ...patch } : x)) });
+                return (
+                  <div key={r.id} style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 6 }}>
+                    <Editable value={r.nome} onChange={(v) => modifica({ nome: v })} width={150} title="Nome della risorsa" />
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                      <button style={{ ...styles.buttonMini, padding: '1px 8px' }} title="Spendi" onClick={() => modifica({ attuali: Math.max(0, r.attuali - 1) })}>−</button>
+                      <strong style={{ minWidth: 18, textAlign: 'center', display: 'inline-block', color: r.attuali === 0 ? C.inkDim : C.ink }}>{r.attuali}</strong>
+                      <button style={{ ...styles.buttonMini, padding: '1px 8px' }} title="Recupera" onClick={() => modifica({ attuali: Math.min(r.max, r.attuali + 1) })}>+</button>
+                      <span style={styles.detail}>/ <Editable value={r.max} tipo="numero" width={34} onChange={(v) => modifica({ max: Math.max(0, v), attuali: Math.min(Math.max(0, v), r.attuali) })} /></span>
+                    </span>
+                    <select
+                      style={{ ...styles.inlineInput, fontSize: 12, padding: '2px 4px' }}
+                      value={r.reset}
+                      onChange={(e) => modifica({ reset: e.target.value })}
+                      title="Quando si ricarica"
+                    >
+                      <option value="">reset manuale</option>
+                      <option value="breve">riposo breve</option>
+                      <option value="lungo">riposo lungo</option>
+                    </select>
+                    <button
+                      style={{ ...styles.buttonMini, padding: '1px 8px', color: C.red }}
+                      title="Rimuovi la risorsa"
+                      onClick={() => aggiorna({ risorse: scheda.risorse.filter((x) => x.id !== r.id) })}
+                    >✕</button>
+                  </div>
+                );
+              })}
+              <button
+                style={{ ...styles.buttonMini, marginTop: 4 }}
+                onClick={() =>
+                  aggiorna({
+                    risorse: [...scheda.risorse, { id: Date.now(), nome: 'Nuova risorsa', attuali: 0, max: 0, reset: 'lungo' }],
+                  })
+                }
+              >
+                + Aggiungi risorsa
+              </button>
+            </Sezione>
 
             {/* Privilegi, talenti, equipaggiamento — collassabili */}
             <Sezione titolo="Privilegi di classe e tratti della specie">

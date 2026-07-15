@@ -66,10 +66,18 @@ zoom di iOS).
   la faccia del dado, `tiro.naturale`).
 - CA da equipaggiamento (`caTotale`): manuale = campo `ca`; nessuna 10+DES;
   leggera base+DES; media base+min(DES,2); pesante base fissa; scudo +2,
-  più bonus. Riposo lungo: PF al massimo, slot recuperati, metà dadi vita
-  (min 1). Il dado vita speso applica la guarigione ai PF e incrementa
-  `dadiVitaSpesi`. Condizioni 5e come chip toggle; storico ultimi 30 tiri
-  in memoria (non persistito).
+  più bonus. Dadi vita: il numero è sempre pari al `livello` (si aggiorna
+  da solo), il tipo (`facceDadoVita`) si sceglie a parte; espressione da
+  `esprDadiVita(livello, facce)`. Bonus competenza suggerito da
+  `bonusCompetenzaDaLivello` (affordance "auto"). Riposo lungo: PF al massimo,
+  slot recuperati, metà dadi vita (min 1), risorse (breve+lungo) ricaricate,
+  −1 sfinimento. Riposo breve: ricarica le risorse "brevi" e spende un dado
+  vita. Il dado vita speso applica la guarigione ai PF e incrementa
+  `dadiVitaSpesi`. **Sfinimento** (0–6, regole 2024): `−2 × livello` a ogni
+  tiro di d20, applicato in `lanciaD20`. **Risorse di classe** (`risorse`):
+  contatori con reset a riposo breve/lungo. **Concentrazione**, **resistenze**
+  e **sensi** sono campi liberi. Condizioni 5e come chip toggle; storico
+  ultimi 30 tiri in memoria (non persistito).
 - **Critico sui danni:** raddoppiano SOLO i dadi dell'espressione di danno
   (es. `2d6+3` → `4d6+3`); i modificatori fissi NON si raddoppiano.
 - Espressioni di danno: formato `NdM±K` con più termini sommati
