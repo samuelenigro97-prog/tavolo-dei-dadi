@@ -510,6 +510,11 @@ function esprDadiVita(livello, facce) {
   return `${Math.max(1, Math.floor(livello) || 1)}d${facce}`;
 }
 
+/** Bonus di competenza corretto per il livello in 5e: +2 a lv 1, +1 ogni 4 livelli. */
+function bonusCompetenzaDaLivello(livello) {
+  return 2 + Math.floor((Math.max(1, Math.floor(livello) || 1) - 1) / 4);
+}
+
 /**
  * Tira un'espressione di danno già parsata.
  * Regola del critico 5e: con `critico` = true raddoppiano SOLO i dadi
@@ -1807,7 +1812,21 @@ export default function App() {
                   <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={30} />
                 </span>
               </div>
-              <div style={{ ...styles.detail, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: 2 }}>
+              {(() => {
+                // barra dei PF: verde > 50%, oro > 25%, rossa sotto
+                const max = Math.max(1, scheda.pfMax);
+                const perc = Math.max(0, Math.min(100, (scheda.pfAttuali / max) * 100));
+                const colore = perc > 50 ? C.green : perc > 25 ? C.gold : C.red;
+                return (
+                  <div
+                    style={{ height: 5, borderRadius: 3, background: C.border, overflow: 'hidden', margin: '4px 10px 0' }}
+                    title={`${scheda.pfAttuali} / ${scheda.pfMax} PF`}
+                  >
+                    <div style={{ width: `${perc}%`, height: '100%', background: colore, transition: 'width 0.25s ease' }} />
+                  </div>
+                );
+              })()}
+              <div style={{ ...styles.detail, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: 4 }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                   Dadi vita{' '}
                   <Rollable onRoll={tiraDadoVita} title="Tieni premuto e rilascia: spendi un dado vita (guarigione = 1 dado + COS)">
@@ -1863,8 +1882,18 @@ export default function App() {
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>Bonus Comp.</div>
               <div style={styles.vitalValue}>
-                <Editable value={scheda.bonusCompetenza} tipo="numero" onChange={(v) => aggiorna({ bonusCompetenza: v })} width={38} />
+                <Editable value={conSegno(scheda.bonusCompetenza)} onChange={(v) => aggiorna({ bonusCompetenza: parseInt(v, 10) || 0 })} width={38} title="1 click: modifica" />
               </div>
+              {scheda.bonusCompetenza !== bonusCompetenzaDaLivello(scheda.livello) && (
+                <span
+                  className="tirabile"
+                  style={{ fontSize: 9, color: C.goldDark, cursor: 'pointer', marginTop: 1 }}
+                  title={`Il bonus corretto per il livello ${scheda.livello} è ${conSegno(bonusCompetenzaDaLivello(scheda.livello))}`}
+                  onClick={() => aggiorna({ bonusCompetenza: bonusCompetenzaDaLivello(scheda.livello) })}
+                >
+                  auto {conSegno(bonusCompetenzaDaLivello(scheda.livello))}
+                </span>
+              )}
             </div>
 
             {/* Iniziativa */}
