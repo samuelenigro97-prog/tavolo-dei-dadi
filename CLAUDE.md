@@ -91,6 +91,15 @@ zoom di iOS).
   modello.
 - Non fare refactor non richiesti.
 
+## Densità e sezioni descrittive
+
+- `Sezione` è un pannello collassabile (`<details>/<summary>`, freccia ▾/▸
+  animata, `.sezione` in CSS). Le sezioni descrittive (privilegi, talenti,
+  addestramento, equipaggiamento, aspetto/storia, import/export) sono
+  collassabili; alcune partono chiuse (`aperto={false}`) per compattezza.
+- `AreaTesto` cresce con il contenuto (auto-resize su `scrollHeight`, niente
+  altezza fissa né spazio morto).
+
 ## Roster e reset
 
 - `nuovoPersonaggio`/`duplicaPersonaggio`/`eliminaPersonaggio` gestiscono il

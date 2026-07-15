@@ -332,6 +332,10 @@ const GLOBAL_CSS = `
 html, body { margin: 0; padding: 0; background: ${C.bg}; }
 /* touch: il doppio tap deve tirare il dado, non zoomare la pagina */
 * { touch-action: manipulation; }
+/* sezioni collassabili: niente marcatore nativo, freccia che ruota */
+.sezione > summary::-webkit-details-marker { display: none; }
+.sezione .freccia { display: inline-block; transition: transform 0.15s; font-size: 11px; color: var(--c-ink-dim); }
+.sezione:not([open]) .freccia { transform: rotate(-90deg); }
 .griglia-scheda {
   display: grid;
   grid-template-columns: 300px 1fr;
@@ -1093,15 +1097,42 @@ function CampoModulo({ label, children, style }) {
 }
 
 /** Area di testo per le sezioni descrittive della scheda. */
-function AreaTesto({ value, onChange, righe = 4, placeholder }) {
+function AreaTesto({ value, onChange, righe = 2, placeholder }) {
+  const ref = useRef(null);
+  // cresce con il contenuto: niente altezza fissa e niente spazio morto
+  const adatta = (el) => {
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  };
+  useEffect(() => adatta(ref.current), [value]);
   return (
     <textarea
-      style={styles.textarea}
+      ref={ref}
+      style={{ ...styles.textarea, resize: 'none', overflow: 'hidden' }}
       rows={righe}
       value={value}
       placeholder={placeholder}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) => {
+        onChange(e.target.value);
+        adatta(e.target);
+      }}
     />
+  );
+}
+
+/**
+ * Pannello con titolo collassabile (details/summary nativo). Di default aperto;
+ * cliccando il titolo si richiude per risparmiare spazio verticale.
+ */
+function Sezione({ titolo, children, aperto = true }) {
+  return (
+    <details open={aperto} style={styles.panel} className="sezione">
+      <summary style={{ ...styles.panelTitle, cursor: 'pointer', listStyle: 'none', marginBottom: 0, userSelect: 'none' }}>
+        <span className="freccia">▾</span> {titolo}
+      </summary>
+      <div style={{ marginTop: 10 }}>{children}</div>
+    </details>
   );
 }
 
@@ -2219,27 +2250,24 @@ export default function App() {
               </button>
             </section>
 
-            {/* Privilegi, talenti, equipaggiamento */}
-            <section style={styles.panel}>
-              <h2 style={styles.panelTitle}>Privilegi di classe e tratti della specie</h2>
+            {/* Privilegi, talenti, equipaggiamento — collassabili */}
+            <Sezione titolo="Privilegi di classe e tratti della specie">
               <AreaTesto
                 value={scheda.privilegi}
-                righe={5}
                 placeholder="Es. Stregoneria innata, Scurovisione, Trance…"
                 onChange={(v) => aggiorna({ privilegi: v })}
               />
-              <h2 style={{ ...styles.panelTitle, marginTop: 14 }}>Talenti</h2>
+            </Sezione>
+
+            <Sezione titolo="Talenti">
               <AreaTesto
                 value={scheda.talenti}
-                righe={3}
                 placeholder="Es. Guerramaga (War Caster): vantaggio ai TS di Concentrazione…"
                 onChange={(v) => aggiorna({ talenti: v })}
               />
-            </section>
+            </Sezione>
 
-            {/* Addestramento e competenze nell'equipaggiamento */}
-            <section style={styles.panel}>
-              <h2 style={styles.panelTitle}>Addestramento e competenze nell'equipaggiamento</h2>
+            <Sezione titolo="Addestramento e competenze nell'equipaggiamento" aperto={false}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
                 <span style={styles.detail}>Armature:</span>
                 {[
@@ -2287,13 +2315,11 @@ export default function App() {
                   />
                 </div>
               </div>
-            </section>
+            </Sezione>
 
-            <section style={styles.panel}>
-              <h2 style={styles.panelTitle}>Equipaggiamento e lingue</h2>
+            <Sezione titolo="Equipaggiamento e lingue">
               <AreaTesto
                 value={scheda.equipaggiamento}
-                righe={4}
                 placeholder="Zaino, corda, razioni…"
                 onChange={(v) => aggiorna({ equipaggiamento: v })}
               />
@@ -2321,29 +2347,26 @@ export default function App() {
                   </span>
                 ))}
               </div>
-            </section>
+            </Sezione>
 
-            <section style={styles.panel}>
-              <h2 style={styles.panelTitle}>Aspetto</h2>
+            <Sezione titolo="Aspetto, storia e tratti" aperto={false}>
+              <div style={styles.moduloLabel}>Aspetto</div>
               <AreaTesto
                 value={scheda.aspetto}
-                righe={3}
                 placeholder="Aspetto fisico del personaggio…"
                 onChange={(v) => aggiorna({ aspetto: v })}
               />
-              <h2 style={{ ...styles.panelTitle, marginTop: 14 }}>Storia e tratti caratteriali</h2>
+              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>Storia e tratti caratteriali</div>
               <AreaTesto
                 value={scheda.note}
-                righe={5}
                 placeholder="Storia del personaggio, tratti caratteriali, alleati, appunti di sessione…"
                 onChange={(v) => aggiorna({ note: v })}
               />
-            </section>
+            </Sezione>
 
             {/* Import / export */}
-            <section style={styles.panel}>
-              <h2 style={styles.panelTitle}>Importa / esporta scheda</h2>
-              <p style={styles.detail}>
+            <Sezione titolo="Importa / esporta scheda" aperto={false}>
+              <p style={{ ...styles.detail, marginTop: 0 }}>
                 Importa da PDF (trascrizione automatica: serve il server con la chiave API),
                 oppure salva e ricarica la scheda come file JSON per portarla su un altro
                 dispositivo o tenerne una copia. Gli import creano un nuovo personaggio.
@@ -2369,7 +2392,7 @@ export default function App() {
                 </button>
               </div>
               {erroreImport && <div style={{ color: C.red, marginTop: 8 }}>{erroreImport}</div>}
-            </section>
+            </Sezione>
           </div>
         </div>
       </main>
