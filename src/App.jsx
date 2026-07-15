@@ -2295,7 +2295,7 @@ export default function App() {
             </div>
           </div>
 
-          {/* stato di gioco: concentrazione + sfinimento */}
+          {/* stato di gioco: concentrazione, sfinimento, difese, sensi, condizioni su una riga */}
           <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center', marginTop: 12 }}>
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 6, padding: '2px 8px', borderRadius: 6,
@@ -2315,10 +2315,6 @@ export default function App() {
               <button style={{ ...styles.buttonMini, padding: '1px 8px' }} onClick={() => aggiorna({ sfinimento: Math.min(6, scheda.sfinimento + 1) })} title="Aumenta">+</button>
               {scheda.sfinimento > 0 && <span style={{ ...styles.detail, color: C.red }}>−{scheda.sfinimento * 2} ai tiri</span>}
             </span>
-          </div>
-
-          {/* difese, sensi e condizioni: tutto su una riga per sfruttare lo spazio */}
-          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
             <span style={styles.detail}>Resistenze / immunità:{' '}
               <CampoConTendina value={scheda.resistenze} opzioni={DANNI_5E} onChange={(v) => aggiorna({ resistenze: v })} width={180} title="Resistenze, immunità e vulnerabilità ai danni" />
             </span>
