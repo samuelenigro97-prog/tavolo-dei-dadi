@@ -277,22 +277,9 @@ function emojiSpecie(specie) {
 }
 
 /** Genera un avatar SVG (data URL) che rappresenta classe e specie del PG. */
-function generaAvatar(classe, specie) {
-  const acc = coloreClasse(classe);
-  const base = acc ? acc.chiaro : '#8a6508';
-  const eClasse = (acc && EMOJI_CLASSE[acc.match[0]]) || '🎲';
-  const eSpecie = emojiSpecie(specie);
-  const svg =
-    `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">` +
-    `<defs><radialGradient id="g" cx="50%" cy="32%" r="80%">` +
-    `<stop offset="0%" stop-color="${mescola(base, '#ffffff', 0.4)}"/>` +
-    `<stop offset="100%" stop-color="${mescola(base, '#000000', 0.15)}"/>` +
-    `</radialGradient></defs>` +
-    `<rect width="200" height="200" fill="url(#g)"/>` +
-    `<text x="100" y="120" font-size="96" text-anchor="middle">${eClasse}</text>` +
-    (eSpecie ? `<text x="164" y="176" font-size="40" text-anchor="middle">${eSpecie}</text>` : '') +
-    `</svg>`;
-  return 'data:image/svg+xml,' + encodeURIComponent(svg);
+function generaAvatar(classe, specie, nome) {
+  const seed = `${specie || 'Umano'}-${classe || 'Guerriero'}-${nome || 'Eroe'}`.replace(/\s+/g, '').toLowerCase();
+  return `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(seed)}`;
 }
 
 const styles = {
@@ -1193,7 +1180,7 @@ function normalizeImported(dati) {
     nome: str(dati.nome, base.nome) || base.nome,
     ritratto:
       typeof dati.ritratto === 'string' &&
-      dati.ritratto.startsWith('data:image/') &&
+      (dati.ritratto.startsWith('data:image/') || dati.ritratto.startsWith('https://api.dicebear.com')) &&
       dati.ritratto.length < 800000
         ? dati.ritratto
         : '',
@@ -1758,10 +1745,10 @@ export default function App() {
    * Rigenera l'avatar da classe/specie SOLO se non c'è una foto caricata
    * dall'utente (gli avatar generati sono SVG; le foto sono jpeg/png).
    */
-  function ritrattoAuto(classe, specie) {
+  function ritrattoAuto(classe, specie, nome) {
     const r = scheda.ritratto;
-    if (r && !r.startsWith('data:image/svg')) return {};
-    return { ritratto: generaAvatar(classe, specie) };
+    if (r && !r.startsWith('data:image/svg') && !r.startsWith('https://api.dicebear.com')) return {};
+    return { ritratto: generaAvatar(classe, specie, nome || scheda.nome) };
   }
 
   /** Applica al background: imposta competenti le abilità concesse (senza togliere le altre). */
@@ -1802,7 +1789,7 @@ export default function App() {
       if (piu1) s.caratteristiche[piu1] = (s.caratteristiche[piu1] || 10) + 1;
     }
     // avatar e chiusura schermate
-    s.ritratto = generaAvatar(classe, specie);
+    s.ritratto = generaAvatar(classe, specie, s.nome);
     nuovoPersonaggio(s);
     setMostraCrea(false);
     setMostraMenu(false);
@@ -2434,8 +2421,18 @@ export default function App() {
               style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)' }}
               value={scheda.nome}
               onChange={(e) => aggiorna({ nome: e.target.value })}
-              onBlur={() => setRinominando(false)}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setRinominando(false); }}
+              onBlur={() => {
+                setRinominando(false);
+                const rPatch = ritrattoAuto(scheda.classe, scheda.specie, scheda.nome);
+                if (rPatch.ritratto) aggiorna(rPatch);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === 'Escape') {
+                  setRinominando(false);
+                  const rPatch = ritrattoAuto(scheda.classe, scheda.specie, scheda.nome);
+                  if (rPatch.ritratto) aggiorna(rPatch);
+                }
+              }}
             />
           ) : (
             <select
@@ -2529,7 +2526,7 @@ export default function App() {
                     opzioni={NOMI_CLASSI}
                     onChange={(v) => {
                       const car = caratteristicaIncantatorePerClasse(v);
-                      aggiorna({ classe: v, ...(car ? { incantatore: { caratteristica: car } } : {}), ...ritrattoAuto(v, scheda.specie) });
+                      aggiorna({ classe: v, ...(car ? { incantatore: { caratteristica: car } } : {}), ...ritrattoAuto(v, scheda.specie, scheda.nome) });
                     }}
                     title="Scegli la classe (imposta colori, caratteristica da incantatore e avatar)"
                   />
@@ -2538,7 +2535,7 @@ export default function App() {
                   <CampoTendina value={scheda.sottoclasse} opzioni={sottoclassiPerClasse(scheda.classe)} onChange={(v) => aggiorna({ sottoclasse: v })} title="Sottoclasse (opzioni in base alla classe)" />
                 </CampoModulo>
                 <CampoModulo label="Specie">
-                  <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => aggiorna({ specie: v, ...ritrattoAuto(scheda.classe, v) })} title="Scegli la specie (aggiorna l'avatar)" />
+                  <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => aggiorna({ specie: v, ...ritrattoAuto(scheda.classe, v, scheda.nome) })} title="Scegli la specie (aggiorna l'avatar)" />
                 </CampoModulo>
                 <CampoModulo label="Taglia">
                   <CampoTendina value={scheda.taglia} opzioni={TAGLIE_5E} onChange={(v) => aggiorna({ taglia: v })} title="Scegli la taglia" />
