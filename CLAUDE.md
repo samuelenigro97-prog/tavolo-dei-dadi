@@ -124,6 +124,12 @@ minuti per la fascia oraria. Chiaro/Scuro forzano il modo.
   `order` su una colonna flex (nessun JSX spostato), stato `ordineSezioni`
   persistito in `localStorage` (`scheda-interattiva:ordine-sezioni`).
   Le sezioni combattimento/incantesimi restano fisse in alto (`order` −2/−1).
+- Scegliere il **background** imposta le competenze nelle abilità
+  (`BACKGROUND_COMPETENZE` → `abilitaConBackground`); la **classe** imposta la
+  caratteristica da incantatore; classe/specie generano un **avatar** SVG
+  (`generaAvatar`, solo se non c'è una foto caricata: `ritrattoAuto`).
+- La riga dei personaggi in alto è un `select` (il "riquadro" col nome, per
+  cambiare PG al volo) con pulsante ✎ per rinominare; niente nome duplicato.
 - I campi anagrafica sono menù a tendina (`CampoTendina`, con "Altro…");
   resistenze/sensi usano `CampoConTendina` (testo libero + "＋" da lista);
   le condizioni sono chip removibili + tendina, sulla stessa riga di sensi.

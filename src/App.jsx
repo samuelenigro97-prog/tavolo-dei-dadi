@@ -65,6 +65,25 @@ const BACKGROUND_5E = [
   'Guardia', 'Guida', 'Intrattenitore', 'Marinaio', 'Mercante', 'Nobile',
   'Saggio', 'Scriba', 'Soldato', 'Viandante',
 ];
+// Competenze nelle abilità concesse da ogni background (chiavi di ABILITA).
+const BACKGROUND_COMPETENZE = {
+  Accolito: ['intuizione', 'religione'],
+  Artigiano: ['indagare', 'persuasione'],
+  Ciarlatano: ['inganno', 'rapiditaDiMano'],
+  Contadino: ['addestrareAnimali', 'natura'],
+  Criminale: ['rapiditaDiMano', 'furtivita'],
+  Eremita: ['medicina', 'religione'],
+  Guardia: ['atletica', 'percezione'],
+  Guida: ['furtivita', 'sopravvivenza'],
+  Intrattenitore: ['acrobazia', 'intrattenere'],
+  Marinaio: ['acrobazia', 'percezione'],
+  Mercante: ['addestrareAnimali', 'persuasione'],
+  Nobile: ['storia', 'persuasione'],
+  Saggio: ['arcano', 'storia'],
+  Scriba: ['indagare', 'percezione'],
+  Soldato: ['atletica', 'intimidire'],
+  Viandante: ['intuizione', 'rapiditaDiMano'],
+};
 const SPECIE_5E = [
   'Aasimar', 'Dragonide', 'Elfo', 'Gnomo', 'Goliath', 'Halfling',
   'Nano', 'Orco', 'Tiefling', 'Umano',
@@ -194,6 +213,42 @@ function eNotte(d = new Date()) {
   return h >= 20 || h < 7;
 }
 
+// Emoji rappresentativa per classe (chiave = primo alias in CLASSI) e per specie.
+const EMOJI_CLASSE = {
+  barbaro: '🪓', bardo: '🎵', chierico: '✨', druido: '🌿', guerriero: '⚔️', ladro: '🗡️',
+  mago: '🔮', monaco: '👊', paladino: '🛡️', ranger: '🏹', stregone: '✴️', warlock: '👁️',
+};
+const EMOJI_SPECIE = [
+  { m: ['drago', 'dragon'], e: '🐉' }, { m: ['tiefling'], e: '😈' }, { m: ['orc'], e: '👹' },
+  { m: ['aasimar'], e: '😇' }, { m: ['goliath'], e: '🗿' }, { m: ['nano', 'dwarf'], e: '⛏️' },
+  { m: ['elfo', 'elf'], e: '🧝' }, { m: ['gnomo', 'gnome'], e: '🧙' },
+  { m: ['halfling', 'mezz'], e: '🧒' }, { m: ['umano', 'human'], e: '🧑' },
+];
+
+function emojiSpecie(specie) {
+  const s = (specie || '').toLowerCase();
+  return (EMOJI_SPECIE.find((x) => x.m.some((k) => s.includes(k))) || {}).e || '';
+}
+
+/** Genera un avatar SVG (data URL) che rappresenta classe e specie del PG. */
+function generaAvatar(classe, specie) {
+  const acc = coloreClasse(classe);
+  const base = acc ? acc.chiaro : '#8a6508';
+  const eClasse = (acc && EMOJI_CLASSE[acc.match[0]]) || '🎲';
+  const eSpecie = emojiSpecie(specie);
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">` +
+    `<defs><radialGradient id="g" cx="50%" cy="32%" r="80%">` +
+    `<stop offset="0%" stop-color="${mescola(base, '#ffffff', 0.4)}"/>` +
+    `<stop offset="100%" stop-color="${mescola(base, '#000000', 0.15)}"/>` +
+    `</radialGradient></defs>` +
+    `<rect width="200" height="200" fill="url(#g)"/>` +
+    `<text x="100" y="120" font-size="96" text-anchor="middle">${eClasse}</text>` +
+    (eSpecie ? `<text x="164" y="176" font-size="40" text-anchor="middle">${eSpecie}</text>` : '') +
+    `</svg>`;
+  return 'data:image/svg+xml,' + encodeURIComponent(svg);
+}
+
 const styles = {
   app: {
     minHeight: '100vh',
@@ -240,10 +295,10 @@ const styles = {
     textTransform: 'uppercase',
     marginTop: 2,
   },
-  moduloCampo: { borderBottom: `1px solid ${C.ink}`, minHeight: 22, paddingBottom: 1 },
+  moduloCampo: { borderBottom: `1px solid ${C.ink}`, minHeight: 22, paddingBottom: 1, width: 'fit-content', maxWidth: '100%' },
   ritratto: {
-    width: 92,
-    height: 92,
+    width: 132,
+    height: 132,
     flexShrink: 0,
     display: 'flex',
     alignItems: 'center',
@@ -1508,6 +1563,7 @@ export default function App() {
   });
   const [sezTrascinata, setSezTrascinata] = useState(null);
   const [mostraMenu, setMostraMenu] = useState(true); // menu iniziale (nuovo / carica PG)
+  const [rinominando, setRinominando] = useState(false); // rinomina inline del PG attivo
   // versione delle regole: '2024' (5.5, default) o '2014' (5.0)
   const [regoleVersione, setRegoleVersione] = useState(() => localStorage.getItem('scheda-interattiva:versione') || '2024');
   useEffect(() => {
@@ -1648,6 +1704,25 @@ export default function App() {
 
   function aggiorna(patch) {
     setScheda((s) => ({ ...s, ...patch }));
+  }
+
+  /**
+   * Rigenera l'avatar da classe/specie SOLO se non c'è una foto caricata
+   * dall'utente (gli avatar generati sono SVG; le foto sono jpeg/png).
+   */
+  function ritrattoAuto(classe, specie) {
+    const r = scheda.ritratto;
+    if (r && !r.startsWith('data:image/svg')) return {};
+    return { ritratto: generaAvatar(classe, specie) };
+  }
+
+  /** Applica al background: imposta competenti le abilità concesse (senza togliere le altre). */
+  function abilitaConBackground(bg) {
+    const chiavi = BACKGROUND_COMPETENZE[bg] || [];
+    if (!chiavi.length) return {};
+    const abilita = { ...scheda.abilita };
+    chiavi.forEach((k) => { abilita[k] = Math.max(abilita[k] || 0, 1); });
+    return { abilita };
   }
 
   // --- gestione roster ---
@@ -2214,25 +2289,32 @@ export default function App() {
           {erroreEspressione && <span style={{ color: C.red, fontSize: 13 }}>Espressione non valida</span>}
         </section>
 
-        {/* Personaggi: il nome vive qui (modificabile); a fianco lo switcher se >1 PG */}
+        {/* Personaggi: il riquadro blu È il nome/selettore. Cambia PG al volo; ✎ per rinominare */}
         <section style={{ ...styles.panel, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'nowrap', padding: '6px 12px' }}>
-          <span style={{ flex: 1, minWidth: 0, fontSize: 18, fontWeight: 'bold', color: 'var(--c-title)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', display: 'block' }}>
-            <Editable value={scheda.nome} onChange={(v) => aggiorna({ nome: v })} width="100%" title="Nome del personaggio (1 click per modificare)" />
-          </span>
-          {Object.keys(roster.personaggi).length > 1 && (
+          {rinominando ? (
+            <input
+              autoFocus
+              style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)' }}
+              value={scheda.nome}
+              onChange={(e) => aggiorna({ nome: e.target.value })}
+              onBlur={() => setRinominando(false)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setRinominando(false); }}
+            />
+          ) : (
             <select
-              style={{ ...styles.inlineInput, padding: '5px 4px', width: 52, flexShrink: 0 }}
+              style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', padding: '5px 8px' }}
               value={roster.attivo}
               onChange={(e) => setRoster((r) => ({ ...r, attivo: e.target.value }))}
-              title="Cambia personaggio"
+              title="Personaggio attivo — scegli per cambiare al volo"
             >
               {Object.entries(roster.personaggi).map(([id, p]) => (
                 <option key={id} value={id}>
-                  {p.nome}{p.classe ? ` (${p.classe} ${p.livello})` : ''}
+                  {p.nome || 'Senza nome'}{p.classe ? ` · ${p.classe} liv. ${p.livello}` : ''}
                 </option>
               ))}
             </select>
           )}
+          <button style={styles.buttonMini} onClick={() => setRinominando(!rinominando)} title="Rinomina il personaggio">✎</button>
           <button style={styles.buttonMini} onClick={() => nuovoPersonaggio()} title="Nuovo personaggio">＋</button>
           <button style={styles.buttonMini} onClick={duplicaPersonaggio} title="Duplica il personaggio attivo">⧉</button>
           <button style={styles.buttonMini} onClick={resetScheda} title="Azzera i campi del personaggio attivo">↺</button>
@@ -2288,9 +2370,11 @@ export default function App() {
                     display: 'inline-flex', alignItems: 'center', gap: 5,
                     padding: '3px 11px', borderRadius: 999, cursor: 'pointer',
                     fontSize: 12, letterSpacing: 0.5, whiteSpace: 'nowrap',
-                    background: scheda.ispirazione ? C.panelLight : 'transparent',
-                    border: `1px solid ${scheda.ispirazione ? C.goldDark : C.border}`,
-                    color: scheda.ispirazione ? C.goldDark : C.inkDim,
+                    background: scheda.ispirazione ? 'rgba(212,175,55,0.18)' : 'transparent',
+                    border: `1px solid ${scheda.ispirazione ? '#d4af37' : C.border}`,
+                    color: scheda.ispirazione ? '#d4af37' : C.inkDim,
+                    boxShadow: scheda.ispirazione ? '0 0 6px rgba(212,175,55,0.5)' : 'none',
+                    fontWeight: scheda.ispirazione ? 'bold' : 'normal',
                   }}
                   title="Ispirazione (eroica): click per attivare/disattivare"
                   onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
@@ -2300,7 +2384,7 @@ export default function App() {
               </div>
               <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px 12px', marginTop: 8 }}>
                 <CampoModulo label="Background">
-                  <CampoTendina value={scheda.background} opzioni={BACKGROUND_5E} onChange={(v) => aggiorna({ background: v })} title="Scegli un background" />
+                  <CampoTendina value={scheda.background} opzioni={BACKGROUND_5E} onChange={(v) => aggiorna({ background: v, ...abilitaConBackground(v) })} title="Scegli un background (imposta le competenze nelle abilità)" />
                 </CampoModulo>
                 <CampoModulo label="Classe">
                   <CampoTendina
@@ -2308,16 +2392,16 @@ export default function App() {
                     opzioni={NOMI_CLASSI}
                     onChange={(v) => {
                       const car = caratteristicaIncantatorePerClasse(v);
-                      aggiorna({ classe: v, ...(car ? { incantatore: { caratteristica: car } } : {}) });
+                      aggiorna({ classe: v, ...(car ? { incantatore: { caratteristica: car } } : {}), ...ritrattoAuto(v, scheda.specie) });
                     }}
-                    title="Scegli la classe (imposta colori e caratteristica da incantatore)"
+                    title="Scegli la classe (imposta colori, caratteristica da incantatore e avatar)"
                   />
                 </CampoModulo>
                 <CampoModulo label="Sottoclasse">
                   <CampoTendina value={scheda.sottoclasse} opzioni={sottoclassiPerClasse(scheda.classe)} onChange={(v) => aggiorna({ sottoclasse: v })} title="Sottoclasse (opzioni in base alla classe)" />
                 </CampoModulo>
                 <CampoModulo label="Specie">
-                  <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => aggiorna({ specie: v })} title="Scegli la specie" />
+                  <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => aggiorna({ specie: v, ...ritrattoAuto(scheda.classe, v) })} title="Scegli la specie (aggiorna l'avatar)" />
                 </CampoModulo>
                 <CampoModulo label="Taglia">
                   <CampoTendina value={scheda.taglia} opzioni={TAGLIE_5E} onChange={(v) => aggiorna({ taglia: v })} title="Scegli la taglia" />
@@ -2497,14 +2581,14 @@ export default function App() {
           </div>
 
           {/* stato di gioco: concentrazione, sfinimento, difese, sensi, condizioni su una riga */}
-          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center', marginTop: 12 }}>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginTop: 12 }}>
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 6, padding: '2px 8px', borderRadius: 6,
               background: scheda.concentrazione ? C.panelLight : 'transparent',
               border: `1px solid ${scheda.concentrazione ? C.goldDark : C.border}`,
             }}>
               🧠 <span style={styles.detail}>Concentrazione:</span>
-              <Editable value={scheda.concentrazione} onChange={(v) => aggiorna({ concentrazione: v })} width={150} title="Incantesimo su cui ti concentri" />
+              <Editable value={scheda.concentrazione} onChange={(v) => aggiorna({ concentrazione: v })} width={110} title="Incantesimo su cui ti concentri" />
               {scheda.concentrazione && (
                 <span className="tirabile" style={{ cursor: 'pointer', color: C.red }} title="Termina la concentrazione" onClick={() => aggiorna({ concentrazione: '' })}>✕</span>
               )}
@@ -2520,11 +2604,11 @@ export default function App() {
                 </span>
               )}
             </span>
-            <span style={styles.detail}>Resistenze / immunità:{' '}
-              <CampoConTendina value={scheda.resistenze} opzioni={DANNI_5E} onChange={(v) => aggiorna({ resistenze: v })} width={180} title="Resistenze, immunità e vulnerabilità ai danni" />
+            <span style={styles.detail}>Resistenze:{' '}
+              <CampoConTendina value={scheda.resistenze} opzioni={DANNI_5E} onChange={(v) => aggiorna({ resistenze: v })} width={120} title="Resistenze, immunità e vulnerabilità ai danni" />
             </span>
             <span style={styles.detail}>Sensi:{' '}
-              <CampoConTendina value={scheda.sensi} opzioni={SENSI_5E} onChange={(v) => aggiorna({ sensi: v })} width={160} title="Scurovisione, percezione tremorsensitiva, ecc." />
+              <CampoConTendina value={scheda.sensi} opzioni={SENSI_5E} onChange={(v) => aggiorna({ sensi: v })} width={110} title="Scurovisione, percezione tremorsensitiva, ecc." />
             </span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
               <span style={styles.detail}>Condizioni:</span>
