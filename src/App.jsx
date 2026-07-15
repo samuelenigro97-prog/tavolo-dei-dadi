@@ -1854,6 +1854,9 @@ export default function App() {
                 <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px' }} onClick={tiraDadoVita} title="Riposo breve: spendi un dado vita per curarti">
                   🔥 Riposo breve
                 </button>
+                <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px' }} onClick={riposoLungo} title="Riposo lungo: PF al massimo, slot recuperati, metà dadi vita">
+                  🌙 Riposo lungo
+                </button>
               </div>
             </div>
 
@@ -1931,12 +1934,9 @@ export default function App() {
             </div>
           </div>
 
-          {/* riposo e condizioni */}
+          {/* condizioni */}
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 12 }}>
-            <button style={styles.button} onClick={riposoLungo} title="PF al massimo, slot recuperati, metà dadi vita">
-              🌙 Riposo lungo
-            </button>
-            <span style={{ ...styles.detail, marginLeft: 8 }}>Condizioni:</span>
+            <span style={styles.detail}>Condizioni:</span>
             {CONDIZIONI_5E.map((c) => {
               const attiva = scheda.condizioni.includes(c);
               return (
