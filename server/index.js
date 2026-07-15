@@ -70,6 +70,13 @@ Rispondi SOLO con un oggetto JSON valido, senza testo prima o dopo, con questo s
   "lingue": "string — es. \\"Comune, Elfico\\"",
   "aspetto": "string — descrizione dell'aspetto, se presente",
   "note": "string — storia e tratti caratteriali, se presenti",
+  "resistenze": "string — resistenze/immunità/vulnerabilità ai danni, es. \\"Fuoco, Veleno\\", vuoto se assenti",
+  "sensi": "string — sensi speciali, es. \\"Scurovisione 18 m\\", vuoto se assenti",
+  "sfinimento": "number — livelli di sfinimento 0-6, 0 se non indicato",
+  "concentrazione": "string — incantesimo su cui si concentra, vuoto se nessuno",
+  "risorse": [
+    { "nome": "string — es. \\"Ki\\", \\"Ispirazione bardica\\"", "attuali": number, "max": number, "reset": "string — \\"breve\\", \\"lungo\\" o vuoto" }
+  ],
   "addestramento": {
     "armature": { "leggera": boolean, "media": boolean, "pesante": boolean, "scudi": boolean },
     "armi": "string",
