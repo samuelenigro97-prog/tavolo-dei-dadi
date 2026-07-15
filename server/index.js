@@ -63,7 +63,8 @@ Rispondi SOLO con un oggetto JSON valido, senza testo prima o dopo, con questo s
   "incantesimiLista": [
     { "livello": number, "nome": "string", "tempo": "string — es. \\"AZ\\", \\"REAZ\\", \\"AZ BONUS\\"", "gittata": "string", "note": "string" }
   ],
-  "privilegi": "string — privilegi di classe e tratti della specie, riassunti in testo semplice",
+  "privilegi": "string — privilegi/capacità di CLASSE, riassunti in testo semplice",
+  "trattiSpecie": "string — tratti della SPECIE (es. scurovisione, astuzia gnomesca), separati dai privilegi di classe",
   "talenti": "string",
   "equipaggiamento": "string",
   "sintonia": "string — oggetti magici in sintonia, se presenti",

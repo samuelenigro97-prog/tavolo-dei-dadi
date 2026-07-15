@@ -97,6 +97,18 @@ function sottoclassiPerClasse(classe) {
   return (c && SOTTOCLASSI_5E[c.match[0]]) || [];
 }
 
+// Caratteristica da incantatore per classe (chiave = primo alias in CLASSI).
+const CARATT_INCANTATORE = {
+  bardo: 'carisma', stregone: 'carisma', warlock: 'carisma', paladino: 'carisma',
+  chierico: 'saggezza', druido: 'saggezza', ranger: 'saggezza',
+  mago: 'intelligenza',
+};
+/** Caratteristica da incantatore della classe (o '' se non incantatore/ignota). */
+function caratteristicaIncantatorePerClasse(classe) {
+  const c = coloreClasse(classe);
+  return (c && CARATT_INCANTATORE[c.match[0]]) || '';
+}
+
 // Tipi di danno (per resistenze/immunità/vulnerabilità) e sensi comuni.
 const DANNI_5E = [
   'Acido', 'Contundente', 'Freddo', 'Fuoco', 'Fulmine', 'Necrotico',
@@ -105,7 +117,7 @@ const DANNI_5E = [
 const SENSI_5E = ['Scurovisione', 'Vista cieca', 'Percezione tremorsensitiva', 'Vista vera'];
 
 // Ordine di default delle sezioni collassabili (riordinabili via drag).
-const ORDINE_SEZIONI_DEFAULT = ['risorse', 'privilegi', 'talenti', 'addestramento', 'equipaggiamento', 'aspetto', 'import'];
+const ORDINE_SEZIONI_DEFAULT = ['risorse', 'privilegi', 'trattiSpecie', 'talenti', 'addestramento', 'equipaggiamento', 'aspetto', 'import'];
 
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 function coloreClasse(classe) {
@@ -707,6 +719,7 @@ function schedaVuota() {
     // trucchetti (livello 0) e incantesimi preparati
     incantesimiLista: [],
     privilegi: '',
+    trattiSpecie: '',
     talenti: '',
     equipaggiamento: '',
     sintonia: '',
@@ -829,8 +842,10 @@ const ESEMPIO_GNOMO = {
   privilegi:
     'RECUPERO ARCANO: 1 volta al giorno, con un riposo breve recuperi slot per un totale di 5 livelli.\n' +
     'PLASMARE INCANTESIMI: crei varchi sicuri nelle aree dei tuoi incantesimi di invocazione.\n' +
-    'INCANTESIMO POTENZIATO: aggiungi INT ai danni degli incantesimi di invocazione.\n' +
-    'ASTUZIA GNOMESCA: vantaggio ai TS di INT, SAG e CAR contro la magia. Scurovisione 18m.',
+    'INCANTESIMO POTENZIATO: aggiungi INT ai danni degli incantesimi di invocazione.',
+  trattiSpecie:
+    'ASTUZIA GNOMESCA: vantaggio ai TS di INT, SAG e CAR contro la magia.\n' +
+    'SCUROVISIONE: vedi al buio entro 18 m.',
   talenti: 'Adepto Elementale (fuoco): i tuoi incantesimi ignorano la resistenza al fuoco; gli 1 sui dadi di danno da fuoco contano come 2.',
   equipaggiamento: 'Libro degli incantesimi, bacchetta (focus arcano), dotazione da studioso, pozione di guarigione x2',
   sintonia: 'Bacchetta della Guerra Magica (+1 ai tiri per colpire con incantesimo)',
@@ -1049,6 +1064,7 @@ function normalizeImported(dati) {
     slotIncantesimo: slot,
     incantesimiLista,
     privilegi: str(dati.privilegi),
+    trattiSpecie: str(dati.trattiSpecie),
     talenti: str(dati.talenti),
     equipaggiamento: str(dati.equipaggiamento),
     sintonia: str(dati.sintonia),
@@ -1421,13 +1437,17 @@ export default function App() {
 
   // ordine (personalizzabile via drag) delle sezioni collassabili
   const [ordineSezioni, setOrdineSezioni] = useState(() => {
+    let salvato = [];
     try {
       const s = JSON.parse(localStorage.getItem('scheda-interattiva:ordine-sezioni'));
-      if (Array.isArray(s)) return s;
+      if (Array.isArray(s)) salvato = s;
     } catch {
       /* niente */
     }
-    return ORDINE_SEZIONI_DEFAULT;
+    // mantieni l'ordine salvato, scarta id sconosciuti, aggiungi le sezioni nuove
+    const ordinato = salvato.filter((id) => ORDINE_SEZIONI_DEFAULT.includes(id));
+    for (const id of ORDINE_SEZIONI_DEFAULT) if (!ordinato.includes(id)) ordinato.push(id);
+    return ordinato;
   });
   const [sezTrascinata, setSezTrascinata] = useState(null);
   const ordineRef = useRef(ordineSezioni);
@@ -2117,7 +2137,15 @@ export default function App() {
                   <CampoTendina value={scheda.background} opzioni={BACKGROUND_5E} onChange={(v) => aggiorna({ background: v })} title="Scegli un background" />
                 </CampoModulo>
                 <CampoModulo label="Classe">
-                  <CampoTendina value={scheda.classe} opzioni={NOMI_CLASSI} onChange={(v) => aggiorna({ classe: v })} title="Scegli la classe (cambia i colori della scheda)" />
+                  <CampoTendina
+                    value={scheda.classe}
+                    opzioni={NOMI_CLASSI}
+                    onChange={(v) => {
+                      const car = caratteristicaIncantatorePerClasse(v);
+                      aggiorna({ classe: v, ...(car ? { incantatore: { caratteristica: car } } : {}) });
+                    }}
+                    title="Scegli la classe (imposta colori e caratteristica da incantatore)"
+                  />
                 </CampoModulo>
                 <CampoModulo label="Sottoclasse">
                   <CampoTendina value={scheda.sottoclasse} opzioni={sottoclassiPerClasse(scheda.classe)} onChange={(v) => aggiorna({ sottoclasse: v })} title="Sottoclasse (opzioni in base alla classe)" />
@@ -2737,12 +2765,20 @@ export default function App() {
               </button>
             </Sezione>
 
-            {/* Privilegi, talenti, equipaggiamento — collassabili */}
-            <Sezione titolo="Privilegi di classe e tratti della specie" {...propsSez('privilegi')}>
+            {/* Privilegi di classe, tratti della specie, talenti — collassabili */}
+            <Sezione titolo="Privilegi di classe" {...propsSez('privilegi')}>
               <AreaTesto
                 value={scheda.privilegi}
-                placeholder="Es. Stregoneria innata, Scurovisione, Trance…"
+                placeholder="Es. Incanalare divinità, Recupero arcano, Attacco furtivo…"
                 onChange={(v) => aggiorna({ privilegi: v })}
+              />
+            </Sezione>
+
+            <Sezione titolo="Tratti della specie" {...propsSez('trattiSpecie')}>
+              <AreaTesto
+                value={scheda.trattiSpecie}
+                placeholder="Es. Scurovisione, Astuzia gnomesca, Trance, Fortuna halfling…"
+                onChange={(v) => aggiorna({ trattiSpecie: v })}
               />
             </Sezione>
 
