@@ -3634,7 +3634,11 @@ export default function App() {
                 })}
               </div>
             </section>
+          </div>
+        </div>
 
+        {/* Sezioni descrittive a piena larghezza: riempiono lo spazio sotto le due colonne */}
+        <div style={{ display: 'flex', flexDirection: 'column', marginTop: 10 }}>
             {/* Risorse di classe: contatori con reset a riposo breve/lungo */}
             <Sezione titolo="Risorse di classe" {...propsSez('risorse')}>
               {scheda.risorse.length === 0 && (
@@ -3856,7 +3860,6 @@ export default function App() {
               </div>
               {erroreImport && <div style={{ color: C.red, marginTop: 8 }}>{erroreImport}</div>}
             </Sezione>
-          </div>
         </div>
       </main>
     </div>
