@@ -3025,7 +3025,7 @@ export default function App() {
                   <span>base <Editable value={scheda.armatura.base} tipo="numero" width={24} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, base: Math.max(0, v) } })} /></span>
                 )}
                 <span className="tirabile" style={{ cursor: 'pointer' }} title="Scudo: +2 alla CA" onClick={() => aggiorna({ armatura: { ...scheda.armatura, scudo: !scheda.armatura.scudo } })}>
-                  <span style={styles.pip(scheda.armatura.scudo, C.goldDark)} /> scudo
+                  <span style={styles.pip(scheda.armatura.scudo, C.goldDark)} /> <span style={{ opacity: scheda.armatura.scudo ? 1 : 0.4 }}>🛡️</span>
                 </span>
                 <span>+ <Editable value={scheda.armatura.bonus} tipo="numero" width={22} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, bonus: v } })} /></span>
               </div>
