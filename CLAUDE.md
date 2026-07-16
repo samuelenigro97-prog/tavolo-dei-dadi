@@ -149,6 +149,24 @@ L'app è una PWA installabile e offline (vite-plugin-pwa, `registerType:
 'autoUpdate'`): manifest e service worker sono generati alla build; le
 richieste `/api` sono escluse dalla cache. Icone in `public/icona-*.png`.
 
+## Lavoro multi-agente (Claude Code + Antigravity)
+
+Il repo viene modificato da più agenti/sessioni. Per evitare conflitti:
+
+1. **Sincronizza SEMPRE prima di lavorare**: `git fetch origin main` e
+   allineati (`git pull` è configurato con `pull.rebase=true` +
+   `rebase.autoStash=true`, quindi rebasa senza merge commit).
+2. **Non lavorare in contemporanea** con l'altro agente sugli **stessi file**
+   (tutta la UI è in `src/App.jsx`: è il punto più a rischio).
+3. **Commit piccoli e push frequenti**: prima di ogni push rifai
+   `git fetch` e, se il remote è avanzato, `git rebase origin/main`.
+4. Se nasce un conflitto in `App.jsx`, risolverlo **preferendo le modifiche
+   più recenti dell'altro agente** per la struttura/layout, reinnestando solo
+   la propria logica (es. regole D&D) nei punti giusti.
+
+Nessuna configurazione elimina i conflitti al 100% se due agenti editano le
+**stesse righe** insieme: la garanzia è la disciplina di sync qui sopra.
+
 ## TODO futuri (non farli senza richiesta esplicita)
 
 - (lista vuota — proporre nuove idee all'utente prima di implementarle)
