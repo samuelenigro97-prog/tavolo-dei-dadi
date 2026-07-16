@@ -310,10 +310,8 @@ const styles = {
   panel: {
     background: C.panel,
     border: `1px solid ${C.border}`,
-    outline: `1px solid ${C.border}`,
-    outlineOffset: 3,
-    borderRadius: 6,
-    padding: 11,
+    borderRadius: 10,
+    padding: 12,
     marginBottom: 8,
     boxShadow: '0 1px 4px rgba(60,50,30,0.08)',
   },
