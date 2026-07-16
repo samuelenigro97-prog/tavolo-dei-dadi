@@ -1116,7 +1116,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.5.0';
+const APP_VERSION = '1.5.1';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3114,8 +3114,8 @@ export default function App() {
             <span style={styles.detail}>Resistenze:{' '}
               <CampoConTendina value={scheda.resistenze} opzioni={DANNI_5E} onChange={(v) => aggiorna({ resistenze: v })} width={120} title="Resistenze, immunità e vulnerabilità ai danni" />
             </span>
-            <span style={styles.detail}>Sensi:{' '}
-              <CampoConTendina value={scheda.sensi} opzioni={SENSI_5E} onChange={(v) => aggiorna({ sensi: v })} width={110} title="Scurovisione, percezione tremorsensitiva, ecc." />
+            <span style={styles.detail}>Vista:{' '}
+              <CampoConTendina value={scheda.sensi} opzioni={SENSI_5E} onChange={(v) => aggiorna({ sensi: v })} width={110} title="Vista normale, scurovisione, ecc." />
             </span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
               <span style={styles.detail}>Condizioni:</span>
