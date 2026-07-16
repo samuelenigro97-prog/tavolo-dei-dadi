@@ -720,12 +720,12 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
 .campi-anagrafica .campo-modulo-box { padding: 0 4px !important; min-height: 28px !important; height: 28px; display: flex; align-items: center; overflow: hidden; }
 .campi-anagrafica .campo-modulo-label { font-size: 8px !important; margin-top: 1px; }
 .selettore-personaggio {
-  width: 100%;
+  width: 50%;
   margin: 0 0 8px 0 !important;
 }
 @media (max-width: 820px) {
   .griglia-scheda { grid-template-columns: 1fr; }
-  .selettore-personaggio { max-width: 100%; }
+  .selettore-personaggio { width: 100%; }
 }
 @media (max-width: 560px) {
   .anagrafica > div:last-child > div:last-child { grid-template-columns: repeat(2, 1fr) !important; }
