@@ -3072,7 +3072,7 @@ export default function App() {
 
             {/* Ispirazione */}
             <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>Ispirazione</div>
+              <div style={{ ...styles.vitalLabel, color: scheda.ispirazione ? C.goldDark : undefined }}>Ispirazione</div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                 <button
                   className="tirabile"
