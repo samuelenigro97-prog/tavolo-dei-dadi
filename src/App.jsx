@@ -1570,7 +1570,7 @@ function CampoConTendina({ value, opzioni, onChange, width, title }) {
         <select
           value=""
           onChange={(e) => aggiungi(e.target.value)}
-          style={{ ...styles.inlineInput, fontSize: 13, padding: '2px 4px', width: 32, height: 24, textAlign: 'center', cursor: 'pointer' }}
+          style={{ ...styles.inlineInput, appearance: 'none', fontSize: 13, padding: '2px 4px', width: 24, height: 24, textAlign: 'center', cursor: 'pointer' }}
           title="Aggiungi dalla lista"
         >
           <option value="">＋</option>
