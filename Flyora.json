@@ -1,0 +1,139 @@
+{
+  "versione": "1.2.0",
+  "nome": "Flyora delle Acque Nere",
+  "classe": "Stregone",
+  "sottoclasse": "Magia Selvaggia",
+  "livello": 4,
+  "background": "Eremita",
+  "specie": "Elfo Alto",
+  "taglia": "Media",
+  "allineamento": "Neutrale",
+  "pe": 0,
+  "pfMax": 30,
+  "pfAttuali": 30,
+  "pfTemp": 0,
+  "dadiVita": "4d6",
+  "dadiVitaSpesi": 0,
+  "ca": 12,
+  "velocita": 9,
+  "ispirazione": false,
+  "sfinimento": 0,
+  "armatura": {
+    "tipo": "manuale",
+    "base": 10,
+    "scudo": false,
+    "bonus": 0
+  },
+  "caratteristiche": {
+    "forza": 12,
+    "destrezza": 15,
+    "costituzione": 16,
+    "intelligenza": 14,
+    "saggezza": 15,
+    "carisma": 18
+  },
+  "tiriSalvezza": {
+    "forza": false,
+    "destrezza": false,
+    "costituzione": true,
+    "intelligenza": false,
+    "saggezza": false,
+    "carisma": true
+  },
+  "abilita": {
+    "acrobazia": false,
+    "addestrareAnimali": false,
+    "arcano": true,
+    "atletica": false,
+    "furtivita": false,
+    "indagare": false,
+    "inganno": false,
+    "intimidire": false,
+    "intrattenere": false,
+    "intuizione": false,
+    "medicina": true,
+    "natura": false,
+    "percezione": true,
+    "persuasione": true,
+    "rapiditaDiMano": false,
+    "religione": true,
+    "sopravvivenza": false,
+    "storia": false
+  },
+  "maestrie": {},
+  "armi": [
+    {
+      "id": "1",
+      "nome": "Spada",
+      "caratteristica": "destrezza",
+      "competenza": true,
+      "danno": "1d6",
+      "tipoDanno": "Perforante",
+      "bonusAttacco": 0,
+      "bonusDanno": 0,
+      "note": "Accurata, Leggera"
+    },
+    {
+      "id": "2",
+      "nome": "Pugnale x2",
+      "caratteristica": "destrezza",
+      "competenza": true,
+      "danno": "1d4",
+      "tipoDanno": "Perforante",
+      "bonusAttacco": 0,
+      "bonusDanno": 0,
+      "note": "Accurata, Leggera, Lancio"
+    },
+    {
+      "id": "3",
+      "nome": "Bastone Ferrato",
+      "caratteristica": "forza",
+      "competenza": true,
+      "danno": "1d6",
+      "tipoDanno": "Contundente",
+      "bonusAttacco": 0,
+      "bonusDanno": 0,
+      "note": "Versatile (1d8 a due mani)"
+    }
+  ],
+  "incantatore": {
+    "caratteristica": "carisma",
+    "cdExtra": 0,
+    "attaccoExtra": 0
+  },
+  "slotIncantesimi": {
+    "1": { "max": 4, "spesi": 0 },
+    "2": { "max": 3, "spesi": 0 },
+    "3": { "max": 0, "spesi": 0 },
+    "4": { "max": 0, "spesi": 0 },
+    "5": { "max": 0, "spesi": 0 },
+    "6": { "max": 0, "spesi": 0 },
+    "7": { "max": 0, "spesi": 0 },
+    "8": { "max": 0, "spesi": 0 },
+    "9": { "max": 0, "spesi": 0 }
+  },
+  "incantesimi": [
+    { "id": "i1", "nome": "Interdizione alle Lame", "livello": 0, "preparato": true, "dettagli": "Azione, V S, res. armi" },
+    { "id": "i2", "nome": "Messaggio", "livello": 0, "preparato": true, "dettagli": "Azione, 36m, V S M" },
+    { "id": "i3", "nome": "Morsa del Gelo", "livello": 0, "preparato": true, "dettagli": "Azione, 18m, V S" },
+    { "id": "i4", "nome": "Prestidigitazione", "livello": 0, "preparato": true, "dettagli": "Azione, 3m, V S" },
+    { "id": "i5", "nome": "Vampa", "livello": 0, "preparato": true, "dettagli": "Azione, 18m, V S" },
+    { "id": "i6", "nome": "Caduta Morbida", "livello": 1, "preparato": true, "dettagli": "Reazione, 18m, V M" },
+    { "id": "i7", "nome": "Individuazione del Magico", "livello": 1, "preparato": true, "dettagli": "Azione (Rituale), 9m, V S M" },
+    { "id": "i8", "nome": "Onda Tonante", "livello": 1, "preparato": true, "dettagli": "Azione, cubo 4,5m, V S" },
+    { "id": "i9", "nome": "Scudo", "livello": 1, "preparato": true, "dettagli": "Reazione, V S" },
+    { "id": "i10", "nome": "Dardo Incantato", "livello": 1, "preparato": true, "dettagli": "Azione, 36m, V S" },
+    { "id": "i11", "nome": "Frantumare", "livello": 2, "preparato": true, "dettagli": "Azione, 18m, V S M" },
+    { "id": "i12", "nome": "Immagine Speculare", "livello": 2, "preparato": true, "dettagli": "Azione, V S" },
+    { "id": "i13", "nome": "Passo Velato", "livello": 2, "preparato": true, "dettagli": "Azione Bonus, V" }
+  ],
+  "risorse": [
+    { "id": "r1", "nome": "Punti Stregoneria", "max": 4, "attuali": 4, "ricarica": "Lungo" },
+    { "id": "r2", "nome": "Stregoneria Innata", "max": 2, "attuali": 2, "ricarica": "Lungo" },
+    { "id": "r3", "nome": "Kit da Guaritore", "max": 10, "attuali": 10, "ricarica": "Nessuno" }
+  ],
+  "tratti": "Stregoneria Innata\nFonte di Magia\nMetamagia: Incantesimo Celato, Preciso\nOnde di Caos\nRetaggio Fatato\nScurovisione\nTrance\nGuaritore\nGuerramaga",
+  "equipaggiamento": "Focus Arcano (Cristallo)\nBorsa da erborista\nGiaciglio\nLibro (filosofia)\nDotazione da avventuriero\nAbiti da viaggiatore",
+  "monete": { "mr": 0, "ma": 0, "me": 0, "mo": 74, "mp": 0 },
+  "note": "Storia: Il personaggio ha trascorso i suoi primi anni rinchiuso in una capanna o un monastero molto distante..."
+}
