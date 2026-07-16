@@ -3195,7 +3195,7 @@ export default function App() {
                         aggiorna({ tiriSalvezza: { ...scheda.tiriSalvezza, [key]: !scheda.tiriSalvezza[key] } });
                       }}
                     >
-                      {scheda.tiriSalvezza[key] ? '★' : '○'}
+                      {scheda.tiriSalvezza[key] ? '★\uFE0E' : '○'}
                     </span>
                     <strong style={{ width: 32 }}>{conSegno(bonusTS)}</strong>
                     <em>Tiro salvezza</em>
@@ -3220,7 +3220,7 @@ export default function App() {
                             aggiorna({ abilita: { ...scheda.abilita, [a.key]: liv ? 0 : 1 } });
                           }}
                         >
-                          {liv ? '★' : '○'}
+                          {liv ? '★\uFE0E' : '○'}
                         </span>
                         <strong style={{ width: 32 }}>{conSegno(bonus)}</strong>
                         <span>
