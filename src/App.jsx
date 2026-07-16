@@ -1540,27 +1540,62 @@ function CampoModulo({ label, children, style }) {
  * "＋" per aggiungere velocemente voci da una lista, senza perdere il testo.
  */
 function CampoConTendina({ value, opzioni, onChange, width, title }) {
+  const attuali = value ? value.split(',').map((s) => s.trim()).filter(Boolean) : [];
+  
   const aggiungi = (v) => {
     if (!v) return;
-    const attuali = value.split(',').map((s) => s.trim()).filter(Boolean);
     if (attuali.some((x) => x.toLowerCase() === v.toLowerCase())) return;
     onChange([...attuali, v].join(', '));
   };
+
+  const rimuovi = (v) => {
+    onChange(attuali.filter(x => x !== v).join(', '));
+  };
+
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-      <Editable value={value} onChange={onChange} width={width} title={title} />
-      <select
-        value=""
-        onChange={(e) => aggiungi(e.target.value)}
-        style={{ ...styles.inlineInput, fontSize: 12, padding: '1px 2px' }}
-        title="Aggiungi dalla lista"
-      >
-        <option value="">＋</option>
-        {opzioni.map((o) => (
-          <option key={o} value={o}>{o}</option>
-        ))}
-      </select>
-    </span>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', minHeight: 24 }} title={title}>
+      {attuali.map(t => (
+        <span key={t} style={{ background: 'rgba(255,255,255,0.08)', padding: '2px 6px', borderRadius: 6, fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, border: `1px solid rgba(255,255,255,0.15)` }}>
+          {t}
+          <button 
+            style={{ background: 'transparent', border: 'none', color: '#ff6b6b', cursor: 'pointer', padding: '0 2px', fontSize: 14, lineHeight: 0.8, marginTop: -2 }} 
+            onClick={() => rimuovi(t)} 
+            title={`Rimuovi ${t}`}
+          >
+            ×
+          </button>
+        </span>
+      ))}
+      <span style={{ display: 'flex', gap: 4 }}>
+        <select
+          value=""
+          onChange={(e) => aggiungi(e.target.value)}
+          style={{ ...styles.inlineInput, fontSize: 13, padding: '2px 4px', width: 32, height: 24, textAlign: 'center', cursor: 'pointer' }}
+          title="Aggiungi dalla lista"
+        >
+          <option value="">＋</option>
+          {opzioni.map((o) => (
+            <option key={o} value={o}>{o}</option>
+          ))}
+        </select>
+        <input 
+          type="text" 
+          style={{ ...styles.inlineInput, fontSize: 12, padding: '2px 6px', width: 70, height: 24, background: 'transparent' }} 
+          placeholder="Scrivi..." 
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ',') {
+              e.preventDefault();
+              aggiungi(e.target.value.trim());
+              e.target.value = '';
+            }
+          }}
+          onBlur={(e) => {
+            aggiungi(e.target.value.trim());
+            e.target.value = '';
+          }}
+        />
+      </span>
+    </div>
   );
 }
 
