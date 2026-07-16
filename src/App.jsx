@@ -605,8 +605,16 @@ const styles = {
     color: C.inkDim,
     letterSpacing: 0.8,
     textTransform: 'uppercase',
-    marginBottom: 5,
+    marginBottom: 6,
     fontWeight: 600,
+    lineHeight: 1.15,
+    // altezza fissa per ~2 righe: i titoli corti e quelli lunghi occupano lo
+    // stesso spazio, così i valori sotto restano tutti allineati
+    minHeight: '2.3em',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    textAlign: 'center',
   },
   vitalValue: { fontSize: 17, color: C.ink },
   abilityBlock: {
@@ -1266,7 +1274,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.6.9';
+const APP_VERSION = '1.7.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1702,35 +1710,17 @@ function CampoConTendina({ value, opzioni, onChange, width, title }) {
           </button>
         </span>
       ))}
-      <span style={{ display: 'flex', gap: 4 }}>
-        <select
-          value=""
-          onChange={(e) => aggiungi(e.target.value)}
-          style={{ ...styles.inlineInput, appearance: 'none', fontSize: 13, padding: '2px 4px', width: 24, height: 24, textAlign: 'center', cursor: 'pointer' }}
-          title="Aggiungi dalla lista"
-        >
-          <option value="">＋</option>
-          {opzioni.map((o) => (
-            <option key={o} value={o}>{o}</option>
-          ))}
-        </select>
-        <input 
-          type="text" 
-          style={{ ...styles.inlineInput, fontSize: 12, padding: '2px 6px', width: 70, height: 24, background: 'transparent' }} 
-          placeholder="Scrivi..." 
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ',') {
-              e.preventDefault();
-              aggiungi(e.target.value.trim());
-              e.target.value = '';
-            }
-          }}
-          onBlur={(e) => {
-            aggiungi(e.target.value.trim());
-            e.target.value = '';
-          }}
-        />
-      </span>
+      <select
+        value=""
+        onChange={(e) => aggiungi(e.target.value)}
+        style={{ ...styles.inlineInput, appearance: 'none', fontSize: 13, padding: '2px 4px', width: 24, height: 24, textAlign: 'center', cursor: 'pointer' }}
+        title="Aggiungi dalla lista"
+      >
+        <option value="">＋</option>
+        {opzioni.map((o) => (
+          <option key={o} value={o}>{o}</option>
+        ))}
+      </select>
     </div>
   );
 }
