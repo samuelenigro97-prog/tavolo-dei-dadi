@@ -306,7 +306,13 @@ const DANNI_5E = [
   'Acido', 'Contundente', 'Freddo', 'Fuoco', 'Fulmine', 'Necrotico',
   'Perforante', 'Psichico', 'Radiante', 'Tagliente', 'Tuono', 'Veleno',
 ];
-const SENSI_5E = ['Vista normale', 'Scurovisione', 'Vista cieca', 'Percezione tremorsensitiva'];
+// Sensi 5e con le gittate tipiche (si può comunque scrivere un valore libero).
+const SENSI_5E = [
+  'Scurovisione 18 m', 'Scurovisione 36 m', 'Scurovisione 24 m',
+  'Percezione cieca 3 m', 'Percezione cieca 9 m',
+  'Percezione tremorsensitiva 9 m', 'Percezione tremorsensitiva 18 m',
+  'Vista vera 36 m',
+];
 
 // Sfinimento: nella 5.0 (2014) sono 6 livelli con effetti crescenti; nella 5.5
 // (2024) ogni livello dà −2 a tutti i tiri di d20. Testo degli effetti 2014:
@@ -594,13 +600,14 @@ const styles = {
     minHeight: 40,
   },
   vitalLabel: {
-    fontSize: 9.5,
+    fontSize: 10.5,
     color: C.inkDim,
-    letterSpacing: 0.7,
+    letterSpacing: 0.8,
     textTransform: 'uppercase',
-    marginBottom: 3,
+    marginBottom: 5,
+    fontWeight: 600,
   },
-  vitalValue: { fontSize: 16, color: C.ink },
+  vitalValue: { fontSize: 17, color: C.ink },
   abilityBlock: {
     background: C.panel,
     border: `1px solid ${C.border}`,
@@ -791,6 +798,15 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
   0% { transform: rotate(-4deg) scale(1.08); }
   50% { transform: rotate(4deg) scale(1.14); }
   100% { transform: rotate(-4deg) scale(1.08); }
+}
+/* pulsante "Aggiorna" quando c'è una nuova versione: lampeggia di verde */
+.aggiorna-pronto {
+  animation: aggiorna-lampeggia 1.1s ease-in-out infinite;
+  font-weight: bold;
+}
+@keyframes aggiorna-lampeggia {
+  0%, 100% { background: transparent; border-color: #2e8b57; color: #2e8b57; box-shadow: 0 0 0 rgba(46,139,87,0); }
+  50% { background: #2e8b57; border-color: #2e8b57; color: #fff; box-shadow: 0 0 12px 2px rgba(46,139,87,0.75); }
 }
 `;
 
@@ -1240,7 +1256,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.6.6';
+const APP_VERSION = '1.6.8';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1847,6 +1863,30 @@ export default function App() {
     u.searchParams.set('agg', Date.now().toString());
     window.location.replace(u.toString());
   }
+
+  // Rilevatore di nuove versioni INDIPENDENTE dal service worker: interroga
+  // `version.json` (che non è nella cache, quindi va sempre in rete) e confronta
+  // il `build` pubblicato con quello di questa build (__BUILD_ID__ iniettato da
+  // Vite). Se differiscono, il pulsante 🔄 lampeggia di verde per invitare al click.
+  const [aggiornamentoPronto, setAggiornamentoPronto] = useState(false);
+  useEffect(() => {
+    let annullato = false;
+    const controlla = async () => {
+      try {
+        const r = await fetch(`version.json?ts=${Date.now()}`, { cache: 'no-store' });
+        if (!r.ok) return;
+        const dati = await r.json();
+        if (!annullato && dati && dati.build && String(dati.build) !== String(__BUILD_ID__)) {
+          setAggiornamentoPronto(true);
+        }
+      } catch { /* offline o file assente: nessun avviso */ }
+    };
+    const t = setTimeout(controlla, 6000);          // primo controllo dopo l'avvio
+    const id = setInterval(controlla, 60 * 1000);   // poi ogni minuto
+    return () => { annullato = true; clearTimeout(t); clearInterval(id); };
+  }, []);
+  // il pulsante lampeggia se c'è una nuova versione (rilevata in un modo o nell'altro)
+  const nuovaVersione = aggiornamentoPronto || needRefresh;
 
   const [roster, setRoster] = useState(loadState);
   const [modalita, setModalita] = useState('normale'); // normale | vantaggio | svantaggio
@@ -2815,15 +2855,13 @@ export default function App() {
 
         <div className="app-header-group" style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
           <button
-            style={{
-              ...styles.modeButton(needRefresh),
-              ...(needRefresh ? { borderColor: C.goldDark, color: C.goldDark } : {}),
-            }}
-            title={needRefresh ? 'È disponibile una nuova versione: click per aggiornare' : 'Aggiorna l’app: svuota la cache e ricarica l’ultima versione'}
+            className={nuovaVersione && !aggiornando ? 'aggiorna-pronto' : undefined}
+            style={styles.modeButton(false)}
+            title={nuovaVersione ? 'È disponibile una nuova versione: click per aggiornare' : 'Aggiorna l’app: svuota la cache e ricarica l’ultima versione'}
             onClick={forzaAggiornamento}
             disabled={aggiornando}
           >
-            {aggiornando ? '… Aggiorno' : needRefresh ? '🔄 Aggiorna!' : '🔄 Aggiorna'}
+            {aggiornando ? '… Aggiorno' : nuovaVersione ? '🔄 Aggiorna!' : '🔄 Aggiorna'}
           </button>
           <button
             style={styles.modeButton(false)}
@@ -3247,48 +3285,30 @@ export default function App() {
               <div style={styles.vitalValue}>{percezionePassiva}</div>
             </div>
 
-            {/* Resistenze */}
+            {/* Resistenze — chip rimovibili + tendina */}
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>Resistenze</div>
-              <div style={{ fontSize: 10, color: C.ink, textAlign: 'center', lineHeight: 1.3 }}>
-                {scheda.resistenze ? scheda.resistenze : <span style={{ color: C.inkDim }}>—</span>}
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <CampoConTendina
+                  value={scheda.resistenze}
+                  opzioni={DANNI_5E}
+                  onChange={(v) => aggiorna({ resistenze: v })}
+                  title="Resistenze ai danni: scegli dalla tendina o scrivi"
+                />
               </div>
-              <select
-                value=""
-                onChange={(e) => {
-                  const v = e.target.value;
-                  if (!v) return;
-                  const cur = scheda.resistenze ? scheda.resistenze.split(',').map(x => x.trim()).filter(Boolean) : [];
-                  if (!cur.includes(v)) aggiorna({ resistenze: [...cur, v].join(', ') });
-                }}
-                style={{ ...styles.inlineInput, fontSize: 10, padding: '1px 2px', height: 18, marginTop: 2 }}
-                title="Aggiungi resistenza"
-              >
-                <option value="">＋</option>
-                {DANNI_5E.map((o) => <option key={o} value={o}>{o}</option>)}
-              </select>
             </div>
 
-            {/* Vista */}
+            {/* Vista / Sensi — chip rimovibili + tendina (valore non fisso) */}
             <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>Vista</div>
-              <div style={{ fontSize: 10, color: C.ink, textAlign: 'center', lineHeight: 1.3 }}>
-                {scheda.sensi ? scheda.sensi : <span style={{ color: C.inkDim }}>—</span>}
+              <div style={styles.vitalLabel}>Vista e Sensi</div>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <CampoConTendina
+                  value={scheda.sensi}
+                  opzioni={SENSI_5E}
+                  onChange={(v) => aggiorna({ sensi: v })}
+                  title="Sensi: scegli dalla tendina o scrivi (es. Scurovisione 18 m)"
+                />
               </div>
-              <select
-                value=""
-                onChange={(e) => {
-                  const v = e.target.value;
-                  if (!v) return;
-                  const cur = scheda.sensi ? scheda.sensi.split(',').map(x => x.trim()).filter(Boolean) : [];
-                  if (!cur.includes(v)) aggiorna({ sensi: [...cur, v].join(', ') });
-                }}
-                style={{ ...styles.inlineInput, fontSize: 10, padding: '1px 2px', height: 18, marginTop: 2 }}
-                title="Aggiungi senso"
-              >
-                <option value="">＋</option>
-                {SENSI_5E.map((o) => <option key={o} value={o}>{o}</option>)}
-              </select>
             </div>
 
             {/* RIGA 3 — Bonus Comp. | Sfinimento | Ispirazione | Condizioni (span 2) */}

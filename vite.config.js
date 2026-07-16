@@ -1,18 +1,41 @@
 import { defineConfig } from 'vite';
+import { writeFileSync } from 'node:fs';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+
+// Identificativo univoco di questa build: viene iniettato nell'app (__BUILD_ID__)
+// e scritto anche in dist/version.json. L'app confronta i due valori per capire
+// se sul server c'è una versione più nuova (vedi rilevatore in App.jsx).
+const BUILD_ID = Date.now().toString();
+
+// Scrive dist/version.json a fine build. version.json NON è nella precache
+// (globPatterns non include .json), quindi il fetch va sempre in rete: così il
+// controllo "nuova versione disponibile" funziona anche con il service worker.
+const scriveVersionJson = {
+  name: 'scrive-version-json',
+  apply: 'build',
+  closeBundle() {
+    const dir = process.env.BASE_PATH ? 'dist' : 'dist';
+    try {
+      writeFileSync(`${dir}/version.json`, JSON.stringify({ build: BUILD_ID }));
+    } catch (e) {
+      console.warn('version.json non scritto:', e?.message);
+    }
+  },
+};
 
 export default defineConfig({
   // su GitHub Pages l'app vive in /tavolo-dei-dadi/ (vedi workflow deploy.yml)
   base: process.env.BASE_PATH || '/',
+  define: { __BUILD_ID__: JSON.stringify(BUILD_ID) },
   plugins: [
     react(),
     VitePWA({
-      // autoUpdate + skipWaiting/clientsClaim: la nuova versione del service
-      // worker si attiva SUBITO (non resta "in attesa") e prende il controllo
-      // delle pagine già aperte, così l'app si aggiorna da sola senza dover
-      // svuotare la cache a mano.
-      registerType: 'autoUpdate',
+      // 'prompt': la nuova versione NON si installa a sorpresa; l'app avvisa con
+      // il pulsante 🔄 che lampeggia di verde e l'utente sceglie quando aggiornare.
+      // skipWaiting/clientsClaim: quando si aggiorna, il nuovo SW prende subito il
+      // controllo (niente stato "in attesa" bloccato).
+      registerType: 'prompt',
       injectRegister: 'auto',
       includeAssets: ['icona-192.png', 'icona-512.png', 'icona-maskable-512.png'],
       manifest: {
@@ -32,7 +55,7 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,svg}'],
         navigateFallbackDenylist: [/^\/api\//],
-        // attiva subito la nuova versione e ripulisci le cache vecchie
+        // quando si aggiorna, attiva subito il nuovo SW e ripulisci le cache vecchie
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
@@ -52,6 +75,7 @@ export default defineConfig({
         ],
       },
     }),
+    scriveVersionJson,
   ],
   server: {
     port: 5173,
