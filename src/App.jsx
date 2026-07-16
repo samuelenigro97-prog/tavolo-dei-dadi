@@ -400,7 +400,11 @@ const styles = {
     maxWidth: 1080,
     margin: '0 auto 16px auto',
     padding: '12px 0 16px',
-    textAlign: 'center',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    flexWrap: 'wrap',
   },
   title: { margin: 0, fontSize: 21, letterSpacing: 1, color: 'var(--c-title)' },
   hint: { margin: '3px 0 0', color: C.inkDim, fontStyle: 'italic', fontSize: 12 },
@@ -740,6 +744,15 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
 .selettore-personaggio {
   width: 100%;
   margin: 0 0 8px 0 !important;
+}
+/* testata: gruppi ai lati, titolo centrato al centro (flex, niente sovrapposizioni) */
+.app-header-title { flex: 1 1 auto; text-align: center; }
+.app-header-group { flex: 0 0 auto; }
+@media (max-width: 560px) {
+  /* su schermi stretti: titolo su una riga sopra, i due gruppi di pulsanti sotto */
+  .app-header { justify-content: center; }
+  .app-header-title { order: -1; flex: 1 1 100%; margin-bottom: 6px !important; }
+  .app-header-group { flex: 1 1 auto; }
 }
 @media (max-width: 820px) {
   .griglia-scheda { grid-template-columns: 1fr; }
@@ -1227,7 +1240,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.6.2';
+const APP_VERSION = '1.6.3';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1810,6 +1823,26 @@ export default function App() {
       if (r) setInterval(() => r.update(), 60 * 1000); // controlla ogni minuto
     },
   });
+
+  // Aggiornamento manuale: svuota le cache della PWA e ricarica dalla rete.
+  // Utile quando il service worker serve ancora una versione vecchia: così
+  // l'utente può forzare l'ultima versione con un solo click.
+  const [aggiornando, setAggiornando] = useState(false);
+  async function forzaAggiornamento() {
+    setAggiornando(true);
+    try {
+      if ('caches' in window) {
+        const chiavi = await caches.keys();
+        await Promise.all(chiavi.map((k) => caches.delete(k)));
+      }
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.update().catch(() => {})));
+      }
+    } catch { /* ignora: ricarichiamo comunque */ }
+    if (needRefresh) { updateServiceWorker(true); return; } // c'è già una nuova SW pronta
+    window.location.reload();
+  }
 
   const [roster, setRoster] = useState(loadState);
   const [modalita, setModalita] = useState('normale'); // normale | vantaggio | svantaggio
@@ -2756,10 +2789,8 @@ export default function App() {
         );
       })()}
 
-      <header style={{ ...styles.header, position: 'relative' }}>
-        <h1 style={styles.title}>Tavolo dei Dadi <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 'normal', letterSpacing: 0.5 }}>v{APP_VERSION}</span></h1>
-
-        <div style={{ position: 'absolute', left: 0, top: 12, display: 'flex', gap: 6 }}>
+      <header className="app-header" style={styles.header}>
+        <div className="app-header-group" style={{ display: 'flex', gap: 6 }}>
           <button
             style={styles.modeButton(false)}
             title="Menu iniziale: nuovo personaggio, carica"
@@ -2775,13 +2806,29 @@ export default function App() {
             ☁️ Cloud
           </button>
         </div>
-        <button
-          style={{ ...styles.modeButton(false), position: 'absolute', right: 0, top: 12 }}
-          title="Tema: Auto diventa scuro di notte o se il sistema è in modalità scura. I colori della scheda seguono la classe del personaggio."
-          onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}
-        >
-          {tema === 'auto' ? '🌗 Auto' : tema === 'chiaro' ? '☀️ Chiaro' : '🌙 Scuro'}
-        </button>
+
+        <h1 className="app-header-title" style={{ ...styles.title, margin: 0 }}>Tavolo dei Dadi <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 'normal', letterSpacing: 0.5 }}>v{APP_VERSION}</span></h1>
+
+        <div className="app-header-group" style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+          <button
+            style={{
+              ...styles.modeButton(needRefresh),
+              ...(needRefresh ? { borderColor: C.goldDark, color: C.goldDark } : {}),
+            }}
+            title={needRefresh ? 'È disponibile una nuova versione: click per aggiornare' : 'Aggiorna l’app: svuota la cache e ricarica l’ultima versione'}
+            onClick={forzaAggiornamento}
+            disabled={aggiornando}
+          >
+            {aggiornando ? '… Aggiorno' : needRefresh ? '🔄 Aggiorna!' : '🔄 Aggiorna'}
+          </button>
+          <button
+            style={styles.modeButton(false)}
+            title="Tema: Auto diventa scuro di notte o se il sistema è in modalità scura. I colori della scheda seguono la classe del personaggio."
+            onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}
+          >
+            {tema === 'auto' ? '🌗 Auto' : tema === 'chiaro' ? '☀️ Chiaro' : '🌙 Scuro'}
+          </button>
+        </div>
       </header>
 
       <main style={styles.main}>
