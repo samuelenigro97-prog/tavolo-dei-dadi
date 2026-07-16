@@ -380,22 +380,32 @@ const styles = {
     boxShadow: '0 4px 12px rgba(60,50,30,0.18)',
     minHeight: 48,
   },
-  d20: (rolling, crit, fumble) => ({
-    width: 64,
-    height: 64,
-    flexShrink: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: crit ? C.goldDark : fumble ? C.red : C.ink,
-    background: C.panelLight,
-    border: `3px solid ${crit ? C.gold : fumble ? C.red : COLORE_DADO[20]}`,
-    clipPath: 'polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)',
-    animation: rolling ? 'd20-spin 0.5s linear infinite' : 'd20-settle 0.35s ease-out',
-    userSelect: 'none',
-  }),
+  dado: (rolling, crit, fumble, facce = 20) => {
+    let clipPath = 'polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)'; // default d20 hexagon
+    if (facce === 4) clipPath = 'polygon(50% 10%, 95% 90%, 5% 90%)'; // Triangle
+    else if (facce === 6) clipPath = 'polygon(10% 10%, 90% 10%, 90% 90%, 10% 90%)'; // Square
+    else if (facce === 8) clipPath = 'polygon(50% 5%, 95% 50%, 50% 95%, 5% 50%)'; // Diamond
+    else if (facce === 10 || facce === 100) clipPath = 'polygon(50% 5%, 95% 35%, 50% 95%, 5% 35%)'; // Kite
+    else if (facce === 12) clipPath = 'polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)'; // Dodecagon approximation (use hexagon for now)
+
+    return {
+      width: 64,
+      height: 64,
+      flexShrink: 0,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: facce === 20 ? 26 : 22,
+      fontWeight: 'bold',
+      color: crit ? C.goldDark : fumble ? C.red : C.ink,
+      background: C.panelLight,
+      border: `3px solid ${crit ? C.gold : fumble ? C.red : (COLORE_DADO[facce] || COLORE_DADO[20])}`,
+      clipPath,
+      animation: rolling ? 'd20-spin 0.5s linear infinite' : 'd20-settle 0.35s ease-out',
+      userSelect: 'none',
+      paddingTop: facce === 4 ? 12 : 0,
+    };
+  },
   badge: (color) => ({
     display: 'inline-block',
     padding: '2px 10px',
@@ -1663,6 +1673,7 @@ export default function App() {
   const [modalita, setModalita] = useState('normale'); // normale | vantaggio | svantaggio
   const [rolling, setRolling] = useState(false);
   const [faccia, setFaccia] = useState(20);
+  const [tipoDadoInUso, setTipoDadoInUso] = useState(20);
   const [tiro, setTiro] = useState(null);
   const [danni, setDanni] = useState(null);
   const [importInCorso, setImportInCorso] = useState(false);
@@ -1931,12 +1942,13 @@ export default function App() {
    * Usato da TUTTI i tiri così il dado "rotola" sempre, anche per danni,
    * dado libero, espressioni e dado vita.
    */
-  function conAnimazione(alFine, facciaFinale) {
+  function conAnimazione(alFine, facciaFinale, tipoDado = 20) {
     clearInterval(intervalRef.current);
     setTiro(null);
     setDanni(null);
     setRolling(true);
-    intervalRef.current = setInterval(() => setFaccia(tiraDado(20)), 70);
+    setTipoDadoInUso(tipoDado);
+    intervalRef.current = setInterval(() => setFaccia(tiraDado(tipoDado)), 70);
     setTimeout(() => {
       clearInterval(intervalRef.current);
       setRolling(false);
@@ -1958,6 +1970,7 @@ export default function App() {
     setDanni(null);
     setTiro(null);
     setRolling(true);
+    setTipoDadoInUso(20);
     intervalRef.current = setInterval(() => setFaccia(tiraDado(20)), 70);
 
     // Sfinimento: nella 5.5 (2024) −2 a ogni tiro di d20 per livello; nella
@@ -1986,23 +1999,25 @@ export default function App() {
   function lanciaDanniDiretti(etichetta, espressione) {
     const parsata = parseEspressioneDado(espressione);
     if (!parsata) return;
+    const maxFacce = Math.max(...parsata.map(p => p.facce).filter(Boolean));
     const esito = tiraDanni(parsata, false);
     conAnimazione(() => {
       setDanni({ etichetta, ...esito, critico: false });
       registra(`${etichetta}: ${esito.totale} (${esito.dettaglio})`);
-    }, esito.totale);
+    }, esito.totale, maxFacce || 20);
   }
 
   /** Tira i danni di un attacco (con eventuale critico), indipendente dallo stato. */
   function tiraDanniPerAttacco(attacco, critico) {
     const parsata = parseEspressioneDado(attacco?.danno || '');
     if (!parsata) return;
+    const maxFacce = Math.max(...parsata.map(p => p.facce).filter(Boolean));
     const nome = attacco.nome;
     const esito = tiraDanni(parsata, critico);
     conAnimazione(() => {
       setDanni({ etichetta: `Danni: ${nome}`, ...esito, critico });
       registra(`Danni ${nome}: ${esito.totale}${critico ? ' ⚔ critico' : ''} (${esito.dettaglio})`);
-    }, esito.totale);
+    }, esito.totale, maxFacce || 20);
   }
 
   /** Danni dell'attacco corrente (dal tiro per colpire in corso). */
@@ -2017,6 +2032,7 @@ export default function App() {
     setDanni(null);
     setTiro(null);
     setRolling(true);
+    setTipoDadoInUso(20);
     intervalRef.current = setInterval(() => setFaccia(tiraDado(20)), 70);
 
     const { naturale, dadi } = tiraD20(modalita);
@@ -2134,7 +2150,7 @@ export default function App() {
     conAnimazione(() => {
       setDanni({ etichetta: 'Tiro libero', totale: valore, dettaglio: `1d${facce} [${valore}]`, libero: true });
       registra(`d${facce}: ${valore}`);
-    }, valore);
+    }, valore, facce);
   }
 
   /** Tiro libero di un'espressione qualsiasi (es. "3d6+2"). */
@@ -2146,11 +2162,12 @@ export default function App() {
     }
     setErroreEspressione(false);
     const testo = espressioneLibera.trim();
+    const maxFacce = Math.max(...parsata.map(p => p.facce).filter(Boolean));
     const esito = tiraDanni(parsata, false);
     conAnimazione(() => {
       setDanni({ etichetta: `Tiro libero: ${testo}`, ...esito, libero: true });
       registra(`${testo}: ${esito.totale} (${esito.dettaglio})`);
-    }, esito.totale);
+    }, esito.totale, maxFacce || 20);
   }
 
   /** Carica l'immagine del personaggio: ridimensionata e salvata nella scheda. */
@@ -2413,23 +2430,25 @@ export default function App() {
       <main style={styles.main}>
         {/* Barra del tiro */}
         <div style={styles.rollBar}>
-          <div style={styles.d20(rolling, !rolling && critico, !rolling && fallimento)}>{faccia}</div>
-          <div style={{ flex: 1, minWidth: 220 }}>
-            {tiro && !rolling ? (
-              <>
+          <div style={styles.dado(rolling, !rolling && (tiro?.naturale === 20 || danni?.critico), !rolling && (tiro?.naturale === 1), tipoDadoInUso)}>{faccia}</div>
+          <div style={{ flex: 1, minWidth: 220, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            {rolling ? (
+              <div style={{ fontSize: 24, fontWeight: 'bold', color: C.inkDim, marginLeft: 16 }}>Tirando...</div>
+            ) : tiro ? (
+              <div style={{ marginLeft: 16 }}>
+                <div style={{ fontSize: 13, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>{tiro.etichetta}</div>
+                <div style={{ fontSize: 28, fontWeight: 'bold', display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                  {tiro.naturale} {tiro.bonus !== 0 && `${conSegno(tiro.bonus)} `}= <strong>{tiro.totale}</strong>
+                </div>
                 <div style={styles.detail}>
-                  {tiro.etichetta}
                   {tiro.dadi.length > 1 && ` · ${tiro.modalita} [${tiro.dadi.join(', ')}] → ${tiro.naturale}`}
                 </div>
-                <div style={{ fontSize: 22, color: C.ink }}>
-                  {tiro.naturale} {tiro.bonus !== 0 && `${conSegno(tiro.bonus)} `}= <strong>{tiro.totale}</strong>
-                  {critico && <span style={styles.badge(C.goldDark)}>⚔ CRITICO! 20 naturale</span>}
-                  {fallimento && <span style={styles.badge(C.red)}>💀 1 naturale</span>}
-                  {tiro.esito && <span style={styles.badge(C.goldDark)}>{tiro.esito}</span>}
-                </div>
-                {tiro.attacco && !fallimento && (
-                  dannoAttaccoValido ? (
-                    critico ? (
+                {tiro.naturale === 20 && <span style={styles.badge(C.goldDark)}>⚔ CRITICO! 20 naturale</span>}
+                {tiro.naturale === 1 && <span style={styles.badge(C.red)}>💀 1 naturale</span>}
+                {tiro.esito && <span style={styles.badge(C.goldDark)}>{tiro.esito}</span>}
+                {tiro.attacco && tiro.naturale !== 1 && (
+                  parseEspressioneDado(tiro.attacco.danno || '') ? (
+                    tiro.naturale === 20 ? (
                       <div style={{ ...styles.detail, marginTop: 6, color: C.goldDark, fontWeight: 'bold' }}>
                         ⚔ Critico! Tiro i danni raddoppiati…
                       </div>
@@ -2442,23 +2461,25 @@ export default function App() {
                     <div style={styles.detail}>Danno non impostato o non valido per questo attacco.</div>
                   )
                 )}
-              </>
-            ) : !rolling && !danni ? (
-              <div style={styles.detail}>
-                Tieni premuto un valore (caratteristiche, tiri salvezza, abilità, attacchi,
-                iniziativa…), rilascia e il dado rotola qui. Funziona anche il doppio click.
               </div>
-            ) : null}
-            {danni && (
-              <div style={{ marginTop: tiro ? 6 : 0 }}>
-                <div style={{ fontSize: 20, color: danni.libero ? C.goldDark : danni.guarigione ? C.green : C.red }}>
+            ) : danni ? (
+              <div style={{ marginLeft: 16 }}>
+                <div style={{ fontSize: 13, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>
+                  {danni.etichetta}
+                </div>
+                <div style={{ fontSize: 24, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 8 }}>
                   {danni.libero ? '🎲' : danni.guarigione ? '✚' : '💥'} <strong>{danni.totale}</strong>
                   {danni.libero ? '' : danni.guarigione ? ' PF recuperati' : ' danni'}
-                  {danni.critico ? ' (critico!)' : ''}
+                  {danni.critico && <span style={styles.badge(C.goldDark)}>⚔ CRITICO!</span>}
                 </div>
-                <div style={styles.detail}>
-                  {danni.etichetta} · {danni.dettaglio} = {danni.totale}
+                <div style={{ ...styles.detail, marginTop: 4 }}>
+                  Dettaglio: {danni.dettaglio}
                 </div>
+              </div>
+            ) : (
+              <div style={{ ...styles.detail, marginLeft: 16 }}>
+                Tieni premuto un valore (caratteristiche, tiri salvezza, abilità, attacchi,
+                iniziativa…), rilascia e il dado rotola qui. Funziona anche il doppio click.
               </div>
             )}
           </div>
