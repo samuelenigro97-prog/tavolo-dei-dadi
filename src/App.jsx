@@ -2409,7 +2409,7 @@ export default function App() {
                     onClick={() => { setRoster((r) => ({ ...r, attivo: id })); setMostraMenu(false); }}
                   >
                     <span>{p.nome || 'Senza nome'}</span>
-                    <span style={styles.detail}>{p.classe ? `${p.classe}` : '—'} {p.livello ? `(Liv. ${p.livello})` : ''}</span>
+                    <span style={styles.detail}>{p.classe ? `${p.classe}` : '—'}</span>
                   </button>
                   <button
                     style={{ ...styles.buttonDanger, padding: '4px 10px', fontSize: 13, flexShrink: 0 }}
@@ -2819,7 +2819,7 @@ export default function App() {
             >
               {Object.entries(roster.personaggi).map(([id, p]) => (
                 <option key={id} value={id}>
-                  {p.nome || 'Senza nome'}{p.classe ? ` · ${p.classe}` : ''}{p.livello ? ` (Liv. ${p.livello})` : ''}
+                  {p.nome || 'Senza nome'}{p.classe ? ` · ${p.classe}` : ''}
                 </option>
               ))}
             </select>
