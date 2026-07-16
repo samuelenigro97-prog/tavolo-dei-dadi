@@ -74,7 +74,7 @@ html, body { margin: 0; padding: 0; background: ${j.bg}; }
 /* consente alle colonne della griglia di stringersi (niente overflow orizzontale) */
 .griglia-scheda > * { min-width: 0; }
 /* riquadri vitali: 5 colonne fisse → riga 1: CA | PF(x2) | Riposo | TsMorte ; riga 2: BonusComp | Iniziativa | Velocità | PercPass */
-.vitali { display: grid; grid-template-columns: 90px 1fr 1fr 80px 100px; gap: 5px; align-items: stretch; }
+.vitali { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; align-items: stretch; }
 /* consente ai riquadri di stringersi sotto la larghezza del contenuto (niente overflow) */
 .vitali > * { min-width: 0; }
 .vitali > * > * { min-width: 0; }
