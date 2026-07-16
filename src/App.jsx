@@ -2852,22 +2852,6 @@ export default function App() {
                   ×
                 </button>
               )}
-              <button
-                className="tirabile"
-                style={{
-                  position: 'absolute', bottom: 8, right: 8, zIndex: 10,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-                  padding: '4px 10px', borderRadius: 20, border: `1px solid ${scheda.ispirazione ? C.goldDark : 'rgba(255,255,255,0.2)'}`,
-                  background: 'rgba(0,0,0,0.65)',
-                  color: scheda.ispirazione ? C.goldDark : '#aaa',
-                  cursor: 'pointer', transition: 'all 0.2s', fontSize: 10, fontWeight: 'bold', letterSpacing: 0.5
-                }}
-                onClick={(e) => { e.stopPropagation(); aggiorna({ ispirazione: !scheda.ispirazione }); }}
-                title="Ispirazione: spendila per avere vantaggio a un tiro o ripetere un dado"
-              >
-                <span style={{ fontSize: 16, marginTop: -2 }}>{scheda.ispirazione ? '★' : '☆'}</span>
-                <span>ISPIRAZIONE</span>
-              </button>
               <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
             </div>
             
@@ -3045,10 +3029,31 @@ export default function App() {
               </div>
             </div>
 
-            {/* Percezione Passiva — torna a occupare 2 colonne per simmetria */}
-            <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
+            {/* Percezione Passiva */}
+            <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>Perc. Passiva</div>
               <div style={styles.vitalValue}>{percezionePassiva}</div>
+            </div>
+
+            {/* Ispirazione */}
+            <div style={styles.vitalBox}>
+              <div style={styles.vitalLabel}>Ispirazione</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                <button
+                  className="tirabile"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    padding: '2px 8px', fontSize: 18, borderRadius: 12, border: 'none',
+                    background: 'transparent',
+                    color: scheda.ispirazione ? C.goldDark : C.border,
+                    cursor: 'pointer', transition: 'all 0.2s', marginTop: -4
+                  }}
+                  onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
+                  title="Ispirazione: spendila per avere vantaggio a un tiro o ripetere un dado"
+                >
+                  {scheda.ispirazione ? '★' : '☆'}
+                </button>
+              </div>
             </div>
           </div>
 
