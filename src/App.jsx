@@ -2264,20 +2264,7 @@ export default function App() {
           onClick={(e) => { if (e.target === e.currentTarget) setMostraMenu(false); }}
         >
           <div style={{ ...styles.panel, maxWidth: 460, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
-            <h1 style={{ ...styles.title, marginBottom: 2 }}>🎲 Scheda Interattiva</h1>
-            <div style={{ display: 'flex', gap: 6, justifyContent: 'center', alignItems: 'center', marginBottom: 16 }}>
-              <span style={styles.detail}>Regole D&D:</span>
-              {['2024', '2014'].map((v) => (
-                <button
-                  key={v}
-                  style={{ ...styles.modeButton(regoleVersione === v), fontSize: 12, padding: '3px 10px' }}
-                  onClick={() => setRegoleVersione(v)}
-                  title={v === '2024' ? '5.5 (2024): sfinimento −2 ai tiri per livello' : '5.0 (2014): sfinimento a effetti crescenti'}
-                >
-                  {v === '2024' ? '5.5 (2024)' : '5.0 (2014)'}
-                </button>
-              ))}
-            </div>
+            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 16 }}>🎲 Scheda Interattiva</h1>
 
             <button
               style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 14 }}
