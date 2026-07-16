@@ -2580,6 +2580,10 @@ export default function App() {
               ))}
             </select>
           )}
+
+          <div style={{ fontSize: 15, fontWeight: 'bold', color: C.goldDark, display: 'flex', alignItems: 'center', gap: 4, marginRight: 8, paddingLeft: 4 }}>
+            Liv. <Editable value={scheda.livello} tipo="numero" width={26} onChange={(v) => aggiorna({ livello: Math.max(1, Math.min(20, v)) })} />
+          </div>
           <button style={styles.buttonMini} onClick={() => setRinominando(!rinominando)} title="Rinomina il personaggio">✎</button>
           <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', tira: true }); setMostraCrea(true); }} title="Nuovo personaggio">＋</button>
           <button style={styles.buttonMini} onClick={duplicaPersonaggio} title="Duplica il personaggio attivo">⧉</button>
@@ -2623,6 +2627,21 @@ export default function App() {
                   ×
                 </button>
               )}
+              <button
+                className="tirabile"
+                style={{
+                  position: 'absolute', bottom: 8, right: 8, zIndex: 10,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: 34, height: 34, borderRadius: '50%', border: `1px solid ${scheda.ispirazione ? C.goldDark : 'rgba(255,255,255,0.2)'}`,
+                  background: 'rgba(0,0,0,0.65)',
+                  color: scheda.ispirazione ? C.goldDark : '#aaa',
+                  cursor: 'pointer', transition: 'all 0.2s', fontSize: 20
+                }}
+                onClick={(e) => { e.stopPropagation(); aggiorna({ ispirazione: !scheda.ispirazione }); }}
+                title="Ispirazione: spendila per avere vantaggio a un tiro o ripetere un dado"
+              >
+                {scheda.ispirazione ? '★' : '☆'}
+              </button>
               <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
             </div>
             
@@ -2800,31 +2819,10 @@ export default function App() {
               </div>
             </div>
 
-            {/* Percezione Passiva — occupa 1 colonna (prima erano 2) */}
-            <div style={styles.vitalBox}>
+            {/* Percezione Passiva — torna a occupare 2 colonne per simmetria */}
+            <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
               <div style={styles.vitalLabel}>Perc. Passiva</div>
               <div style={styles.vitalValue}>{percezionePassiva}</div>
-            </div>
-
-            {/* Ispirazione */}
-            <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>Ispirazione</div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                <button
-                  className="tirabile"
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    padding: '2px 8px', fontSize: 18, borderRadius: 12, border: 'none',
-                    background: 'transparent',
-                    color: scheda.ispirazione ? C.goldDark : C.border,
-                    cursor: 'pointer', transition: 'all 0.2s', marginTop: -4
-                  }}
-                  onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
-                  title="Ispirazione: spendila per avere vantaggio a un tiro o ripetere un dado"
-                >
-                  {scheda.ispirazione ? '★' : '☆'}
-                </button>
-              </div>
             </div>
           </div>
 
