@@ -1713,6 +1713,16 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem('scheda-interattiva:versione', regoleVersione); } catch { /* niente */ }
   }, [regoleVersione]);
+
+  // Cloud Sync
+  const [mostraCloud, setMostraCloud] = useState(false);
+  const [githubToken, setGithubToken] = useState(() => localStorage.getItem('scheda-interattiva:github-token') || '');
+  const [gistId, setGistId] = useState(() => localStorage.getItem('scheda-interattiva:gist-id') || '');
+  const [cloudStatus, setCloudStatus] = useState({ text: '', type: '' });
+
+  // Level Up
+  const [mostraLevelUp, setMostraLevelUp] = useState(false);
+  const [levelUpBozza, setLevelUpBozza] = useState({ metodo: 'media', hpLanciato: 0 });
   const ordineRef = useRef(ordineSezioni);
   ordineRef.current = ordineSezioni;
   const nodiSezioni = useRef({}); // id sezione → elemento DOM
@@ -2243,6 +2253,88 @@ export default function App() {
     }
   }
 
+  // --- Cloud Sync (GitHub Gist) ---
+
+  async function salvaSuCloud() {
+    if (!githubToken) {
+      setCloudStatus({ text: 'Inserisci il GitHub Token per salvare.', type: 'error' });
+      return;
+    }
+    try {
+      setCloudStatus({ text: 'Salvataggio in corso...', type: 'info' });
+      const dati = JSON.stringify(roster, null, 2);
+      
+      if (gistId) {
+        const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `token ${githubToken}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ files: { 'roster_tavolo_dei_dadi.json': { content: dati } } })
+        });
+        if (!res.ok) throw new Error('Errore aggiornamento Gist. Token o ID non validi.');
+        setCloudStatus({ text: '✅ Roster salvato su Cloud!', type: 'success' });
+      } else {
+        const res = await fetch(`https://api.github.com/gists`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `token ${githubToken}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            description: 'Salvataggio Cloud - Tavolo dei Dadi',
+            public: false,
+            files: { 'roster_tavolo_dei_dadi.json': { content: dati } }
+          })
+        });
+        if (!res.ok) throw new Error('Errore creazione Gist. Token non valido.');
+        const out = await res.json();
+        setGistId(out.id);
+        localStorage.setItem('scheda-interattiva:gist-id', out.id);
+        setCloudStatus({ text: '✅ Nuovo salvataggio Cloud creato!', type: 'success' });
+      }
+    } catch (err) {
+      setCloudStatus({ text: err.message, type: 'error' });
+    }
+  }
+
+  async function caricaDaCloud() {
+    if (!githubToken || !gistId) {
+      setCloudStatus({ text: 'Inserisci Token e Gist ID per caricare.', type: 'error' });
+      return;
+    }
+    try {
+      setCloudStatus({ text: 'Caricamento in corso...', type: 'info' });
+      const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+        headers: {
+          'Authorization': `token ${githubToken}`,
+          'Accept': 'application/vnd.github.v3+json',
+        }
+      });
+      if (!res.ok) throw new Error('Errore caricamento. Token o ID non validi.');
+      const out = await res.json();
+      const file = out.files['roster_tavolo_dei_dadi.json'];
+      if (!file) throw new Error('Il file "roster_tavolo_dei_dadi.json" non è presente nel Gist.');
+      const parsed = JSON.parse(file.content);
+      
+      const loadedRoster = { attivo: parsed.attivo, personaggi: {} };
+      for (const id in parsed.personaggi) {
+        loadedRoster.personaggi[id] = normalizeImported(parsed.personaggi[id]);
+      }
+      if (!loadedRoster.attivo || !loadedRoster.personaggi[loadedRoster.attivo]) {
+        loadedRoster.attivo = Object.keys(loadedRoster.personaggi)[0] || '';
+      }
+      
+      setRoster(loadedRoster);
+      setCloudStatus({ text: '✅ Roster caricato e sincronizzato!', type: 'success' });
+    } catch (err) {
+      setCloudStatus({ text: err.message, type: 'error' });
+    }
+  }
+
   const critico = tiro?.naturale === 20;
   const fallimento = tiro?.naturale === 1;
   const dannoAttaccoValido = tiro?.attacco && parseEspressioneDado(tiro.attacco.danno || '');
@@ -2325,6 +2417,130 @@ export default function App() {
         </div>
       )}
 
+      {mostraCloud && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1002, padding: 16,
+            background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setMostraCloud(false); }}
+        >
+          <div style={{ ...styles.panel, maxWidth: 460, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
+            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 12 }}>☁️ Sincronizzazione Cloud</h1>
+            <p style={{ ...styles.detail, marginBottom: 16, lineHeight: 1.4 }}>
+              Salva e carica i tuoi personaggi su un Gist privato di GitHub per sincronizzarli tra PC e telefono.
+              <br />
+              <a href="https://github.com/settings/tokens/new?scopes=gist&description=Tavolo+dei+Dadi+Cloud+Sync" target="_blank" rel="noreferrer" style={{ color: C.goldDark, textDecoration: 'underline' }}>
+                Clicca qui per generare un GitHub Token gratuito
+              </a> (seleziona lo scope "gist").
+            </p>
+
+            <label style={{ ...styles.detail, display: 'block', marginBottom: 3, fontWeight: 'bold' }}>GitHub Personal Access Token</label>
+            <input
+              type="password"
+              style={{ ...styles.inlineInput, width: '100%', padding: '6px 8px', marginBottom: 12, fontSize: 13 }}
+              placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+              value={githubToken}
+              onChange={(e) => {
+                setGithubToken(e.target.value);
+                localStorage.setItem('scheda-interattiva:github-token', e.target.value);
+              }}
+            />
+
+            <label style={{ ...styles.detail, display: 'block', marginBottom: 3, fontWeight: 'bold' }}>Gist ID (creato automaticamente al primo salvataggio)</label>
+            <input
+              type="text"
+              style={{ ...styles.inlineInput, width: '100%', padding: '6px 8px', marginBottom: 16, fontSize: 13, fontFamily: 'monospace' }}
+              placeholder="Lascia vuoto se è il primo salvataggio"
+              value={gistId}
+              onChange={(e) => {
+                setGistId(e.target.value);
+                localStorage.setItem('scheda-interattiva:gist-id', e.target.value);
+              }}
+            />
+
+            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+              <button style={{ ...styles.buttonPrimary, flex: 1 }} onClick={salvaSuCloud}>⬆️ Salva su Cloud</button>
+              <button style={{ ...styles.button, flex: 1, borderColor: C.green, color: C.green }} onClick={caricaDaCloud}>⬇️ Carica da Cloud</button>
+            </div>
+
+            {cloudStatus.text && (
+              <div style={{ padding: 10, borderRadius: 6, background: cloudStatus.type === 'error' ? 'rgba(255,0,0,0.1)' : cloudStatus.type === 'success' ? 'rgba(0,255,0,0.1)' : 'rgba(255,255,255,0.05)', color: cloudStatus.type === 'error' ? C.red : cloudStatus.type === 'success' ? C.green : C.goldDark, fontSize: 13, textAlign: 'center', marginBottom: 12 }}>
+                {cloudStatus.text}
+              </div>
+            )}
+
+            <button style={{ ...styles.button, width: '100%' }} onClick={() => setMostraCloud(false)}>Chiudi</button>
+          </div>
+        </div>
+      )}
+
+      {mostraLevelUp && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1002, padding: 16,
+            background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setMostraLevelUp(false); }}
+        >
+          <div style={{ ...styles.panel, maxWidth: 400, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
+            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 12 }}>⬆️ Passaggio di Livello</h1>
+            <div style={{ textAlign: 'center', marginBottom: 16 }}>
+              Da livello <strong>{scheda.livello || 1}</strong> a livello <strong>{(scheda.livello || 1) + 1}</strong>
+            </div>
+
+            <p style={{ ...styles.detail, marginBottom: 16, lineHeight: 1.4 }}>
+              Scegli come ottenere i tuoi nuovi Punti Ferita massimi. Il tuo modificatore di Costituzione ({conSegno(levelUpBozza.modCos)}) viene aggiunto in automatico.
+            </p>
+
+            <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+              <div
+                style={{ ...styles.button, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, borderColor: levelUpBozza.metodo === 'media' ? C.goldDark : C.border, background: levelUpBozza.metodo === 'media' ? 'rgba(255,215,0,0.1)' : 'transparent' }}
+                onClick={() => setLevelUpBozza((b) => ({ ...b, metodo: 'media' }))}
+              >
+                <div style={{ fontWeight: 'bold' }}>Media Fissa</div>
+                <div style={{ fontSize: 24, color: C.goldDark }}>+{levelUpBozza.hpGainMedia} PF</div>
+                <div style={styles.detail}>Veloce e sicuro</div>
+              </div>
+              <div
+                style={{ ...styles.button, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, borderColor: levelUpBozza.metodo === 'tiro' ? C.goldDark : C.border, background: levelUpBozza.metodo === 'tiro' ? 'rgba(255,215,0,0.1)' : 'transparent' }}
+                onClick={() => setLevelUpBozza((b) => ({ ...b, metodo: 'tiro' }))}
+              >
+                <div style={{ fontWeight: 'bold' }}>Tira il Dado (1d{levelUpBozza.facceDV})</div>
+                <div style={{ fontSize: 24, color: C.goldDark }}>
+                  {levelUpBozza.tiroFatto > 0 ? `+${Math.max(1, levelUpBozza.tiroFatto + levelUpBozza.modCos)} PF` : '?'}
+                </div>
+                <div style={styles.detail}>
+                  {levelUpBozza.tiroFatto > 0 ? `(Hai tirato ${levelUpBozza.tiroFatto})` : <button style={{ ...styles.buttonMini, fontSize: 12 }} onClick={(e) => { e.stopPropagation(); setLevelUpBozza((b) => ({ ...b, tiroFatto: Math.floor(Math.random() * b.facceDV) + 1, metodo: 'tiro' })); }}>Tira Ora</button>}
+                </div>
+              </div>
+            </div>
+
+            <button
+              style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 12 }}
+              disabled={levelUpBozza.metodo === 'tiro' && !levelUpBozza.tiroFatto}
+              onClick={() => {
+                const gain = levelUpBozza.metodo === 'media' ? levelUpBozza.hpGainMedia : Math.max(1, levelUpBozza.tiroFatto + levelUpBozza.modCos);
+                const nuovoLivello = (scheda.livello || 1) + 1;
+                const dvAttuale = String(scheda.dadiVita || '').split('d')[1] || '8';
+                
+                aggiorna({
+                  livello: nuovoLivello,
+                  pfMax: scheda.pfMax + gain,
+                  pfAttuali: scheda.pfAttuali + gain, // Cura automatica dei PF appena guadagnati
+                  dadiVita: `${nuovoLivello}d${dvAttuale}`, // Aggiorna formula dadi vita totali
+                  bonusCompetenza: bonusCompetenzaDaLivello(nuovoLivello)
+                });
+                setMostraLevelUp(false);
+              }}
+            >
+              🚀 Conferma Level Up
+            </button>
+            <button style={{ ...styles.button, width: '100%' }} onClick={() => setMostraLevelUp(false)}>Annulla</button>
+          </div>
+        </div>
+      )}
+
       {mostraCrea && (() => {
         const setB = (patch) => setBozzaCrea((b) => ({ ...b, ...patch }));
         const stileSelect = { ...styles.inlineInput, width: '100%', padding: '6px 8px', fontSize: 15 };
@@ -2403,6 +2619,13 @@ export default function App() {
             onClick={() => setMostraMenu(true)}
           >
             🏠 Menu
+          </button>
+          <button
+            style={{ ...styles.modeButton(mostraCloud), color: C.goldDark, borderColor: C.goldDark }}
+            title="Sincronizza i tuoi personaggi sul Cloud GitHub"
+            onClick={() => { setCloudStatus({ text: '', type: '' }); setMostraCloud(true); }}
+          >
+            ☁️ Cloud
           </button>
         </div>
         <button
@@ -2571,6 +2794,20 @@ export default function App() {
 
           <div style={{ fontSize: 15, fontWeight: 'bold', color: C.goldDark, display: 'flex', alignItems: 'center', gap: 4, marginRight: 8, paddingLeft: 4 }}>
             Liv. <Editable value={scheda.livello} tipo="numero" width={26} onChange={(v) => aggiorna({ livello: Math.max(1, Math.min(20, v)) })} />
+            <button
+              style={{ ...styles.buttonMini, marginLeft: 2, padding: '2px 4px', fontSize: 14 }}
+              title="Assistente al Passaggio di Livello"
+              onClick={() => {
+                const dvMatch = String(scheda.dadiVita || '').match(/d(\d+)/i);
+                const facceDV = dvMatch ? parseInt(dvMatch[1]) : 8;
+                const modCos = modificatore(scheda.caratteristiche?.costituzione || 10) || 0;
+                const avgHpGain = Math.floor(facceDV / 2) + 1 + modCos;
+                setLevelUpBozza({ metodo: 'media', hpGainMedia: Math.max(1, avgHpGain), facceDV, modCos, tiroFatto: 0 });
+                setMostraLevelUp(true);
+              }}
+            >
+              ⬆️
+            </button>
           </div>
           <button style={styles.buttonMini} onClick={() => setRinominando(!rinominando)} title="Rinomina il personaggio">✎</button>
           <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', tira: true }); setMostraCrea(true); }} title="Nuovo personaggio">＋</button>
