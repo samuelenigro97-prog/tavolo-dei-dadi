@@ -2267,7 +2267,7 @@ export default function App() {
       nuovoPersonaggio(normalizeImported(dati));
       setMostraMenu(false);
     } catch {
-      setErroreImport('File JSON non valido: usa un file esportato da Scheda Interattiva.');
+      setErroreImport('File JSON non valido: usa un file esportato da Tavolo dei Dadi.');
     }
   }
 
@@ -2391,7 +2391,7 @@ export default function App() {
           onClick={(e) => { if (e.target === e.currentTarget) setMostraMenu(false); }}
         >
           <div style={{ ...styles.panel, maxWidth: 460, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
-            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 16 }}>Scheda Interattiva</h1>
+            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 16 }}>Tavolo dei Dadi</h1>
 
             <button
               style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 14 }}
@@ -2643,7 +2643,7 @@ export default function App() {
       })()}
 
       <header style={{ ...styles.header, position: 'relative' }}>
-        <h1 style={styles.title}>Scheda Interattiva <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 'normal', letterSpacing: 0.5 }}>v{APP_VERSION}</span></h1>
+        <h1 style={styles.title}>Tavolo dei Dadi <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 'normal', letterSpacing: 0.5 }}>v{APP_VERSION}</span></h1>
         <p style={styles.hint}>
           1 click per modificare · tieni premuto e rilascia (o doppio click) per tirare il dado
         </p>
@@ -3687,18 +3687,18 @@ export default function App() {
                 <button style={styles.buttonPrimary} disabled={importInCorso} onClick={() => fileRef.current?.click()}>
                   {importInCorso ? 'Trascrizione in corso…' : '📜 Importa scheda PDF'}
                 </button>
-                <button style={styles.button} onClick={esportaJson}>
-                  💾 Esporta JSON
-                </button>
                 <button style={styles.button} onClick={() => jsonRef.current?.click()}>
                   📂 Importa JSON
                 </button>
                 <button
                   style={styles.button}
-                  onClick={() => nuovoPersonaggio(normalizeImported(ESEMPIO_GNOMO))}
-                  title="Carica la scheda di esempio (Boddynock, gnomo mago di livello 10)"
+                  onClick={() => nuovoPersonaggio(normalizeImported(FLYORA_JSON))}
+                  title="Carica la scheda di esempio (Flyora, stregone livello 4)"
                 >
-                  ✨ Carica esempio: Gnomo Mago
+                  ✨ Carica esempio (Flyora)
+                </button>
+                <button style={styles.button} onClick={esportaJson}>
+                  💾 Esporta JSON
                 </button>
               </div>
               {erroreImport && <div style={{ color: C.red, marginTop: 8 }}>{erroreImport}</div>}
