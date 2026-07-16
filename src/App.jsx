@@ -1226,7 +1226,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.6.0';
+const APP_VERSION = '1.6.1';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2991,9 +2991,16 @@ export default function App() {
                     }}
                   />
                 ) : (
-                  <div style={{ textAlign: 'center', color: C.inkDim }}>
-                    <div style={{ fontSize: 24 }}>🖼</div>
-                    <div style={{ fontSize: 9, letterSpacing: 1 }}>RITRATTO</div>
+                  // Nessuna foto: mostra l'avatar tematico (iniziale su colore
+                  // classe) così il riquadro non resta un vuoto grigio; resta
+                  // cliccabile per caricare un'immagine.
+                  <div style={{ position: 'relative', width: '100%', height: '100%' }} title="Click: carica l'immagine del personaggio">
+                    <img
+                      src={avatarSvgFallback(scheda.classe, scheda.specie, scheda.nome)}
+                      alt={`Ritratto di ${scheda.nome}`}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    />
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.35)', color: '#fff', fontSize: 9, letterSpacing: 1, textAlign: 'center', padding: '2px 0' }}>RITRATTO</div>
                   </div>
                 )}
               </div>
