@@ -2374,7 +2374,7 @@ export default function App() {
                     onClick={() => { setRoster((r) => ({ ...r, attivo: id })); setMostraMenu(false); }}
                   >
                     <span>{p.nome || 'Senza nome'}</span>
-                    <span style={styles.detail}>{p.classe ? `${p.classe}` : '—'}</span>
+                    <span style={styles.detail}>{p.classe ? `${p.classe}` : '—'} {p.livello ? `(Liv. ${p.livello})` : ''}</span>
                   </button>
                   <button
                     style={{ ...styles.buttonDanger, padding: '4px 10px', fontSize: 13, flexShrink: 0 }}
@@ -2615,7 +2615,7 @@ export default function App() {
         <div style={{ position: 'absolute', left: 0, top: 12, display: 'flex', gap: 6 }}>
           <button
             style={styles.modeButton(false)}
-            title="Menu iniziale: nuovo personaggio, carica, versione"
+            title="Menu iniziale: nuovo personaggio, carica"
             onClick={() => setMostraMenu(true)}
           >
             🏠 Menu
@@ -2678,7 +2678,7 @@ export default function App() {
                   {danni.etichetta}
                 </div>
                 <div style={{ fontSize: 24, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {danni.libero ? 'Danno' : danni.guarigione ? '✚' : '💥'} <strong>{danni.totale}</strong>
+                  {danni.libero ? '' : danni.guarigione ? '✚' : '💥'} <strong>{danni.totale}</strong>
                   {danni.libero ? '' : danni.guarigione ? ' PF recuperati' : ' danni'}
                   {danni.critico && <span style={styles.badge(C.goldDark)}>⚔ CRITICO!</span>}
                 </div>
@@ -2786,7 +2786,7 @@ export default function App() {
             >
               {Object.entries(roster.personaggi).map(([id, p]) => (
                 <option key={id} value={id}>
-                  {p.nome || 'Senza nome'}{p.classe ? ` · ${p.classe}` : ''}
+                  {p.nome || 'Senza nome'}{p.classe ? ` · ${p.classe}` : ''}{p.livello ? ` (Liv. ${p.livello})` : ''}
                 </option>
               ))}
             </select>
