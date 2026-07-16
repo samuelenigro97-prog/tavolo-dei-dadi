@@ -224,7 +224,7 @@ const DANNI_5E = [
   'Acido', 'Contundente', 'Freddo', 'Fuoco', 'Fulmine', 'Necrotico',
   'Perforante', 'Psichico', 'Radiante', 'Tagliente', 'Tuono', 'Veleno',
 ];
-const SENSI_5E = ['Scurovisione', 'Vista cieca', 'Percezione tremorsensitiva', 'Vista vera'];
+const SENSI_5E = ['Vista normale', 'Scurovisione', 'Vista cieca', 'Percezione tremorsensitiva'];
 
 // Sfinimento: nella 5.0 (2014) sono 6 livelli con effetti crescenti; nella 5.5
 // (2024) ogni livello dà −2 a tutti i tiri di d20. Testo degli effetti 2014:
@@ -2980,7 +2980,7 @@ export default function App() {
                 return (
                   <div style={{ height: 5, borderRadius: 3, background: C.border, overflow: 'hidden', margin: '4px 10px 0', display: 'flex' }} title={`${scheda.pfAttuali} / ${scheda.pfMax} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
                     <div style={{ width: `${percNormale}%`, height: '100%', background: coloreNormale, transition: 'width 0.25s ease' }} />
-                    {temp > 0 && <div style={{ width: `${percTemp}%`, height: '100%', background: C.blue, transition: 'width 0.25s ease' }} />}
+                    {temp > 0 && <div style={{ width: `${percTemp}%`, height: '100%', background: '#4A90E2', transition: 'width 0.25s ease' }} />}
                   </div>
                 );
               })()}
