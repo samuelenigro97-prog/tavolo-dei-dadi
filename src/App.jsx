@@ -720,7 +720,6 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
 .campi-anagrafica .campo-modulo-box { padding: 0 4px !important; min-height: 28px !important; height: 28px; display: flex; align-items: center; overflow: hidden; }
 .campi-anagrafica .campo-modulo-label { font-size: 8px !important; margin-top: 1px; }
 .selettore-personaggio {
-  max-width: calc(50% - 5px);
   width: 100%;
   margin: 0 0 8px 0 !important;
 }
