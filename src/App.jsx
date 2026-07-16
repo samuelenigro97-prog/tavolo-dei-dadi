@@ -2851,6 +2851,7 @@ export default function App() {
 
         {/* Testata: anagrafica + riquadri vitali uniformi */}
         <section style={styles.panel}>
+          <h2 style={styles.panelTitle}>Profilo e Statistiche</h2>
           <div style={{ display: 'flex', gap: 14, alignItems: 'stretch' }}>
             <div style={{ flex: '0 0 160px', position: 'relative', display: 'flex', flexDirection: 'column' }}>
               <div
