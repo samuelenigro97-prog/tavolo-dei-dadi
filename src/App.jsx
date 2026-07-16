@@ -2737,7 +2737,7 @@ export default function App() {
               title="Cronologia dei tiri della sessione"
               onClick={() => setStoricoAperto(!storicoAperto)}
             >
-              📜
+              Cronologia
             </button>
           </div>
         </div>
