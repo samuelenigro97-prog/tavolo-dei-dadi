@@ -2628,25 +2628,6 @@ export default function App() {
             </div>
             
             <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 6 }}>
-                <button
-                  className="tirabile"
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 6,
-                    padding: '4px 14px', borderRadius: 999, cursor: 'pointer',
-                    fontSize: 13, letterSpacing: 0.5, whiteSpace: 'nowrap',
-                    background: scheda.ispirazione ? 'rgba(212,175,55,0.2)' : 'rgba(0,0,0,0.1)',
-                    border: `1px solid ${scheda.ispirazione ? '#d4af37' : C.border}`,
-                    color: scheda.ispirazione ? '#d4af37' : C.ink,
-                    boxShadow: scheda.ispirazione ? '0 0 8px rgba(212,175,55,0.5)' : 'none',
-                    fontWeight: scheda.ispirazione ? 'bold' : 'normal',
-                  }}
-                  title="Ispirazione (eroica): click per attivare/disattivare"
-                  onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
-                >
-                  {scheda.ispirazione ? '★' : '☆'} Ispirazione
-                </button>
-              </div>
               <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px 10px', alignItems: 'end' }}>
                 <CampoModulo label={regoleVersione === '2024' ? 'Specie' : 'Razza'}>
                   <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => aggiorna({ specie: v, ...ritrattoAuto(scheda.classe, v, scheda.nome) })} title="Scegli la specie (aggiorna l'avatar)" />
@@ -2696,7 +2677,7 @@ export default function App() {
                   <option key={t.key} value={t.key}>{t.label}</option>
                 ))}
               </select>
-              <div style={{ fontSize: 10, color: C.inkDim, display: 'flex', gap: 5, alignItems: 'center', justifyContent: 'center', marginTop: 3, flexWrap: 'wrap' }}>
+              <div style={{ fontSize: 10, color: C.inkDim, display: 'flex', gap: 5, alignItems: 'center', justifyContent: 'center', marginTop: 'auto', paddingTop: 6, flexWrap: 'wrap' }}>
                 {(scheda.armatura.tipo === 'leggera' || scheda.armatura.tipo === 'media' || scheda.armatura.tipo === 'pesante') && (
                   <span>base <Editable value={scheda.armatura.base} tipo="numero" width={24} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, base: Math.max(0, v) } })} /></span>
                 )}
@@ -2820,10 +2801,31 @@ export default function App() {
               </div>
             </div>
 
-            {/* Percezione Passiva — occupa le ultime 2 colonne della riga 2 */}
-            <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
+            {/* Percezione Passiva — occupa 1 colonna (prima erano 2) */}
+            <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>Perc. Passiva</div>
               <div style={styles.vitalValue}>{percezionePassiva}</div>
+            </div>
+
+            {/* Ispirazione */}
+            <div style={styles.vitalBox}>
+              <div style={styles.vitalLabel}>Ispirazione</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                <button
+                  className="tirabile"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    padding: '2px 8px', fontSize: 18, borderRadius: 12, border: 'none',
+                    background: 'transparent',
+                    color: scheda.ispirazione ? C.goldDark : C.border,
+                    cursor: 'pointer', transition: 'all 0.2s', marginTop: -4
+                  }}
+                  onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
+                  title="Ispirazione: spendila per avere vantaggio a un tiro o ripetere un dado"
+                >
+                  {scheda.ispirazione ? '★' : '☆'}
+                </button>
+              </div>
             </div>
           </div>
 
