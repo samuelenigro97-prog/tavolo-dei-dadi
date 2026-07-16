@@ -2619,16 +2619,17 @@ export default function App() {
                 className="tirabile"
                 style={{
                   position: 'absolute', bottom: 8, right: 8, zIndex: 10,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  width: 34, height: 34, borderRadius: '50%', border: `1px solid ${scheda.ispirazione ? C.goldDark : 'rgba(255,255,255,0.2)'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                  padding: '4px 10px', borderRadius: 20, border: `1px solid ${scheda.ispirazione ? C.goldDark : 'rgba(255,255,255,0.2)'}`,
                   background: 'rgba(0,0,0,0.65)',
                   color: scheda.ispirazione ? C.goldDark : '#aaa',
-                  cursor: 'pointer', transition: 'all 0.2s', fontSize: 20
+                  cursor: 'pointer', transition: 'all 0.2s', fontSize: 10, fontWeight: 'bold', letterSpacing: 0.5
                 }}
                 onClick={(e) => { e.stopPropagation(); aggiorna({ ispirazione: !scheda.ispirazione }); }}
                 title="Ispirazione: spendila per avere vantaggio a un tiro o ripetere un dado"
               >
-                {scheda.ispirazione ? '★' : '☆'}
+                <span style={{ fontSize: 16, marginTop: -2 }}>{scheda.ispirazione ? '★' : '☆'}</span>
+                <span>ISPIRAZIONE</span>
               </button>
               <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
             </div>
