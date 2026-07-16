@@ -977,17 +977,22 @@ const FLYORA_JSON = {
   caratteristiche: { forza: 12, destrezza: 15, costituzione: 16, intelligenza: 14, saggezza: 15, carisma: 18 },
   tiriSalvezza: { forza: false, destrezza: false, costituzione: true, intelligenza: false, saggezza: false, carisma: true },
   abilita: {
-    acrobazia: false, addestrareAnimali: false, arcano: true, atletica: false,
-    furtivita: false, indagare: false, inganno: false, intimidire: false,
-    intrattenere: false, intuizione: false, medicina: true, natura: false,
-    percezione: true, persuasione: true, rapiditaDiMano: false,
-    religione: true, sopravvivenza: false, storia: false
+    acrobazia: 0, addestrareAnimali: 0, arcano: 1, atletica: 0,
+    furtivita: 0, indagare: 0, inganno: 1, intimidire: 0,
+    intrattenere: 0, intuizione: 0, medicina: 1, natura: 0,
+    percezione: 1, persuasione: 1, rapiditaDiMano: 0,
+    religione: 1, sopravvivenza: 0, storia: 0
   },
-  maestrie: {},
+  competenzeExtra: 'Armi semplici',
+  resistenze: '',
+  sensi: 'Scurovisione',
+  condizioni: [],
+  concentrazione: '',
   attacchi: [
-    { id: 1, nome: 'Spada', caratteristica: 'destrezza', competenza: true, danno: '1d6', tipoDanno: 'Perforante', bonusAttacco: 0, bonusDanno: 0, note: 'Accurata, Leggera' },
-    { id: 2, nome: 'Pugnale x2', caratteristica: 'destrezza', competenza: true, danno: '1d4', tipoDanno: 'Perforante', bonusAttacco: 0, bonusDanno: 0, note: 'Accurata, Leggera, Lancio' },
-    { id: 3, nome: 'Bastone Ferrato', caratteristica: 'forza', competenza: true, danno: '1d6', tipoDanno: 'Contundente', bonusAttacco: 0, bonusDanno: 0, note: 'Versatile (1d8 a due mani)' }
+    { id: 1, nome: 'Spada', caratteristica: 'destrezza', competenza: true, danno: '1d6+2', tipoDanno: 'Perforante', bonusAttacco: 0, bonusDanno: 0, note: 'Accurata, Leggera' },
+    { id: 2, nome: 'Pugnale x2', caratteristica: 'destrezza', competenza: true, danno: '1d4+2', tipoDanno: 'Perforante', bonusAttacco: 0, bonusDanno: 0, note: '6/18m Accurata, Leggera, Lancio' },
+    { id: 3, nome: 'Bastone Ferrato (1 mano)', caratteristica: 'forza', competenza: true, danno: '1d6+1', tipoDanno: 'Contundente', bonusAttacco: 0, bonusDanno: 0, note: 'Versatile' },
+    { id: 4, nome: 'Bastone Ferrato (2 mani)', caratteristica: 'forza', competenza: true, danno: '1d8+1', tipoDanno: 'Contundente', bonusAttacco: 0, bonusDanno: 0, note: 'Versatile' }
   ],
   incantatore: { caratteristica: 'carisma', cdExtra: 0, attaccoExtra: 0 },
   slotIncantesimo: {
@@ -1005,10 +1010,10 @@ const FLYORA_JSON = {
     { livello: 0, nome: 'Interdizione alle Lame', tempo: 'AZ', gittata: 'contatto', note: 'V S, res. armi' },
     { livello: 0, nome: 'Messaggio', tempo: 'AZ', gittata: '36m', note: 'V S M' },
     { livello: 0, nome: 'Morsa del Gelo', tempo: 'AZ', gittata: '18m', note: 'V S' },
-    { livello: 0, nome: 'Prestidigitazione', tempo: 'AZ', gittata: '3m', note: 'V S' },
+    { livello: 0, nome: 'Prestidigitazione', tempo: 'AZ', gittata: '3m', note: 'V S (Razza)' },
     { livello: 0, nome: 'Vampa', tempo: 'AZ', gittata: '18m', note: 'V S' },
     { livello: 1, nome: 'Caduta Morbida', tempo: 'REAZ', gittata: '18m', note: 'V M' },
-    { livello: 1, nome: 'Individuazione del Magico', tempo: 'AZ', gittata: '9m', note: 'V S M, Rituale' },
+    { livello: 1, nome: 'Individuazione del Magico', tempo: 'AZ', gittata: '9m', note: 'V S M, Rituale (Razza)' },
     { livello: 1, nome: 'Onda Tonante', tempo: 'AZ', gittata: 'cubo 4,5m', note: 'V S' },
     { livello: 1, nome: 'Scudo', tempo: 'REAZ', gittata: '', note: 'V S' },
     { livello: 1, nome: 'Dardo Incantato', tempo: 'AZ', gittata: '36m', note: 'V S' },
@@ -2448,7 +2453,6 @@ export default function App() {
               >
                 ✨ Esempio (Flyora)
               </button>
-              <button style={styles.button} onClick={() => fileRef.current?.click()}>📜 Da PDF</button>
             </div>
             {erroreImport && <div style={{ color: C.red, marginTop: 10 }}>{erroreImport}</div>}
           </div>
