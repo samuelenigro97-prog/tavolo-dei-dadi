@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useRegisterSW } from 'virtual:pwa-register/react';
 
 // ---------------------------------------------------------------------------
 // Palette e stili
@@ -1799,6 +1800,16 @@ function Sezione({ titolo, children, aperto = true, manigliaProps, trascinando, 
 // ---------------------------------------------------------------------------
 
 export default function App() {
+  // aggiornamenti PWA: mostra un banner quando è pronta una nuova versione
+  const {
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW({
+    onRegisteredSW(_url, r) {
+      if (r) setInterval(() => r.update(), 60 * 1000); // controlla ogni minuto
+    },
+  });
+
   const [roster, setRoster] = useState(loadState);
   const [modalita, setModalita] = useState('normale'); // normale | vantaggio | svantaggio
   const [rolling, setRolling] = useState(false);
@@ -2469,6 +2480,21 @@ export default function App() {
   return (
     <div style={styles.app}>
       <style>{GLOBAL_CSS}</style>
+
+      {needRefresh && (
+        <div
+          style={{
+            position: 'fixed', bottom: 16, left: '50%', transform: 'translateX(-50%)', zIndex: 2000,
+            display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderRadius: 10,
+            background: C.panel, border: `1px solid var(--c-gold-dark)`, boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
+            maxWidth: '92vw',
+          }}
+        >
+          <span style={{ ...styles.detail, color: C.ink }}>🔄 È disponibile una nuova versione.</span>
+          <button style={styles.buttonPrimary} onClick={() => updateServiceWorker(true)}>Ricarica</button>
+          <button style={styles.buttonMini} title="Ignora" onClick={() => setNeedRefresh(false)}>✕</button>
+        </div>
+      )}
 
       {mostraMenu && (
         <div
