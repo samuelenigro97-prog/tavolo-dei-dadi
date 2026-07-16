@@ -2490,7 +2490,7 @@ export default function App() {
             ))}
             <button
               style={styles.modeButton(storicoAperto)}
-              title="Storico dei tiri della sessione"
+              title="Cronologia dei tiri della sessione"
               onClick={() => setStoricoAperto(!storicoAperto)}
             >
               📜
@@ -2500,7 +2500,7 @@ export default function App() {
 
         {storicoAperto && (
           <section style={{ ...styles.panel, padding: '10px 16px' }}>
-            <h2 style={{ ...styles.panelTitle, fontSize: 13 }}>Storico dei tiri</h2>
+            <h2 style={{ ...styles.panelTitle, fontSize: 13 }}>Cronologia</h2>
             {storico.length === 0 ? (
               <div style={styles.detail}>Ancora nessun tiro in questa sessione.</div>
             ) : (
