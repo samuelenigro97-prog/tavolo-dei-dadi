@@ -3094,17 +3094,6 @@ export default function App() {
 
           {/* stato di gioco: concentrazione, sfinimento, difese, sensi, condizioni su una riga */}
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginTop: 12 }}>
-            <span style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6, padding: '2px 8px', borderRadius: 6,
-              background: scheda.concentrazione ? C.panelLight : 'transparent',
-              border: `1px solid ${scheda.concentrazione ? C.goldDark : C.border}`,
-            }}>
-              🧠 <span style={styles.detail}>Concentrazione:</span>
-              <Editable value={scheda.concentrazione} onChange={(v) => aggiorna({ concentrazione: v })} width={110} title="Incantesimo su cui ti concentri" />
-              {scheda.concentrazione && (
-                <span className="tirabile" style={{ cursor: 'pointer', color: C.red }} title="Termina la concentrazione" onClick={() => aggiorna({ concentrazione: '' })}>✕</span>
-              )}
-            </span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               <span style={styles.detail}>Sfinimento</span>
               <button style={{ ...styles.buttonMini, padding: '1px 8px' }} onClick={() => aggiorna({ sfinimento: Math.max(0, scheda.sfinimento - 1) })} title="Diminuisci">−</button>
