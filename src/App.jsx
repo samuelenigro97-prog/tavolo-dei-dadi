@@ -3371,22 +3371,26 @@ export default function App() {
                   <Editable value={scheda.sintonia} onChange={(v) => aggiorna({ sintonia: v })} width={300} />
                 </span>
               </div>
-              <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', marginTop: 10 }}>
+              <div style={{ marginTop: 10 }}>
                 <span style={styles.detail}>
                   Lingue:{' '}
-                  <Editable value={scheda.lingue} onChange={(v) => aggiorna({ lingue: v })} width={240} />
+                  <Editable value={scheda.lingue} onChange={(v) => aggiorna({ lingue: v })} width={300} />
                 </span>
-                <span style={{ flex: 1 }} />
+              </div>
+              
+              <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
                 {DENARI.map(({ key, label }) => (
-                  <span key={key} style={styles.detail}>
-                    {label}{' '}
-                    <Editable
-                      value={scheda.denari[key]}
-                      tipo="numero"
-                      width={48}
-                      onChange={(v) => aggiorna({ denari: { ...scheda.denari, [key]: Math.max(0, v) } })}
-                    />
-                  </span>
+                  <div key={key} style={{ ...styles.vitalBox, minHeight: 'auto', padding: '6px 4px' }}>
+                    <div style={styles.vitalLabel}>{label}</div>
+                    <div style={styles.vitalValue}>
+                      <Editable
+                        value={scheda.denari[key]}
+                        tipo="numero"
+                        width={40}
+                        onChange={(v) => aggiorna({ denari: { ...scheda.denari, [key]: Math.max(0, v) } })}
+                      />
+                    </div>
+                  </div>
                 ))}
               </div>
             </Sezione>
