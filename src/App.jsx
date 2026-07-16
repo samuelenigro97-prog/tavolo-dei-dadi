@@ -530,13 +530,16 @@ const styles = {
     fontSize: 14,
   }),
   dot: (livello) => ({
-    width: 13,
-    height: 13,
+    width: 14,
+    height: 14,
     flexShrink: 0,
-    borderRadius: '50%',
-    border: `2px solid ${livello > 0 ? C.goldDark : C.inkDim}`,
-    background: livello === 2 ? C.goldDark : livello === 1 ? C.gold : 'transparent',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 15,
+    color: livello > 0 ? C.goldDark : C.inkDim,
     cursor: 'pointer',
+    userSelect: 'none',
   }),
   editable: {
     borderBottom: `1px dashed ${C.inkDim}`,
@@ -3070,7 +3073,7 @@ export default function App() {
             </div>
 
             {/* Ispirazione */}
-            <div style={styles.vitalBox}>
+            <div style={{ ...styles.vitalBox, borderColor: scheda.ispirazione ? C.goldDark : C.border }}>
               <div style={{ ...styles.vitalLabel, color: scheda.ispirazione ? C.goldDark : undefined }}>Ispirazione</div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                 <button
@@ -3187,7 +3190,9 @@ export default function App() {
                         e.stopPropagation();
                         aggiorna({ tiriSalvezza: { ...scheda.tiriSalvezza, [key]: !scheda.tiriSalvezza[key] } });
                       }}
-                    />
+                    >
+                      {scheda.tiriSalvezza[key] ? '★' : '○'}
+                    </span>
                     <strong style={{ width: 32 }}>{conSegno(bonusTS)}</strong>
                     <em>Tiro salvezza</em>
                   </Rollable>
@@ -3208,13 +3213,14 @@ export default function App() {
                           onPointerDown={(e) => e.stopPropagation()}
                           onClick={(e) => {
                             e.stopPropagation();
-                            aggiorna({ abilita: { ...scheda.abilita, [a.key]: (liv + 1) % 3 } });
+                            aggiorna({ abilita: { ...scheda.abilita, [a.key]: liv ? 0 : 1 } });
                           }}
-                        />
+                        >
+                          {liv ? '★' : '○'}
+                        </span>
                         <strong style={{ width: 32 }}>{conSegno(bonus)}</strong>
                         <span>
                           {a.label}
-                          {liv === 2 && <span style={{ color: C.goldDark }}> ✶</span>}
                         </span>
                       </Rollable>
                     );
