@@ -3213,17 +3213,23 @@ export default function App() {
             </div>
 
             {/* Ispirazione */}
-            <div style={{ ...styles.vitalBox, borderColor: scheda.ispirazione ? C.goldDark : C.border }}>
-              <div style={{ ...styles.vitalLabel, color: scheda.ispirazione ? C.goldDark : undefined }}>Ispirazione</div>
+            <div style={{
+              ...styles.vitalBox,
+              borderColor: scheda.ispirazione ? C.goldDark : C.border,
+              background: scheda.ispirazione ? 'rgba(184,134,11,0.18)' : C.panelLight,
+              transition: 'background 0.25s, border-color 0.25s',
+            }}>
+              <div style={{ ...styles.vitalLabel, color: scheda.ispirazione ? C.goldDark : C.inkDim }}>Ispirazione</div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                 <button
                   className="tirabile"
                   style={{
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    padding: '2px 8px', fontSize: 18, borderRadius: 12, border: 'none',
-                    background: 'transparent',
-                    color: scheda.ispirazione ? C.goldDark : C.border,
-                    cursor: 'pointer', transition: 'all 0.2s', marginTop: -4
+                    padding: '2px 8px', fontSize: 18, borderRadius: 8,
+                    border: `1px solid ${scheda.ispirazione ? C.goldDark : C.border}`,
+                    background: C.panelLight,
+                    color: scheda.ispirazione ? C.goldDark : C.inkDim,
+                    cursor: 'pointer', transition: 'all 0.2s',
                   }}
                   onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
                   title="Ispirazione: spendila per avere vantaggio a un tiro o ripetere un dado"
