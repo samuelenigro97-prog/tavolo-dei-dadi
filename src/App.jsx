@@ -84,10 +84,18 @@ const BACKGROUND_COMPETENZE = {
   Soldato: ['atletica', 'intimidire'],
   Viandante: ['intuizione', 'rapiditaDiMano'],
 };
-const SPECIE_5E = [
-  'Aasimar', 'Dragonide', 'Elfo', 'Gnomo', 'Goliath', 'Halfling',
-  'Nano', 'Orco', 'Tiefling', 'Umano',
-];
+const SPECIE_5E = {
+  'Aasimar': ['Aasimar'],
+  'Dragonide': ['Dragonide'],
+  'Elfo': ['Elfo', 'Elfo Alto', 'Elfo dei Boschi', 'Elfo Oscuro (Drow)'],
+  'Gnomo': ['Gnomo', 'Gnomo delle Foreste', 'Gnomo delle Rocce'],
+  'Goliath': ['Goliath'],
+  'Halfling': ['Halfling', 'Halfling Piedelesto', 'Halfling Tozzo'],
+  'Nano': ['Nano', 'Nano delle Colline', 'Nano delle Montagne'],
+  'Orco': ['Mezzorco', 'Orco'],
+  'Tiefling': ['Tiefling'],
+  'Umano': ['Umano', 'Mezzelfo']
+};
 const TAGLIE_5E = ['Minuscola', 'Piccola', 'Media', 'Grande', 'Enorme', 'Mastodontica'];
 const ALLINEAMENTI_5E = [
   'Legale Buono', 'Neutrale Buono', 'Caotico Buono',
@@ -610,14 +618,14 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
 /* consente alle colonne della griglia di stringersi (niente overflow orizzontale) */
 .griglia-scheda > * { min-width: 0; }
 /* riquadri vitali: 5 colonne fisse → riga 1: CA | PF(x2) | Riposo | TsMorte ; riga 2: BonusComp | Iniziativa | Velocità | PercPass */
-.vitali { display: grid; grid-template-columns: 90px 1fr 1fr 80px 100px; gap: 5px; align-items: stretch; }
+.vitali { display: grid; grid-template-columns: 132px 1fr 1fr 80px 100px; gap: 5px; align-items: stretch; }
 /* consente ai riquadri di stringersi sotto la larghezza del contenuto (niente overflow) */
 .vitali > * { min-width: 0; }
 .vitali > * > * { min-width: 0; }
 /* i campi anagrafica (con le tendine): font piccolo, padding compatto, allineati in basso */
 .campi-anagrafica > * { min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; }
 .campi-anagrafica select { max-width: 100%; font-size: 11px !important; padding: 1px 2px !important; height: 20px; line-height: 1.2; }
-.campi-anagrafica .campo-modulo-box { padding: 0 2px !important; min-height: 22px !important; height: 22px; display: flex; align-items: center; overflow: hidden; }
+.campi-anagrafica .campo-modulo-box { padding: 0 4px !important; min-height: 28px !important; height: 28px; display: flex; align-items: center; overflow: hidden; }
 .campi-anagrafica .campo-modulo-label { font-size: 8px !important; margin-top: 1px; }
 @media (max-width: 820px) {
   .griglia-scheda { grid-template-columns: 1fr; }
@@ -1090,7 +1098,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.3.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1551,7 +1559,7 @@ function CampoConTendina({ value, opzioni, onChange, width, title }) {
  * così i valori personalizzati/importati non vanno persi.
  */
 function CampoTendina({ value, opzioni, onChange, title }) {
-  const std = opzioni.includes(value);
+  const std = Array.isArray(opzioni) ? opzioni.includes(value) : Object.values(opzioni).flat().includes(value);
   return (
     <>
       <select
@@ -1560,8 +1568,8 @@ function CampoTendina({ value, opzioni, onChange, title }) {
           border: 'none',
           color: C.ink,
           fontFamily: 'inherit',
-          fontSize: 12,
-          padding: '0 2px 0 0',
+          fontSize: 13,
+          padding: '0 4px 0 0',
           width: '100%',
           outline: 'none',
           cursor: 'pointer',
@@ -1575,14 +1583,18 @@ function CampoTendina({ value, opzioni, onChange, title }) {
         title={title}
       >
         <option value="" style={{ background: C.panel }}>Scegli…</option>
-        {opzioni.map((o) => (
+        {Array.isArray(opzioni) ? opzioni.map((o) => (
           <option key={o} value={o} style={{ background: C.panel }}>{o}</option>
+        )) : Object.entries(opzioni).map(([group, opts]) => (
+          <optgroup key={group} label={group} style={{ background: C.panel }}>
+            {opts.map((o) => <option key={o} value={o} style={{ background: C.panel }}>{o}</option>)}
+          </optgroup>
         ))}
         <option value="__altro" style={{ background: C.panel }}>Altro…</option>
       </select>
       {!std && value !== '' && (
-        <div style={{ marginTop: 1 }}>
-          <Editable value={value} onChange={onChange} width={80} style={{ fontSize: 12, borderBottom: 'none' }} title="Valore personalizzato" />
+        <div style={{ marginTop: 2 }}>
+          <Editable value={value} onChange={onChange} width={80} style={{ fontSize: 13, borderBottom: 'none' }} title="Valore personalizzato" />
         </div>
       )}
     </>
@@ -2341,7 +2353,11 @@ export default function App() {
               <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{regoleVersione === '2024' ? 'Specie' : 'Razza'}</label>
               <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.specie} onChange={(e) => setB({ specie: e.target.value })}>
                 <option value="">Scegli…</option>
-                {SPECIE_5E.map((n) => <option key={n} value={n}>{n}</option>)}
+                {Object.entries(SPECIE_5E).map(([g, opts]) => (
+                  <optgroup key={g} label={g}>
+                    {opts.map((n) => <option key={n} value={n}>{n}</option>)}
+                  </optgroup>
+                ))}
               </select>
 
               <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>Background</label>
@@ -2584,7 +2600,26 @@ export default function App() {
               <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px 10px', marginTop: 6, alignItems: 'end' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 6 }}>
+                <button
+                  className="tirabile"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    padding: '4px 14px', borderRadius: 999, cursor: 'pointer',
+                    fontSize: 13, letterSpacing: 0.5, whiteSpace: 'nowrap',
+                    background: scheda.ispirazione ? 'rgba(212,175,55,0.2)' : 'rgba(0,0,0,0.1)',
+                    border: `1px solid ${scheda.ispirazione ? '#d4af37' : C.border}`,
+                    color: scheda.ispirazione ? '#d4af37' : C.ink,
+                    boxShadow: scheda.ispirazione ? '0 0 8px rgba(212,175,55,0.5)' : 'none',
+                    fontWeight: scheda.ispirazione ? 'bold' : 'normal',
+                  }}
+                  title="Ispirazione (eroica): click per attivare/disattivare"
+                  onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
+                >
+                  {scheda.ispirazione ? '★' : '☆'} Ispirazione
+                </button>
+              </div>
+              <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px 10px', alignItems: 'end' }}>
                 <CampoModulo label="Livello">
                   <Editable value={scheda.livello} tipo="numero" onChange={(v) => aggiorna({ livello: v, dadiVita: esprDadiVita(v, facceDadoVita(scheda.dadiVita)), dadiVitaSpesi: Math.min(scheda.dadiVitaSpesi, Math.max(1, v)) })} width="100%" style={{ borderBottom: 'none', fontSize: 13 }} />
                 </CampoModulo>
@@ -2613,27 +2648,6 @@ export default function App() {
                 </CampoModulo>
                 <CampoModulo label="Sottoclasse">
                   <CampoTendina value={scheda.sottoclasse} opzioni={sottoclassiPerClasse(scheda.classe)} onChange={(v) => aggiorna({ sottoclasse: v })} title="Sottoclasse (opzioni in base alla classe)" />
-                </CampoModulo>
-                <CampoModulo label="Ispirazione">
-                  <div style={{ display: 'flex', width: '100%', justifyContent: 'center' }}>
-                    <span
-                      className="tirabile"
-                      style={{
-                        display: 'inline-flex', alignItems: 'center', gap: 5,
-                        padding: '1px 8px', borderRadius: 999, cursor: 'pointer',
-                        fontSize: 12, letterSpacing: 0.5, whiteSpace: 'nowrap',
-                        background: scheda.ispirazione ? 'rgba(212,175,55,0.18)' : 'transparent',
-                        border: `1px solid ${scheda.ispirazione ? '#d4af37' : C.border}`,
-                        color: scheda.ispirazione ? '#d4af37' : C.inkDim,
-                        boxShadow: scheda.ispirazione ? '0 0 6px rgba(212,175,55,0.5)' : 'none',
-                        fontWeight: scheda.ispirazione ? 'bold' : 'normal',
-                      }}
-                      title="Ispirazione (eroica): click per attivare/disattivare"
-                      onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
-                    >
-                      {scheda.ispirazione ? '★' : '☆'}
-                    </span>
-                  </div>
                 </CampoModulo>
               </div>
             </div>
