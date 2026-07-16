@@ -3225,9 +3225,8 @@ export default function App() {
                   className="tirabile"
                   style={{
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    padding: '2px 8px', fontSize: 18, borderRadius: 8,
-                    border: `1px solid ${scheda.ispirazione ? C.goldDark : C.border}`,
-                    background: C.panelLight,
+                    padding: '2px 8px', fontSize: 18, border: 'none',
+                    background: 'transparent',
                     color: scheda.ispirazione ? C.goldDark : C.inkDim,
                     cursor: 'pointer', transition: 'all 0.2s',
                   }}
