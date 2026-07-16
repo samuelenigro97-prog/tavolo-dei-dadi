@@ -371,6 +371,22 @@ function generaAvatar(classe, specie, nome) {
   return `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(seed)}`;
 }
 
+/**
+ * Avatar SVG inline (senza rete) usato come fallback quando DiceBear non è
+ * raggiungibile (offline / PWA / reti restrittive): iniziale su colore classe.
+ */
+function avatarSvgFallback(classe, specie, nome) {
+  const acc = coloreClasse(classe);
+  const col = (acc && acc.chiaro) || '#8a6508';
+  const iniziale = ((nome || specie || '?').trim()[0] || '?').toUpperCase();
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">` +
+    `<rect width="200" height="200" fill="${col}"/>` +
+    `<text x="100" y="140" font-size="120" font-family="Georgia,serif" fill="#fff" text-anchor="middle">${iniziale}</text>` +
+    `</svg>`;
+  return 'data:image/svg+xml,' + encodeURIComponent(svg);
+}
+
 const styles = {
   app: {
     minHeight: '100vh',
@@ -2940,6 +2956,13 @@ export default function App() {
                     src={scheda.ritratto}
                     alt={`Ritratto di ${scheda.nome}`}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => {
+                      // offline / DiceBear non raggiungibile → avatar SVG locale
+                      if (!e.currentTarget.dataset.fallback) {
+                        e.currentTarget.dataset.fallback = '1';
+                        e.currentTarget.src = avatarSvgFallback(scheda.classe, scheda.specie, scheda.nome);
+                      }
+                    }}
                   />
                 ) : (
                   <div style={{ textAlign: 'center', color: C.inkDim }}>
