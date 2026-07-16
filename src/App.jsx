@@ -414,15 +414,16 @@ const styles = {
     boxShadow: '0 1px 4px rgba(60,50,30,0.08)',
   },
   panelTitle: {
-    margin: '0 0 10px',
-    fontSize: 14,
+    margin: '0 0 12px',
+    fontSize: 15,
     color: C.ink,
     textAlign: 'center',
     textTransform: 'uppercase',
     fontWeight: 'bold',
-    borderBottom: `2px solid ${C.ink}`,
-    paddingBottom: 5,
-    letterSpacing: 1.5,
+    // filetto dorato sottile (più caldo e leggero della vecchia riga scura piena)
+    borderBottom: `1.5px solid ${C.goldDark}`,
+    paddingBottom: 6,
+    letterSpacing: 2.5,
   },
   // campo in stile modulo: valore su riga con etichetta sotto
   moduloLabel: {
@@ -581,12 +582,12 @@ const styles = {
     textAlign: 'center',
     background: C.panelLight,
     border: `1px solid ${C.border}`,
-    borderRadius: 7,
-    padding: '4px 3px',
+    borderRadius: 8,
+    padding: '8px 6px',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
-    minHeight: 36,
+    minHeight: 40,
   },
   vitalLabel: {
     fontSize: 9,
@@ -727,7 +728,7 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
 /* consente alle colonne della griglia di stringersi (niente overflow orizzontale) */
 .griglia-scheda > * { min-width: 0; }
 /* riquadri vitali: 5 colonne fisse → riga 1: CA | PF(x2) | Riposo | TsMorte ; riga 2: BonusComp | Iniziativa | Velocità | PercPass */
-.vitali { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; align-items: stretch; }
+.vitali { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; align-items: stretch; }
 /* consente ai riquadri di stringersi sotto la larghezza del contenuto (niente overflow) */
 .vitali > * { min-width: 0; }
 .vitali > * > * { min-width: 0; }
@@ -1226,7 +1227,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.6.1';
+const APP_VERSION = '1.6.2';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2941,7 +2942,7 @@ export default function App() {
           <div style={{ fontSize: 15, fontWeight: 'bold', color: C.goldDark, display: 'flex', alignItems: 'center', gap: 4, marginRight: 8, paddingLeft: 4 }}>
             Liv. <Editable value={scheda.livello} tipo="numero" width={26} onChange={(v) => aggiorna({ livello: Math.max(1, Math.min(20, v)) })} />
             <button
-              style={{ ...styles.buttonMini, marginLeft: 2, padding: '2px 4px', fontSize: 14 }}
+              style={{ ...styles.buttonMini, marginLeft: 2 }}
               title="Assistente al Passaggio di Livello"
               onClick={() => {
                 const dvMatch = String(scheda.dadiVita || '').match(/d(\d+)/i);
