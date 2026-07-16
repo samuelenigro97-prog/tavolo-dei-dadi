@@ -381,8 +381,8 @@ const styles = {
   },
   header: {
     maxWidth: 1080,
-    margin: '0 auto',
-    padding: '8px 0 2px',
+    margin: '0 auto 16px auto',
+    padding: '12px 0 16px',
     textAlign: 'center',
   },
   title: { margin: 0, fontSize: 21, letterSpacing: 1, color: 'var(--c-title)' },
@@ -618,7 +618,7 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     fontSize: 15,
-    color: livello > 0 ? C.goldDark : C.inkDim,
+    color: livello === 2 ? C.goldDark : livello === 1 ? C.ink : C.inkDim,
     cursor: 'pointer',
     userSelect: 'none',
   }),
@@ -719,8 +719,14 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
 .campi-anagrafica select { max-width: 100%; font-size: 11px !important; padding: 1px 2px !important; height: 20px; line-height: 1.2; }
 .campi-anagrafica .campo-modulo-box { padding: 0 4px !important; min-height: 28px !important; height: 28px; display: flex; align-items: center; overflow: hidden; }
 .campi-anagrafica .campo-modulo-label { font-size: 8px !important; margin-top: 1px; }
+.selettore-personaggio {
+  max-width: calc(50% - 5px);
+  width: 100%;
+  margin: 0 0 8px 0 !important;
+}
 @media (max-width: 820px) {
   .griglia-scheda { grid-template-columns: 1fr; }
+  .selettore-personaggio { max-width: 100%; }
 }
 @media (max-width: 560px) {
   .anagrafica > div:last-child > div:last-child { grid-template-columns: repeat(2, 1fr) !important; }
@@ -957,7 +963,7 @@ function schedaVuota() {
     },
     // 0 = nessuna competenza, 1 = competenza, 2 = maestria (expertise)
     abilita: Object.fromEntries(ABILITA.map((a) => [a.key, 0])),
-    attacchi: [{ id: 1, nome: 'Spada lunga', bonus: 5, danno: '1d8+3', tipoDanno: 'Tagliente', note: '' }],
+    attacchi: [{ id: 1, nome: 'Spada lunga', categoria: 'Azione', bonus: 5, danno: '1d8+3', tipoDanno: 'Tagliente', note: '' }],
     incantatore: { caratteristica: '' }, // '' = non incantatore
     slotIncantesimo: Object.fromEntries(
       Array.from({ length: 9 }, (_, i) => [i + 1, { totale: 0, spesi: 0 }])
@@ -999,6 +1005,12 @@ const CONDIZIONI_5E = [
   'Accecato', 'Affascinato', 'Afferrato', 'Assordato', 'Avvelenato',
   'Incapacitato', 'Invisibile', 'Paralizzato', 'Pietrificato',
   'Privo di sensi', 'Prono', 'Spaventato', 'Stordito', 'Trattenuto',
+];
+
+const LINGUE_5E = [
+  'Abissale', 'Celestiale', 'Comune', 'Draconico', 'Elfico', 
+  'Gigante', 'Gnomesco', 'Goblin', 'Halfling', 'Infernale', 
+  'Nanico', 'Orchesco', 'Primordiale', 'Silvano', 'Sottocomune'
 ];
 
 /**
@@ -1107,8 +1119,9 @@ const FLYORA_JSON = {
     { id: 2, nome: 'Stregoneria Innata', max: 2, attuali: 2, ricarica: 'Lungo' },
     { id: 3, nome: 'Borsa del Guaritore', max: 10, attuali: 10, ricarica: 'Nessuno' }
   ],
-  privilegi: "Stregoneria Innata\nFonte di Magia\nMetamagia: Incantesimo Celato, Preciso\nOnde di Caos\nRetaggio Fatato\nScurovisione\nTrance\nGuaritore\nGuerramaga",
-  talenti: "Guaritore\nGuerramaga",
+  privilegi: "Stregoneria Innata\nFonte di Magia\nMetamagia: Incantesimo Celato, Preciso\nOnde di Caos",
+  trattiSpecie: "Retaggio Fatato\nScurovisione\nTrance",
+  talenti: "Guaritore\nIncantatore da Guerra",
   equipaggiamento: "Focus Arcano (Cristallo)\nBorsa da erborista\nGiaciglio\nLibro (filosofia)\nDotazione da avventuriero\nAbiti da viaggiatore",
   lingue: "Comune, Elfico",
   monete: { mr: 0, ma: 0, me: 0, mo: 74, mp: 0 },
@@ -1244,29 +1257,6 @@ function saveState(roster) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Import PDF — NON MODIFICARE la logica di transcribePdf
-// ---------------------------------------------------------------------------
-
-async function transcribePdf(file) {
-  const base64 = await new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result).split(',')[1]);
-    reader.onerror = () => reject(new Error('Lettura del file fallita'));
-    reader.readAsDataURL(file);
-  });
-
-  const risposta = await fetch('/api/transcribe', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ pdfBase64: base64 }),
-  });
-  if (!risposta.ok) {
-    const errore = await risposta.json().catch(() => ({}));
-    throw new Error(errore.error || `Errore del server (${risposta.status})`);
-  }
-  return risposta.json();
-}
 
 /** Normalizza i dati importati dal PDF (o da JSON/esempio) nel modello della scheda. */
 function normalizeImported(dati) {
@@ -1300,6 +1290,7 @@ function normalizeImported(dati) {
         .map((a, i) => ({
           id: Date.now() + i,
           nome: String(a.nome),
+          categoria: ['Azione', 'Bonus', 'Reazione'].includes(a.categoria) ? a.categoria : 'Azione',
           bonus: num(a.bonus, 0),
           danno: typeof a.danno === 'string' && parseEspressioneDado(a.danno) ? a.danno.trim() : '',
           tipoDanno: str(a.tipoDanno),
@@ -1800,7 +1791,7 @@ export default function App() {
   const [tipoDadoInUso, setTipoDadoInUso] = useState(20);
   const [tiro, setTiro] = useState(null);
   const [danni, setDanni] = useState(null);
-  const [importInCorso, setImportInCorso] = useState(false);
+
   const [erroreImport, setErroreImport] = useState('');
   const [espressioneLibera, setEspressioneLibera] = useState('');
   const [erroreEspressione, setErroreEspressione] = useState(false);
@@ -1967,7 +1958,6 @@ export default function App() {
     }
   }, [tema, sistemaScuro, oraTick, classeAttiva]);
   const intervalRef = useRef(null);
-  const fileRef = useRef(null);
   const jsonRef = useRef(null);
   const ritrattoRef = useRef(null);
 
@@ -2072,14 +2062,6 @@ export default function App() {
     });
   }
 
-  /** Tira le caratteristiche (4d6 scarta il minimo) e le assegna per la classe. */
-  function tiraCaratteristiche() {
-    const qualcheValore = Object.values(scheda.caratteristiche).some((v) => v !== 10);
-    if (qualcheValore && !window.confirm('Tirare nuove caratteristiche (4d6, scarta il più basso)? Sovrascrive quelle attuali.')) return;
-    const nuove = generaCaratteristiche(scheda.classe);
-    aggiorna({ caratteristiche: nuove });
-    registra(`Caratteristiche tirate (4d6): ${Object.entries(nuove).map(([k, v]) => `${k.slice(0, 3).toUpperCase()} ${v}`).join(', ')}`);
-  }
 
   /** Azzera la scheda del personaggio attivo, mantenendolo nel roster. */
   function resetScheda() {
@@ -2376,23 +2358,6 @@ export default function App() {
       setMostraMenu(false);
     } catch {
       setErroreImport('File JSON non valido: usa un file esportato da Tavolo dei Dadi.');
-    }
-  }
-
-  async function importaPdf(evento) {
-    const file = evento.target.files?.[0];
-    evento.target.value = '';
-    if (!file) return;
-    setErroreImport('');
-    setImportInCorso(true);
-    try {
-      const dati = await transcribePdf(file);
-      nuovoPersonaggio(normalizeImported(dati));
-      setMostraMenu(false);
-    } catch (err) {
-      setErroreImport(err.message || 'Import fallito');
-    } finally {
-      setImportInCorso(false);
     }
   }
 
@@ -2897,7 +2862,7 @@ export default function App() {
         </section>
 
         {/* Personaggi: il riquadro blu È il nome/selettore. Cambia PG al volo; ✎ per rinominare */}
-        <section style={{ ...styles.panel, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'nowrap', padding: '6px 12px' }}>
+        <section className="selettore-personaggio" style={{ ...styles.panel, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'nowrap', padding: '6px 12px' }}>
           {rinominando ? (
             <input
               autoFocus
@@ -3145,24 +3110,9 @@ export default function App() {
               </div>
             </div>
 
-            {/* RIGA 2 — Bonus Comp. | Iniziativa | Velocità | Perc. Passiva — riempiono le ultime 4 celle (5ª col. lasciata vuota o aggiustata) */}
-            {/* Bonus Competenza */}
-            <div style={{ ...styles.vitalBox, gridColumn: '1' }}>
-              <div style={styles.vitalLabel}>Bonus Comp.</div>
-              <div style={styles.vitalValue}>
-                <Editable value={conSegno(scheda.bonusCompetenza)} onChange={(v) => aggiorna({ bonusCompetenza: parseInt(v, 10) || 0 })} width={38} title="1 click: modifica" />
-              </div>
-              {scheda.bonusCompetenza !== bonusCompetenzaDaLivello(scheda.livello) && (
-                <span className="tirabile" style={{ fontSize: 9, color: C.goldDark, cursor: 'pointer', marginTop: 1 }}
-                  title={`Bonus corretto per liv. ${scheda.livello}: ${conSegno(bonusCompetenzaDaLivello(scheda.livello))}`}
-                  onClick={() => aggiorna({ bonusCompetenza: bonusCompetenzaDaLivello(scheda.livello) })}>
-                  auto {conSegno(bonusCompetenzaDaLivello(scheda.livello))}
-                </span>
-              )}
-            </div>
-
+            {/* RIGA 2 — Iniziativa | Velocità | Perc. Passiva | Resistenze | Vista */}
             {/* Iniziativa */}
-            <div style={styles.vitalBox}>
+            <div style={{ ...styles.vitalBox, gridColumn: '1' }}>
               <div style={styles.vitalLabel}>Iniziativa</div>
               <div style={styles.vitalValue}>
                 <Rollable onRoll={() => lanciaD20('Iniziativa', modificatore(scheda.caratteristiche.destrezza))}>
@@ -3186,6 +3136,81 @@ export default function App() {
               <div style={styles.vitalValue}>{percezionePassiva}</div>
             </div>
 
+            {/* Resistenze */}
+            <div style={styles.vitalBox}>
+              <div style={styles.vitalLabel}>Resistenze</div>
+              <div style={{ fontSize: 10, color: C.ink, textAlign: 'center', lineHeight: 1.3 }}>
+                {scheda.resistenze ? scheda.resistenze : <span style={{ color: C.inkDim }}>—</span>}
+              </div>
+              <select
+                value=""
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (!v) return;
+                  const cur = scheda.resistenze ? scheda.resistenze.split(',').map(x => x.trim()).filter(Boolean) : [];
+                  if (!cur.includes(v)) aggiorna({ resistenze: [...cur, v].join(', ') });
+                }}
+                style={{ ...styles.inlineInput, fontSize: 10, padding: '1px 2px', height: 18, marginTop: 2 }}
+                title="Aggiungi resistenza"
+              >
+                <option value="">＋</option>
+                {DANNI_5E.map((o) => <option key={o} value={o}>{o}</option>)}
+              </select>
+            </div>
+
+            {/* Vista */}
+            <div style={styles.vitalBox}>
+              <div style={styles.vitalLabel}>Vista</div>
+              <div style={{ fontSize: 10, color: C.ink, textAlign: 'center', lineHeight: 1.3 }}>
+                {scheda.sensi ? scheda.sensi : <span style={{ color: C.inkDim }}>—</span>}
+              </div>
+              <select
+                value=""
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (!v) return;
+                  const cur = scheda.sensi ? scheda.sensi.split(',').map(x => x.trim()).filter(Boolean) : [];
+                  if (!cur.includes(v)) aggiorna({ sensi: [...cur, v].join(', ') });
+                }}
+                style={{ ...styles.inlineInput, fontSize: 10, padding: '1px 2px', height: 18, marginTop: 2 }}
+                title="Aggiungi senso"
+              >
+                <option value="">＋</option>
+                {SENSI_5E.map((o) => <option key={o} value={o}>{o}</option>)}
+              </select>
+            </div>
+
+            {/* RIGA 3 — Bonus Comp. | Sfinimento | Ispirazione | Condizioni (span 2) */}
+            {/* Bonus Competenza */}
+            <div style={{ ...styles.vitalBox, gridColumn: '1' }}>
+              <div style={styles.vitalLabel}>Bonus Comp.</div>
+              <div style={styles.vitalValue}>
+                <Editable value={conSegno(scheda.bonusCompetenza)} onChange={(v) => aggiorna({ bonusCompetenza: parseInt(v, 10) || 0 })} width={38} title="1 click: modifica" />
+              </div>
+              {scheda.bonusCompetenza !== bonusCompetenzaDaLivello(scheda.livello) && (
+                <span className="tirabile" style={{ fontSize: 9, color: C.goldDark, cursor: 'pointer', marginTop: 1 }}
+                  title={`Bonus corretto per liv. ${scheda.livello}: ${conSegno(bonusCompetenzaDaLivello(scheda.livello))}`}
+                  onClick={() => aggiorna({ bonusCompetenza: bonusCompetenzaDaLivello(scheda.livello) })}>
+                  auto {conSegno(bonusCompetenzaDaLivello(scheda.livello))}
+                </span>
+              )}
+            </div>
+
+            {/* Sfinimento */}
+            <div style={styles.vitalBox}>
+              <div style={styles.vitalLabel}>Sfinimento</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 'auto', marginBottom: 'auto' }}>
+                <button style={{ ...styles.buttonMini, padding: '1px 6px' }} onClick={() => aggiorna({ sfinimento: Math.max(0, scheda.sfinimento - 1) })} title="Diminuisci">−</button>
+                <strong style={{ color: scheda.sfinimento ? C.red : C.ink, fontSize: 16, minWidth: 12, textAlign: 'center' }}>{scheda.sfinimento}</strong>
+                <button style={{ ...styles.buttonMini, padding: '1px 6px' }} onClick={() => aggiorna({ sfinimento: Math.min(6, scheda.sfinimento + 1) })} title="Aumenta">+</button>
+              </div>
+              {scheda.sfinimento > 0 && (
+                <div style={{ fontSize: 9, color: C.red, marginTop: 'auto' }} title={regoleVersione === '2024' ? 'Regole 2024: −2 ai tiri di d20 per livello' : `Regole 2014: ${SFINIMENTO_2014[scheda.sfinimento]}`}>
+                  {regoleVersione === '2024' ? `−${scheda.sfinimento * 2}` : `L${scheda.sfinimento}`}
+                </div>
+              )}
+            </div>
+
             {/* Ispirazione */}
             <div style={{ ...styles.vitalBox, borderColor: scheda.ispirazione ? C.goldDark : C.border }}>
               <div style={{ ...styles.vitalLabel, color: scheda.ispirazione ? C.goldDark : undefined }}>Ispirazione</div>
@@ -3206,52 +3231,36 @@ export default function App() {
                 </button>
               </div>
             </div>
-          </div>
 
-          {/* stato di gioco: concentrazione, sfinimento, difese, sensi, condizioni su una riga */}
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginTop: 12 }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span style={styles.detail}>Sfinimento</span>
-              <button style={{ ...styles.buttonMini, padding: '1px 8px' }} onClick={() => aggiorna({ sfinimento: Math.max(0, scheda.sfinimento - 1) })} title="Diminuisci">−</button>
-              <strong style={{ color: scheda.sfinimento ? C.red : C.ink, minWidth: 14, textAlign: 'center', display: 'inline-block' }}>{scheda.sfinimento}</strong>
-              <button style={{ ...styles.buttonMini, padding: '1px 8px' }} onClick={() => aggiorna({ sfinimento: Math.min(6, scheda.sfinimento + 1) })} title="Aumenta">+</button>
-              {scheda.sfinimento > 0 && (
-                <span style={{ ...styles.detail, color: C.red }} title={regoleVersione === '2024' ? 'Regole 2024: −2 ai tiri di d20 per livello' : `Regole 2014: ${SFINIMENTO_2014[scheda.sfinimento]}`}>
-                  {regoleVersione === '2024' ? `−${scheda.sfinimento * 2} ai tiri` : SFINIMENTO_2014[scheda.sfinimento]}
-                </span>
-              )}
-            </span>
-            <span style={styles.detail}>Resistenze:{' '}
-              <CampoConTendina value={scheda.resistenze} opzioni={DANNI_5E} onChange={(v) => aggiorna({ resistenze: v })} width={120} title="Resistenze, immunità e vulnerabilità ai danni" />
-            </span>
-            <span style={styles.detail}>Vista:{' '}
-              <CampoConTendina value={scheda.sensi} opzioni={SENSI_5E} onChange={(v) => aggiorna({ sensi: v })} width={110} title="Vista normale, scurovisione, ecc." />
-            </span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-              <span style={styles.detail}>Condizioni:</span>
-              {scheda.condizioni.map((c) => (
-                <button
-                  key={c}
-                  className="tirabile"
-                  style={{ ...styles.modeButton(true), fontSize: 11, padding: '3px 8px' }}
-                  title="Click per rimuovere"
-                  onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
-                >
-                  {c} ✕
-                </button>
-              ))}
-              <select
-                value=""
-                onChange={(e) => { if (e.target.value) aggiorna({ condizioni: [...scheda.condizioni, e.target.value] }); }}
-                style={{ ...styles.inlineInput, fontSize: 12, padding: '2px 4px' }}
-                title="Aggiungi una condizione"
-              >
-                <option value="">＋ aggiungi</option>
-                {CONDIZIONI_5E.filter((c) => !scheda.condizioni.includes(c)).map((c) => (
-                  <option key={c} value={c}>{c}</option>
+            {/* Condizioni */}
+            <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
+              <div style={styles.vitalLabel}>Condizioni</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center', alignItems: 'center', marginTop: 2 }}>
+                {scheda.condizioni.map((c) => (
+                  <button
+                    key={c}
+                    className="tirabile"
+                    style={{ ...styles.modeButton(true), fontSize: 9, padding: '1px 4px', margin: 0, lineHeight: 1.4 }}
+                    title="Click per rimuovere"
+                    onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
+                  >
+                    {c} ✕
+                  </button>
                 ))}
-              </select>
-            </span>
+                <select
+                  value=""
+                  onChange={(e) => { if (e.target.value) aggiorna({ condizioni: [...scheda.condizioni, e.target.value] }); }}
+                  style={{ ...styles.inlineInput, fontSize: 10, padding: '1px 2px', height: 18 }}
+                  title="Aggiungi una condizione"
+                >
+                  <option value="">＋ aggiungi</option>
+                  {CONDIZIONI_5E.filter((c) => !scheda.condizioni.includes(c)).map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -3305,7 +3314,7 @@ export default function App() {
                         aggiorna({ tiriSalvezza: { ...scheda.tiriSalvezza, [key]: !scheda.tiriSalvezza[key] } });
                       }}
                     >
-                      {scheda.tiriSalvezza[key] ? '★\uFE0E' : '○'}
+                      {scheda.tiriSalvezza[key] ? '●' : '○'}
                     </span>
                     <strong style={{ width: 32 }}>{conSegno(bonusTS)}</strong>
                     <em>Tiro salvezza</em>
@@ -3327,10 +3336,10 @@ export default function App() {
                           onPointerDown={(e) => e.stopPropagation()}
                           onClick={(e) => {
                             e.stopPropagation();
-                            aggiorna({ abilita: { ...scheda.abilita, [a.key]: liv ? 0 : 1 } });
+                            aggiorna({ abilita: { ...scheda.abilita, [a.key]: liv === 0 ? 1 : liv === 1 ? 2 : 0 } });
                           }}
                         >
-                          {liv ? '★\uFE0E' : '○'}
+                          {liv === 2 ? '★\uFE0E' : liv === 1 ? '●' : '○'}
                         </span>
                         <strong style={{ width: 32 }}>{conSegno(bonus)}</strong>
                         <span>
@@ -3347,88 +3356,99 @@ export default function App() {
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {/* Armi e attacchi */}
             <section style={{ ...styles.panel, order: -2 }}>
-              <h2 style={styles.panelTitle}>Armi e trucchetti da combattimento</h2>
+              <h2 style={styles.panelTitle}>Azioni di combattimento</h2>
               <div style={{ overflowX: 'auto' }}>
-              <table style={styles.table}>
-                <thead>
-                  <tr>
-                    <th style={styles.th}>Nome</th>
-                    <th style={styles.th}>Bonus att.</th>
-                    <th style={styles.th}>Danno e tipo</th>
-                    <th style={styles.th}>Note</th>
-                    <th style={styles.th} />
-                  </tr>
-                </thead>
-                <tbody>
-                  {scheda.attacchi.map((a) => {
-                    const aggiornaAttacco = (patch) =>
-                      aggiorna({
-                        attacchi: scheda.attacchi.map((x) => (x.id === a.id ? { ...x, ...patch } : x)),
-                      });
-                    const dannoValido = a.danno.trim() === '' || parseEspressioneDado(a.danno);
-                    return (
-                      <tr key={a.id}>
-                        <td style={styles.td}>
-                          <Editable
-                            value={a.nome}
-                            width={150}
-                            onChange={(v) => aggiornaAttacco({ nome: v })}
-                            onRoll={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a })}
-                          />
-                        </td>
-                        <td style={styles.td}>
-                          <Editable
-                            value={conSegno(a.bonus)}
-                            width={44}
-                            onChange={(v) => aggiornaAttacco({ bonus: Number(String(v).replace('+', '')) || 0 })}
-                            onRoll={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a })}
-                          />
-                        </td>
-                        <td style={{ ...styles.td, color: dannoValido ? undefined : C.red }}>
-                          <Editable
-                            value={a.danno}
-                            width={80}
-                            onChange={(v) => aggiornaAttacco({ danno: v })}
-                            onRoll={
-                              parseEspressioneDado(a.danno)
-                                ? () => lanciaDanniDiretti(`Danni: ${a.nome}`, a.danno)
-                                : undefined
-                            }
-                            title="1 click: modifica · doppio click: tira solo i danni"
-                          />{' '}
-                          <Editable value={a.tipoDanno} width={90} onChange={(v) => aggiornaAttacco({ tipoDanno: v })} />
-                        </td>
-                        <td style={styles.td}>
-                          <Editable value={a.note} width={130} onChange={(v) => aggiornaAttacco({ note: v })} />
-                        </td>
-                        <td style={{ ...styles.td, textAlign: 'right' }}>
-                          <button
-                            style={styles.buttonDanger}
-                            onClick={() => aggiorna({ attacchi: scheda.attacchi.filter((x) => x.id !== a.id) })}
-                          >
-                            ×
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                {['Azione', 'Bonus', 'Reazione'].map((cat) => {
+                  const arr = scheda.attacchi.filter((a) => (a.categoria || 'Azione') === cat);
+                  if (arr.length === 0 && cat !== 'Azione') return null;
+                  return (
+                    <div key={cat} style={{ marginBottom: 16 }}>
+                      <h3 style={{ fontSize: 13, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 1, borderBottom: `1px solid ${C.border}`, paddingBottom: 4, marginBottom: 8 }}>
+                        {cat === 'Bonus' ? 'Azioni Bonus' : cat === 'Reazione' ? 'Reazioni' : 'Azioni'}
+                      </h3>
+                      <table style={styles.table}>
+                        <thead>
+                          <tr>
+                            <th style={styles.th}>Nome</th>
+                            <th style={styles.th}>Bonus att.</th>
+                            <th style={styles.th}>Danno e tipo</th>
+                            <th style={styles.th}>Note</th>
+                            <th style={styles.th} />
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {arr.map((a) => {
+                            const aggiornaAttacco = (patch) =>
+                              aggiorna({
+                                attacchi: scheda.attacchi.map((x) => (x.id === a.id ? { ...x, ...patch } : x)),
+                              });
+                            const dannoValido = a.danno.trim() === '' || parseEspressioneDado(a.danno);
+                            return (
+                              <tr key={a.id}>
+                                <td style={styles.td}>
+                                  <Editable
+                                    value={a.nome}
+                                    width={150}
+                                    onChange={(v) => aggiornaAttacco({ nome: v })}
+                                    onRoll={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a })}
+                                  />
+                                </td>
+                                <td style={styles.td}>
+                                  <Editable
+                                    value={conSegno(a.bonus)}
+                                    width={44}
+                                    onChange={(v) => aggiornaAttacco({ bonus: Number(String(v).replace('+', '')) || 0 })}
+                                    onRoll={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a })}
+                                  />
+                                </td>
+                                <td style={{ ...styles.td, color: dannoValido ? undefined : C.red }}>
+                                  <Editable
+                                    value={a.danno}
+                                    width={80}
+                                    onChange={(v) => aggiornaAttacco({ danno: v })}
+                                    onRoll={
+                                      parseEspressioneDado(a.danno)
+                                        ? () => lanciaDanniDiretti(`Danni: ${a.nome}`, a.danno)
+                                        : undefined
+                                    }
+                                    title="1 click: modifica · doppio click: tira solo i danni"
+                                  />{' '}
+                                  <Editable value={a.tipoDanno} width={90} onChange={(v) => aggiornaAttacco({ tipoDanno: v })} />
+                                </td>
+                                <td style={styles.td}>
+                                  <Editable value={a.note} width={130} onChange={(v) => aggiornaAttacco({ note: v })} />
+                                </td>
+                                <td style={{ ...styles.td, textAlign: 'right' }}>
+                                  <button
+                                    style={styles.buttonDanger}
+                                    onClick={() => aggiorna({ attacchi: scheda.attacchi.filter((x) => x.id !== a.id) })}
+                                  >
+                                    ×
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                      <button
+                        style={{ ...styles.button, marginTop: 6, fontSize: 12, padding: '2px 8px' }}
+                        onClick={() =>
+                          aggiorna({
+                            attacchi: [
+                              ...scheda.attacchi,
+                              { id: Date.now(), nome: 'Nuovo', categoria: cat, bonus: 0, danno: '', tipoDanno: '', note: '' },
+                            ],
+                          })
+                        }
+                      >
+                        + Aggiungi {cat.toLowerCase()}
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
-              <div style={{ marginTop: 10, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                <button
-                  style={styles.button}
-                  onClick={() =>
-                    aggiorna({
-                      attacchi: [
-                        ...scheda.attacchi,
-                        { id: Date.now(), nome: 'Nuovo attacco', bonus: 0, danno: '', tipoDanno: '', note: '' },
-                      ],
-                    })
-                  }
-                >
-                  + Aggiungi
-                </button>
+              <div style={{ marginTop: 4, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
                 <span style={styles.detail}>
                   Doppio click sul nome o sul bonus: tiro per colpire · sul danno: solo danni.
                 </span>
@@ -3531,73 +3551,82 @@ export default function App() {
                 Trucchetti e incantesimi preparati
               </h3>
               <div style={{ overflowX: 'auto' }}>
-                <table style={styles.table}>
-                  <thead>
-                    <tr>
-                      <th style={styles.th}>Liv.</th>
-                      <th style={styles.th}>Nome</th>
-                      <th style={styles.th}>Tempo</th>
-                      <th style={styles.th}>Gittata</th>
-                      <th style={styles.th}>Note</th>
-                      <th style={styles.th} />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[...scheda.incantesimiLista]
-                      .sort((a, b) => a.livello - b.livello)
-                      .map((s) => {
-                        const aggiornaIncantesimo = (patch) =>
-                          aggiorna({
-                            incantesimiLista: scheda.incantesimiLista.map((x) =>
-                              x.id === s.id ? { ...x, ...patch } : x
-                            ),
-                          });
-                        return (
-                          <tr key={s.id}>
-                            <td style={styles.td}>
-                              <Editable value={s.livello} tipo="numero" width={34} onChange={(v) => aggiornaIncantesimo({ livello: Math.max(0, Math.min(9, v)) })} />
-                            </td>
-                            <td style={styles.td}>
-                              <Editable value={s.nome} width={170} onChange={(v) => aggiornaIncantesimo({ nome: v })} />
-                            </td>
-                            <td style={styles.td}>
-                              <Editable value={s.tempo} width={70} onChange={(v) => aggiornaIncantesimo({ tempo: v })} />
-                            </td>
-                            <td style={styles.td}>
-                              <Editable value={s.gittata} width={70} onChange={(v) => aggiornaIncantesimo({ gittata: v })} />
-                            </td>
-                            <td style={styles.td}>
-                              <Editable value={s.note} width={120} onChange={(v) => aggiornaIncantesimo({ note: v })} />
-                            </td>
-                            <td style={{ ...styles.td, textAlign: 'right' }}>
-                              <button
-                                style={styles.buttonDanger}
-                                onClick={() =>
-                                  aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })
-                                }
-                              >
-                                ×
-                              </button>
-                            </td>
+                {Array.from({ length: 10 }, (_, liv) => {
+                  const spells = scheda.incantesimiLista.filter((s) => s.livello === liv);
+                  const haSlot = liv === 0 || ((scheda.slotIncantesimo[liv]?.totale || 0) > 0);
+                  const haSpells = spells.length > 0;
+                  
+                  if (!haSlot && !haSpells) return null;
+                  
+                  return (
+                    <div key={liv} style={{ marginBottom: 16 }}>
+                      <h4 style={{ fontSize: 12, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5, borderBottom: `1px solid ${C.border}`, paddingBottom: 2, marginBottom: 6 }}>
+                        {liv === 0 ? 'Trucchetti (Livello 0)' : `${liv}° Livello`}
+                      </h4>
+                      <table style={styles.table}>
+                        <thead>
+                          <tr>
+                            <th style={styles.th}>Nome</th>
+                            <th style={styles.th}>Tempo</th>
+                            <th style={styles.th}>Gittata</th>
+                            <th style={styles.th}>Note</th>
+                            <th style={styles.th} />
                           </tr>
-                        );
-                      })}
-                  </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                          {spells.map((s) => {
+                            const aggiornaIncantesimo = (patch) =>
+                              aggiorna({
+                                incantesimiLista: scheda.incantesimiLista.map((x) =>
+                                  x.id === s.id ? { ...x, ...patch } : x
+                                ),
+                              });
+                            return (
+                              <tr key={s.id}>
+                                <td style={styles.td}>
+                                  <Editable value={s.nome} width={180} onChange={(v) => aggiornaIncantesimo({ nome: v })} />
+                                </td>
+                                <td style={styles.td}>
+                                  <Editable value={s.tempo} width={70} onChange={(v) => aggiornaIncantesimo({ tempo: v })} />
+                                </td>
+                                <td style={styles.td}>
+                                  <Editable value={s.gittata} width={70} onChange={(v) => aggiornaIncantesimo({ gittata: v })} />
+                                </td>
+                                <td style={styles.td}>
+                                  <Editable value={s.note} width={140} onChange={(v) => aggiornaIncantesimo({ note: v })} />
+                                </td>
+                                <td style={{ ...styles.td, textAlign: 'right' }}>
+                                  <button
+                                    style={styles.buttonDanger}
+                                    onClick={() =>
+                                      aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })
+                                    }
+                                  >
+                                    ×
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                      <button
+                        style={{ ...styles.button, marginTop: 4, fontSize: 11, padding: '2px 6px' }}
+                        onClick={() =>
+                          aggiorna({
+                            incantesimiLista: [
+                              ...scheda.incantesimiLista,
+                              { id: Date.now(), livello: liv, nome: 'Nuovo incantesimo', tempo: '1 Az.', gittata: '', note: '' },
+                            ],
+                          })
+                        }
+                      >
+                        + Aggiungi {liv === 0 ? 'trucchetto' : `L${liv}`}
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
-              <button
-                style={{ ...styles.button, marginTop: 10 }}
-                onClick={() =>
-                  aggiorna({
-                    incantesimiLista: [
-                      ...scheda.incantesimiLista,
-                      { id: Date.now(), livello: 0, nome: 'Nuovo incantesimo', tempo: 'AZ', gittata: '', note: '' },
-                    ],
-                  })
-                }
-              >
-                + Aggiungi incantesimo
-              </button>
             </section>
 
             {/* Risorse di classe: contatori con reset a riposo breve/lungo */}
@@ -3741,6 +3770,27 @@ export default function App() {
                 <span style={styles.detail}>
                   Lingue:{' '}
                   <Editable value={scheda.lingue} onChange={(v) => aggiorna({ lingue: v })} width={300} />
+                  <select
+                    value=""
+                    onChange={(e) => {
+                      const ling = e.target.value;
+                      if (!ling) return;
+                      const esistenti = scheda.lingue
+                        ? scheda.lingue.split(',').map((l) => l.trim()).filter(Boolean)
+                        : [];
+                      if (!esistenti.some((l) => l.toLowerCase() === ling.toLowerCase())) {
+                        esistenti.push(ling);
+                        aggiorna({ lingue: esistenti.join(', ') });
+                      }
+                    }}
+                    style={{ ...styles.inlineInput, fontSize: 12, padding: '1px 3px', marginLeft: 8, height: 20 }}
+                    title="Aggiungi una lingua"
+                  >
+                    <option value="">＋ aggiungi lingua</option>
+                    {LINGUE_5E.map((l) => (
+                      <option key={l} value={l}>{l}</option>
+                    ))}
+                  </select>
                 </span>
               </div>
               
@@ -3779,15 +3829,13 @@ export default function App() {
             {/* Import / export */}
             <Sezione titolo="Importa / esporta scheda" aperto={false} style={{ order: 999 }}>
               <p style={{ ...styles.detail, marginTop: 0 }}>
-                Importa da PDF (trascrizione automatica: serve il server con la chiave API),
-                oppure salva e ricarica la scheda come file JSON per portarla su un altro
+                Salva e ricarica la scheda come file JSON per portarla su un altro
                 dispositivo o tenerne una copia. Gli import creano un nuovo personaggio.
               </p>
-              <input ref={fileRef} type="file" accept="application/pdf" style={{ display: 'none' }} onChange={importaPdf} />
               <input ref={jsonRef} type="file" accept="application/json,.json" style={{ display: 'none' }} onChange={importaJson} />
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                <button style={styles.buttonPrimary} disabled={importInCorso} onClick={() => fileRef.current?.click()}>
-                  {importInCorso ? 'Trascrizione in corso…' : '📜 Importa scheda PDF'}
+                <button style={styles.button} onClick={esportaJson}>
+                  💾 Esporta JSON
                 </button>
                 <button style={styles.button} onClick={() => jsonRef.current?.click()}>
                   📂 Importa JSON
@@ -3798,9 +3846,6 @@ export default function App() {
                   title="Carica la scheda di esempio (Flyora, stregone livello 4)"
                 >
                   ✨ Carica esempio (Flyora)
-                </button>
-                <button style={styles.button} onClick={esportaJson}>
-                  💾 Esporta JSON
                 </button>
               </div>
               {erroreImport && <div style={{ color: C.red, marginTop: 8 }}>{erroreImport}</div>}
