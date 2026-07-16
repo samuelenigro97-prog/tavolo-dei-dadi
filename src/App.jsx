@@ -1021,6 +1021,7 @@ const FLYORA_JSON = {
   privilegi: "Stregoneria Innata\nFonte di Magia\nMetamagia: Incantesimo Celato, Preciso\nOnde di Caos\nRetaggio Fatato\nScurovisione\nTrance\nGuaritore\nGuerramaga",
   talenti: "Guaritore\nGuerramaga",
   equipaggiamento: "Focus Arcano (Cristallo)\nBorsa da erborista\nGiaciglio\nLibro (filosofia)\nDotazione da avventuriero\nAbiti da viaggiatore",
+  lingue: "Comune, Elfico",
   monete: { mr: 0, ma: 0, me: 0, mo: 74, mp: 0 },
   note: "Il personaggio ha trascorso i suoi primi anni rinchiuso in una capanna o un monastero..."
 };
