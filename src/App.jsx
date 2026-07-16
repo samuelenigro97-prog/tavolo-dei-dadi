@@ -2644,9 +2644,7 @@ export default function App() {
 
       <header style={{ ...styles.header, position: 'relative' }}>
         <h1 style={styles.title}>Tavolo dei Dadi <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 'normal', letterSpacing: 0.5 }}>v{APP_VERSION}</span></h1>
-        <p style={styles.hint}>
-          1 click per modificare · tieni premuto e rilascia (o doppio click) per tirare il dado
-        </p>
+
         <div style={{ position: 'absolute', left: 0, top: 12, display: 'flex', gap: 6 }}>
           <button
             style={styles.modeButton(false)}
