@@ -431,9 +431,9 @@ const styles = {
   },
   // campo in stile modulo: valore su riga con etichetta sotto
   moduloLabel: {
-    fontSize: 8,
+    fontSize: 9,
     color: C.inkDim,
-    letterSpacing: 0.5,
+    letterSpacing: 0.7,
     textTransform: 'uppercase',
     marginTop: 1,
   },
@@ -594,11 +594,11 @@ const styles = {
     minHeight: 40,
   },
   vitalLabel: {
-    fontSize: 9,
+    fontSize: 9.5,
     color: C.inkDim,
-    letterSpacing: 0.5,
+    letterSpacing: 0.7,
     textTransform: 'uppercase',
-    marginBottom: 2,
+    marginBottom: 3,
   },
   vitalValue: { fontSize: 16, color: C.ink },
   abilityBlock: {
@@ -675,13 +675,13 @@ const styles = {
   th: {
     textAlign: 'left',
     color: C.inkDim,
-    fontSize: 12,
-    letterSpacing: 1,
+    fontSize: 11,
+    letterSpacing: 0.8,
     textTransform: 'uppercase',
-    padding: '4px 8px',
+    padding: '5px 8px',
     borderBottom: `1px solid ${C.border}`,
   },
-  td: { padding: '6px 8px', borderBottom: `1px solid ${C.border}` },
+  td: { padding: '7px 8px', borderBottom: `1px solid ${C.border}`, verticalAlign: 'middle' },
   pip: (attivo, colore) => ({
     width: 12,
     height: 12,
@@ -740,7 +740,7 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
 .campi-anagrafica > * { min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; }
 .campi-anagrafica select { max-width: 100%; font-size: 11px !important; padding: 1px 2px !important; height: 20px; line-height: 1.2; }
 .campi-anagrafica .campo-modulo-box { padding: 0 4px !important; min-height: 28px !important; height: 28px; display: flex; align-items: center; overflow: hidden; }
-.campi-anagrafica .campo-modulo-label { font-size: 8px !important; margin-top: 1px; }
+.campi-anagrafica .campo-modulo-label { font-size: 9px !important; margin-top: 2px; }
 .selettore-personaggio {
   width: 100%;
   margin: 0 0 8px 0 !important;
@@ -1240,7 +1240,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.6.4';
+const APP_VERSION = '1.6.5';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3399,8 +3399,8 @@ export default function App() {
                       {conSegno(mod)}
                     </Rollable>
                     <div>
-                      <div style={{ fontSize: 13, color: C.inkDim, letterSpacing: 1 }}>{label.toUpperCase()}</div>
-                      <div style={styles.detail}>
+                      <div style={{ fontSize: 13, color: C.ink, letterSpacing: 0.8, fontWeight: 'bold' }}>{label.toUpperCase()}</div>
+                      <div style={{ ...styles.detail, fontSize: 12 }}>
                         punteggio{' '}
                         <Editable
                           value={scheda.caratteristiche[key]}
@@ -3617,7 +3617,14 @@ export default function App() {
               {/* Slot incantesimo compatti: totale modificabile, rombi per gli spesi */}
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
                 <span style={{ ...styles.detail, marginRight: 2 }}>Slot:</span>
-                {Array.from({ length: 9 }, (_, i) => i + 1).map((liv) => {
+                {(() => {
+                  // mostra solo i livelli con slot + il primo vuoto successivo
+                  // (niente file di riquadri "0" inutili per chi non li usa)
+                  const conSlot = Array.from({ length: 9 }, (_, i) => i + 1)
+                    .filter((l) => (scheda.slotIncantesimo[l]?.totale || 0) > 0);
+                  const maxLiv = conSlot.length ? Math.max(...conSlot) : 0;
+                  return Array.from({ length: Math.min(9, Math.max(1, maxLiv + 1)) }, (_, i) => i + 1);
+                })().map((liv) => {
                   const slot = scheda.slotIncantesimo[liv] || { totale: 0, spesi: 0 };
                   const aggiornaSlot = (patch) =>
                     aggiorna({
