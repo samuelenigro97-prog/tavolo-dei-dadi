@@ -973,44 +973,45 @@ const FLYORA_JSON = {
     religione: true, sopravvivenza: false, storia: false
   },
   maestrie: {},
-  armi: [
-    { id: '1', nome: 'Spada', caratteristica: 'destrezza', competenza: true, danno: '1d6', tipoDanno: 'Perforante', bonusAttacco: 0, bonusDanno: 0, note: 'Accurata, Leggera' },
-    { id: '2', nome: 'Pugnale x2', caratteristica: 'destrezza', competenza: true, danno: '1d4', tipoDanno: 'Perforante', bonusAttacco: 0, bonusDanno: 0, note: 'Accurata, Leggera, Lancio' },
-    { id: '3', nome: 'Bastone Ferrato', caratteristica: 'forza', competenza: true, danno: '1d6', tipoDanno: 'Contundente', bonusAttacco: 0, bonusDanno: 0, note: 'Versatile (1d8 a due mani)' }
+  attacchi: [
+    { id: 1, nome: 'Spada', caratteristica: 'destrezza', competenza: true, danno: '1d6', tipoDanno: 'Perforante', bonusAttacco: 0, bonusDanno: 0, note: 'Accurata, Leggera' },
+    { id: 2, nome: 'Pugnale x2', caratteristica: 'destrezza', competenza: true, danno: '1d4', tipoDanno: 'Perforante', bonusAttacco: 0, bonusDanno: 0, note: 'Accurata, Leggera, Lancio' },
+    { id: 3, nome: 'Bastone Ferrato', caratteristica: 'forza', competenza: true, danno: '1d6', tipoDanno: 'Contundente', bonusAttacco: 0, bonusDanno: 0, note: 'Versatile (1d8 a due mani)' }
   ],
   incantatore: { caratteristica: 'carisma', cdExtra: 0, attaccoExtra: 0 },
-  slotIncantesimi: {
-    '1': { max: 4, spesi: 0 },
-    '2': { max: 3, spesi: 0 },
-    '3': { max: 0, spesi: 0 },
-    '4': { max: 0, spesi: 0 },
-    '5': { max: 0, spesi: 0 },
-    '6': { max: 0, spesi: 0 },
-    '7': { max: 0, spesi: 0 },
-    '8': { max: 0, spesi: 0 },
-    '9': { max: 0, spesi: 0 }
+  slotIncantesimo: {
+    1: { totale: 4, spesi: 0 },
+    2: { totale: 3, spesi: 0 },
+    3: { totale: 0, spesi: 0 },
+    4: { totale: 0, spesi: 0 },
+    5: { totale: 0, spesi: 0 },
+    6: { totale: 0, spesi: 0 },
+    7: { totale: 0, spesi: 0 },
+    8: { totale: 0, spesi: 0 },
+    9: { totale: 0, spesi: 0 }
   },
-  incantesimi: [
-    { id: 'i1', nome: 'Interdizione alle Lame', livello: 0, preparato: true, dettagli: 'Azione, V S, res. armi' },
-    { id: 'i2', nome: 'Messaggio', livello: 0, preparato: true, dettagli: 'Azione, 36m, V S M' },
-    { id: 'i3', nome: 'Morsa del Gelo', livello: 0, preparato: true, dettagli: 'Azione, 18m, V S' },
-    { id: 'i4', nome: 'Prestidigitazione', livello: 0, preparato: true, dettagli: 'Azione, 3m, V S' },
-    { id: 'i5', nome: 'Vampa', livello: 0, preparato: true, dettagli: 'Azione, 18m, V S' },
-    { id: 'i6', nome: 'Caduta Morbida', livello: 1, preparato: true, dettagli: 'Reazione, 18m, V M' },
-    { id: 'i7', nome: 'Individuazione del Magico', livello: 1, preparato: true, dettagli: 'Azione (Rituale), 9m, V S M' },
-    { id: 'i8', nome: 'Onda Tonante', livello: 1, preparato: true, dettagli: 'Azione, cubo 4,5m, V S' },
-    { id: 'i9', nome: 'Scudo', livello: 1, preparato: true, dettagli: 'Reazione, V S' },
-    { id: 'i10', nome: 'Dardo Incantato', livello: 1, preparato: true, dettagli: 'Azione, 36m, V S' },
-    { id: 'i11', nome: 'Frantumare', livello: 2, preparato: true, dettagli: 'Azione, 18m, V S M' },
-    { id: 'i12', nome: 'Immagine Speculare', livello: 2, preparato: true, dettagli: 'Azione, V S' },
-    { id: 'i13', nome: 'Passo Velato', livello: 2, preparato: true, dettagli: 'Azione Bonus, V' }
+  incantesimiLista: [
+    { livello: 0, nome: 'Interdizione alle Lame', tempo: 'AZ', gittata: 'contatto', note: 'V S, res. armi' },
+    { livello: 0, nome: 'Messaggio', tempo: 'AZ', gittata: '36m', note: 'V S M' },
+    { livello: 0, nome: 'Morsa del Gelo', tempo: 'AZ', gittata: '18m', note: 'V S' },
+    { livello: 0, nome: 'Prestidigitazione', tempo: 'AZ', gittata: '3m', note: 'V S' },
+    { livello: 0, nome: 'Vampa', tempo: 'AZ', gittata: '18m', note: 'V S' },
+    { livello: 1, nome: 'Caduta Morbida', tempo: 'REAZ', gittata: '18m', note: 'V M' },
+    { livello: 1, nome: 'Individuazione del Magico', tempo: 'AZ', gittata: '9m', note: 'V S M, Rituale' },
+    { livello: 1, nome: 'Onda Tonante', tempo: 'AZ', gittata: 'cubo 4,5m', note: 'V S' },
+    { livello: 1, nome: 'Scudo', tempo: 'REAZ', gittata: '', note: 'V S' },
+    { livello: 1, nome: 'Dardo Incantato', tempo: 'AZ', gittata: '36m', note: 'V S' },
+    { livello: 2, nome: 'Frantumare', tempo: 'AZ', gittata: '18m', note: 'V S M' },
+    { livello: 2, nome: 'Immagine Speculare', tempo: 'AZ', gittata: '', note: 'V S' },
+    { livello: 2, nome: 'Passo Velato', tempo: 'AZ BONUS', gittata: '', note: 'V' }
   ],
-  risorse: [
-    { id: 'r1', nome: 'Punti Stregoneria', max: 4, attuali: 4, ricarica: 'Lungo' },
-    { id: 'r2', nome: 'Stregoneria Innata', max: 2, attuali: 2, ricarica: 'Lungo' },
-    { id: 'r3', nome: 'Borsa del Guaritore', max: 10, attuali: 10, ricarica: 'Nessuno' }
+  risorsePersonaggio: [
+    { id: 1, nome: 'Punti Stregoneria', max: 4, attuali: 4, ricarica: 'Lungo' },
+    { id: 2, nome: 'Stregoneria Innata', max: 2, attuali: 2, ricarica: 'Lungo' },
+    { id: 3, nome: 'Borsa del Guaritore', max: 10, attuali: 10, ricarica: 'Nessuno' }
   ],
-  tratti: "Stregoneria Innata\nFonte di Magia\nMetamagia: Incantesimo Celato, Preciso\nOnde di Caos\nRetaggio Fatato\nScurovisione\nTrance\nGuaritore\nGuerramaga",
+  privilegi: "Stregoneria Innata\nFonte di Magia\nMetamagia: Incantesimo Celato, Preciso\nOnde di Caos\nRetaggio Fatato\nScurovisione\nTrance\nGuaritore\nGuerramaga",
+  talenti: "Guaritore\nGuerramaga",
   equipaggiamento: "Focus Arcano (Cristallo)\nBorsa da erborista\nGiaciglio\nLibro (filosofia)\nDotazione da avventuriero\nAbiti da viaggiatore",
   monete: { mr: 0, ma: 0, me: 0, mo: 74, mp: 0 },
   note: "Il personaggio ha trascorso i suoi primi anni rinchiuso in una capanna o un monastero..."
@@ -2700,12 +2701,15 @@ export default function App() {
                 </span>
               </div>
               {(() => {
-                const max = Math.max(1, scheda.pfMax);
-                const perc = Math.max(0, Math.min(100, (scheda.pfAttuali / max) * 100));
-                const colore = perc > 50 ? C.green : perc > 25 ? C.gold : C.red;
+                const temp = Number(scheda.pfTemp) || 0;
+                const max = Math.max(1, scheda.pfMax + temp);
+                const percNormale = Math.max(0, Math.min(100, (scheda.pfAttuali / max) * 100));
+                const percTemp = Math.max(0, Math.min(100, (temp / max) * 100));
+                const coloreNormale = (scheda.pfAttuali / Math.max(1, scheda.pfMax)) > 0.5 ? C.green : (scheda.pfAttuali / Math.max(1, scheda.pfMax)) > 0.25 ? C.gold : C.red;
                 return (
-                  <div style={{ height: 5, borderRadius: 3, background: C.border, overflow: 'hidden', margin: '4px 10px 0' }} title={`${scheda.pfAttuali} / ${scheda.pfMax} PF`}>
-                    <div style={{ width: `${perc}%`, height: '100%', background: colore, transition: 'width 0.25s ease' }} />
+                  <div style={{ height: 5, borderRadius: 3, background: C.border, overflow: 'hidden', margin: '4px 10px 0', display: 'flex' }} title={`${scheda.pfAttuali} / ${scheda.pfMax} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
+                    <div style={{ width: `${percNormale}%`, height: '100%', background: coloreNormale, transition: 'width 0.25s ease' }} />
+                    {temp > 0 && <div style={{ width: `${percTemp}%`, height: '100%', background: C.blue, transition: 'width 0.25s ease' }} />}
                   </div>
                 );
               })()}
