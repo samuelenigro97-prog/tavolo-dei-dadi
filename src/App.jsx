@@ -1430,6 +1430,7 @@ function Editable({ value, onChange, onRoll, tipo = 'testo', width, style, title
       <input
         style={{ ...styles.inlineInput, width: width || 70 }}
         autoFocus
+        onFocus={(e) => e.target.select()}
         type={tipo === 'numero' ? 'number' : 'text'}
         value={bozza}
         onChange={(e) => setBozza(e.target.value)}
