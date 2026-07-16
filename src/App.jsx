@@ -421,6 +421,7 @@ const styles = {
     borderRadius: 10,
     padding: 12,
     marginBottom: 8,
+    boxSizing: 'border-box',
     boxShadow: '0 1px 4px rgba(60,50,30,0.08)',
   },
   panelTitle: {
@@ -724,6 +725,9 @@ const GLOBAL_CSS = `
   }
 }
 html, body { margin: 0; padding: 0; background: ${C.bg}; }
+/* box-sizing coerente: padding e bordi non allargano mai gli elementi
+   (evita che i pannelli con width:100% sbordino a destra) */
+*, *::before, *::after { box-sizing: border-box; }
 /* touch: il doppio tap deve tirare il dado, non zoomare la pagina */
 * { touch-action: manipulation; }
 /* sezioni collassabili: niente marcatore nativo, freccia che ruota */
@@ -739,7 +743,7 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
 /* consente alle colonne della griglia di stringersi (niente overflow orizzontale) */
 .griglia-scheda > * { min-width: 0; }
 /* riquadri vitali: 5 colonne fisse → riga 1: CA | PF(x2) | Riposo | TsMorte ; riga 2: BonusComp | Iniziativa | Velocità | PercPass */
-.vitali { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; align-items: stretch; }
+.vitali { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 8px; align-items: stretch; }
 /* consente ai riquadri di stringersi sotto la larghezza del contenuto (niente overflow) */
 .vitali > * { min-width: 0; }
 .vitali > * > * { min-width: 0; }
@@ -767,6 +771,12 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
 }
 @media (max-width: 560px) {
   .anagrafica > div:last-child > div:last-child { grid-template-columns: repeat(2, 1fr) !important; }
+  /* su telefono i riquadri anagrafica e vitali passano a 2 colonne (leggibili,
+     niente 5 colonne schiacciate); le altezze non sono più forzate uguali */
+  .campi-anagrafica { grid-template-columns: repeat(2, 1fr) !important; }
+  .vitali { grid-template-columns: repeat(2, 1fr) !important; grid-auto-rows: auto !important; }
+  /* niente riquadri a doppia colonna su mobile: griglia 2×N perfettamente uniforme */
+  .vitali > * { grid-column: auto !important; }
 }
 /* su mobile i campi con font < 16px fanno zoomare iOS al focus */
 @media (max-width: 820px) {
@@ -1256,7 +1266,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.6.8';
+const APP_VERSION = '1.6.9';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3261,7 +3271,7 @@ export default function App() {
 
             {/* RIGA 2 — Iniziativa | Velocità | Perc. Passiva | Resistenze | Vista */}
             {/* Iniziativa */}
-            <div style={{ ...styles.vitalBox, gridColumn: '1' }}>
+            <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>Iniziativa</div>
               <div style={styles.vitalValue}>
                 <Rollable onRoll={() => lanciaD20('Iniziativa', modificatore(scheda.caratteristiche.destrezza))}>
@@ -3313,7 +3323,7 @@ export default function App() {
 
             {/* RIGA 3 — Bonus Comp. | Sfinimento | Ispirazione | Condizioni (span 2) */}
             {/* Bonus Competenza */}
-            <div style={{ ...styles.vitalBox, gridColumn: '1' }}>
+            <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>Bonus Comp.</div>
               <div style={styles.vitalValue}>
                 <Editable value={conSegno(scheda.bonusCompetenza)} onChange={(v) => aggiorna({ bonusCompetenza: parseInt(v, 10) || 0 })} width={38} title="1 click: modifica" />
