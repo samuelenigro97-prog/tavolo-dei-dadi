@@ -618,7 +618,7 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
 /* consente alle colonne della griglia di stringersi (niente overflow orizzontale) */
 .griglia-scheda > * { min-width: 0; }
 /* riquadri vitali: 5 colonne fisse → riga 1: CA | PF(x2) | Riposo | TsMorte ; riga 2: BonusComp | Iniziativa | Velocità | PercPass */
-.vitali { display: grid; grid-template-columns: 132px 1fr 1fr 80px 100px; gap: 5px; align-items: stretch; }
+.vitali { display: grid; grid-template-columns: 90px 1fr 1fr 80px 100px; gap: 5px; align-items: stretch; }
 /* consente ai riquadri di stringersi sotto la larghezza del contenuto (niente overflow) */
 .vitali > * { min-width: 0; }
 .vitali > * > * { min-width: 0; }
@@ -2277,7 +2277,7 @@ export default function App() {
                     onClick={() => { setRoster((r) => ({ ...r, attivo: id })); setMostraMenu(false); }}
                   >
                     <span>{p.nome || 'Senza nome'}</span>
-                    <span style={styles.detail}>{p.classe ? `${p.classe} liv. ${p.livello} · ${p.pe || 0} PE` : '—'}</span>
+                    <span style={styles.detail}>{p.classe ? `${p.classe}` : '—'}</span>
                   </button>
                   <button
                     style={{ ...styles.buttonDanger, padding: '4px 10px', fontSize: 13, flexShrink: 0 }}
@@ -2554,7 +2554,7 @@ export default function App() {
             >
               {Object.entries(roster.personaggi).map(([id, p]) => (
                 <option key={id} value={id}>
-                  {p.nome || 'Senza nome'}{p.classe ? ` · ${p.classe} liv. ${p.livello} · ${p.pe || 0} PE` : ''}
+                  {p.nome || 'Senza nome'}{p.classe ? ` · ${p.classe}` : ''}
                 </option>
               ))}
             </select>
@@ -2568,10 +2568,15 @@ export default function App() {
 
         {/* Testata: anagrafica + riquadri vitali uniformi */}
         <section style={styles.panel}>
-          <div className="anagrafica" style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 10 }}>
-            <div style={{ position: 'relative' }}>
+          <div style={{ display: 'flex', gap: 14, alignItems: 'stretch' }}>
+            <div style={{ flex: '0 0 160px', position: 'relative', display: 'flex', flexDirection: 'column' }}>
               <div
-                style={styles.ritratto}
+                style={{
+                  width: '100%', flex: 1, minHeight: 240, borderRadius: 12, overflow: 'hidden',
+                  background: C.panel, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: 'inset 0 0 8px rgba(0,0,0,0.2)', border: `2px solid ${coloreClasse(scheda.classe)}`,
+                  cursor: 'pointer', position: 'relative',
+                }}
                 title={scheda.ritratto ? 'Click: cambia immagine' : 'Click: carica l’immagine del personaggio'}
                 onClick={() => ritrattoRef.current?.click()}
               >
@@ -2599,7 +2604,8 @@ export default function App() {
               )}
               <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
+            
+            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 6 }}>
                 <button
                   className="tirabile"
@@ -2619,10 +2625,7 @@ export default function App() {
                   {scheda.ispirazione ? '★' : '☆'} Ispirazione
                 </button>
               </div>
-              <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px 10px', alignItems: 'end' }}>
-                <CampoModulo label="Livello">
-                  <Editable value={scheda.livello} tipo="numero" onChange={(v) => aggiorna({ livello: v, dadiVita: esprDadiVita(v, facceDadoVita(scheda.dadiVita)), dadiVitaSpesi: Math.min(scheda.dadiVitaSpesi, Math.max(1, v)) })} width="100%" style={{ borderBottom: 'none', fontSize: 13 }} />
-                </CampoModulo>
+              <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px 10px', alignItems: 'end' }}>
                 <CampoModulo label={regoleVersione === '2024' ? 'Specie' : 'Razza'}>
                   <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => aggiorna({ specie: v, ...ritrattoAuto(scheda.classe, v, scheda.nome) })} title="Scegli la specie (aggiorna l'avatar)" />
                 </CampoModulo>
@@ -2650,9 +2653,6 @@ export default function App() {
                   <CampoTendina value={scheda.sottoclasse} opzioni={sottoclassiPerClasse(scheda.classe)} onChange={(v) => aggiorna({ sottoclasse: v })} title="Sottoclasse (opzioni in base alla classe)" />
                 </CampoModulo>
               </div>
-            </div>
-          </div>
-
           <div className="vitali">
             {/* RIGA 1 — Classe Armatura | Punti Ferita (x2) | Riposo | TS Morte */}
             {/* Classe Armatura */}
@@ -2858,7 +2858,9 @@ export default function App() {
               </select>
             </span>
           </div>
-        </section>
+        </div>
+      </div>
+    </section>
 
         {/* Corpo scheda: caratteristiche a sinistra, resto a destra */}
         <div className="griglia-scheda">
