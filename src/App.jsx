@@ -3199,14 +3199,16 @@ export default function App() {
             {/* Sfinimento */}
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>Sfinimento</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 'auto', marginBottom: 'auto' }}>
-                <button style={{ ...styles.buttonMini, padding: '1px 6px' }} onClick={() => aggiorna({ sfinimento: Math.max(0, scheda.sfinimento - 1) })} title="Diminuisci">−</button>
-                <strong style={{ color: scheda.sfinimento ? C.red : C.ink, fontSize: 16, minWidth: 12, textAlign: 'center' }}>{scheda.sfinimento}</strong>
-                <button style={{ ...styles.buttonMini, padding: '1px 6px' }} onClick={() => aggiorna({ sfinimento: Math.min(6, scheda.sfinimento + 1) })} title="Aumenta">+</button>
+              <div style={styles.vitalValue}>
+                <button style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 13 }} onClick={() => aggiorna({ sfinimento: Math.max(0, scheda.sfinimento - 1) })} title="Diminuisci">−</button>
+                {' '}
+                <strong style={{ color: scheda.sfinimento ? C.red : C.ink }}>{scheda.sfinimento}</strong>
+                {' '}
+                <button style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 13 }} onClick={() => aggiorna({ sfinimento: Math.min(6, scheda.sfinimento + 1) })} title="Aumenta">+</button>
               </div>
               {scheda.sfinimento > 0 && (
-                <div style={{ fontSize: 9, color: C.red, marginTop: 'auto' }} title={regoleVersione === '2024' ? 'Regole 2024: −2 ai tiri di d20 per livello' : `Regole 2014: ${SFINIMENTO_2014[scheda.sfinimento]}`}>
-                  {regoleVersione === '2024' ? `−${scheda.sfinimento * 2}` : `L${scheda.sfinimento}`}
+                <div style={{ fontSize: 9, color: C.red }} title={regoleVersione === '2024' ? 'Regole 2024: −2 ai tiri di d20 per livello' : `Regole 2014: ${SFINIMENTO_2014[scheda.sfinimento]}`}>
+                  {regoleVersione === '2024' ? `−${scheda.sfinimento * 2}` : SFINIMENTO_2014[scheda.sfinimento]}
                 </div>
               )}
             </div>

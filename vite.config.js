@@ -26,10 +26,22 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // app shell offline; le chiamate /api restano solo-rete (l'import PDF
-        // richiede comunque il server)
         globPatterns: ['**/*.{js,css,html,png,svg}'],
         navigateFallbackDenylist: [/^\/api\//],
+        // NetworkFirst: il browser scarica sempre la versione più recente;
+        // cade sul cache solo se offline. Così basta premere Invio per aggiornare.
+        runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.mode === 'navigate',
+            handler: 'NetworkFirst',
+            options: { cacheName: 'pages', networkTimeoutSeconds: 0 },
+          },
+          {
+            urlPattern: /\.(?:js|css|png|svg)$/,
+            handler: 'NetworkFirst',
+            options: { cacheName: 'assets', networkTimeoutSeconds: 0 },
+          },
+        ],
       },
     }),
   ],
