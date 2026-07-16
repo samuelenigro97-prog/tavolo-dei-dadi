@@ -1240,7 +1240,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.6.5';
+const APP_VERSION = '1.6.6';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2955,11 +2955,11 @@ export default function App() {
         </section>
 
         {/* Personaggi: il riquadro blu È il nome/selettore. Cambia PG al volo; ✎ per rinominare */}
-        <section className="selettore-personaggio" style={{ ...styles.panel, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'nowrap', padding: '6px 12px' }}>
+        <section className="selettore-personaggio" style={{ ...styles.panel, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: '6px 12px' }}>
           {rinominando ? (
             <input
               autoFocus
-              style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)' }}
+              style={{ ...styles.inlineInput, flex: '1 1 180px', minWidth: 150, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)' }}
               value={scheda.nome}
               onChange={(e) => aggiorna({ nome: e.target.value })}
               onBlur={() => {
@@ -2977,7 +2977,7 @@ export default function App() {
             />
           ) : (
             <select
-              style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', padding: '5px 8px' }}
+              style={{ ...styles.inlineInput, flex: '1 1 180px', minWidth: 150, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', padding: '5px 8px' }}
               value={roster.attivo}
               onChange={(e) => setRoster((r) => ({ ...r, attivo: e.target.value }))}
               title="Personaggio attivo — scegli per cambiare al volo"
@@ -2990,10 +2990,14 @@ export default function App() {
             </select>
           )}
 
-          <div style={{ fontSize: 15, fontWeight: 'bold', color: C.goldDark, display: 'flex', alignItems: 'center', gap: 4, marginRight: 8, paddingLeft: 4 }}>
-            Liv. <Editable value={scheda.livello} tipo="numero" width={26} onChange={(v) => aggiorna({ livello: Math.max(1, Math.min(20, v)) })} />
+          {/* Livello + pulsanti: un unico gruppo con spaziatura uniforme, va a
+              capo insieme sotto il selettore invece di sbordare */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', flexShrink: 0 }}>
+            <span style={{ fontSize: 15, fontWeight: 'bold', color: C.goldDark, display: 'inline-flex', alignItems: 'center', gap: 4, marginRight: 2 }}>
+              Liv. <Editable value={scheda.livello} tipo="numero" width={26} onChange={(v) => aggiorna({ livello: Math.max(1, Math.min(20, v)) })} />
+            </span>
             <button
-              style={{ ...styles.buttonMini, marginLeft: 2 }}
+              style={styles.buttonMini}
               title="Assistente al Passaggio di Livello"
               onClick={() => {
                 const dvMatch = String(scheda.dadiVita || '').match(/d(\d+)/i);
@@ -3006,12 +3010,12 @@ export default function App() {
             >
               ⬆️
             </button>
+            <button style={styles.buttonMini} onClick={() => setRinominando(!rinominando)} title="Rinomina il personaggio">✎</button>
+            <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', tira: true }); setMostraCrea(true); }} title="Nuovo personaggio">＋</button>
+            <button style={styles.buttonMini} onClick={duplicaPersonaggio} title="Duplica il personaggio attivo">⧉</button>
+            <button style={styles.buttonMini} onClick={resetScheda} title="Azzera i campi del personaggio attivo">↺</button>
+            <button style={{ ...styles.buttonMini, borderColor: C.red, color: C.red }} onClick={eliminaPersonaggio} title="Elimina il personaggio attivo">🗑</button>
           </div>
-          <button style={styles.buttonMini} onClick={() => setRinominando(!rinominando)} title="Rinomina il personaggio">✎</button>
-          <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', tira: true }); setMostraCrea(true); }} title="Nuovo personaggio">＋</button>
-          <button style={styles.buttonMini} onClick={duplicaPersonaggio} title="Duplica il personaggio attivo">⧉</button>
-          <button style={styles.buttonMini} onClick={resetScheda} title="Azzera i campi del personaggio attivo">↺</button>
-          <button style={{ ...styles.buttonMini, borderColor: C.red, color: C.red }} onClick={eliminaPersonaggio} title="Elimina il personaggio attivo">🗑</button>
         </section>
 
         {/* Testata: anagrafica + riquadri vitali uniformi */}
