@@ -1240,7 +1240,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.6.3';
+const APP_VERSION = '1.6.4';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1831,17 +1831,21 @@ export default function App() {
   async function forzaAggiornamento() {
     setAggiornando(true);
     try {
+      // 1) rimuovi del tutto i service worker: nessuno intercetta più le richieste
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister().catch(() => {})));
+      }
+      // 2) svuota ogni cache della PWA
       if ('caches' in window) {
         const chiavi = await caches.keys();
         await Promise.all(chiavi.map((k) => caches.delete(k)));
       }
-      if ('serviceWorker' in navigator) {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(regs.map((r) => r.update().catch(() => {})));
-      }
     } catch { /* ignora: ricarichiamo comunque */ }
-    if (needRefresh) { updateServiceWorker(true); return; } // c'è già una nuova SW pronta
-    window.location.reload();
+    // 3) ricarica bypassando anche la cache HTTP (query cache-busting)
+    const u = new URL(window.location.href);
+    u.searchParams.set('agg', Date.now().toString());
+    window.location.replace(u.toString());
   }
 
   const [roster, setRoster] = useState(loadState);

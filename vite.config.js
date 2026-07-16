@@ -8,7 +8,11 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'prompt',
+      // autoUpdate + skipWaiting/clientsClaim: la nuova versione del service
+      // worker si attiva SUBITO (non resta "in attesa") e prende il controllo
+      // delle pagine già aperte, così l'app si aggiorna da sola senza dover
+      // svuotare la cache a mano.
+      registerType: 'autoUpdate',
       injectRegister: 'auto',
       includeAssets: ['icona-192.png', 'icona-512.png', 'icona-maskable-512.png'],
       manifest: {
@@ -28,6 +32,10 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,svg}'],
         navigateFallbackDenylist: [/^\/api\//],
+        // attiva subito la nuova versione e ripulisci le cache vecchie
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
         // NetworkFirst: il browser scarica sempre la versione più recente;
         // cade sul cache solo se offline. Così basta premere Invio per aggiornare.
         runtimeCaching: [

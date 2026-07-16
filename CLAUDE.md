@@ -146,7 +146,13 @@ minuti per la fascia oraria. Chiaro/Scuro forzano il modo.
 ## PWA
 
 L'app è una PWA installabile e offline (vite-plugin-pwa, `registerType:
-'autoUpdate'`): manifest e service worker sono generati alla build; le
+'autoUpdate'` con `skipWaiting`+`clientsClaim`+`cleanupOutdatedCaches`): la
+nuova versione del service worker si attiva **subito** e prende il controllo
+delle pagine aperte, così l'app si aggiorna da sola senza svuotare la cache a
+mano. In più c'è un pulsante **🔄 Aggiorna** in testata (accanto al tema):
+`forzaAggiornamento` deregistra i service worker, svuota tutte le cache e
+ricarica con query cache-busting (soluzione "nucleare" per client bloccati su
+una versione vecchia). Manifest e service worker sono generati alla build; le
 richieste `/api` sono escluse dalla cache. Icone in `public/icona-*.png`.
 
 ## Lavoro multi-agente (Claude Code + Antigravity)
