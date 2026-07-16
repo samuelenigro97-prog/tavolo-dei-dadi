@@ -219,6 +219,87 @@ function bonusCaratteristicheBackground(bg, classe) {
   return [ordinate[0], ordinate[1]];
 }
 
+// Tiri salvezza in cui ogni classe è competente (2 per classe).
+const TS_CLASSE = {
+  barbaro: ['forza', 'costituzione'], bardo: ['destrezza', 'carisma'],
+  chierico: ['saggezza', 'carisma'], druido: ['intelligenza', 'saggezza'],
+  guerriero: ['forza', 'costituzione'], ladro: ['destrezza', 'intelligenza'],
+  mago: ['intelligenza', 'saggezza'], monaco: ['forza', 'destrezza'],
+  paladino: ['saggezza', 'carisma'], ranger: ['forza', 'destrezza'],
+  stregone: ['costituzione', 'carisma'], warlock: ['saggezza', 'carisma'],
+};
+function tiriSalvezzaPerClasse(classe) {
+  const c = coloreClasse(classe);
+  const keys = (c && TS_CLASSE[c.match[0]]) || [];
+  if (!keys.length) return null;
+  const ts = { forza: false, destrezza: false, costituzione: false, intelligenza: false, saggezza: false, carisma: false };
+  keys.forEach((k) => { ts[k] = true; });
+  return ts;
+}
+
+// Addestramento in armature e armi per classe.
+const ADDESTRAMENTO_CLASSE = {
+  barbaro: { armature: { leggera: true, media: true, pesante: false, scudi: true }, armi: 'Armi semplici e da guerra' },
+  bardo: { armature: { leggera: true, media: false, pesante: false, scudi: false }, armi: 'Armi semplici' },
+  chierico: { armature: { leggera: true, media: true, pesante: false, scudi: true }, armi: 'Armi semplici' },
+  druido: { armature: { leggera: true, media: true, pesante: false, scudi: true }, armi: 'Armi semplici (no metallo)' },
+  guerriero: { armature: { leggera: true, media: true, pesante: true, scudi: true }, armi: 'Armi semplici e da guerra' },
+  ladro: { armature: { leggera: true, media: false, pesante: false, scudi: false }, armi: 'Armi semplici e con finezza' },
+  mago: { armature: { leggera: false, media: false, pesante: false, scudi: false }, armi: 'Armi semplici' },
+  monaco: { armature: { leggera: false, media: false, pesante: false, scudi: false }, armi: 'Armi semplici e arma da monaco' },
+  paladino: { armature: { leggera: true, media: true, pesante: true, scudi: true }, armi: 'Armi semplici e da guerra' },
+  ranger: { armature: { leggera: true, media: true, pesante: false, scudi: true }, armi: 'Armi semplici e da guerra' },
+  stregone: { armature: { leggera: false, media: false, pesante: false, scudi: false }, armi: 'Armi semplici' },
+  warlock: { armature: { leggera: true, media: false, pesante: false, scudi: false }, armi: 'Armi semplici' },
+};
+function addestramentoPerClasse(classe) {
+  const c = coloreClasse(classe);
+  return (c && ADDESTRAMENTO_CLASSE[c.match[0]]) || null;
+}
+
+// Dati di specie (2024): velocità in metri, sensi, taglia, tratti principali.
+const SPECIE_DATI = {
+  Aasimar: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Resistenza celestiale, Mani guaritrici, Portatore di luce' },
+  Dragonide: { velocita: 9, sensi: '', taglia: 'Media', tratti: 'Arma a soffio, Resistenza al danno, Antenati draconici' },
+  Elfo: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Trance, Retaggio fatato, Sensi acuti' },
+  Gnomo: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Piccola', tratti: 'Astuzia gnomesca (vantaggio ai TS mentali contro la magia)' },
+  Goliath: { velocita: 10.5, sensi: '', taglia: 'Media', tratti: 'Retaggio dei giganti, Corporatura potente' },
+  Halfling: { velocita: 9, sensi: '', taglia: 'Piccola', tratti: 'Coraggioso, Agilità halfling, Fortuna, Furtività naturale' },
+  Nano: { velocita: 9, sensi: 'Scurovisione 36 m', taglia: 'Media', tratti: 'Robustezza nanica, Scalpellino, Resistenza al veleno' },
+  Orco: { velocita: 9, sensi: 'Scurovisione 36 m', taglia: 'Media', tratti: 'Scatto adrenalinico, Resistenza implacabile' },
+  Tiefling: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Presenza ultraterrena, Resistenza al danno' },
+  Umano: { velocita: 9, sensi: '', taglia: 'Media', tratti: 'Pieno di risorse, Abile, Versatile' },
+};
+
+// Slot incantesimo degli incantatori completi (livello PG → slot per livello 1-9).
+const SLOT_FULL_CASTER = {
+  1: [2], 2: [3], 3: [4, 2], 4: [4, 3], 5: [4, 3, 2], 6: [4, 3, 3], 7: [4, 3, 3, 1], 8: [4, 3, 3, 2],
+  9: [4, 3, 3, 3, 1], 10: [4, 3, 3, 3, 2], 11: [4, 3, 3, 3, 2, 1], 12: [4, 3, 3, 3, 2, 1],
+  13: [4, 3, 3, 3, 2, 1, 1], 14: [4, 3, 3, 3, 2, 1, 1], 15: [4, 3, 3, 3, 2, 1, 1, 1], 16: [4, 3, 3, 3, 2, 1, 1, 1],
+  17: [4, 3, 3, 3, 2, 1, 1, 1, 1], 18: [4, 3, 3, 3, 3, 1, 1, 1, 1], 19: [4, 3, 3, 3, 3, 2, 1, 1, 1], 20: [4, 3, 3, 3, 3, 2, 2, 1, 1],
+};
+// Slot dei semi-incantatori (paladino, ranger): tabella classica, incantesimi fino al 5° livello.
+const SLOT_MEZZO_CASTER = {
+  1: [], 2: [2], 3: [3], 4: [3], 5: [4, 2], 6: [4, 2], 7: [4, 3], 8: [4, 3], 9: [4, 3, 2], 10: [4, 3, 2],
+  11: [4, 3, 3], 12: [4, 3, 3], 13: [4, 3, 3, 1], 14: [4, 3, 3, 1], 15: [4, 3, 3, 2], 16: [4, 3, 3, 2],
+  17: [4, 3, 3, 3, 1], 18: [4, 3, 3, 3, 1], 19: [4, 3, 3, 3, 2], 20: [4, 3, 3, 3, 2],
+};
+const CLASSI_FULL_CASTER = ['bardo', 'chierico', 'druido', 'mago', 'stregone'];
+const CLASSI_MEZZO_CASTER = ['paladino', 'ranger'];
+/** Slot incantesimo coerenti con classe e livello (null se non applicabile: manuale). */
+function slotDaClasseLivello(classe, livello) {
+  const c = coloreClasse(classe);
+  if (!c) return null;
+  const lv = Math.max(1, Math.min(20, Math.floor(livello) || 1));
+  let tabella = null;
+  if (CLASSI_FULL_CASTER.includes(c.match[0])) tabella = SLOT_FULL_CASTER[lv];
+  else if (CLASSI_MEZZO_CASTER.includes(c.match[0])) tabella = SLOT_MEZZO_CASTER[lv];
+  if (!tabella) return null;
+  const slot = {};
+  for (let i = 1; i <= 9; i++) slot[i] = { totale: tabella[i - 1] || 0, spesi: 0 };
+  return slot;
+}
+
 // Tipi di danno (per resistenze/immunità/vulnerabilità) e sensi comuni.
 const DANNI_5E = [
   'Acido', 'Contundente', 'Freddo', 'Fuoco', 'Fulmine', 'Necrotico',
@@ -1116,7 +1197,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.5.1';
+const APP_VERSION = '1.6.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1747,7 +1828,17 @@ export default function App() {
     return ordinato;
   });
   const [sezTrascinata, setSezTrascinata] = useState(null);
-  const [mostraMenu, setMostraMenu] = useState(true); // menu iniziale (nuovo / carica PG)
+  // menu iniziale: si mostra solo al primo avvio (nessun PG reale); poi carica la scheda
+  const [mostraMenu, setMostraMenu] = useState(() => {
+    try {
+      const r = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      const s = r?.personaggi?.[r?.attivo];
+      if (s && (s.nome || s.classe)) return false;
+    } catch {
+      /* niente */
+    }
+    return true;
+  });
   const [rinominando, setRinominando] = useState(false); // rinomina inline del PG attivo
   const [mostraCrea, setMostraCrea] = useState(false); // schermata di creazione guidata
   const [bozzaCrea, setBozzaCrea] = useState({ nome: '', classe: '', specie: '', background: '', tira: true });
@@ -1936,10 +2027,19 @@ export default function App() {
     s.classe = classe;
     s.specie = specie;
     s.background = background;
-    // caratteristica da incantatore e dado vita dalla classe
+    // dati dalla classe: incantatore, dado vita, tiri salvezza, addestramento, slot
     const car = caratteristicaIncantatorePerClasse(classe);
     if (car) s.incantatore = { caratteristica: car };
     s.dadiVita = esprDadiVita(s.livello, dadoVitaClasse(classe));
+    const ts = tiriSalvezzaPerClasse(classe);
+    if (ts) s.tiriSalvezza = ts;
+    const add = addestramentoPerClasse(classe);
+    if (add) s.addestramento = { ...s.addestramento, armature: { ...add.armature }, armi: add.armi };
+    const slot = slotDaClasseLivello(classe, s.livello);
+    if (slot) s.slotIncantesimo = slot;
+    // dati dalla specie: velocità, sensi, taglia, tratti
+    const sp = SPECIE_DATI[specie];
+    if (sp) { s.velocita = sp.velocita; s.sensi = sp.sensi; s.taglia = sp.taglia; s.trattiSpecie = sp.tratti; }
     // caratteristiche: tirate (4d6, ordinate per classe) o array base
     if (tira) s.caratteristiche = generaCaratteristiche(classe);
     // background: competenze nelle abilità
@@ -2895,11 +2995,10 @@ export default function App() {
               )}
               <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
             </div>
-            
             <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px 10px', alignItems: 'end' }}>
                 <CampoModulo label={regoleVersione === '2024' ? 'Specie' : 'Razza'}>
-                  <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => aggiorna({ specie: v, ...ritrattoAuto(scheda.classe, v, scheda.nome) })} title="Scegli la specie (aggiorna l'avatar)" />
+                  <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => { const sp = SPECIE_DATI[v]; aggiorna({ specie: v, ...(sp ? { velocita: sp.velocita, sensi: sp.sensi, taglia: sp.taglia, trattiSpecie: sp.tratti } : {}), ...ritrattoAuto(scheda.classe, v, scheda.nome) }); }} title="Scegli la specie (imposta velocità, sensi, taglia, tratti e avatar)" />
                 </CampoModulo>
                 <CampoModulo label="Taglia">
                   <CampoTendina value={scheda.taglia} opzioni={TAGLIE_5E} onChange={(v) => aggiorna({ taglia: v })} title="Scegli la taglia" />
@@ -2916,9 +3015,20 @@ export default function App() {
                     opzioni={NOMI_CLASSI}
                     onChange={(v) => {
                       const car = caratteristicaIncantatorePerClasse(v);
-                      aggiorna({ classe: v, ...(car ? { incantatore: { caratteristica: car } } : {}), ...ritrattoAuto(v, scheda.specie, scheda.nome) });
+                      const ts = tiriSalvezzaPerClasse(v);
+                      const add = addestramentoPerClasse(v);
+                      const slot = slotDaClasseLivello(v, scheda.livello);
+                      aggiorna({
+                        classe: v,
+                        ...(car ? { incantatore: { caratteristica: car } } : {}),
+                        ...(ts ? { tiriSalvezza: ts } : {}),
+                        ...(add ? { addestramento: { ...scheda.addestramento, armature: { ...add.armature }, armi: add.armi } } : {}),
+                        ...(slot ? { slotIncantesimo: slot } : {}),
+                        dadiVita: esprDadiVita(scheda.livello, dadoVitaClasse(v)),
+                        ...ritrattoAuto(v, scheda.specie, scheda.nome),
+                      });
                     }}
-                    title="Scegli la classe (imposta colori, caratteristica da incantatore e avatar)"
+                    title="Scegli la classe (imposta TS, addestramento, incantatore, slot, dado vita e avatar)"
                   />
                 </CampoModulo>
                 <CampoModulo label="Sottoclasse">
