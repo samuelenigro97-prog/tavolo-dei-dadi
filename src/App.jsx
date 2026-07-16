@@ -614,11 +614,11 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
 /* consente ai riquadri di stringersi sotto la larghezza del contenuto (niente overflow) */
 .vitali > * { min-width: 0; }
 .vitali > * > * { min-width: 0; }
-/* i campi anagrafica (con le tendine): font piccolo, padding compatto */
-.campi-anagrafica > * { min-width: 0; }
+/* i campi anagrafica (con le tendine): font piccolo, padding compatto, allineati in basso */
+.campi-anagrafica > * { min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; }
 .campi-anagrafica select { max-width: 100%; font-size: 11px !important; padding: 1px 2px !important; height: 20px; line-height: 1.2; }
-.campi-anagrafica .campo-modulo-box { padding: 2px 4px !important; min-height: 20px !important; }
-.campi-anagrafica .campo-modulo-label { font-size: 8px !important; }
+.campi-anagrafica .campo-modulo-box { padding: 0 2px !important; min-height: 22px !important; height: 22px; display: flex; align-items: center; overflow: hidden; }
+.campi-anagrafica .campo-modulo-label { font-size: 8px !important; margin-top: 1px; }
 @media (max-width: 820px) {
   .griglia-scheda { grid-template-columns: 1fr; }
 }
@@ -935,7 +935,80 @@ function bonusTiroSalvezza(scheda, car) {
   );
 }
 
-// Esempio pronto all'uso: Flyora delle Acque Nere (scheda PDF di riferimento).
+const FLYORA_JSON = {
+  nome: 'Flyora delle Acque Nere',
+  classe: 'Stregone',
+  sottoclasse: 'Magia Selvaggia',
+  livello: 4,
+  background: 'Eremita',
+  specie: 'Elfo Alto',
+  taglia: 'Media',
+  allineamento: 'Neutrale',
+  pe: 0,
+  pfMax: 30,
+  pfAttuali: 30,
+  pfTemp: 0,
+  dadiVita: '4d6',
+  dadiVitaSpesi: 0,
+  ca: 12,
+  velocita: 9,
+  ispirazione: false,
+  sfinimento: 0,
+  armatura: { tipo: 'manuale', base: 10, scudo: false, bonus: 0 },
+  caratteristiche: { forza: 12, destrezza: 15, costituzione: 16, intelligenza: 14, saggezza: 15, carisma: 18 },
+  tiriSalvezza: { forza: false, destrezza: false, costituzione: true, intelligenza: false, saggezza: false, carisma: true },
+  abilita: {
+    acrobazia: false, addestrareAnimali: false, arcano: true, atletica: false,
+    furtivita: false, indagare: false, inganno: false, intimidire: false,
+    intrattenere: false, intuizione: false, medicina: true, natura: false,
+    percezione: true, persuasione: true, rapiditaDiMano: false,
+    religione: true, sopravvivenza: false, storia: false
+  },
+  maestrie: {},
+  armi: [
+    { id: '1', nome: 'Spada', caratteristica: 'destrezza', competenza: true, danno: '1d6', tipoDanno: 'Perforante', bonusAttacco: 0, bonusDanno: 0, note: 'Accurata, Leggera' },
+    { id: '2', nome: 'Pugnale x2', caratteristica: 'destrezza', competenza: true, danno: '1d4', tipoDanno: 'Perforante', bonusAttacco: 0, bonusDanno: 0, note: 'Accurata, Leggera, Lancio' },
+    { id: '3', nome: 'Bastone Ferrato', caratteristica: 'forza', competenza: true, danno: '1d6', tipoDanno: 'Contundente', bonusAttacco: 0, bonusDanno: 0, note: 'Versatile (1d8 a due mani)' }
+  ],
+  incantatore: { caratteristica: 'carisma', cdExtra: 0, attaccoExtra: 0 },
+  slotIncantesimi: {
+    '1': { max: 4, spesi: 0 },
+    '2': { max: 3, spesi: 0 },
+    '3': { max: 0, spesi: 0 },
+    '4': { max: 0, spesi: 0 },
+    '5': { max: 0, spesi: 0 },
+    '6': { max: 0, spesi: 0 },
+    '7': { max: 0, spesi: 0 },
+    '8': { max: 0, spesi: 0 },
+    '9': { max: 0, spesi: 0 }
+  },
+  incantesimi: [
+    { id: 'i1', nome: 'Interdizione alle Lame', livello: 0, preparato: true, dettagli: 'Azione, V S, res. armi' },
+    { id: 'i2', nome: 'Messaggio', livello: 0, preparato: true, dettagli: 'Azione, 36m, V S M' },
+    { id: 'i3', nome: 'Morsa del Gelo', livello: 0, preparato: true, dettagli: 'Azione, 18m, V S' },
+    { id: 'i4', nome: 'Prestidigitazione', livello: 0, preparato: true, dettagli: 'Azione, 3m, V S' },
+    { id: 'i5', nome: 'Vampa', livello: 0, preparato: true, dettagli: 'Azione, 18m, V S' },
+    { id: 'i6', nome: 'Caduta Morbida', livello: 1, preparato: true, dettagli: 'Reazione, 18m, V M' },
+    { id: 'i7', nome: 'Individuazione del Magico', livello: 1, preparato: true, dettagli: 'Azione (Rituale), 9m, V S M' },
+    { id: 'i8', nome: 'Onda Tonante', livello: 1, preparato: true, dettagli: 'Azione, cubo 4,5m, V S' },
+    { id: 'i9', nome: 'Scudo', livello: 1, preparato: true, dettagli: 'Reazione, V S' },
+    { id: 'i10', nome: 'Dardo Incantato', livello: 1, preparato: true, dettagli: 'Azione, 36m, V S' },
+    { id: 'i11', nome: 'Frantumare', livello: 2, preparato: true, dettagli: 'Azione, 18m, V S M' },
+    { id: 'i12', nome: 'Immagine Speculare', livello: 2, preparato: true, dettagli: 'Azione, V S' },
+    { id: 'i13', nome: 'Passo Velato', livello: 2, preparato: true, dettagli: 'Azione Bonus, V' }
+  ],
+  risorse: [
+    { id: 'r1', nome: 'Punti Stregoneria', max: 4, attuali: 4, ricarica: 'Lungo' },
+    { id: 'r2', nome: 'Stregoneria Innata', max: 2, attuali: 2, ricarica: 'Lungo' },
+    { id: 'r3', nome: 'Borsa del Guaritore', max: 10, attuali: 10, ricarica: 'Nessuno' }
+  ],
+  tratti: "Stregoneria Innata\nFonte di Magia\nMetamagia: Incantesimo Celato, Preciso\nOnde di Caos\nRetaggio Fatato\nScurovisione\nTrance\nGuaritore\nGuerramaga",
+  equipaggiamento: "Focus Arcano (Cristallo)\nBorsa da erborista\nGiaciglio\nLibro (filosofia)\nDotazione da avventuriero\nAbiti da viaggiatore",
+  monete: { mr: 0, ma: 0, me: 0, mo: 74, mp: 0 },
+  note: "Il personaggio ha trascorso i suoi primi anni rinchiuso in una capanna o un monastero..."
+};
+
+// Esempio pronto all'uso: Gnomo Mago.
 const ESEMPIO_GNOMO = {
   nome: 'Boddynock Folgorio',
   background: 'Sapiente',
@@ -2162,7 +2235,6 @@ export default function App() {
         >
           <div style={{ ...styles.panel, maxWidth: 460, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
             <h1 style={{ ...styles.title, marginBottom: 2 }}>🎲 Scheda Interattiva</h1>
-            <div style={{ ...styles.detail, textAlign: 'center', marginBottom: 12 }}>versione app {APP_VERSION}</div>
             <div style={{ display: 'flex', gap: 6, justifyContent: 'center', alignItems: 'center', marginBottom: 16 }}>
               <span style={styles.detail}>Regole D&D:</span>
               {['2024', '2014'].map((v) => (
@@ -2187,14 +2259,33 @@ export default function App() {
             <div style={{ ...styles.detail, marginBottom: 6, fontWeight: 'bold' }}>Carica un personaggio</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
               {Object.entries(roster.personaggi).map(([id, p]) => (
-                <button
-                  key={id}
-                  style={{ ...styles.button, display: 'flex', justifyContent: 'space-between', gap: 10, textAlign: 'left' }}
-                  onClick={() => { setRoster((r) => ({ ...r, attivo: id })); setMostraMenu(false); }}
-                >
-                  <span>{p.nome || 'Senza nome'}</span>
-                  <span style={styles.detail}>{p.classe ? `${p.classe} liv. ${p.livello} · ${p.pe || 0} PE` : '—'}</span>
-                </button>
+                <div key={id} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  <button
+                    style={{ ...styles.button, flex: 1, display: 'flex', justifyContent: 'space-between', gap: 10, textAlign: 'left' }}
+                    onClick={() => { setRoster((r) => ({ ...r, attivo: id })); setMostraMenu(false); }}
+                  >
+                    <span>{p.nome || 'Senza nome'}</span>
+                    <span style={styles.detail}>{p.classe ? `${p.classe} liv. ${p.livello} · ${p.pe || 0} PE` : '—'}</span>
+                  </button>
+                  <button
+                    style={{ ...styles.buttonDanger, padding: '4px 10px', fontSize: 13, flexShrink: 0 }}
+                    title={`Elimina ${p.nome || 'questo personaggio'}`}
+                    onClick={() => {
+                      if (window.confirm(`Eliminare "${p.nome || 'Senza nome'}"? L'azione è irreversibile.`)) {
+                        setRoster((r) => {
+                          const nuovi = { ...r.personaggi };
+                          delete nuovi[id];
+                          const nuovoAttivo = r.attivo === id
+                            ? (Object.keys(nuovi)[0] ?? null)
+                            : r.attivo;
+                          return { personaggi: nuovi, attivo: nuovoAttivo };
+                        });
+                      }
+                    }}
+                  >
+                    🗑️
+                  </button>
+                </div>
               ))}
               {Object.keys(roster.personaggi).length === 0 && (
                 <span style={styles.detail}>Nessun personaggio salvato.</span>
@@ -2206,9 +2297,10 @@ export default function App() {
               <button style={styles.button} onClick={() => fileRef.current?.click()}>📜 Da PDF</button>
               <button
                 style={styles.button}
-                onClick={() => { nuovoPersonaggio(normalizeImported(ESEMPIO_GNOMO)); setMostraMenu(false); }}
+                onClick={() => { nuovoPersonaggio(normalizeImported(FLYORA_JSON)); setMostraMenu(false); }}
+                title="Carica la scheda di Flyora (liv. 4)"
               >
-                ✨ Esempio
+                ✨ Esempio (Flyora)
               </button>
             </div>
             {erroreImport && <div style={{ color: C.red, marginTop: 10 }}>{erroreImport}</div>}
@@ -2279,7 +2371,7 @@ export default function App() {
       })()}
 
       <header style={{ ...styles.header, position: 'relative' }}>
-        <h1 style={styles.title}>🎲 Scheda Interattiva</h1>
+        <h1 style={styles.title}>🎲 Scheda Interattiva <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 'normal', letterSpacing: 0.5 }}>v{APP_VERSION}</span></h1>
         <p style={styles.hint}>
           1 click per modificare · tieni premuto e rilascia (o doppio click) per tirare il dado
         </p>
@@ -2290,15 +2382,6 @@ export default function App() {
             onClick={() => setMostraMenu(true)}
           >
             🏠 Menu
-          </button>
-          <button
-            style={styles.modeButton(false)}
-            title={regoleVersione === '2024'
-              ? 'Regole D&D 5.5 (2024). Clicca per passare alla 5.0 (2014): cambia il funzionamento dello sfinimento.'
-              : 'Regole D&D 5.0 (2014). Clicca per passare alla 5.5 (2024): sfinimento −2 ai tiri per livello.'}
-            onClick={() => setRegoleVersione(regoleVersione === '2024' ? '2014' : '2024')}
-          >
-            📖 {regoleVersione === '2024' ? '5.5' : '5.0'}
           </button>
         </div>
         <button
@@ -2501,27 +2584,19 @@ export default function App() {
               <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              {/* Ispirazione (eroica) allineata a destra */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
-                <span
-                  className="tirabile"
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 5,
-                    padding: '3px 11px', borderRadius: 999, cursor: 'pointer',
-                    fontSize: 12, letterSpacing: 0.5, whiteSpace: 'nowrap',
-                    background: scheda.ispirazione ? 'rgba(212,175,55,0.18)' : 'transparent',
-                    border: `1px solid ${scheda.ispirazione ? '#d4af37' : C.border}`,
-                    color: scheda.ispirazione ? '#d4af37' : C.inkDim,
-                    boxShadow: scheda.ispirazione ? '0 0 6px rgba(212,175,55,0.5)' : 'none',
-                    fontWeight: scheda.ispirazione ? 'bold' : 'normal',
-                  }}
-                  title="Ispirazione (eroica): click per attivare/disattivare"
-                  onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
-                >
-                  {scheda.ispirazione ? '★' : '☆'} Ispirazione
-                </span>
-              </div>
-              <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px 10px', marginTop: 6 }}>
+              <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px 10px', marginTop: 6, alignItems: 'end' }}>
+                <CampoModulo label="Livello">
+                  <Editable value={scheda.livello} tipo="numero" onChange={(v) => aggiorna({ livello: v, dadiVita: esprDadiVita(v, facceDadoVita(scheda.dadiVita)), dadiVitaSpesi: Math.min(scheda.dadiVitaSpesi, Math.max(1, v)) })} width="100%" style={{ borderBottom: 'none', fontSize: 13 }} />
+                </CampoModulo>
+                <CampoModulo label={regoleVersione === '2024' ? 'Specie' : 'Razza'}>
+                  <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => aggiorna({ specie: v, ...ritrattoAuto(scheda.classe, v, scheda.nome) })} title="Scegli la specie (aggiorna l'avatar)" />
+                </CampoModulo>
+                <CampoModulo label="Taglia">
+                  <CampoTendina value={scheda.taglia} opzioni={TAGLIE_5E} onChange={(v) => aggiorna({ taglia: v })} title="Scegli la taglia" />
+                </CampoModulo>
+                <CampoModulo label="Allineamento">
+                  <CampoTendina value={scheda.allineamento} opzioni={ALLINEAMENTI_5E} onChange={(v) => aggiorna({ allineamento: v })} title="Scegli l'allineamento" />
+                </CampoModulo>
                 <CampoModulo label="Background">
                   <CampoTendina value={scheda.background} opzioni={BACKGROUND_5E} onChange={(v) => aggiorna({ background: v, ...abilitaConBackground(v) })} title="Scegli un background (imposta le competenze nelle abilità)" />
                 </CampoModulo>
@@ -2539,20 +2614,26 @@ export default function App() {
                 <CampoModulo label="Sottoclasse">
                   <CampoTendina value={scheda.sottoclasse} opzioni={sottoclassiPerClasse(scheda.classe)} onChange={(v) => aggiorna({ sottoclasse: v })} title="Sottoclasse (opzioni in base alla classe)" />
                 </CampoModulo>
-                <CampoModulo label="Livello">
-                  <Editable value={scheda.livello} tipo="numero" onChange={(v) => aggiorna({ livello: v, dadiVita: esprDadiVita(v, facceDadoVita(scheda.dadiVita)), dadiVitaSpesi: Math.min(scheda.dadiVitaSpesi, Math.max(1, v)) })} width="100%" style={{ borderBottom: 'none', fontSize: 13 }} />
-                </CampoModulo>
-                <CampoModulo label={regoleVersione === '2024' ? 'Specie' : 'Razza'}>
-                  <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => aggiorna({ specie: v, ...ritrattoAuto(scheda.classe, v, scheda.nome) })} title="Scegli la specie (aggiorna l'avatar)" />
-                </CampoModulo>
-                <CampoModulo label="Taglia">
-                  <CampoTendina value={scheda.taglia} opzioni={TAGLIE_5E} onChange={(v) => aggiorna({ taglia: v })} title="Scegli la taglia" />
-                </CampoModulo>
-                <CampoModulo label="Allineamento">
-                  <CampoTendina value={scheda.allineamento} opzioni={ALLINEAMENTI_5E} onChange={(v) => aggiorna({ allineamento: v })} title="Scegli l'allineamento" />
-                </CampoModulo>
-                <CampoModulo label="PE">
-                  <Editable value={scheda.pe} tipo="numero" onChange={(v) => aggiorna({ pe: v })} width="100%" style={{ borderBottom: 'none', fontSize: 13 }} />
+                <CampoModulo label="Ispirazione">
+                  <div style={{ display: 'flex', width: '100%', justifyContent: 'center' }}>
+                    <span
+                      className="tirabile"
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 5,
+                        padding: '1px 8px', borderRadius: 999, cursor: 'pointer',
+                        fontSize: 12, letterSpacing: 0.5, whiteSpace: 'nowrap',
+                        background: scheda.ispirazione ? 'rgba(212,175,55,0.18)' : 'transparent',
+                        border: `1px solid ${scheda.ispirazione ? '#d4af37' : C.border}`,
+                        color: scheda.ispirazione ? '#d4af37' : C.inkDim,
+                        boxShadow: scheda.ispirazione ? '0 0 6px rgba(212,175,55,0.5)' : 'none',
+                        fontWeight: scheda.ispirazione ? 'bold' : 'normal',
+                      }}
+                      title="Ispirazione (eroica): click per attivare/disattivare"
+                      onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
+                    >
+                      {scheda.ispirazione ? '★' : '☆'}
+                    </span>
+                  </div>
                 </CampoModulo>
               </div>
             </div>
