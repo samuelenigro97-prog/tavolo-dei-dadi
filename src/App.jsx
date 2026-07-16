@@ -2323,7 +2323,6 @@ export default function App() {
 
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button style={styles.button} onClick={() => jsonRef.current?.click()}>📂 Da file JSON</button>
-              <button style={styles.button} onClick={() => fileRef.current?.click()}>📜 Da PDF</button>
               <button
                 style={styles.button}
                 onClick={() => { nuovoPersonaggio(normalizeImported(FLYORA_JSON)); setMostraMenu(false); }}
@@ -2331,6 +2330,7 @@ export default function App() {
               >
                 ✨ Esempio (Flyora)
               </button>
+              <button style={styles.button} onClick={() => fileRef.current?.click()}>📜 Da PDF</button>
             </div>
             {erroreImport && <div style={{ color: C.red, marginTop: 10 }}>{erroreImport}</div>}
           </div>
