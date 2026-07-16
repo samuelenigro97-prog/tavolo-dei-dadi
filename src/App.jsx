@@ -2264,7 +2264,7 @@ export default function App() {
           onClick={(e) => { if (e.target === e.currentTarget) setMostraMenu(false); }}
         >
           <div style={{ ...styles.panel, maxWidth: 460, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
-            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 16 }}>🎲 Scheda Interattiva</h1>
+            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 16 }}>Scheda Interattiva</h1>
 
             <button
               style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 14 }}
@@ -2392,7 +2392,7 @@ export default function App() {
       })()}
 
       <header style={{ ...styles.header, position: 'relative' }}>
-        <h1 style={styles.title}>🎲 Scheda Interattiva <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 'normal', letterSpacing: 0.5 }}>v{APP_VERSION}</span></h1>
+        <h1 style={styles.title}>Scheda Interattiva <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 'normal', letterSpacing: 0.5 }}>v{APP_VERSION}</span></h1>
         <p style={styles.hint}>
           1 click per modificare · tieni premuto e rilascia (o doppio click) per tirare il dado
         </p>
@@ -2455,7 +2455,7 @@ export default function App() {
                   {danni.etichetta}
                 </div>
                 <div style={{ fontSize: 24, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {danni.libero ? '🎲' : danni.guarigione ? '✚' : '💥'} <strong>{danni.totale}</strong>
+                  {danni.libero ? 'Danno' : danni.guarigione ? '✚' : '💥'} <strong>{danni.totale}</strong>
                   {danni.libero ? '' : danni.guarigione ? ' PF recuperati' : ' danni'}
                   {danni.critico && <span style={styles.badge(C.goldDark)}>⚔ CRITICO!</span>}
                 </div>
@@ -2738,7 +2738,7 @@ export default function App() {
                       <option key={f} value={f}>{f}</option>
                     ))}
                   </select>
-                  🎲 · spesi{' '}
+                  Spesi:{' '}
                   <Editable value={scheda.dadiVitaSpesi} tipo="numero" onChange={(v) => aggiorna({ dadiVitaSpesi: Math.min(Math.max(1, scheda.livello || 1), Math.max(0, v)) })} width={26} />
                   <span style={{ color: C.inkDim }}>/ {Math.max(1, scheda.livello || 1)}</span>
                 </span>
@@ -2757,7 +2757,7 @@ export default function App() {
             {/* TS Morte */}
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>
-                <Rollable onRoll={tiroSalvezzaMorte} title="Tieni premuto e rilascia: TS contro morte">TS Morte 🎲</Rollable>
+                <Rollable onRoll={tiroSalvezzaMorte} title="Tieni premuto e rilascia: TS contro morte">TS Morte</Rollable>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, height: 16 }}>
                 {[1, 2, 3].map((i) => (
@@ -2794,7 +2794,7 @@ export default function App() {
               <div style={styles.vitalLabel}>Iniziativa</div>
               <div style={styles.vitalValue}>
                 <Rollable onRoll={() => lanciaD20('Iniziativa', modificatore(scheda.caratteristiche.destrezza))}>
-                  {conSegno(modificatore(scheda.caratteristiche.destrezza))} 🎲
+                  {conSegno(modificatore(scheda.caratteristiche.destrezza))}
                 </Rollable>
               </div>
             </div>
@@ -2883,7 +2883,7 @@ export default function App() {
               onClick={tiraCaratteristiche}
               title="Tira 4d6 e scarta il dado più basso per ogni caratteristica; i valori più alti vanno alle caratteristiche più importanti per la classe scelta"
             >
-              🎲 Tira caratteristiche (4d6){coloreClasse(scheda.classe) ? ` · ordinate per ${scheda.classe}` : ''}
+              Tira caratteristiche (4d6){coloreClasse(scheda.classe) ? ` · ordinate per ${scheda.classe}` : ''}
             </button>
             {CARATTERISTICHE.map(({ key, label, abbr }) => {
               const mod = modificatore(scheda.caratteristiche[key]);
@@ -3093,7 +3093,7 @@ export default function App() {
                             lanciaD20('Attacco con incantesimo', scheda.bonusCompetenza + modIncantatore)
                           }
                         >
-                          {conSegno(scheda.bonusCompetenza + modIncantatore)} 🎲
+                          {conSegno(scheda.bonusCompetenza + modIncantatore)}
                         </Rollable>
                       </div>
                     </div>
