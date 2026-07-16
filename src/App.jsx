@@ -609,14 +609,16 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
 }
 /* consente alle colonne della griglia di stringersi (niente overflow orizzontale) */
 .griglia-scheda > * { min-width: 0; }
-/* riquadri vitali: griglia uniforme che si adatta, tutti stessa altezza */
-.vitali { display: grid; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 6px; align-items: stretch; }
+/* riquadri vitali: 5 colonne fisse → riga 1: CA | PF(x2) | Riposo | TsMorte ; riga 2: BonusComp | Iniziativa | Velocità | PercPass */
+.vitali { display: grid; grid-template-columns: 90px 1fr 1fr 80px 100px; gap: 5px; align-items: stretch; }
 /* consente ai riquadri di stringersi sotto la larghezza del contenuto (niente overflow) */
 .vitali > * { min-width: 0; }
 .vitali > * > * { min-width: 0; }
-/* i campi anagrafica (con le tendine) devono stringersi su mobile */
+/* i campi anagrafica (con le tendine): font piccolo, padding compatto */
 .campi-anagrafica > * { min-width: 0; }
-.campi-anagrafica select { max-width: 100%; }
+.campi-anagrafica select { max-width: 100%; font-size: 11px !important; padding: 1px 2px !important; height: 20px; line-height: 1.2; }
+.campi-anagrafica .campo-modulo-box { padding: 2px 4px !important; min-height: 20px !important; }
+.campi-anagrafica .campo-modulo-label { font-size: 8px !important; }
 @media (max-width: 820px) {
   .griglia-scheda { grid-template-columns: 1fr; }
 }
@@ -1435,8 +1437,8 @@ function Rollable({ onRoll, children, style, title, as: Tag = 'span' }) {
 function CampoModulo({ label, children, style }) {
   return (
     <div style={style}>
-      <div style={styles.moduloCampo}>{children}</div>
-      <div style={styles.moduloLabel}>{label}</div>
+      <div className="campo-modulo-box" style={styles.moduloCampo}>{children}</div>
+      <div className="campo-modulo-label" style={styles.moduloLabel}>{label}</div>
     </div>
   );
 }
@@ -2499,18 +2501,11 @@ export default function App() {
               <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              {/* Livello/PE + ispirazione (il nome vive nel rettangolo in alto) */}
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
-                <span style={{ ...styles.detail, whiteSpace: 'nowrap', fontSize: 14 }}>
-                  liv. <Editable value={scheda.livello} tipo="numero" onChange={(v) => aggiorna({ livello: v, dadiVita: esprDadiVita(v, facceDadoVita(scheda.dadiVita)), dadiVitaSpesi: Math.min(scheda.dadiVitaSpesi, Math.max(1, v)) })} width={32} />
-                  {' · PE '}
-                  <Editable value={scheda.pe} tipo="numero" onChange={(v) => aggiorna({ pe: v })} width={56} />
-                </span>
-                {/* Ispirazione: casellina compatta nell'angolo in alto a destra */}
+              {/* Ispirazione (eroica) allineata a destra */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
                 <span
                   className="tirabile"
                   style={{
-                    marginLeft: 'auto',
                     display: 'inline-flex', alignItems: 'center', gap: 5,
                     padding: '3px 11px', borderRadius: 999, cursor: 'pointer',
                     fontSize: 12, letterSpacing: 0.5, whiteSpace: 'nowrap',
@@ -2526,7 +2521,7 @@ export default function App() {
                   {scheda.ispirazione ? '★' : '☆'} Ispirazione
                 </span>
               </div>
-              <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px 10px', marginTop: 6 }}>
+              <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px 10px', marginTop: 6 }}>
                 <CampoModulo label="Background">
                   <CampoTendina value={scheda.background} opzioni={BACKGROUND_5E} onChange={(v) => aggiorna({ background: v, ...abilitaConBackground(v) })} title="Scegli un background (imposta le competenze nelle abilità)" />
                 </CampoModulo>
@@ -2544,6 +2539,9 @@ export default function App() {
                 <CampoModulo label="Sottoclasse">
                   <CampoTendina value={scheda.sottoclasse} opzioni={sottoclassiPerClasse(scheda.classe)} onChange={(v) => aggiorna({ sottoclasse: v })} title="Sottoclasse (opzioni in base alla classe)" />
                 </CampoModulo>
+                <CampoModulo label="Livello">
+                  <Editable value={scheda.livello} tipo="numero" onChange={(v) => aggiorna({ livello: v, dadiVita: esprDadiVita(v, facceDadoVita(scheda.dadiVita)), dadiVitaSpesi: Math.min(scheda.dadiVitaSpesi, Math.max(1, v)) })} width="100%" style={{ borderBottom: 'none', fontSize: 13 }} />
+                </CampoModulo>
                 <CampoModulo label={regoleVersione === '2024' ? 'Specie' : 'Razza'}>
                   <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => aggiorna({ specie: v, ...ritrattoAuto(scheda.classe, v, scheda.nome) })} title="Scegli la specie (aggiorna l'avatar)" />
                 </CampoModulo>
@@ -2553,12 +2551,16 @@ export default function App() {
                 <CampoModulo label="Allineamento">
                   <CampoTendina value={scheda.allineamento} opzioni={ALLINEAMENTI_5E} onChange={(v) => aggiorna({ allineamento: v })} title="Scegli l'allineamento" />
                 </CampoModulo>
+                <CampoModulo label="PE">
+                  <Editable value={scheda.pe} tipo="numero" onChange={(v) => aggiorna({ pe: v })} width="100%" style={{ borderBottom: 'none', fontSize: 13 }} />
+                </CampoModulo>
               </div>
             </div>
           </div>
 
           <div className="vitali">
-            {/* Classe Armatura — scudo e bonus sempre disponibili */}
+            {/* RIGA 1 — Classe Armatura | Punti Ferita (x2) | Riposo | TS Morte */}
+            {/* Classe Armatura */}
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>Classe Armatura</div>
               <div style={styles.vitalValue}>
@@ -2579,9 +2581,7 @@ export default function App() {
               </select>
               <div style={{ fontSize: 10, color: C.inkDim, display: 'flex', gap: 5, alignItems: 'center', justifyContent: 'center', marginTop: 3, flexWrap: 'wrap' }}>
                 {(scheda.armatura.tipo === 'leggera' || scheda.armatura.tipo === 'media' || scheda.armatura.tipo === 'pesante') && (
-                  <span>
-                    base <Editable value={scheda.armatura.base} tipo="numero" width={24} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, base: Math.max(0, v) } })} />
-                  </span>
+                  <span>base <Editable value={scheda.armatura.base} tipo="numero" width={24} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, base: Math.max(0, v) } })} /></span>
                 )}
                 <span className="tirabile" style={{ cursor: 'pointer' }} title="Scudo: +2 alla CA" onClick={() => aggiorna({ armatura: { ...scheda.armatura, scudo: !scheda.armatura.scudo } })}>
                   <span style={styles.pip(scheda.armatura.scudo, C.goldDark)} /> scudo
@@ -2590,7 +2590,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* Punti Ferita + Dadi Vita insieme */}
+            {/* Punti Ferita — occupa 2 colonne */}
             <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
               <div style={styles.vitalLabel}>Punti Ferita</div>
               <div style={styles.vitalValue}>
@@ -2605,15 +2605,11 @@ export default function App() {
                 </span>
               </div>
               {(() => {
-                // barra dei PF: verde > 50%, oro > 25%, rossa sotto
                 const max = Math.max(1, scheda.pfMax);
                 const perc = Math.max(0, Math.min(100, (scheda.pfAttuali / max) * 100));
                 const colore = perc > 50 ? C.green : perc > 25 ? C.gold : C.red;
                 return (
-                  <div
-                    style={{ height: 5, borderRadius: 3, background: C.border, overflow: 'hidden', margin: '4px 10px 0' }}
-                    title={`${scheda.pfAttuali} / ${scheda.pfMax} PF`}
-                  >
+                  <div style={{ height: 5, borderRadius: 3, background: C.border, overflow: 'hidden', margin: '4px 10px 0' }} title={`${scheda.pfAttuali} / ${scheda.pfMax} PF`}>
                     <div style={{ width: `${perc}%`, height: '100%', background: colore, transition: 'width 0.25s ease' }} />
                   </div>
                 );
@@ -2621,7 +2617,7 @@ export default function App() {
               <div style={{ ...styles.detail, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: 4 }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
                   Dadi vita{' '}
-                  <Rollable onRoll={tiraDadoVita} title="Tieni premuto e rilascia: spendi un dado vita (guarigione = 1 dado + COS)">
+                  <Rollable onRoll={tiraDadoVita} title="Tieni premuto e rilascia: spendi un dado vita">
                     <strong>{Math.max(1, scheda.livello || 1)}</strong>d
                   </Rollable>
                   <select
@@ -2635,36 +2631,25 @@ export default function App() {
                     ))}
                   </select>
                   🎲 · spesi{' '}
-                  <Editable
-                    value={scheda.dadiVitaSpesi}
-                    tipo="numero"
-                    onChange={(v) => aggiorna({ dadiVitaSpesi: Math.min(Math.max(1, scheda.livello || 1), Math.max(0, v)) })}
-                    width={26}
-                  />
+                  <Editable value={scheda.dadiVitaSpesi} tipo="numero" onChange={(v) => aggiorna({ dadiVitaSpesi: Math.min(Math.max(1, scheda.livello || 1), Math.max(0, v)) })} width={26} />
                   <span style={{ color: C.inkDim }}>/ {Math.max(1, scheda.livello || 1)}</span>
                 </span>
               </div>
             </div>
 
-            {/* Riposo: box dedicato con i due pulsanti */}
+            {/* Riposo */}
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>Riposo</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 4px' }} onClick={riposoBreve} title="Riposo breve: ricarica le risorse brevi e spendi un dado vita">
-                  🔥 Breve
-                </button>
-                <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 4px' }} onClick={riposoLungo} title="Riposo lungo: PF al massimo, slot recuperati, metà dadi vita">
-                  🌙 Lungo
-                </button>
+                <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 4px' }} onClick={riposoBreve} title="Riposo breve">🔥 Breve</button>
+                <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 4px' }} onClick={riposoLungo} title="Riposo lungo">🌙 Lungo</button>
               </div>
             </div>
 
-            {/* TS contro morte */}
+            {/* TS Morte */}
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>
-                <Rollable onRoll={tiroSalvezzaMorte} title="Tieni premuto e rilascia: TS contro morte">
-                  TS Morte 🎲
-                </Rollable>
+                <Rollable onRoll={tiroSalvezzaMorte} title="Tieni premuto e rilascia: TS contro morte">TS Morte 🎲</Rollable>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, height: 16 }}>
                 {[1, 2, 3].map((i) => (
@@ -2680,19 +2665,17 @@ export default function App() {
               </div>
             </div>
 
+            {/* RIGA 2 — Bonus Comp. | Iniziativa | Velocità | Perc. Passiva — riempiono le ultime 4 celle (5ª col. lasciata vuota o aggiustata) */}
             {/* Bonus Competenza */}
-            <div style={styles.vitalBox}>
+            <div style={{ ...styles.vitalBox, gridColumn: '1' }}>
               <div style={styles.vitalLabel}>Bonus Comp.</div>
               <div style={styles.vitalValue}>
                 <Editable value={conSegno(scheda.bonusCompetenza)} onChange={(v) => aggiorna({ bonusCompetenza: parseInt(v, 10) || 0 })} width={38} title="1 click: modifica" />
               </div>
               {scheda.bonusCompetenza !== bonusCompetenzaDaLivello(scheda.livello) && (
-                <span
-                  className="tirabile"
-                  style={{ fontSize: 9, color: C.goldDark, cursor: 'pointer', marginTop: 1 }}
-                  title={`Il bonus corretto per il livello ${scheda.livello} è ${conSegno(bonusCompetenzaDaLivello(scheda.livello))}`}
-                  onClick={() => aggiorna({ bonusCompetenza: bonusCompetenzaDaLivello(scheda.livello) })}
-                >
+                <span className="tirabile" style={{ fontSize: 9, color: C.goldDark, cursor: 'pointer', marginTop: 1 }}
+                  title={`Bonus corretto per liv. ${scheda.livello}: ${conSegno(bonusCompetenzaDaLivello(scheda.livello))}`}
+                  onClick={() => aggiorna({ bonusCompetenza: bonusCompetenzaDaLivello(scheda.livello) })}>
                   auto {conSegno(bonusCompetenzaDaLivello(scheda.livello))}
                 </span>
               )}
@@ -2717,8 +2700,8 @@ export default function App() {
               </div>
             </div>
 
-            {/* Percezione passiva */}
-            <div style={styles.vitalBox}>
+            {/* Percezione Passiva — occupa le ultime 2 colonne della riga 2 */}
+            <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
               <div style={styles.vitalLabel}>Perc. Passiva</div>
               <div style={styles.vitalValue}>{percezionePassiva}</div>
             </div>
