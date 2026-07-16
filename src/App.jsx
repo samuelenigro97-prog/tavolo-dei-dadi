@@ -3143,13 +3143,7 @@ export default function App() {
         {/* Corpo scheda: caratteristiche a sinistra, resto a destra */}
         <div className="griglia-scheda">
           <div>
-            <button
-              style={{ ...styles.button, width: '100%', marginBottom: 8 }}
-              onClick={tiraCaratteristiche}
-              title="Tira 4d6 e scarta il dado più basso per ogni caratteristica; i valori più alti vanno alle caratteristiche più importanti per la classe scelta"
-            >
-              Tira caratteristiche (4d6){coloreClasse(scheda.classe) ? ` · ordinate per ${scheda.classe}` : ''}
-            </button>
+
             {CARATTERISTICHE.map(({ key, label, abbr }) => {
               const mod = modificatore(scheda.caratteristiche[key]);
               const bonusTS = bonusTiroSalvezza(scheda, key);
