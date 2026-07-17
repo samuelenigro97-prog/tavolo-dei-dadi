@@ -39,9 +39,9 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['icona-192.png', 'icona-512.png', 'icona-maskable-512.png'],
       manifest: {
-        name: 'Scheda Interattiva',
-        short_name: 'Scheda',
-        description: 'Scheda D&D 5e interattiva: un click modifica, doppio click tira i dadi',
+        name: 'Tavolo dei Dadi',
+        short_name: 'Tavolo dei Dadi',
+        description: 'Scheda 5e interattiva: un click modifica, doppio click tira i dadi',
         lang: 'it',
         display: 'standalone',
         background_color: '#f4f1ea',
