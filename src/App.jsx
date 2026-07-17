@@ -315,6 +315,28 @@ function competenzeSpecieDi(specie) {
   return k ? { ...COMPETENZE_SPECIE[k], specie: k } : null;
 }
 
+// Nomi fantasy per razza/specie (liste generiche) + cognomi occasionali.
+const NOMI_SPECIE = {
+  elfo: ['Aelar', 'Faelyn', 'Thalindra', 'Miriel', 'Erevan', 'Sylvaris', 'Caelynn', 'Lithael', 'Naivara', 'Aramil', 'Enna', 'Vaeril'],
+  nano: ['Durgan', 'Baldrek', 'Thora', 'Helga', 'Grunnar', 'Kildrak', 'Barundra', 'Dwalin', 'Morgrym', 'Vistra', 'Kaddra', 'Rurik'],
+  orco: ['Grosh', 'Karg', 'Ushka', 'Mogru', 'Thurgok', 'Renk', 'Grukka', 'Vola', 'Dragok', 'Yarzol', 'Romok', 'Shautha'],
+  umano: ['Aldric', 'Elena', 'Marcus', 'Sera', 'Gareth', 'Lyra', 'Rowan', 'Mira', 'Corin', 'Talia', 'Emeric', 'Dara'],
+  tiefling: ['Malakar', 'Nyx', 'Ember', 'Vex', 'Karrin', 'Damaia', 'Kallista', 'Mordai', 'Sered', 'Akta', 'Barakas', 'Rieta'],
+  drago: ['Rhogar', 'Balasar', 'Kava', 'Sora', 'Nadarr', 'Pandjed', 'Arjhan', 'Mishann', 'Torinn', 'Kriv', 'Farideh', 'Harann'],
+  gnomo: ['Fizwick', 'Namfudl', 'Roondar', 'Ella', 'Bimble', 'Wren', 'Dabbek', 'Nissa', 'Zook', 'Ellywick', 'Boddynock', 'Lorra'],
+  halfling: ['Milo', 'Pip', 'Rosanna', 'Cade', 'Wenna', 'Lidda', 'Finnan', 'Nedda', 'Corrin', 'Seraphina', 'Osborn', 'Verna'],
+  aasimar: ['Seraphel', 'Aurelia', 'Cael', 'Lumen', 'Nova', 'Ysera', 'Ilias', 'Elenya', 'Raziel', 'Solara'],
+  goliath: ['Kavaki', 'Thruun', 'Vaunea', 'Ilikan', 'Ovak', 'Nalla', 'Gae-Al', 'Keothi', 'Uthal', 'Manneo'],
+};
+const NOMI_GENERICI = ['Aldric', 'Lyra', 'Corin', 'Sera', 'Rowan', 'Mira', 'Talon', 'Enna', 'Kael', 'Nira'];
+/** Nome fantasy casuale coerente con la specie scelta. */
+function nomeCasuale(specie) {
+  const s = (specie || '').toLowerCase();
+  const chiave = Object.keys(NOMI_SPECIE).find((k) => s.includes(k));
+  const lista = (chiave && NOMI_SPECIE[chiave]) || NOMI_GENERICI;
+  return lista[Math.floor(Math.random() * lista.length)];
+}
+
 // Dati di specie (2024): velocità in metri, sensi, taglia, tratti principali.
 const SPECIE_DATI = {
   Aasimar: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Resistenza celestiale, Mani guaritrici, Portatore di luce' },
@@ -1374,7 +1396,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.8.9';
+const APP_VERSION = '1.9.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2288,6 +2310,24 @@ export default function App() {
     setMostraMenu(false);
   }
 
+  /** Genera un personaggio casuale ma coerente (classe/specie/background, stat, competenze, nome). */
+  function generaPgCasuale() {
+    const rnd = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const classe = rnd(NOMI_CLASSI);
+    const specie = rnd(Object.keys(SPECIE_DATI));
+    const background = rnd(BACKGROUND_5E);
+    const cc = competenzeClasseDi(classe);
+    const bgSkills = BACKGROUND_COMPETENZE[background] || [];
+    let competenzeClasse = [];
+    if (cc) {
+      const disponibili = cc.lista.filter((k) => !bgSkills.includes(k)).sort(() => Math.random() - 0.5);
+      competenzeClasse = disponibili.slice(0, cc.numero);
+    }
+    const cs = competenzeSpecieDi(specie);
+    const competenzeSpecie = cs ? [rnd(cs.lista)] : [];
+    creaPersonaggio({ nome: nomeCasuale(specie), classe, specie, background, metodo: 'auto', pool: null, assegna: {}, competenzeClasse, competenzeSpecie });
+  }
+
   function duplicaPersonaggio() {
     nuovoPersonaggio({ ...scheda, nome: `${scheda.nome} (copia)` });
   }
@@ -2853,6 +2893,13 @@ export default function App() {
               <button style={styles.button} onClick={() => jsonRef.current?.click()}>📂 Da file JSON</button>
               <button
                 style={styles.button}
+                onClick={() => generaPgCasuale()}
+                title="Genera un personaggio casuale ma coerente (classe, specie, background, stat, competenze e nome)"
+              >
+                🎲 PG casuale
+              </button>
+              <button
+                style={styles.button}
                 onClick={() => { nuovoPersonaggio(normalizeImported(FLYORA_JSON)); setMostraMenu(false); }}
                 title="Carica la scheda di Flyora (liv. 4)"
               >
@@ -3037,7 +3084,10 @@ export default function App() {
               </div>
 
               <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>Nome</label>
-              <input style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.nome} placeholder="Nome del personaggio" onChange={(e) => setB({ nome: e.target.value })} />
+              <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+                <input style={{ ...stileSelect, flex: 1, marginBottom: 0 }} value={bozzaCrea.nome} placeholder="Nome del personaggio" onChange={(e) => setB({ nome: e.target.value })} />
+                <button style={styles.buttonMini} title="Genera un nome fantasy coerente con la specie" onClick={() => setB({ nome: nomeCasuale(bozzaCrea.specie) })}>🎲</button>
+              </div>
 
               <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>Classe</label>
               <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.classe} onChange={(e) => setB({ classe: e.target.value, competenzeClasse: [] })}>
