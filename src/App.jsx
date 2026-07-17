@@ -622,7 +622,8 @@ const styles = {
     padding: '8px 6px',
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'center',
+    // titolo in alto (allineato fra tutti i riquadri), valore appena sotto
+    justifyContent: 'flex-start',
     minHeight: 40,
   },
   vitalLabel: {
@@ -1308,7 +1309,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.8.1';
+const APP_VERSION = '1.8.2';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
