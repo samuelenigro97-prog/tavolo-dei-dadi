@@ -179,6 +179,48 @@ Il repo viene modificato da più agenti/sessioni. Per evitare conflitti:
 Nessuna configurazione elimina i conflitti al 100% se due agenti editano le
 **stesse righe** insieme: la garanzia è la disciplina di sync qui sopra.
 
-## TODO futuri (non farli senza richiesta esplicita)
+## BACKLOG / cose da fare (richieste dall'utente, ancora aperte)
 
-- (lista vuota — proporre nuove idee all'utente prima di implementarle)
+Aggiornato: le voci qui sono richieste esplicite dell'utente non ancora
+completate. Man mano che si chiudono, spostarle in "Fatto" in fondo.
+
+### A. Creazione guidata — completare l'auto-compilazione
+- [ ] **Privilegi di classe automatici**: tabella privilegi per classe/livello
+  (es. Stregone → Stregoneria Innata, Fonte di Magia…) che riempie la sezione
+  "Privilegi di classe" alla creazione.
+- [ ] **Competenze concesse dalla specie** → devono diventare ★ (competenza di
+  classe/razza). Es. Elfo "Sensi Acuti" (1 fra Intuizione/Percezione/Sopravv.).
+  Oggi la specie imposta velocità/sensi/taglia/tratti ma NON le competenze.
+
+### B. Doppia versione regole 5.5 (2024) e 5.0 (2014)
+- [ ] **Lavorare sempre doppio**: garantire che TUTTO funzioni con entrambe le
+  versioni (liste competenze di classe, background, sfinimento, bonus caratt.
+  di background solo-2024, ecc.). Fare una verifica sistematica per versione.
+- Nota: lo switch versione ora è SOLO nella creazione del PG (rimosso dalla
+  testata su richiesta dell'utente).
+
+### C. Internazionalizzazione (grande)
+- [ ] **Tasto lingua 🇬🇧 vicino alla barra del tiro** che passa a inglese.
+  Richiede un sistema i18n IT/EN e la traduzione di TUTTA l'interfaccia.
+
+### D. Estetica
+- [ ] **Colori delle classi più distinti** fra loro (rivedere palette `CLASSI`).
+- [ ] **Immagini di riferimento** (5 img inviate dall'utente, IMG_6554…6558;
+  la 6555 "mood D&D" è la preferita) → estrarne palette per sfondi/temi.
+  ISPIRAZIONE per i colori, NON incorporare le immagini (copyright).
+
+### E. Incantesimi
+- [ ] **Migliorare il sistema incantesimi**: liste per classe/livello, ricerca,
+  distinzione preparati vs conosciuti, slot per livello più chiari.
+
+### F. Varie
+- [ ] **Rinominare il progetto** — in attesa del nome scelto dall'utente
+  (cambiare titolo in-app + nome PWA; il repo resta `tavolo-dei-dadi`).
+- [ ] **Deploy del Worker PDF→JSON** (lato utente): guidarlo nell'attivazione
+  online (vedi `worker/LEGGIMI.md`).
+
+### Fatto di recente (riferimento)
+Abilità a 3 stati (○/●/★), creazione con metodo caratteristiche (auto / scelgo
+io / a mano) e scelta competenze di classe, sync cloud con auto-salvataggio +
+auto-caricamento, import PDF→JSON via Cloudflare Worker, coerenza scheda Flyora
+col PDF, pulsante Aggiorna che lampeggia, tante correzioni estetiche.
