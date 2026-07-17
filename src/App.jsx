@@ -1308,7 +1308,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.7.9';
+const APP_VERSION = '1.8.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2604,6 +2604,7 @@ export default function App() {
       const orario = new Date(quando).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
       setUltimoSync(orario);
       localStorage.setItem('scheda-interattiva:ultimo-sync', orario);
+      localStorage.setItem('scheda-interattiva:sync-ts', String(quando));
       setCloudStatus({ text: `✅ Sincronizzato · ${orario}`, type: 'success' });
       return nuovoId;
     } catch (err) {
@@ -2623,6 +2624,39 @@ export default function App() {
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roster, autoSync, githubToken, gistId]);
+
+  // Auto-caricamento all'avvio: se il cloud è configurato e contiene una copia
+  // più recente di quella locale, la carica da sola (vera sincronia tra device).
+  const autoCaricato = useRef(false);
+  useEffect(() => {
+    if (autoCaricato.current) return;
+    autoCaricato.current = true;
+    if (!githubToken || !gistId) return;
+    (async () => {
+      try {
+        const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+          headers: { 'Authorization': `token ${githubToken}`, 'Accept': 'application/vnd.github.v3+json' },
+        });
+        if (!res.ok) return;
+        const out = await res.json();
+        const file = out.files?.['roster_tavolo_dei_dadi.json'];
+        if (!file) return;
+        const parsed = JSON.parse(file.content);
+        const cloudTs = Number(parsed._updatedAt) || 0;
+        const localTs = Number(localStorage.getItem('scheda-interattiva:sync-ts')) || 0;
+        if (cloudTs <= localTs) return; // il locale è già aggiornato quanto il cloud
+        const caricato = { attivo: parsed.attivo, personaggi: {} };
+        for (const id in parsed.personaggi) caricato.personaggi[id] = normalizeImported(parsed.personaggi[id]);
+        if (!caricato.attivo || !caricato.personaggi[caricato.attivo]) caricato.attivo = Object.keys(caricato.personaggi)[0] || '';
+        if (Object.keys(caricato.personaggi).length) {
+          setRoster(caricato);
+          localStorage.setItem('scheda-interattiva:sync-ts', String(cloudTs));
+          setCloudStatus({ text: '☁️ Personaggi caricati dal cloud', type: 'success' });
+        }
+      } catch { /* offline o errore: si resta sui dati locali */ }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function caricaDaCloud() {
     if (!githubToken || !gistId) {
@@ -2652,6 +2686,7 @@ export default function App() {
       }
       
       setRoster(loadedRoster);
+      if (parsed._updatedAt) localStorage.setItem('scheda-interattiva:sync-ts', String(parsed._updatedAt));
       setCloudStatus({ text: '✅ Roster caricato e sincronizzato!', type: 'success' });
     } catch (err) {
       setCloudStatus({ text: err.message, type: 'error' });
