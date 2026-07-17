@@ -1309,7 +1309,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.8.2';
+const APP_VERSION = '1.8.3';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1994,6 +1994,7 @@ export default function App() {
   const [gistId, setGistId] = useState(() => localStorage.getItem('scheda-interattiva:gist-id') || '');
   const [cloudStatus, setCloudStatus] = useState({ text: '', type: '' });
   // auto-salvataggio su cloud (debounced) + orario ultimo salvataggio
+  const [mostraToken, setMostraToken] = useState(false);
   const [autoSync, setAutoSync] = useState(() => localStorage.getItem('scheda-interattiva:auto-sync') !== 'off');
   const [ultimoSync, setUltimoSync] = useState(() => localStorage.getItem('scheda-interattiva:ultimo-sync') || '');
   const [sincronizzando, setSincronizzando] = useState(false);
@@ -2809,28 +2810,42 @@ export default function App() {
             </p>
 
             <label style={{ ...styles.detail, display: 'block', marginBottom: 3, fontWeight: 'bold' }}>GitHub Personal Access Token</label>
-            <input
-              type="password"
-              style={{ ...styles.inlineInput, width: '100%', padding: '6px 8px', marginBottom: 12, fontSize: 13 }}
-              placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-              value={githubToken}
-              onChange={(e) => {
-                setGithubToken(e.target.value);
-                localStorage.setItem('scheda-interattiva:github-token', e.target.value);
-              }}
-            />
+            <div style={{ display: 'flex', gap: 6, marginBottom: 4 }}>
+              <input
+                type={mostraToken ? 'text' : 'password'}
+                style={{ ...styles.inlineInput, flex: 1, padding: '6px 8px', fontSize: 13 }}
+                placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                value={githubToken}
+                onChange={(e) => {
+                  setGithubToken(e.target.value);
+                  localStorage.setItem('scheda-interattiva:github-token', e.target.value);
+                }}
+              />
+              <button style={styles.buttonMini} title={mostraToken ? 'Nascondi' : 'Mostra per copiarlo'} onClick={() => setMostraToken((v) => !v)}>{mostraToken ? '🙈' : '👁'}</button>
+              <button style={styles.buttonMini} title="Copia il token" onClick={() => navigator.clipboard?.writeText(githubToken).then(() => setCloudStatus({ text: 'Token copiato', type: 'success' }))}>📋</button>
+            </div>
+            <p style={{ ...styles.detail, fontSize: 11, marginTop: 0, marginBottom: 12 }}>
+              Il token si vede una sola volta su GitHub: <strong>salvalo</strong> (con 👁 e 📋 lo copi da qui). Sull'altro dispositivo incolla lo <strong>stesso</strong> token e Gist ID, oppure genera un nuovo token (stesso account, scope "gist").
+            </p>
 
             <label style={{ ...styles.detail, display: 'block', marginBottom: 3, fontWeight: 'bold' }}>Gist ID (creato automaticamente al primo salvataggio)</label>
-            <input
-              type="text"
-              style={{ ...styles.inlineInput, width: '100%', padding: '6px 8px', marginBottom: 16, fontSize: 13, fontFamily: 'monospace' }}
-              placeholder="Lascia vuoto se è il primo salvataggio"
-              value={gistId}
-              onChange={(e) => {
-                setGistId(e.target.value);
-                localStorage.setItem('scheda-interattiva:gist-id', e.target.value);
-              }}
-            />
+            <div style={{ display: 'flex', gap: 6, marginBottom: 4 }}>
+              <input
+                type="text"
+                style={{ ...styles.inlineInput, flex: 1, padding: '6px 8px', fontSize: 13, fontFamily: 'monospace' }}
+                placeholder="Lascia vuoto se è il primo salvataggio"
+                value={gistId}
+                onChange={(e) => {
+                  setGistId(e.target.value);
+                  localStorage.setItem('scheda-interattiva:gist-id', e.target.value);
+                }}
+              />
+              <button style={styles.buttonMini} title="Copia il Gist ID" onClick={() => navigator.clipboard?.writeText(gistId).then(() => setCloudStatus({ text: 'Gist ID copiato', type: 'success' }))}>📋</button>
+              {gistId && <a href={`https://gist.github.com/${gistId}`} target="_blank" rel="noreferrer" style={{ ...styles.buttonMini, textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }} title="Apri il Gist su GitHub">↗</a>}
+            </div>
+            <p style={{ ...styles.detail, fontSize: 11, marginTop: 0, marginBottom: 16 }}>
+              Il Gist ID lo trovi qui dopo il primo salvataggio (o nell'URL del gist su github.com/…). Copialo con 📋 e incollalo sull'altro dispositivo, poi premi «Carica da Cloud».
+            </p>
 
             <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
               <button style={{ ...styles.buttonPrimary, flex: 1 }} onClick={() => salvaSuCloud(false)}>⬆️ Salva ora</button>
