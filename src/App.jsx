@@ -258,6 +258,31 @@ function addestramentoPerClasse(classe) {
   return (c && ADDESTRAMENTO_CLASSE[c.match[0]]) || null;
 }
 
+// Competenze nelle abilità concesse da ogni classe (2024): quante sceglierne e
+// da quale lista. 'tutte' = qualsiasi abilità (Bardo). Chiavi = quelle di ABILITA.
+const COMPETENZE_CLASSE = {
+  barbaro: { numero: 2, lista: ['addestrareAnimali', 'atletica', 'intimidire', 'natura', 'percezione', 'sopravvivenza'] },
+  bardo: { numero: 3, lista: 'tutte' },
+  chierico: { numero: 2, lista: ['storia', 'intuizione', 'medicina', 'persuasione', 'religione'] },
+  druido: { numero: 2, lista: ['arcano', 'addestrareAnimali', 'intuizione', 'medicina', 'natura', 'percezione', 'religione', 'sopravvivenza'] },
+  guerriero: { numero: 2, lista: ['acrobazia', 'addestrareAnimali', 'atletica', 'storia', 'intuizione', 'intimidire', 'percezione', 'sopravvivenza'] },
+  ladro: { numero: 4, lista: ['acrobazia', 'atletica', 'inganno', 'intuizione', 'intimidire', 'indagare', 'percezione', 'persuasione', 'rapiditaDiMano', 'furtivita'] },
+  mago: { numero: 2, lista: ['arcano', 'storia', 'intuizione', 'indagare', 'medicina', 'religione'] },
+  monaco: { numero: 2, lista: ['acrobazia', 'atletica', 'storia', 'intuizione', 'religione', 'furtivita'] },
+  paladino: { numero: 2, lista: ['atletica', 'intuizione', 'intimidire', 'medicina', 'persuasione', 'religione'] },
+  ranger: { numero: 3, lista: ['addestrareAnimali', 'atletica', 'indagare', 'intuizione', 'natura', 'percezione', 'furtivita', 'sopravvivenza'] },
+  stregone: { numero: 2, lista: ['arcano', 'inganno', 'intuizione', 'intimidire', 'persuasione', 'religione'] },
+  warlock: { numero: 2, lista: ['arcano', 'inganno', 'storia', 'intimidire', 'indagare', 'natura', 'religione'] },
+};
+/** Competenze di classe: { numero, lista:[chiavi] } (lista completa se 'tutte'), o null. */
+function competenzeClasseDi(classe) {
+  const c = coloreClasse(classe);
+  const dati = c && COMPETENZE_CLASSE[c.match[0]];
+  if (!dati) return null;
+  const lista = dati.lista === 'tutte' ? ABILITA.map((a) => a.key) : dati.lista;
+  return { numero: dati.numero, lista };
+}
+
 // Dati di specie (2024): velocità in metri, sensi, taglia, tratti principali.
 const SPECIE_DATI = {
   Aasimar: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Resistenza celestiale, Mani guaritrici, Portatore di luce' },
@@ -1283,7 +1308,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.7.8';
+const APP_VERSION = '1.7.9';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1955,7 +1980,7 @@ export default function App() {
   });
   const [rinominando, setRinominando] = useState(false); // rinomina inline del PG attivo
   const [mostraCrea, setMostraCrea] = useState(false); // schermata di creazione guidata
-  const [bozzaCrea, setBozzaCrea] = useState({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {} });
+  const [bozzaCrea, setBozzaCrea] = useState({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [] });
   // versione delle regole: '2024' (5.5, default) o '2014' (5.0)
   const [regoleVersione, setRegoleVersione] = useState(() => localStorage.getItem('scheda-interattiva:versione') || '2024');
   useEffect(() => {
@@ -2139,7 +2164,7 @@ export default function App() {
   }
 
   /** Genera un personaggio coerente da classe/specie/background (creazione guidata). */
-  function creaPersonaggio({ nome, classe, specie, background, metodo, pool, assegna }) {
+  function creaPersonaggio({ nome, classe, specie, background, metodo, pool, assegna, competenzeClasse }) {
     const s = schedaVuota();
     s.nome = nome?.trim() || 'Nuovo personaggio';
     s.classe = classe;
@@ -2170,8 +2195,11 @@ export default function App() {
         s.caratteristiche[key] = (idx != null && pool[idx] != null) ? pool[idx] : 10;
       }
     }
-    // background: competenze nelle abilità
+    // competenze nelle abilità:
+    //  - background → competenza semplice (livello 1, cerchietto ●)
+    //  - classe (scelte dall'utente) → competenza di classe/razza (livello 2, ★)
     (BACKGROUND_COMPETENZE[background] || []).forEach((k) => { s.abilita[k] = Math.max(s.abilita[k] || 0, 1); });
+    (Array.isArray(competenzeClasse) ? competenzeClasse : []).forEach((k) => { if (k in s.abilita) s.abilita[k] = 2; });
     // background: bonus alle caratteristiche (solo regole 2024)
     if (regoleVersione === '2024') {
       const [piu2, piu1] = bonusCaratteristicheBackground(background, classe);
@@ -2670,7 +2698,7 @@ export default function App() {
 
             <button
               style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 14 }}
-              onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {} }); setMostraCrea(true); }}
+              onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [] }); setMostraCrea(true); }}
             >
               ➕ Nuovo personaggio
             </button>
@@ -2888,7 +2916,7 @@ export default function App() {
               <input style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.nome} placeholder="Nome del personaggio" onChange={(e) => setB({ nome: e.target.value })} />
 
               <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>Classe</label>
-              <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.classe} onChange={(e) => setB({ classe: e.target.value })}>
+              <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.classe} onChange={(e) => setB({ classe: e.target.value, competenzeClasse: [] })}>
                 <option value="">Scegli…</option>
                 {NOMI_CLASSI.map((n) => <option key={n} value={n}>{n}</option>)}
               </select>
@@ -2910,10 +2938,48 @@ export default function App() {
               </select>
               {bozzaCrea.background && (
                 <div style={{ ...styles.detail, marginBottom: 12, fontSize: 11 }}>
-                  Competenze: {(BACKGROUND_COMPETENZE[bozzaCrea.background] || []).map((k) => ABILITA.find((a) => a.key === k)?.label).join(', ')}
+                  Competenze (background): {(BACKGROUND_COMPETENZE[bozzaCrea.background] || []).map((k) => ABILITA.find((a) => a.key === k)?.label).join(', ')}
                   {bonusBg.length > 0 && ` · Caratteristiche: +2 ${bonusBg[0]?.slice(0, 3).toUpperCase()}, +1 ${bonusBg[1]?.slice(0, 3).toUpperCase()}`}
                 </div>
               )}
+
+              {/* Competenze di classe: scelta dell'utente (diventano ★ nella scheda) */}
+              {(() => {
+                const cc = competenzeClasseDi(bozzaCrea.classe);
+                if (!cc) return null;
+                const scelte = bozzaCrea.competenzeClasse || [];
+                const bgSkills = BACKGROUND_COMPETENZE[bozzaCrea.background] || [];
+                const pieno = scelte.length >= cc.numero;
+                const toggle = (k) => {
+                  if (scelte.includes(k)) setB({ competenzeClasse: scelte.filter((x) => x !== k) });
+                  else if (!pieno) setB({ competenzeClasse: [...scelte, k] });
+                };
+                return (
+                  <div style={{ marginBottom: 14 }}>
+                    <label style={{ ...styles.detail, display: 'block', marginBottom: 4, fontWeight: 'bold' }}>
+                      Competenze di classe — scegli {cc.numero} <span style={{ fontWeight: 'normal', color: pieno ? C.green : C.inkDim }}>({scelte.length}/{cc.numero})</span>
+                    </label>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                      {cc.lista.map((k) => {
+                        const lab = ABILITA.find((a) => a.key === k)?.label || k;
+                        const sel = scelte.includes(k);
+                        const daBg = bgSkills.includes(k);
+                        return (
+                          <button
+                            key={k}
+                            disabled={daBg || (!sel && pieno)}
+                            onClick={() => toggle(k)}
+                            style={{ ...styles.modeButton(sel), fontSize: 11, padding: '3px 8px', opacity: daBg ? 0.45 : 1 }}
+                            title={daBg ? 'Già concessa dal background' : (!sel && pieno ? `Hai già scelto ${cc.numero} competenze` : 'Click per scegliere')}
+                          >
+                            {sel ? '★ ' : ''}{lab}{daBg ? ' (bg)' : ''}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
 
               <label style={{ ...styles.detail, display: 'block', marginBottom: 6, fontWeight: 'bold' }}>Caratteristiche</label>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
@@ -3207,7 +3273,7 @@ export default function App() {
               ⬆️
             </button>
             <button style={styles.buttonMini} onClick={() => setRinominando(!rinominando)} title="Rinomina il personaggio">✎</button>
-            <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {} }); setMostraCrea(true); }} title="Nuovo personaggio">＋</button>
+            <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [] }); setMostraCrea(true); }} title="Nuovo personaggio">＋</button>
             <button style={styles.buttonMini} onClick={duplicaPersonaggio} title="Duplica il personaggio attivo">⧉</button>
             <button style={styles.buttonMini} onClick={resetScheda} title="Azzera i campi del personaggio attivo">↺</button>
             <button style={{ ...styles.buttonMini, borderColor: C.red, color: C.red }} onClick={eliminaPersonaggio} title="Elimina il personaggio attivo">🗑</button>
