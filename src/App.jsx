@@ -40,19 +40,20 @@ const BASE_TEMA = {
 
 // Colore identità per ogni classe (variante chiara e scura per restare leggibile).
 // `match` = sottostringhe riconosciute nel campo classe (italiano + inglese).
+// Palette a 12 tinte ben distinte (una per classe), sia in chiaro sia in scuro.
 const CLASSI = [
-  { match: ['barbaro', 'barbarian'], chiaro: '#a8321f', scuro: '#e0745f' },
-  { match: ['bardo', 'bard'], chiaro: '#9c2f9c', scuro: '#d67fd6' },
-  { match: ['chierico', 'cleric'], chiaro: '#b8860b', scuro: '#dcb84f' },
-  { match: ['druido', 'druid'], chiaro: '#3e7d32', scuro: '#7fb069' },
-  { match: ['guerriero', 'fighter'], chiaro: '#3f5d7a', scuro: '#7fa8cc' },
-  { match: ['ladro', 'rogue'], chiaro: '#556070', scuro: '#9aa6b4' },
-  { match: ['mago', 'wizard'], chiaro: '#1f6fb2', scuro: '#5fa8e0' },
-  { match: ['monaco', 'monk'], chiaro: '#1f8f80', scuro: '#5fd0c0' },
-  { match: ['paladino', 'paladin'], chiaro: '#b08900', scuro: '#e6c34d' },
-  { match: ['ranger'], chiaro: '#2e6b4f', scuro: '#68b08c' },
-  { match: ['stregone', 'sorcerer'], chiaro: '#c0392b', scuro: '#e8776a' },
-  { match: ['warlock', 'patto'], chiaro: '#6c3fa0', scuro: '#a67fd6' },
+  { match: ['barbaro', 'barbarian'], chiaro: '#b0281b', scuro: '#ec6f5e' },   // rosso
+  { match: ['bardo', 'bard'], chiaro: '#c02a9c', scuro: '#ee78d0' },          // magenta
+  { match: ['chierico', 'cleric'], chiaro: '#d6a90f', scuro: '#f0cb44' },     // oro
+  { match: ['druido', 'druid'], chiaro: '#3f9a3a', scuro: '#79ce6f' },        // verde foglia
+  { match: ['guerriero', 'fighter'], chiaro: '#4a6a8a', scuro: '#8aa6c8' },   // blu acciaio
+  { match: ['ladro', 'rogue'], chiaro: '#566070', scuro: '#99a4b4' },         // grigio ardesia
+  { match: ['mago', 'wizard'], chiaro: '#1f74d4', scuro: '#66acf0' },         // azzurro
+  { match: ['monaco', 'monk'], chiaro: '#12a08e', scuro: '#57d6c4' },         // giada
+  { match: ['paladino', 'paladin'], chiaro: '#b07d2f', scuro: '#e0a851' },    // bronzo
+  { match: ['ranger'], chiaro: '#7d8a26', scuro: '#b3c257' },                 // verde oliva
+  { match: ['stregone', 'sorcerer'], chiaro: '#e0521c', scuro: '#f4885a' },   // arancio fuoco
+  { match: ['warlock', 'patto'], chiaro: '#7b30b0', scuro: '#b07be0' },       // viola indaco
 ];
 
 // Le 12 classi base (2024), per il menù a tendina della classe.
@@ -1343,7 +1344,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.8.4';
+const APP_VERSION = '1.8.5';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
