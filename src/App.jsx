@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
+import { ICONE_CLASSE, ICONE_SPECIE } from './ritratti';
 
 // ---------------------------------------------------------------------------
 // Palette e stili
@@ -397,10 +398,43 @@ function emojiSpecie(specie) {
   return (EMOJI_SPECIE.find((x) => x.m.some((k) => s.includes(k))) || {}).e || '';
 }
 
-/** Genera un avatar SVG (data URL) che rappresenta classe e specie del PG. */
+/**
+ * Ritratto "da manuale": emblema della CLASSE (icona grande al centro) su un
+ * gradiente del colore di classe, con un distintivo della SPECIE in basso a
+ * destra. Icone game-icons.net (CC BY 3.0). Tutto SVG inline: nessuna rete,
+ * coerente con classe e razza scelte alla creazione.
+ */
 function generaAvatar(classe, specie, nome) {
-  const seed = `${specie || 'Umano'}-${classe || 'Guerriero'}-${nome || 'Eroe'}`.replace(/\s+/g, '').toLowerCase();
-  return `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(seed)}`;
+  const acc = coloreClasse(classe);
+  const base = (acc && acc.chiaro) || '#8a6508';
+  const chiaro = mescola(base, '#ffffff', 0.35);
+  const dClasse = acc && ICONE_CLASSE[acc.match[0]];
+  const chiaveSpecie = Object.keys(ICONE_SPECIE).find(
+    (k) => (specie || '').toLowerCase().includes(k.toLowerCase()),
+  );
+  const dSpecie = chiaveSpecie && ICONE_SPECIE[chiaveSpecie];
+  const iniziale = ((nome || specie || '?').trim()[0] || '?').toUpperCase();
+
+  const eroe = dClasse
+    ? `<g transform="translate(96,78) scale(0.62)">
+         <path d="${dClasse}" fill="rgba(0,0,0,0.28)" transform="translate(6,8)"/>
+         <path d="${dClasse}" fill="#fdf6e3"/>
+       </g>`
+    : `<text x="256" y="330" font-size="300" font-family="Georgia,serif" fill="#fdf6e3" text-anchor="middle">${iniziale}</text>`;
+  const distintivo = dSpecie
+    ? `<circle cx="398" cy="400" r="92" fill="rgba(0,0,0,0.4)" stroke="#fdf6e3" stroke-width="6"/>
+       <g transform="translate(338,340) scale(0.235)"><path d="${dSpecie}" fill="#fdf6e3"/></g>`
+    : '';
+
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">` +
+    `<defs><radialGradient id="g" cx="50%" cy="36%" r="85%">` +
+    `<stop offset="0%" stop-color="${chiaro}"/><stop offset="100%" stop-color="${base}"/>` +
+    `</radialGradient></defs>` +
+    `<rect width="512" height="512" fill="url(#g)"/>` +
+    eroe + distintivo +
+    `</svg>`;
+  return 'data:image/svg+xml,' + encodeURIComponent(svg);
 }
 
 /**
@@ -1309,7 +1343,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.8.3';
+const APP_VERSION = '1.8.4';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3332,8 +3366,10 @@ export default function App() {
               <div
                 style={{
                   width: '100%', flex: 1, minHeight: 240, borderRadius: 12, overflow: 'hidden',
-                  background: C.panel, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: 'inset 0 0 8px rgba(0,0,0,0.2)', border: `2px solid ${coloreClasse(scheda.classe)}`,
+                  // emblema auto: sfondo col colore classe (si fonde coi bordi dell'SVG)
+                  background: (scheda.ritratto || '').startsWith('data:image/svg') ? (coloreClasse(scheda.classe)?.chiaro || C.panel) : C.panel,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: 'inset 0 0 8px rgba(0,0,0,0.2)', border: `2px solid ${coloreClasse(scheda.classe)?.chiaro || C.border}`,
                   cursor: 'pointer', position: 'relative',
                 }}
                 title={scheda.ritratto ? 'Click: cambia immagine' : 'Click: carica l’immagine del personaggio'}
@@ -3343,7 +3379,7 @@ export default function App() {
                   <img
                     src={scheda.ritratto}
                     alt={`Ritratto di ${scheda.nome}`}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    style={{ width: '100%', height: '100%', objectFit: (scheda.ritratto || '').startsWith('data:image/svg') ? 'contain' : 'cover' }}
                     onError={(e) => {
                       // offline / DiceBear non raggiungibile → avatar SVG locale
                       if (!e.currentTarget.dataset.fallback) {
@@ -4297,6 +4333,12 @@ export default function App() {
               {erroreImport && <div style={{ color: C.red, marginTop: 8 }}>{erroreImport}</div>}
             </Sezione>
         </div>
+
+        <footer style={{ textAlign: 'center', margin: '18px 0 0', fontSize: 11, color: C.inkDim }}>
+          Emblemi di classe e specie:{' '}
+          <a href="https://game-icons.net" target="_blank" rel="noreferrer" style={{ color: C.inkDim }}>game-icons.net</a>{' '}
+          (CC BY 3.0).
+        </footer>
       </main>
     </div>
   );
