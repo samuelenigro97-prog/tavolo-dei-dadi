@@ -1308,7 +1308,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.8.0';
+const APP_VERSION = '1.8.1';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3100,13 +3100,6 @@ export default function App() {
             onClick={() => { setCloudStatus({ text: '', type: '' }); setMostraCloud(true); }}
           >
             ☁️ Cloud{sincronizzando ? ' …' : (githubToken && gistId && autoSync ? ' ✓' : '')}
-          </button>
-          <button
-            style={styles.modeButton(false)}
-            title={`Versione delle regole D&D in uso: ${regoleVersione === '2024' ? '5.5 (2024)' : '5.0 (2014)'}. Click per cambiare (incide su sfinimento e bonus di background).`}
-            onClick={() => setRegoleVersione(regoleVersione === '2024' ? '2014' : '2024')}
-          >
-            {regoleVersione === '2024' ? '📕 5.5' : '📗 5.0'}
           </button>
         </div>
 
