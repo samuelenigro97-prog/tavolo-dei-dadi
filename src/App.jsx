@@ -1102,7 +1102,11 @@ function bonusAbilita(scheda, abilita) {
   const def = ABILITA.find((a) => a.key === abilita);
   if (!def) return 0;
   const livComp = scheda.abilita[abilita] || 0;
-  return modificatore(scheda.caratteristiche[def.car]) + livComp * scheda.bonusCompetenza;
+  // 0 = niente, 1 = competenza (cerchietto), 2 = competenza di classe/razza
+  // (stellina). Entrambe le competenze valgono ×1 il bonus (la 2 è solo un
+  // marcatore d'origine, non maestria): così i numeri restano fedeli alla scheda.
+  const competente = livComp >= 1 ? 1 : 0;
+  return modificatore(scheda.caratteristiche[def.car]) + competente * scheda.bonusCompetenza;
 }
 
 /** Bonus di un tiro salvezza: mod caratteristica + eventuale competenza. */
@@ -1135,11 +1139,14 @@ const FLYORA_JSON = {
   armatura: { tipo: 'manuale', base: 10, scudo: false, bonus: 0 },
   caratteristiche: { forza: 12, destrezza: 15, costituzione: 16, intelligenza: 14, saggezza: 15, carisma: 18 },
   tiriSalvezza: { forza: false, destrezza: false, costituzione: true, intelligenza: false, saggezza: false, carisma: true },
+  // 0 = niente · 1 = competenza (cerchietto) · 2 = competenza di classe/razza (stella)
+  // Stregone → Arcano, Persuasione · Elfo (Sensi Acuti) → Percezione (stelle);
+  // Eremita/altre competenze → cerchietto.
   abilita: {
-    acrobazia: 0, addestrareAnimali: 0, arcano: 1, atletica: 0,
+    acrobazia: 0, addestrareAnimali: 0, arcano: 2, atletica: 0,
     furtivita: 0, indagare: 0, inganno: 0, intimidire: 0,
     intrattenere: 0, intuizione: 1, medicina: 1, natura: 0,
-    percezione: 1, persuasione: 1, rapiditaDiMano: 0,
+    percezione: 2, persuasione: 2, rapiditaDiMano: 0,
     religione: 1, sopravvivenza: 1, storia: 0
   },
   competenzeExtra: 'Armi semplici',
@@ -1276,7 +1283,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.7.5';
+const APP_VERSION = '1.7.6';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3528,7 +3535,7 @@ export default function App() {
                         as="div"
                         key={a.key}
                         style={{ ...styles.skillRow(true), opacity: liv === 0 ? 0.5 : 1 }}
-                        title={`Tieni premuto e rilascia: prova di ${a.label} · click sul pallino: competenza/maestria`}
+                        title={`Tieni premuto e rilascia: prova di ${a.label} · click sul pallino: niente → competenza (●) → competenza di classe/razza (★)`}
                         onRoll={() => lanciaD20(`${a.label} (${abbr})`, bonus)}
                       >
                         <span
