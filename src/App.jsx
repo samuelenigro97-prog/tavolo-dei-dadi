@@ -659,7 +659,6 @@ const styles = {
     // competenza chiara a colpo d'occhio: verde pieno = competente, oro = maestria,
     // anello tenue = non competente (così non sembrano tutte "accese")
     color: livello === 2 ? '#d4af37' : livello === 1 ? C.green : C.inkDim,
-    opacity: livello === 0 ? 0.5 : 1,
     cursor: 'pointer',
     userSelect: 'none',
   }),
@@ -1277,7 +1276,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.7.4';
+const APP_VERSION = '1.7.5';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3503,7 +3502,7 @@ export default function App() {
 
                   <Rollable
                     as="div"
-                    style={styles.skillRow(true)}
+                    style={{ ...styles.skillRow(true), opacity: scheda.tiriSalvezza[key] ? 1 : 0.5 }}
                     title={`Tieni premuto e rilascia: tiro salvezza di ${label} · click sul pallino: competenza`}
                     onRoll={() => lanciaD20(`Tiro salvezza: ${label}`, bonusTS)}
                   >
@@ -3528,7 +3527,7 @@ export default function App() {
                       <Rollable
                         as="div"
                         key={a.key}
-                        style={styles.skillRow(true)}
+                        style={{ ...styles.skillRow(true), opacity: liv === 0 ? 0.5 : 1 }}
                         title={`Tieni premuto e rilascia: prova di ${a.label} · click sul pallino: competenza/maestria`}
                         onRoll={() => lanciaD20(`${a.label} (${abbr})`, bonus)}
                       >
@@ -3659,8 +3658,8 @@ export default function App() {
             {/* Incantesimi */}
             <section style={{ ...styles.panel, order: -1 }}>
               <h2 style={styles.panelTitle}>Incantesimi</h2>
-              <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
-                <label style={styles.detail}>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'stretch', flexWrap: 'wrap', marginBottom: 12 }}>
+                <label style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                   Caratteristica da incantatore:{' '}
                   <select
                     style={{ ...styles.inlineInput, padding: '4px 6px' }}
@@ -3676,16 +3675,17 @@ export default function App() {
                   </select>
                 </label>
                 {modIncantatore !== null && (
-                  <>
-                    <div style={styles.vitalBox}>
+                  // i tre riquadri si allargano per riempire lo spazio a destra
+                  <div style={{ display: 'flex', gap: 10, flex: 1, minWidth: 250 }}>
+                    <div style={{ ...styles.vitalBox, flex: 1 }}>
                       <div style={styles.vitalLabel}>Modificatore</div>
                       <div style={styles.vitalValue}>{conSegno(modIncantatore)}</div>
                     </div>
-                    <div style={styles.vitalBox}>
+                    <div style={{ ...styles.vitalBox, flex: 1 }}>
                       <div style={styles.vitalLabel}>CD Incantesimi</div>
                       <div style={styles.vitalValue}>{8 + scheda.bonusCompetenza + modIncantatore}</div>
                     </div>
-                    <div style={styles.vitalBox}>
+                    <div style={{ ...styles.vitalBox, flex: 1 }}>
                       <div style={styles.vitalLabel}>Attacco Incantesimo</div>
                       <div style={styles.vitalValue}>
                         <Rollable
@@ -3697,7 +3697,7 @@ export default function App() {
                         </Rollable>
                       </div>
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
 
