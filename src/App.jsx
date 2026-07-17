@@ -1283,7 +1283,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.7.6';
+const APP_VERSION = '1.7.7';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1967,6 +1967,10 @@ export default function App() {
   const [githubToken, setGithubToken] = useState(() => localStorage.getItem('scheda-interattiva:github-token') || '');
   const [gistId, setGistId] = useState(() => localStorage.getItem('scheda-interattiva:gist-id') || '');
   const [cloudStatus, setCloudStatus] = useState({ text: '', type: '' });
+  // auto-salvataggio su cloud (debounced) + orario ultimo salvataggio
+  const [autoSync, setAutoSync] = useState(() => localStorage.getItem('scheda-interattiva:auto-sync') !== 'off');
+  const [ultimoSync, setUltimoSync] = useState(() => localStorage.getItem('scheda-interattiva:ultimo-sync') || '');
+  const [sincronizzando, setSincronizzando] = useState(false);
 
   // Level Up
   const [mostraLevelUp, setMostraLevelUp] = useState(false);
@@ -2527,51 +2531,60 @@ export default function App() {
 
   // --- Cloud Sync (GitHub Gist) ---
 
-  async function salvaSuCloud() {
+  async function salvaSuCloud(silenzioso = false) {
     if (!githubToken) {
-      setCloudStatus({ text: 'Inserisci il GitHub Token per salvare.', type: 'error' });
+      if (!silenzioso) setCloudStatus({ text: 'Inserisci il GitHub Token per salvare.', type: 'error' });
       return;
     }
     try {
-      setCloudStatus({ text: 'Salvataggio in corso...', type: 'info' });
-      const dati = JSON.stringify(roster, null, 2);
-      
+      setSincronizzando(true);
+      if (!silenzioso) setCloudStatus({ text: 'Salvataggio in corso...', type: 'info' });
+      const quando = Date.now();
+      const dati = JSON.stringify({ ...roster, _updatedAt: quando }, null, 2);
+      const corpo = { files: { 'roster_tavolo_dei_dadi.json': { content: dati } } };
+
+      let nuovoId = gistId;
       if (gistId) {
         const res = await fetch(`https://api.github.com/gists/${gistId}`, {
           method: 'PATCH',
-          headers: {
-            'Authorization': `token ${githubToken}`,
-            'Accept': 'application/vnd.github.v3+json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ files: { 'roster_tavolo_dei_dadi.json': { content: dati } } })
+          headers: { 'Authorization': `token ${githubToken}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+          body: JSON.stringify(corpo),
         });
         if (!res.ok) throw new Error('Errore aggiornamento Gist. Token o ID non validi.');
-        setCloudStatus({ text: '✅ Roster salvato su Cloud!', type: 'success' });
       } else {
         const res = await fetch(`https://api.github.com/gists`, {
           method: 'POST',
-          headers: {
-            'Authorization': `token ${githubToken}`,
-            'Accept': 'application/vnd.github.v3+json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            description: 'Salvataggio Cloud - Tavolo dei Dadi',
-            public: false,
-            files: { 'roster_tavolo_dei_dadi.json': { content: dati } }
-          })
+          headers: { 'Authorization': `token ${githubToken}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description: 'Salvataggio Cloud - Tavolo dei Dadi', public: false, ...corpo }),
         });
         if (!res.ok) throw new Error('Errore creazione Gist. Token non valido.');
         const out = await res.json();
+        nuovoId = out.id;
         setGistId(out.id);
         localStorage.setItem('scheda-interattiva:gist-id', out.id);
-        setCloudStatus({ text: '✅ Nuovo salvataggio Cloud creato!', type: 'success' });
       }
+      const orario = new Date(quando).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+      setUltimoSync(orario);
+      localStorage.setItem('scheda-interattiva:ultimo-sync', orario);
+      setCloudStatus({ text: `✅ Sincronizzato · ${orario}`, type: 'success' });
+      return nuovoId;
     } catch (err) {
       setCloudStatus({ text: err.message, type: 'error' });
+    } finally {
+      setSincronizzando(false);
     }
   }
+
+  // Auto-salvataggio: quando il roster cambia e il cloud è configurato, salva
+  // dopo 2,5s di inattività (debounce). Salta il primo render.
+  const primoRenderSync = useRef(true);
+  useEffect(() => {
+    if (primoRenderSync.current) { primoRenderSync.current = false; return; }
+    if (!autoSync || !githubToken || !gistId) return;
+    const t = setTimeout(() => { salvaSuCloud(true); }, 2500);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roster, autoSync, githubToken, gistId]);
 
   async function caricaDaCloud() {
     if (!githubToken || !gistId) {
@@ -2746,9 +2759,22 @@ export default function App() {
             />
 
             <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-              <button style={{ ...styles.buttonPrimary, flex: 1 }} onClick={salvaSuCloud}>⬆️ Salva su Cloud</button>
+              <button style={{ ...styles.buttonPrimary, flex: 1 }} onClick={() => salvaSuCloud(false)}>⬆️ Salva ora</button>
               <button style={{ ...styles.button, flex: 1, borderColor: C.green, color: C.green }} onClick={caricaDaCloud}>⬇️ Carica da Cloud</button>
             </div>
+
+            {/* Auto-salvataggio: quando attivo, ogni modifica va sul cloud da sola */}
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={autoSync}
+                onChange={(e) => { setAutoSync(e.target.checked); localStorage.setItem('scheda-interattiva:auto-sync', e.target.checked ? 'on' : 'off'); }}
+              />
+              <span style={styles.detail}>
+                <strong>Salvataggio automatico</strong> — sincronizza da solo a ogni modifica
+                {ultimoSync && <><br />Ultimo salvataggio: {ultimoSync}{sincronizzando ? ' · salvo…' : ''}</>}
+              </span>
+            </label>
 
             {cloudStatus.text && (
               <div style={{ padding: 10, borderRadius: 6, background: cloudStatus.type === 'error' ? 'rgba(255,0,0,0.1)' : cloudStatus.type === 'success' ? 'rgba(0,255,0,0.1)' : 'rgba(255,255,255,0.05)', color: cloudStatus.type === 'error' ? C.red : cloudStatus.type === 'success' ? C.green : C.goldDark, fontSize: 13, textAlign: 'center', marginBottom: 12 }}>
@@ -2904,10 +2930,10 @@ export default function App() {
           </button>
           <button
             style={{ ...styles.modeButton(mostraCloud), color: C.goldDark, borderColor: C.goldDark }}
-            title="Sincronizza i tuoi personaggi sul Cloud GitHub"
+            title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato (auto-salvataggio spento)') : 'Sincronizza i tuoi personaggi sul Cloud GitHub'}
             onClick={() => { setCloudStatus({ text: '', type: '' }); setMostraCloud(true); }}
           >
-            ☁️ Cloud
+            ☁️ Cloud{sincronizzando ? ' …' : (githubToken && gistId && autoSync ? ' ✓' : '')}
           </button>
           <button
             style={styles.modeButton(false)}

@@ -12,30 +12,31 @@ API: la chiave vive qui, nel Worker.
 - Una **chiave API Anthropic** (da <https://console.anthropic.com/>).
 - Node.js installato (per il comando `npx wrangler`).
 
-## Deploy in 4 passi
+## Opzione A — dal sito Cloudflare (senza terminale, consigliata)
+
+1. Vai su <https://dash.cloudflare.com> → **Workers & Pages** → **Create** →
+   **Create Worker**. Dai un nome (es. `tavolo-dei-dadi-transcribe`) → **Deploy**.
+2. **Edit code**: cancella il codice di esempio, incolla tutto il contenuto di
+   `worker/transcribe-worker.js` (questo file del progetto) → **Deploy**.
+3. **Settings → Variables and Secrets → Add**:
+   - tipo **Secret**, nome `ANTHROPIC_API_KEY`, valore = la tua chiave API. Salva.
+   - (opzionale) tipo **Text**, nome `ALLOW_ORIGIN`, valore
+     `https://TUOUTENTE.github.io` per limitarlo al tuo sito.
+4. In alto trovi l'URL del Worker (es.
+   `https://tavolo-dei-dadi-transcribe.TUONOME.workers.dev`). Copialo.
+5. Nell'app: sezione *Importa / esporta scheda* → *⚙️ Configura import da PDF (IA)*
+   → incolla l'URL. Fatto: il pulsante **🤖 Importa da PDF** ora funziona.
+
+## Opzione B — da terminale (wrangler)
 
 ```bash
 cd worker
-
-# 1) accedi a Cloudflare (apre il browser)
-npx wrangler login
-
-# 2) imposta la chiave API come segreto (te la chiede e la nasconde)
-npx wrangler secret put ANTHROPIC_API_KEY
-
-# 3) pubblica il Worker
-npx wrangler deploy
+npx wrangler login                       # 1) accedi (apre il browser)
+npx wrangler secret put ANTHROPIC_API_KEY # 2) incolla la chiave API (nascosta)
+npx wrangler deploy                       # 3) pubblica
 ```
 
-Al termine Wrangler stampa l'URL pubblico, tipo:
-
-```
-https://tavolo-dei-dadi-transcribe.TUONOME.workers.dev
-```
-
-**4)** Copia quell'URL e incollalo nell'app: sezione *Importa / esporta scheda*
-→ *⚙️ Configura import da PDF (IA)*. Fatto: ora il pulsante **🤖 Importa da PDF**
-funziona.
+Wrangler stampa l'URL pubblico: copialo e incollalo nell'app come al punto 5.
 
 ## Consiglio di sicurezza
 Chi conosce l'URL del Worker può usarlo e consumare la tua quota API. Per
