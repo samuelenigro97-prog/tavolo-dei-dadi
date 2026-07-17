@@ -33,7 +33,13 @@ minuti per la fascia oraria. Chiaro/Scuro forzano il modo.
   con la palette `C`. Niente CSS framework, niente TypeScript.
 - **Backend:** Express (`server/index.js`) su porta 3001, fa solo da proxy
   all'API Anthropic per la trascrizione delle schede PDF
-  (`POST /api/transcribe`). Richiede `ANTHROPIC_API_KEY` (file `.env`).
+  (`POST /api/transcribe`). Richiede `ANTHROPIC_API_KEY` (file `.env`). **Online**
+  (GitHub Pages non ha backend) la stessa funzione è servita da un Cloudflare
+  Worker (`worker/transcribe-worker.js`, vedi `worker/LEGGIMI.md`): il client
+  chiama un endpoint **configurabile** — `transcribeUrl` in `localStorage`
+  (`scheda-interattiva:transcribe-url`) o `VITE_TRANSCRIBE_URL`, con fallback
+  `/api/transcribe` per lo sviluppo locale. Lo **schema del PROMPT** (server e
+  Worker) deve restare allineato a `normalizeImported`.
 - **Dev:** `npm run dev` avvia Vite (5173, con proxy `/api` → 3001) e il server
   insieme via concurrently.
 - **Persistenza:** `localStorage` tramite `loadState`/`saveState` in

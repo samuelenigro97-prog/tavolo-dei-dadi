@@ -1,0 +1,11 @@
+name = "tavolo-dei-dadi-transcribe"
+main = "transcribe-worker.js"
+compatibility_date = "2024-11-01"
+
+# La chiave API si imposta come SEGRETO, non qui:
+#   wrangler secret put ANTHROPIC_API_KEY
+#
+# Opzionale: limita il CORS al tuo sito (altrimenti chiunque abbia l'URL del
+# Worker può usarlo e consumare la tua quota API). Scommenta e personalizza:
+# [vars]
+# ALLOW_ORIGIN = "https://TUOUTENTE.github.io"

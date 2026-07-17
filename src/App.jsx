@@ -1277,7 +1277,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.7.3';
+const APP_VERSION = '1.7.4';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1900,6 +1900,16 @@ export default function App() {
   const [danni, setDanni] = useState(null);
 
   const [erroreImport, setErroreImport] = useState('');
+  // Import da PDF con l'IA: endpoint configurabile (Cloudflare Worker o server
+  // locale). In dev il proxy manda /api → localhost:3001; online serve un URL.
+  const [transcribeUrl, setTranscribeUrl] = useState(
+    () => localStorage.getItem('scheda-interattiva:transcribe-url')
+      || (typeof import.meta !== 'undefined' && import.meta.env?.VITE_TRANSCRIBE_URL) || ''
+  );
+  useEffect(() => {
+    try { localStorage.setItem('scheda-interattiva:transcribe-url', transcribeUrl); } catch { /* niente */ }
+  }, [transcribeUrl]);
+  const [pdfStato, setPdfStato] = useState(''); // '' | 'loading'
   const [espressioneLibera, setEspressioneLibera] = useState('');
   const [erroreEspressione, setErroreEspressione] = useState(false);
   const [storico, setStorico] = useState([]);
@@ -2066,6 +2076,7 @@ export default function App() {
   }, [tema, sistemaScuro, oraTick, classeAttiva]);
   const intervalRef = useRef(null);
   const jsonRef = useRef(null);
+  const pdfRef = useRef(null);
   const ritrattoRef = useRef(null);
 
   const scheda = roster.personaggi[roster.attivo];
@@ -2465,6 +2476,46 @@ export default function App() {
       setMostraMenu(false);
     } catch {
       setErroreImport('File JSON non valido: usa un file esportato da Tavolo dei Dadi.');
+    }
+  }
+
+  /**
+   * Import da PDF con l'IA: manda il PDF (base64) all'endpoint di trascrizione
+   * (Cloudflare Worker o server locale), che risponde con il JSON della scheda.
+   */
+  async function transcribePdf(evento) {
+    const file = evento.target.files?.[0];
+    evento.target.value = '';
+    if (!file) return;
+    const endpoint = (transcribeUrl || '').trim() || '/api/transcribe';
+    setErroreImport('');
+    setPdfStato('loading');
+    try {
+      const base64 = await new Promise((risolvi, rifiuta) => {
+        const fr = new FileReader();
+        fr.onload = () => risolvi(String(fr.result).split(',')[1] || '');
+        fr.onerror = () => rifiuta(new Error('lettura del file fallita'));
+        fr.readAsDataURL(file);
+      });
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pdfBase64: base64 }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `errore ${res.status}`);
+      }
+      const dati = await res.json();
+      nuovoPersonaggio(normalizeImported(dati));
+      setPdfStato('');
+      setMostraMenu(false);
+    } catch (e) {
+      setPdfStato('');
+      const dove = (transcribeUrl || '').trim()
+        ? 'Controlla che l’endpoint IA sia corretto e attivo.'
+        : 'Devi prima configurare l’endpoint IA (campo qui sotto): serve un Cloudflare Worker con la tua chiave API.';
+      setErroreImport(`Import da PDF fallito: ${e.message}. ${dove}`);
     }
   }
 
@@ -3994,6 +4045,7 @@ export default function App() {
                 dispositivo o tenerne una copia. Gli import creano un nuovo personaggio.
               </p>
               <input ref={jsonRef} type="file" accept="application/json,.json" style={{ display: 'none' }} onChange={importaJson} />
+              <input ref={pdfRef} type="file" accept="application/pdf,.pdf" style={{ display: 'none' }} onChange={transcribePdf} />
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <button style={styles.button} onClick={esportaJson}>
                   💾 Esporta JSON
@@ -4003,12 +4055,37 @@ export default function App() {
                 </button>
                 <button
                   style={styles.button}
+                  onClick={() => pdfRef.current?.click()}
+                  disabled={pdfStato === 'loading'}
+                  title="Trasforma un PDF di scheda D&D in personaggio, con l'IA (richiede endpoint configurato)"
+                >
+                  {pdfStato === 'loading' ? '🤖 Leggo il PDF…' : '🤖 Importa da PDF (IA)'}
+                </button>
+                <button
+                  style={styles.button}
                   onClick={() => nuovoPersonaggio(normalizeImported(FLYORA_JSON))}
                   title="Carica la scheda di esempio (Flyora, stregone livello 4)"
                 >
                   ✨ Carica esempio (Flyora)
                 </button>
               </div>
+
+              {/* Configurazione endpoint IA per l'import da PDF */}
+              <details style={{ marginTop: 10 }}>
+                <summary style={{ ...styles.detail, cursor: 'pointer' }}>⚙️ Configura import da PDF (IA)</summary>
+                <p style={{ ...styles.detail, marginTop: 6 }}>
+                  L'import da PDF usa l'IA e richiede un piccolo servizio con la tua
+                  chiave API (un <strong>Cloudflare Worker</strong> gratuito). Incolla
+                  qui l'URL del Worker; istruzioni nel file <code>worker/LEGGIMI.md</code> del progetto.
+                </p>
+                <input
+                  type="url"
+                  value={transcribeUrl}
+                  onChange={(e) => setTranscribeUrl(e.target.value)}
+                  placeholder="https://il-tuo-worker.workers.dev"
+                  style={{ ...styles.inlineInput, width: '100%', maxWidth: 420, padding: '6px 8px' }}
+                />
+              </details>
               {erroreImport && <div style={{ color: C.red, marginTop: 8 }}>{erroreImport}</div>}
             </Sezione>
         </div>
