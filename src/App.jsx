@@ -1135,21 +1135,21 @@ const FLYORA_JSON = {
   tiriSalvezza: { forza: false, destrezza: false, costituzione: true, intelligenza: false, saggezza: false, carisma: true },
   abilita: {
     acrobazia: 0, addestrareAnimali: 0, arcano: 1, atletica: 0,
-    furtivita: 0, indagare: 0, inganno: 1, intimidire: 0,
-    intrattenere: 0, intuizione: 0, medicina: 1, natura: 0,
+    furtivita: 0, indagare: 0, inganno: 0, intimidire: 0,
+    intrattenere: 0, intuizione: 1, medicina: 1, natura: 0,
     percezione: 1, persuasione: 1, rapiditaDiMano: 0,
-    religione: 1, sopravvivenza: 0, storia: 0
+    religione: 1, sopravvivenza: 1, storia: 0
   },
   competenzeExtra: 'Armi semplici',
   resistenze: '',
-  sensi: 'Scurovisione',
+  sensi: 'Scurovisione 18 m',
   condizioni: [],
   concentrazione: '',
   attacchi: [
-    { id: 1, nome: 'Spada', caratteristica: 'destrezza', competenza: true, danno: '1d6+2', tipoDanno: 'Perforante', bonusAttacco: 0, bonusDanno: 0, note: 'Accurata, Leggera' },
-    { id: 2, nome: 'Pugnale x2', caratteristica: 'destrezza', competenza: true, danno: '1d4+2', tipoDanno: 'Perforante', bonusAttacco: 0, bonusDanno: 0, note: '6/18m Accurata, Leggera, Lancio' },
-    { id: 3, nome: 'Bastone Ferrato (1 mano)', caratteristica: 'forza', competenza: true, danno: '1d6+1', tipoDanno: 'Contundente', bonusAttacco: 0, bonusDanno: 0, note: 'Versatile' },
-    { id: 4, nome: 'Bastone Ferrato (2 mani)', caratteristica: 'forza', competenza: true, danno: '1d8+1', tipoDanno: 'Contundente', bonusAttacco: 0, bonusDanno: 0, note: 'Versatile' }
+    { id: 1, nome: 'Spada', categoria: 'Azione', bonus: 4, danno: '1d6+2', tipoDanno: 'Perforante', note: 'Accurata, Leggera' },
+    { id: 2, nome: 'Pugnale x2', categoria: 'Azione', bonus: 4, danno: '1d4+2', tipoDanno: 'Perforante', note: '6/18m Accurata, Leggera, Lancio' },
+    { id: 3, nome: 'Bastone Ferrato (1 mano)', categoria: 'Azione', bonus: 3, danno: '1d6+1', tipoDanno: 'Contundente', note: 'Versatile' },
+    { id: 4, nome: 'Bastone Ferrato (2 mani)', categoria: 'Azione', bonus: 3, danno: '1d8+1', tipoDanno: 'Contundente', note: 'Versatile' }
   ],
   incantatore: { caratteristica: 'carisma', cdExtra: 0, attaccoExtra: 0 },
   slotIncantesimo: {
@@ -1184,11 +1184,11 @@ const FLYORA_JSON = {
     { id: 3, nome: 'Borsa del Guaritore', max: 10, attuali: 10, ricarica: 'Nessuno' }
   ],
   privilegi: "Stregoneria Innata\nFonte di Magia\nMetamagia: Incantesimo Celato, Preciso\nOnde di Caos",
-  trattiSpecie: "Retaggio Fatato\nScurovisione\nTrance",
-  talenti: "Guaritore\nIncantatore da Guerra",
+  trattiSpecie: "Retaggio Fatato\nScurovisione 18 m\nSensi Acuti (Intuizione, Percezione o Sopravvivenza)\nTrance",
+  talenti: "Guerramaga (Incantatore da Guerra)\nGuaritore",
   equipaggiamento: "Focus Arcano (Cristallo)\nBorsa da erborista\nGiaciglio\nLibro (filosofia)\nDotazione da avventuriero\nAbiti da viaggiatore",
-  lingue: "Comune, Elfico",
-  monete: { mr: 0, ma: 0, me: 0, mo: 74, mp: 0 },
+  lingue: "Comune, Elfico, Sottocomune",
+  denari: { mr: 0, ma: 0, me: 0, mo: 74, mp: 0 },
   note: "Il personaggio ha trascorso i suoi primi anni rinchiuso in una capanna o un monastero..."
 };
 
@@ -1274,7 +1274,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.7.0';
+const APP_VERSION = '1.7.2';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3344,22 +3344,25 @@ export default function App() {
               )}
             </div>
 
-            {/* Ispirazione */}
+            {/* Ispirazione — quando è accesa: bordo, stella e scritta tutti dorati.
+                Uso un oro fisso (non `--c-gold`, che è tinto col colore classe). */}
             <div style={{
               ...styles.vitalBox,
-              borderColor: scheda.ispirazione ? C.goldDark : C.border,
-              background: scheda.ispirazione ? 'rgba(184,134,11,0.18)' : C.panelLight,
-              transition: 'background 0.25s, border-color 0.25s',
+              border: `1px solid ${scheda.ispirazione ? '#d4af37' : C.border}`,
+              background: scheda.ispirazione ? 'rgba(212,175,55,0.16)' : C.panelLight,
+              boxShadow: scheda.ispirazione ? '0 0 9px rgba(212,175,55,0.55)' : 'none',
+              transition: 'background 0.25s, border-color 0.25s, box-shadow 0.25s',
             }}>
-              <div style={{ ...styles.vitalLabel, color: scheda.ispirazione ? C.goldDark : C.inkDim }}>Ispirazione</div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+              <div style={{ ...styles.vitalLabel, color: scheda.ispirazione ? '#c8991a' : C.inkDim }}>Ispirazione</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <button
                   className="tirabile"
                   style={{
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    padding: '2px 8px', fontSize: 18, border: 'none',
+                    padding: '0 8px', fontSize: 22, border: 'none', lineHeight: 1,
                     background: 'transparent',
-                    color: scheda.ispirazione ? C.goldDark : C.inkDim,
+                    color: scheda.ispirazione ? '#d4af37' : C.inkDim,
+                    textShadow: scheda.ispirazione ? '0 0 7px rgba(212,175,55,0.7)' : 'none',
                     cursor: 'pointer', transition: 'all 0.2s',
                   }}
                   onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
