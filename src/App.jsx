@@ -1344,7 +1344,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.8.5';
+const APP_VERSION = '1.8.6';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2135,10 +2135,13 @@ export default function App() {
     set('--c-gold', t.gold); set('--c-gold-dark', t.goldDark); set('--c-red', t.red);
     set('--c-green', t.green); set('--c-title', t.title);
     // sfondo della scheda: alone tematico che cambia con la classe selezionata
-    const sfondo = acc
-      ? `radial-gradient(130% 90% at 50% -12%, ${mescola(t.bg, acc[modo], scuroEff ? 0.22 : 0.16)}, ${t.bg} 58%)`
-      : t.bg;
-    document.body.style.background = sfondo;
+    // Sfondo atmosferico "tavolo a lume di candela" (ispirato alla palette D&D):
+    // bagliore della classe + luce ambrata calda in alto + vignettatura profonda.
+    const tintaClasse = acc ? acc[modo] : t.gold;
+    const glowClasse = `radial-gradient(135% 95% at 50% -14%, ${mescola(t.bg, tintaClasse, scuroEff ? 0.26 : 0.17)}, transparent 60%)`;
+    const ambra = `radial-gradient(70% 46% at 50% -2%, rgba(224,162,74,${scuroEff ? 0.13 : 0.06}), transparent 66%)`;
+    const vignetta = `radial-gradient(116% 116% at 50% 42%, transparent 52%, ${mescola(t.bg, '#000000', scuroEff ? 0.42 : 0.13)} 100%)`;
+    document.body.style.background = `${glowClasse}, ${ambra}, ${vignetta}, ${t.bg}`;
     document.body.style.backgroundAttachment = 'fixed';
     try {
       localStorage.setItem('scheda-interattiva:tema', tema);
@@ -3367,8 +3370,8 @@ export default function App() {
               <div
                 style={{
                   width: '100%', flex: 1, minHeight: 240, borderRadius: 12, overflow: 'hidden',
-                  // emblema auto: sfondo col colore classe (si fonde coi bordi dell'SVG)
-                  background: (scheda.ritratto || '').startsWith('data:image/svg') ? (coloreClasse(scheda.classe)?.chiaro || C.panel) : C.panel,
+                  // emblema auto (foto assente o SVG): sfondo col colore classe, si fonde coi bordi
+                  background: (!scheda.ritratto || scheda.ritratto.startsWith('data:image/svg')) ? (coloreClasse(scheda.classe)?.chiaro || C.panel) : C.panel,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   boxShadow: 'inset 0 0 8px rgba(0,0,0,0.2)', border: `2px solid ${coloreClasse(scheda.classe)?.chiaro || C.border}`,
                   cursor: 'pointer', position: 'relative',
@@ -3390,14 +3393,13 @@ export default function App() {
                     }}
                   />
                 ) : (
-                  // Nessuna foto: mostra l'avatar tematico (iniziale su colore
-                  // classe) così il riquadro non resta un vuoto grigio; resta
-                  // cliccabile per caricare un'immagine.
+                  // Nessuna foto: mostra l'emblema tematico di classe/specie
+                  // (icone game-icons.net), cliccabile per caricare una foto.
                   <div style={{ position: 'relative', width: '100%', height: '100%' }} title="Click: carica l'immagine del personaggio">
                     <img
-                      src={avatarSvgFallback(scheda.classe, scheda.specie, scheda.nome)}
+                      src={generaAvatar(scheda.classe, scheda.specie, scheda.nome)}
                       alt={`Ritratto di ${scheda.nome}`}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                      style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
                     />
                     <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.35)', color: '#fff', fontSize: 9, letterSpacing: 1, textAlign: 'center', padding: '2px 0' }}>RITRATTO</div>
                   </div>
