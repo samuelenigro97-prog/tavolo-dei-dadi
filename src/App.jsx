@@ -649,14 +649,17 @@ const styles = {
     fontSize: 14,
   }),
   dot: (livello) => ({
-    width: 14,
-    height: 14,
+    width: 15,
+    height: 15,
     flexShrink: 0,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     fontSize: 15,
-    color: livello === 2 ? C.goldDark : livello === 1 ? C.ink : C.inkDim,
+    // competenza chiara a colpo d'occhio: verde pieno = competente, oro = maestria,
+    // anello tenue = non competente (così non sembrano tutte "accese")
+    color: livello === 2 ? '#d4af37' : livello === 1 ? C.green : C.inkDim,
+    opacity: livello === 0 ? 0.5 : 1,
     cursor: 'pointer',
     userSelect: 'none',
   }),
@@ -1274,7 +1277,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.7.2';
+const APP_VERSION = '1.7.3';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2849,6 +2852,13 @@ export default function App() {
           >
             ☁️ Cloud
           </button>
+          <button
+            style={styles.modeButton(false)}
+            title={`Versione delle regole D&D in uso: ${regoleVersione === '2024' ? '5.5 (2024)' : '5.0 (2014)'}. Click per cambiare (incide su sfinimento e bonus di background).`}
+            onClick={() => setRegoleVersione(regoleVersione === '2024' ? '2014' : '2024')}
+          >
+            {regoleVersione === '2024' ? '📕 5.5' : '📗 5.0'}
+          </button>
         </div>
 
         <h1 className="app-header-title" style={{ ...styles.title, margin: 0 }}>Tavolo dei Dadi <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 'normal', letterSpacing: 0.5 }}>v{APP_VERSION}</span></h1>
@@ -3427,8 +3437,7 @@ export default function App() {
                     </Rollable>
                     <div>
                       <div style={{ fontSize: 13, color: C.ink, letterSpacing: 0.8, fontWeight: 'bold' }}>{label.toUpperCase()}</div>
-                      <div style={{ ...styles.detail, fontSize: 12 }}>
-                        punteggio{' '}
+                      <div style={{ ...styles.detail, fontSize: 13 }} title="Punteggio di caratteristica (1 click per modificare)">
                         <Editable
                           value={scheda.caratteristiche[key]}
                           tipo="numero"
