@@ -1283,7 +1283,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.7.7';
+const APP_VERSION = '1.7.8';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1955,7 +1955,7 @@ export default function App() {
   });
   const [rinominando, setRinominando] = useState(false); // rinomina inline del PG attivo
   const [mostraCrea, setMostraCrea] = useState(false); // schermata di creazione guidata
-  const [bozzaCrea, setBozzaCrea] = useState({ nome: '', classe: '', specie: '', background: '', tira: true });
+  const [bozzaCrea, setBozzaCrea] = useState({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {} });
   // versione delle regole: '2024' (5.5, default) o '2014' (5.0)
   const [regoleVersione, setRegoleVersione] = useState(() => localStorage.getItem('scheda-interattiva:versione') || '2024');
   useEffect(() => {
@@ -2139,7 +2139,7 @@ export default function App() {
   }
 
   /** Genera un personaggio coerente da classe/specie/background (creazione guidata). */
-  function creaPersonaggio({ nome, classe, specie, background, tira }) {
+  function creaPersonaggio({ nome, classe, specie, background, metodo, pool, assegna }) {
     const s = schedaVuota();
     s.nome = nome?.trim() || 'Nuovo personaggio';
     s.classe = classe;
@@ -2158,8 +2158,18 @@ export default function App() {
     // dati dalla specie: velocità, sensi, taglia, tratti
     const sp = SPECIE_DATI[specie];
     if (sp) { s.velocita = sp.velocita; s.sensi = sp.sensi; s.taglia = sp.taglia; s.trattiSpecie = sp.tratti; }
-    // caratteristiche: tirate (4d6, ordinate per classe) o array base
-    if (tira) s.caratteristiche = generaCaratteristiche(classe);
+    // caratteristiche secondo il metodo scelto:
+    //  'auto'    → 4d6 assegnate per priorità di classe
+    //  'assegna' → i 6 valori tirati (pool), assegnati a mano dall'utente
+    //  'manuale' → restano a 10 (le imposta l'utente più tardi)
+    if (metodo === 'auto') {
+      s.caratteristiche = generaCaratteristiche(classe);
+    } else if (metodo === 'assegna' && Array.isArray(pool)) {
+      for (const { key } of CARATTERISTICHE) {
+        const idx = assegna?.[key];
+        s.caratteristiche[key] = (idx != null && pool[idx] != null) ? pool[idx] : 10;
+      }
+    }
     // background: competenze nelle abilità
     (BACKGROUND_COMPETENZE[background] || []).forEach((k) => { s.abilita[k] = Math.max(s.abilita[k] || 0, 1); });
     // background: bonus alle caratteristiche (solo regole 2024)
@@ -2660,7 +2670,7 @@ export default function App() {
 
             <button
               style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 14 }}
-              onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', tira: true }); setMostraCrea(true); }}
+              onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {} }); setMostraCrea(true); }}
             >
               ➕ Nuovo personaggio
             </button>
@@ -2905,10 +2915,65 @@ export default function App() {
                 </div>
               )}
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, cursor: 'pointer' }}>
-                <input type="checkbox" checked={bozzaCrea.tira} onChange={(e) => setB({ tira: e.target.checked })} />
-                <span style={styles.detail}>Tira le caratteristiche (4d6, scarta il più basso, ordinate per classe)</span>
-              </label>
+              <label style={{ ...styles.detail, display: 'block', marginBottom: 6, fontWeight: 'bold' }}>Caratteristiche</label>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+                {[['auto', '🎲 Tira e assegna'], ['assegna', '🎲 Tira e scelgo io'], ['manuale', '✍️ A mano']].map(([m, etichetta]) => (
+                  <button
+                    key={m}
+                    style={{ ...styles.modeButton(bozzaCrea.metodo === m), fontSize: 12, padding: '4px 10px' }}
+                    onClick={() => setB({ metodo: m, pool: m === 'assegna' ? bozzaCrea.pool : null, assegna: {} })}
+                  >
+                    {etichetta}
+                  </button>
+                ))}
+              </div>
+              {bozzaCrea.metodo === 'auto' && (
+                <div style={{ ...styles.detail, fontSize: 11, marginBottom: 16 }}>
+                  Tira 4d6 (scarta il più basso) e mette il valore più alto sulla caratteristica chiave della classe.
+                </div>
+              )}
+              {bozzaCrea.metodo === 'manuale' && (
+                <div style={{ ...styles.detail, fontSize: 11, marginBottom: 16 }}>
+                  Le caratteristiche partono da 10: le imposti tu sulla scheda (o tiri i dadi fisicamente).
+                </div>
+              )}
+              {bozzaCrea.metodo === 'assegna' && (
+                <div style={{ marginBottom: 16 }}>
+                  <button
+                    style={{ ...styles.button, marginBottom: 8 }}
+                    onClick={() => setB({ pool: Array.from({ length: 6 }, tira4d6ScartaMinimo).sort((a, b) => b - a), assegna: {} })}
+                  >
+                    🎲 {bozzaCrea.pool ? 'Ritira i valori' : 'Tira i 6 valori'}
+                  </button>
+                  {bozzaCrea.pool && (
+                    <>
+                      <div style={{ ...styles.detail, fontSize: 11, marginBottom: 6 }}>
+                        Valori tirati: <strong>{bozzaCrea.pool.join(', ')}</strong>. Assegna ognuno a una caratteristica:
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
+                        {CARATTERISTICHE.map(({ key, label }) => {
+                          const usatiAltrove = Object.entries(bozzaCrea.assegna).filter(([k]) => k !== key).map(([, idx]) => idx);
+                          return (
+                            <label key={key} style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+                              <span style={{ width: 66 }}>{label}</span>
+                              <select
+                                value={bozzaCrea.assegna[key] ?? ''}
+                                onChange={(e) => setB({ assegna: { ...bozzaCrea.assegna, [key]: e.target.value === '' ? undefined : Number(e.target.value) } })}
+                                style={{ ...styles.inlineInput, fontSize: 12, padding: '2px 4px', flex: 1 }}
+                              >
+                                <option value="">—</option>
+                                {bozzaCrea.pool.map((v, i) => (
+                                  <option key={i} value={i} disabled={usatiAltrove.includes(i)}>{v}</option>
+                                ))}
+                              </select>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
 
               <div style={{ display: 'flex', gap: 8 }}>
                 <button style={{ ...styles.buttonPrimary, flex: 1 }} onClick={() => creaPersonaggio(bozzaCrea)}>Crea personaggio</button>
@@ -3142,7 +3207,7 @@ export default function App() {
               ⬆️
             </button>
             <button style={styles.buttonMini} onClick={() => setRinominando(!rinominando)} title="Rinomina il personaggio">✎</button>
-            <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', tira: true }); setMostraCrea(true); }} title="Nuovo personaggio">＋</button>
+            <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {} }); setMostraCrea(true); }} title="Nuovo personaggio">＋</button>
             <button style={styles.buttonMini} onClick={duplicaPersonaggio} title="Duplica il personaggio attivo">⧉</button>
             <button style={styles.buttonMini} onClick={resetScheda} title="Azzera i campi del personaggio attivo">↺</button>
             <button style={{ ...styles.buttonMini, borderColor: C.red, color: C.red }} onClick={eliminaPersonaggio} title="Elimina il personaggio attivo">🗑</button>
