@@ -1374,7 +1374,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.8.8';
+const APP_VERSION = '1.8.9';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1501,6 +1501,7 @@ function normalizeImported(dati) {
           tempo: str(s.tempo),
           gittata: str(s.gittata),
           note: str(s.note),
+          preparato: s.preparato !== false,
         }))
     : [];
 
@@ -2007,6 +2008,7 @@ export default function App() {
     try { localStorage.setItem('scheda-interattiva:transcribe-url', transcribeUrl); } catch { /* niente */ }
   }, [transcribeUrl]);
   const [pdfStato, setPdfStato] = useState(''); // '' | 'loading'
+  const [filtroIncantesimo, setFiltroIncantesimo] = useState('');
   const [espressioneLibera, setEspressioneLibera] = useState('');
   const [erroreEspressione, setErroreEspressione] = useState(false);
   const [storico, setStorico] = useState([]);
@@ -4065,16 +4067,33 @@ export default function App() {
                 })}
               </div>
 
-              {/* Trucchetti e incantesimi preparati */}
+              {/* Trucchetti e incantesimi */}
               <h3 style={{ ...styles.panelTitle, fontSize: 15, marginTop: 14 }}>
-                Trucchetti e incantesimi preparati
+                Trucchetti e incantesimi
               </h3>
+              {(() => {
+                const preparati = scheda.incantesimiLista.filter((s) => s.livello > 0 && s.preparato !== false).length;
+                return (
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
+                    <input
+                      type="search"
+                      value={filtroIncantesimo}
+                      onChange={(e) => setFiltroIncantesimo(e.target.value)}
+                      placeholder="🔍 Cerca incantesimo…"
+                      style={{ ...styles.inlineInput, padding: '5px 8px', width: 200 }}
+                    />
+                    <span style={styles.detail}>★ = preparato · click sulla stella per (dis)preparare · <strong>{preparati}</strong> preparati</span>
+                  </div>
+                );
+              })()}
               <div style={{ overflowX: 'auto' }}>
                 {Array.from({ length: 10 }, (_, liv) => {
-                  const spells = scheda.incantesimiLista.filter((s) => s.livello === liv);
+                  const q = filtroIncantesimo.trim().toLowerCase();
+                  const spells = scheda.incantesimiLista.filter((s) => s.livello === liv && (!q || (s.nome || '').toLowerCase().includes(q)));
                   const haSlot = liv === 0 || ((scheda.slotIncantesimo[liv]?.totale || 0) > 0);
                   const haSpells = spells.length > 0;
-                  
+
+                  if (q && !haSpells) return null;
                   if (!haSlot && !haSpells) return null;
                   
                   return (
@@ -4085,6 +4104,7 @@ export default function App() {
                       <table style={styles.table}>
                         <thead>
                           <tr>
+                            {liv > 0 && <th style={{ ...styles.th, width: 24 }} title="Preparato" />}
                             <th style={styles.th}>Nome</th>
                             <th style={styles.th}>Tempo</th>
                             <th style={styles.th}>Gittata</th>
@@ -4100,8 +4120,16 @@ export default function App() {
                                   x.id === s.id ? { ...x, ...patch } : x
                                 ),
                               });
+                            const preparato = s.preparato !== false;
                             return (
-                              <tr key={s.id}>
+                              <tr key={s.id} style={liv > 0 && !preparato ? { opacity: 0.5 } : undefined}>
+                                {liv > 0 && (
+                                  <td style={{ ...styles.td, textAlign: 'center', cursor: 'pointer', color: preparato ? '#d4af37' : C.inkDim }}
+                                    title={preparato ? 'Preparato (click: conosciuto ma non preparato)' : 'Conosciuto (click: prepara)'}
+                                    onClick={() => aggiornaIncantesimo({ preparato: !preparato })}>
+                                    {preparato ? '★' : '☆'}
+                                  </td>
+                                )}
                                 <td style={styles.td}>
                                   <Editable value={s.nome} width={180} onChange={(v) => aggiornaIncantesimo({ nome: v })} />
                                 </td>
@@ -4135,7 +4163,7 @@ export default function App() {
                           aggiorna({
                             incantesimiLista: [
                               ...scheda.incantesimiLista,
-                              { id: Date.now(), livello: liv, nome: 'Nuovo incantesimo', tempo: '1 Az.', gittata: '', note: '' },
+                              { id: Date.now(), livello: liv, nome: 'Nuovo incantesimo', tempo: '1 Az.', gittata: '', note: '', preparato: true },
                             ],
                           })
                         }
