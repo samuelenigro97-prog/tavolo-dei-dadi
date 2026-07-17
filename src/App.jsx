@@ -285,6 +285,36 @@ function competenzeClasseDi(classe) {
   return { numero: dati.numero, lista };
 }
 
+// Privilegi di classe di 1° livello (2024), riassunti in parole nostre.
+const PRIVILEGI_CLASSE_L1 = {
+  barbaro: 'Ira\nDifesa senza armatura (CA = 10 + DES + COS)\nMaestria nelle armi',
+  bardo: 'Lancio di incantesimi (Carisma)\nIspirazione bardica (d6)',
+  chierico: 'Lancio di incantesimi (Saggezza)\nOrdine divino (Protettore o Taumaturgo)',
+  druido: 'Lancio di incantesimi (Saggezza)\nOrdine primordiale\nLinguaggio druidico',
+  guerriero: 'Stile di combattimento\nRecuperare energie (azione bonus)\nMaestria nelle armi',
+  ladro: 'Attacco furtivo (1d6)\nMaestria (doppia competenza in 2 abilità)\nGergo ladresco\nMaestria nelle armi',
+  mago: 'Lancio di incantesimi (Intelligenza)\nRecupero arcano\nRituali · Studioso',
+  monaco: 'Arti marziali\nDifesa senza armatura (CA = 10 + DES + SAG)',
+  paladino: 'Imposizione delle mani (cura 5 × livello)\nLancio di incantesimi (Carisma)\nMaestria nelle armi',
+  ranger: 'Lancio di incantesimi (Saggezza)\nNemico favorito\nEsploratore provetto\nMaestria nelle armi',
+  stregone: 'Lancio di incantesimi (Carisma)\nStregoneria innata\nFonte di magia (Punti stregoneria)',
+  warlock: 'Magia del patto (Carisma)\nPatrono ultraterreno\nSuppliche occulte (invocazioni)',
+};
+function privilegiClasseL1(classe) {
+  const c = coloreClasse(classe);
+  return (c && PRIVILEGI_CLASSE_L1[c.match[0]]) || '';
+}
+
+// Competenze concesse dalla SPECIE (2024): quasi nessuna specie dà abilità
+// (spostate sui background); l'Elfo con "Sensi Acuti" ne concede 1 a scelta.
+const COMPETENZE_SPECIE = {
+  Elfo: { numero: 1, lista: ['intuizione', 'percezione', 'sopravvivenza'], tratto: 'Sensi Acuti' },
+};
+function competenzeSpecieDi(specie) {
+  const k = Object.keys(COMPETENZE_SPECIE).find((x) => (specie || '').toLowerCase().includes(x.toLowerCase()));
+  return k ? { ...COMPETENZE_SPECIE[k], specie: k } : null;
+}
+
 // Dati di specie (2024): velocità in metri, sensi, taglia, tratti principali.
 const SPECIE_DATI = {
   Aasimar: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Resistenza celestiale, Mani guaritrici, Portatore di luce' },
@@ -1344,7 +1374,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.8.6';
+const APP_VERSION = '1.8.7';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2016,7 +2046,7 @@ export default function App() {
   });
   const [rinominando, setRinominando] = useState(false); // rinomina inline del PG attivo
   const [mostraCrea, setMostraCrea] = useState(false); // schermata di creazione guidata
-  const [bozzaCrea, setBozzaCrea] = useState({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [] });
+  const [bozzaCrea, setBozzaCrea] = useState({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [] });
   // versione delle regole: '2024' (5.5, default) o '2014' (5.0)
   const [regoleVersione, setRegoleVersione] = useState(() => localStorage.getItem('scheda-interattiva:versione') || '2024');
   useEffect(() => {
@@ -2204,7 +2234,7 @@ export default function App() {
   }
 
   /** Genera un personaggio coerente da classe/specie/background (creazione guidata). */
-  function creaPersonaggio({ nome, classe, specie, background, metodo, pool, assegna, competenzeClasse }) {
+  function creaPersonaggio({ nome, classe, specie, background, metodo, pool, assegna, competenzeClasse, competenzeSpecie }) {
     const s = schedaVuota();
     s.nome = nome?.trim() || 'Nuovo personaggio';
     s.classe = classe;
@@ -2237,9 +2267,12 @@ export default function App() {
     }
     // competenze nelle abilità:
     //  - background → competenza semplice (livello 1, cerchietto ●)
-    //  - classe (scelte dall'utente) → competenza di classe/razza (livello 2, ★)
+    //  - classe e specie (scelte dall'utente) → competenza di classe/razza (livello 2, ★)
     (BACKGROUND_COMPETENZE[background] || []).forEach((k) => { s.abilita[k] = Math.max(s.abilita[k] || 0, 1); });
     (Array.isArray(competenzeClasse) ? competenzeClasse : []).forEach((k) => { if (k in s.abilita) s.abilita[k] = 2; });
+    (Array.isArray(competenzeSpecie) ? competenzeSpecie : []).forEach((k) => { if (k in s.abilita) s.abilita[k] = 2; });
+    // privilegi di classe di 1° livello
+    s.privilegi = privilegiClasseL1(classe);
     // background: bonus alle caratteristiche (solo regole 2024)
     if (regoleVersione === '2024') {
       const [piu2, piu1] = bonusCaratteristicheBackground(background, classe);
@@ -2773,7 +2806,7 @@ export default function App() {
 
             <button
               style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 14 }}
-              onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [] }); setMostraCrea(true); }}
+              onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [] }); setMostraCrea(true); }}
             >
               ➕ Nuovo personaggio
             </button>
@@ -3011,7 +3044,7 @@ export default function App() {
               </select>
 
               <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{regoleVersione === '2024' ? 'Specie' : 'Razza'}</label>
-              <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.specie} onChange={(e) => setB({ specie: e.target.value })}>
+              <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.specie} onChange={(e) => setB({ specie: e.target.value, competenzeSpecie: [] })}>
                 <option value="">Scegli…</option>
                 {Object.entries(SPECIE_5E).map(([g, opts]) => (
                   <optgroup key={g} label={g}>
@@ -3062,6 +3095,37 @@ export default function App() {
                             title={daBg ? 'Già concessa dal background' : (!sel && pieno ? `Hai già scelto ${cc.numero} competenze` : 'Click per scegliere')}
                           >
                             {sel ? '★ ' : ''}{lab}{daBg ? ' (bg)' : ''}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Competenza concessa dalla specie (es. Elfo · Sensi Acuti): diventa ★ */}
+              {(() => {
+                const cs = competenzeSpecieDi(bozzaCrea.specie);
+                if (!cs) return null;
+                const scelte = bozzaCrea.competenzeSpecie || [];
+                const pieno = scelte.length >= cs.numero;
+                const toggle = (k) => {
+                  if (scelte.includes(k)) setB({ competenzeSpecie: scelte.filter((x) => x !== k) });
+                  else if (!pieno) setB({ competenzeSpecie: [...scelte, k] });
+                };
+                return (
+                  <div style={{ marginBottom: 14 }}>
+                    <label style={{ ...styles.detail, display: 'block', marginBottom: 4, fontWeight: 'bold' }}>
+                      Competenza di specie · {cs.tratto} — scegli {cs.numero} <span style={{ fontWeight: 'normal', color: pieno ? C.green : C.inkDim }}>({scelte.length}/{cs.numero})</span>
+                    </label>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                      {cs.lista.map((k) => {
+                        const lab = ABILITA.find((a) => a.key === k)?.label || k;
+                        const sel = scelte.includes(k);
+                        return (
+                          <button key={k} disabled={!sel && pieno} onClick={() => toggle(k)}
+                            style={{ ...styles.modeButton(sel), fontSize: 11, padding: '3px 8px' }}>
+                            {sel ? '★ ' : ''}{lab}
                           </button>
                         );
                       })}
@@ -3355,7 +3419,7 @@ export default function App() {
               ⬆️
             </button>
             <button style={styles.buttonMini} onClick={() => setRinominando(!rinominando)} title="Rinomina il personaggio">✎</button>
-            <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [] }); setMostraCrea(true); }} title="Nuovo personaggio">＋</button>
+            <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [] }); setMostraCrea(true); }} title="Nuovo personaggio">＋</button>
             <button style={styles.buttonMini} onClick={duplicaPersonaggio} title="Duplica il personaggio attivo">⧉</button>
             <button style={styles.buttonMini} onClick={resetScheda} title="Azzera i campi del personaggio attivo">↺</button>
             <button style={{ ...styles.buttonMini, borderColor: C.red, color: C.red }} onClick={eliminaPersonaggio} title="Elimina il personaggio attivo">🗑</button>
