@@ -441,6 +441,79 @@ function livelloSceltaSottoclasse(classe) {
   return (k && SOTTOCLASSE_LIV[k] && SOTTOCLASSE_LIV[k][0]) || 3;
 }
 
+// Elenco (curato) degli incantesimi più comuni per classe e livello, in italiano.
+// Serve al menu "Aggiungi incantesimo": non è esaustivo (c'è sempre "Scrivi a
+// mano"), ma copre gli incantesimi tipici. I nomi sono indicativi e modificabili.
+const INCANTESIMI_CLASSE = {
+  stregone: {
+    0: ['Dardo Infuocato', 'Raggio di Gelo', 'Morsa del Gelo', 'Mano Magica', 'Luce', 'Messaggio', 'Prestidigitazione', 'Illusione Minore', 'Spruzzo di Veleno', 'Tocco Folgorante', 'Luci Danzanti', 'Interdizione alle Lame', 'Vampa'],
+    1: ['Dardo Incantato', 'Scudo', 'Armatura Magica', 'Onda Tonante', 'Mani Brucianti', 'Sfera Cromatica', 'Sonno', 'Ammaliare Persone', 'Caduta Morbida', 'Individuazione del Magico', 'Nube di Nebbia', 'Camuffarsi', 'Immagine Silenziosa', 'Fulmine Stregato'],
+    2: ['Immagine Speculare', 'Passo Velato', 'Frantumare', 'Raggio Rovente', 'Invisibilità', 'Blocca Persone', 'Oscurità', 'Scurovisione', 'Levitazione', 'Ragnatela', 'Suggestione', 'Offuscamento', 'Vedere Invisibilità'],
+    3: ['Palla di Fuoco', 'Controincantesimo', 'Fulmine', 'Volare', 'Velocità', 'Lentezza', 'Dissolvi Magie', 'Nube Mefitica', 'Paura'],
+    4: ['Invisibilità Superiore', 'Porta Dimensionale', 'Tempesta di Ghiaccio', 'Scudo di Fuoco', 'Polimorfia', 'Confusione'],
+    5: ['Cono di Freddo', 'Blocca Mostri', 'Dominare Persone', 'Telecinesi', 'Muro di Pietra'],
+  },
+  mago: {
+    0: ['Dardo Infuocato', 'Raggio di Gelo', 'Morsa del Gelo', 'Mano Magica', 'Luce', 'Messaggio', 'Prestidigitazione', 'Illusione Minore', 'Zampata Acida', 'Tocco Folgorante', 'Colpo Sicuro'],
+    1: ['Dardo Incantato', 'Scudo', 'Armatura Magica', 'Onda Tonante', 'Mani Brucianti', 'Sonno', 'Individuazione del Magico', 'Comprendere Linguaggi', 'Identificare', 'Ritirata Veloce', 'Falsa Vita', 'Servitore Invisibile', 'Sfera Cromatica'],
+    2: ['Immagine Speculare', 'Passo Velato', 'Frantumare', 'Raggio Rovente', 'Invisibilità', 'Blocca Persone', 'Ragnatela', 'Levitazione', 'Vedere Invisibilità', 'Bussare', 'Individuazione dei Pensieri'],
+    3: ['Palla di Fuoco', 'Controincantesimo', 'Fulmine', 'Volare', 'Velocità', 'Dissolvi Magie', 'Nube Mefitica', 'Animare Morti', 'Dardo Incantato Superiore'],
+    4: ['Invisibilità Superiore', 'Porta Dimensionale', 'Tempesta di Ghiaccio', 'Scudo di Fuoco', 'Polimorfia', 'Pelle di Pietra', 'Muro di Fuoco'],
+    5: ['Cono di Freddo', 'Blocca Mostri', 'Telecinesi', 'Muro di Forza', 'Evocare Elementale'],
+  },
+  chierico: {
+    0: ['Fiamma Sacra', 'Guida', 'Luce', 'Aggiustare', 'Resistenza', 'Stabilizzare', 'Taumaturgia', 'Rintocco Funebre'],
+    1: ['Benedizione', 'Cura Ferite', 'Dardo Guida', 'Parola di Guarigione', 'Comando', 'Individuazione del Magico', 'Infliggere Ferite', 'Protezione dal Male e dal Bene', 'Santuario', 'Scudo della Fede', 'Rovina'],
+    2: ['Aiuto', 'Ristorare Inferiore', 'Arma Spirituale', 'Blocca Persone', 'Silenzio', 'Preghiera di Guarigione', 'Presagio', 'Legame di Protezione'],
+    3: ['Dissolvi Magie', 'Parola di Guarigione di Massa', 'Rivitalizzare', 'Guardiani Spirituali', 'Faro di Speranza', 'Rimuovi Maledizione', 'Luce del Giorno'],
+    4: ['Barriera contro la Morte', 'Guardiano della Fede', 'Esilio', 'Libertà di Movimento'],
+    5: ['Colonna di Fuoco', 'Ristorare Superiore', 'Cura Ferite di Massa', 'Rianimare Morti'],
+  },
+  druido: {
+    0: ['Arte Druidica', 'Guida', 'Aggiustare', 'Spruzzo di Veleno', 'Produrre Fiamma', 'Resistenza', 'Bastone Incantato', 'Frusta di Spine'],
+    1: ['Cura Ferite', 'Parola di Guarigione', 'Intralciare', 'Fuoco Fatato', 'Bacche Nutrienti', 'Parlare con gli Animali', 'Onda Tonante', 'Nube di Nebbia', 'Passo Lungo'],
+    2: ['Pelle Coriacea', 'Sfera Infuocata', 'Raggio di Luna', 'Metallo Rovente', 'Passo Senza Tracce', 'Crescita di Spine', 'Ristorare Inferiore', 'Blocca Persone'],
+    3: ['Chiamare il Fulmine', 'Evocare Animali', 'Dissolvi Magie', 'Crescita Vegetale', 'Tempesta di Nevischio', 'Respirare sott’acqua', 'Muro di Vento'],
+    4: ['Polimorfia', 'Tempesta di Ghiaccio', 'Pelle di Pietra', 'Muro di Fuoco', 'Libertà di Movimento'],
+    5: ['Ridestare', 'Comunione con la Natura', 'Piaga di Insetti', 'Passo Arboreo', 'Cura Ferite di Massa'],
+  },
+  bardo: {
+    0: ['Derisione Crudele', 'Luci Danzanti', 'Luce', 'Mano Magica', 'Aggiustare', 'Messaggio', 'Illusione Minore', 'Prestidigitazione', 'Colpo Sicuro'],
+    1: ['Cura Ferite', 'Parola di Guarigione', 'Ammaliare Persone', 'Camuffarsi', 'Fuoco Fatato', 'Caduta Morbida', 'Eroismo', 'Sonno', 'Onda Tonante', 'Sussurri Dissonanti', 'Individuazione del Magico'],
+    2: ['Invisibilità', 'Suggestione', 'Blocca Persone', 'Frantumare', 'Metallo Rovente', 'Potenziare Caratteristica', 'Ristorare Inferiore', 'Silenzio', 'Vedere Invisibilità'],
+    3: ['Dissolvi Magie', 'Schema Ipnotico', 'Paura', 'Immagine Maggiore', 'Linguaggi', 'Infliggere Maledizione', 'Messaggio a Distanza'],
+    4: ['Porta Dimensionale', 'Polimorfia', 'Libertà di Movimento', 'Invisibilità Superiore', 'Confusione'],
+    5: ['Ristorare Superiore', 'Cura Ferite di Massa', 'Blocca Mostri', 'Dominare Persone', 'Sviare'],
+  },
+  warlock: {
+    0: ['Raffica Occulta', 'Morsa del Gelo', 'Mano Magica', 'Illusione Minore', 'Spruzzo di Veleno', 'Prestidigitazione', 'Colpo Sicuro'],
+    1: ['Malocchio', 'Armatura di Agathys', 'Braccia di Hadar', 'Ammaliare Persone', 'Comprendere Linguaggi', 'Ritirata Veloce', 'Protezione dal Male e dal Bene', 'Fulmine Stregato', 'Rappresaglia Infernale', 'Servitore Invisibile'],
+    2: ['Invisibilità', 'Immagine Speculare', 'Passo Velato', 'Blocca Persone', 'Oscurità', 'Raggio dell’Indebolimento', 'Corona della Follia', 'Suggestione'],
+    3: ['Controincantesimo', 'Dissolvi Magie', 'Volare', 'Paura', 'Schema Ipnotico', 'Fame di Hadar', 'Tocco Vampirico'],
+    4: ['Esilio', 'Porta Dimensionale', 'Malanno', 'Terreno Allucinatorio'],
+    5: ['Blocca Mostri', 'Scrutare', 'Passo Lontano'],
+  },
+  paladino: {
+    1: ['Benedizione', 'Cura Ferite', 'Comando', 'Individuazione del Magico', 'Favore Divino', 'Eroismo', 'Protezione dal Male e dal Bene', 'Scudo della Fede', 'Colpo Ardente', 'Colpo Tonante', 'Colpo Irato'],
+    2: ['Aiuto', 'Ristorare Inferiore', 'Trovare Destriero', 'Arma Magica', 'Colpo Marchiante', 'Protezione dal Veleno', 'Zona di Verità'],
+    3: ['Dissolvi Magie', 'Rivitalizzare', 'Aura di Vitalità', 'Colpo Accecante', 'Manto del Crociato', 'Arma Elementale'],
+    4: ['Esilio', 'Barriera contro la Morte', 'Aura di Vita', 'Colpo Sconvolgente'],
+    5: ['Cerchio di Potere', 'Onda Distruttrice'],
+  },
+  ranger: {
+    1: ['Cura Ferite', 'Marchio del Cacciatore', 'Colpo Intrappolante', 'Nube di Nebbia', 'Bacche Nutrienti', 'Pioggia di Spine', 'Passo Lungo', 'Parlare con gli Animali'],
+    2: ['Ristorare Inferiore', 'Passo Senza Tracce', 'Crescita di Spine', 'Pelle Coriacea', 'Silenzio', 'Cordone di Frecce', 'Localizzare Oggetto'],
+    3: ['Evocare Animali', 'Freccia Fulminante', 'Crescita Vegetale', 'Respirare sott’acqua', 'Muro di Vento'],
+    4: ['Libertà di Movimento', 'Pelle di Pietra', 'Vite Afferrante'],
+    5: ['Faretra Veloce', 'Passo Arboreo'],
+  },
+};
+/** Incantesimi consigliati per la classe a un dato livello (o [] se non previsti). */
+function incantesimiClasseLivello(classe, livello) {
+  const k = chiaveClasse(classe);
+  return (k && INCANTESIMI_CLASSE[k] && INCANTESIMI_CLASSE[k][livello]) || [];
+}
+
 // Livelli in cui si sceglie o si potenzia la sottoclasse (2024).
 const SOTTOCLASSE_LIV = {
   barbaro: [3, 6, 10, 14], bardo: [3, 6, 14], chierico: [3, 6, 17],
@@ -1050,7 +1123,25 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
   margin: 0 0 8px 0 !important;
 }
 /* testata: gruppi ai lati, titolo centrato al centro (flex, niente sovrapposizioni) */
-.app-header-title { flex: 1 1 auto; text-align: center; }
+.app-header-title {
+  flex: 1 1 auto;
+  text-align: center;
+  font-weight: 800;
+  /* logo colorato: sfumatura con i colori dei dadi/classi, ritagliata sul testo */
+  background: linear-gradient(90deg, #c0392b 0%, #e0521c 18%, #d6a90f 36%, #3f9a3a 54%, #12a08e 68%, #1f74d4 84%, #7b30b0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  text-shadow: none;
+}
+/* la versione (vX.Y.Z) resta in colore tenue, non nella sfumatura */
+.app-header-title span { -webkit-text-fill-color: var(--c-ink-dim); color: var(--c-ink-dim); }
+/* schermata di caricamento dal cloud: nuvola che pulsa e barra che scorre */
+.cloud-spinner { animation: cloud-bob 1.4s ease-in-out infinite; }
+@keyframes cloud-bob { 0%,100% { transform: translateY(0); opacity: 0.85; } 50% { transform: translateY(-8px); opacity: 1; } }
+.cloud-bar { width: 40%; animation: cloud-slide 1.1s ease-in-out infinite; }
+@keyframes cloud-slide { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
 .app-header-group { flex: 0 0 auto; }
 @media (max-width: 560px) {
   /* su schermi stretti: titolo su una riga sopra, i due gruppi di pulsanti sotto */
@@ -1585,7 +1676,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.7';
+const APP_VERSION = '1.9.8';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2011,7 +2102,7 @@ function CampoConTendina({ value, opzioni, onChange, width, title }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', minHeight: 24 }} title={title}>
       {attuali.map(t => (
-        <span key={t} style={{ background: 'rgba(255,255,255,0.08)', padding: '2px 6px', borderRadius: 6, fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, border: `1px solid rgba(255,255,255,0.15)` }}>
+        <span key={t} title={t} style={{ background: 'rgba(255,255,255,0.08)', padding: '2px 6px', borderRadius: 6, fontSize: 11, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4, border: `1px solid rgba(255,255,255,0.15)` }}>
           {t}
           <button 
             style={{ background: 'transparent', border: 'none', color: '#ff6b6b', cursor: 'pointer', padding: '0 2px', fontSize: 14, lineHeight: 0.8, marginTop: -2 }} 
@@ -2282,6 +2373,7 @@ export default function App() {
   const [autoSync, setAutoSync] = useState(() => localStorage.getItem('scheda-interattiva:auto-sync') !== 'off');
   const [ultimoSync, setUltimoSync] = useState(() => localStorage.getItem('scheda-interattiva:ultimo-sync') || '');
   const [sincronizzando, setSincronizzando] = useState(false);
+  const [caricandoCloud, setCaricandoCloud] = useState(false); // overlay di caricamento dal cloud
 
   // Level Up
   const [mostraLevelUp, setMostraLevelUp] = useState(false);
@@ -2950,6 +3042,7 @@ export default function App() {
     if (!githubToken || !gistId) return;
     (async () => {
       try {
+        setCaricandoCloud(true);
         const res = await fetch(`https://api.github.com/gists/${gistId}`, {
           headers: { 'Authorization': `token ${githubToken}`, 'Accept': 'application/vnd.github.v3+json' },
         });
@@ -2970,6 +3063,7 @@ export default function App() {
           setCloudStatus({ text: '☁️ Personaggi caricati dal cloud', type: 'success' });
         }
       } catch { /* offline o errore: si resta sui dati locali */ }
+      finally { setCaricandoCloud(false); }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -2980,6 +3074,7 @@ export default function App() {
       return;
     }
     try {
+      setCaricandoCloud(true);
       setCloudStatus({ text: 'Caricamento in corso...', type: 'info' });
       const res = await fetch(`https://api.github.com/gists/${gistId}`, {
         headers: {
@@ -3006,6 +3101,8 @@ export default function App() {
       setCloudStatus({ text: '✅ Roster caricato e sincronizzato!', type: 'success' });
     } catch (err) {
       setCloudStatus({ text: err.message, type: 'error' });
+    } finally {
+      setCaricandoCloud(false);
     }
   }
 
@@ -3020,6 +3117,21 @@ export default function App() {
   return (
     <div style={styles.app}>
       <style>{GLOBAL_CSS}</style>
+
+      {caricandoCloud && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 3000,
+          background: 'rgba(20,12,8,0.72)', backdropFilter: 'blur(3px)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18,
+        }}>
+          <div className="cloud-spinner" style={{ fontSize: 54 }}>☁️</div>
+          <div style={{ color: '#fff', fontSize: 18, fontWeight: 700, letterSpacing: 0.5 }}>Carico i personaggi dal cloud…</div>
+          <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>Un attimo di pazienza</div>
+          <div style={{ width: 180, height: 5, borderRadius: 3, overflow: 'hidden', background: 'rgba(255,255,255,0.2)' }}>
+            <div className="cloud-bar" style={{ height: '100%', background: 'linear-gradient(90deg,#e0521c,#d6a90f,#3f9a3a,#1f74d4)' }} />
+          </div>
+        </div>
+      )}
 
       {needRefresh && (
         <div
@@ -4586,19 +4698,43 @@ export default function App() {
                           })}
                         </tbody>
                       </table>
-                      <button
-                        style={{ ...styles.button, marginTop: 4, fontSize: 11, padding: '2px 6px' }}
-                        onClick={() =>
+                      {(() => {
+                        const suggeriti = incantesimiClasseLivello(scheda.classe, liv);
+                        const gia = new Set(scheda.incantesimiLista.filter((s) => s.livello === liv).map((s) => (s.nome || '').toLowerCase()));
+                        const aggiungiInc = (nome) =>
                           aggiorna({
                             incantesimiLista: [
                               ...scheda.incantesimiLista,
-                              { id: Date.now(), livello: liv, nome: 'Nuovo incantesimo', tempo: '1 Az.', gittata: '', note: '', preparato: true },
+                              { id: Date.now(), livello: liv, nome, tempo: '1 Az.', gittata: '', note: '', preparato: true },
                             ],
-                          })
-                        }
-                      >
-                        + Aggiungi {liv === 0 ? 'trucchetto' : `L${liv}`}
-                      </button>
+                          });
+                        const etichetta = `➕ Aggiungi ${liv === 0 ? 'Trucchetto' : `Incantesimo Liv. ${liv}`}`;
+                        return (
+                          <select
+                            className="add-spell"
+                            value=""
+                            style={{ ...styles.button, marginTop: 6, fontSize: 13, padding: '7px 12px', fontWeight: 600, cursor: 'pointer', maxWidth: '100%' }}
+                            onChange={(e) => {
+                              const v = e.target.value;
+                              if (!v) return;
+                              aggiungiInc(v === '__manuale__' ? 'Nuovo incantesimo' : v);
+                              e.target.value = '';
+                            }}
+                          >
+                            <option value="">{etichetta}…</option>
+                            <option value="__manuale__">✍️ Scrivi a mano</option>
+                            {suggeriti.length > 0 && (
+                              <optgroup label={`Incantesimi da ${scheda.classe}`}>
+                                {suggeriti.map((n) => (
+                                  <option key={n} value={n} disabled={gia.has(n.toLowerCase())}>
+                                    {gia.has(n.toLowerCase()) ? `✓ ${n}` : n}
+                                  </option>
+                                ))}
+                              </optgroup>
+                            )}
+                          </select>
+                        );
+                      })()}
                     </div>
                   );
                 })}
