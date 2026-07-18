@@ -1417,6 +1417,7 @@ function schedaVuota() {
     sintonia: '',
     lingue: '',
     aspetto: '',
+    trattiCaratteriali: '',
     note: '',
     // stato di gioco
     risorse: [], // { id, nome, attuali, max, reset: 'breve' | 'lungo' | '' }
@@ -1676,7 +1677,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.8';
+const APP_VERSION = '1.9.9';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1855,6 +1856,7 @@ function normalizeImported(dati) {
     sintonia: str(dati.sintonia),
     lingue: str(dati.lingue),
     aspetto: str(dati.aspetto),
+    trattiCaratteriali: str(dati.trattiCaratteriali),
     note: str(dati.note),
     risorse: Array.isArray(dati.risorse)
       ? dati.risorse
@@ -3210,13 +3212,6 @@ export default function App() {
                 title="Genera un personaggio casuale ma coerente (classe, specie, background, stat, competenze e nome)"
               >
                 🎲 PG casuale
-              </button>
-              <button
-                style={styles.button}
-                onClick={() => { nuovoPersonaggio(normalizeImported(FLYORA_JSON)); setMostraMenu(false); }}
-                title="Carica la scheda di Flyora (liv. 4)"
-              >
-                ✨ Esempio (Flyora)
               </button>
             </div>
             {erroreImport && <div style={{ color: C.red, marginTop: 10 }}>{erroreImport}</div>}
@@ -4934,10 +4929,16 @@ export default function App() {
                 placeholder="Aspetto fisico del personaggio…"
                 onChange={(v) => aggiorna({ aspetto: v })}
               />
-              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>Storia e tratti caratteriali</div>
+              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>Tratti caratteriali</div>
+              <AreaTesto
+                value={scheda.trattiCaratteriali}
+                placeholder="Ideali, legami, difetti, modi di fare… (chi è il personaggio)"
+                onChange={(v) => aggiorna({ trattiCaratteriali: v })}
+              />
+              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>Storia e appunti</div>
               <AreaTesto
                 value={scheda.note}
-                placeholder="Storia del personaggio, tratti caratteriali, alleati, appunti di sessione…"
+                placeholder="Storia del personaggio, alleati, appunti di sessione…"
                 onChange={(v) => aggiorna({ note: v })}
               />
             </Sezione>
