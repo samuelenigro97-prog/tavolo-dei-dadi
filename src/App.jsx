@@ -2337,7 +2337,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.21';
+const APP_VERSION = '1.9.22';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2359,6 +2359,11 @@ function loadState() {
           const s = { ...schedaVuota(), ...roster.personaggi[id] };
           // i dadi vita seguono sempre il livello (numero = livello, tipo dalla classe)
           s.dadiVita = esprDadiVita(s.livello, facceDadoVita(s.dadiVita));
+          // assegna un id agli incantesimi che ne fossero privi (schede legacy),
+          // così ognuno è modificabile singolarmente nel sottomenu
+          if (Array.isArray(s.incantesimiLista)) {
+            s.incantesimiLista = s.incantesimiLista.map((sp, i) => (sp && sp.id != null ? sp : { ...sp, id: Date.now() + i }));
+          }
           roster.personaggi[id] = s;
         }
         return roster;
@@ -3045,6 +3050,7 @@ export default function App() {
   const [mostraLevelUp, setMostraLevelUp] = useState(false);
   const [mostraPrivilegi, setMostraPrivilegi] = useState(false); // panoramica privilegi per livello
   const [info, setInfo] = useState(null); // nuvoletta esplicativa: { titolo, testo }
+  const [dettaglioInc, setDettaglioInc] = useState(null); // id incantesimo aperto nel sottomenu
   const [levelUpBozza, setLevelUpBozza] = useState({ metodo: 'media', hpLanciato: 0 });
   const ordineRef = useRef(ordineSezioni);
   ordineRef.current = ordineSezioni;
@@ -3821,6 +3827,73 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {dettaglioInc != null && (() => {
+        const s = scheda.incantesimiLista.find((x) => x.id === dettaglioInc);
+        if (!s) return null;
+        const upd = (patch) => aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, ...patch } : x)) });
+        const eff = spiegaIncantesimo(s.nome);
+        const campo = { ...styles.inlineInput, width: '100%', padding: '6px 8px', fontSize: 14, marginTop: 2 };
+        const etichetta = { ...styles.detail, display: 'block', marginBottom: 1, marginTop: 8, fontWeight: 600 };
+        return (
+          <div
+            style={{ position: 'fixed', inset: 0, zIndex: 1004, padding: 16, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            onClick={(e) => { if (e.target === e.currentTarget) setDettaglioInc(null); }}
+          >
+            <div style={{ ...styles.panel, maxWidth: 420, width: '100%', maxHeight: '88vh', overflowY: 'auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                <strong style={{ color: C.goldDark, fontSize: 17 }}>{s.nome || 'Incantesimo'}</strong>
+                <button style={styles.buttonMini} onClick={() => setDettaglioInc(null)} title="Chiudi">✕</button>
+              </div>
+              <div style={{ ...styles.detail, marginBottom: 4 }}>{s.livello === 0 ? 'Trucchetto' : `Incantesimo di ${s.livello}° livello`}</div>
+              {/* Effetti (spiegazione) */}
+              <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 12px', fontSize: 14, lineHeight: 1.4 }}>
+                {eff || 'Nessuna spiegazione automatica per questo incantesimo. Scrivi le note qui sotto.'}
+              </div>
+
+              <label style={etichetta}>Nome</label>
+              <input style={campo} value={s.nome} onChange={(e) => upd({ nome: e.target.value })} />
+              <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={etichetta}>Livello</label>
+                  <select style={campo} value={s.livello} onChange={(e) => upd({ livello: Number(e.target.value) })}>
+                    {Array.from({ length: 10 }, (_, i) => <option key={i} value={i}>{i === 0 ? 'Trucchetto' : `${i}° livello`}</option>)}
+                  </select>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={etichetta}>Tempo</label>
+                  <input style={campo} value={s.tempo} onChange={(e) => upd({ tempo: e.target.value })} />
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={etichetta}>Gittata</label>
+                  <input style={campo} value={s.gittata} onChange={(e) => upd({ gittata: e.target.value })} />
+                </div>
+                {s.livello > 0 && (
+                  <div style={{ flex: 1 }}>
+                    <label style={etichetta}>Preparato</label>
+                    <button
+                      style={{ ...styles.button, width: '100%', marginTop: 2, color: s.preparato !== false ? '#d4af37' : C.inkDim }}
+                      onClick={() => upd({ preparato: !(s.preparato !== false) })}
+                    >{s.preparato !== false ? '★ Preparato' : '☆ Non preparato'}</button>
+                  </div>
+                )}
+              </div>
+              <label style={etichetta}>Note</label>
+              <input style={campo} value={s.note} onChange={(e) => upd({ note: e.target.value })} placeholder="Componenti, TS, concentrazione…" />
+
+              <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+                <button
+                  style={{ ...styles.buttonDanger, flex: 1 }}
+                  onClick={() => { aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) }); setDettaglioInc(null); }}
+                >🗑 Elimina</button>
+                <button style={{ ...styles.buttonPrimary, flex: 1 }} onClick={() => setDettaglioInc(null)}>Fatto</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {caricandoCloud && (
         <div style={{
@@ -5506,33 +5579,19 @@ export default function App() {
                                   </td>
                                 )}
                                 <td style={styles.td}>
-                                  <Editable value={s.nome} width={160} onChange={(v) => aggiornaIncantesimo({ nome: v })} />
-                                  {spiegaIncantesimo(s.nome) && (
-                                    <span
-                                      style={{ cursor: 'help', color: C.goldDark, marginLeft: 4, fontSize: 12 }}
-                                      title="Cosa fa questo incantesimo?"
-                                      onClick={() => setInfo({ titolo: s.nome, testo: spiegaIncantesimo(s.nome) })}
-                                    >ⓘ</span>
-                                  )}
-                                </td>
-                                <td style={styles.td}>
-                                  <Editable value={s.tempo} width={70} onChange={(v) => aggiornaIncantesimo({ tempo: v })} />
-                                </td>
-                                <td style={styles.td}>
-                                  <Editable value={s.gittata} width={70} onChange={(v) => aggiornaIncantesimo({ gittata: v })} />
-                                </td>
-                                <td style={styles.td}>
-                                  <Editable value={s.note} width={140} onChange={(v) => aggiornaIncantesimo({ note: v })} />
-                                </td>
-                                <td style={{ ...styles.td, textAlign: 'right' }}>
                                   <button
-                                    style={styles.buttonDanger}
-                                    onClick={() =>
-                                      aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })
-                                    }
+                                    style={{ background: 'transparent', border: 'none', color: C.ink, fontWeight: 600, cursor: 'pointer', textAlign: 'left', padding: 0, fontSize: 14, textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
+                                    title="Apri: effetti e modifiche"
+                                    onClick={() => setDettaglioInc(s.id)}
                                   >
-                                    ×
+                                    {s.nome || 'Senza nome'}
                                   </button>
+                                </td>
+                                <td style={{ ...styles.td, color: C.inkDim }}>{s.tempo}</td>
+                                <td style={{ ...styles.td, color: C.inkDim }}>{s.gittata}</td>
+                                <td style={{ ...styles.td, color: C.inkDim }}>{s.note}</td>
+                                <td style={{ ...styles.td, textAlign: 'right' }}>
+                                  <button style={styles.buttonMini} title="Apri i dettagli" onClick={() => setDettaglioInc(s.id)}>⋯</button>
                                 </td>
                               </tr>
                             );
