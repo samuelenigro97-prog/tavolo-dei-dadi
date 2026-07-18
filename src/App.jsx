@@ -778,8 +778,8 @@ const styles = {
   },
   header: {
     maxWidth: 1080,
-    margin: '0 auto 26px auto',
-    padding: '12px 0 16px',
+    margin: '0 auto 6px auto',
+    padding: '12px 0 8px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -1684,7 +1684,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.13';
+const APP_VERSION = '1.9.14';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
