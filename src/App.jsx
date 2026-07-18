@@ -533,6 +533,60 @@ function incantesimiClasseLivello(classe, livello) {
   return (k && INCANTESIMI_CLASSE[k] && INCANTESIMI_CLASSE[k][livello]) || [];
 }
 
+// Numero di TRUCCHETTI conosciuti per classe (soglie ai livelli 1 / 4 / 10).
+// Le classi che non lanciano trucchetti non compaiono (nessun limite).
+const TRUCCHETTI_NOTI = {
+  bardo: [2, 3, 4], chierico: [3, 4, 5], druido: [2, 3, 4],
+  mago: [3, 4, 5], stregone: [4, 5, 6], warlock: [2, 3, 4],
+};
+/** Massimo di trucchetti conosciuti per classe e livello (null = nessun limite). */
+function trucchettiMax(classe, livello) {
+  const k = chiaveClasse(classe);
+  const base = TRUCCHETTI_NOTI[k];
+  if (!base) return null;
+  const lv = Math.max(1, Math.floor(livello) || 1);
+  return lv >= 10 ? base[2] : lv >= 4 ? base[1] : base[0];
+}
+// Incantesimi (livello 1+) noti/preparati per classe e livello (indice 0 = liv.1).
+// 2024: quasi tutte le classi "preparano". 2014: i conoscitori hanno tabelle fisse,
+// i preparatori usano mod. da incantatore + livello. Valori indicativi, modificabili.
+const INC_MAX_2024 = {
+  bardo:    [4, 5, 6, 7, 9, 10, 11, 12, 14, 15, 16, 16, 17, 17, 18, 19, 20, 21, 22, 22],
+  chierico: [4, 5, 6, 7, 9, 10, 11, 12, 14, 15, 16, 16, 17, 17, 18, 20, 21, 22, 23, 24],
+  druido:   [4, 5, 6, 7, 9, 10, 11, 12, 14, 15, 16, 16, 17, 18, 19, 20, 22, 23, 24, 25],
+  mago:     [4, 5, 6, 7, 9, 10, 11, 12, 14, 15, 16, 16, 17, 18, 19, 21, 22, 23, 24, 25],
+  stregone: [2, 4, 6, 7, 9, 10, 11, 12, 14, 15, 16, 16, 17, 17, 18, 19, 20, 21, 22, 22],
+  warlock:  [2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15],
+  paladino: [2, 3, 4, 5, 6, 6, 7, 7, 8, 9, 10, 10, 11, 11, 12, 12, 14, 14, 15, 15],
+  ranger:   [2, 3, 4, 5, 6, 6, 7, 7, 9, 9, 10, 10, 11, 11, 12, 12, 14, 14, 15, 15],
+};
+const INC_MAX_2014_NOTI = {
+  stregone: [2, 3, 4, 5, 6, 7, 7, 8, 9, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15],
+  bardo:    [4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 15, 16, 18, 19, 19, 20, 22, 22, 22],
+  warlock:  [2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15],
+  ranger:   [0, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11],
+};
+/**
+ * Massimo di incantesimi (livello 1+) per classe/livello/versione (o null se non
+ * incantatore). È un default modificabile a mano dall'utente.
+ */
+function incantesimiMaxAuto(scheda, versione = '2024') {
+  const k = chiaveClasse(scheda?.classe);
+  if (!k) return null;
+  const idx = Math.min(19, Math.max(1, Math.floor(scheda.livello) || 1) - 1);
+  const carKey = scheda.incantatore?.caratteristica;
+  const mod = carKey ? modificatore(scheda.caratteristiche?.[carKey]) : 0;
+  const lv = idx + 1;
+  if (versione === '2014') {
+    if (['chierico', 'druido', 'mago'].includes(k)) return Math.max(1, mod + lv);
+    if (k === 'paladino') return Math.max(1, mod + Math.floor(lv / 2));
+    const noti = INC_MAX_2014_NOTI[k];
+    return noti ? noti[idx] : null;
+  }
+  const t = INC_MAX_2024[k];
+  return t ? t[idx] : null;
+}
+
 // Livelli in cui si sceglie o si potenzia la sottoclasse (2024).
 const SOTTOCLASSE_LIV = {
   barbaro: [3, 6, 10, 14], bardo: [3, 6, 14], chierico: [3, 6, 17],
@@ -1417,6 +1471,8 @@ function schedaVuota() {
     ),
     // trucchetti (livello 0) e incantesimi preparati
     incantesimiLista: [],
+    maxTrucchetti: 0, // 0 = automatico (dalla classe); >0 = massimo forzato a mano
+    maxIncantesimi: 0,
     privilegi: '',
     trattiSpecie: '',
     talenti: '',
@@ -1684,7 +1740,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.14';
+const APP_VERSION = '1.9.15';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1838,6 +1894,8 @@ function normalizeImported(dati) {
     specie: str(dati.specie),
     allineamento: str(dati.allineamento),
     versione: dati.versione === '2014' ? '2014' : '2024',
+    maxTrucchetti: num(dati.maxTrucchetti, 0),
+    maxIncantesimi: num(dati.maxIncantesimi, 0),
     livello: num(dati.livello, base.livello),
     pe: num(dati.pe, 0),
     ca: num(dati.ca, base.ca),
@@ -3127,6 +3185,20 @@ export default function App() {
   const modIncantatore = scheda.incantatore.caratteristica
     ? modificatore(scheda.caratteristiche[scheda.incantatore.caratteristica])
     : null;
+
+  // Limiti di trucchetti/incantesimi (come il lock delle armature): quando sei al
+  // massimo per la tua classe/livello, i pulsanti "Aggiungi" si bloccano.
+  const nTrucchetti = scheda.incantesimiLista.filter((s) => s.livello === 0).length;
+  const nIncantesimi = scheda.incantesimiLista.filter((s) => s.livello > 0).length;
+  // base = override manuale (>0) oppure automatico da classe/livello/versione
+  const baseTrucchetti = (scheda.maxTrucchetti > 0) ? scheda.maxTrucchetti : trucchettiMax(scheda.classe, scheda.livello);
+  const baseIncantesimi = (scheda.maxIncantesimi > 0) ? scheda.maxIncantesimi : incantesimiMaxAuto(scheda, versione);
+  // "pieno" (e quindi blocco) quando sei al limite base; il massimo mostrato non
+  // scende mai sotto quanti ne hai già, così le schede esistenti non risultano "oltre".
+  const trucchettiPieno = baseTrucchetti != null && nTrucchetti >= baseTrucchetti;
+  const incantesimiPieno = baseIncantesimi != null && nIncantesimi >= baseIncantesimi;
+  const maxTrucchetti = baseTrucchetti == null ? null : Math.max(baseTrucchetti, nTrucchetti);
+  const maxIncantesimi = baseIncantesimi == null ? null : Math.max(baseIncantesimi, nIncantesimi);
 
   return (
     <div style={styles.app}>
@@ -4690,7 +4762,18 @@ export default function App() {
                       placeholder="🔍 Cerca incantesimo…"
                       style={{ ...styles.inlineInput, padding: '5px 8px', width: 200 }}
                     />
-                    <span style={styles.detail}>★ = preparato · click sulla stella per (dis)preparare · <strong>{preparati}</strong> preparati</span>
+                    <span style={styles.detail}>★ = preparato · <strong>{preparati}</strong> preparati</span>
+                    {/* Conteggi con massimo modificabile: al limite si bloccano gli "Aggiungi" */}
+                    {maxTrucchetti != null && (
+                      <span style={{ ...styles.detail, color: trucchettiPieno ? C.goldDark : C.inkDim, fontWeight: trucchettiPieno ? 700 : 400 }} title="Trucchetti conosciuti / massimo (modificabile). Al massimo il tasto Aggiungi si blocca.">
+                        Trucchetti <strong>{nTrucchetti}</strong>/<Editable value={maxTrucchetti} tipo="numero" width={24} onChange={(v) => aggiorna({ maxTrucchetti: Math.max(0, v) })} />
+                      </span>
+                    )}
+                    {maxIncantesimi != null && (
+                      <span style={{ ...styles.detail, color: incantesimiPieno ? C.goldDark : C.inkDim, fontWeight: incantesimiPieno ? 700 : 400 }} title="Incantesimi (liv. 1+) noti o preparati / massimo (modificabile). Al massimo il tasto Aggiungi si blocca.">
+                        Incantesimi <strong>{nIncantesimi}</strong>/<Editable value={maxIncantesimi} tipo="numero" width={24} onChange={(v) => aggiorna({ maxIncantesimi: Math.max(0, v) })} />
+                      </span>
+                    )}
                   </div>
                 );
               })()}
@@ -4775,12 +4858,18 @@ export default function App() {
                               { id: Date.now(), livello: liv, nome, tempo: '1 Az.', gittata: '', note: '', preparato: true },
                             ],
                           });
-                        const etichetta = `➕ Aggiungi ${liv === 0 ? 'Trucchetto' : `Incantesimo Liv. ${liv}`}`;
+                        // Lock come per le armature: al massimo per classe/livello si blocca.
+                        const bloccato = liv === 0 ? trucchettiPieno : incantesimiPieno;
+                        const etichetta = bloccato
+                          ? `🔒 Massimo ${liv === 0 ? 'trucchetti' : 'incantesimi'} raggiunto`
+                          : `➕ Aggiungi ${liv === 0 ? 'Trucchetto' : `Incantesimo Liv. ${liv}`}`;
                         return (
                           <select
                             className="add-spell"
                             value=""
-                            style={{ ...styles.button, marginTop: 6, fontSize: 13, padding: '7px 12px', fontWeight: 600, cursor: 'pointer', maxWidth: '100%' }}
+                            disabled={bloccato}
+                            title={bloccato ? 'Hai raggiunto il massimo per la tua classe a questo livello. Alza il numero accanto ai conteggi se ti serve.' : undefined}
+                            style={{ ...styles.button, marginTop: 6, fontSize: 13, padding: '7px 12px', fontWeight: 600, cursor: bloccato ? 'not-allowed' : 'pointer', opacity: bloccato ? 0.55 : 1, maxWidth: '100%' }}
                             onChange={(e) => {
                               const v = e.target.value;
                               if (!v) return;
