@@ -650,7 +650,7 @@ const SFINIMENTO_2014 = [
 
 // Ordine di default delle sezioni collassabili (riordinabili via drag).
 // Sezioni riordinabili via drag. 'import' NON è qui: resta sempre fissa in fondo.
-const ORDINE_SEZIONI_DEFAULT = ['risorse', 'privilegi', 'trattiSpecie', 'talenti', 'addestramento', 'equipaggiamento', 'aspetto'];
+const ORDINE_SEZIONI_DEFAULT = ['privilegi', 'trattiSpecie', 'talenti', 'addestramento', 'equipaggiamento', 'aspetto'];
 
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 function coloreClasse(classe) {
@@ -1677,7 +1677,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.9';
+const APP_VERSION = '1.9.10';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4402,20 +4402,73 @@ export default function App() {
                 </div>
               );
             })}
+
+            {/* Risorse di classe — compatte, sotto le caratteristiche (Carisma) */}
+            <Sezione titolo="Risorse di classe" {...apertoProps('risorse')}>
+              {scheda.risorse.length === 0 && (
+                <p style={{ ...styles.detail, marginTop: 0, fontSize: 11 }}>
+                  Nessuna risorsa. Aggiungi Ki, punti stregoneria, ira, ispirazione bardica, usi dei privilegi…
+                </p>
+              )}
+              {scheda.risorse.map((r) => {
+                const modifica = (patch) =>
+                  aggiorna({ risorse: scheda.risorse.map((x) => (x.id === r.id ? { ...x, ...patch } : x)) });
+                return (
+                  <div key={r.id} style={{ marginBottom: 8, fontSize: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
+                      <Editable value={r.nome} onChange={(v) => modifica({ nome: v })} width={110} title="Nome della risorsa" />
+                      <button
+                        style={{ ...styles.buttonMini, padding: '0 6px', color: C.red }}
+                        title="Rimuovi la risorsa"
+                        onClick={() => aggiorna({ risorse: scheda.risorse.filter((x) => x.id !== r.id) })}
+                      >✕</button>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 3, flexWrap: 'wrap' }}>
+                      <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title="Spendi" onClick={() => modifica({ attuali: Math.max(0, r.attuali - 1) })}>−</button>
+                      <strong style={{ minWidth: 16, textAlign: 'center', display: 'inline-block', color: r.attuali === 0 ? C.inkDim : C.ink }}>{r.attuali}</strong>
+                      <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title="Recupera" onClick={() => modifica({ attuali: Math.min(r.max, r.attuali + 1) })}>+</button>
+                      <span style={styles.detail}>/ <Editable value={r.max} tipo="numero" width={30} onChange={(v) => modifica({ max: Math.max(0, v), attuali: Math.min(Math.max(0, v), r.attuali) })} /></span>
+                      <select
+                        style={{ ...styles.inlineInput, fontSize: 11, padding: '1px 3px' }}
+                        value={r.reset}
+                        onChange={(e) => modifica({ reset: e.target.value })}
+                        title="Quando si ricarica"
+                      >
+                        <option value="">manuale</option>
+                        <option value="breve">r. breve</option>
+                        <option value="lungo">r. lungo</option>
+                      </select>
+                    </div>
+                  </div>
+                );
+              })}
+              <button
+                style={{ ...styles.buttonMini, marginTop: 2 }}
+                onClick={() =>
+                  aggiorna({
+                    risorse: [...scheda.risorse, { id: Date.now(), nome: 'Nuova risorsa', attuali: 0, max: 0, reset: 'lungo' }],
+                  })
+                }
+              >
+                + Aggiungi risorsa
+              </button>
+            </Sezione>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {/* Armi e attacchi — sezione collassabile */}
-            <Sezione titolo="Azioni di combattimento" style={{ order: -2 }} {...apertoProps('attacchi')}>
+            <Sezione titolo="Combattimento" style={{ order: -2 }} {...apertoProps('attacchi')}>
               <div style={{ overflowX: 'auto' }}>
                 {['Azione', 'Bonus', 'Reazione'].map((cat) => {
                   const arr = scheda.attacchi.filter((a) => (a.categoria || 'Azione') === cat);
                   if (arr.length === 0 && cat !== 'Azione') return null;
                   return (
                     <div key={cat} style={{ marginBottom: 16 }}>
-                      <h3 style={{ fontSize: 13, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 1, borderBottom: `1px solid ${C.border}`, paddingBottom: 4, marginBottom: 8 }}>
-                        {cat === 'Bonus' ? 'Azioni Bonus' : cat === 'Reazione' ? 'Reazioni' : 'Azioni'}
-                      </h3>
+                      {cat !== 'Azione' && (
+                        <h3 style={{ fontSize: 13, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 1, borderBottom: `1px solid ${C.border}`, paddingBottom: 4, marginBottom: 8 }}>
+                          {cat === 'Bonus' ? 'Azioni Bonus' : 'Reazioni'}
+                        </h3>
+                      )}
                       <table style={styles.table}>
                         <thead>
                           <tr>
@@ -4740,55 +4793,6 @@ export default function App() {
 
         {/* Sezioni descrittive a piena larghezza: riempiono lo spazio sotto le due colonne */}
         <div style={{ display: 'flex', flexDirection: 'column', marginTop: 10 }}>
-            {/* Risorse di classe: contatori con reset a riposo breve/lungo */}
-            <Sezione titolo="Risorse di classe" {...propsSez('risorse')} {...apertoProps('risorse')}>
-              {scheda.risorse.length === 0 && (
-                <p style={{ ...styles.detail, marginTop: 0 }}>
-                  Nessuna risorsa. Aggiungine una per tracciare Ki, punti stregoneria, ira, ispirazione bardica, usi dei privilegi…
-                </p>
-              )}
-              {scheda.risorse.map((r) => {
-                const modifica = (patch) =>
-                  aggiorna({ risorse: scheda.risorse.map((x) => (x.id === r.id ? { ...x, ...patch } : x)) });
-                return (
-                  <div key={r.id} style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 6 }}>
-                    <Editable value={r.nome} onChange={(v) => modifica({ nome: v })} width={150} title="Nome della risorsa" />
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                      <button style={{ ...styles.buttonMini, padding: '1px 8px' }} title="Spendi" onClick={() => modifica({ attuali: Math.max(0, r.attuali - 1) })}>−</button>
-                      <strong style={{ minWidth: 18, textAlign: 'center', display: 'inline-block', color: r.attuali === 0 ? C.inkDim : C.ink }}>{r.attuali}</strong>
-                      <button style={{ ...styles.buttonMini, padding: '1px 8px' }} title="Recupera" onClick={() => modifica({ attuali: Math.min(r.max, r.attuali + 1) })}>+</button>
-                      <span style={styles.detail}>/ <Editable value={r.max} tipo="numero" width={34} onChange={(v) => modifica({ max: Math.max(0, v), attuali: Math.min(Math.max(0, v), r.attuali) })} /></span>
-                    </span>
-                    <select
-                      style={{ ...styles.inlineInput, fontSize: 12, padding: '2px 4px' }}
-                      value={r.reset}
-                      onChange={(e) => modifica({ reset: e.target.value })}
-                      title="Quando si ricarica"
-                    >
-                      <option value="">reset manuale</option>
-                      <option value="breve">riposo breve</option>
-                      <option value="lungo">riposo lungo</option>
-                    </select>
-                    <button
-                      style={{ ...styles.buttonMini, padding: '1px 8px', color: C.red }}
-                      title="Rimuovi la risorsa"
-                      onClick={() => aggiorna({ risorse: scheda.risorse.filter((x) => x.id !== r.id) })}
-                    >✕</button>
-                  </div>
-                );
-              })}
-              <button
-                style={{ ...styles.buttonMini, marginTop: 4 }}
-                onClick={() =>
-                  aggiorna({
-                    risorse: [...scheda.risorse, { id: Date.now(), nome: 'Nuova risorsa', attuali: 0, max: 0, reset: 'lungo' }],
-                  })
-                }
-              >
-                + Aggiungi risorsa
-              </button>
-            </Sezione>
-
             {/* Privilegi di classe, tratti della specie, talenti — collassabili */}
             <Sezione titolo="Privilegi di classe" {...propsSez('privilegi')} {...apertoProps('privilegi')}>
               <AreaTesto
