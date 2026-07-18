@@ -1607,6 +1607,7 @@ function schedaVuota() {
     maxTrucchetti: 0, // 0 = automatico (dalla classe); >0 = massimo forzato a mano
     maxIncantesimi: 0,
     privilegi: '',
+    privilegiSottoclasse: '',
     trattiSpecie: '',
     talenti: '',
     equipaggiamento: '',
@@ -1873,7 +1874,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.16';
+const APP_VERSION = '1.9.17';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2049,6 +2050,7 @@ function normalizeImported(dati) {
     slotIncantesimo: slot,
     incantesimiLista,
     privilegi: str(dati.privilegi),
+    privilegiSottoclasse: str(dati.privilegiSottoclasse),
     trattiSpecie: str(dati.trattiSpecie),
     talenti: str(dati.talenti),
     equipaggiamento: str(dati.equipaggiamento),
@@ -2578,6 +2580,7 @@ export default function App() {
 
   // Level Up
   const [mostraLevelUp, setMostraLevelUp] = useState(false);
+  const [mostraPrivilegi, setMostraPrivilegi] = useState(false); // panoramica privilegi per livello
   const [levelUpBozza, setLevelUpBozza] = useState({ metodo: 'media', hpLanciato: 0 });
   const ordineRef = useRef(ordineSezioni);
   ordineRef.current = ordineSezioni;
@@ -3520,6 +3523,50 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {mostraPrivilegi && (() => {
+        const liv = Math.max(1, Math.min(20, scheda.livello || 1));
+        const subLiv = sottoclasseLivPer(versione)[chiaveClasse(scheda.classe)] || [];
+        // Costruisce la lista ordinata dei privilegi di classe per livello 1→20.
+        const righe = [];
+        for (let L = 1; L <= 20; L++) {
+          const feat = L === 1 ? privilegiClasseL1(scheda.classe, versione) : privilegiClasseLivello(scheda.classe, L, versione);
+          const asi = asiAlLivello(scheda.classe, L);
+          const sub = subLiv.includes(L);
+          if (feat || asi || sub) righe.push({ L, feat, asi, sub, futuro: L > liv });
+        }
+        return (
+          <div
+            style={{ position: 'fixed', inset: 0, zIndex: 1003, padding: 16, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            onClick={(e) => { if (e.target === e.currentTarget) setMostraPrivilegi(false); }}
+          >
+            <div style={{ ...styles.panel, maxWidth: 520, width: '100%', maxHeight: '88vh', overflowY: 'auto' }}>
+              <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 4 }}>📖 Panoramica privilegi</h1>
+              <div style={{ textAlign: 'center', ...styles.detail, marginBottom: 12 }}>
+                {scheda.classe || '—'}{scheda.sottoclasse ? ` · ${scheda.sottoclasse}` : ''} · Liv. {liv} · {versione === '2024' ? 'D&D 5.5' : 'D&D 5.0'}
+              </div>
+              {righe.length === 0 && <p style={styles.detail}>Nessun privilegio da mostrare per questa classe.</p>}
+              {righe.map(({ L, feat, asi, sub, futuro }) => (
+                <div key={L} style={{ display: 'flex', gap: 10, padding: '6px 0', borderBottom: `1px solid ${C.border}`, opacity: futuro ? 0.5 : 1 }}>
+                  <div style={{ flexShrink: 0, width: 44, fontWeight: 'bold', color: futuro ? C.inkDim : C.goldDark }}>
+                    Liv {L}
+                  </div>
+                  <div style={{ flex: 1, fontSize: 13 }}>
+                    {feat && feat.split('\n').map((r, i) => <div key={i}>• {r}</div>)}
+                    {sub && <div style={{ color: C.green }}>🌟 Privilegio di sottoclasse{scheda.sottoclasse ? ` (${scheda.sottoclasse})` : ''}</div>}
+                    {asi && <div style={{ color: C.inkDim }}>🎯 Aumento di Caratteristica o Talento</div>}
+                    {futuro && <span style={{ ...styles.detail, fontStyle: 'italic' }}>— non ancora raggiunto</span>}
+                  </div>
+                </div>
+              ))}
+              <p style={{ ...styles.detail, marginTop: 10, fontSize: 11 }}>
+                🌟 = la tua sottoclasse guadagna un privilegio (scrivine il testo nella sezione «Privilegi di sottoclasse»). I nomi sono riassunti indicativi.
+              </p>
+              <button style={{ ...styles.button, width: '100%', marginTop: 6 }} onClick={() => setMostraPrivilegi(false)}>Chiudi</button>
+            </div>
+          </div>
+        );
+      })()}
 
       {mostraLevelUp && (() => {
         // --- Anteprima di TUTTO ciò che cambia salendo di livello ---
@@ -5036,10 +5083,25 @@ export default function App() {
         <div style={{ display: 'flex', flexDirection: 'column', marginTop: 10 }}>
             {/* Privilegi di classe, tratti della specie, talenti — collassabili */}
             <Sezione titolo="Privilegi di classe" {...propsSez('privilegi')} {...apertoProps('privilegi')}>
+              <button
+                style={{ ...styles.button, marginBottom: 8, fontSize: 12 }}
+                onClick={() => setMostraPrivilegi(true)}
+                title="Panoramica ordinata dei privilegi di classe e sottoclasse per livello"
+              >
+                📖 Panoramica privilegi per livello
+              </button>
               <AreaTesto
                 value={scheda.privilegi}
                 placeholder="Es. Incanalare divinità, Recupero arcano, Attacco furtivo…"
                 onChange={(v) => aggiorna({ privilegi: v })}
+              />
+            </Sezione>
+
+            <Sezione titolo="Privilegi di sottoclasse" {...apertoProps('privilegiSottoclasse')}>
+              <AreaTesto
+                value={scheda.privilegiSottoclasse}
+                placeholder={`Privilegi della sottoclasse${scheda.sottoclasse ? ` (${scheda.sottoclasse})` : ''}: scrivili qui per tenerli separati dai privilegi di classe.`}
+                onChange={(v) => aggiorna({ privilegiSottoclasse: v })}
               />
             </Sezione>
 
