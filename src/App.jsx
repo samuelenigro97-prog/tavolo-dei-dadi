@@ -1566,7 +1566,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.3';
+const APP_VERSION = '1.9.4';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4239,9 +4239,8 @@ export default function App() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {/* Armi e attacchi */}
-            <section style={{ ...styles.panel, order: -2 }}>
-              <h2 style={styles.panelTitle}>Azioni di combattimento</h2>
+            {/* Armi e attacchi — sezione collassabile */}
+            <Sezione titolo="Azioni di combattimento" style={{ order: -2 }}>
               <div style={{ overflowX: 'auto' }}>
                 {['Azione', 'Bonus', 'Reazione'].map((cat) => {
                   const arr = scheda.attacchi.filter((a) => (a.categoria || 'Azione') === cat);
@@ -4338,11 +4337,10 @@ export default function App() {
                   Doppio click sul nome o sul bonus: tiro per colpire · sul danno: solo danni.
                 </span>
               </div>
-            </section>
+            </Sezione>
 
-            {/* Incantesimi */}
-            <section style={{ ...styles.panel, order: -1 }}>
-              <h2 style={styles.panelTitle}>Incantesimi</h2>
+            {/* Incantesimi — sezione collassabile */}
+            <Sezione titolo="Incantesimi" style={{ order: -1 }}>
               <div style={{ display: 'flex', gap: 12, alignItems: 'stretch', flexWrap: 'wrap', marginBottom: 12 }}>
                 <label style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                   Caratteristica da incantatore:{' '}
@@ -4546,7 +4544,7 @@ export default function App() {
                   );
                 })}
               </div>
-            </section>
+            </Sezione>
           </div>
         </div>
 
