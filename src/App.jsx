@@ -1389,6 +1389,16 @@ function caTotale(scheda) {
   return ca + (a.scudo ? 2 : 0) + (Number(a.bonus) || 0);
 }
 
+/**
+ * Sei competente per indossare questo tipo di armatura? 'manuale' e 'nessuna'
+ * sono sempre concessi; leggera/media/pesante richiedono la competenza segnata
+ * in addestramento (che deriva dalla classe, o si attiva a mano per talenti).
+ */
+function competenteInArmatura(scheda, tipo) {
+  if (tipo === 'manuale' || tipo === 'nessuna') return true;
+  return !!scheda.addestramento?.armature?.[tipo];
+}
+
 /** Bonus di un'abilità: mod caratteristica + competenza (1x o 2x per maestria). */
 function bonusAbilita(scheda, abilita) {
   const def = ABILITA.find((a) => a.key === abilita);
@@ -1575,7 +1585,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.5';
+const APP_VERSION = '1.9.6';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3920,25 +3930,47 @@ export default function App() {
                 value={scheda.armatura.tipo}
                 onChange={(e) => {
                   const tipo = e.target.value;
+                  // Blocco: non puoi indossare armature per cui non sei competente.
+                  if (!competenteInArmatura(scheda, tipo)) return;
                   // Passando a una categoria con armatura, parti da un valore base
                   // sensato così la CA cambia subito (poi si può correggere a mano).
                   const base = BASE_ARMATURA_DEFAULT[tipo] ?? scheda.armatura.base;
                   aggiorna({ armatura: { ...scheda.armatura, tipo, base } });
                 }}
               >
-                {TIPI_ARMATURA.map((t) => (
-                  <option key={t.key} value={t.key}>{t.label}</option>
-                ))}
+                {TIPI_ARMATURA.map((t) => {
+                  const bloccato = !competenteInArmatura(scheda, t.key);
+                  return <option key={t.key} value={t.key} disabled={bloccato}>{bloccato ? '🔒 ' : ''}{t.label}</option>;
+                })}
               </select>
               <div style={{ fontSize: 10, color: C.inkDim, display: 'flex', gap: 5, alignItems: 'center', justifyContent: 'center', marginTop: 'auto', paddingTop: 6, flexWrap: 'wrap' }}>
                 {(scheda.armatura.tipo === 'leggera' || scheda.armatura.tipo === 'media' || scheda.armatura.tipo === 'pesante') && (
                   <span title={`CA base dell'armatura. Esempi: ${ESEMPI_ARMATURA[scheda.armatura.tipo]}`}>base <Editable value={scheda.armatura.base} tipo="numero" width={24} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, base: Math.max(0, v) } })} /></span>
                 )}
-                <span className="tirabile" style={{ cursor: 'pointer' }} title="Scudo: +2 alla CA" onClick={() => aggiorna({ armatura: { ...scheda.armatura, scudo: !scheda.armatura.scudo } })}>
-                  <span style={styles.pip(scheda.armatura.scudo, C.goldDark)} /> <span style={{ opacity: scheda.armatura.scudo ? 1 : 0.4 }}>🛡️</span>
-                </span>
+                {(() => {
+                  const scudiOk = !!scheda.addestramento?.armature?.scudi;
+                  return (
+                    <span
+                      className="tirabile"
+                      style={{ cursor: scudiOk || scheda.armatura.scudo ? 'pointer' : 'not-allowed', opacity: scudiOk || scheda.armatura.scudo ? 1 : 0.5 }}
+                      title={scudiOk ? 'Scudo: +2 alla CA' : 'Non sei competente con gli scudi (attivala in “Addestramento…”)'}
+                      onClick={() => {
+                        // Blocco: non puoi imbracciare uno scudo senza competenza (ma puoi sempre toglierlo).
+                        if (!scudiOk && !scheda.armatura.scudo) return;
+                        aggiorna({ armatura: { ...scheda.armatura, scudo: !scheda.armatura.scudo } });
+                      }}
+                    >
+                      <span style={styles.pip(scheda.armatura.scudo, C.goldDark)} /> <span style={{ opacity: scheda.armatura.scudo ? 1 : 0.4 }}>{scudiOk ? '🛡️' : '🔒'}</span>
+                    </span>
+                  );
+                })()}
                 <span>+ <Editable value={scheda.armatura.bonus} tipo="numero" width={22} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, bonus: v } })} /></span>
               </div>
+              {(!competenteInArmatura(scheda, scheda.armatura.tipo) || (scheda.armatura.scudo && !scheda.addestramento?.armature?.scudi)) && (
+                <div style={{ fontSize: 9, color: C.red, marginTop: 3, lineHeight: 1.2 }} title="Senza competenza: svantaggio a prove, TS e attacchi basati su Forza e Destrezza, e non puoi lanciare incantesimi.">
+                  ⚠️ Non competente{!competenteInArmatura(scheda, scheda.armatura.tipo) ? ` (${scheda.armatura.tipo})` : ''}{scheda.armatura.scudo && !scheda.addestramento?.armature?.scudi ? ' (scudo)' : ''}
+                </div>
+              )}
             </div>
 
             {/* Punti Ferita — occupa 2 colonne */}
