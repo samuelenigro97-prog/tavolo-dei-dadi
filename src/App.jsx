@@ -1127,8 +1127,8 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
   flex: 1 1 auto;
   text-align: center;
   font-weight: 800;
-  /* logo colorato: sfumatura con i colori dei dadi/classi, ritagliata sul testo */
-  background: linear-gradient(90deg, #c0392b 0%, #e0521c 18%, #d6a90f 36%, #3f9a3a 54%, #12a08e 68%, #1f74d4 84%, #7b30b0 100%);
+  /* logo colorato: stessa sequenza di colori dei dadi (d4→d20), ritagliata sul testo */
+  background: linear-gradient(90deg, ${COLORE_DADO[4]} 0%, ${COLORE_DADO[6]} 20%, ${COLORE_DADO[8]} 40%, ${COLORE_DADO[10]} 60%, ${COLORE_DADO[12]} 80%, ${COLORE_DADO[20]} 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1677,7 +1677,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.10';
+const APP_VERSION = '1.9.11';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
