@@ -1461,6 +1461,168 @@ const SPIEG_ABILITA = {
   sopravvivenza: 'Seguire tracce, orientarsi, cacciare, prevedere il clima ed evitare pericoli naturali. (Saggezza)',
   storia: 'Conoscenze su eventi passati, regni, guerre, personaggi e civiltà. (Intelligenza)',
 };
+// Spiegazioni brevi dei privilegi di classe/sottoclasse (per la nuvoletta nella
+// Panoramica). Le chiavi combaciano col nome "base" (senza parentesi né "dN").
+const SPIEG_PRIVILEGI = {
+  'Lancio di incantesimi': 'Puoi lanciare incantesimi della tua classe, usando la caratteristica da incantatore per CD e attacchi.',
+  'Maestria nelle armi': 'Applichi una proprietà di maestria (es. Sanguinare, Spingere, Rallentare) alle armi in cui sei competente. (2024)',
+  'Stile di combattimento': 'Scegli uno stile (Duellare, Tiro, Difesa, ecc.) che ti dà un bonus permanente in combattimento.',
+  'Attacco extra': "Quando compi l'azione di Attacco, puoi attaccare due volte invece di una.",
+  'Due attacchi extra': "Con l'azione di Attacco compi tre attacchi in totale.",
+  'Tre attacchi extra': "Con l'azione di Attacco compi quattro attacchi in totale.",
+  'Difesa senza armatura': "Se non indossi armatura, la tua CA usa un modificatore di caratteristica al posto dell'armatura.",
+  // Barbaro
+  'Ira': 'Entri in Ira: bonus ai danni in mischia, vantaggio alle prove di Forza e resistenza a contundenti/perforanti/taglienti.',
+  'Attacco irruento': 'Attacchi con vantaggio, ma i nemici hanno vantaggio contro di te fino al tuo prossimo turno.',
+  'Percezione del pericolo': 'Vantaggio ai TS su Destrezza contro effetti che puoi vedere (trappole, incantesimi).',
+  'Movimento veloce': 'La tua velocità aumenta di 3 metri quando non indossi armatura pesante.',
+  'Istinto ferino': "Vantaggio ai tiri d'iniziativa.",
+  'Ira instancabile': "Recuperi/mantieni l'Ira più facilmente quando ne hai bisogno. (2024)",
+  'Critico brutale': 'Sui colpi critici in mischia tiri dadi di danno aggiuntivi.',
+  'Ira implacabile': "Se scenderesti a 0 PF durante l'Ira, con un TS resti a 1 PF.",
+  'Ira persistente': "La tua Ira non termina anticipatamente per mancanza di attacchi o perché sei incapacitato.",
+  'Forza indomabile': 'Se una prova di Forza dà meno del tuo punteggio di Forza, usi il punteggio.',
+  'Campione primordiale': 'Forza e Costituzione aumentano fino a un massimo più alto: il culmine del barbaro.',
+  // Bardo
+  'Ispirazione bardica': 'Come azione bonus dai a un alleato un dado da aggiungere a una prova, un attacco o un TS.',
+  'Factotum': 'Aggiungi metà del bonus di competenza alle prove in cui non sei competente.',
+  'Canzone di riposo': 'Durante un riposo breve tu e gli alleati recuperate PF extra grazie alla tua musica.',
+  'Competenza': 'Raddoppi il bonus di competenza in alcune abilità scelte (maestria).',
+  "Fonte d'ispirazione": 'Recuperi gli usi di Ispirazione bardica dopo un riposo breve, non solo lungo.',
+  'Segreti magici': 'Impari incantesimi da qualsiasi lista di classe.',
+  'Ispirazione superiore': "All'inizio del combattimento recuperi usi di Ispirazione bardica se ne hai pochi.",
+  'Parole di creazione': 'Padroneggi due potenti incantesimi finali del bardo.',
+  'Controincantesimo': 'Con la musica disturbi incantesimi che affascinano o spaventano. (2014)',
+  // Chierico
+  'Ordine divino': 'Scegli un ruolo (Protettore o Taumaturgo) che dà competenze o un trucchetto potenziato. (2024)',
+  'Incanalare divinità': 'Canalizzi energia divina per effetti come Scacciare non morti o poteri del dominio.',
+  'Distruggere non morti': 'Quando Scacci i non morti, quelli di grado basso vengono distrutti subito.',
+  'Colpo benedetto': 'Aggiungi danni radiosi ai tuoi attacchi o potenzi i trucchetti. (2024)',
+  'Colpo benedetto migliorato': 'La versione potenziata di Colpo benedetto, con più danni. (2024)',
+  'Intervento divino': 'Preghi la tua divinità perché intervenga direttamente in tuo aiuto.',
+  'Dominio divino': 'La tua sottoclasse: il dominio della divinità, con incantesimi e poteri. (2014)',
+  // Druido
+  'Ordine primordiale': "Scegli un'inclinazione (Mago o Guardiano) che dà un beneficio. (2024)",
+  'Linguaggio druidico': 'Conosci il linguaggio segreto dei druidi.',
+  'Druidico': 'Conosci il linguaggio segreto dei druidi.',
+  'Forma selvatica': 'Ti trasformi in una bestia, assumendone le statistiche di combattimento.',
+  'Forma selvatica migliorata': 'Puoi assumere forme di bestie più potenti (grado di sfida più alto).',
+  'Compagno selvatico': 'Evochi uno spirito bestiale che ti assiste (come Trova Famiglio). (2024)',
+  'Furia elementale': 'I tuoi trucchetti o la forma selvatica infliggono danni elementali extra. (2024)',
+  'Incantesimi nella forma selvatica': 'Puoi lanciare incantesimi anche in forma selvatica.',
+  'Incantesimi bestiali': 'Puoi lanciare incantesimi mentre sei in Forma Selvatica. (2014)',
+  'Corpo senza tempo': 'Invecchi molto più lentamente.',
+  'Arcidruido': 'Usi la Forma Selvatica quasi senza limiti e altri benefici supremi.',
+  // Guerriero
+  'Recuperare energie': 'Come azione bonus recuperi alcuni PF, una volta per riposo.',
+  'Azione impetuosa': 'Compi unʼazione aggiuntiva nel tuo turno, una volta per riposo.',
+  'Mente tattica': 'Puoi spendere Recuperare Energie per migliorare una prova fallita. (2024)',
+  'Indomito': 'Puoi ritirare un tiro salvezza fallito, una volta per riposo lungo.',
+  'Maestro tattico': 'Usando la Maestria nelle armi ottieni opzioni tattiche extra. (2024)',
+  'Attacchi studiati': 'Se manchi un attacco, ottieni vantaggio al prossimo contro quel bersaglio. (2024)',
+  // Ladro
+  'Attacco furtivo': 'Infliggi dadi di danno extra quando hai vantaggio o un alleato è adiacente al bersaglio.',
+  'Maestria': 'Raddoppi il bonus di competenza in alcune abilità scelte.',
+  'Gergo ladresco': 'Un gergo segreto per messaggi nascosti tra ladri.',
+  'Azione scaltra': 'Come azione bonus puoi Scattare, Disimpegnarti o Nasconderti ogni turno.',
+  'Schivata prodigiosa': 'Come reazione dimezzi i danni di un attacco che ti colpisce.',
+  'Elusione': 'Con un TS su Destrezza riuscito eviti del tutto i danni invece di dimezzarli.',
+  'Talento affidabile': 'Nelle prove in cui sei competente, ogni tiro del d20 di 9 o meno conta come 10.',
+  'Colpo scaltro': 'Spendi dadi di Attacco furtivo per effetti extra (avvelenare, atterrare, allontanare). (2024)',
+  'Colpo scaltro migliorato': 'Puoi combinare più effetti di Colpo scaltro nello stesso attacco. (2024)',
+  'Mente sfuggente': 'Ottieni competenza in altri tiri salvezza (es. Saggezza).',
+  'Inafferrabile': 'Nessun attacco ha vantaggio contro di te finché non sei incapacitato.',
+  'Colpo di fortuna': 'Trasformi un mancato in colpo, o una prova fallita in un 20, una volta per riposo.',
+  'Percezione cieca': 'Percepisci creature nascoste o invisibili nelle vicinanze. (2014)',
+  // Mago
+  'Recupero arcano': 'Durante un riposo breve recuperi alcuni slot incantesimo spesi.',
+  'Rituali · Studioso': 'Puoi lanciare come rituale e hai competenza extra in un campo del sapere. (2024)',
+  'Studioso': 'Hai competenza (o maestria) in un campo del sapere: Arcano, Storia, ecc. (2024)',
+  'Memorizzare incantesimo': 'Durante un riposo breve puoi sostituire un incantesimo preparato. (2024)',
+  'Padronanza degli incantesimi': 'Lanci a volontà un incantesimo di 1° e uno di 2° livello scelti.',
+  'Incantesimi distintivi': 'Due incantesimi di 3° livello che lanci gratis una volta per riposo.',
+  // Monaco
+  'Arti marziali': "Le armi da monaco usano Destrezza e infliggono danni crescenti; ottieni un colpo senz'armi bonus.",
+  'Concentrazione monastica': 'Hai punti Ki/Concentrazione per tecniche come Raffica di colpi, Scatto e Difesa.',
+  'Ki': 'Hai punti Ki che alimentano le tecniche monastiche.',
+  'Movimento senza armatura': 'Senza armatura la tua velocità aumenta.',
+  'Metabolismo prodigioso': 'Recuperi punti Concentrazione e PF con più facilità. (2024)',
+  'Deviare attacchi': 'Come reazione riduci i danni di un attacco (e a volte lo rilanci).',
+  'Deviare i proiettili': 'Come reazione riduci i danni di un attacco a distanza (e puoi rilanciarlo).',
+  'Caduta lenta': 'Come reazione riduci i danni da caduta.',
+  'Colpo stordente': 'Spendi Ki per tentare di stordire un bersaglio colpito in mischia.',
+  'Colpi potenziati dal ki': 'I colpi senzʼarmi contano come magici per superare le resistenze. (2014)',
+  'Quiete della mente': 'Puoi porre fine a effetti che ti affascinano o spaventano. (2014)',
+  'Movimento acrobatico': 'Ti muovi su superfici verticali e sui liquidi senza cadere. (2024)',
+  'Concentrazione accresciuta': 'Migliori la gestione dei tuoi punti Concentrazione. (2024)',
+  'Auto-guarigione': 'Spendi Concentrazione per curarti o rimuovere condizioni. (2024)',
+  "Deviare l'energia": 'Puoi deviare anche attacchi che infliggono danni elementali. (2024)',
+  'Sopravvissuto disciplinato': 'Ottieni competenza in tutti i tiri salvezza. (2024)',
+  'Concentrazione perfetta': "Recuperi sempre alcuni punti Concentrazione all'iniziativa. (2024)",
+  'Purezza del corpo': 'Sei immune a malattie e veleni. (2014)',
+  'Lingua del sole e della luna': 'Comprendi e ti fai capire in qualsiasi lingua. (2014)',
+  'Anima di diamante': 'Competenza in tutti i TS e possibilità di ritirarli. (2014)',
+  'Difesa superiore': 'Spendi Concentrazione per resistere a quasi tutti i danni per un turno. (2024)',
+  'Corpo vuoto': 'Diventi invisibile e resistente a quasi tutti i danni per un breve tempo. (2014)',
+  'Sé perfetto': 'Il culmine del monaco: recuperi Ki e potenzi corpo e mente.',
+  'Corpo e mente': 'Il culmine del monaco: Destrezza e Saggezza aumentano notevolmente. (2024)',
+  // Paladino
+  'Imposizione delle mani': 'Hai una riserva di punti cura da distribuire toccando i feriti (o curare malattie/veleni).',
+  'Colpo divino': 'Spendi uno slot incantesimo per infliggere danni radiosi extra con un colpo.',
+  'Punizione divina': 'Spendi uno slot incantesimo per infliggere danni radiosi extra con un colpo.',
+  'Punizione divina migliorata': 'Tutti i tuoi attacchi in mischia infliggono danni radiosi extra. (2014)',
+  'Salute divina': 'Sei immune alle malattie. (2014)',
+  'Senso divino': 'Percepisci celestiali, immondi e non morti nelle vicinanze. (2014)',
+  'Aura di protezione': 'Tu e gli alleati vicini aggiungete il tuo mod. di Carisma ai tiri salvezza.',
+  'Aura di coraggio': 'Tu e gli alleati vicini non potete essere spaventati.',
+  'Colpi radiosi': 'I tuoi attacchi in mischia infliggono danni radiosi aggiuntivi. (2024)',
+  'Rinnegare i nemici': 'Spaventi e blocchi i nemici con la tua presenza divina. (2024)',
+  'Tocco risanatore': 'Puoi porre fine a incantesimi su di te o sugli alleati.',
+  'Tocco purificante': 'Puoi porre fine a incantesimi su di te o sugli alleati. (2014)',
+  'Aure potenziate': 'Il raggio delle tue aure aumenta.',
+  'Aure': 'Il raggio delle tue aure aumenta.',
+  'Destriero fidato': 'Evochi una cavalcatura spirituale (come Trova Destriero). (2024)',
+  // Ranger
+  'Nemico favorito': 'Hai un vantaggio nel dare la caccia e conoscere certi tipi di creature.',
+  'Nemico prescelto': 'Conosci a fondo certi tipi di creatura: vantaggio a tracciarle e ricordarne informazioni. (2014)',
+  'Esploratore provetto': 'Sei abile nel viaggio, orientamento e sopravvivenza.',
+  'Esploratore naturale': "Ti muovi e sopravvivi con maestria nei territori a te familiari. (2014)",
+  'Consapevolezza primordiale': "Spendi uno slot per percepire certi tipi di creatura nell'area. (2014)",
+  'Vagabondo': 'Aumenti velocità, scalata e salto. (2024)',
+  'Instancabile': 'Riduci lo sfinimento e recuperi PF temporanei. (2024)',
+  'Cacciatore implacabile': 'Il tuo Marchio del Cacciatore si mantiene meglio (meno concentrazione). (2024)',
+  'Velo della natura': 'Come azione bonus diventi invisibile per un turno. (2024)',
+  'Cacciatore preciso': 'Vantaggio agli attacchi contro il bersaglio del tuo Marchio. (2024)',
+  'Sensi ferini': 'Percepisci le creature invisibili vicine e le colpisci meglio.',
+  'Andatura nel terreno': 'Il terreno difficile naturale non ti rallenta. (2014)',
+  'Nascondersi in piena vista': 'Puoi nasconderti restando immobile e mimetizzato. (2014)',
+  'Svanire': 'Come azione bonus puoi Nasconderti; non puoi essere tracciato. (2014)',
+  'Sterminatore di nemici': 'Una volta per turno aggiungi danni extra a un attacco contro un nemico.',
+  // Stregone
+  'Stregoneria innata': 'La fonte della tua magia innata: la sottoclasse che concede poteri unici.',
+  'Origine stregonesca': 'La fonte della tua magia innata: la sottoclasse che concede poteri unici. (2014)',
+  'Fonte di magia': 'Hai Punti Stregoneria che puoi convertire in slot incantesimo e viceversa.',
+  'Metamagia': 'Spendi Punti Stregoneria per modificare gli incantesimi (gittata, bersagli, silenzioso, ecc.).',
+  'Recupero stregonesco': 'Recuperi Punti Stregoneria dopo un riposo.',
+  'Ristoro stregonesco': 'Recuperi Punti Stregoneria dopo un riposo breve. (2014)',
+  'Stregoneria incarnata': 'Potenzi la tua Stregoneria Innata con effetti aggiuntivi. (2024)',
+  'Apoteosi arcana': 'Il culmine dello stregone: usi la metamagia gratis in certe condizioni.',
+  // Warlock
+  'Magia del patto': 'Lanci incantesimi con pochi slot che si recuperano a ogni riposo breve, sempre al livello massimo.',
+  'Patrono ultraterreno': "L'entità del tuo patto: la sottoclasse che concede incantesimi e poteri.",
+  'Suppliche occulte': 'Doni magici permanenti a scelta (es. Vista del Diavolo, Raffica potenziata).',
+  'Invocazioni occulte': 'Doni magici permanenti a scelta (es. Vista del Diavolo, Raffica potenziata). (2014)',
+  'Astuzia magica': 'Durante un riposo breve puoi recuperare slot del patto spesi. (2024)',
+  'Dono del patto': 'Scegli un dono: lama, tomo, catena o talismano. (2014)',
+  'Contattare il patrono': 'Puoi comunicare direttamente col tuo patrono. (2024)',
+  'Arcanum mistico': 'Impari un incantesimo di alto livello che lanci gratis una volta per riposo lungo.',
+  'Maestro occulto': 'Il culmine del warlock: recuperi tutti gli slot del patto con un breve rituale.',
+};
+/** Spiegazione di un privilegio dal nome mostrato (o null se non presente). */
+function spiegaPrivilegio(nome) {
+  const base = String(nome || '').replace(/\s*\(.*$/, '').replace(/\s+d\d+.*$/i, '').trim();
+  return SPIEG_PRIVILEGI[base] || SPIEG_PRIVILEGI[String(nome || '').trim()] || null;
+}
 
 const DENARI = [
   { key: 'mr', label: 'MR' },
@@ -1904,7 +2066,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.18';
+const APP_VERSION = '1.9.19';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3601,7 +3763,20 @@ export default function App() {
                     Liv {L}
                   </div>
                   <div style={{ flex: 1, fontSize: 13 }}>
-                    {feat && feat.split('\n').map((r, i) => <div key={i}>• {r}</div>)}
+                    {feat && feat.split('\n').map((r, i) => {
+                      const sp = spiegaPrivilegio(r);
+                      return (
+                        <div key={i}>
+                          • {sp ? (
+                            <span
+                              style={{ cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
+                              title="Tocca per la spiegazione"
+                              onClick={() => setInfo({ titolo: r, testo: sp })}
+                            >{r} ⓘ</span>
+                          ) : r}
+                        </div>
+                      );
+                    })}
                     {sub && <div style={{ color: C.green }}>🌟 Privilegio di sottoclasse{scheda.sottoclasse ? ` (${scheda.sottoclasse})` : ''}</div>}
                     {asi && <div style={{ color: C.inkDim }}>🎯 Aumento di Caratteristica o Talento</div>}
                     {futuro && <span style={{ ...styles.detail, fontStyle: 'italic' }}>— non ancora raggiunto</span>}
