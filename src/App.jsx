@@ -435,6 +435,12 @@ const ASI_LIV = {
   ladro: [4, 8, 10, 12, 16, 19],
   _default: [4, 8, 12, 16, 19],
 };
+// Livello in cui si SCEGLIE la sottoclasse (il primo dei livelli di sottoclasse).
+function livelloSceltaSottoclasse(classe) {
+  const k = chiaveClasse(classe);
+  return (k && SOTTOCLASSE_LIV[k] && SOTTOCLASSE_LIV[k][0]) || 3;
+}
+
 // Livelli in cui si sceglie o si potenzia la sottoclasse (2024).
 const SOTTOCLASSE_LIV = {
   barbaro: [3, 6, 10, 14], bardo: [3, 6, 14], chierico: [3, 6, 17],
@@ -1560,7 +1566,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.2';
+const APP_VERSION = '1.9.3';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3180,6 +3186,15 @@ export default function App() {
           : '';
         const haASI = asiAlLivello(scheda.classe, nuovoLivello);
         const haSub = sottoclasseAlLivello(scheda.classe, nuovoLivello);
+        // A questo livello si SCEGLIE la sottoclasse (il primo livello di sottoclasse)?
+        const scelteSub = sottoclassiPerClasse(scheda.classe);
+        const mostraSceltaSub = nuovoLivello === livelloSceltaSottoclasse(scheda.classe) && scelteSub.length > 0;
+        // Le scelte interattive sono complete? (per abilitare la conferma)
+        const asiCompleto = !haASI
+          || (levelUpBozza.asiMode === 'talento'
+            ? !!(levelUpBozza.talento || '').trim()
+            : !!(levelUpBozza.asiA && levelUpBozza.asiB));
+        const hpOk = !(levelUpBozza.metodo === 'tiro' && !levelUpBozza.tiroFatto);
         const rigaCambio = { display: 'flex', justifyContent: 'space-between', gap: 8, padding: '3px 0', borderBottom: `1px solid ${C.border}` };
         return (
         <div
@@ -3222,6 +3237,65 @@ export default function App() {
               </div>
             </div>
 
+            {/* Scelta della SOTTOCLASSE (solo al livello in cui si sceglie) */}
+            {mostraSceltaSub && (
+              <div style={{ marginBottom: 14 }}>
+                <label style={{ ...styles.detail, display: 'block', marginBottom: 4, fontWeight: 'bold' }}>
+                  🌟 Sottoclasse — scegli la tua specializzazione
+                </label>
+                <select
+                  style={{ ...styles.inlineInput, width: '100%', padding: '6px 8px', fontSize: 15 }}
+                  value={levelUpBozza.sottoclasse || ''}
+                  onChange={(e) => setLevelUpBozza((b) => ({ ...b, sottoclasse: e.target.value }))}
+                >
+                  <option value="">Scegli…</option>
+                  {scelteSub.map((n) => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </div>
+            )}
+
+            {/* Scelta AUMENTO CARATTERISTICHE / TALENTO */}
+            {haASI && (
+              <div style={{ marginBottom: 14 }}>
+                <label style={{ ...styles.detail, display: 'block', marginBottom: 4, fontWeight: 'bold' }}>
+                  🎯 Aumento di Caratteristica o Talento
+                </label>
+                <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+                  {[['aumento', 'Aumento caratteristiche'], ['talento', 'Talento']].map(([m, lab]) => (
+                    <button key={m} style={{ ...styles.modeButton(levelUpBozza.asiMode === m), fontSize: 12, padding: '4px 10px' }}
+                      onClick={() => setLevelUpBozza((b) => ({ ...b, asiMode: m }))}>{lab}</button>
+                  ))}
+                </div>
+                {levelUpBozza.asiMode === 'talento' ? (
+                  <input
+                    style={{ ...styles.inlineInput, width: '100%', padding: '6px 8px', fontSize: 14 }}
+                    placeholder="Nome del talento (es. Attaccante Robusto)"
+                    value={levelUpBozza.talento || ''}
+                    onChange={(e) => setLevelUpBozza((b) => ({ ...b, talento: e.target.value }))}
+                  />
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    {['asiA', 'asiB'].map((campo) => (
+                      <label key={campo} style={{ ...styles.detail, fontSize: 12 }}>
+                        <span style={{ display: 'block', marginBottom: 2 }}>+1 a…</span>
+                        <select
+                          style={{ ...styles.inlineInput, width: '100%', fontSize: 13, padding: '4px 6px' }}
+                          value={levelUpBozza[campo] || ''}
+                          onChange={(e) => setLevelUpBozza((b) => ({ ...b, [campo]: e.target.value }))}
+                        >
+                          <option value="">—</option>
+                          {CARATTERISTICHE.map(({ key, label }) => <option key={key} value={key}>{label}</option>)}
+                        </select>
+                      </label>
+                    ))}
+                    <div style={{ gridColumn: '1 / -1', ...styles.detail, fontSize: 11, color: C.inkDim }}>
+                      Stessa caratteristica due volte = +2; due diverse = +1 ciascuna (massimo 20).
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Riepilogo: cosa cambia salendo di livello */}
             <div style={{ ...styles.panelSoft || {}, background: 'rgba(0,0,0,0.03)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 12px', marginBottom: 14, fontSize: 13 }}>
               <div style={{ fontWeight: 'bold', color: C.goldDark, marginBottom: 6 }}>📋 Cosa cambia</div>
@@ -3242,20 +3316,29 @@ export default function App() {
                   {privNuovi.split('\n').map((r, i) => <div key={i} style={{ color: C.green }}>• {r}</div>)}
                 </div>
               )}
-              {haSub && (
-                <div style={{ padding: '5px 0', color: C.inkDim }}>🌟 Scegli/aggiorna un <strong>privilegio di sottoclasse</strong> (aggiungilo a mano nei Privilegi).</div>
-              )}
+              {mostraSceltaSub ? (
+                <div style={rigaCambio}><span>Sottoclasse</span><strong>{levelUpBozza.sottoclasse || '— da scegliere'}</strong></div>
+              ) : haSub ? (
+                <div style={{ padding: '5px 0', color: C.inkDim }}>🌟 La tua sottoclasse guadagna un nuovo privilegio (aggiungilo a mano nei Privilegi).</div>
+              ) : null}
               {haASI && (
-                <div style={{ padding: '5px 0', color: C.inkDim }}>🎯 <strong>Aumento di Caratteristica o Talento</strong>: +2 a una caratteristica o +1 a due, oppure un Talento (applicalo a mano).</div>
+                <div style={rigaCambio}>
+                  <span>Aumento / Talento</span>
+                  <strong>{levelUpBozza.asiMode === 'talento'
+                    ? ((levelUpBozza.talento || '').trim() || '— talento da indicare')
+                    : ((levelUpBozza.asiA || levelUpBozza.asiB)
+                      ? [levelUpBozza.asiA, levelUpBozza.asiB].filter(Boolean).map((k) => CARATTERISTICHE.find((c) => c.key === k)?.label).join(', ')
+                      : '— da scegliere')}</strong>
+                </div>
               )}
-              {!slotStr && !privNuovi && !haSub && !haASI && (
+              {!slotStr && !privNuovi && !haSub && !haASI && !mostraSceltaSub && (
                 <div style={{ padding: '3px 0', color: C.inkDim }}>Nessun altro cambiamento automatico a questo livello.</div>
               )}
             </div>
 
             <button
               style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 12 }}
-              disabled={levelUpBozza.metodo === 'tiro' && !levelUpBozza.tiroFatto}
+              disabled={!hpOk || !asiCompleto}
               onClick={() => {
                 const g = levelUpBozza.metodo === 'media' ? levelUpBozza.hpGainMedia : Math.max(1, levelUpBozza.tiroFatto + levelUpBozza.modCos);
                 const dvAttuale = String(scheda.dadiVita || '').split('d')[1] || String(levelUpBozza.facceDV) || '8';
@@ -3270,6 +3353,21 @@ export default function App() {
                 if (slotNuovi) patch.slotIncantesimo = { ...scheda.slotIncantesimo, ...slotNuovi };
                 // Appende i nuovi privilegi di classe (senza duplicare le righe)
                 if (privNuovi) patch.privilegi = attualiPriv.trim() ? `${attualiPriv.trim()}\n${privNuovi}` : privNuovi;
+                // Sottoclasse scelta (solo al livello di scelta)
+                if (mostraSceltaSub && levelUpBozza.sottoclasse) patch.sottoclasse = levelUpBozza.sottoclasse;
+                // Aumento di Caratteristica o Talento
+                if (haASI) {
+                  if (levelUpBozza.asiMode === 'talento') {
+                    const t = (levelUpBozza.talento || '').trim();
+                    if (t) patch.talenti = (scheda.talenti || '').trim() ? `${(scheda.talenti || '').trim()}\n${t}` : t;
+                  } else {
+                    const nuoveCar = { ...scheda.caratteristiche };
+                    [levelUpBozza.asiA, levelUpBozza.asiB].forEach((k) => {
+                      if (k) nuoveCar[k] = Math.min(20, (nuoveCar[k] || 10) + 1);
+                    });
+                    patch.caratteristiche = nuoveCar;
+                  }
+                }
                 aggiorna(patch);
                 setMostraLevelUp(false);
               }}
@@ -3684,7 +3782,11 @@ export default function App() {
                 const facceDV = dvMatch ? parseInt(dvMatch[1]) : 8;
                 const modCos = modificatore(scheda.caratteristiche?.costituzione || 10) || 0;
                 const avgHpGain = Math.floor(facceDV / 2) + 1 + modCos;
-                setLevelUpBozza({ metodo: 'media', hpGainMedia: Math.max(1, avgHpGain), facceDV, modCos, tiroFatto: 0 });
+                setLevelUpBozza({
+                  metodo: 'media', hpGainMedia: Math.max(1, avgHpGain), facceDV, modCos, tiroFatto: 0,
+                  asiMode: 'aumento', asiA: '', asiB: '', talento: '',
+                  sottoclasse: scheda.sottoclasse || '',
+                });
                 setMostraLevelUp(true);
               }}
             >
