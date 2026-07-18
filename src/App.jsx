@@ -305,6 +305,170 @@ function privilegiClasseL1(classe) {
   return (c && PRIVILEGI_CLASSE_L1[c.match[0]]) || '';
 }
 
+// Privilegi di classe guadagnati livello per livello (2024), riassunti in parole
+// nostre. Qui stanno solo i privilegi "di classe": gli Aumenti di Caratteristica
+// e i privilegi di SOTTOCLASSE sono gestiti a parte (promemoria nel level up).
+const PRIVILEGI_CLASSE_LIV = {
+  barbaro: {
+    2: 'Attacco irruento\nPercezione del pericolo',
+    5: 'Attacco extra\nMovimento veloce (+3 m)',
+    7: 'Istinto ferino\nIra instancabile',
+    9: 'Critico brutale (1 dado extra)',
+    11: 'Ira implacabile',
+    15: 'Ira persistente',
+    17: 'Critico brutale (2 dadi extra)',
+    18: 'Forza indomabile',
+    20: 'Campione primordiale (+4 FOR e COS, max 25)',
+  },
+  bardo: {
+    2: 'Factotum (metà competenza)\nCanzone di riposo',
+    3: 'Maestria (competenza doppia in 2 abilità)',
+    5: "Fonte d'ispirazione\nIspirazione bardica d8",
+    9: 'Ispirazione bardica d10',
+    10: 'Segreti magici',
+    13: 'Ispirazione bardica d12',
+    18: 'Ispirazione superiore',
+    20: 'Parole di creazione',
+  },
+  chierico: {
+    2: 'Incanalare divinità',
+    5: 'Distruggere non morti',
+    7: 'Colpo benedetto',
+    10: 'Intervento divino',
+    14: 'Colpo benedetto migliorato',
+    18: 'Incanalare divinità (usi aggiuntivi)',
+    20: 'Intervento divino migliorato',
+  },
+  druido: {
+    2: 'Forma selvatica\nCompagno selvatico',
+    5: 'Furia elementale',
+    7: 'Incantesimi nella forma selvatica',
+    15: 'Furia elementale migliorata',
+    18: 'Incantesimi bestiali',
+    20: 'Arcidruido',
+  },
+  guerriero: {
+    2: 'Azione impetuosa\nMente tattica',
+    5: 'Attacco extra',
+    9: 'Indomito\nMaestro tattico',
+    11: 'Due attacchi extra (3 attacchi totali)',
+    13: 'Indomito (2 usi)\nAttacchi studiati',
+    17: 'Azione impetuosa (2 usi)\nIndomito (3 usi)',
+    20: 'Tre attacchi extra (4 attacchi totali)',
+  },
+  ladro: {
+    2: 'Azione scaltra',
+    5: 'Colpo scaltro\nSchivata prodigiosa',
+    7: 'Elusione\nTalento affidabile',
+    11: 'Colpo scaltro migliorato',
+    14: 'Competenze aggiuntive',
+    15: 'Mente sfuggente',
+    18: 'Inafferrabile',
+    20: 'Colpo di fortuna',
+    // Attacco furtivo (+1d6 a ogni livello dispari) è aggiunto a parte.
+  },
+  mago: {
+    2: 'Studioso',
+    5: 'Memorizzare incantesimo',
+    18: 'Padronanza degli incantesimi',
+    20: 'Incantesimi distintivi',
+  },
+  monaco: {
+    2: 'Concentrazione monastica (Ki)\nMovimento senza armatura\nMetabolismo prodigioso',
+    3: 'Deviare attacchi',
+    4: 'Caduta lenta',
+    5: 'Attacco extra\nColpo stordente',
+    7: 'Elusione',
+    9: 'Movimento acrobatico',
+    10: 'Concentrazione accresciuta\nAuto-guarigione',
+    13: "Deviare l'energia",
+    14: 'Sopravvissuto disciplinato',
+    15: 'Concentrazione perfetta',
+    18: 'Difesa superiore',
+    20: 'Corpo e mente',
+  },
+  paladino: {
+    2: 'Stile di combattimento\nColpo divino (Divine Smite)',
+    3: 'Incanalare divinità',
+    5: 'Attacco extra\nDestriero fidato',
+    6: 'Aura di protezione',
+    9: 'Rinnegare i nemici',
+    10: 'Aura di coraggio',
+    11: 'Colpi radiosi',
+    14: 'Tocco risanatore',
+    18: 'Aure potenziate (9 m)',
+  },
+  ranger: {
+    2: 'Esploratore provetto\nStile di combattimento',
+    5: 'Attacco extra',
+    6: 'Vagabondo',
+    9: 'Maestria (competenza doppia)',
+    10: 'Instancabile',
+    13: 'Cacciatore implacabile',
+    14: 'Velo della natura',
+    17: 'Cacciatore preciso',
+    18: 'Sensi ferini',
+    20: 'Sterminatore di nemici',
+  },
+  stregone: {
+    2: 'Fonte di magia (Punti stregoneria)\nMetamagia',
+    5: 'Recupero stregonesco',
+    7: 'Stregoneria incarnata',
+    10: 'Metamagia (opzioni aggiuntive)',
+    17: 'Metamagia (opzioni aggiuntive)',
+    20: 'Apoteosi arcana',
+  },
+  warlock: {
+    2: 'Astuzia magica',
+    9: 'Contattare il patrono',
+    11: 'Arcanum mistico (6° livello)',
+    13: 'Arcanum mistico (7° livello)',
+    15: 'Arcanum mistico (8° livello)',
+    17: 'Arcanum mistico (9° livello)',
+    20: 'Maestro occulto',
+  },
+};
+
+// Livelli di Aumento dei Punteggi di Caratteristica / Talento (2024).
+const ASI_LIV = {
+  guerriero: [4, 6, 8, 12, 14, 16, 19],
+  ladro: [4, 8, 10, 12, 16, 19],
+  _default: [4, 8, 12, 16, 19],
+};
+// Livelli in cui si sceglie o si potenzia la sottoclasse (2024).
+const SOTTOCLASSE_LIV = {
+  barbaro: [3, 6, 10, 14], bardo: [3, 6, 14], chierico: [3, 6, 17],
+  druido: [3, 6, 10, 14], guerriero: [3, 7, 10, 15, 18], ladro: [3, 9, 13, 17],
+  mago: [3, 6, 10, 14], monaco: [3, 6, 11, 17], paladino: [3, 7, 15, 20],
+  ranger: [3, 7, 11, 15], stregone: [3, 6, 14, 18], warlock: [3, 6, 10, 14],
+};
+
+function chiaveClasse(classe) {
+  const c = coloreClasse(classe);
+  return c ? c.match[0] : null;
+}
+/** Privilegi di classe guadagnati esattamente a questo livello (testo, o ''). */
+function privilegiClasseLivello(classe, livello) {
+  const k = chiaveClasse(classe);
+  if (!k) return '';
+  let extra = (PRIVILEGI_CLASSE_LIV[k] && PRIVILEGI_CLASSE_LIV[k][livello]) || '';
+  if (k === 'ladro' && livello % 2 === 1) {
+    // Attacco furtivo del ladro: +1d6 a ogni livello dispari.
+    extra = (extra ? extra + '\n' : '') + `Attacco furtivo ${Math.ceil(livello / 2)}d6`;
+  }
+  return extra;
+}
+/** Vero se a questo livello scatta un Aumento di Caratteristica/Talento. */
+function asiAlLivello(classe, livello) {
+  const k = chiaveClasse(classe);
+  return ((k && ASI_LIV[k]) || ASI_LIV._default).includes(livello);
+}
+/** Vero se a questo livello si sceglie/potenzia la sottoclasse. */
+function sottoclasseAlLivello(classe, livello) {
+  const k = chiaveClasse(classe);
+  return !!(k && SOTTOCLASSE_LIV[k] && SOTTOCLASSE_LIV[k].includes(livello));
+}
+
 // Competenze concesse dalla SPECIE (2024): quasi nessuna specie dà abilità
 // (spostate sui background); l'Elfo con "Sensi Acuti" ne concede 1 a scelta.
 const COMPETENZE_SPECIE = {
@@ -1396,7 +1560,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.1';
+const APP_VERSION = '1.9.2';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2996,7 +3160,28 @@ export default function App() {
         </div>
       )}
 
-      {mostraLevelUp && (
+      {mostraLevelUp && (() => {
+        // --- Anteprima di TUTTO ciò che cambia salendo di livello ---
+        const nuovoLivello = (scheda.livello || 1) + 1;
+        const gain = levelUpBozza.metodo === 'media'
+          ? (levelUpBozza.hpGainMedia || 0)
+          : (levelUpBozza.tiroFatto > 0 ? Math.max(1, levelUpBozza.tiroFatto + levelUpBozza.modCos) : null);
+        const bcVecchio = scheda.bonusCompetenza;
+        const bcNuovo = bonusCompetenzaDaLivello(nuovoLivello);
+        const slotNuovi = slotDaClasseLivello(scheda.classe, nuovoLivello); // null se non incantatore
+        const slotStr = slotNuovi
+          ? Object.keys(slotNuovi).filter((l) => slotNuovi[l].totale > 0).map((l) => `${l}° ×${slotNuovi[l].totale}`).join(' · ')
+          : null;
+        const privNuoviTutti = privilegiClasseLivello(scheda.classe, nuovoLivello);
+        // Non ripetere righe già presenti nei privilegi attuali.
+        const attualiPriv = (scheda.privilegi || '');
+        const privNuovi = privNuoviTutti
+          ? privNuoviTutti.split('\n').filter((r) => r.trim() && !attualiPriv.includes(r.trim())).join('\n')
+          : '';
+        const haASI = asiAlLivello(scheda.classe, nuovoLivello);
+        const haSub = sottoclasseAlLivello(scheda.classe, nuovoLivello);
+        const rigaCambio = { display: 'flex', justifyContent: 'space-between', gap: 8, padding: '3px 0', borderBottom: `1px solid ${C.border}` };
+        return (
         <div
           style={{
             position: 'fixed', inset: 0, zIndex: 1002, padding: 16,
@@ -3007,7 +3192,7 @@ export default function App() {
           <div style={{ ...styles.panel, maxWidth: 400, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
             <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 12 }}>⬆️ Passaggio di Livello</h1>
             <div style={{ textAlign: 'center', marginBottom: 16 }}>
-              Da livello <strong>{scheda.livello || 1}</strong> a livello <strong>{(scheda.livello || 1) + 1}</strong>
+              Da livello <strong>{scheda.livello || 1}</strong> a livello <strong>{nuovoLivello}</strong>
             </div>
 
             <p style={{ ...styles.detail, marginBottom: 16, lineHeight: 1.4 }}>
@@ -3037,21 +3222,55 @@ export default function App() {
               </div>
             </div>
 
+            {/* Riepilogo: cosa cambia salendo di livello */}
+            <div style={{ ...styles.panelSoft || {}, background: 'rgba(0,0,0,0.03)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 12px', marginBottom: 14, fontSize: 13 }}>
+              <div style={{ fontWeight: 'bold', color: C.goldDark, marginBottom: 6 }}>📋 Cosa cambia</div>
+              <div style={rigaCambio}><span>Punti Ferita massimi</span><strong>{gain != null ? `+${gain}` : '—'}</strong></div>
+              <div style={rigaCambio}><span>Dadi vita</span><strong>{nuovoLivello}d{levelUpBozza.facceDV}</strong></div>
+              {bcNuovo !== bcVecchio && (
+                <div style={rigaCambio}><span>Bonus competenza</span><strong>{conSegno(bcVecchio)} → {conSegno(bcNuovo)} ⬆️</strong></div>
+              )}
+              {slotStr && (
+                <div style={{ padding: '3px 0', borderBottom: `1px solid ${C.border}` }}>
+                  <div>Slot incantesimo</div>
+                  <div style={{ color: C.inkDim, marginTop: 2 }}>{slotStr}</div>
+                </div>
+              )}
+              {privNuovi && (
+                <div style={{ padding: '5px 0', borderBottom: `1px solid ${C.border}` }}>
+                  <div style={{ marginBottom: 2 }}>Nuovi privilegi di classe</div>
+                  {privNuovi.split('\n').map((r, i) => <div key={i} style={{ color: C.green }}>• {r}</div>)}
+                </div>
+              )}
+              {haSub && (
+                <div style={{ padding: '5px 0', color: C.inkDim }}>🌟 Scegli/aggiorna un <strong>privilegio di sottoclasse</strong> (aggiungilo a mano nei Privilegi).</div>
+              )}
+              {haASI && (
+                <div style={{ padding: '5px 0', color: C.inkDim }}>🎯 <strong>Aumento di Caratteristica o Talento</strong>: +2 a una caratteristica o +1 a due, oppure un Talento (applicalo a mano).</div>
+              )}
+              {!slotStr && !privNuovi && !haSub && !haASI && (
+                <div style={{ padding: '3px 0', color: C.inkDim }}>Nessun altro cambiamento automatico a questo livello.</div>
+              )}
+            </div>
+
             <button
               style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 12 }}
               disabled={levelUpBozza.metodo === 'tiro' && !levelUpBozza.tiroFatto}
               onClick={() => {
-                const gain = levelUpBozza.metodo === 'media' ? levelUpBozza.hpGainMedia : Math.max(1, levelUpBozza.tiroFatto + levelUpBozza.modCos);
-                const nuovoLivello = (scheda.livello || 1) + 1;
-                const dvAttuale = String(scheda.dadiVita || '').split('d')[1] || '8';
-                
-                aggiorna({
+                const g = levelUpBozza.metodo === 'media' ? levelUpBozza.hpGainMedia : Math.max(1, levelUpBozza.tiroFatto + levelUpBozza.modCos);
+                const dvAttuale = String(scheda.dadiVita || '').split('d')[1] || String(levelUpBozza.facceDV) || '8';
+                const patch = {
                   livello: nuovoLivello,
-                  pfMax: scheda.pfMax + gain,
-                  pfAttuali: scheda.pfAttuali + gain, // Cura automatica dei PF appena guadagnati
+                  pfMax: scheda.pfMax + g,
+                  pfAttuali: scheda.pfAttuali + g, // Cura automatica dei PF appena guadagnati
                   dadiVita: `${nuovoLivello}d${dvAttuale}`, // Aggiorna formula dadi vita totali
-                  bonusCompetenza: bonusCompetenzaDaLivello(nuovoLivello)
-                });
+                  bonusCompetenza: bcNuovo,
+                };
+                // Slot incantesimo aggiornati (e ricaricati) secondo la tabella della classe
+                if (slotNuovi) patch.slotIncantesimo = { ...scheda.slotIncantesimo, ...slotNuovi };
+                // Appende i nuovi privilegi di classe (senza duplicare le righe)
+                if (privNuovi) patch.privilegi = attualiPriv.trim() ? `${attualiPriv.trim()}\n${privNuovi}` : privNuovi;
+                aggiorna(patch);
                 setMostraLevelUp(false);
               }}
             >
@@ -3060,7 +3279,8 @@ export default function App() {
             <button style={{ ...styles.button, width: '100%' }} onClick={() => setMostraLevelUp(false)}>Annulla</button>
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {mostraCrea && (() => {
         const setB = (patch) => setBozzaCrea((b) => ({ ...b, ...patch }));
