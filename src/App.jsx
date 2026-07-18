@@ -1618,10 +1618,14 @@ const SPIEG_PRIVILEGI = {
   'Arcanum mistico': 'Impari un incantesimo di alto livello che lanci gratis una volta per riposo lungo.',
   'Maestro occulto': 'Il culmine del warlock: recuperi tutti gli slot del patto con un breve rituale.',
 };
-/** Spiegazione di un privilegio dal nome mostrato (o null se non presente). */
+// Indice minuscolo per ricerche senza distinzione di maiuscole.
+const _lcMap = (obj) => { const m = {}; for (const k in obj) m[k.toLowerCase()] = obj[k]; return m; };
+const SPIEG_PRIVILEGI_LC = _lcMap(SPIEG_PRIVILEGI);
+/** Spiegazione di un privilegio dal nome mostrato (o null), senza distinzione maiuscole. */
 function spiegaPrivilegio(nome) {
-  const base = String(nome || '').replace(/\s*\(.*$/, '').replace(/\s+d\d+.*$/i, '').trim();
-  return SPIEG_PRIVILEGI[base] || SPIEG_PRIVILEGI[String(nome || '').trim()] || null;
+  const n = String(nome || '').trim();
+  const base = n.replace(/\s*\(.*$/, '').replace(/\s+d\d+.*$/i, '').trim();
+  return SPIEG_PRIVILEGI_LC[base.toLowerCase()] || SPIEG_PRIVILEGI_LC[n.toLowerCase()] || null;
 }
 
 // Riassunti funzionali (nostri) di cosa fa ogni incantesimo. Per la nuvoletta ⓘ
@@ -1814,10 +1818,11 @@ const SPIEG_INCANTESIMI = {
   'Zampata Acida': "Lanci una bolla d'acido su uno o due bersagli vicini. (Trucchetto)",
   'Zona di Verità': "Le creature in un'area non possono mentire deliberatamente.",
 };
-/** Spiegazione di un incantesimo dal nome (o null). Ignora suffissi tra parentesi. */
+const SPIEG_INCANTESIMI_LC = _lcMap(SPIEG_INCANTESIMI);
+/** Spiegazione di un incantesimo dal nome (o null), senza distinzione maiuscole. */
 function spiegaIncantesimo(nome) {
   const n = String(nome || '').trim();
-  return SPIEG_INCANTESIMI[n] || SPIEG_INCANTESIMI[n.replace(/\s*\(.*$/, '').trim()] || null;
+  return SPIEG_INCANTESIMI_LC[n.toLowerCase()] || SPIEG_INCANTESIMI_LC[n.replace(/\s*\(.*$/, '').trim().toLowerCase()] || null;
 }
 
 // Tratti di razza/specie e sensi comuni (tutte le razze), riassunti nostri.
@@ -1864,13 +1869,14 @@ const SPIEG_TRATTI = {
   'Abile': 'Competenza in unʼabilità a scelta.',
   'Versatile': 'Ottieni un talento di origine a tua scelta. (2024)',
 };
-/** Spiegazione di un tratto di razza/senso (o null), con prefisso di parola. */
+const SPIEG_TRATTI_LC = _lcMap(SPIEG_TRATTI);
+/** Spiegazione di un tratto di razza/senso (o null), senza maiuscole, con prefisso. */
 function spiegaTratto(nome) {
-  const n = String(nome || '').trim();
-  if (SPIEG_TRATTI[n]) return SPIEG_TRATTI[n];
+  const n = String(nome || '').trim().toLowerCase();
+  if (SPIEG_TRATTI_LC[n]) return SPIEG_TRATTI_LC[n];
   const base = n.replace(/\s*\(.*$/, '').trim();
-  if (SPIEG_TRATTI[base]) return SPIEG_TRATTI[base];
-  for (const k of Object.keys(SPIEG_TRATTI)) if (base.startsWith(k)) return SPIEG_TRATTI[k];
+  if (SPIEG_TRATTI_LC[base]) return SPIEG_TRATTI_LC[base];
+  for (const k of Object.keys(SPIEG_TRATTI_LC)) if (base.startsWith(k)) return SPIEG_TRATTI_LC[k];
   return null;
 }
 /** Righe (di un testo libero) che hanno una spiegazione, come lista cliccabile ⓘ. */
@@ -2337,7 +2343,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.22';
+const APP_VERSION = '1.9.23';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2869,6 +2875,74 @@ function AreaTesto({ value, onChange, righe = 2, placeholder }) {
         adatta(e.target);
       }}
     />
+  );
+}
+
+/**
+ * Elenco di "quadratini": ogni riga (di un testo separato da a-capo) è una
+ * chip cliccabile. Il click apre un sottomenu con la spiegazione (se nota) e
+ * i campi per modificare/eliminare la voce. In fondo un pulsante per aggiungere.
+ * Il valore resta un unico testo con a-capo (nessun cambio al modello dati).
+ */
+function ListaQuadratini({ value, onChange, lookup, placeholder }) {
+  const righe = String(value || '').split('\n').map((r) => r.trim()).filter(Boolean);
+  const [edit, setEdit] = useState(null); // { index, valore }  (index -1 = nuova)
+  const salva = (nuove) => onChange(nuove.join('\n'));
+  const conferma = () => {
+    const v = (edit.valore || '').trim();
+    const nuove = [...righe];
+    if (edit.index === -1) { if (v) nuove.push(v); }
+    else if (v) nuove[edit.index] = v;
+    else nuove.splice(edit.index, 1);
+    salva(nuove);
+    setEdit(null);
+  };
+  const elimina = () => { salva(righe.filter((_, i) => i !== edit.index)); setEdit(null); };
+  const chip = { background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '5px 10px', fontSize: 13, cursor: 'pointer', color: C.ink };
+  const spEdit = edit ? (lookup ? lookup(edit.valore) : null) : null;
+  return (
+    <>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        {righe.length === 0 && <span style={{ ...styles.detail, fontStyle: 'italic' }}>{placeholder || 'Nessuna voce.'}</span>}
+        {righe.map((r, i) => {
+          const sp = lookup ? lookup(r) : null;
+          return (
+            <button key={i} style={chip} title="Apri: dettagli e modifica" onClick={() => setEdit({ index: i, valore: r })}>
+              {r}{sp ? ' ⓘ' : ''}
+            </button>
+          );
+        })}
+        <button style={{ ...chip, borderStyle: 'dashed', color: C.goldDark }} onClick={() => setEdit({ index: -1, valore: '' })}>➕ Aggiungi</button>
+      </div>
+      {edit && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 1004, padding: 16, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setEdit(null); }}
+        >
+          <div style={{ ...styles.panel, maxWidth: 420, width: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <strong style={{ color: C.goldDark, fontSize: 16 }}>{edit.index === -1 ? 'Nuova voce' : 'Voce'}</strong>
+              <button style={styles.buttonMini} onClick={() => setEdit(null)} title="Chiudi">✕</button>
+            </div>
+            {spEdit && (
+              <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 12px', fontSize: 14, lineHeight: 1.4, marginBottom: 8 }}>{spEdit}</div>
+            )}
+            <input
+              autoFocus
+              style={{ ...styles.inlineInput, width: '100%', padding: '8px 10px', fontSize: 15 }}
+              value={edit.valore}
+              placeholder="Nome della voce"
+              onChange={(e) => setEdit({ ...edit, valore: e.target.value })}
+              onKeyDown={(e) => { if (e.key === 'Enter') conferma(); }}
+            />
+            <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+              {edit.index !== -1 && <button style={{ ...styles.buttonDanger, flex: 1 }} onClick={elimina}>🗑 Elimina</button>}
+              <button style={{ ...styles.buttonPrimary, flex: 1 }} onClick={conferma}>Salva</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -5660,36 +5734,37 @@ export default function App() {
               >
                 📖 Panoramica privilegi per livello
               </button>
-              <AreaTesto
+              <ListaQuadratini
                 value={scheda.privilegi}
-                placeholder="Es. Incanalare divinità, Recupero arcano, Attacco furtivo…"
+                lookup={spiegaPrivilegio}
+                placeholder="Nessun privilegio. Aggiungine uno."
                 onChange={(v) => aggiorna({ privilegi: v })}
               />
-              {renderSpiegazioni(scheda.privilegi, spiegaPrivilegio, setInfo)}
             </Sezione>
 
             <Sezione titolo="Privilegi di sottoclasse" {...apertoProps('privilegiSottoclasse')}>
-              <AreaTesto
+              <ListaQuadratini
                 value={scheda.privilegiSottoclasse}
-                placeholder={`Privilegi della sottoclasse${scheda.sottoclasse ? ` (${scheda.sottoclasse})` : ''}: scrivili qui per tenerli separati dai privilegi di classe.`}
+                lookup={spiegaPrivilegio}
+                placeholder={`Privilegi della sottoclasse${scheda.sottoclasse ? ` (${scheda.sottoclasse})` : ''}: aggiungili qui.`}
                 onChange={(v) => aggiorna({ privilegiSottoclasse: v })}
               />
-              {renderSpiegazioni(scheda.privilegiSottoclasse, spiegaPrivilegio, setInfo)}
             </Sezione>
 
             <Sezione titolo="Tratti della specie" {...propsSez('trattiSpecie')} {...apertoProps('trattiSpecie')}>
-              <AreaTesto
+              <ListaQuadratini
                 value={scheda.trattiSpecie}
+                lookup={spiegaTratto}
                 placeholder="Es. Scurovisione, Astuzia gnomesca, Trance, Fortuna halfling…"
                 onChange={(v) => aggiorna({ trattiSpecie: v })}
               />
-              {renderSpiegazioni(scheda.trattiSpecie, spiegaTratto, setInfo)}
             </Sezione>
 
             <Sezione titolo="Talenti" {...propsSez('talenti')} {...apertoProps('talenti')}>
-              <AreaTesto
+              <ListaQuadratini
                 value={scheda.talenti}
-                placeholder="Es. Guerramaga (War Caster): vantaggio ai TS di Concentrazione…"
+                lookup={null}
+                placeholder="Es. Guerramaga, Guaritore, Attaccante Robusto…"
                 onChange={(v) => aggiorna({ talenti: v })}
               />
             </Sezione>
