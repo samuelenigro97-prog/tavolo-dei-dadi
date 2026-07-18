@@ -297,7 +297,7 @@ const PRIVILEGI_CLASSE_L1 = {
   monaco: 'Arti marziali\nDifesa senza armatura (CA = 10 + DES + SAG)',
   paladino: 'Imposizione delle mani (cura 5 × livello)\nLancio di incantesimi (Carisma)\nMaestria nelle armi',
   ranger: 'Lancio di incantesimi (Saggezza)\nNemico favorito\nEsploratore provetto\nMaestria nelle armi',
-  stregone: 'Lancio di incantesimi (Carisma)\nStregoneria innata\nFonte di magia (Punti stregoneria)',
+  stregone: 'Lancio di incantesimi (Carisma)\nStregoneria innata',
   warlock: 'Magia del patto (Carisma)\nPatrono ultraterreno\nSuppliche occulte (invocazioni)',
 };
 // Privilegi di 1° livello nella 5.0 (2014): niente Maestria nelle armi, e alcune
@@ -1432,6 +1432,36 @@ const ABILITA = [
   { key: 'storia', label: 'Storia', car: 'intelligenza' },
 ];
 
+// Spiegazioni brevi per la "nuvoletta" informativa (click su caratteristica/abilità).
+const SPIEG_CARATT = {
+  forza: 'Potenza fisica. Governa gli attacchi in mischia, l\'abilità Atletica, la capacità di carico e le prove di forza bruta (spaccare, sollevare, spingere).',
+  destrezza: 'Agilità e riflessi. Influenza Classe Armatura, Iniziativa, gli attacchi a distanza e con armi accurate, e le abilità Acrobazia, Furtività e Rapidità di Mano.',
+  costituzione: 'Salute e vigore. Determina i Punti Ferita e i tiri salvezza contro fatica, veleni, malattie e freddo. Non ha abilità associate.',
+  intelligenza: 'Ragionamento e memoria. Governa Arcano, Indagare, Natura, Religione e Storia, e la magia del Mago.',
+  saggezza: 'Percezione e intuito. Governa Addestrare Animali, Intuizione, Medicina, Percezione e Sopravvivenza, e la magia di Chierico, Druido e Ranger.',
+  carisma: 'Forza di personalità. Governa Inganno, Intimidire, Intrattenere e Persuasione, e la magia di Bardo, Stregone, Warlock e Paladino.',
+};
+const SPIEG_ABILITA = {
+  acrobazia: 'Mantenere l\'equilibrio, capriole, muoversi su superfici insidiose o divincolarsi da una presa. (Destrezza)',
+  addestrareAnimali: 'Calmare o controllare un animale, capirne il comportamento, guidare una cavalcatura in situazioni difficili. (Saggezza)',
+  arcano: 'Conoscenze su incantesimi, oggetti magici, simboli arcani, piani di esistenza e tradizioni magiche. (Intelligenza)',
+  atletica: 'Arrampicarsi, saltare, nuotare, lottare e altre prove di pura forza fisica. (Forza)',
+  furtivita: 'Nascondersi, muoversi in silenzio e passare inosservati. (Destrezza)',
+  indagare: 'Cercare indizi, dedurre, esaminare dettagli e trovare ciò che è nascosto. (Intelligenza)',
+  inganno: 'Mentire in modo convincente, travestirsi, raggirare con le parole. (Carisma)',
+  intimidire: 'Influenzare gli altri con minacce, ostilità o forza di volontà. (Carisma)',
+  intrattenere: 'Esibirsi con musica, danza, recitazione o oratoria per intrattenere un pubblico. (Carisma)',
+  intuizione: 'Capire le vere intenzioni altrui, individuare bugie e leggere gli stati d\'animo. (Saggezza)',
+  medicina: 'Stabilizzare un morente, diagnosticare malattie e prestare cure. (Saggezza)',
+  natura: 'Conoscenze su terreni, piante, animali, clima e cicli naturali. (Intelligenza)',
+  percezione: 'Notare cose con vista, udito e altri sensi; accorgersi di pericoli e presenze. (Saggezza)',
+  persuasione: 'Convincere con tatto, gentilezza e buona fede. (Carisma)',
+  rapiditaDiMano: 'Giochi di prestigio, borseggiare, nascondere un oggetto sulla persona. (Destrezza)',
+  religione: 'Conoscenze su divinità, riti, simboli sacri e gerarchie religiose. (Intelligenza)',
+  sopravvivenza: 'Seguire tracce, orientarsi, cacciare, prevedere il clima ed evitare pericoli naturali. (Saggezza)',
+  storia: 'Conoscenze su eventi passati, regni, guerre, personaggi e civiltà. (Intelligenza)',
+};
+
 const DENARI = [
   { key: 'mr', label: 'MR' },
   { key: 'ma', label: 'MA' },
@@ -1874,7 +1904,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.17';
+const APP_VERSION = '1.9.18';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2581,6 +2611,7 @@ export default function App() {
   // Level Up
   const [mostraLevelUp, setMostraLevelUp] = useState(false);
   const [mostraPrivilegi, setMostraPrivilegi] = useState(false); // panoramica privilegi per livello
+  const [info, setInfo] = useState(null); // nuvoletta esplicativa: { titolo, testo }
   const [levelUpBozza, setLevelUpBozza] = useState({ metodo: 'media', hpLanciato: 0 });
   const ordineRef = useRef(ordineSezioni);
   ordineRef.current = ordineSezioni;
@@ -3339,6 +3370,24 @@ export default function App() {
   return (
     <div style={styles.app}>
       <style>{GLOBAL_CSS}</style>
+
+      {info && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 3100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'rgba(0,0,0,0.45)' }}
+          onClick={() => setInfo(null)}
+        >
+          <div
+            style={{ ...styles.panel, maxWidth: 360, width: '100%', position: 'relative', boxShadow: '0 8px 30px rgba(0,0,0,0.4)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+              <strong style={{ color: C.goldDark, fontSize: 16 }}>{info.titolo}</strong>
+              <button style={styles.buttonMini} onClick={() => setInfo(null)} title="Chiudi">✕</button>
+            </div>
+            <div style={{ fontSize: 14, lineHeight: 1.45, color: C.ink }}>{info.testo}</div>
+          </div>
+        </div>
+      )}
 
       {caricandoCloud && (
         <div style={{
@@ -4608,7 +4657,11 @@ export default function App() {
                       {conSegno(mod)}
                     </Rollable>
                     <div>
-                      <div style={{ fontSize: 13, color: C.ink, letterSpacing: 0.8, fontWeight: 'bold' }}>{label.toUpperCase()}</div>
+                      <div
+                        style={{ fontSize: 13, color: C.ink, letterSpacing: 0.8, fontWeight: 'bold', cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
+                        title="Cosa governa questa caratteristica?"
+                        onClick={() => setInfo({ titolo: label, testo: SPIEG_CARATT[key] })}
+                      >{label.toUpperCase()} ⓘ</div>
                       <div style={{ ...styles.detail, fontSize: 13 }} title="Punteggio di caratteristica (1 click per modificare)">
                         <Editable
                           value={scheda.caratteristiche[key]}
@@ -4664,7 +4717,12 @@ export default function App() {
                           {liv === 2 ? '★\uFE0E' : liv === 1 ? '●' : '○'}
                         </span>
                         <strong style={{ width: 32 }}>{conSegno(bonus)}</strong>
-                        <span>
+                        <span
+                          style={{ cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
+                          title="Cosa copre questa abilità?"
+                          onPointerDown={(e) => e.stopPropagation()}
+                          onClick={(e) => { e.stopPropagation(); setInfo({ titolo: `${a.label} (${abbr})`, testo: SPIEG_ABILITA[a.key] }); }}
+                        >
                           {a.label}
                         </span>
                       </Rollable>
