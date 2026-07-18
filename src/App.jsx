@@ -879,8 +879,8 @@ const styles = {
     padding: '8px 6px',
     display: 'flex',
     flexDirection: 'column',
-    // titolo in alto (allineato fra tutti i riquadri), valore appena sotto
-    justifyContent: 'flex-start',
+    // contenuto (titolo + valore) centrato verticalmente nel riquadro
+    justifyContent: 'center',
     minHeight: 40,
   },
   vitalLabel: {
@@ -1585,7 +1585,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.6';
+const APP_VERSION = '1.9.7';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2115,9 +2115,15 @@ function AreaTesto({ value, onChange, righe = 2, placeholder }) {
  * cliccando il titolo si richiude per risparmiare spazio verticale.
  * Con `manigliaProps` mostra un segnalino ⠿ per trascinare e riordinare.
  */
-function Sezione({ titolo, children, aperto = true, manigliaProps, trascinando, style, innerRef }) {
+function Sezione({ titolo, children, aperto = true, onToggleAperto, manigliaProps, trascinando, style, innerRef }) {
   return (
-    <details ref={innerRef} open={aperto} style={{ ...styles.panel, opacity: trascinando ? 0.4 : 1, ...style }} className="sezione">
+    <details
+      ref={innerRef}
+      open={aperto}
+      onToggle={(e) => { const open = e.currentTarget.open; if (onToggleAperto && open !== aperto) onToggleAperto(open); }}
+      style={{ ...styles.panel, opacity: trascinando ? 0.4 : 1, ...style }}
+      className="sezione"
+    >
       <summary style={{ ...styles.panelTitle, cursor: 'pointer', listStyle: 'none', marginBottom: 0, userSelect: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
         {manigliaProps && (
           <span
@@ -2335,6 +2341,12 @@ export default function App() {
     },
     manigliaProps: { onPointerDown: (e) => iniziaTrascinamento(e, id) },
     trascinando: sezTrascinata === id,
+  });
+
+  /** Props per ricordare, PER SINGOLO PG, se una Sezione è aperta o minimizzata. */
+  const apertoProps = (id, def = true) => ({
+    aperto: scheda.sezioniAperte?.[id] ?? def,
+    onToggleAperto: (open) => aggiorna({ sezioniAperte: { ...(scheda.sezioniAperte || {}), [id]: open } }),
   });
 
   // ascolta il cambio di tema di sistema e ricontrolla l'orario ogni 5 minuti
@@ -3821,7 +3833,7 @@ export default function App() {
 
         {/* Testata: anagrafica + riquadri vitali uniformi */}
         <section style={styles.panel}>
-          <h2 style={styles.panelTitle}>Profilo e Statistiche</h2>
+          <h2 style={styles.panelTitle}>Profilo</h2>
           <div style={{ display: 'flex', gap: 14, alignItems: 'stretch' }}>
             <div style={{ flex: '0 0 160px', position: 'relative', display: 'flex', flexDirection: 'column' }}>
               <div
@@ -4287,7 +4299,7 @@ export default function App() {
 
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {/* Armi e attacchi — sezione collassabile */}
-            <Sezione titolo="Azioni di combattimento" style={{ order: -2 }}>
+            <Sezione titolo="Azioni di combattimento" style={{ order: -2 }} {...apertoProps('attacchi')}>
               <div style={{ overflowX: 'auto' }}>
                 {['Azione', 'Bonus', 'Reazione'].map((cat) => {
                   const arr = scheda.attacchi.filter((a) => (a.categoria || 'Azione') === cat);
@@ -4387,7 +4399,7 @@ export default function App() {
             </Sezione>
 
             {/* Incantesimi — sezione collassabile */}
-            <Sezione titolo="Incantesimi" style={{ order: -1 }}>
+            <Sezione titolo="Incantesimi" style={{ order: -1 }} {...apertoProps('incantesimi')}>
               <div style={{ display: 'flex', gap: 12, alignItems: 'stretch', flexWrap: 'wrap', marginBottom: 12 }}>
                 <label style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                   Caratteristica da incantatore:{' '}
@@ -4598,7 +4610,7 @@ export default function App() {
         {/* Sezioni descrittive a piena larghezza: riempiono lo spazio sotto le due colonne */}
         <div style={{ display: 'flex', flexDirection: 'column', marginTop: 10 }}>
             {/* Risorse di classe: contatori con reset a riposo breve/lungo */}
-            <Sezione titolo="Risorse di classe" {...propsSez('risorse')}>
+            <Sezione titolo="Risorse di classe" {...propsSez('risorse')} {...apertoProps('risorse')}>
               {scheda.risorse.length === 0 && (
                 <p style={{ ...styles.detail, marginTop: 0 }}>
                   Nessuna risorsa. Aggiungine una per tracciare Ki, punti stregoneria, ira, ispirazione bardica, usi dei privilegi…
@@ -4647,7 +4659,7 @@ export default function App() {
             </Sezione>
 
             {/* Privilegi di classe, tratti della specie, talenti — collassabili */}
-            <Sezione titolo="Privilegi di classe" {...propsSez('privilegi')}>
+            <Sezione titolo="Privilegi di classe" {...propsSez('privilegi')} {...apertoProps('privilegi')}>
               <AreaTesto
                 value={scheda.privilegi}
                 placeholder="Es. Incanalare divinità, Recupero arcano, Attacco furtivo…"
@@ -4655,7 +4667,7 @@ export default function App() {
               />
             </Sezione>
 
-            <Sezione titolo="Tratti della specie" {...propsSez('trattiSpecie')}>
+            <Sezione titolo="Tratti della specie" {...propsSez('trattiSpecie')} {...apertoProps('trattiSpecie')}>
               <AreaTesto
                 value={scheda.trattiSpecie}
                 placeholder="Es. Scurovisione, Astuzia gnomesca, Trance, Fortuna halfling…"
@@ -4663,7 +4675,7 @@ export default function App() {
               />
             </Sezione>
 
-            <Sezione titolo="Talenti" {...propsSez('talenti')}>
+            <Sezione titolo="Talenti" {...propsSez('talenti')} {...apertoProps('talenti')}>
               <AreaTesto
                 value={scheda.talenti}
                 placeholder="Es. Guerramaga (War Caster): vantaggio ai TS di Concentrazione…"
@@ -4671,7 +4683,7 @@ export default function App() {
               />
             </Sezione>
 
-            <Sezione titolo="Addestramento e competenze nell'equipaggiamento" aperto={false} {...propsSez('addestramento')}>
+            <Sezione titolo="Addestramento e competenze nell'equipaggiamento" {...propsSez('addestramento')} {...apertoProps('addestramento', false)}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
                 <span style={styles.detail}>Armature:</span>
                 {[
@@ -4722,7 +4734,7 @@ export default function App() {
               </div>
             </Sezione>
 
-            <Sezione titolo="Equipaggiamento e lingue" {...propsSez('equipaggiamento')}>
+            <Sezione titolo="Equipaggiamento e lingue" {...propsSez('equipaggiamento')} {...apertoProps('equipaggiamento')}>
               <AreaTesto
                 value={scheda.equipaggiamento}
                 placeholder="Zaino, corda, razioni…"
@@ -4779,7 +4791,7 @@ export default function App() {
               </div>
             </Sezione>
 
-            <Sezione titolo="Aspetto, storia e tratti" aperto={false} {...propsSez('aspetto')}>
+            <Sezione titolo="Aspetto, storia e tratti" {...propsSez('aspetto')} {...apertoProps('aspetto', false)}>
               <div style={styles.moduloLabel}>Aspetto</div>
               <AreaTesto
                 value={scheda.aspetto}
