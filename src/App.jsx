@@ -1396,7 +1396,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.0';
+const APP_VERSION = '1.9.1';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4449,13 +4449,6 @@ export default function App() {
                   title="Trasforma un PDF di scheda D&D in personaggio, con l'IA (richiede endpoint configurato)"
                 >
                   {pdfStato === 'loading' ? '🤖 Leggo il PDF…' : '🤖 Importa da PDF (IA)'}
-                </button>
-                <button
-                  style={styles.button}
-                  onClick={() => nuovoPersonaggio(normalizeImported(FLYORA_JSON))}
-                  title="Carica la scheda di esempio (Flyora, stregone livello 4)"
-                >
-                  ✨ Carica esempio (Flyora)
                 </button>
               </div>
 
