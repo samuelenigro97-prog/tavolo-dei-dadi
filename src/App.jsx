@@ -300,9 +300,28 @@ const PRIVILEGI_CLASSE_L1 = {
   stregone: 'Lancio di incantesimi (Carisma)\nStregoneria innata\nFonte di magia (Punti stregoneria)',
   warlock: 'Magia del patto (Carisma)\nPatrono ultraterreno\nSuppliche occulte (invocazioni)',
 };
-function privilegiClasseL1(classe) {
+// Privilegi di 1° livello nella 5.0 (2014): niente Maestria nelle armi, e alcune
+// classi ricevono la sottoclasse già al 1° livello (Chierico, Stregoni, Warlock).
+const PRIVILEGI_CLASSE_L1_2014 = {
+  barbaro: 'Ira\nDifesa senza armatura (CA = 10 + DES + COS)',
+  bardo: 'Lancio di incantesimi (Carisma)\nIspirazione bardica (d6)',
+  chierico: 'Lancio di incantesimi (Saggezza)\nDominio divino (sottoclasse)',
+  druido: 'Lancio di incantesimi (Saggezza)\nDruidico',
+  guerriero: 'Stile di combattimento\nRecuperare energie',
+  ladro: 'Attacco furtivo (1d6)\nMaestria (doppia competenza in 2 abilità)\nGergo ladresco',
+  mago: 'Lancio di incantesimi (Intelligenza)\nRecupero arcano',
+  monaco: 'Difesa senza armatura (CA = 10 + DES + SAG)\nArti marziali',
+  paladino: 'Senso divino\nImposizione delle mani (cura 5 × livello)',
+  ranger: 'Nemico prescelto\nEsploratore naturale',
+  stregone: 'Lancio di incantesimi (Carisma)\nOrigine stregonesca (sottoclasse)',
+  warlock: 'Magia del patto (Carisma)\nPatrono ultraterreno (sottoclasse)',
+};
+/** Privilegi di 1° livello nella versione indicata ('2024' default, '2014'). */
+function privilegiClasseL1(classe, versione = '2024') {
   const c = coloreClasse(classe);
-  return (c && PRIVILEGI_CLASSE_L1[c.match[0]]) || '';
+  if (!c) return '';
+  const tabella = versione === '2014' ? PRIVILEGI_CLASSE_L1_2014 : PRIVILEGI_CLASSE_L1;
+  return tabella[c.match[0]] || '';
 }
 
 // Privilegi di classe guadagnati livello per livello (2024), riassunti in parole
@@ -1354,6 +1373,7 @@ function schedaVuota() {
     sottoclasse: '',
     specie: '',
     allineamento: '',
+    versione: '2024', // regole del personaggio: '2024' (5.5) o '2014' (5.0)
     livello: 1,
     pe: 0,
     ca: 10,
@@ -1664,7 +1684,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.12';
+const APP_VERSION = '1.9.13';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1817,6 +1837,7 @@ function normalizeImported(dati) {
     sottoclasse: str(dati.sottoclasse),
     specie: str(dati.specie),
     allineamento: str(dati.allineamento),
+    versione: dati.versione === '2014' ? '2014' : '2024',
     livello: num(dati.livello, base.livello),
     pe: num(dati.pe, 0),
     ca: num(dati.ca, base.ca),
@@ -2491,6 +2512,8 @@ export default function App() {
   const ritrattoRef = useRef(null);
 
   const scheda = roster.personaggi[roster.attivo];
+  // versione delle regole del personaggio attivo (fallback: impostazione globale)
+  const versione = scheda?.versione || regoleVersione || '2024';
 
   useEffect(() => {
     saveState(roster);
@@ -2577,8 +2600,10 @@ export default function App() {
     (BACKGROUND_COMPETENZE[background] || []).forEach((k) => { s.abilita[k] = Math.max(s.abilita[k] || 0, 1); });
     (Array.isArray(competenzeClasse) ? competenzeClasse : []).forEach((k) => { if (k in s.abilita) s.abilita[k] = 2; });
     (Array.isArray(competenzeSpecie) ? competenzeSpecie : []).forEach((k) => { if (k in s.abilita) s.abilita[k] = 2; });
-    // privilegi di classe di 1° livello
-    s.privilegi = privilegiClasseL1(classe);
+    // versione delle regole scelta per questo personaggio
+    s.versione = regoleVersione;
+    // privilegi di classe di 1° livello (coerenti con la versione)
+    s.privilegi = privilegiClasseL1(classe, regoleVersione);
     // background: bonus alle caratteristiche (solo regole 2024)
     if (regoleVersione === '2024') {
       const [piu2, piu1] = bonusCaratteristicheBackground(background, classe);
@@ -2673,7 +2698,7 @@ export default function App() {
 
     // Sfinimento: nella 5.5 (2024) −2 a ogni tiro di d20 per livello; nella
     // 5.0 (2014) gli effetti sono condizionali (nessuna penalità fissa qui).
-    const penSfinimento = regoleVersione === '2024' ? 2 * scheda.sfinimento : 0;
+    const penSfinimento = versione === '2024' ? 2 * scheda.sfinimento : 0;
     const bonusEff = bonus - penSfinimento;
     const { naturale, dadi } = tiraD20(modalita);
     setTimeout(() => {
@@ -3900,6 +3925,13 @@ export default function App() {
               Liv. <Editable value={scheda.livello} tipo="numero" width={26} onChange={(v) => aggiorna({ livello: Math.max(1, Math.min(20, v)) })} />
             </span>
             <button
+              style={{ ...styles.buttonMini, fontWeight: 'bold', color: versione === '2024' ? C.goldDark : C.green }}
+              title={`Versione delle regole di questo personaggio: ${versione === '2024' ? 'D&D 5.5 (2024)' : 'D&D 5.0 (2014)'}. Click per cambiare.`}
+              onClick={() => aggiorna({ versione: versione === '2024' ? '2014' : '2024' })}
+            >
+              {versione === '2024' ? '5.5' : '5.0'}
+            </button>
+            <button
               style={styles.buttonMini}
               title="Assistente al Passaggio di Livello"
               onClick={() => {
@@ -3981,7 +4013,7 @@ export default function App() {
             </div>
             <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px 10px', alignItems: 'end' }}>
-                <CampoModulo label={regoleVersione === '2024' ? 'Specie' : 'Razza'}>
+                <CampoModulo label={versione === '2024' ? 'Specie' : 'Razza'}>
                   <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => { const sp = SPECIE_DATI[v]; aggiorna({ specie: v, ...(sp ? { velocita: sp.velocita, sensi: sp.sensi, taglia: sp.taglia, trattiSpecie: sp.tratti } : {}), ...ritrattoAuto(scheda.classe, v, scheda.nome) }); }} title="Scegli la specie (imposta velocità, sensi, taglia, tratti e avatar)" />
                 </CampoModulo>
                 <CampoModulo label="Taglia">
@@ -4236,8 +4268,8 @@ export default function App() {
                 <button style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 13 }} onClick={() => aggiorna({ sfinimento: Math.min(6, scheda.sfinimento + 1) })} title="Aumenta">+</button>
               </div>
               {scheda.sfinimento > 0 && (
-                <div style={{ fontSize: 9, color: C.red }} title={regoleVersione === '2024' ? 'Regole 2024: −2 ai tiri di d20 per livello' : `Regole 2014: ${SFINIMENTO_2014[scheda.sfinimento]}`}>
-                  {regoleVersione === '2024' ? `−${scheda.sfinimento * 2}` : SFINIMENTO_2014[scheda.sfinimento]}
+                <div style={{ fontSize: 9, color: C.red }} title={versione === '2024' ? 'Regole 2024: −2 ai tiri di d20 per livello' : `Regole 2014: ${SFINIMENTO_2014[scheda.sfinimento]}`}>
+                  {versione === '2024' ? `−${scheda.sfinimento * 2}` : SFINIMENTO_2014[scheda.sfinimento]}
                 </div>
               )}
             </div>
