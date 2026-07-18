@@ -448,6 +448,126 @@ const PRIVILEGI_CLASSE_LIV = {
   },
 };
 
+// Privilegi di classe per livello nella 5.0 (2014). Differiscono dalla 2024
+// (niente Maestria armi, sottoclasse a livelli diversi, alcune capacità cambiano).
+const PRIVILEGI_CLASSE_LIV_2014 = {
+  barbaro: {
+    2: 'Attacco irruento\nPercezione del pericolo',
+    5: 'Attacco extra\nMovimento veloce (+3 m)',
+    7: 'Istinto ferino',
+    9: 'Critico brutale (1 dado extra)',
+    11: 'Ira implacabile',
+    13: 'Critico brutale (2 dadi extra)',
+    15: 'Ira persistente',
+    17: 'Critico brutale (3 dadi extra)',
+    18: 'Forza indomabile',
+    20: 'Campione primordiale (+4 FOR e COS, max 24)',
+  },
+  bardo: {
+    2: 'Factotum (metà competenza)\nCanzone di riposo (d6)',
+    3: 'Competenza (2 abilità)',
+    5: "Fonte d'ispirazione\nIspirazione bardica d8",
+    6: 'Controincantesimo',
+    10: 'Segreti magici\nIspirazione bardica d10\nCompetenza (altre 2)',
+    14: 'Segreti magici',
+    15: 'Ispirazione bardica d12',
+    18: 'Segreti magici',
+    20: 'Ispirazione superiore',
+  },
+  chierico: {
+    2: 'Incanalare divinità (1/riposo)',
+    5: 'Distruggere non morti (GS 1/2)',
+    6: 'Incanalare divinità (2/riposo)',
+    8: 'Distruggere non morti (GS 1)\nColpo divino (se previsto dal dominio)',
+    10: 'Intervento divino',
+    11: 'Distruggere non morti (GS 2)',
+    14: 'Distruggere non morti (GS 3)',
+    17: 'Distruggere non morti (GS 4)',
+    18: 'Incanalare divinità (3/riposo)',
+    20: 'Intervento divino migliorato',
+  },
+  druido: {
+    2: 'Forma selvatica',
+    4: 'Forma selvatica migliorata (GS 1/2)',
+    8: 'Forma selvatica (GS 1)',
+    18: 'Corpo senza tempo\nIncantesimi bestiali',
+    20: 'Arcidruido',
+  },
+  guerriero: {
+    2: 'Azione impetuosa',
+    5: 'Attacco extra',
+    9: 'Indomito',
+    11: 'Attacco extra (2)',
+    13: 'Indomito (2 usi)',
+    17: 'Azione impetuosa (2 usi)\nIndomito (3 usi)',
+    20: 'Attacco extra (3)',
+  },
+  ladro: {
+    2: 'Azione scaltra',
+    5: 'Schivata prodigiosa',
+    7: 'Elusione',
+    11: 'Talento affidabile',
+    14: 'Percezione cieca',
+    15: 'Mente sfuggente',
+    18: 'Inafferrabile',
+    20: 'Colpo di fortuna',
+  },
+  mago: {
+    18: 'Padronanza degli incantesimi',
+    20: 'Incantesimi distintivi',
+  },
+  monaco: {
+    2: 'Ki\nMovimento senza armatura',
+    3: 'Deviare i proiettili',
+    4: 'Caduta lenta',
+    5: 'Attacco extra\nColpo stordente',
+    6: 'Colpi potenziati dal ki',
+    7: 'Elusione\nQuiete della mente',
+    10: 'Purezza del corpo',
+    13: 'Lingua del sole e della luna',
+    14: 'Anima di diamante',
+    15: 'Corpo senza tempo',
+    18: 'Corpo vuoto',
+    20: 'Sé perfetto',
+  },
+  paladino: {
+    2: 'Stile di combattimento\nPunizione divina',
+    3: 'Salute divina',
+    5: 'Attacco extra',
+    6: 'Aura di protezione',
+    10: 'Aura di coraggio',
+    11: 'Punizione divina migliorata',
+    14: 'Tocco purificante',
+    18: 'Aure (raggio 9 m)',
+  },
+  ranger: {
+    2: 'Stile di combattimento',
+    3: 'Consapevolezza primordiale',
+    5: 'Attacco extra',
+    8: 'Andatura nel terreno',
+    10: 'Nascondersi in piena vista',
+    14: 'Svanire',
+    18: 'Sensi ferini',
+    20: 'Sterminatore di nemici',
+  },
+  stregone: {
+    2: 'Fonte di magia (Punti stregoneria)',
+    3: 'Metamagia',
+    10: 'Metamagia (opzione aggiuntiva)',
+    17: 'Metamagia (opzione aggiuntiva)',
+    20: 'Ristoro stregonesco',
+  },
+  warlock: {
+    2: 'Invocazioni occulte',
+    3: 'Dono del patto',
+    11: 'Arcanum mistico (6° livello)',
+    13: 'Arcanum mistico (7° livello)',
+    15: 'Arcanum mistico (8° livello)',
+    17: 'Arcanum mistico (9° livello)',
+    20: 'Maestro occulto',
+  },
+};
+
 // Livelli di Aumento dei Punteggi di Caratteristica / Talento (2024).
 const ASI_LIV = {
   guerriero: [4, 6, 8, 12, 14, 16, 19],
@@ -455,9 +575,10 @@ const ASI_LIV = {
   _default: [4, 8, 12, 16, 19],
 };
 // Livello in cui si SCEGLIE la sottoclasse (il primo dei livelli di sottoclasse).
-function livelloSceltaSottoclasse(classe) {
+function livelloSceltaSottoclasse(classe, versione = '2024') {
   const k = chiaveClasse(classe);
-  return (k && SOTTOCLASSE_LIV[k] && SOTTOCLASSE_LIV[k][0]) || 3;
+  const liv = sottoclasseLivPer(versione);
+  return (k && liv[k] && liv[k][0]) || 3;
 }
 
 // Elenco (curato) degli incantesimi più comuni per classe e livello, in italiano.
@@ -594,18 +715,29 @@ const SOTTOCLASSE_LIV = {
   mago: [3, 6, 10, 14], monaco: [3, 6, 11, 17], paladino: [3, 7, 15, 20],
   ranger: [3, 7, 11, 15], stregone: [3, 6, 14, 18], warlock: [3, 6, 10, 14],
 };
+// Livelli di sottoclasse nella 5.0 (2014): alcune classi la scelgono già al 1°/2°.
+const SOTTOCLASSE_LIV_2014 = {
+  barbaro: [3, 6, 10, 14], bardo: [3, 6, 14], chierico: [1, 2, 6, 8, 17],
+  druido: [2, 6, 10, 14], guerriero: [3, 7, 10, 15, 18], ladro: [3, 9, 13, 17],
+  mago: [2, 6, 10, 14], monaco: [3, 6, 11, 17], paladino: [3, 7, 15, 20],
+  ranger: [3, 7, 11, 15], stregone: [1, 6, 14, 18], warlock: [1, 6, 10, 14],
+};
+function sottoclasseLivPer(versione) {
+  return versione === '2014' ? SOTTOCLASSE_LIV_2014 : SOTTOCLASSE_LIV;
+}
 
 function chiaveClasse(classe) {
   const c = coloreClasse(classe);
   return c ? c.match[0] : null;
 }
 /** Privilegi di classe guadagnati esattamente a questo livello (testo, o ''). */
-function privilegiClasseLivello(classe, livello) {
+function privilegiClasseLivello(classe, livello, versione = '2024') {
   const k = chiaveClasse(classe);
   if (!k) return '';
-  let extra = (PRIVILEGI_CLASSE_LIV[k] && PRIVILEGI_CLASSE_LIV[k][livello]) || '';
+  const tabella = versione === '2014' ? PRIVILEGI_CLASSE_LIV_2014 : PRIVILEGI_CLASSE_LIV;
+  let extra = (tabella[k] && tabella[k][livello]) || '';
   if (k === 'ladro' && livello % 2 === 1) {
-    // Attacco furtivo del ladro: +1d6 a ogni livello dispari.
+    // Attacco furtivo del ladro: +1d6 a ogni livello dispari (uguale in 5.0 e 5.5).
     extra = (extra ? extra + '\n' : '') + `Attacco furtivo ${Math.ceil(livello / 2)}d6`;
   }
   return extra;
@@ -615,10 +747,11 @@ function asiAlLivello(classe, livello) {
   const k = chiaveClasse(classe);
   return ((k && ASI_LIV[k]) || ASI_LIV._default).includes(livello);
 }
-/** Vero se a questo livello si sceglie/potenzia la sottoclasse. */
-function sottoclasseAlLivello(classe, livello) {
+/** Vero se a questo livello si sceglie/potenzia la sottoclasse (per versione). */
+function sottoclasseAlLivello(classe, livello, versione = '2024') {
   const k = chiaveClasse(classe);
-  return !!(k && SOTTOCLASSE_LIV[k] && SOTTOCLASSE_LIV[k].includes(livello));
+  const liv = sottoclasseLivPer(versione);
+  return !!(k && liv[k] && liv[k].includes(livello));
 }
 
 // Competenze concesse dalla SPECIE (2024): quasi nessuna specie dà abilità
@@ -1740,7 +1873,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.15';
+const APP_VERSION = '1.9.16';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3400,17 +3533,17 @@ export default function App() {
         const slotStr = slotNuovi
           ? Object.keys(slotNuovi).filter((l) => slotNuovi[l].totale > 0).map((l) => `${l}° ×${slotNuovi[l].totale}`).join(' · ')
           : null;
-        const privNuoviTutti = privilegiClasseLivello(scheda.classe, nuovoLivello);
+        const privNuoviTutti = privilegiClasseLivello(scheda.classe, nuovoLivello, versione);
         // Non ripetere righe già presenti nei privilegi attuali.
         const attualiPriv = (scheda.privilegi || '');
         const privNuovi = privNuoviTutti
           ? privNuoviTutti.split('\n').filter((r) => r.trim() && !attualiPriv.includes(r.trim())).join('\n')
           : '';
         const haASI = asiAlLivello(scheda.classe, nuovoLivello);
-        const haSub = sottoclasseAlLivello(scheda.classe, nuovoLivello);
+        const haSub = sottoclasseAlLivello(scheda.classe, nuovoLivello, versione);
         // A questo livello si SCEGLIE la sottoclasse (il primo livello di sottoclasse)?
         const scelteSub = sottoclassiPerClasse(scheda.classe);
-        const mostraSceltaSub = nuovoLivello === livelloSceltaSottoclasse(scheda.classe) && scelteSub.length > 0;
+        const mostraSceltaSub = nuovoLivello === livelloSceltaSottoclasse(scheda.classe, versione) && scelteSub.length > 0;
         // Le scelte interattive sono complete? (per abilitare la conferma)
         const asiCompleto = !haASI
           || (levelUpBozza.asiMode === 'talento'
