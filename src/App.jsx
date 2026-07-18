@@ -1343,12 +1343,21 @@ function schedaVuota() {
 }
 
 const TIPI_ARMATURA = [
-  { key: 'manuale', label: 'CA a mano' },
+  { key: 'manuale', label: 'CA Manuale' },
   { key: 'nessuna', label: 'Senza armatura' },
   { key: 'leggera', label: 'Leggera (+DES)' },
   { key: 'media', label: 'Media (+DES max 2)' },
   { key: 'pesante', label: 'Pesante (fissa)' },
 ];
+// Valore "base" tipico per categoria (5e): scegliendo la categoria si parte da
+// un'armatura sensata, così la CA cambia subito; l'utente può poi correggere.
+const BASE_ARMATURA_DEFAULT = { leggera: 12, media: 14, pesante: 18 };
+// Esempi di armature per categoria (per il suggerimento sotto la CA).
+const ESEMPI_ARMATURA = {
+  leggera: 'Imbottita 11 · Cuoio 11 · Cuoio borchiato 12',
+  media: 'Camaglia 13 · Corazza 14 · Mezza piastra 15',
+  pesante: 'Anelli 14 · Maglia 16 · Chiodata 17 · Piastre 18',
+};
 
 const CONDIZIONI_5E = [
   'Accecato', 'Affascinato', 'Afferrato', 'Assordato', 'Avvelenato',
@@ -1566,7 +1575,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.4';
+const APP_VERSION = '1.9.5';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3909,7 +3918,13 @@ export default function App() {
               <select
                 style={{ ...styles.inlineInput, fontSize: 10, padding: '1px 3px', maxWidth: '100%', marginTop: 2 }}
                 value={scheda.armatura.tipo}
-                onChange={(e) => aggiorna({ armatura: { ...scheda.armatura, tipo: e.target.value } })}
+                onChange={(e) => {
+                  const tipo = e.target.value;
+                  // Passando a una categoria con armatura, parti da un valore base
+                  // sensato così la CA cambia subito (poi si può correggere a mano).
+                  const base = BASE_ARMATURA_DEFAULT[tipo] ?? scheda.armatura.base;
+                  aggiorna({ armatura: { ...scheda.armatura, tipo, base } });
+                }}
               >
                 {TIPI_ARMATURA.map((t) => (
                   <option key={t.key} value={t.key}>{t.label}</option>
@@ -3917,7 +3932,7 @@ export default function App() {
               </select>
               <div style={{ fontSize: 10, color: C.inkDim, display: 'flex', gap: 5, alignItems: 'center', justifyContent: 'center', marginTop: 'auto', paddingTop: 6, flexWrap: 'wrap' }}>
                 {(scheda.armatura.tipo === 'leggera' || scheda.armatura.tipo === 'media' || scheda.armatura.tipo === 'pesante') && (
-                  <span>base <Editable value={scheda.armatura.base} tipo="numero" width={24} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, base: Math.max(0, v) } })} /></span>
+                  <span title={`CA base dell'armatura. Esempi: ${ESEMPI_ARMATURA[scheda.armatura.tipo]}`}>base <Editable value={scheda.armatura.base} tipo="numero" width={24} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, base: Math.max(0, v) } })} /></span>
                 )}
                 <span className="tirabile" style={{ cursor: 'pointer' }} title="Scudo: +2 alla CA" onClick={() => aggiorna({ armatura: { ...scheda.armatura, scudo: !scheda.armatura.scudo } })}>
                   <span style={styles.pip(scheda.armatura.scudo, C.goldDark)} /> <span style={{ opacity: scheda.armatura.scudo ? 1 : 0.4 }}>🛡️</span>
