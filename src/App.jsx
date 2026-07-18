@@ -1820,6 +1820,81 @@ function spiegaIncantesimo(nome) {
   return SPIEG_INCANTESIMI[n] || SPIEG_INCANTESIMI[n.replace(/\s*\(.*$/, '').trim()] || null;
 }
 
+// Tratti di razza/specie e sensi comuni (tutte le razze), riassunti nostri.
+const SPIEG_TRATTI = {
+  'Scurovisione': 'Vedi al buio entro una certa distanza (in bianco e nero); nell\'oscurità totale vedi come in penombra.',
+  'Percezione cieca': 'Percepisci ciò che ti circonda senza vedere, entro una breve distanza.',
+  'Percezione tremorsensitiva': 'Percepisci creature e cose a contatto col terreno tramite le vibrazioni.',
+  'Vista vera': 'Vedi nel buio normale e magico, gli invisibili e le vere forme (illusioni, mutaforma).',
+  // Elfo
+  'Trance': 'Non dormi: 4 ore di meditazione vigile equivalgono a un riposo lungo di 8.',
+  'Retaggio Fatato': "Vantaggio ai TS contro l'essere affascinato; la magia non può farti addormentare.",
+  'Retaggio fatato': "Vantaggio ai TS contro l'essere affascinato; la magia non può farti addormentare.",
+  'Sensi Acuti': 'Competenza in unʼabilità a scelta tra Intuizione, Percezione o Sopravvivenza.',
+  'Sensi acuti': 'Competenza in unʼabilità a scelta tra Intuizione, Percezione o Sopravvivenza.',
+  // Gnomo
+  'Astuzia gnomesca': 'Vantaggio ai TS su Intelligenza, Saggezza e Carisma contro la magia.',
+  // Nano
+  'Robustezza nanica': 'PF massimi aumentati (+1 per livello) grazie alla tempra nanica.',
+  'Scalpellino': 'Competenza con gli arnesi da muratore; riconosci lʼorigine delle opere in pietra.',
+  'Resistenza al veleno': 'Vantaggio ai TS contro il veleno e resistenza ai danni da veleno.',
+  // Halfling
+  'Coraggioso': "Vantaggio ai TS contro l'essere spaventato.",
+  'Agilità halfling': 'Puoi muoverti attraverso lo spazio di creature più grandi di te.',
+  'Fortuna': 'Quando ottieni 1 sul d20 per un attacco, una prova o un TS, puoi ritirare il dado.',
+  'Furtività naturale': 'Puoi tentare di nasconderti anche se sei coperto solo da una creatura più grande.',
+  // Aasimar
+  'Resistenza celestiale': 'Resistenza ai danni necrotici e radiosi.',
+  'Mani guaritrici': 'Puoi curare PF pari al tuo livello, una volta per riposo lungo.',
+  'Portatore di luce': 'Conosci il trucchetto Luce.',
+  // Dragonide
+  'Arma a soffio': 'Sostituisci un attacco con un soffio elementale che colpisce unʼarea.',
+  'Resistenza al danno': 'Hai resistenza a un tipo di danno legato alla tua stirpe.',
+  'Antenati draconici': 'Il tuo tipo di drago determina il danno del soffio e la resistenza.',
+  // Goliath
+  'Retaggio dei giganti': 'Ottieni un beneficio legato a un tipo di gigante.',
+  'Corporatura potente': 'Conti come una taglia più grande per capacità di carico e prese.',
+  // Orco
+  'Scatto adrenalinico': 'Come azione bonus puoi Scattare e ottenere PF temporanei.',
+  'Resistenza implacabile': 'Quando scenderesti a 0 PF resti a 1 (una volta per riposo lungo).',
+  // Tiefling
+  'Presenza ultraterrena': 'Conosci il trucchetto Taumaturgia.',
+  // Umano (2024)
+  'Pieno di risorse': "Ottieni Ispirazione dopo ogni riposo lungo. (2024)",
+  'Abile': 'Competenza in unʼabilità a scelta.',
+  'Versatile': 'Ottieni un talento di origine a tua scelta. (2024)',
+};
+/** Spiegazione di un tratto di razza/senso (o null), con prefisso di parola. */
+function spiegaTratto(nome) {
+  const n = String(nome || '').trim();
+  if (SPIEG_TRATTI[n]) return SPIEG_TRATTI[n];
+  const base = n.replace(/\s*\(.*$/, '').trim();
+  if (SPIEG_TRATTI[base]) return SPIEG_TRATTI[base];
+  for (const k of Object.keys(SPIEG_TRATTI)) if (base.startsWith(k)) return SPIEG_TRATTI[k];
+  return null;
+}
+/** Righe (di un testo libero) che hanno una spiegazione, come lista cliccabile ⓘ. */
+function renderSpiegazioni(testo, lookup, setInfo) {
+  const trovate = String(testo || '')
+    .split('\n').map((r) => r.trim()).filter(Boolean)
+    .map((r) => ({ r, sp: lookup(r) })).filter((x) => x.sp);
+  if (trovate.length === 0) return null;
+  return (
+    <div style={{ marginTop: 8, fontSize: 12, borderTop: `1px solid ${C.border}`, paddingTop: 6 }}>
+      <div style={{ ...styles.detail, marginBottom: 3 }}>ⓘ Tocca per la spiegazione:</div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        {trovate.map(({ r, sp }, i) => (
+          <span
+            key={i}
+            style={{ cursor: 'help', background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 6, padding: '2px 7px' }}
+            onClick={() => setInfo({ titolo: r, testo: sp })}
+          >{r} ⓘ</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const DENARI = [
   { key: 'mr', label: 'MR' },
   { key: 'ma', label: 'MA' },
@@ -2262,7 +2337,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.20';
+const APP_VERSION = '1.9.21';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -5531,6 +5606,7 @@ export default function App() {
                 placeholder="Es. Incanalare divinità, Recupero arcano, Attacco furtivo…"
                 onChange={(v) => aggiorna({ privilegi: v })}
               />
+              {renderSpiegazioni(scheda.privilegi, spiegaPrivilegio, setInfo)}
             </Sezione>
 
             <Sezione titolo="Privilegi di sottoclasse" {...apertoProps('privilegiSottoclasse')}>
@@ -5539,6 +5615,7 @@ export default function App() {
                 placeholder={`Privilegi della sottoclasse${scheda.sottoclasse ? ` (${scheda.sottoclasse})` : ''}: scrivili qui per tenerli separati dai privilegi di classe.`}
                 onChange={(v) => aggiorna({ privilegiSottoclasse: v })}
               />
+              {renderSpiegazioni(scheda.privilegiSottoclasse, spiegaPrivilegio, setInfo)}
             </Sezione>
 
             <Sezione titolo="Tratti della specie" {...propsSez('trattiSpecie')} {...apertoProps('trattiSpecie')}>
@@ -5547,6 +5624,7 @@ export default function App() {
                 placeholder="Es. Scurovisione, Astuzia gnomesca, Trance, Fortuna halfling…"
                 onChange={(v) => aggiorna({ trattiSpecie: v })}
               />
+              {renderSpiegazioni(scheda.trattiSpecie, spiegaTratto, setInfo)}
             </Sezione>
 
             <Sezione titolo="Talenti" {...propsSez('talenti')} {...apertoProps('talenti')}>
