@@ -759,7 +759,7 @@ const styles = {
   },
   header: {
     maxWidth: 1080,
-    margin: '0 auto 16px auto',
+    margin: '0 auto 26px auto',
     padding: '12px 0 16px',
     display: 'flex',
     alignItems: 'center',
@@ -1123,20 +1123,7 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
   margin: 0 0 8px 0 !important;
 }
 /* testata: gruppi ai lati, titolo centrato al centro (flex, niente sovrapposizioni) */
-.app-header-title {
-  flex: 1 1 auto;
-  text-align: center;
-  font-weight: 800;
-  /* logo colorato: stessa sequenza di colori dei dadi (d4→d20), ritagliata sul testo */
-  background: linear-gradient(90deg, ${COLORE_DADO[4]} 0%, ${COLORE_DADO[6]} 20%, ${COLORE_DADO[8]} 40%, ${COLORE_DADO[10]} 60%, ${COLORE_DADO[12]} 80%, ${COLORE_DADO[20]} 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-  text-shadow: none;
-}
-/* la versione (vX.Y.Z) resta in colore tenue, non nella sfumatura */
-.app-header-title span { -webkit-text-fill-color: var(--c-ink-dim); color: var(--c-ink-dim); }
+.app-header-title { flex: 1 1 auto; text-align: center; }
 /* schermata di caricamento dal cloud: nuvola che pulsa e barra che scorre */
 .cloud-spinner { animation: cloud-bob 1.4s ease-in-out infinite; }
 @keyframes cloud-bob { 0%,100% { transform: translateY(0); opacity: 0.85; } 50% { transform: translateY(-8px); opacity: 1; } }
@@ -1677,7 +1664,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.11';
+const APP_VERSION = '1.9.12';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
