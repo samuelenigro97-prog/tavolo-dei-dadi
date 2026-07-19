@@ -127,6 +127,25 @@ function sottoclassiPerClasse(classe) {
   return (c && SOTTOCLASSI_5E[c.match[0]]) || [];
 }
 
+// Privilegi delle sottoclasse per livello (in costruzione: si aggiungono classe
+// per classe). Chiave = nome della sottoclasse come in SOTTOCLASSI_5E.
+const SUBCLASS_PRIVILEGI = {
+  // Stregone (2024)
+  'Magia Selvaggia': { 3: 'Ondata di Magia Selvaggia\nOnde di Caos', 6: 'Piega la Sorte', 14: 'Caos Controllato', 18: 'Bombardamento Magico' },
+  'Stirpe Draconica': { 3: 'Resilienza Draconica\nIncantesimi Draconici', 6: 'Affinità Elementale', 14: 'Ali di Drago', 18: 'Compagno Draconico' },
+  'Mente Aberrante': { 3: 'Linguaggio Telepatico\nIncantesimi Psionici', 6: 'Stregoneria Psionica\nDifese Psichiche', 14: 'Rivelazione nella Carne', 18: 'Implosione Distorcente' },
+  'Anima Meccanica': { 3: 'Magia Meccanica\nRipristinare l\'Equilibrio', 6: 'Bastione della Legge', 14: 'Trance dell\'Ordine', 18: 'Cavalcata Meccanica' },
+};
+/** Privilegi della sottoclasse fino al livello dato (testo con a-capo), o null. */
+function privilegiSottoclasseFinoA(sottoclasse, livello) {
+  const t = SUBCLASS_PRIVILEGI[sottoclasse];
+  if (!t) return null;
+  const lv = Math.max(1, Math.floor(livello) || 1);
+  const righe = [];
+  for (let L = 1; L <= lv; L++) if (t[L]) righe.push(t[L]);
+  return righe.join('\n');
+}
+
 // Caratteristica da incantatore per classe (chiave = primo alias in CLASSI).
 const CARATT_INCANTATORE = {
   bardo: 'carisma', stregone: 'carisma', warlock: 'carisma', paladino: 'carisma',
@@ -2350,7 +2369,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.25';
+const APP_VERSION = '1.9.26';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -5636,11 +5655,18 @@ export default function App() {
 
                   if (q && !haSpells) return null;
                   if (!haSlot && !haSpells) return null;
-                  
+
+                  const countLiv = scheda.incantesimiLista.filter((x) => x.livello === liv).length;
+                  // Conteggio accanto al titolo: trucchetti = selezionati/conosciuti;
+                  // livelli 1+ = quanti ne hai a quel livello.
+                  const conteggio = liv === 0
+                    ? (maxTrucchetti != null ? `${countLiv}/${maxTrucchetti}` : `${countLiv}`)
+                    : `${countLiv}`;
                   return (
                     <div key={liv} style={{ marginBottom: 16 }}>
-                      <h4 style={{ fontSize: 12, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5, borderBottom: `1px solid ${C.border}`, paddingBottom: 2, marginBottom: 6 }}>
-                        {liv === 0 ? 'Trucchetti (Livello 0)' : `${liv}° Livello`}
+                      <h4 style={{ fontSize: 12, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5, borderBottom: `1px solid ${C.border}`, paddingBottom: 2, marginBottom: 6, display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                        <span>{liv === 0 ? 'Trucchetti (Livello 0)' : `${liv}° Livello`}</span>
+                        <span style={{ color: (liv === 0 && trucchettiPieno) ? C.goldDark : C.inkDim, fontWeight: 700 }}>{conteggio}</span>
                       </h4>
                       <table style={styles.table}>
                         <thead>
@@ -5749,6 +5775,19 @@ export default function App() {
             </Sezione>
 
             <Sezione titolo="Privilegi di sottoclasse" {...apertoProps('privilegiSottoclasse')}>
+              {(() => {
+                const dati = privilegiSottoclasseFinoA(scheda.sottoclasse, scheda.livello);
+                if (dati === null) return null; // sottoclasse non ancora nel database
+                return (
+                  <button
+                    style={{ ...styles.button, marginBottom: 8, fontSize: 12 }}
+                    title={`Inserisce i privilegi di ${scheda.sottoclasse} fino al liv. ${scheda.livello}`}
+                    onClick={() => aggiorna({ privilegiSottoclasse: dati })}
+                  >
+                    ✨ Riempi dai dati ({scheda.sottoclasse}, liv. {scheda.livello})
+                  </button>
+                );
+              })()}
               <ListaQuadratini
                 value={scheda.privilegiSottoclasse}
                 lookup={spiegaPrivilegio}
