@@ -799,6 +799,13 @@ const SPECIE_DATI = {
   Tiefling: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Presenza ultraterrena, Resistenza al danno' },
   Umano: { velocita: 9, sensi: '', taglia: 'Media', tratti: 'Pieno di risorse, Abile, Versatile' },
 };
+/** Dati di una specie a partire dal nome scelto (anche varianti tipo "Elfo Alto"). */
+function datiSpecieDi(specie) {
+  if (!specie) return null;
+  const s = String(specie).toLowerCase();
+  const k = Object.keys(SPECIE_DATI).find((x) => s.includes(x.toLowerCase()));
+  return k ? { ...SPECIE_DATI[k], nome: k } : null;
+}
 
 // Slot incantesimo degli incantatori completi (livello PG → slot per livello 1-9).
 const SLOT_FULL_CASTER = {
@@ -2343,7 +2350,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.24';
+const APP_VERSION = '1.9.25';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2908,7 +2915,7 @@ function ListaQuadratini({ value, onChange, lookup, placeholder }) {
           const sp = lookup ? lookup(r) : null;
           return (
             <button key={i} style={chip} title="Apri: dettagli e modifica" onClick={() => setEdit({ index: i, valore: r })}>
-              {r}{sp ? ' ⓘ' : ''}
+              {r}
             </button>
           );
         })}
@@ -4196,7 +4203,7 @@ export default function App() {
                               style={{ cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
                               title="Tocca per la spiegazione"
                               onClick={() => setInfo({ titolo: r, testo: sp })}
-                            >{r} ⓘ</span>
+                            >{r}</span>
                           ) : r}
                         </div>
                       );
@@ -4457,20 +4464,32 @@ export default function App() {
                 <button style={styles.buttonMini} title="Genera un nome fantasy coerente con la specie" onClick={() => setB({ nome: nomeCasuale(bozzaCrea.specie) })}>🎲</button>
               </div>
 
-              <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>Classe</label>
-              <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.classe} onChange={(e) => setB({ classe: e.target.value, competenzeClasse: [] })}>
-                <option value="">Scegli…</option>
-                {NOMI_CLASSI.map((n) => <option key={n} value={n}>{n}</option>)}
-              </select>
-
               <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{regoleVersione === '2024' ? 'Specie' : 'Razza'}</label>
-              <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.specie} onChange={(e) => setB({ specie: e.target.value, competenzeSpecie: [] })}>
+              <select style={{ ...stileSelect, marginBottom: bozzaCrea.specie ? 4 : 12 }} value={bozzaCrea.specie} onChange={(e) => setB({ specie: e.target.value, competenzeSpecie: [] })}>
                 <option value="">Scegli…</option>
                 {Object.entries(SPECIE_5E).map(([g, opts]) => (
                   <optgroup key={g} label={g}>
                     {opts.map((n) => <option key={n} value={n}>{n}</option>)}
                   </optgroup>
                 ))}
+              </select>
+              {bozzaCrea.specie && (() => {
+                const d = datiSpecieDi(bozzaCrea.specie);
+                return (
+                  <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 10px', marginBottom: 12, fontSize: 11, lineHeight: 1.5 }}>
+                    {d && <div>🏃 Velocità {d.velocita} m · 📏 {d.taglia}{d.sensi ? ` · 👁 ${d.sensi}` : ''}</div>}
+                    {d && <div>✨ Tratti: {d.tratti}</div>}
+                    <div style={{ color: C.inkDim }}>
+                      💪 Bonus di caratteristica: {regoleVersione === '2024' ? 'dal background (nella 5.5 non dalla specie)' : 'assegnati dalla razza'}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>Classe</label>
+              <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.classe} onChange={(e) => setB({ classe: e.target.value, competenzeClasse: [] })}>
+                <option value="">Scegli…</option>
+                {NOMI_CLASSI.map((n) => <option key={n} value={n}>{n}</option>)}
               </select>
 
               <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>Background</label>
@@ -4479,9 +4498,11 @@ export default function App() {
                 {BACKGROUND_5E.map((n) => <option key={n} value={n}>{n}</option>)}
               </select>
               {bozzaCrea.background && (
-                <div style={{ ...styles.detail, marginBottom: 12, fontSize: 11 }}>
-                  Competenze (background): {(BACKGROUND_COMPETENZE[bozzaCrea.background] || []).map((k) => ABILITA.find((a) => a.key === k)?.label).join(', ')}
-                  {bonusBg.length > 0 && ` · Caratteristiche: +2 ${bonusBg[0]?.slice(0, 3).toUpperCase()}, +1 ${bonusBg[1]?.slice(0, 3).toUpperCase()}`}
+                <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 10px', marginBottom: 12, fontSize: 11, lineHeight: 1.5 }}>
+                  <div>🎓 Competenze: {(BACKGROUND_COMPETENZE[bozzaCrea.background] || []).map((k) => ABILITA.find((a) => a.key === k)?.label).join(', ') || '—'}</div>
+                  {regoleVersione === '2024' && bonusBg.length > 0 && (
+                    <div>💪 Caratteristiche: +2 {bonusBg[0]?.slice(0, 3).toUpperCase()}, +1 {bonusBg[1]?.slice(0, 3).toUpperCase()} (a scelta: +1 a tre diverse)</div>
+                  )}
                 </div>
               )}
 
@@ -4824,13 +4845,6 @@ export default function App() {
             <span style={{ fontSize: 15, fontWeight: 'bold', color: C.goldDark, display: 'inline-flex', alignItems: 'center', gap: 4, marginRight: 2 }}>
               Liv. <Editable value={scheda.livello} tipo="numero" width={26} onChange={(v) => aggiorna({ livello: Math.max(1, Math.min(20, v)) })} />
             </span>
-            <button
-              style={{ ...styles.buttonMini, fontWeight: 'bold', color: versione === '2024' ? C.goldDark : C.green }}
-              title={`Versione delle regole di questo personaggio: ${versione === '2024' ? 'D&D 5.5 (2024)' : 'D&D 5.0 (2014)'}. Click per cambiare.`}
-              onClick={() => aggiorna({ versione: versione === '2024' ? '2014' : '2024' })}
-            >
-              {versione === '2024' ? '5.5' : '5.0'}
-            </button>
             <button
               style={styles.buttonMini}
               title="Assistente al Passaggio di Livello"
@@ -5260,7 +5274,7 @@ export default function App() {
                         style={{ fontSize: 13, color: C.ink, letterSpacing: 0.8, fontWeight: 'bold', cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
                         title="Cosa governa questa caratteristica?"
                         onClick={() => setInfo({ titolo: label, testo: SPIEG_CARATT[key] })}
-                      >{label.toUpperCase()} ⓘ</div>
+                      >{label.toUpperCase()}</div>
                       <div style={{ ...styles.detail, fontSize: 13 }} title="Punteggio di caratteristica (1 click per modificare)">
                         <Editable
                           value={scheda.caratteristiche[key]}
