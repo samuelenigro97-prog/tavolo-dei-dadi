@@ -2343,7 +2343,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.23';
+const APP_VERSION = '1.9.24';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3125,6 +3125,7 @@ export default function App() {
   const [mostraPrivilegi, setMostraPrivilegi] = useState(false); // panoramica privilegi per livello
   const [info, setInfo] = useState(null); // nuvoletta esplicativa: { titolo, testo }
   const [dettaglioInc, setDettaglioInc] = useState(null); // id incantesimo aperto nel sottomenu
+  const [conferma, setConferma] = useState(null); // { titolo, testo, onConferma } per la conferma in-app
   const [levelUpBozza, setLevelUpBozza] = useState({ metodo: 'media', hpLanciato: 0 });
   const ordineRef = useRef(ordineSezioni);
   ordineRef.current = ordineSezioni;
@@ -3378,13 +3379,16 @@ export default function App() {
   }
 
   function eliminaPersonaggio() {
-    if (!window.confirm(`Eliminare "${scheda.nome}"? L'operazione non si può annullare.`)) return;
-    setRoster((r) => {
-      const personaggi = { ...r.personaggi };
-      delete personaggi[r.attivo];
-      const ids = Object.keys(personaggi);
-      if (ids.length === 0) return rosterVuoto();
-      return { attivo: ids[0], personaggi };
+    setConferma({
+      titolo: 'Elimina personaggio',
+      testo: `Vuoi eliminare davvero "${scheda.nome || 'Senza nome'}"? L'operazione non si può annullare.`,
+      onConferma: () => setRoster((r) => {
+        const personaggi = { ...r.personaggi };
+        delete personaggi[r.attivo];
+        const ids = Object.keys(personaggi);
+        if (ids.length === 0) return rosterVuoto();
+        return { attivo: ids[0], personaggi };
+      }),
     });
   }
 
@@ -3902,6 +3906,22 @@ export default function App() {
         </div>
       )}
 
+      {conferma && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 3200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'rgba(0,0,0,0.55)' }}
+          onClick={() => setConferma(null)}
+        >
+          <div style={{ ...styles.panel, maxWidth: 380, width: '100%', boxShadow: '0 8px 30px rgba(0,0,0,0.4)' }} onClick={(e) => e.stopPropagation()}>
+            <strong style={{ color: C.red, fontSize: 16, display: 'block', marginBottom: 8 }}>{conferma.titolo}</strong>
+            <div style={{ fontSize: 14, lineHeight: 1.45, color: C.ink, marginBottom: 16 }}>{conferma.testo}</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button style={{ ...styles.button, flex: 1 }} onClick={() => setConferma(null)}>Annulla</button>
+              <button style={{ ...styles.buttonDanger, flex: 1 }} onClick={() => { const f = conferma.onConferma; setConferma(null); if (f) f(); }}>🗑 Elimina</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {dettaglioInc != null && (() => {
         const s = scheda.incantesimiLista.find((x) => x.id === dettaglioInc);
         if (!s) return null;
@@ -3919,11 +3939,7 @@ export default function App() {
                 <strong style={{ color: C.goldDark, fontSize: 17 }}>{s.nome || 'Incantesimo'}</strong>
                 <button style={styles.buttonMini} onClick={() => setDettaglioInc(null)} title="Chiudi">✕</button>
               </div>
-              <div style={{ ...styles.detail, marginBottom: 4 }}>{s.livello === 0 ? 'Trucchetto' : `Incantesimo di ${s.livello}° livello`}</div>
-              {/* Effetti (spiegazione) */}
-              <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 12px', fontSize: 14, lineHeight: 1.4 }}>
-                {eff || 'Nessuna spiegazione automatica per questo incantesimo. Scrivi le note qui sotto.'}
-              </div>
+              <div style={{ ...styles.detail, marginBottom: 4 }}>Modifica · {s.livello === 0 ? 'Trucchetto' : `Incantesimo di ${s.livello}° livello`}</div>
 
               <label style={etichetta}>Nome</label>
               <input style={campo} value={s.nome} onChange={(e) => upd({ nome: e.target.value })} />
@@ -3944,15 +3960,7 @@ export default function App() {
                   <label style={etichetta}>Gittata</label>
                   <input style={campo} value={s.gittata} onChange={(e) => upd({ gittata: e.target.value })} />
                 </div>
-                {s.livello > 0 && (
-                  <div style={{ flex: 1 }}>
-                    <label style={etichetta}>Preparato</label>
-                    <button
-                      style={{ ...styles.button, width: '100%', marginTop: 2, color: s.preparato !== false ? '#d4af37' : C.inkDim }}
-                      onClick={() => upd({ preparato: !(s.preparato !== false) })}
-                    >{s.preparato !== false ? '★ Preparato' : '☆ Non preparato'}</button>
-                  </div>
-                )}
+                <div style={{ flex: 1 }} />
               </div>
               <label style={etichetta}>Note</label>
               <input style={campo} value={s.note} onChange={(e) => upd({ note: e.target.value })} placeholder="Componenti, TS, concentrazione…" />
@@ -4031,18 +4039,16 @@ export default function App() {
                   <button
                     style={{ ...styles.buttonDanger, padding: '4px 10px', fontSize: 13, flexShrink: 0 }}
                     title={`Elimina ${p.nome || 'questo personaggio'}`}
-                    onClick={() => {
-                      if (window.confirm(`Eliminare "${p.nome || 'Senza nome'}"? L'azione è irreversibile.`)) {
-                        setRoster((r) => {
-                          const nuovi = { ...r.personaggi };
-                          delete nuovi[id];
-                          const nuovoAttivo = r.attivo === id
-                            ? (Object.keys(nuovi)[0] ?? null)
-                            : r.attivo;
-                          return { personaggi: nuovi, attivo: nuovoAttivo };
-                        });
-                      }
-                    }}
+                    onClick={() => setConferma({
+                      titolo: 'Elimina personaggio',
+                      testo: `Vuoi eliminare davvero "${p.nome || 'Senza nome'}"? L'azione è irreversibile.`,
+                      onConferma: () => setRoster((r) => {
+                        const nuovi = { ...r.personaggi };
+                        delete nuovi[id];
+                        const nuovoAttivo = r.attivo === id ? (Object.keys(nuovi)[0] ?? null) : r.attivo;
+                        return { personaggi: nuovi, attivo: nuovoAttivo };
+                      }),
+                    })}
                   >
                     🗑️
                   </button>
@@ -5583,7 +5589,6 @@ export default function App() {
                 Trucchetti e incantesimi
               </h3>
               {(() => {
-                const preparati = scheda.incantesimiLista.filter((s) => s.livello > 0 && s.preparato !== false).length;
                 return (
                   <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
                     <input
@@ -5593,7 +5598,7 @@ export default function App() {
                       placeholder="🔍 Cerca incantesimo…"
                       style={{ ...styles.inlineInput, padding: '5px 8px', width: 200 }}
                     />
-                    <span style={styles.detail}>★ = preparato · <strong>{preparati}</strong> preparati</span>
+                    <span style={styles.detail}>Tocca il nome per gli effetti · ✎ modifica · 🗑 elimina</span>
                     {/* Conteggi con massimo modificabile: al limite si bloccano gli "Aggiungi" */}
                     {maxTrucchetti != null && (
                       <span style={{ ...styles.detail, color: trucchettiPieno ? C.goldDark : C.inkDim, fontWeight: trucchettiPieno ? 700 : 400 }} title="Trucchetti conosciuti / massimo (modificabile). Al massimo il tasto Aggiungi si blocca.">
@@ -5626,7 +5631,6 @@ export default function App() {
                       <table style={styles.table}>
                         <thead>
                           <tr>
-                            {liv > 0 && <th style={{ ...styles.th, width: 24 }} title="Preparato" />}
                             <th style={styles.th}>Nome</th>
                             <th style={styles.th}>Tempo</th>
                             <th style={styles.th}>Gittata</th>
@@ -5636,27 +5640,14 @@ export default function App() {
                         </thead>
                         <tbody>
                           {spells.map((s) => {
-                            const aggiornaIncantesimo = (patch) =>
-                              aggiorna({
-                                incantesimiLista: scheda.incantesimiLista.map((x) =>
-                                  x.id === s.id ? { ...x, ...patch } : x
-                                ),
-                              });
-                            const preparato = s.preparato !== false;
+                            const eff = spiegaIncantesimo(s.nome);
                             return (
-                              <tr key={s.id} style={liv > 0 && !preparato ? { opacity: 0.5 } : undefined}>
-                                {liv > 0 && (
-                                  <td style={{ ...styles.td, textAlign: 'center', cursor: 'pointer', color: preparato ? '#d4af37' : C.inkDim }}
-                                    title={preparato ? 'Preparato (click: conosciuto ma non preparato)' : 'Conosciuto (click: prepara)'}
-                                    onClick={() => aggiornaIncantesimo({ preparato: !preparato })}>
-                                    {preparato ? '★' : '☆'}
-                                  </td>
-                                )}
+                              <tr key={s.id}>
                                 <td style={styles.td}>
                                   <button
                                     style={{ background: 'transparent', border: 'none', color: C.ink, fontWeight: 600, cursor: 'pointer', textAlign: 'left', padding: 0, fontSize: 14, textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
-                                    title="Apri: effetti e modifiche"
-                                    onClick={() => setDettaglioInc(s.id)}
+                                    title="Cosa fa questo incantesimo?"
+                                    onClick={() => setInfo({ titolo: `${s.nome || 'Incantesimo'}${s.livello === 0 ? ' · Trucchetto' : ` · ${s.livello}° livello`}`, testo: eff || 'Nessuna descrizione disponibile per questo incantesimo. Aprilo con ✎ per aggiungere delle note.' })}
                                   >
                                     {s.nome || 'Senza nome'}
                                   </button>
@@ -5664,8 +5655,9 @@ export default function App() {
                                 <td style={{ ...styles.td, color: C.inkDim }}>{s.tempo}</td>
                                 <td style={{ ...styles.td, color: C.inkDim }}>{s.gittata}</td>
                                 <td style={{ ...styles.td, color: C.inkDim }}>{s.note}</td>
-                                <td style={{ ...styles.td, textAlign: 'right' }}>
-                                  <button style={styles.buttonMini} title="Apri i dettagli" onClick={() => setDettaglioInc(s.id)}>⋯</button>
+                                <td style={{ ...styles.td, textAlign: 'right', whiteSpace: 'nowrap' }}>
+                                  <button style={styles.buttonMini} title="Modifica" onClick={() => setDettaglioInc(s.id)}>✎</button>{' '}
+                                  <button style={{ ...styles.buttonMini, color: C.red }} title="Elimina incantesimo" onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })}>🗑</button>
                                 </td>
                               </tr>
                             );

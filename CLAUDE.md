@@ -184,6 +184,20 @@ Nessuna configurazione elimina i conflitti al 100% se due agenti editano le
 Aggiornato: le voci qui sono richieste esplicite dell'utente non ancora
 completate. Man mano che si chiudono, spostarle in "Fatto" in fondo.
 
+### APPUNTI / da riprendere
+- [ ] **Preparati vs conosciuti (incantesimi)**: le stelline ★/☆ sono state
+  RIMOSSE dagli incantesimi (confondevano con la competenza ★ delle abilità;
+  inoltre gli incantesimi in lista sono già quelli scelti dall'utente = di fatto
+  preparati). Trovare un modo DIVERSO per distinguere "conosciuti" da
+  "preparati" (es. un raggruppamento, un colore, un piccolo badge non a stella).
+- [ ] **Traduzione inglese + switch IT/EN** (task #17): grande. Era motivata dal
+  pubblico più ampio; con la scelta "uso privato" è meno urgente ma resta utile
+  se qualcuno gioca in inglese.
+- Nota copyright: progetto tenuto a USO PRIVATO (niente Ko-fi/monetizzazione).
+  Misure adottate: meta `noindex,nofollow` in index.html + `public/robots.txt`
+  (Disallow: /). Spiegazioni di incantesimi/privilegi sono riassunti NOSTRI (non
+  testi del manuale). Nessun marchio D&D nell'app.
+
 ### A. Creazione guidata — completare l'auto-compilazione
 - [ ] **Privilegi di classe automatici**: tabella privilegi per classe/livello
   (es. Stregone → Stregoneria Innata, Fonte di Magia…) che riempie la sezione
