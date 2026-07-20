@@ -112,13 +112,13 @@ const SOTTOCLASSI_5E = {
   chierico: ['Dominio della Vita', 'Dominio della Luce', 'Dominio dell’Inganno', 'Dominio della Guerra'],
   druido: ['Circolo della Terra', 'Circolo della Luna', 'Circolo del Mare', 'Circolo delle Stelle'],
   guerriero: ['Campione', 'Maestro di Battaglia', 'Cavaliere Mistico', 'Soldato Psionico'],
-  ladro: ['Assassino', 'Furfante', 'Anima Lama', 'Ladro Arcano'],
+  ladro: ['Mistificatore Arcano', 'Assassino', 'Lama Spirituale', 'Furfante'],
   mago: ['Abiuratore', 'Divinatore', 'Invocatore', 'Illusionista'],
-  monaco: ['Mano Aperta', 'Misericordia', 'Elementi', 'Ombra'],
-  paladino: ['Giuramento della Devozione', 'Giuramento della Gloria', 'Giuramento degli Antichi', 'Giuramento della Vendetta'],
-  ranger: ['Cacciatore', 'Signore delle Bestie', 'Vagabondo Fatato', 'Errante Cupo'],
-  stregone: ['Stregoneria Aberrante', 'Anima Meccanica', 'Stirpe Draconica', 'Magia Selvaggia'],
-  warlock: ['Immondo', 'Arcifata', 'Grande Antico', 'Celestiale'],
+  monaco: ['Guerriero della Misericordia', 'Guerriero dell’Ombra', 'Guerriero degli Elementi', 'Guerriero della Mano Aperta'],
+  paladino: ['Giuramento di Devozione', 'Giuramento di Gloria', 'Giuramento degli Antichi', 'Giuramento di Vendetta'],
+  ranger: ['Signore delle Bestie', 'Viandante Fatato', 'Cacciatore delle Tenebre', 'Cacciatore'],
+  stregone: ['Stregoneria Aberrante', 'Stregoneria Meccanica', 'Stregoneria Draconica', 'Stregoneria della Magia Selvaggia'],
+  warlock: ['Patrono Signore Fatato', 'Patrono Celestiale', 'Patrono Immondo', 'Patrono Grande Antico'],
 };
 
 /** Sottoclassi disponibili per la classe indicata (o [] se non riconosciuta). */
@@ -161,47 +161,47 @@ const SUBCLASS_PRIVILEGI = {
   'Cavaliere Mistico': { 3: 'Lancio di Incantesimi\nLegame con l’Arma', 7: 'Magia da Guerra', 10: 'Colpo Arcano', 15: 'Carica Arcana', 18: 'Magia da Guerra Migliorata' },
   'Soldato Psionico': { 3: 'Potere Psionico\nGuardia Protettrice', 7: 'Adepto Telecinetico', 10: 'Mente Protetta', 15: 'Baluardo di Forza', 18: 'Maestro Telecinetico' },
 
-  // --- LADRO (3, 9, 13, 17) ---
-  'Assassino': { 3: 'Competenze Bonus\nAssassinare', 9: 'Esperto d’Infiltrazione', 13: 'Impostore', 17: 'Colpo Mortale' },
-  'Furfante': { 3: 'Mani Veloci\nLavoro in Quota', 9: 'Furtività Suprema', 13: 'Uso di Oggetti Magici', 17: 'Riflessi del Ladro' },
-  'Anima Lama': { 3: 'Potere Psionico\nLame Psichiche', 9: 'Lame dell’Anima', 13: 'Velo Psichico', 17: 'Lacerare la Mente' },
-  'Ladro Arcano': { 3: 'Lancio di Incantesimi\nMano Magica Prestidigitatrice', 9: 'Imboscata Magica', 13: 'Ingannatore Versatile', 17: 'Ladro di Incantesimi' },
+  // --- LADRO (3, 9, 13, 17) — nomi ufficiali 2024 ---
+  'Mistificatore Arcano': { 3: 'Gioco di Prestigio della Mano Magica\nIncantesimi', 9: 'Imboscata Magica', 13: 'Ingannatore Versatile', 17: 'Ladro di Incantesimi' },
+  'Assassino': { 3: 'Arnesi dell’Assassino\nAssassinare', 9: 'Maestro Infiltrato', 13: 'Avvelenare Armi', 17: 'Colpo di Morte' },
+  'Lama Spirituale': { 3: 'Lame Psichiche\nPotere Psionico', 9: 'Lame dell’Anima', 13: 'Velo Psichico', 17: 'Squarciare la Mente' },
+  'Furfante': { 3: 'Lavoro al Secondo Piano\nMani Veloci', 9: 'Furtività Suprema', 13: 'Usare Oggetto Magico', 17: 'Riflessi da Furfante' },
 
-  // --- MAGO (3, 6, 10, 14) ---
-  'Abiuratore': { 3: 'Sapiente dell’Abiurazione\nBarriera Arcana', 6: 'Barriera Proiettata', 10: 'Spezza-Incantesimi', 14: 'Resistenza agli Incantesimi' },
-  'Divinatore': { 3: 'Sapiente della Divinazione\nPresagio', 6: 'Divinazione Esperta', 10: 'Il Terzo Occhio', 14: 'Presagio Superiore' },
-  'Invocatore': { 3: 'Sapiente dell’Invocazione\nPlasmare Incantesimi', 6: 'Trucchetto Potente', 10: 'Invocazione Potenziata', 14: 'Sovraccaricare' },
-  'Illusionista': { 3: 'Sapiente dell’Illusione\nIllusioni Migliorate', 6: 'Creature Fantasmatiche', 10: 'Sé Illusorio', 14: 'Realtà Illusoria' },
+  // --- MAGO (3, 6, 10, 14) — nomi ufficiali 2024 ---
+  'Abiuratore': { 3: 'Abiuratore Sapiente\nInterdizione Arcana', 6: 'Interdizione Proiettata', 10: 'Spezzamagia', 14: 'Resistenza agli Incantesimi' },
+  'Divinatore': { 3: 'Divinatore Sapiente\nPortento', 6: 'Divinazione Esperta', 10: 'Il Terzo Occhio', 14: 'Portento Superiore' },
+  'Invocatore': { 3: 'Invocatore Sapiente\nTrucchetto Potente', 6: 'Plasmare Incantesimi', 10: 'Invocazione Potente', 14: 'Saturazione Magica' },
+  'Illusionista': { 3: 'Illusionista Sapiente\nIllusioni Migliorate', 6: 'Creature Spettrali', 10: 'Sosia Illusorio', 14: 'Realtà Illusoria' },
 
-  // --- MONACO (3, 6, 11, 17) ---
-  'Mano Aperta': { 3: 'Tecnica della Mano Aperta', 6: 'Ristoro del Corpo', 11: 'Tranquillità', 17: 'Palmo Vibrante' },
-  'Misericordia': { 3: 'Mano della Guarigione\nMano del Danno', 6: 'Tocco del Medico', 11: 'Raffica di Cure e Danni', 17: 'Mano della Misericordia Suprema' },
-  'Elementi': { 3: 'Sintonia Elementale\nManipolare gli Elementi', 6: 'Scarica Elementale', 11: 'Passo degli Elementi', 17: 'Epitome Elementale' },
-  'Ombra': { 3: 'Arti dell’Ombra', 6: 'Passo dell’Ombra', 11: 'Passo dell’Ombra Migliorato', 17: 'Manto d’Ombre' },
+  // --- MONACO (3, 6, 11, 17) — nomi ufficiali 2024 ---
+  'Guerriero della Mano Aperta': { 3: 'Tecnica della Mano Aperta', 6: 'Integrità del Corpo', 11: 'Passo Lesto', 17: 'Palmo Tremante' },
+  'Guerriero della Misericordia': { 3: 'Mano del Dolore\nMano Guaritrice\nStrumenti di Misericordia', 6: 'Tocco del Medico', 11: 'Raffica di Guarigione e Dolore', 17: 'Mano della Misericordia Suprema' },
+  'Guerriero degli Elementi': { 3: 'Manipolare gli Elementi\nSintonia Elementale', 6: 'Esplosione Elementale', 11: 'Passo degli Elementi', 17: 'Quintessenza Elementale' },
+  'Guerriero dell’Ombra': { 3: 'Arti dell’Ombra', 6: 'Passo d’Ombra', 11: 'Passo d’Ombra Migliorato', 17: 'Manto di Ombre' },
 
-  // --- PALADINO (3, 7, 15, 20) ---
-  'Giuramento della Devozione': { 3: 'Incantesimi del Giuramento\nArma Sacra', 7: 'Aura di Devozione', 15: 'Punizione della Protezione', 20: 'Nimbo Sacro' },
-  'Giuramento della Gloria': { 3: 'Incantesimi del Giuramento\nAtleta Impareggiabile\nPunizione Ispiratrice', 7: 'Aura di Alacrità', 15: 'Difesa Gloriosa', 20: 'Leggenda Vivente' },
-  'Giuramento degli Antichi': { 3: 'Incantesimi del Giuramento\nIra della Natura', 7: 'Aura di Guardia', 15: 'Sentinella Imperitura', 20: 'Campione Antico' },
-  'Giuramento della Vendetta': { 3: 'Incantesimi del Giuramento\nVoto di Inimicizia', 7: 'Vendicatore Implacabile', 15: 'Anima della Vendetta', 20: 'Angelo Vendicatore' },
+  // --- PALADINO (3, 7, 15, 20) — nomi ufficiali 2024 ---
+  'Giuramento di Devozione': { 3: 'Arma Consacrata\nIncantesimi del Giuramento', 7: 'Aura di Devozione', 15: 'Punizione Protettiva', 20: 'Nube Sacra' },
+  'Giuramento di Gloria': { 3: 'Atleta Impareggiabile\nPunizione Ispiratrice\nIncantesimi del Giuramento', 7: 'Aura di Alacrità', 15: 'Difesa Gloriosa', 20: 'Leggenda Vivente' },
+  'Giuramento degli Antichi': { 3: 'Furia della Natura\nIncantesimi del Giuramento', 7: 'Aura Guardiana', 15: 'Sentinella Imperitura', 20: 'Campione degli Antichi' },
+  'Giuramento di Vendetta': { 3: 'Voto di Inimicizia\nIncantesimi del Giuramento', 7: 'Vendetta Implacabile', 15: 'Anima Vendicativa', 20: 'Angelo Vendicatore' },
 
-  // --- RANGER (3, 7, 11, 15) ---
-  'Cacciatore': { 3: 'Preda del Cacciatore', 7: 'Tattiche Difensive', 11: 'Multiattacco', 15: 'Difesa Superiore del Cacciatore' },
-  'Signore delle Bestie': { 3: 'Compagno Primordiale', 7: 'Addestramento Eccezionale', 11: 'Furia Bestiale', 15: 'Condividere Incantesimi' },
-  'Vagabondo Fatato': { 3: 'Incantesimi\nColpi Terrificanti\nFascino Ultraterreno', 7: 'Distorsione Ammaliante', 11: 'Rinforzi Fatati', 15: 'Vagabondo Nebbioso' },
-  'Errante Cupo': { 3: 'Incantesimi\nAgguato Terrificante\nVista Umbratile', 7: 'Mente di Ferro', 11: 'Raffica del Predatore', 15: 'Schivata Ombrosa' },
+  // --- RANGER (3, 7, 11, 15) — nomi ufficiali 2024 ---
+  'Signore delle Bestie': { 3: 'Compagno Primordiale', 7: 'Addestramento Eccezionale', 11: 'Furia Bestiale', 15: 'Condividi Incantesimi' },
+  'Viandante Fatato': { 3: 'Colpi Terribili\nFascino Ultraterreno\nIncantesimi del Viandante', 7: 'Scambio Seducente', 11: 'Rinforzi Fatati', 15: 'Viandante Velato' },
+  'Cacciatore delle Tenebre': { 3: 'Imboscata Terrificante\nVista dell’Ombra\nIncantesimi del Cacciatore', 7: 'Mente di Ferro', 11: 'Raffica del Cacciatore', 15: 'Schivata dell’Ombra' },
+  'Cacciatore': { 3: 'Preda del Cacciatore\nSapienza del Cacciatore', 7: 'Tattiche Difensive', 11: 'Preda del Cacciatore Superiore', 15: 'Difesa del Cacciatore Superiore' },
 
-  // --- STREGONE (3, 6, 14, 18) ---
-  'Magia Selvaggia': { 3: 'Ondata di Magia Selvaggia\nOnde di Caos', 6: 'Piega la Sorte', 14: 'Caos Controllato', 18: 'Bombardamento Magico' },
-  'Stirpe Draconica': { 3: 'Resilienza Draconica\nIncantesimi Draconici', 6: 'Affinità Elementale', 14: 'Ali di Drago', 18: 'Compagno Draconico' },
-  'Stregoneria Aberrante': { 3: 'Linguaggio Telepatico\nIncantesimi Psionici', 6: 'Stregoneria Psionica\nDifese Psichiche', 14: 'Rivelazione nella Carne', 18: 'Implosione Distorcente' },
-  'Anima Meccanica': { 3: 'Magia Meccanica\nRipristinare l’Equilibrio', 6: 'Bastione della Legge', 14: 'Trance dell’Ordine', 18: 'Cavalcata Meccanica' },
+  // --- STREGONE (3, 6, 14, 18) — nomi ufficiali 2024 ---
+  'Stregoneria Aberrante': { 3: 'Conversazione Telepatica\nIncantesimi Psionici', 6: 'Stregoneria Psionica\nDifese Psichiche', 14: 'Rivelazione della Carne', 18: 'Implosione Distorcente' },
+  'Stregoneria Draconica': { 3: 'Incantesimi Draconici\nResilienza Draconica', 6: 'Affinità Elementale', 14: 'Ali di Drago', 18: 'Seguace Draconico' },
+  'Stregoneria della Magia Selvaggia': { 3: 'Impulso di Magia Selvaggia\nOnde di Caos', 6: 'Piegare la Fortuna', 14: 'Caos Controllato', 18: 'Impulsi Domati' },
+  'Stregoneria Meccanica': { 3: 'Incantesimi Meccanici\nRipristino dell’Equilibrio', 6: 'Bastione della Legge', 14: 'Trance dell’Ordine', 18: 'Cavalleria Meccanica' },
 
-  // --- WARLOCK (3, 6, 10, 14) ---
-  'Immondo': { 3: 'Incantesimi del Patrono\nBenedizione dell’Oscuro', 6: 'Fortuna dell’Oscuro', 10: 'Resilienza Immonda', 14: 'Scagliare all’Inferno' },
-  'Arcifata': { 3: 'Incantesimi del Patrono\nPassi Fatati', 6: 'Fuga Nebbiosa', 10: 'Difese Ammalianti', 14: 'Magia Stregante' },
-  'Grande Antico': { 3: 'Incantesimi del Patrono\nMente Risvegliata', 6: 'Combattente Chiaroveggente', 10: 'Scudo del Pensiero', 14: 'Creare uno Schiavo' },
-  'Celestiale': { 3: 'Incantesimi del Patrono\nLuce Guaritrice', 6: 'Anima Radiosa', 10: 'Resilienza Celestiale', 14: 'Vendetta Ardente' },
+  // --- WARLOCK (3, 6, 10, 14) — nomi ufficiali 2024 ---
+  'Patrono Signore Fatato': { 3: 'Incantesimi del Signore Fatato\nMovimenti del Folletto', 6: 'Fuga Nebbiosa', 10: 'Difese Seducenti', 14: 'Magia Ammaliante' },
+  'Patrono Celestiale': { 3: 'Incantesimi Celestiali\nLuce Curatrice', 6: 'Anima Radiosa', 10: 'Resilienza Celestiale', 14: 'Vendetta Incandescente' },
+  'Patrono Immondo': { 3: 'Benedizione dell’Oscuro\nIncantesimi Immondi', 6: 'Fortuna dell’Oscuro', 10: 'Resilienza Immonda', 14: 'Scagliare all’Inferno' },
+  'Patrono Grande Antico': { 3: 'Incantesimi del Grande Antico\nIncantesimi Psichici\nMente Risvegliata', 6: 'Guerriero Chiaroveggente', 10: 'Scudo del Pensiero', 14: 'Creare Servitore' },
 };
 /** Privilegi della sottoclasse fino al livello dato (testo con a-capo), o null. */
 function privilegiSottoclasseFinoA(sottoclasse, livello) {
@@ -1966,6 +1966,92 @@ const SPIEG_PRIVILEGI = {
   'Duplicato Migliorato': 'Crei più illusioni di te stesso contemporaneamente.',
   'Colpo Guidato': 'Con Incanalare Divinità aggiungi un grosso bonus a un tiro per colpire.',
   'Sacerdote di Guerra': 'Come azione bonus compi un attacco d’arma aggiuntivo.',
+
+  // ===== Nomi ufficiali 2024 — Ladro, Mago, Monaco, Paladino, Ranger, Stregone, Warlock =====
+  'Ispirazione in Combattimento': 'Gli alleati possono usare la tua Ispirazione bardica per danni o CA in combattimento.',
+  'Incantesimi del Dominio': 'Il tuo dominio ti concede incantesimi sempre preparati.',
+  // Ladro
+  'Gioco di Prestigio della Mano Magica': 'La tua Mano Magica è invisibile e può rubare, scassinare e fare furti.',
+  'Arnesi dell’Assassino': 'Ottieni competenza col kit da avvelenatore e il kit da travestimento.',
+  'Maestro Infiltrato': 'Crei identità false credibili e ti infiltri con facilità.',
+  'Avvelenare Armi': 'Avveleni le tue armi per infliggere danni extra e indebolire i bersagli.',
+  'Colpo di Morte': 'Contro un bersaglio sorpreso raddoppi i danni se lo colpisci.',
+  'Squarciare la Mente': 'Il tuo Attacco Furtivo può ferire la mente del bersaglio e stordirlo.',
+  'Lavoro al Secondo Piano': 'Scali più in fretta e salti più lontano.',
+  'Usare Oggetto Magico': 'Puoi usare bacchette, pergamene e oggetti magici di altre classi.',
+  'Riflessi da Furfante': 'Nel primo round di combattimento agisci due volte.',
+  // Mago
+  'Abiuratore Sapiente': 'Impari e copi incantesimi di abiurazione con più facilità ed economia.',
+  'Interdizione Arcana': 'Una barriera magica assorbe danni al posto tuo; si ricarica lanciando abiurazioni.',
+  'Interdizione Proiettata': 'Come reazione usi la tua barriera arcana per proteggere un alleato.',
+  'Spezzamagia': 'Sei più efficace nel dissolvere e contrastare la magia nemica.',
+  'Divinatore Sapiente': 'Impari e copi incantesimi di divinazione con più facilità ed economia.',
+  'Portento': 'A ogni riposo lungo tiri due d20 da usare per sostituire tiri tuoi o altrui.',
+  'Portento Superiore': 'Ottieni un dado di Portento in più a ogni riposo lungo.',
+  'Invocatore Sapiente': 'Impari e copi incantesimi di invocazione con più facilità ed economia.',
+  'Invocazione Potente': 'Aggiungi il tuo modificatore da incantatore ai danni degli incantesimi di invocazione.',
+  'Saturazione Magica': 'Puoi infliggere il danno massimo con un incantesimo di invocazione.',
+  'Illusionista Sapiente': 'Impari e copi incantesimi di illusione con più facilità ed economia.',
+  'Creature Spettrali': 'Le tue illusioni possono dare forma a creature semi-reali.',
+  'Sosia Illusorio': 'Come reazione crei un’illusione che fa mancare un attacco che ti colpirebbe.',
+  // Monaco
+  'Integrità del Corpo': 'Come azione spendi Concentrazione per curarti.',
+  'Passo Lesto': 'La tua mobilità aumenta: ti muovi più liberamente in battaglia.',
+  'Palmo Tremante': 'Colpisci con energia letale che può abbattere il bersaglio in un secondo momento.',
+  'Mano del Dolore': 'Con la Concentrazione infliggi danni necrotici extra a una creatura colpita.',
+  'Mano Guaritrice': 'Con la Concentrazione curi PF a una creatura toccata.',
+  'Strumenti di Misericordia': 'Ottieni competenza in Intuizione, Medicina e nella borsa da erborista.',
+  'Raffica di Guarigione e Dolore': 'La tua Raffica di Colpi cura gli alleati o danneggia i nemici senza costo.',
+  'Esplosione Elementale': 'Spendi Concentrazione per un’esplosione elementale ad area.',
+  'Quintessenza Elementale': 'Il culmine degli Elementi: resistenza e portata elementale potenziate.',
+  'Passo d’Ombra': 'Nell’oscurità ti teletrasporti da un’ombra all’altra con vantaggio all’attacco.',
+  'Passo d’Ombra Migliorato': 'Il tuo Passo d’Ombra ha portata maggiore e più usi.',
+  'Manto di Ombre': 'Come azione diventi invisibile nell’oscurità.',
+  // Paladino
+  'Arma Consacrata': 'Con Incanalare Divinità la tua arma diventa sacra: bonus a colpire e danni radiosi.',
+  'Punizione Protettiva': 'Quando usi Punizione Divina, gli alleati vicini ottengono copertura.',
+  'Nube Sacra': 'Emani luce solare che ti protegge e brucia i nemici vicini.',
+  'Furia della Natura': 'Con Incanalare Divinità evochi viticci spettrali che trattengono i nemici vicini.',
+  'Aura Guardiana': 'Tu e gli alleati nell’aura avete resistenza ai danni degli incantesimi.',
+  'Campione degli Antichi': 'Ti trasformi in un campione della natura: rigenerazione e magia potenziata.',
+  'Vendetta Implacabile': 'Quando colpisci con un attacco di opportunità puoi muoverti restando saldo.',
+  'Anima Vendicativa': 'Come reazione attacchi il bersaglio del tuo Voto quando colpisce un altro.',
+  // Ranger
+  'Condividi Incantesimi': 'Puoi far bersaglio anche del tuo compagno agli incantesimi lanciati su di te.',
+  'Colpi Terribili': 'I tuoi attacchi d’arma possono infliggere danni psichici extra.',
+  'Incantesimi del Viandante': 'La tua sottoclasse ti concede incantesimi sempre preparati.',
+  'Scambio Seducente': 'Come reazione redirigi un attacco verso un’altra creatura vicina.',
+  'Viandante Velato': 'Puoi teletrasportarti brevemente ogni turno tra la nebbia.',
+  'Imboscata Terrificante': 'Nel primo turno di combattimento sei più rapido e infliggi danni extra.',
+  'Vista dell’Ombra': 'Ottieni scurovisione (o migliore) e vedi nell’oscurità magica.',
+  'Incantesimi del Cacciatore': 'La tua sottoclasse ti concede incantesimi sempre preparati.',
+  'Raffica del Cacciatore': 'Quando manchi un attacco puoi ripeterlo, restando efficace.',
+  'Schivata dell’Ombra': 'Come reazione, nell’ombra imponi svantaggio a un attacco contro di te.',
+  'Sapienza del Cacciatore': 'Ottieni un beneficio contro la tua preda (colpo o difesa extra).',
+  'Preda del Cacciatore Superiore': 'La tua Preda del Cacciatore si potenzia.',
+  'Difesa del Cacciatore Superiore': 'Come reazione riduci i danni subiti, potenziando le tue difese.',
+  // Stregone
+  'Conversazione Telepatica': 'Comunichi telepaticamente con le creature vicine.',
+  'Rivelazione della Carne': 'Come azione bonus ottieni tratti aberranti (volo, nuoto, portata…).',
+  'Seguace Draconico': 'Al culmine evochi uno spirito draconico e potenzi le tue capacità.',
+  'Impulso di Magia Selvaggia': 'La tua magia può scatenare effetti casuali (tabella del caos).',
+  'Piegare la Fortuna': 'Spendi Punti Stregoneria per aggiungere o togliere a un tiro d20.',
+  'Impulsi Domati': 'Al culmine puoi scegliere il risultato quando scateni la magia selvaggia.',
+  'Incantesimi Meccanici': 'La tua origine ti concede incantesimi d’ordine sempre preparati.',
+  'Ripristino dell’Equilibrio': 'Come reazione annulli vantaggio o svantaggio su un tiro vicino.',
+  'Cavalleria Meccanica': 'Al culmine evochi un costrutto meccanico che ti serve e ti trasporta.',
+  // Warlock
+  'Incantesimi del Signore Fatato': 'Il tuo patrono ti concede incantesimi sempre preparati.',
+  'Movimenti del Folletto': 'Come azione bonus ti teletrasporti e affascini o spaventi chi è vicino.',
+  'Difese Seducenti': 'Non puoi essere affascinato e chi ti affascina subisce l’incantesimo di ritorno.',
+  'Incantesimi Celestiali': 'Il tuo patrono ti concede incantesimi sempre preparati.',
+  'Luce Curatrice': 'Hai una riserva di dadi di cura da distribuire come azione bonus.',
+  'Vendetta Incandescente': 'Quando scenderesti a 0 PF esplodi di luce, curandoti e ferendo i nemici.',
+  'Incantesimi Immondi': 'Il tuo patrono ti concede incantesimi sempre preparati.',
+  'Incantesimi del Grande Antico': 'Il tuo patrono ti concede incantesimi sempre preparati.',
+  'Incantesimi Psichici': 'La tua sottoclasse ti concede incantesimi sempre preparati.',
+  'Guerriero Chiaroveggente': 'Un tuo alleato psichico dà vantaggio ai tiri contro un nemico.',
+  'Creare Servitore': 'Puoi ammaliare permanentemente un umanoide o una bestia.',
 };
 // Indice minuscolo per ricerche senza distinzione di maiuscole.
 const _lcMap = (obj) => { const m = {}; for (const k in obj) m[k.toLowerCase()] = obj[k]; return m; };
@@ -2677,7 +2763,7 @@ function bonusTiroSalvezza(scheda, car) {
 const FLYORA_JSON = {
   nome: 'Flyora delle Acque Nere',
   classe: 'Stregone',
-  sottoclasse: 'Magia Selvaggia',
+  sottoclasse: 'Stregoneria della Magia Selvaggia',
   livello: 4,
   background: 'Eremita',
   specie: 'Elfo Alto',
@@ -2841,7 +2927,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.34';
+const APP_VERSION = '1.9.35';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
