@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { ICONE_CLASSE, ICONE_SPECIE } from './ritratti';
 
@@ -2569,6 +2569,35 @@ function attaccoDaArma(arma, scheda) {
   return { nome: arma.nome, danno, tipoDanno: arma.tipo, note: arma.note, bonus: mod + comp };
 }
 
+// Suggerimenti per l'autocompletamento dell'equipaggiamento comune (5e).
+const EQUIP_5E = [
+  'Abiti da viaggiatore', 'Abiti comuni', 'Abiti eleganti', 'Acciarino ed esca', 'Ampolla',
+  'Arnesi da scasso', 'Balestra a mano', 'Borraccia', 'Borsa da componenti', 'Borsa da erborista',
+  'Candela', 'Catena (3 m)', 'Cesto', 'Chiodi da rampino (10)', 'Coperta', 'Corda di canapa (15 m)',
+  'Corda di seta (15 m)', 'Corno', 'Dotazione da avventuriero', 'Dotazione da esploratore',
+  'Dotazione da scassinatore', 'Focus arcano', 'Fiaccola', 'Grimaldelli', 'Kit del guaritore',
+  'Lanterna cieca', 'Lanterna schermabile', 'Libro', 'Lucchetto', 'Martello', 'Olio (fiasco)',
+  'Otre', 'Pala', 'Pergamena (foglio)', 'Piccone', 'Pietra focaia', 'Piede di porco',
+  'Rampino', 'Razioni (1 giorno)', 'Sacca a pelo', 'Sacco', 'Simbolo sacro', 'Specchietto d’acciaio',
+  'Torcia', 'Zaino', 'Corda', 'Tenda', 'Acqua santa (ampolla)', 'Veleno base (fiala)',
+  'Kit da erborista', 'Pozione di guarigione',
+];
+
+// Strumenti e dotazioni con competenza (5e).
+const STRUMENTI_5E = [
+  'Arnesi da scasso', 'Borsa da erborista', 'Strumenti da avvelenatore', 'Kit da travestimento',
+  'Kit da falsario', 'Strumenti da calligrafo', 'Attrezzi da fabbro', 'Attrezzi da birraio',
+  'Attrezzi da carpentiere', 'Attrezzi da cartografo', 'Attrezzi da calzolaio', 'Attrezzi da cuoco',
+  'Attrezzi da vetraio', 'Attrezzi da gioielliere', 'Attrezzi da vasaio', 'Attrezzi da conciatore',
+  'Attrezzi da intagliatore', 'Attrezzi da tessitore', 'Attrezzi da ceramista', 'Attrezzi da muratore',
+  'Attrezzi da pittore', 'Attrezzi da fabbro d’armi', 'Strumenti da navigatore', 'Set da gioco',
+  'Carte da gioco', 'Dadi', 'Strumento musicale', 'Cornamusa', 'Tamburo', 'Flauto', 'Liuto',
+  'Lira', 'Corno', 'Zufolo', 'Veicoli (terrestri)', 'Veicoli (acquatici)',
+];
+
+// Suggerimenti per le competenze nelle armi (categorie + armi specifiche).
+const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w.nome)];
+
 /**
  * CA totale in base all'equipaggiamento (regole 5e):
  * a mano = valore scritto · nessuna 10+DES · leggera base+DES ·
@@ -2784,7 +2813,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.32';
+const APP_VERSION = '1.9.33';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3336,9 +3365,10 @@ function AreaTesto({ value, onChange, righe = 2, placeholder }) {
  * i campi per modificare/eliminare la voce. In fondo un pulsante per aggiungere.
  * Il valore resta un unico testo con a-capo (nessun cambio al modello dati).
  */
-function ListaQuadratini({ value, onChange, lookup, placeholder }) {
+function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni }) {
   const righe = String(value || '').split('\n').map((r) => r.trim()).filter(Boolean);
   const [edit, setEdit] = useState(null); // { index, valore }  (index -1 = nuova)
+  const listId = useId();
   const salva = (nuove) => onChange(nuove.join('\n'));
   const conferma = () => {
     const v = (edit.valore || '').trim();
@@ -3383,10 +3413,16 @@ function ListaQuadratini({ value, onChange, lookup, placeholder }) {
               autoFocus
               style={{ ...styles.inlineInput, width: '100%', padding: '8px 10px', fontSize: 15 }}
               value={edit.valore}
-              placeholder="Nome della voce"
+              placeholder={opzioni ? 'Scrivi o scegli dalla lista…' : 'Nome della voce'}
+              list={opzioni ? listId : undefined}
               onChange={(e) => setEdit({ ...edit, valore: e.target.value })}
               onKeyDown={(e) => { if (e.key === 'Enter') conferma(); }}
             />
+            {opzioni && (
+              <datalist id={listId}>
+                {opzioni.map((o) => <option key={o} value={o} />)}
+              </datalist>
+            )}
             <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
               {edit.index !== -1 && <button style={{ ...styles.buttonDanger, flex: 1 }} onClick={elimina}>🗑 Elimina</button>}
               <button style={{ ...styles.buttonPrimary, flex: 1 }} onClick={conferma}>Salva</button>
@@ -6316,19 +6352,19 @@ export default function App() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <div>
                   <div style={styles.moduloLabel}>Armi</div>
-                  <AreaTesto
+                  <ListaQuadratini
                     value={scheda.addestramento.armi}
-                    righe={2}
-                    placeholder="Es. armi semplici, spade lunghe…"
+                    opzioni={COMP_ARMI_5E}
+                    placeholder="Es. Armi semplici, Spada lunga…"
                     onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, armi: v } })}
                   />
                 </div>
                 <div>
                   <div style={styles.moduloLabel}>Strumenti</div>
-                  <AreaTesto
+                  <ListaQuadratini
                     value={scheda.addestramento.strumenti}
-                    righe={2}
-                    placeholder="Es. borsa da erborista, arnesi da scasso…"
+                    opzioni={STRUMENTI_5E}
+                    placeholder="Es. Borsa da erborista, Arnesi da scasso…"
                     onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, strumenti: v } })}
                   />
                 </div>
@@ -6336,9 +6372,10 @@ export default function App() {
             </Sezione>
 
             <Sezione titolo="Equipaggiamento e lingue" {...propsSez('equipaggiamento')} {...apertoProps('equipaggiamento')}>
-              <AreaTesto
+              <ListaQuadratini
                 value={scheda.equipaggiamento}
-                placeholder="Zaino, corda, razioni…"
+                opzioni={EQUIP_5E}
+                placeholder="Zaino, corda, razioni… (scrivi o scegli dalla lista)"
                 onChange={(v) => aggiorna({ equipaggiamento: v })}
               />
               <div style={{ marginTop: 10 }}>
