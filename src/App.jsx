@@ -2140,6 +2140,8 @@ const SPIEG_INCANTESIMI = {
   'Zona di Verità': "Le creature in un'area non possono mentire deliberatamente.",
 };
 const SPIEG_INCANTESIMI_LC = _lcMap(SPIEG_INCANTESIMI);
+// Elenco ordinato dei nomi di incantesimo noti (per l'autocompletamento).
+const INCANTESIMI_NOMI = Object.keys(SPIEG_INCANTESIMI).sort((a, b) => a.localeCompare(b, 'it'));
 /** Spiegazione di un incantesimo dal nome (o null), senza distinzione maiuscole. */
 function spiegaIncantesimo(nome) {
   const n = String(nome || '').trim();
@@ -2501,10 +2503,71 @@ const CONDIZIONI_5E = [
 ];
 
 const LINGUE_5E = [
-  'Abissale', 'Celestiale', 'Comune', 'Draconico', 'Elfico', 
-  'Gigante', 'Gnomesco', 'Goblin', 'Halfling', 'Infernale', 
+  'Abissale', 'Celestiale', 'Comune', 'Draconico', 'Elfico',
+  'Gigante', 'Gnomesco', 'Goblin', 'Halfling', 'Infernale',
   'Nanico', 'Orchesco', 'Primordiale', 'Silvano', 'Sottocomune'
 ];
+
+// Armi standard 5e (dado di danno, tipo e proprietà). Scegliendone una si
+// compilano danno/tipo/note e, dai modificatori del PG, bonus a colpire.
+// finesse = Accurata (usa FOR o DES, la migliore); ranged = a distanza (DES).
+const ARMI_5E = [
+  // Semplici da mischia
+  { nome: 'Ascia (Handaxe)', danno: '1d6', tipo: 'Tagliente', note: 'Leggera, Lancio (6/18 m)' },
+  { nome: 'Bastone ferrato', danno: '1d6', tipo: 'Contundente', note: 'Versatile (1d8)' },
+  { nome: 'Clava', danno: '1d4', tipo: 'Contundente', note: 'Leggera' },
+  { nome: 'Falcetto', danno: '1d4', tipo: 'Tagliente', note: 'Leggera' },
+  { nome: 'Giavellotto', danno: '1d6', tipo: 'Perforante', note: 'Lancio (9/36 m)' },
+  { nome: 'Grande clava', danno: '1d8', tipo: 'Contundente', note: 'Due mani' },
+  { nome: 'Lancia', danno: '1d6', tipo: 'Perforante', note: 'Lancio (6/18 m), Versatile (1d8)' },
+  { nome: 'Martello leggero', danno: '1d4', tipo: 'Contundente', note: 'Leggera, Lancio (6/18 m)' },
+  { nome: 'Mazza', danno: '1d6', tipo: 'Contundente', note: '' },
+  { nome: 'Pugnale', danno: '1d4', tipo: 'Perforante', note: 'Accurata, Leggera, Lancio (6/18 m)', finesse: true },
+  // Semplici a distanza
+  { nome: 'Arco corto', danno: '1d6', tipo: 'Perforante', note: 'Munizioni, Due mani (24/96 m)', ranged: true },
+  { nome: 'Balestra leggera', danno: '1d8', tipo: 'Perforante', note: 'Munizioni, Caricamento, Due mani (24/96 m)', ranged: true },
+  { nome: 'Dardo', danno: '1d4', tipo: 'Perforante', note: 'Accurata, Lancio (6/18 m)', finesse: true, ranged: true },
+  { nome: 'Fionda', danno: '1d4', tipo: 'Contundente', note: 'Munizioni (9/36 m)', ranged: true },
+  // Da guerra da mischia
+  { nome: 'Alabarda', danno: '1d10', tipo: 'Tagliente', note: 'Pesante, Portata, Due mani' },
+  { nome: 'Ascia bipenne', danno: '1d12', tipo: 'Tagliente', note: 'Pesante, Due mani' },
+  { nome: 'Ascia da battaglia', danno: '1d8', tipo: 'Tagliente', note: 'Versatile (1d10)' },
+  { nome: 'Falcione', danno: '1d10', tipo: 'Tagliente', note: 'Pesante, Portata, Due mani' },
+  { nome: 'Frusta', danno: '1d4', tipo: 'Tagliente', note: 'Accurata, Portata', finesse: true },
+  { nome: 'Martello da guerra', danno: '1d8', tipo: 'Contundente', note: 'Versatile (1d10)' },
+  { nome: 'Mazzafrusto', danno: '1d8', tipo: 'Contundente', note: '' },
+  { nome: 'Mazza chiodata', danno: '1d8', tipo: 'Perforante', note: '' },
+  { nome: 'Picca', danno: '1d10', tipo: 'Perforante', note: 'Pesante, Portata, Due mani' },
+  { nome: 'Piccone da guerra', danno: '1d8', tipo: 'Perforante', note: '' },
+  { nome: 'Scimitarra', danno: '1d6', tipo: 'Tagliente', note: 'Accurata, Leggera', finesse: true },
+  { nome: 'Spada corta', danno: '1d6', tipo: 'Perforante', note: 'Accurata, Leggera', finesse: true },
+  { nome: 'Spada lunga', danno: '1d8', tipo: 'Tagliente', note: 'Versatile (1d10)' },
+  { nome: 'Spadone', danno: '2d6', tipo: 'Tagliente', note: 'Pesante, Due mani' },
+  { nome: 'Stocco', danno: '1d8', tipo: 'Perforante', note: 'Accurata', finesse: true },
+  { nome: 'Tridente', danno: '1d8', tipo: 'Perforante', note: 'Lancio (6/18 m), Versatile (1d10)' },
+  // Da guerra a distanza
+  { nome: 'Arco lungo', danno: '1d8', tipo: 'Perforante', note: 'Munizioni, Pesante, Due mani (45/180 m)', ranged: true },
+  { nome: 'Balestra a mano', danno: '1d6', tipo: 'Perforante', note: 'Leggera, Munizioni, Caricamento (9/36 m)', ranged: true },
+  { nome: 'Balestra pesante', danno: '1d10', tipo: 'Perforante', note: 'Munizioni, Pesante, Caricamento, Due mani (30/120 m)', ranged: true },
+];
+
+/**
+ * Costruisce un attacco dai dati di un'arma standard e dai modificatori del PG.
+ * Assume la competenza con l'arma (bonus = mod + bonus competenza); il danno
+ * usa il modificatore di caratteristica appropriato (FOR, o DES se a distanza
+ * o Accurata e più alta). Restituisce un patch { nome, danno, tipoDanno, note, bonus }.
+ */
+function attaccoDaArma(arma, scheda) {
+  const forza = modificatore(scheda.caratteristiche.forza);
+  const destr = modificatore(scheda.caratteristiche.destrezza);
+  let mod;
+  if (arma.ranged) mod = destr;
+  else if (arma.finesse) mod = Math.max(forza, destr);
+  else mod = forza;
+  const comp = scheda.bonusCompetenza || 0;
+  const danno = mod === 0 ? arma.danno : `${arma.danno}${mod > 0 ? '+' : ''}${mod}`;
+  return { nome: arma.nome, danno, tipoDanno: arma.tipo, note: arma.note, bonus: mod + comp };
+}
 
 /**
  * CA totale in base all'equipaggiamento (regole 5e):
@@ -2721,7 +2784,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.31';
+const APP_VERSION = '1.9.32';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4331,7 +4394,11 @@ export default function App() {
               <div style={{ ...styles.detail, marginBottom: 4 }}>Modifica · {s.livello === 0 ? 'Trucchetto' : `Incantesimo di ${s.livello}° livello`}</div>
 
               <label style={etichetta}>Nome</label>
-              <input style={campo} value={s.nome} onChange={(e) => upd({ nome: e.target.value })} />
+              <input style={campo} value={s.nome} onChange={(e) => upd({ nome: e.target.value })} list="lista-incantesimi" placeholder="Scrivi o scegli dalla lista…" />
+              <datalist id="lista-incantesimi">
+                {INCANTESIMI_NOMI.map((n) => <option key={n} value={n} />)}
+              </datalist>
+              {eff && <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 12px', fontSize: 13, lineHeight: 1.4, marginTop: 6 }}>{eff}</div>}
               <div style={{ display: 'flex', gap: 8 }}>
                 <div style={{ flex: 1 }}>
                   <label style={etichetta}>Livello</label>
@@ -5834,12 +5901,26 @@ export default function App() {
                             return (
                               <tr key={a.id}>
                                 <td style={styles.td}>
-                                  <Editable
-                                    value={a.nome}
-                                    width={150}
-                                    onChange={(v) => aggiornaAttacco({ nome: v })}
-                                    onRoll={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a })}
-                                  />
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                    <select
+                                      value=""
+                                      title="Scegli un'arma standard: compila danno, tipo, proprietà e bonus"
+                                      onChange={(e) => {
+                                        const arma = ARMI_5E.find((w) => w.nome === e.target.value);
+                                        if (arma) aggiornaAttacco(attaccoDaArma(arma, scheda));
+                                      }}
+                                      style={{ ...styles.inlineInput, appearance: 'none', width: 22, height: 22, padding: 0, textAlign: 'center', cursor: 'pointer', flexShrink: 0 }}
+                                    >
+                                      <option value="">⚔️</option>
+                                      {ARMI_5E.map((w) => <option key={w.nome} value={w.nome}>{w.nome}</option>)}
+                                    </select>
+                                    <Editable
+                                      value={a.nome}
+                                      width={130}
+                                      onChange={(v) => aggiornaAttacco({ nome: v })}
+                                      onRoll={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a })}
+                                    />
+                                  </div>
                                 </td>
                                 <td style={styles.td}>
                                   <Editable
