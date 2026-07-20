@@ -2988,7 +2988,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.47';
+const APP_VERSION = '1.9.48';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -6181,6 +6181,55 @@ export default function App() {
                 + Aggiungi risorsa
               </button>
             </Sezione>
+
+            <Sezione titolo="Addestramento e competenze equipaggiamento" {...propsSez('addestramento')} {...apertoProps('addestramento', false)}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
+                <span style={styles.detail}>Armature:</span>
+                {[
+                  ['leggera', 'leggera'],
+                  ['media', 'media'],
+                  ['pesante', 'pesante'],
+                  ['scudi', 'scudi'],
+                ].map(([key, label]) => (
+                  <span
+                    key={key}
+                    className="tirabile"
+                    style={{ ...styles.detail, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                    onClick={() =>
+                      aggiorna({
+                        addestramento: {
+                          ...scheda.addestramento,
+                          armature: {
+                            ...scheda.addestramento.armature,
+                            [key]: !scheda.addestramento.armature[key],
+                          },
+                        },
+                      })
+                    }
+                  >
+                    <span style={styles.pip(scheda.addestramento.armature[key], C.goldDark)} /> {label}
+                  </span>
+                ))}
+              </div>
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ ...styles.detail, marginBottom: 4 }}>Armi:</div>
+                <ListaQuadratini
+                  value={scheda.addestramento.armi}
+                  opzioni={COMP_ARMI_5E}
+                  placeholder="Es. Armi semplici, Spada lunga…"
+                  onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, armi: v } })}
+                />
+              </div>
+              <div>
+                <div style={{ ...styles.detail, marginBottom: 4 }}>Strumenti:</div>
+                <ListaQuadratini
+                  value={scheda.addestramento.strumenti}
+                  opzioni={STRUMENTI_5E}
+                  placeholder="Es. Borsa da erborista, Arnesi da scasso…"
+                  onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, strumenti: v } })}
+                />
+              </div>
+            </Sezione>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -6600,57 +6649,6 @@ export default function App() {
               />
             </Sezione>
 
-            <Sezione titolo="Addestramento e competenze nell'equipaggiamento" {...propsSez('addestramento')} {...apertoProps('addestramento', false)}>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
-                <span style={styles.detail}>Armature:</span>
-                {[
-                  ['leggera', 'leggera'],
-                  ['media', 'media'],
-                  ['pesante', 'pesante'],
-                  ['scudi', 'scudi'],
-                ].map(([key, label]) => (
-                  <span
-                    key={key}
-                    className="tirabile"
-                    style={{ ...styles.detail, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}
-                    onClick={() =>
-                      aggiorna({
-                        addestramento: {
-                          ...scheda.addestramento,
-                          armature: {
-                            ...scheda.addestramento.armature,
-                            [key]: !scheda.addestramento.armature[key],
-                          },
-                        },
-                      })
-                    }
-                  >
-                    <span style={styles.pip(scheda.addestramento.armature[key], C.goldDark)} /> {label}
-                  </span>
-                ))}
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <div>
-                  <div style={{ ...styles.detail, marginBottom: 4 }}>Armi:</div>
-                  <ListaQuadratini
-                    value={scheda.addestramento.armi}
-                    opzioni={COMP_ARMI_5E}
-                    placeholder="Es. Armi semplici, Spada lunga…"
-                    onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, armi: v } })}
-                  />
-                </div>
-                <div>
-                  <div style={{ ...styles.detail, marginBottom: 4 }}>Strumenti:</div>
-                  <ListaQuadratini
-                    value={scheda.addestramento.strumenti}
-                    opzioni={STRUMENTI_5E}
-                    placeholder="Es. Borsa da erborista, Arnesi da scasso…"
-                    onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, strumenti: v } })}
-                  />
-                </div>
-              </div>
-            </Sezione>
-
             <Sezione titolo="Equipaggiamento e lingue" {...propsSez('equipaggiamento')} {...apertoProps('equipaggiamento')}>
               <ListaQuadratini
                 value={scheda.equipaggiamento}
@@ -6691,20 +6689,20 @@ export default function App() {
               </div>
             </Sezione>
 
-            <Sezione titolo="Aspetto, storia e tratti" {...propsSez('aspetto')} {...apertoProps('aspetto', false)}>
+            <Sezione titolo="Aspetto, Carattere, Storia" {...propsSez('aspetto')} {...apertoProps('aspetto', false)}>
               <div style={styles.moduloLabel}>Aspetto</div>
               <AreaTesto
                 value={scheda.aspetto}
                 placeholder="Aspetto fisico del personaggio…"
                 onChange={(v) => aggiorna({ aspetto: v })}
               />
-              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>Tratti caratteriali</div>
+              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>Carattere</div>
               <AreaTesto
                 value={scheda.trattiCaratteriali}
                 placeholder="Ideali, legami, difetti, modi di fare… (chi è il personaggio)"
                 onChange={(v) => aggiorna({ trattiCaratteriali: v })}
               />
-              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>Storia e appunti</div>
+              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>Storia</div>
               <AreaTesto
                 value={scheda.note}
                 placeholder="Storia del personaggio, alleati, appunti di sessione…"
