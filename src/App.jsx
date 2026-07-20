@@ -1055,11 +1055,6 @@ const styles = {
     maxWidth: 1080,
     margin: '0 auto 6px auto',
     padding: '12px 0 8px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
-    flexWrap: 'wrap',
   },
   title: { margin: 0, fontSize: 21, letterSpacing: 1, color: 'var(--c-title)' },
   hint: { margin: '3px 0 0', color: C.inkDim, fontStyle: 'italic', fontSize: 12 },
@@ -1417,8 +1412,13 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
   width: 100%;
   margin: 0 0 8px 0 !important;
 }
-/* testata: gruppi ai lati, titolo centrato al centro (flex, niente sovrapposizioni) */
-.app-header-title { flex: 1 1 auto; text-align: center; }
+/* testata: griglia 1fr auto 1fr → titolo sempre centrato e simmetrico, i due
+   gruppi di pulsanti nelle colonne laterali di uguale larghezza (niente sovrapposizioni) */
+.app-header { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
+.app-header-title { grid-column: 2; justify-self: center; text-align: center; white-space: nowrap; margin: 0; }
+.app-header-group { flex-wrap: wrap; min-width: 0; }
+.app-header-group:first-of-type { justify-self: start; }
+.app-header-group:last-of-type { justify-self: end; }
 /* schermata di caricamento dal cloud: nuvola che pulsa e barra che scorre */
 .cloud-spinner { animation: cloud-bob 1.4s ease-in-out infinite; }
 @keyframes cloud-bob { 0%,100% { transform: translateY(0); opacity: 0.85; } 50% { transform: translateY(-8px); opacity: 1; } }
@@ -1427,9 +1427,9 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
 .app-header-group { flex: 0 0 auto; }
 @media (max-width: 560px) {
   /* su schermi stretti: titolo su una riga sopra, i due gruppi di pulsanti sotto */
-  .app-header { justify-content: center; }
-  .app-header-title { order: -1; flex: 1 1 100%; margin-bottom: 6px !important; }
-  .app-header-group { flex: 1 1 auto; }
+  .app-header { display: flex; flex-wrap: wrap; justify-content: center; }
+  .app-header-title { grid-column: auto; justify-self: auto; order: -1; flex: 1 1 100%; margin-bottom: 6px !important; }
+  .app-header-group { flex: 1 1 auto; justify-self: auto; }
 }
 @media (max-width: 820px) {
   .griglia-scheda { grid-template-columns: 1fr; }
@@ -2988,7 +2988,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.52';
+const APP_VERSION = '1.9.54';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -5474,7 +5474,12 @@ export default function App() {
           </button>
         </div>
 
-        <h1 className="app-header-title" style={{ ...styles.title, margin: 0 }}>Tavolo dei Dadi <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 'normal', letterSpacing: 0.5 }}>v{APP_VERSION}</span></h1>
+        <h1 className="app-header-title" style={{ ...styles.title, margin: 0 }}>
+          <span style={{ position: 'relative' }}>
+            Tavolo dei Dadi
+            <span style={{ position: 'absolute', left: '100%', bottom: 3, marginLeft: 6, fontSize: 11, color: C.inkDim, fontWeight: 'normal', letterSpacing: 0.5 }}>v{APP_VERSION}</span>
+          </span>
+        </h1>
 
         <div className="app-header-group" style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
           <button
@@ -6250,7 +6255,7 @@ export default function App() {
               </button>
             </Sezione>
 
-            <Sezione titolo="Addestramento e competenze equipaggiamento" {...propsSez('addestramento')} {...apertoProps('addestramento', false)}>
+            <Sezione titolo="Addestramento" {...propsSez('addestramento')} {...apertoProps('addestramento', false)}>
               <div style={{ marginBottom: 10 }}>
                 <div style={{ ...styles.detail, marginBottom: 4 }}>Armature:</div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -6299,6 +6304,15 @@ export default function App() {
                   onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, strumenti: v } })}
                 />
               </div>
+            </Sezione>
+
+            <Sezione titolo="Tratti della specie" {...propsSez('trattiSpecie')} {...apertoProps('trattiSpecie')}>
+              <ListaQuadratini
+                value={scheda.trattiSpecie}
+                lookup={spiegaTratto}
+                placeholder="Es. Scurovisione, Astuzia gnomesca, Trance, Fortuna halfling…"
+                onChange={(v) => aggiorna({ trattiSpecie: v })}
+              />
             </Sezione>
           </div>
 
@@ -6700,16 +6714,7 @@ export default function App() {
 
         {/* Sezioni descrittive a piena larghezza: riempiono lo spazio sotto le due colonne */}
         <div style={{ display: 'flex', flexDirection: 'column', marginTop: 10 }}>
-            {/* Tratti della specie, talenti — collassabili */}
-            <Sezione titolo="Tratti della specie" {...propsSez('trattiSpecie')} {...apertoProps('trattiSpecie')}>
-              <ListaQuadratini
-                value={scheda.trattiSpecie}
-                lookup={spiegaTratto}
-                placeholder="Es. Scurovisione, Astuzia gnomesca, Trance, Fortuna halfling…"
-                onChange={(v) => aggiorna({ trattiSpecie: v })}
-              />
-            </Sezione>
-
+            {/* Talenti, equipaggiamento, aspetto — collassabili */}
             <Sezione titolo="Talenti" {...propsSez('talenti')} {...apertoProps('talenti')}>
               <ListaQuadratini
                 value={scheda.talenti}
