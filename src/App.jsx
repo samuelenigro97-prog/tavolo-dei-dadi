@@ -1560,14 +1560,14 @@ const SPIEG_PRIVILEGI = {
   'Tre attacchi extra': "Con l'azione di Attacco compi quattro attacchi in totale.",
   'Difesa senza armatura': "Se non indossi armatura, la tua CA usa un modificatore di caratteristica al posto dell'armatura.",
   // Barbaro
-  'Ira': 'Entri in Ira: bonus ai danni in mischia, vantaggio alle prove di Forza e resistenza a contundenti/perforanti/taglienti.',
-  'Attacco irruento': 'Attacchi con vantaggio, ma i nemici hanno vantaggio contro di te fino al tuo prossimo turno.',
+  'Ira': 'Azione bonus: +danni in mischia con la Forza (da +2 a +4 col livello), vantaggio alle prove/TS di Forza e resistenza a contundenti/perforanti/taglienti. Dura 1 min; usi limitati per riposo lungo.',
+  'Attacco irruento': 'Attacchi in mischia con vantaggio, ma fino al tuo prossimo turno i nemici hanno vantaggio contro di te.',
   'Percezione del pericolo': 'Vantaggio ai TS su Destrezza contro effetti che puoi vedere (trappole, incantesimi).',
   'Movimento veloce': 'La tua velocità aumenta di 3 metri quando non indossi armatura pesante.',
   'Istinto ferino': "Vantaggio ai tiri d'iniziativa.",
   'Ira instancabile': "Recuperi/mantieni l'Ira più facilmente quando ne hai bisogno. (2024)",
-  'Critico brutale': 'Sui colpi critici in mischia tiri dadi di danno aggiuntivi.',
-  'Ira implacabile': "Se scenderesti a 0 PF durante l'Ira, con un TS resti a 1 PF.",
+  'Critico brutale': 'Sui colpi critici in mischia tiri 1 dado dell’arma in più (2 al 13°, 3 al 17°).',
+  'Ira implacabile': "Se scenderesti a 0 PF durante l'Ira, con un TS su Costituzione (CD 10, +5 a ogni uso) resti a 1 PF.",
   'Ira persistente': "La tua Ira non termina anticipatamente per mancanza di attacchi o perché sei incapacitato.",
   'Forza indomabile': 'Se una prova di Forza dà meno del tuo punteggio di Forza, usi il punteggio.',
   'Campione primordiale': 'Forza e Costituzione aumentano fino a un massimo più alto: il culmine del barbaro.',
@@ -1609,7 +1609,7 @@ const SPIEG_PRIVILEGI = {
   'Maestro tattico': 'Usando la Maestria nelle armi ottieni opzioni tattiche extra. (2024)',
   'Attacchi studiati': 'Se manchi un attacco, ottieni vantaggio al prossimo contro quel bersaglio. (2024)',
   // Ladro
-  'Attacco furtivo': 'Infliggi dadi di danno extra quando hai vantaggio o un alleato è adiacente al bersaglio.',
+  'Attacco furtivo': 'Una volta per turno infliggi danni extra (1d6 ogni 2 livelli da ladro: 1d6 al 1°, 5d6 al 9°, 10d6 al 19°) se hai vantaggio o un alleato è adiacente al bersaglio.',
   'Maestria': 'Raddoppi il bonus di competenza in alcune abilità scelte.',
   'Gergo ladresco': 'Un gergo segreto per messaggi nascosti tra ladri.',
   'Azione scaltra': 'Come azione bonus puoi Scattare, Disimpegnarti o Nasconderti ogni turno.',
@@ -1636,9 +1636,9 @@ const SPIEG_PRIVILEGI = {
   'Movimento senza armatura': 'Senza armatura la tua velocità aumenta.',
   'Metabolismo prodigioso': 'Recuperi punti Concentrazione e PF con più facilità. (2024)',
   'Deviare attacchi': 'Come reazione riduci i danni di un attacco (e a volte lo rilanci).',
-  'Deviare i proiettili': 'Come reazione riduci i danni di un attacco a distanza (e puoi rilanciarlo).',
-  'Caduta lenta': 'Come reazione riduci i danni da caduta.',
-  'Colpo stordente': 'Spendi Ki per tentare di stordire un bersaglio colpito in mischia.',
+  'Deviare i proiettili': 'Come reazione riduci i danni di un attacco a distanza di 1d10 + Destrezza + livello da monaco; se li annulli puoi rilanciare il proiettile.',
+  'Caduta lenta': 'Come reazione riduci i danni da caduta di 5 × il tuo livello da monaco.',
+  'Colpo stordente': 'Spendi 1 punto Concentrazione: il bersaglio colpito in mischia è stordito fino al tuo prossimo turno (TS Costituzione).',
   'Colpi potenziati dal ki': 'I colpi senzʼarmi contano come magici per superare le resistenze. (2014)',
   'Quiete della mente': 'Puoi porre fine a effetti che ti affascinano o spaventano. (2014)',
   'Movimento acrobatico': 'Ti muovi su superfici verticali e sui liquidi senza cadere. (2024)',
@@ -1655,14 +1655,14 @@ const SPIEG_PRIVILEGI = {
   'Sé perfetto': 'Il culmine del monaco: recuperi Ki e potenzi corpo e mente.',
   'Corpo e mente': 'Il culmine del monaco: Destrezza e Saggezza aumentano notevolmente. (2024)',
   // Paladino
-  'Imposizione delle mani': 'Hai una riserva di punti cura da distribuire toccando i feriti (o curare malattie/veleni).',
-  'Colpo divino': 'Spendi uno slot incantesimo per infliggere danni radiosi extra con un colpo.',
-  'Punizione divina': 'Spendi uno slot incantesimo per infliggere danni radiosi extra con un colpo.',
+  'Imposizione delle mani': 'Riserva di cura pari a 5 × il tuo livello da paladino, da distribuire toccando i feriti (5 punti curano anche un veleno o una malattia). Si ricarica col riposo lungo.',
+  'Colpo divino': 'Quando colpisci in mischia, spendi uno slot incantesimo per +2d8 danni radiosi (+1d8 per livello di slot oltre il 1°; +1d8 contro non morti/immondi).',
+  'Punizione divina': 'Quando colpisci in mischia, spendi uno slot incantesimo per +2d8 danni radiosi (+1d8 per livello di slot oltre il 1°; +1d8 contro non morti/immondi).',
   'Punizione divina migliorata': 'Tutti i tuoi attacchi in mischia infliggono danni radiosi extra. (2014)',
   'Salute divina': 'Sei immune alle malattie. (2014)',
   'Senso divino': 'Percepisci celestiali, immondi e non morti nelle vicinanze. (2014)',
-  'Aura di protezione': 'Tu e gli alleati vicini aggiungete il tuo mod. di Carisma ai tiri salvezza.',
-  'Aura di coraggio': 'Tu e gli alleati vicini non potete essere spaventati.',
+  'Aura di protezione': 'Tu e gli alleati entro 3 m (9 m al 18°) aggiungete il tuo modificatore di Carisma (min +1) a tutti i tiri salvezza.',
+  'Aura di coraggio': 'Tu e gli alleati entro 3 m (9 m al 18°) non potete essere spaventati.',
   'Colpi radiosi': 'I tuoi attacchi in mischia infliggono danni radiosi aggiuntivi. (2024)',
   'Rinnegare i nemici': 'Spaventi e blocchi i nemici con la tua presenza divina. (2024)',
   'Tocco risanatore': 'Puoi porre fine a incantesimi su di te o sugli alleati.',
@@ -1689,16 +1689,16 @@ const SPIEG_PRIVILEGI = {
   // Stregone
   'Stregoneria innata': 'La fonte della tua magia innata: la sottoclasse che concede poteri unici.',
   'Origine stregonesca': 'La fonte della tua magia innata: la sottoclasse che concede poteri unici. (2014)',
-  'Fonte di magia': 'Hai Punti Stregoneria che puoi convertire in slot incantesimo e viceversa.',
-  'Metamagia': 'Spendi Punti Stregoneria per modificare gli incantesimi (gittata, bersagli, silenzioso, ecc.).',
+  'Fonte di magia': 'Hai Punti Stregoneria (= livello da stregone) che converti in slot incantesimo e viceversa, come azione bonus.',
+  'Metamagia': 'Impari 2 opzioni di Metamagia (altre al 10° e 17°): spendi Punti Stregoneria per modificare un incantesimo (gittata, bersagli, silenzioso, rapido, ecc.).',
   'Recupero stregonesco': 'Recuperi Punti Stregoneria dopo un riposo.',
   'Ristoro stregonesco': 'Recuperi Punti Stregoneria dopo un riposo breve. (2014)',
   'Stregoneria incarnata': 'Potenzi la tua Stregoneria Innata con effetti aggiuntivi. (2024)',
   'Apoteosi arcana': 'Il culmine dello stregone: usi la metamagia gratis in certe condizioni.',
   // Warlock
-  'Magia del patto': 'Lanci incantesimi con pochi slot che si recuperano a ogni riposo breve, sempre al livello massimo.',
+  'Magia del patto': 'Pochi slot incantesimo (1-4) sempre al livello massimo, che recuperi a ogni riposo breve o lungo.',
   'Patrono ultraterreno': "L'entità del tuo patto: la sottoclasse che concede incantesimi e poteri.",
-  'Suppliche occulte': 'Doni magici permanenti a scelta (es. Vista del Diavolo, Raffica potenziata).',
+  'Suppliche occulte': 'Impari doni magici permanenti a scelta (ne ottieni di più salendo di livello): es. vedere al buio, potenziare Raffica Occulta, lanciare certi incantesimi.',
   'Invocazioni occulte': 'Doni magici permanenti a scelta (es. Vista del Diavolo, Raffica potenziata). (2014)',
   'Astuzia magica': 'Durante un riposo breve puoi recuperare slot del patto spesi. (2024)',
   'Dono del patto': 'Scegli un dono: lama, tomo, catena o talismano. (2014)',
@@ -2946,7 +2946,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.39';
+const APP_VERSION = '1.9.40';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
