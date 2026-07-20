@@ -2927,7 +2927,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.35';
+const APP_VERSION = '1.9.36';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -5459,6 +5459,12 @@ export default function App() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', flexShrink: 0 }}>
             <span style={{ fontSize: 15, fontWeight: 'bold', color: C.goldDark, display: 'inline-flex', alignItems: 'center', gap: 4, marginRight: 2 }}>
               Liv. <Editable value={scheda.livello} tipo="numero" width={26} onChange={(v) => aggiorna({ livello: Math.max(1, Math.min(20, v)) })} />
+            </span>
+            <span
+              style={{ fontSize: 11, fontWeight: 'bold', padding: '2px 7px', borderRadius: 6, border: `1px solid ${C.border}`, color: C.inkDim, background: 'rgba(0,0,0,0.04)', whiteSpace: 'nowrap' }}
+              title="Versione delle regole di questo personaggio (scelta alla creazione)"
+            >
+              {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
             </span>
             <button
               style={styles.buttonMini}
