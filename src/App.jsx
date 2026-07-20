@@ -127,14 +127,81 @@ function sottoclassiPerClasse(classe) {
   return (c && SOTTOCLASSI_5E[c.match[0]]) || [];
 }
 
-// Privilegi delle sottoclasse per livello (in costruzione: si aggiungono classe
-// per classe). Chiave = nome della sottoclasse come in SOTTOCLASSI_5E.
+// Privilegi delle sottoclassi per livello (regole 2024). I nomi seguono le
+// sottoclasse elencate in SOTTOCLASSI_5E e i livelli in SOTTOCLASSE_LIV.
+// Sono riassunti/etichette nostre: da verificare col proprio manuale.
 const SUBCLASS_PRIVILEGI = {
-  // Stregone (2024)
+  // --- BARBARO (3, 6, 10, 14) ---
+  'Berserker': { 3: 'Frenesia', 6: 'Ira Instancabile', 10: 'Presenza Intimidatoria', 14: 'Rappresaglia' },
+  'Cuore Selvaggio': { 3: 'Ira della Natura', 6: 'Aspetto della Natura', 10: 'Parlare con la Natura', 14: 'Potere della Natura' },
+  'Albero del Mondo': { 3: 'Vitalità dell’Albero\nRami dell’Albero', 6: 'Battaglia per l’Albero', 10: 'Radici Nutrienti', 14: 'Viaggio lungo l’Albero' },
+  'Zelota': { 3: 'Furia Divina\nGuerriero degli Dèi', 6: 'Concentrazione Fanatica', 10: 'Presenza Zelante', 14: 'Ira degli Dèi' },
+
+  // --- BARDO (3, 6, 14) ---
+  'Collegio della Danza': { 3: 'Passi Abbaglianti', 6: 'Movimento Ispiratore\nPassi in Tandem', 14: 'Elusione Guida' },
+  'Collegio dello Splendore': { 3: 'Manto d’Ispirazione\nEsibizione Soggiogante', 6: 'Manto di Maestà', 14: 'Maestà Infrangibile' },
+  'Collegio del Sapere': { 3: 'Competenze Bonus\nParole Taglienti', 6: 'Scoperte Magiche', 14: 'Abilità Impareggiabile' },
+  'Collegio del Valore': { 3: 'Competenze Bonus\nIspirazione da Combattimento', 6: 'Attacco Extra', 14: 'Magia da Battaglia' },
+
+  // --- CHIERICO (3, 6, 17) ---
+  'Dominio della Vita': { 3: 'Incantesimi di Dominio\nDiscepolo della Vita\nPreservare la Vita', 6: 'Guaritore Benedetto', 17: 'Guarigione Suprema' },
+  'Dominio della Luce': { 3: 'Incantesimi di Dominio\nBagliore Protettivo\nRadiosità dell’Alba', 6: 'Bagliore Migliorato', 17: 'Corona di Luce' },
+  'Dominio dell’Inganno': { 3: 'Incantesimi di Dominio\nBenedizione dell’Ingannatore\nInvocare Duplicità', 6: 'Trasposizione dell’Ingannatore', 17: 'Duplicità Migliorata' },
+  'Dominio della Guerra': { 3: 'Incantesimi di Dominio\nSacerdote Guerriero\nAttacco Guidato', 6: 'Benedizione del Dio della Guerra', 17: 'Avatar della Battaglia' },
+
+  // --- DRUIDO (3, 6, 10, 14) ---
+  'Circolo della Terra': { 3: 'Incantesimi del Circolo\nAiuto della Terra', 6: 'Recupero Naturale', 10: 'Protezione della Natura', 14: 'Santuario della Natura' },
+  'Circolo della Luna': { 3: 'Forme del Circolo', 6: 'Forme del Circolo Migliorate', 10: 'Passo di Luce Lunare', 14: 'Forma Lunare' },
+  'Circolo del Mare': { 3: 'Incantesimi del Circolo\nIra del Mare', 6: 'Affinità Acquatica', 10: 'Nato dalla Tempesta', 14: 'Dono Oceanico' },
+  'Circolo delle Stelle': { 3: 'Mappa Stellare\nForma Stellata', 6: 'Presagio Cosmico', 10: 'Costellazioni Scintillanti', 14: 'Pieno di Stelle' },
+
+  // --- GUERRIERO (3, 7, 10, 15, 18) ---
+  'Campione': { 3: 'Critico Migliorato', 7: 'Atleta Straordinario', 10: 'Stile di Combattimento Aggiuntivo', 15: 'Critico Superiore', 18: 'Sopravvissuto' },
+  'Maestro di Battaglia': { 3: 'Manovre da Combattimento\nDadi di Superiorità\nStudente di Guerra', 7: 'Conosci il Nemico', 10: 'Dadi di Superiorità Migliorati (d10)', 15: 'Implacabile', 18: 'Dadi di Superiorità Superiori (d12)' },
+  'Cavaliere Mistico': { 3: 'Lancio di Incantesimi\nLegame con l’Arma', 7: 'Magia da Guerra', 10: 'Colpo Arcano', 15: 'Carica Arcana', 18: 'Magia da Guerra Migliorata' },
+  'Soldato Psionico': { 3: 'Potere Psionico\nGuardia Protettrice', 7: 'Adepto Telecinetico', 10: 'Mente Protetta', 15: 'Baluardo di Forza', 18: 'Maestro Telecinetico' },
+
+  // --- LADRO (3, 9, 13, 17) ---
+  'Assassino': { 3: 'Competenze Bonus\nAssassinare', 9: 'Esperto d’Infiltrazione', 13: 'Impostore', 17: 'Colpo Mortale' },
+  'Furfante': { 3: 'Mani Veloci\nLavoro in Quota', 9: 'Furtività Suprema', 13: 'Uso di Oggetti Magici', 17: 'Riflessi del Ladro' },
+  'Anima Lama': { 3: 'Potere Psionico\nLame Psichiche', 9: 'Lame dell’Anima', 13: 'Velo Psichico', 17: 'Lacerare la Mente' },
+  'Ladro Arcano': { 3: 'Lancio di Incantesimi\nMano Magica Prestidigitatrice', 9: 'Imboscata Magica', 13: 'Ingannatore Versatile', 17: 'Ladro di Incantesimi' },
+
+  // --- MAGO (3, 6, 10, 14) ---
+  'Abiuratore': { 3: 'Sapiente dell’Abiurazione\nBarriera Arcana', 6: 'Barriera Proiettata', 10: 'Spezza-Incantesimi', 14: 'Resistenza agli Incantesimi' },
+  'Divinatore': { 3: 'Sapiente della Divinazione\nPresagio', 6: 'Divinazione Esperta', 10: 'Il Terzo Occhio', 14: 'Presagio Superiore' },
+  'Invocatore': { 3: 'Sapiente dell’Invocazione\nPlasmare Incantesimi', 6: 'Trucchetto Potente', 10: 'Invocazione Potenziata', 14: 'Sovraccaricare' },
+  'Illusionista': { 3: 'Sapiente dell’Illusione\nIllusioni Migliorate', 6: 'Creature Fantasmatiche', 10: 'Sé Illusorio', 14: 'Realtà Illusoria' },
+
+  // --- MONACO (3, 6, 11, 17) ---
+  'Mano Aperta': { 3: 'Tecnica della Mano Aperta', 6: 'Ristoro del Corpo', 11: 'Tranquillità', 17: 'Palmo Vibrante' },
+  'Misericordia': { 3: 'Mano della Guarigione\nMano del Danno', 6: 'Tocco del Medico', 11: 'Raffica di Cure e Danni', 17: 'Mano della Misericordia Suprema' },
+  'Elementi': { 3: 'Sintonia Elementale\nManipolare gli Elementi', 6: 'Scarica Elementale', 11: 'Passo degli Elementi', 17: 'Epitome Elementale' },
+  'Ombra': { 3: 'Arti dell’Ombra', 6: 'Passo dell’Ombra', 11: 'Passo dell’Ombra Migliorato', 17: 'Manto d’Ombre' },
+
+  // --- PALADINO (3, 7, 15, 20) ---
+  'Giuramento della Devozione': { 3: 'Incantesimi del Giuramento\nArma Sacra', 7: 'Aura di Devozione', 15: 'Punizione della Protezione', 20: 'Nimbo Sacro' },
+  'Giuramento della Gloria': { 3: 'Incantesimi del Giuramento\nAtleta Impareggiabile\nPunizione Ispiratrice', 7: 'Aura di Alacrità', 15: 'Difesa Gloriosa', 20: 'Leggenda Vivente' },
+  'Giuramento degli Antichi': { 3: 'Incantesimi del Giuramento\nIra della Natura', 7: 'Aura di Protezione', 15: 'Sentinella Imperitura', 20: 'Campione Antico' },
+  'Giuramento della Vendetta': { 3: 'Incantesimi del Giuramento\nVoto di Inimicizia', 7: 'Vendicatore Implacabile', 15: 'Anima della Vendetta', 20: 'Angelo Vendicatore' },
+
+  // --- RANGER (3, 7, 11, 15) ---
+  'Cacciatore': { 3: 'Preda del Cacciatore', 7: 'Tattiche Difensive', 11: 'Multiattacco', 15: 'Difesa Superiore del Cacciatore' },
+  'Signore delle Bestie': { 3: 'Compagno Primordiale', 7: 'Addestramento Eccezionale', 11: 'Furia Bestiale', 15: 'Condividere Incantesimi' },
+  'Vagabondo Fatato': { 3: 'Incantesimi\nColpi Terrificanti\nFascino Ultraterreno', 7: 'Distorsione Ammaliante', 11: 'Rinforzi Fatati', 15: 'Vagabondo Nebbioso' },
+  'Errante Cupo': { 3: 'Incantesimi\nAgguato Terrificante\nVista Umbratile', 7: 'Mente di Ferro', 11: 'Raffica del Predatore', 15: 'Schivata Ombrosa' },
+
+  // --- STREGONE (3, 6, 14, 18) ---
   'Magia Selvaggia': { 3: 'Ondata di Magia Selvaggia\nOnde di Caos', 6: 'Piega la Sorte', 14: 'Caos Controllato', 18: 'Bombardamento Magico' },
   'Stirpe Draconica': { 3: 'Resilienza Draconica\nIncantesimi Draconici', 6: 'Affinità Elementale', 14: 'Ali di Drago', 18: 'Compagno Draconico' },
-  'Mente Aberrante': { 3: 'Linguaggio Telepatico\nIncantesimi Psionici', 6: 'Stregoneria Psionica\nDifese Psichiche', 14: 'Rivelazione nella Carne', 18: 'Implosione Distorcente' },
-  'Anima Meccanica': { 3: 'Magia Meccanica\nRipristinare l\'Equilibrio', 6: 'Bastione della Legge', 14: 'Trance dell\'Ordine', 18: 'Cavalcata Meccanica' },
+  'Stregoneria Aberrante': { 3: 'Linguaggio Telepatico\nIncantesimi Psionici', 6: 'Stregoneria Psionica\nDifese Psichiche', 14: 'Rivelazione nella Carne', 18: 'Implosione Distorcente' },
+  'Anima Meccanica': { 3: 'Magia Meccanica\nRipristinare l’Equilibrio', 6: 'Bastione della Legge', 14: 'Trance dell’Ordine', 18: 'Cavalcata Meccanica' },
+
+  // --- WARLOCK (3, 6, 10, 14) ---
+  'Immondo': { 3: 'Incantesimi del Patrono\nBenedizione dell’Oscuro', 6: 'Fortuna dell’Oscuro', 10: 'Resilienza Immonda', 14: 'Scagliare all’Inferno' },
+  'Arcifata': { 3: 'Incantesimi del Patrono\nPassi Fatati', 6: 'Fuga Nebbiosa', 10: 'Difese Ammalianti', 14: 'Magia Stregante' },
+  'Grande Antico': { 3: 'Incantesimi del Patrono\nMente Risvegliata', 6: 'Combattente Chiaroveggente', 10: 'Scudo del Pensiero', 14: 'Creare uno Schiavo' },
+  'Celestiale': { 3: 'Incantesimi del Patrono\nLuce Guaritrice', 6: 'Anima Radiosa', 10: 'Resilienza Celestiale', 14: 'Vendetta Ardente' },
 };
 /** Privilegi della sottoclasse fino al livello dato (testo con a-capo), o null. */
 function privilegiSottoclasseFinoA(sottoclasse, livello) {
@@ -2425,7 +2492,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.27';
+const APP_VERSION = '1.9.28';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4328,6 +4395,14 @@ export default function App() {
         // A questo livello si SCEGLIE la sottoclasse (il primo livello di sottoclasse)?
         const scelteSub = sottoclassiPerClasse(scheda.classe);
         const mostraSceltaSub = nuovoLivello === livelloSceltaSottoclasse(scheda.classe, versione) && scelteSub.length > 0;
+        // Privilegi di sottoclasse guadagnati a QUESTO livello (dai dati 2024).
+        // Al livello di scelta usiamo la sottoclasse selezionata nel modale.
+        const subSel = mostraSceltaSub ? (levelUpBozza.sottoclasse || '') : (scheda.sottoclasse || '');
+        const subTab = SUBCLASS_PRIVILEGI[subSel];
+        const attualiSub = (scheda.privilegiSottoclasse || '');
+        const subPrivNuovi = subTab && subTab[nuovoLivello]
+          ? subTab[nuovoLivello].split('\n').filter((r) => r.trim() && !attualiSub.includes(r.trim())).join('\n')
+          : '';
         // Le scelte interattive sono complete? (per abilitare la conferma)
         const asiCompleto = !haASI
           || (levelUpBozza.asiMode === 'talento'
@@ -4455,10 +4530,16 @@ export default function App() {
                   {privNuovi.split('\n').map((r, i) => <div key={i} style={{ color: C.green }}>• {r}</div>)}
                 </div>
               )}
-              {mostraSceltaSub ? (
+              {mostraSceltaSub && (
                 <div style={rigaCambio}><span>Sottoclasse</span><strong>{levelUpBozza.sottoclasse || '— da scegliere'}</strong></div>
-              ) : haSub ? (
-                <div style={{ padding: '5px 0', color: C.inkDim }}>🌟 La tua sottoclasse guadagna un nuovo privilegio (aggiungilo a mano nei Privilegi).</div>
+              )}
+              {subPrivNuovi ? (
+                <div style={{ padding: '5px 0', borderBottom: `1px solid ${C.border}` }}>
+                  <div style={{ marginBottom: 2 }}>Nuovi privilegi di sottoclasse</div>
+                  {subPrivNuovi.split('\n').map((r, i) => <div key={i} style={{ color: C.green }}>• {r}</div>)}
+                </div>
+              ) : haSub && !mostraSceltaSub ? (
+                <div style={{ padding: '5px 0', color: C.inkDim }}>🌟 La tua sottoclasse guadagna un nuovo privilegio (aggiungilo a mano nei Privilegi di sottoclasse).</div>
               ) : null}
               {haASI && (
                 <div style={rigaCambio}>
@@ -4470,7 +4551,7 @@ export default function App() {
                       : '— da scegliere')}</strong>
                 </div>
               )}
-              {!slotStr && !privNuovi && !haSub && !haASI && !mostraSceltaSub && (
+              {!slotStr && !privNuovi && !subPrivNuovi && !haSub && !haASI && !mostraSceltaSub && (
                 <div style={{ padding: '3px 0', color: C.inkDim }}>Nessun altro cambiamento automatico a questo livello.</div>
               )}
             </div>
@@ -4494,6 +4575,8 @@ export default function App() {
                 if (privNuovi) patch.privilegi = attualiPriv.trim() ? `${attualiPriv.trim()}\n${privNuovi}` : privNuovi;
                 // Sottoclasse scelta (solo al livello di scelta)
                 if (mostraSceltaSub && levelUpBozza.sottoclasse) patch.sottoclasse = levelUpBozza.sottoclasse;
+                // Appende i nuovi privilegi di sottoclasse guadagnati a questo livello
+                if (subPrivNuovi) patch.privilegiSottoclasse = attualiSub.trim() ? `${attualiSub.trim()}\n${subPrivNuovi}` : subPrivNuovi;
                 // Aumento di Caratteristica o Talento
                 if (haASI) {
                   if (levelUpBozza.asiMode === 'talento') {
@@ -5044,7 +5127,19 @@ export default function App() {
                   />
                 </CampoModulo>
                 <CampoModulo label="Sottoclasse">
-                  <CampoTendina value={scheda.sottoclasse} opzioni={sottoclassiPerClasse(scheda.classe)} onChange={(v) => aggiorna({ sottoclasse: v })} title="Sottoclasse (opzioni in base alla classe)" />
+                  <CampoTendina
+                    value={scheda.sottoclasse}
+                    opzioni={sottoclassiPerClasse(scheda.classe)}
+                    onChange={(v) => {
+                      const patch = { sottoclasse: v };
+                      // Riempi in automatico i privilegi di sottoclasse fino al
+                      // livello attuale (se abbiamo i dati per questa sottoclasse).
+                      const auto = privilegiSottoclasseFinoA(v, scheda.livello || 1);
+                      if (auto) patch.privilegiSottoclasse = auto;
+                      aggiorna(patch);
+                    }}
+                    title="Sottoclasse (imposta anche i privilegi di sottoclasse fino al tuo livello)"
+                  />
                 </CampoModulo>
               </div>
           <div className="vitali">

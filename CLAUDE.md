@@ -219,9 +219,7 @@ completate. Man mano che si chiudono, spostarle in "Fatto" in fondo.
 
 ### D. Estetica
 - [ ] **Colori delle classi più distinti** fra loro (rivedere palette `CLASSI`).
-- [ ] **Immagini di riferimento** (5 img inviate dall'utente, IMG_6554…6558;
-  la 6555 "mood D&D" è la preferita) → estrarne palette per sfondi/temi.
-  ISPIRAZIONE per i colori, NON incorporare le immagini (copyright).
+- ~~Immagini di riferimento → palette~~ (annullato su richiesta dell'utente).
 
 ### E. Incantesimi
 - [ ] **Migliorare il sistema incantesimi**: liste per classe/livello, ricerca,
