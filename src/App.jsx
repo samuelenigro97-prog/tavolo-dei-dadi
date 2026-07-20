@@ -2360,6 +2360,8 @@ const SPIEG_TALENTI = {
   'Maestro di Scudo': 'Usi lo scudo per spingere e proteggerti meglio dagli effetti ad area.',
 };
 const SPIEG_TALENTI_LC = _lcMap(SPIEG_TALENTI);
+// Elenco ordinato dei talenti noti (per il menu a tendina al Level Up).
+const TALENTI_NOMI = Object.keys(SPIEG_TALENTI).sort((a, b) => a.localeCompare(b, 'it'));
 /** Spiegazione di un talento dal nome (o null), senza maiuscole, ignora parentesi. */
 function spiegaTalento(nome) {
   const n = String(nome || '').trim().toLowerCase();
@@ -2975,7 +2977,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.41';
+const APP_VERSION = '1.9.42';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -5007,12 +5009,31 @@ export default function App() {
                   ))}
                 </div>
                 {levelUpBozza.asiMode === 'talento' ? (
-                  <input
-                    style={{ ...styles.inlineInput, width: '100%', padding: '6px 8px', fontSize: 14 }}
-                    placeholder="Nome del talento (es. Attaccante Robusto)"
-                    value={levelUpBozza.talento || ''}
-                    onChange={(e) => setLevelUpBozza((b) => ({ ...b, talento: e.target.value }))}
-                  />
+                  <>
+                    <select
+                      style={{ ...styles.inlineInput, width: '100%', padding: '6px 8px', fontSize: 14 }}
+                      value={TALENTI_NOMI.includes(levelUpBozza.talento) ? levelUpBozza.talento : (levelUpBozza.talento ? '__altro' : '')}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setLevelUpBozza((b) => ({ ...b, talento: v === '__altro' ? '' : v }));
+                      }}
+                    >
+                      <option value="">Scegli un talento…</option>
+                      {TALENTI_NOMI.map((t) => <option key={t} value={t}>{t}</option>)}
+                      <option value="__altro">Altro (scrivi a mano)…</option>
+                    </select>
+                    {!TALENTI_NOMI.includes(levelUpBozza.talento) && (
+                      <input
+                        style={{ ...styles.inlineInput, width: '100%', padding: '6px 8px', fontSize: 14, marginTop: 6 }}
+                        placeholder="Nome del talento"
+                        value={levelUpBozza.talento || ''}
+                        onChange={(e) => setLevelUpBozza((b) => ({ ...b, talento: e.target.value }))}
+                      />
+                    )}
+                    {spiegaTalento(levelUpBozza.talento) && (
+                      <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 10px', fontSize: 12, lineHeight: 1.4, marginTop: 6 }}>{spiegaTalento(levelUpBozza.talento)}</div>
+                    )}
+                  </>
                 ) : (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                     {['asiA', 'asiB'].map((campo) => (
@@ -5668,19 +5689,35 @@ export default function App() {
                   />
                 </CampoModulo>
                 <CampoModulo label="Sottoclasse">
-                  <CampoTendina
-                    value={scheda.sottoclasse}
-                    opzioni={sottoclassiPerClasse(scheda.classe)}
-                    onChange={(v) => {
-                      const patch = { sottoclasse: v };
-                      // Riempi in automatico i privilegi di sottoclasse fino al
-                      // livello attuale (se abbiamo i dati per questa sottoclasse).
-                      const auto = privilegiSottoclasseFinoA(v, scheda.livello || 1);
-                      if (auto) patch.privilegiSottoclasse = auto;
-                      aggiorna(patch);
-                    }}
-                    title="Sottoclasse (imposta anche i privilegi di sottoclasse fino al tuo livello)"
-                  />
+                  {(() => {
+                    const livSub = livelloSceltaSottoclasse(scheda.classe, versione);
+                    const sbloccata = !scheda.classe || !livSub || (scheda.livello || 1) >= livSub;
+                    if (!sbloccata) {
+                      return (
+                        <div
+                          style={{ fontSize: 13, color: C.inkDim, fontStyle: 'italic', padding: '2px 0', cursor: 'not-allowed', userSelect: 'none' }}
+                          title={`La sottoclasse si sceglie al ${livSub}° livello: verrà proposta al Level Up.`}
+                        >
+                          🔒 Dal {livSub}° livello
+                        </div>
+                      );
+                    }
+                    return (
+                      <CampoTendina
+                        value={scheda.sottoclasse}
+                        opzioni={sottoclassiPerClasse(scheda.classe)}
+                        onChange={(v) => {
+                          const patch = { sottoclasse: v };
+                          // Riempi in automatico i privilegi di sottoclasse fino al
+                          // livello attuale (se abbiamo i dati per questa sottoclasse).
+                          const auto = privilegiSottoclasseFinoA(v, scheda.livello || 1);
+                          if (auto) patch.privilegiSottoclasse = auto;
+                          aggiorna(patch);
+                        }}
+                        title="Sottoclasse (imposta anche i privilegi di sottoclasse fino al tuo livello)"
+                      />
+                    );
+                  })()}
                 </CampoModulo>
               </div>
           <div className="vitali">
