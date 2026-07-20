@@ -2705,19 +2705,24 @@ function attaccoDaArma(arma, scheda) {
 
 // Dotazione iniziale indicativa per classe (armi che diventano attacchi +
 // equipaggiamento + monete d'oro). Le armi devono combaciare con ARMI_5E.
+// Tipi di armatura iniziale (per impostare in automatico il riquadro CA).
+const ARM_CUOIO = { tipo: 'leggera', base: 11, nome: 'Armatura di cuoio' };
+const ARM_SCAGLIE = { tipo: 'media', base: 14, nome: 'Armatura a scaglie' };
+const ARM_MAGLIA = { tipo: 'pesante', base: 16, nome: 'Cotta di maglia' };
+const ARM_NESSUNA = { tipo: 'nessuna', base: 0, nome: '' };
 const KIT_CLASSE = {
-  barbaro:  { armi: ['Ascia bipenne'], equip: ['Ascia (Handaxe) ×4', 'Dotazione da esploratore'], denari: 15 },
-  bardo:    { armi: ['Stocco'], equip: ['Armatura di cuoio', 'Pugnale', 'Strumento musicale', 'Dotazione da intrattenitore'], denari: 19 },
-  chierico: { armi: ['Mazza'], equip: ['Armatura a scaglie', 'Scudo', 'Balestra leggera + 20 dardi', 'Simbolo sacro', 'Dotazione da sacerdote'], denari: 7 },
-  druido:   { armi: ['Scimitarra'], equip: ['Armatura di cuoio', 'Scudo (legno)', 'Focus druidico', 'Borsa da erborista', 'Dotazione da esploratore'], denari: 9 },
-  guerriero:{ armi: ['Spada lunga', 'Arco lungo'], equip: ['Cotta di maglia', 'Scudo', '20 frecce', 'Dotazione da avventuriero'], denari: 4 },
-  ladro:    { armi: ['Stocco', 'Arco corto'], equip: ['Armatura di cuoio', 'Pugnale ×2', 'Arnesi da scasso', 'Dotazione da scassinatore', '20 frecce'], denari: 8 },
-  mago:     { armi: ['Pugnale'], equip: ['Focus arcano', 'Libro degli incantesimi', 'Dotazione da studioso'], denari: 5 },
-  monaco:   { armi: ['Spada corta'], equip: ['Dardo ×10', 'Dotazione da esploratore', 'Attrezzi da artigiano o strumento musicale'], denari: 11 },
-  paladino: { armi: ['Spada lunga'], equip: ['Cotta di maglia', 'Scudo', 'Giavellotto ×6', 'Simbolo sacro', 'Dotazione da sacerdote'], denari: 9 },
-  ranger:   { armi: ['Spada corta', 'Arco lungo'], equip: ['Armatura di cuoio', '20 frecce', 'Dotazione da esploratore'], denari: 7 },
-  stregone: { armi: ['Pugnale'], equip: ['Focus arcano', 'Pugnale', 'Dotazione da avventuriero'], denari: 28 },
-  warlock:  { armi: ['Pugnale'], equip: ['Armatura di cuoio', 'Focus arcano', 'Pugnale', 'Libro degli occulti', 'Dotazione da studioso'], denari: 15 },
+  barbaro:  { armi: ['Ascia bipenne'], equip: ['Ascia (Handaxe) ×4', 'Dotazione da esploratore'], denari: 15, armatura: ARM_NESSUNA, scudo: false, strumenti: '' },
+  bardo:    { armi: ['Stocco'], equip: ['Armatura di cuoio', 'Pugnale', 'Strumento musicale', 'Dotazione da intrattenitore'], denari: 19, armatura: ARM_CUOIO, scudo: false, strumenti: 'Strumenti musicali (3 a scelta)' },
+  chierico: { armi: ['Mazza'], equip: ['Armatura a scaglie', 'Scudo', 'Balestra leggera + 20 dardi', 'Simbolo sacro', 'Dotazione da sacerdote'], denari: 7, armatura: ARM_SCAGLIE, scudo: true, strumenti: '' },
+  druido:   { armi: ['Scimitarra'], equip: ['Armatura di cuoio', 'Scudo (legno)', 'Focus druidico', 'Borsa da erborista', 'Dotazione da esploratore'], denari: 9, armatura: ARM_CUOIO, scudo: true, strumenti: 'Borsa da erborista' },
+  guerriero:{ armi: ['Spada lunga', 'Arco lungo'], equip: ['Cotta di maglia', 'Scudo', '20 frecce', 'Dotazione da avventuriero'], denari: 4, armatura: ARM_MAGLIA, scudo: true, strumenti: '' },
+  ladro:    { armi: ['Stocco', 'Arco corto'], equip: ['Armatura di cuoio', 'Pugnale ×2', 'Arnesi da scasso', 'Dotazione da scassinatore', '20 frecce'], denari: 8, armatura: ARM_CUOIO, scudo: false, strumenti: 'Arnesi da scasso' },
+  mago:     { armi: ['Pugnale'], equip: ['Focus arcano', 'Libro degli incantesimi', 'Dotazione da studioso'], denari: 5, armatura: ARM_NESSUNA, scudo: false, strumenti: '' },
+  monaco:   { armi: ['Spada corta'], equip: ['Dardo ×10', 'Dotazione da esploratore', 'Attrezzi da artigiano o strumento musicale'], denari: 11, armatura: ARM_NESSUNA, scudo: false, strumenti: 'Un tipo di attrezzi da artigiano o uno strumento musicale' },
+  paladino: { armi: ['Spada lunga'], equip: ['Cotta di maglia', 'Scudo', 'Giavellotto ×6', 'Simbolo sacro', 'Dotazione da sacerdote'], denari: 9, armatura: ARM_MAGLIA, scudo: true, strumenti: '' },
+  ranger:   { armi: ['Spada corta', 'Arco lungo'], equip: ['Armatura di cuoio', '20 frecce', 'Dotazione da esploratore'], denari: 7, armatura: ARM_CUOIO, scudo: false, strumenti: '' },
+  stregone: { armi: ['Pugnale'], equip: ['Focus arcano', 'Pugnale', 'Dotazione da avventuriero'], denari: 28, armatura: ARM_NESSUNA, scudo: false, strumenti: '' },
+  warlock:  { armi: ['Pugnale'], equip: ['Armatura di cuoio', 'Focus arcano', 'Pugnale', 'Libro degli occulti', 'Dotazione da studioso'], denari: 15, armatura: ARM_CUOIO, scudo: false, strumenti: '' },
 };
 // Lingua tematica concessa dalla specie (oltre al Comune). Nella 5.5 le lingue
 // derivano dall'origine, ma diamo un default sensato modificabile a mano.
@@ -2977,7 +2982,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.42';
+const APP_VERSION = '1.9.43';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4005,11 +4010,16 @@ export default function App() {
     s.lingue = lingueIniziali(specie);
     // bonus competenza coerente col livello (serve per gli attacchi iniziali)
     s.bonusCompetenza = bonusCompetenzaDaLivello(s.livello);
-    // dotazione iniziale della classe: armi (come attacchi), equipaggiamento, monete
+    // dotazione iniziale della classe: armi (come attacchi), equipaggiamento,
+    // monete, armatura indossata (riquadro CA), competenze negli strumenti.
     const kit = KIT_CLASSE[chiaveClasse(classe)];
     if (kit) {
       s.equipaggiamento = kit.equip.join('\n');
       s.denari = { ...s.denari, mo: kit.denari };
+      if (kit.strumenti) s.addestramento = { ...s.addestramento, strumenti: kit.strumenti };
+      // armatura indossata → il riquadro CA si calcola da sola
+      s.armatura = { ...s.armatura, ...kit.armatura, scudo: !!kit.scudo, bonus: 0 };
+      if (kit.armatura.tipo === 'manuale' || kit.armatura.tipo === 'nessuna') s.ca = 10 + modificatore(s.caratteristiche.destrezza);
       const armi = kit.armi
         .map((nomeArma, i) => {
           const a = ARMI_5E.find((w) => w.nome === nomeArma);
@@ -4018,6 +4028,9 @@ export default function App() {
         .filter(Boolean);
       if (armi.length) s.attacchi = armi;
     }
+    // punti ferita di 1° livello = dado vita massimo + modificatore di Costituzione
+    s.pfMax = Math.max(1, dadoVitaClasse(classe) + modificatore(s.caratteristiche.costituzione));
+    s.pfAttuali = s.pfMax;
     // avatar e chiusura schermate
     s.ritratto = generaAvatar(classe, specie, s.nome);
     nuovoPersonaggio(s);
