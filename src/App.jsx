@@ -2988,7 +2988,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.54';
+const APP_VERSION = '1.9.55';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -5642,9 +5642,9 @@ export default function App() {
               }}
             />
           ) : (
-            <div style={{ position: 'relative', flex: '1 1 180px', minWidth: 150, display: 'flex' }}>
+            <div style={{ position: 'relative', flex: '1 1 180px', minWidth: 150, display: 'flex', overflow: 'visible' }}>
               <select
-                style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', padding: '5px 34px 5px 8px' }}
+                style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', padding: '9px 36px 9px 8px' }}
                 value={roster.attivo}
                 onChange={(e) => setRoster((r) => ({ ...r, attivo: e.target.value }))}
                 title="Personaggio attivo — scegli per cambiare al volo"
@@ -5658,10 +5658,10 @@ export default function App() {
               <span
                 aria-hidden
                 style={{
-                  position: 'absolute', right: 30, top: '50%', transform: 'translateY(-50%)',
+                  position: 'absolute', right: 34, top: '50%', transform: 'translateY(-50%) rotate(-12deg)',
                   fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: 'italic', fontWeight: 'bold',
-                  fontSize: 30, letterSpacing: 1, lineHeight: 1,
-                  color: C.inkDim, opacity: 0.28, pointerEvents: 'none', userSelect: 'none', whiteSpace: 'nowrap',
+                  fontSize: 38, letterSpacing: 1, lineHeight: 1,
+                  color: C.inkDim, opacity: 0.3, pointerEvents: 'none', userSelect: 'none', whiteSpace: 'nowrap',
                 }}
               >
                 {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
