@@ -2988,7 +2988,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.55';
+const APP_VERSION = '1.9.56';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3770,6 +3770,16 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem('scheda-interattiva:versione', regoleVersione); } catch { /* niente */ }
   }, [regoleVersione]);
+
+  // lingua dell'interfaccia: 'it' (italiano) o 'en' (inglese). Il tasto mostra la
+  // bandiera della lingua ATTIVA e la commuta al click.
+  const [appLang, setAppLang] = useState(() => localStorage.getItem('scheda-interattiva:lingua-app') || 'it');
+  useEffect(() => {
+    try {
+      localStorage.setItem('scheda-interattiva:lingua-app', appLang);
+      document.documentElement.lang = appLang;
+    } catch { /* niente */ }
+  }, [appLang]);
 
   // Cloud Sync
   const [mostraCloud, setMostraCloud] = useState(false);
@@ -5483,6 +5493,13 @@ export default function App() {
 
         <div className="app-header-group" style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
           <button
+            style={styles.modeButton(false)}
+            title={appLang === 'it' ? 'Interfaccia in italiano — click per passare all’inglese' : 'Interface in English — click to switch to Italian'}
+            onClick={() => setAppLang((l) => (l === 'it' ? 'en' : 'it'))}
+          >
+            {appLang === 'it' ? '🇮🇹 IT' : '🇬🇧 EN'}
+          </button>
+          <button
             className={nuovaVersione && !aggiornando ? 'aggiorna-pronto' : undefined}
             style={styles.modeButton(false)}
             title={nuovaVersione ? 'È disponibile una nuova versione: click per aggiornare' : 'Aggiorna l’app: svuota la cache e ricarica l’ultima versione'}
@@ -6314,6 +6331,31 @@ export default function App() {
                 onChange={(v) => aggiorna({ trattiSpecie: v })}
               />
             </Sezione>
+
+            <Sezione titolo="Privilegi di classe" {...propsSez('privilegi')} {...apertoProps('privilegi')}>
+              <button
+                style={{ ...styles.button, marginBottom: 8, fontSize: 12 }}
+                onClick={() => setMostraPrivilegi(true)}
+                title="Panoramica ordinata dei privilegi di classe e sottoclasse per livello"
+              >
+                📖 Panoramica privilegi per livello
+              </button>
+              <ListaQuadratini
+                value={scheda.privilegi}
+                lookup={spiegaPrivilegio}
+                placeholder="Nessun privilegio. Aggiungine uno."
+                onChange={(v) => aggiorna({ privilegi: v })}
+              />
+            </Sezione>
+
+            <Sezione titolo="Privilegi di sottoclasse" {...apertoProps('privilegiSottoclasse')}>
+              <ListaQuadratini
+                value={scheda.privilegiSottoclasse}
+                lookup={spiegaPrivilegio}
+                placeholder={`Privilegi della sottoclasse${scheda.sottoclasse ? ` (${scheda.sottoclasse})` : ''}: aggiungili qui.`}
+                onChange={(v) => aggiorna({ privilegiSottoclasse: v })}
+              />
+            </Sezione>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -6667,31 +6709,6 @@ export default function App() {
                   );
                 })}
               </div>
-            </Sezione>
-
-            <Sezione titolo="Privilegi di classe" {...propsSez('privilegi')} {...apertoProps('privilegi')}>
-              <button
-                style={{ ...styles.button, marginBottom: 8, fontSize: 12 }}
-                onClick={() => setMostraPrivilegi(true)}
-                title="Panoramica ordinata dei privilegi di classe e sottoclasse per livello"
-              >
-                📖 Panoramica privilegi per livello
-              </button>
-              <ListaQuadratini
-                value={scheda.privilegi}
-                lookup={spiegaPrivilegio}
-                placeholder="Nessun privilegio. Aggiungine uno."
-                onChange={(v) => aggiorna({ privilegi: v })}
-              />
-            </Sezione>
-
-            <Sezione titolo="Privilegi di sottoclasse" {...apertoProps('privilegiSottoclasse')}>
-              <ListaQuadratini
-                value={scheda.privilegiSottoclasse}
-                lookup={spiegaPrivilegio}
-                placeholder={`Privilegi della sottoclasse${scheda.sottoclasse ? ` (${scheda.sottoclasse})` : ''}: aggiungili qui.`}
-                onChange={(v) => aggiorna({ privilegiSottoclasse: v })}
-              />
             </Sezione>
 
             {/(stregone|sorcerer)/i.test(scheda.classe || '') && (
