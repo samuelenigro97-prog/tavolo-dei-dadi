@@ -2725,7 +2725,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.29';
+const APP_VERSION = '1.9.30';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -5679,13 +5679,13 @@ export default function App() {
                     >
                       {conSegno(mod)}
                     </Rollable>
-                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8 }}>
                       <div
                         style={{ fontSize: 13, color: C.ink, letterSpacing: 0.8, fontWeight: 'bold', cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
                         title="Cosa governa questa caratteristica?"
                         onClick={() => setInfo({ titolo: label, testo: SPIEG_CARATT[key] })}
                       >{label.toUpperCase()}</div>
-                      <div style={{ fontSize: 17, fontWeight: 'bold', color: C.ink }} title="Punteggio di caratteristica (click per modificare)">
+                      <div style={{ fontSize: 17, fontWeight: 'bold', color: C.goldDark }} title="Punteggio di caratteristica (click per modificare)">
                         <Editable
                           value={scheda.caratteristiche[key]}
                           tipo="numero"
