@@ -111,7 +111,7 @@ const SOTTOCLASSI_5E = {
   bardo: ['Collegio della Danza', 'Collegio del Fascino', 'Collegio della Sapienza', 'Collegio del Valore'],
   chierico: ['Dominio della Vita', 'Dominio della Luce', 'Dominio dell’Inganno', 'Dominio della Guerra'],
   druido: ['Circolo della Terra', 'Circolo della Luna', 'Circolo del Mare', 'Circolo delle Stelle'],
-  guerriero: ['Campione', 'Maestro di Battaglia', 'Cavaliere Mistico', 'Soldato Psionico'],
+  guerriero: ['Maestro di Battaglia', 'Campione', 'Cavaliere Mistico', 'Guerriero Psionico'],
   ladro: ['Mistificatore Arcano', 'Assassino', 'Lama Spirituale', 'Furfante'],
   mago: ['Abiuratore', 'Divinatore', 'Invocatore', 'Illusionista'],
   monaco: ['Guerriero della Misericordia', 'Guerriero dell’Ombra', 'Guerriero degli Elementi', 'Guerriero della Mano Aperta'],
@@ -149,17 +149,17 @@ const SUBCLASS_PRIVILEGI = {
   'Dominio dell’Inganno': { 3: 'Benedizione dell’Ingannatore\nInvocare Duplicato\nIncantesimi del Dominio', 6: 'Trasposizione dell’Ingannatore', 17: 'Duplicato Migliorato' },
   'Dominio della Guerra': { 3: 'Colpo Guidato\nSacerdote di Guerra\nIncantesimi del Dominio', 6: 'Benedizione del Dio della Guerra', 17: 'Avatar della Battaglia' },
 
-  // --- DRUIDO (3, 6, 10, 14) ---
-  'Circolo della Terra': { 3: 'Incantesimi del Circolo\nAiuto della Terra', 6: 'Recupero Naturale', 10: 'Protezione della Natura', 14: 'Santuario della Natura' },
-  'Circolo della Luna': { 3: 'Forme del Circolo', 6: 'Forme del Circolo Migliorate', 10: 'Passo di Luce Lunare', 14: 'Forma Lunare' },
-  'Circolo del Mare': { 3: 'Incantesimi del Circolo\nIra del Mare', 6: 'Affinità Acquatica', 10: 'Nato dalla Tempesta', 14: 'Dono Oceanico' },
-  'Circolo delle Stelle': { 3: 'Mappa Stellare\nForma Stellata', 6: 'Presagio Cosmico', 10: 'Costellazioni Scintillanti', 14: 'Pieno di Stelle' },
+  // --- DRUIDO (3, 6, 10, 14) — nomi ufficiali 2024 ---
+  'Circolo della Terra': { 3: 'Incantesimi del Circolo\nAusilio dalla Terra', 6: 'Recupero Naturale', 10: 'Interdizione della Natura', 14: 'Rifugio della Natura' },
+  'Circolo della Luna': { 3: 'Incantesimi del Circolo\nForme del Circolo', 10: 'Passo Chiardiluna', 14: 'Forma Lunare' },
+  'Circolo del Mare': { 3: 'Incantesimi del Circolo\nFuria dei Mari', 6: 'Affinità Acquatica', 10: 'Nato dalla Tempesta', 14: 'Dono Oceanico' },
+  'Circolo delle Stelle': { 3: 'Carta Celeste\nForma Siderale', 6: 'Profezia Cosmica', 10: 'Costellazioni Scintillanti', 14: 'Manto di Stelle' },
 
-  // --- GUERRIERO (3, 7, 10, 15, 18) ---
-  'Campione': { 3: 'Critico Migliorato', 7: 'Atleta Straordinario', 10: 'Stile di Combattimento Aggiuntivo', 15: 'Critico Superiore', 18: 'Sopravvissuto' },
-  'Maestro di Battaglia': { 3: 'Manovre da Combattimento\nDadi di Superiorità\nStudente di Guerra', 7: 'Conosci il Nemico', 10: 'Dadi di Superiorità Migliorati (d10)', 15: 'Implacabile', 18: 'Dadi di Superiorità Superiori (d12)' },
-  'Cavaliere Mistico': { 3: 'Lancio di Incantesimi\nLegame con l’Arma', 7: 'Magia da Guerra', 10: 'Colpo Arcano', 15: 'Carica Arcana', 18: 'Magia da Guerra Migliorata' },
-  'Soldato Psionico': { 3: 'Potere Psionico\nGuardia Protettrice', 7: 'Adepto Telecinetico', 10: 'Mente Protetta', 15: 'Baluardo di Forza', 18: 'Maestro Telecinetico' },
+  // --- GUERRIERO (3, 7, 10, 15, 18) — nomi ufficiali 2024 ---
+  'Maestro di Battaglia': { 3: 'Studioso di Guerra\nSuperiorità in Combattimento' },
+  'Campione': { 3: 'Atleta Straordinario\nCritico Migliorato', 7: 'Stile di Combattimento Aggiuntivo', 10: 'Guerriero Eroico', 15: 'Critico Superiore', 18: 'Sopravvissuto' },
+  'Cavaliere Mistico': { 3: 'Arma Vincolata\nIncantesimi', 7: 'Magia da Guerra', 10: 'Colpo Mistico', 15: 'Carica Arcana', 18: 'Magia da Guerra Migliorata' },
+  'Guerriero Psionico': { 3: 'Potere Psionico', 7: 'Adepto Telecinetico', 10: 'Scudo Mentale', 15: 'Baluardo della Forza', 18: 'Maestro della Telecinesi' },
 
   // --- LADRO (3, 9, 13, 17) — nomi ufficiali 2024 ---
   'Mistificatore Arcano': { 3: 'Gioco di Prestigio della Mano Magica\nIncantesimi', 9: 'Imboscata Magica', 13: 'Ingannatore Versatile', 17: 'Ladro di Incantesimi' },
@@ -2052,6 +2052,25 @@ const SPIEG_PRIVILEGI = {
   'Incantesimi Psichici': 'La tua sottoclasse ti concede incantesimi sempre preparati.',
   'Guerriero Chiaroveggente': 'Un tuo alleato psichico dà vantaggio ai tiri contro un nemico.',
   'Creare Servitore': 'Puoi ammaliare permanentemente un umanoide o una bestia.',
+
+  // ===== Nomi ufficiali 2024 — Druido e Guerriero =====
+  'Ausilio dalla Terra': 'Spendi una Forma Selvatica per far apparire un’area di fiori curativi e spine dannose.',
+  'Interdizione della Natura': 'Ottieni immunità/resistenza a certi danni e condizioni grazie alla natura.',
+  'Rifugio della Natura': 'I nemici devono superare un TS per riuscire ad attaccarti.',
+  'Passo Chiardiluna': 'Come azione bonus ti teletrasporti e potenzi il tuo prossimo incantesimo.',
+  'Furia dei Mari': 'Come azione bonus colpisci un nemico con un’ondata gelida che lo respinge.',
+  'Carta Celeste': 'Ricevi una mappa stellare magica che ti concede un incantesimo e benefici.',
+  'Forma Siderale': 'Assumi una forma costellata (Arciere, Calice, Drago) con poteri diversi.',
+  'Profezia Cosmica': 'A ogni riposo lungo un presagio ti dà bonus o malus da imporre ai tiri.',
+  'Manto di Stelle': 'Diventi parzialmente incorporeo: resistenza a molti tipi di danno.',
+  'Studioso di Guerra': 'Ottieni competenza in uno strumento da artigiano e nozioni belliche.',
+  'Superiorità in Combattimento': 'Impari manovre tattiche alimentate da Dadi di Superiorità (che crescono di livello).',
+  'Guerriero Eroico': 'All’inizio del tuo turno ottieni un vantaggio eroico da spendere in vari modi.',
+  'Arma Vincolata': 'Leghi magicamente un’arma a te: non puoi essere disarmato e la richiami.',
+  'Colpo Mistico': 'Quando colpisci con un’arma, il tuo prossimo incantesimo è più efficace.',
+  'Scudo Mentale': 'Come reazione ottieni vantaggio ai TS mentali con energia psionica.',
+  'Baluardo della Forza': 'Crei una barriera di forza che protegge te e gli alleati.',
+  'Maestro della Telecinesi': 'Sollevi telecineticamente una creatura o un oggetto (come Mano Potente).',
 };
 // Indice minuscolo per ricerche senza distinzione di maiuscole.
 const _lcMap = (obj) => { const m = {}; for (const k in obj) m[k.toLowerCase()] = obj[k]; return m; };
@@ -2927,7 +2946,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.36';
+const APP_VERSION = '1.9.37';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
