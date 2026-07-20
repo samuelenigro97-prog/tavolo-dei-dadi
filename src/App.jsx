@@ -108,7 +108,7 @@ const ALLINEAMENTI_5E = [
 // Sottoclassi per classe (chiave = primo alias in CLASSI, es. 'mago').
 const SOTTOCLASSI_5E = {
   barbaro: ['Berserker', 'Cuore Selvaggio', 'Albero del Mondo', 'Zelota'],
-  bardo: ['Collegio della Danza', 'Collegio dello Splendore', 'Collegio del Sapere', 'Collegio del Valore'],
+  bardo: ['Collegio della Danza', 'Collegio del Fascino', 'Collegio della Sapienza', 'Collegio del Valore'],
   chierico: ['Dominio della Vita', 'Dominio della Luce', 'Dominio dell’Inganno', 'Dominio della Guerra'],
   druido: ['Circolo della Terra', 'Circolo della Luna', 'Circolo del Mare', 'Circolo delle Stelle'],
   guerriero: ['Campione', 'Maestro di Battaglia', 'Cavaliere Mistico', 'Soldato Psionico'],
@@ -131,23 +131,23 @@ function sottoclassiPerClasse(classe) {
 // sottoclasse elencate in SOTTOCLASSI_5E e i livelli in SOTTOCLASSE_LIV.
 // Sono riassunti/etichette nostre: da verificare col proprio manuale.
 const SUBCLASS_PRIVILEGI = {
-  // --- BARBARO (3, 6, 10, 14) ---
-  'Berserker': { 3: 'Frenesia', 6: 'Ira Instancabile', 10: 'Presenza Intimidatoria', 14: 'Rappresaglia' },
-  'Cuore Selvaggio': { 3: 'Ira Selvaggia', 6: 'Aspetto della Natura', 10: 'Parlare con la Natura', 14: 'Potere della Natura' },
-  'Albero del Mondo': { 3: 'Vitalità dell’Albero\nRami dell’Albero', 6: 'Battaglia per l’Albero', 10: 'Radici Nutrienti', 14: 'Viaggio lungo l’Albero' },
-  'Zelota': { 3: 'Furia Divina\nGuerriero degli Dèi', 6: 'Concentrazione Fanatica', 10: 'Presenza Zelante', 14: 'Ira degli Dèi' },
+  // --- BARBARO (3, 6, 10, 14) — nomi ufficiali Manuale del Giocatore 2024 ---
+  'Berserker': { 3: 'Frenesia', 6: 'Ira Incontenibile', 10: 'Ritorsione', 14: 'Presenza Intimidatoria' },
+  'Cuore Selvaggio': { 3: 'Ira della Natura Selvaggia\nPortavoce degli Animali', 6: 'Aspetto della Natura Selvaggia', 10: 'Portavoce della Natura', 14: 'Potere della Natura Selvaggia' },
+  'Albero del Mondo': { 3: 'Vitalità dell’Albero', 6: 'Rami dell’Albero', 10: 'Radici d’Assalto', 14: 'Viaggio lungo l’Albero' },
+  'Zelota': { 3: 'Furia Divina\nGuerriero degli Dèi', 6: 'Focus Fanatico', 10: 'Presenza Zelante', 14: 'Ira degli Dèi' },
 
-  // --- BARDO (3, 6, 14) ---
-  'Collegio della Danza': { 3: 'Passi Abbaglianti', 6: 'Movimento Ispiratore\nPassi in Tandem', 14: 'Elusione Guida' },
-  'Collegio dello Splendore': { 3: 'Manto d’Ispirazione\nEsibizione Soggiogante', 6: 'Manto di Maestà', 14: 'Maestà Infrangibile' },
-  'Collegio del Sapere': { 3: 'Competenze Bonus\nParole Taglienti', 6: 'Scoperte Magiche', 14: 'Abilità Impareggiabile' },
-  'Collegio del Valore': { 3: 'Competenze Bonus\nIspirazione da Combattimento', 6: 'Attacco Extra', 14: 'Magia da Battaglia' },
+  // --- BARDO (3, 6, 14) — nomi ufficiali 2024 ---
+  'Collegio della Danza': { 3: 'Scarto Smagliante', 6: 'Movimento Ispiratore\nScarto Coordinato', 14: 'Elusione Trainante' },
+  'Collegio del Fascino': { 3: 'Magia Ammaliante\nManto di Ispirazione', 6: 'Manto di Maestosità', 14: 'Maestosità Invitta' },
+  'Collegio della Sapienza': { 3: 'Competenze Bonus\nParole Taglienti', 6: 'Scoperte Magiche', 14: 'Abilità Impareggiabile' },
+  'Collegio del Valore': { 3: 'Addestramento Marziale\nIspirazione in Combattimento', 6: 'Attacco Extra', 14: 'Magia da Combattimento' },
 
-  // --- CHIERICO (3, 6, 17) ---
-  'Dominio della Vita': { 3: 'Incantesimi di Dominio\nDiscepolo della Vita\nPreservare la Vita', 6: 'Guaritore Benedetto', 17: 'Guarigione Suprema' },
-  'Dominio della Luce': { 3: 'Incantesimi di Dominio\nBagliore Protettivo\nRadiosità dell’Alba', 6: 'Bagliore Migliorato', 17: 'Corona di Luce' },
-  'Dominio dell’Inganno': { 3: 'Incantesimi di Dominio\nBenedizione dell’Ingannatore\nInvocare Duplicità', 6: 'Trasposizione dell’Ingannatore', 17: 'Duplicità Migliorata' },
-  'Dominio della Guerra': { 3: 'Incantesimi di Dominio\nSacerdote Guerriero\nAttacco Guidato', 6: 'Benedizione del Dio della Guerra', 17: 'Avatar della Battaglia' },
+  // --- CHIERICO (3, 6, 17) — nomi ufficiali 2024 ---
+  'Dominio della Vita': { 3: 'Discepolo della Vita\nIncantesimi del Dominio\nPreservare Vita', 6: 'Guaritore Benedetto', 17: 'Guarigione Suprema' },
+  'Dominio della Luce': { 3: 'Bagliore di Interdizione\nFulgore dell’Alba\nIncantesimi del Dominio', 6: 'Bagliore di Interdizione Migliorato', 17: 'Corona di Luce' },
+  'Dominio dell’Inganno': { 3: 'Benedizione dell’Ingannatore\nInvocare Duplicato\nIncantesimi del Dominio', 6: 'Trasposizione dell’Ingannatore', 17: 'Duplicato Migliorato' },
+  'Dominio della Guerra': { 3: 'Colpo Guidato\nSacerdote di Guerra\nIncantesimi del Dominio', 6: 'Benedizione del Dio della Guerra', 17: 'Avatar della Battaglia' },
 
   // --- DRUIDO (3, 6, 10, 14) ---
   'Circolo della Terra': { 3: 'Incantesimi del Circolo\nAiuto della Terra', 6: 'Recupero Naturale', 10: 'Protezione della Natura', 14: 'Santuario della Natura' },
@@ -1938,6 +1938,34 @@ const SPIEG_PRIVILEGI = {
   'Anima Radiosa': 'Aggiungi il Carisma ai danni radiosi o da fuoco e ottieni volo temporaneo.',
   'Resilienza Celestiale': 'Ottieni PF temporanei per te e gli alleati a ogni riposo.',
   'Vendetta Ardente': 'Quando scenderesti a 0 PF esplodi di luce, curandoti e ferendo i nemici.',
+
+  // ===== Nomi ufficiali 2024 (Barbaro/Bardo/Chierico) — voci nuove o rinominate =====
+  'Ira Incontenibile': 'Mentre sei in ira non puoi essere affascinato né spaventato; se lo sei, la condizione termina quando entri in ira.',
+  'Ritorsione': 'Come reazione, quando una creatura entro 1,5 m ti ferisce puoi contrattaccarla in mischia.',
+  'Ira della Natura Selvaggia': 'La tua ira assume un aspetto animale (Aquila, Lupo o Orso) con benefici diversi.',
+  'Portavoce degli Animali': 'Puoi lanciare Parlare con gli Animali a volontà (come rituale).',
+  'Aspetto della Natura Selvaggia': 'Ottieni un potere costante da uno spirito animale (sensi, scalata/nuoto, ecc.).',
+  'Portavoce della Natura': 'Puoi lanciare Comunione con la Natura come rituale.',
+  'Potere della Natura Selvaggia': 'Al culmine, alla fine dell’ira evochi uno spirito fatato o ottieni un grande potere naturale.',
+  'Radici d’Assalto': 'Viticci aumentano la tua portata con armi pesanti/versatili e potenzi le proprietà di padronanza.',
+  'Focus Fanatico': 'Una volta per ira, se fallisci un tiro salvezza puoi ripeterlo con un bonus.',
+  'Scarto Smagliante': 'Ti muovi con grazia da ballerino: colpo senz’armi con dado di Ispirazione e mobilità migliore.',
+  'Scarto Coordinato': 'Quando ti muovi, un alleato vicino può muoversi con te senza attacchi di opportunità.',
+  'Elusione Trainante': 'Tu e gli alleati vicini subite metà danni dagli effetti ad area.',
+  'Magia Ammaliante': 'Con un’esibizione affascini chi ti osserva (TS Saggezza).',
+  'Manto di Ispirazione': 'Spendi Ispirazione bardica per dare PF temporanei e movimento agli alleati.',
+  'Manto di Maestosità': 'Per un breve tempo lanci Comando come azione bonus senza spendere slot.',
+  'Maestosità Invitta': 'La tua presenza regale rende difficile ai nemici colpirti.',
+  'Addestramento Marziale': 'Ottieni competenza in armi da guerra, armature medie e scudi.',
+  'Magia da Combattimento': 'Dopo aver lanciato un incantesimo puoi anche compiere un attacco d’arma.',
+  'Preservare Vita': 'Con Incanalare Divinità distribuisci PF a più creature ferite vicine.',
+  'Bagliore di Interdizione': 'Come reazione imponi svantaggio all’attacco di un nemico con un lampo di luce.',
+  'Fulgore dell’Alba': 'Con Incanalare Divinità emani luce che ferisce i nemici e dissolve le tenebre.',
+  'Bagliore di Interdizione Migliorato': 'Il tuo Bagliore di Interdizione può proteggere anche gli alleati vicini.',
+  'Invocare Duplicato': 'Con Incanalare Divinità crei un’illusione di te da cui lanciare incantesimi.',
+  'Duplicato Migliorato': 'Crei più illusioni di te stesso contemporaneamente.',
+  'Colpo Guidato': 'Con Incanalare Divinità aggiungi un grosso bonus a un tiro per colpire.',
+  'Sacerdote di Guerra': 'Come azione bonus compi un attacco d’arma aggiuntivo.',
 };
 // Indice minuscolo per ricerche senza distinzione di maiuscole.
 const _lcMap = (obj) => { const m = {}; for (const k in obj) m[k.toLowerCase()] = obj[k]; return m; };
@@ -2813,7 +2841,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.33';
+const APP_VERSION = '1.9.34';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
