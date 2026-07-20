@@ -1246,8 +1246,9 @@ const styles = {
     padding: '8px 6px',
     display: 'flex',
     flexDirection: 'column',
-    // contenuto (titolo + valore) centrato verticalmente nel riquadro
-    justifyContent: 'center',
+    // titolo in alto e valore sotto: così le etichette di tutti i riquadri
+    // (anche quelli con chip più alti, es. Visione/Resistenze) restano allineate
+    justifyContent: 'flex-start',
     minHeight: 40,
   },
   vitalLabel: {
@@ -2987,7 +2988,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.46';
+const APP_VERSION = '1.9.47';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -5754,24 +5755,6 @@ export default function App() {
                       />
                     );
                   })()}
-                </CampoModulo>
-                <CampoModulo label="Livello (correzione manuale)">
-                  <Editable
-                    value={scheda.livello}
-                    tipo="numero"
-                    width={40}
-                    title="Imposta il livello a mano (ricalcola bonus competenza, dadi vita e slot). Per salire normalmente usa ⬆️."
-                    onChange={(v) => {
-                      const liv = Math.max(1, Math.min(20, Number(v) || 1));
-                      const slot = slotDaClasseLivello(scheda.classe, liv);
-                      aggiorna({
-                        livello: liv,
-                        bonusCompetenza: bonusCompetenzaDaLivello(liv),
-                        dadiVita: esprDadiVita(liv, facceDadoVita(scheda.dadiVita)),
-                        ...(slot ? { slotIncantesimo: slot } : {}),
-                      });
-                    }}
-                  />
                 </CampoModulo>
               </div>
           <div className="vitali">
