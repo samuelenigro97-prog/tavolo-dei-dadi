@@ -2988,7 +2988,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.49';
+const APP_VERSION = '1.9.50';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4851,6 +4851,36 @@ export default function App() {
               </div>
             )}
 
+            {/* Import da PDF con l'IA — funzione avanzata, sotto la sincronizzazione Cloud */}
+            <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 4, paddingTop: 12, marginBottom: 12 }}>
+              <label style={{ ...styles.detail, display: 'block', marginBottom: 6, fontWeight: 'bold' }}>Importa una scheda da PDF (IA)</label>
+              <input ref={pdfRef} type="file" accept="application/pdf,.pdf" style={{ display: 'none' }} onChange={transcribePdf} />
+              <button
+                style={{ ...styles.button, width: '100%' }}
+                onClick={() => pdfRef.current?.click()}
+                disabled={pdfStato === 'loading'}
+                title="Trasforma un PDF di scheda D&D in personaggio, con l'IA (richiede endpoint configurato)"
+              >
+                {pdfStato === 'loading' ? '🤖 Leggo il PDF…' : '🤖 Importa da PDF (IA)'}
+              </button>
+              <details style={{ marginTop: 8 }}>
+                <summary style={{ ...styles.detail, cursor: 'pointer' }}>⚙️ Configura import da PDF (IA)</summary>
+                <p style={{ ...styles.detail, marginTop: 6 }}>
+                  L'import da PDF usa l'IA e richiede un piccolo servizio con la tua
+                  chiave API (un <strong>Cloudflare Worker</strong> gratuito). Incolla
+                  qui l'URL del Worker; istruzioni nel file <code>worker/LEGGIMI.md</code> del progetto.
+                </p>
+                <input
+                  type="url"
+                  value={transcribeUrl}
+                  onChange={(e) => setTranscribeUrl(e.target.value)}
+                  placeholder="https://il-tuo-worker.workers.dev"
+                  style={{ ...styles.inlineInput, width: '100%', maxWidth: 420, padding: '6px 8px' }}
+                />
+              </details>
+              {erroreImport && <div style={{ color: C.red, marginTop: 8, fontSize: 13 }}>{erroreImport}</div>}
+            </div>
+
             <button style={{ ...styles.button, width: '100%' }} onClick={() => setMostraCloud(false)}>Chiudi</button>
           </div>
         </div>
@@ -5427,6 +5457,21 @@ export default function App() {
           >
             ☁️ Cloud{sincronizzando ? ' …' : (githubToken && gistId && autoSync ? ' ✓' : '')}
           </button>
+          <input ref={jsonRef} type="file" accept="application/json,.json" style={{ display: 'none' }} onChange={importaJson} />
+          <button
+            style={styles.modeButton(false)}
+            title="Esporta la scheda come file JSON (backup o trasferimento)"
+            onClick={esportaJson}
+          >
+            💾 Esporta
+          </button>
+          <button
+            style={styles.modeButton(false)}
+            title="Importa una scheda da file JSON (crea un nuovo personaggio)"
+            onClick={() => jsonRef.current?.click()}
+          >
+            📂 Importa
+          </button>
         </div>
 
         <h1 className="app-header-title" style={{ ...styles.title, margin: 0 }}>Tavolo dei Dadi <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 'normal', letterSpacing: 0.5 }}>v{APP_VERSION}</span></h1>
@@ -5592,18 +5637,26 @@ export default function App() {
               }}
             />
           ) : (
-            <select
-              style={{ ...styles.inlineInput, flex: '1 1 180px', minWidth: 150, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', padding: '5px 8px' }}
-              value={roster.attivo}
-              onChange={(e) => setRoster((r) => ({ ...r, attivo: e.target.value }))}
-              title="Personaggio attivo — scegli per cambiare al volo"
-            >
-              {Object.entries(roster.personaggi).map(([id, p]) => (
-                <option key={id} value={id}>
-                  {p.nome || 'Senza nome'}{p.classe ? ` · ${p.classe}` : ''} · Liv. {p.livello || 1} · {(p.versione || '2024') === '2024' ? '5.5' : '5.0'}
-                </option>
-              ))}
-            </select>
+            <div style={{ position: 'relative', flex: '1 1 180px', minWidth: 150, display: 'flex' }}>
+              <select
+                style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', padding: '5px 34px 5px 8px' }}
+                value={roster.attivo}
+                onChange={(e) => setRoster((r) => ({ ...r, attivo: e.target.value }))}
+                title="Personaggio attivo — scegli per cambiare al volo"
+              >
+                {Object.entries(roster.personaggi).map(([id, p]) => (
+                  <option key={id} value={id}>
+                    {p.nome || 'Senza nome'}{p.classe ? ` · ${p.classe}` : ''} · Liv. {p.livello || 1}
+                  </option>
+                ))}
+              </select>
+              <span
+                aria-hidden
+                style={{ position: 'absolute', right: 26, top: '50%', transform: 'translateY(-50%)', fontSize: 15, fontWeight: 'bold', color: C.inkDim, opacity: 0.5, pointerEvents: 'none', letterSpacing: 0.5 }}
+              >
+                {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
+              </span>
+            </div>
           )}
 
           {/* Livello + pulsanti: un unico gruppo con spaziatura uniforme, va a
@@ -5827,7 +5880,7 @@ export default function App() {
                   <Editable value={scheda.pfMax} tipo="numero" onChange={(v) => aggiorna({ pfMax: v })} width={44} />
                 </span>
                 <span style={{ color: C.inkDim, fontSize: 13 }}>
-                  {'  temp '}
+                  {'  Temporanei '}
                   <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={30} />
                 </span>
               </div>
@@ -5847,22 +5900,24 @@ export default function App() {
               <div style={{ ...styles.detail, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: 4 }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
                   Dadi vita{' '}
-                  <Rollable onRoll={tiraDadoVita} title="Tieni premuto e rilascia: spendi un dado vita. Il numero di dadi è pari al livello.">
+                  <Rollable onRoll={tiraDadoVita} title="Tieni premuto e rilascia: spendi un dado vita per curarti. Il numero di dadi è pari al livello.">
                     <strong style={{ color: C.goldDark }}>{Math.max(1, scheda.livello || 1)}</strong>
                   </Rollable>
                   {' × d'}
+                  <strong style={{ color: C.goldDark }} title="Tipo di dado vita: fisso dalla classe (d6 mago/stregone, d8 la maggior parte, d10 guerriero/paladino/ranger, d12 barbaro)">
+                    {facceDadoVita(scheda.dadiVita)}
+                  </strong>
+                  {' · Spesi:'}{' '}
                   <select
-                    style={{ ...styles.inlineInput, fontSize: 12, padding: '1px 2px' }}
-                    value={facceDadoVita(scheda.dadiVita)}
-                    onChange={(e) => aggiorna({ dadiVita: esprDadiVita(scheda.livello, Number(e.target.value)) })}
-                    title="Tipo di dado vita (dalla classe: d6 mago/stregone, d8 la maggior parte, d10 guerriero/paladino/ranger, d12 barbaro)"
+                    style={{ ...styles.inlineInput, fontSize: 12, padding: '1px 3px' }}
+                    value={Math.min(Math.max(0, scheda.dadiVitaSpesi || 0), Math.max(1, scheda.livello || 1))}
+                    onChange={(e) => aggiorna({ dadiVitaSpesi: Number(e.target.value) })}
+                    title="Dadi vita spesi: scegli quanti ne hai usati (ne recuperi metà a ogni riposo lungo)"
                   >
-                    {FACCE_DADO_VITA.map((f) => (
-                      <option key={f} value={f}>{f}</option>
+                    {Array.from({ length: Math.max(1, scheda.livello || 1) + 1 }, (_, i) => (
+                      <option key={i} value={i}>{i}</option>
                     ))}
                   </select>
-                  {' · Spesi:'}{' '}
-                  <Editable value={scheda.dadiVitaSpesi} tipo="numero" onChange={(v) => aggiorna({ dadiVitaSpesi: Math.min(Math.max(1, scheda.livello || 1), Math.max(0, v)) })} width={26} />
                   <span style={{ color: C.inkDim }}>/ {Math.max(1, scheda.livello || 1)}</span>
                 </span>
               </div>
@@ -6248,6 +6303,31 @@ export default function App() {
                 onChange={(v) => aggiorna({ privilegi: v })}
               />
             </Sezione>
+
+            <Sezione titolo="Privilegi di sottoclasse" {...apertoProps('privilegiSottoclasse')}>
+              <ListaQuadratini
+                value={scheda.privilegiSottoclasse}
+                lookup={spiegaPrivilegio}
+                placeholder={`Privilegi della sottoclasse${scheda.sottoclasse ? ` (${scheda.sottoclasse})` : ''}: aggiungili qui.`}
+                onChange={(v) => aggiorna({ privilegiSottoclasse: v })}
+              />
+            </Sezione>
+
+            {/(stregone|sorcerer)/i.test(scheda.classe || '') && (
+              <Sezione titolo="Metamagia" {...apertoProps('metamagia', false)}>
+                <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8 }}>
+                  Scegli dal menu ➕ le opzioni di Metamagia che hai imparato. Tocca il nome per la spiegazione.
+                </div>
+                <CampoConTendina
+                  value={scheda.metamagie}
+                  opzioni={METAMAGIA_5E}
+                  onChange={(v) => aggiorna({ metamagie: v })}
+                  lookup={spiegaMetamagia}
+                  setInfo={setInfo}
+                  title="Opzioni di Metamagia attive"
+                />
+              </Sezione>
+            )}
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -6607,32 +6687,7 @@ export default function App() {
 
         {/* Sezioni descrittive a piena larghezza: riempiono lo spazio sotto le due colonne */}
         <div style={{ display: 'flex', flexDirection: 'column', marginTop: 10 }}>
-            {/* Metamagia, tratti della specie, talenti — collassabili */}
-            {/(stregone|sorcerer)/i.test(scheda.classe || '') && (
-              <Sezione titolo="Metamagia" {...apertoProps('metamagia', false)}>
-                <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8 }}>
-                  Scegli dal menu ➕ le opzioni di Metamagia che hai imparato. Tocca il nome per la spiegazione.
-                </div>
-                <CampoConTendina
-                  value={scheda.metamagie}
-                  opzioni={METAMAGIA_5E}
-                  onChange={(v) => aggiorna({ metamagie: v })}
-                  lookup={spiegaMetamagia}
-                  setInfo={setInfo}
-                  title="Opzioni di Metamagia attive"
-                />
-              </Sezione>
-            )}
-
-            <Sezione titolo="Privilegi di sottoclasse" {...apertoProps('privilegiSottoclasse')}>
-              <ListaQuadratini
-                value={scheda.privilegiSottoclasse}
-                lookup={spiegaPrivilegio}
-                placeholder={`Privilegi della sottoclasse${scheda.sottoclasse ? ` (${scheda.sottoclasse})` : ''}: aggiungili qui.`}
-                onChange={(v) => aggiorna({ privilegiSottoclasse: v })}
-              />
-            </Sezione>
-
+            {/* Tratti della specie, talenti — collassabili */}
             <Sezione titolo="Tratti della specie" {...propsSez('trattiSpecie')} {...apertoProps('trattiSpecie')}>
               <ListaQuadratini
                 value={scheda.trattiSpecie}
@@ -6712,49 +6767,6 @@ export default function App() {
               />
             </Sezione>
 
-            {/* Import / export */}
-            <Sezione titolo="Importa / esporta scheda" aperto={false} style={{ order: 999 }}>
-              <p style={{ ...styles.detail, marginTop: 0 }}>
-                Salva e ricarica la scheda come file JSON per portarla su un altro
-                dispositivo o tenerne una copia. Gli import creano un nuovo personaggio.
-              </p>
-              <input ref={jsonRef} type="file" accept="application/json,.json" style={{ display: 'none' }} onChange={importaJson} />
-              <input ref={pdfRef} type="file" accept="application/pdf,.pdf" style={{ display: 'none' }} onChange={transcribePdf} />
-              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                <button style={styles.button} onClick={esportaJson}>
-                  💾 Esporta JSON
-                </button>
-                <button style={styles.button} onClick={() => jsonRef.current?.click()}>
-                  📂 Importa JSON
-                </button>
-                <button
-                  style={styles.button}
-                  onClick={() => pdfRef.current?.click()}
-                  disabled={pdfStato === 'loading'}
-                  title="Trasforma un PDF di scheda D&D in personaggio, con l'IA (richiede endpoint configurato)"
-                >
-                  {pdfStato === 'loading' ? '🤖 Leggo il PDF…' : '🤖 Importa da PDF (IA)'}
-                </button>
-              </div>
-
-              {/* Configurazione endpoint IA per l'import da PDF */}
-              <details style={{ marginTop: 10 }}>
-                <summary style={{ ...styles.detail, cursor: 'pointer' }}>⚙️ Configura import da PDF (IA)</summary>
-                <p style={{ ...styles.detail, marginTop: 6 }}>
-                  L'import da PDF usa l'IA e richiede un piccolo servizio con la tua
-                  chiave API (un <strong>Cloudflare Worker</strong> gratuito). Incolla
-                  qui l'URL del Worker; istruzioni nel file <code>worker/LEGGIMI.md</code> del progetto.
-                </p>
-                <input
-                  type="url"
-                  value={transcribeUrl}
-                  onChange={(e) => setTranscribeUrl(e.target.value)}
-                  placeholder="https://il-tuo-worker.workers.dev"
-                  style={{ ...styles.inlineInput, width: '100%', maxWidth: 420, padding: '6px 8px' }}
-                />
-              </details>
-              {erroreImport && <div style={{ color: C.red, marginTop: 8 }}>{erroreImport}</div>}
-            </Sezione>
         </div>
 
         <footer style={{ textAlign: 'center', margin: '18px 0 0', fontSize: 11, color: C.inkDim }}>
