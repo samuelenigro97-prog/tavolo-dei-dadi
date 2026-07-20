@@ -1017,7 +1017,7 @@ function generaAvatar(classe, specie, nome) {
     : '';
 
   const svg =
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">` +
+    `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" preserveAspectRatio="xMidYMid slice">` +
     `<defs><radialGradient id="g" cx="50%" cy="36%" r="85%">` +
     `<stop offset="0%" stop-color="${chiaro}"/><stop offset="100%" stop-color="${base}"/>` +
     `</radialGradient></defs>` +
@@ -2946,7 +2946,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.37';
+const APP_VERSION = '1.9.38';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -5707,20 +5707,21 @@ export default function App() {
               <div style={{ ...styles.detail, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: 4 }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
                   Dadi vita{' '}
-                  <Rollable onRoll={tiraDadoVita} title="Tieni premuto e rilascia: spendi un dado vita">
-                    <strong>{Math.max(1, scheda.livello || 1)}</strong>d
+                  <Rollable onRoll={tiraDadoVita} title="Tieni premuto e rilascia: spendi un dado vita. Il numero di dadi è pari al livello.">
+                    <strong style={{ color: C.goldDark }}>{Math.max(1, scheda.livello || 1)}</strong>
                   </Rollable>
+                  {' × d'}
                   <select
                     style={{ ...styles.inlineInput, fontSize: 12, padding: '1px 2px' }}
                     value={facceDadoVita(scheda.dadiVita)}
                     onChange={(e) => aggiorna({ dadiVita: esprDadiVita(scheda.livello, Number(e.target.value)) })}
-                    title="Tipo di dado vita (dalla classe)"
+                    title="Tipo di dado vita (dalla classe: d6 mago/stregone, d8 la maggior parte, d10 guerriero/paladino/ranger, d12 barbaro)"
                   >
                     {FACCE_DADO_VITA.map((f) => (
                       <option key={f} value={f}>{f}</option>
                     ))}
                   </select>
-                  Spesi:{' '}
+                  {' · Spesi:'}{' '}
                   <Editable value={scheda.dadiVitaSpesi} tipo="numero" onChange={(v) => aggiorna({ dadiVitaSpesi: Math.min(Math.max(1, scheda.livello || 1), Math.max(0, v)) })} width={26} />
                   <span style={{ color: C.inkDim }}>/ {Math.max(1, scheda.livello || 1)}</span>
                 </span>
