@@ -2988,7 +2988,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.48';
+const APP_VERSION = '1.9.49';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -6183,33 +6183,35 @@ export default function App() {
             </Sezione>
 
             <Sezione titolo="Addestramento e competenze equipaggiamento" {...propsSez('addestramento')} {...apertoProps('addestramento', false)}>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
-                <span style={styles.detail}>Armature:</span>
-                {[
-                  ['leggera', 'leggera'],
-                  ['media', 'media'],
-                  ['pesante', 'pesante'],
-                  ['scudi', 'scudi'],
-                ].map(([key, label]) => (
-                  <span
-                    key={key}
-                    className="tirabile"
-                    style={{ ...styles.detail, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}
-                    onClick={() =>
-                      aggiorna({
-                        addestramento: {
-                          ...scheda.addestramento,
-                          armature: {
-                            ...scheda.addestramento.armature,
-                            [key]: !scheda.addestramento.armature[key],
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ ...styles.detail, marginBottom: 4 }}>Armature:</div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  {[
+                    ['leggera', 'leggera'],
+                    ['media', 'media'],
+                    ['pesante', 'pesante'],
+                    ['scudi', 'scudi'],
+                  ].map(([key, label]) => (
+                    <span
+                      key={key}
+                      className="tirabile"
+                      style={{ ...styles.detail, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                      onClick={() =>
+                        aggiorna({
+                          addestramento: {
+                            ...scheda.addestramento,
+                            armature: {
+                              ...scheda.addestramento.armature,
+                              [key]: !scheda.addestramento.armature[key],
+                            },
                           },
-                        },
-                      })
-                    }
-                  >
-                    <span style={styles.pip(scheda.addestramento.armature[key], C.goldDark)} /> {label}
-                  </span>
-                ))}
+                        })
+                      }
+                    >
+                      <span style={styles.pip(scheda.addestramento.armature[key], C.goldDark)} /> {label}
+                    </span>
+                  ))}
+                </div>
               </div>
               <div style={{ marginBottom: 10 }}>
                 <div style={{ ...styles.detail, marginBottom: 4 }}>Armi:</div>
@@ -6229,6 +6231,22 @@ export default function App() {
                   onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, strumenti: v } })}
                 />
               </div>
+            </Sezione>
+
+            <Sezione titolo="Privilegi di classe" {...propsSez('privilegi')} {...apertoProps('privilegi')}>
+              <button
+                style={{ ...styles.button, marginBottom: 8, fontSize: 12 }}
+                onClick={() => setMostraPrivilegi(true)}
+                title="Panoramica ordinata dei privilegi di classe e sottoclasse per livello"
+              >
+                📖 Panoramica privilegi per livello
+              </button>
+              <ListaQuadratini
+                value={scheda.privilegi}
+                lookup={spiegaPrivilegio}
+                placeholder="Nessun privilegio. Aggiungine uno."
+                onChange={(v) => aggiorna({ privilegi: v })}
+              />
             </Sezione>
           </div>
 
@@ -6589,23 +6607,7 @@ export default function App() {
 
         {/* Sezioni descrittive a piena larghezza: riempiono lo spazio sotto le due colonne */}
         <div style={{ display: 'flex', flexDirection: 'column', marginTop: 10 }}>
-            {/* Privilegi di classe, tratti della specie, talenti — collassabili */}
-            <Sezione titolo="Privilegi di classe" {...propsSez('privilegi')} {...apertoProps('privilegi')}>
-              <button
-                style={{ ...styles.button, marginBottom: 8, fontSize: 12 }}
-                onClick={() => setMostraPrivilegi(true)}
-                title="Panoramica ordinata dei privilegi di classe e sottoclasse per livello"
-              >
-                📖 Panoramica privilegi per livello
-              </button>
-              <ListaQuadratini
-                value={scheda.privilegi}
-                lookup={spiegaPrivilegio}
-                placeholder="Nessun privilegio. Aggiungine uno."
-                onChange={(v) => aggiorna({ privilegi: v })}
-              />
-            </Sezione>
-
+            {/* Metamagia, tratti della specie, talenti — collassabili */}
             {/(stregone|sorcerer)/i.test(scheda.classe || '') && (
               <Sezione titolo="Metamagia" {...apertoProps('metamagia', false)}>
                 <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8 }}>
