@@ -2724,6 +2724,11 @@ const KIT_CLASSE = {
   stregone: { armi: ['Pugnale'], equip: ['Focus arcano', 'Pugnale', 'Dotazione da avventuriero'], denari: 28, armatura: ARM_NESSUNA, scudo: false, strumenti: '' },
   warlock:  { armi: ['Pugnale'], equip: ['Armatura di cuoio', 'Focus arcano', 'Pugnale', 'Libro degli occulti', 'Dotazione da studioso'], denari: 15, armatura: ARM_CUOIO, scudo: false, strumenti: '' },
 };
+// Oro iniziale alternativo per classe (5.5): al posto del pacchetto di dotazione.
+const ORO_INIZIALE = {
+  barbaro: 75, bardo: 90, chierico: 110, druido: 50, guerriero: 155, ladro: 100,
+  mago: 55, monaco: 50, paladino: 150, ranger: 150, stregone: 50, warlock: 100,
+};
 // Lingua tematica concessa dalla specie (oltre al Comune). Nella 5.5 le lingue
 // derivano dall'origine, ma diamo un default sensato modificabile a mano.
 const LINGUA_SPECIE = {
@@ -2982,7 +2987,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.44';
+const APP_VERSION = '1.9.45';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3758,7 +3763,7 @@ export default function App() {
   });
   const [rinominando, setRinominando] = useState(false); // rinomina inline del PG attivo
   const [mostraCrea, setMostraCrea] = useState(false); // schermata di creazione guidata
-  const [bozzaCrea, setBozzaCrea] = useState({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [] });
+  const [bozzaCrea, setBozzaCrea] = useState({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' });
   // versione delle regole: '2024' (5.5, default) o '2014' (5.0)
   const [regoleVersione, setRegoleVersione] = useState(() => localStorage.getItem('scheda-interattiva:versione') || '2024');
   useEffect(() => {
@@ -3959,7 +3964,7 @@ export default function App() {
   }
 
   /** Genera un personaggio coerente da classe/specie/background (creazione guidata). */
-  function creaPersonaggio({ nome, classe, specie, background, metodo, pool, assegna, competenzeClasse, competenzeSpecie }) {
+  function creaPersonaggio({ nome, classe, specie, background, metodo, pool, assegna, competenzeClasse, competenzeSpecie, dotazione }) {
     const s = schedaVuota();
     s.nome = nome?.trim() || 'Nuovo personaggio';
     s.classe = classe;
@@ -4013,7 +4018,12 @@ export default function App() {
     // dotazione iniziale della classe: armi (come attacchi), equipaggiamento,
     // monete, armatura indossata (riquadro CA), competenze negli strumenti.
     const kit = KIT_CLASSE[chiaveClasse(classe)];
-    if (kit) {
+    if (kit && dotazione === 'oro') {
+      // Alternativa: solo oro iniziale, niente dotazione di classe.
+      s.denari = { ...s.denari, mo: ORO_INIZIALE[chiaveClasse(classe)] || kit.denari };
+      s.equipaggiamento = '';
+      if (kit.strumenti) s.addestramento = { ...s.addestramento, strumenti: kit.strumenti };
+    } else if (kit) {
       s.equipaggiamento = kit.equip.join('\n');
       s.denari = { ...s.denari, mo: kit.denari };
       if (kit.strumenti) s.addestramento = { ...s.addestramento, strumenti: kit.strumenti };
@@ -4706,7 +4716,7 @@ export default function App() {
 
             <button
               style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 14 }}
-              onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [] }); setMostraCrea(true); }}
+              onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' }); setMostraCrea(true); }}
             >
               ➕ Nuovo personaggio
             </button>
@@ -5369,6 +5379,28 @@ export default function App() {
                 </div>
               )}
 
+              {bozzaCrea.classe && (
+                <div style={{ marginTop: 4, marginBottom: 8 }}>
+                  <label style={{ ...styles.detail, display: 'block', marginBottom: 4, fontWeight: 'bold' }}>🎒 Equipaggiamento iniziale</label>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    {[['pacchetto', 'Dotazione della classe'], ['oro', `Oro iniziale (${ORO_INIZIALE[chiaveClasse(bozzaCrea.classe)] || 0} mo)`]].map(([m, lab]) => (
+                      <button
+                        key={m}
+                        style={{ ...styles.modeButton(bozzaCrea.dotazione === m), fontSize: 12, padding: '5px 10px', flex: 1 }}
+                        onClick={() => setB({ dotazione: m })}
+                      >
+                        {lab}
+                      </button>
+                    ))}
+                  </div>
+                  <div style={{ ...styles.detail, fontSize: 11, color: C.inkDim, marginTop: 3 }}>
+                    {bozzaCrea.dotazione === 'oro'
+                      ? 'Parti con solo oro per comprarti l’equipaggiamento (armi/armatura da impostare a mano).'
+                      : 'Parti con armi, armatura e oggetti già pronti (consigliato).'}
+                  </div>
+                </div>
+              )}
+
               <div style={{ display: 'flex', gap: 8 }}>
                 <button style={{ ...styles.buttonPrimary, flex: 1 }} onClick={() => creaPersonaggio(bozzaCrea)}>Crea personaggio</button>
                 <button style={styles.button} onClick={() => setMostraCrea(false)}>Annulla</button>
@@ -5595,7 +5627,7 @@ export default function App() {
               ⬆️
             </button>
             <button style={styles.buttonMini} onClick={() => setRinominando(!rinominando)} title="Rinomina il personaggio">✎</button>
-            <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [] }); setMostraCrea(true); }} title="Nuovo personaggio">＋</button>
+            <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' }); setMostraCrea(true); }} title="Nuovo personaggio">＋</button>
             <button style={styles.buttonMini} onClick={duplicaPersonaggio} title="Duplica il personaggio attivo">⧉</button>
             <button style={styles.buttonMini} onClick={resetScheda} title="Azzera i campi del personaggio attivo">↺</button>
             <button style={{ ...styles.buttonMini, borderColor: C.red, color: C.red }} onClick={eliminaPersonaggio} title="Elimina il personaggio attivo">🗑</button>
@@ -5722,6 +5754,24 @@ export default function App() {
                       />
                     );
                   })()}
+                </CampoModulo>
+                <CampoModulo label="Livello (correzione manuale)">
+                  <Editable
+                    value={scheda.livello}
+                    tipo="numero"
+                    width={40}
+                    title="Imposta il livello a mano (ricalcola bonus competenza, dadi vita e slot). Per salire normalmente usa ⬆️."
+                    onChange={(v) => {
+                      const liv = Math.max(1, Math.min(20, Number(v) || 1));
+                      const slot = slotDaClasseLivello(scheda.classe, liv);
+                      aggiorna({
+                        livello: liv,
+                        bonusCompetenza: bonusCompetenzaDaLivello(liv),
+                        dadiVita: esprDadiVita(liv, facceDadoVita(scheda.dadiVita)),
+                        ...(slot ? { slotIncantesimo: slot } : {}),
+                      });
+                    }}
+                  />
                 </CampoModulo>
               </div>
           <div className="vitali">
