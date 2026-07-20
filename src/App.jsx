@@ -2988,7 +2988,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.51';
+const APP_VERSION = '1.9.52';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -5652,7 +5652,12 @@ export default function App() {
               </select>
               <span
                 aria-hidden
-                style={{ position: 'absolute', right: 26, top: '50%', transform: 'translateY(-50%)', fontSize: 15, fontWeight: 'bold', color: C.inkDim, opacity: 0.5, pointerEvents: 'none', letterSpacing: 0.5 }}
+                style={{
+                  position: 'absolute', right: 30, top: '50%', transform: 'translateY(-50%)',
+                  fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: 'italic', fontWeight: 'bold',
+                  fontSize: 30, letterSpacing: 1, lineHeight: 1,
+                  color: C.inkDim, opacity: 0.28, pointerEvents: 'none', userSelect: 'none', whiteSpace: 'nowrap',
+                }}
               >
                 {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
               </span>
@@ -5919,6 +5924,14 @@ export default function App() {
                     ))}
                   </select>
                   <span style={{ color: C.inkDim }}>/ {Math.max(1, scheda.livello || 1)}</span>
+                  <button
+                    style={{ ...styles.buttonMini, padding: '2px 8px', color: C.green, borderColor: C.green }}
+                    title="Usa un dado vita: tira 1 dado + mod. Costituzione e recupera quei PF"
+                    disabled={scheda.dadiVitaSpesi >= Math.max(1, scheda.livello || 1)}
+                    onClick={tiraDadoVita}
+                  >
+                    🎲 Usa
+                  </button>
                 </span>
               </div>
             </div>
