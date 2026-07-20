@@ -1905,6 +1905,61 @@ function spiegaTratto(nome) {
   for (const k of Object.keys(SPIEG_TRATTI_LC)) if (base.startsWith(k)) return SPIEG_TRATTI_LC[k];
   return null;
 }
+
+// Talenti comuni (5e), riassunti nostri. Per la nuvoletta sui Talenti.
+const SPIEG_TALENTI = {
+  'Guerramaga': 'Vantaggio ai TS di Concentrazione; lanci incantesimi anche con le mani occupate e come attacco di opportunità.',
+  'Incantatore da Guerra': 'Vantaggio ai TS di Concentrazione; lanci incantesimi anche con le mani occupate e come attacco di opportunità.',
+  'Guaritore': 'Con una borsa del guaritore puoi far recuperare PF a un alleato durante il combattimento.',
+  'Robusto': '+2 punti ferita massimi per ogni livello.',
+  'Fortunato': 'Hai punti fortuna per ritirare un attacco, una prova o un TS (tuoi o dei nemici).',
+  'Vigile': "+ all'iniziativa e non puoi essere colto di sorpresa.",
+  'Attaccante Selvaggio': 'Una volta per turno puoi ritirare i dadi di danno di un attacco in mischia.',
+  'Tiratore Scelto': 'Ignori copertura e penalità a lunga gittata, niente svantaggio a distanza; opzione di danno extra.',
+  'Grande Maestro d’Armi': 'Danni potenziati con armi pesanti e attacco bonus dopo un critico o unʼuccisione.',
+  'Maestro delle Armi': 'Sei competente e più efficace con più tipi di arma.',
+  'Sentinella': 'Fermi chi colpisci con attacchi di opportunità e proteggi gli alleati vicini.',
+  'Osservatore': 'Bonus a Percezione e Indagare; leggi il labiale.',
+  'Mobile': 'Velocità aumentata e nessun attacco di opportunità da chi attacchi in mischia.',
+  'Iniziato alla Magia': 'Impari due trucchetti e un incantesimo di 1° livello da una classe.',
+  'Attore': 'Bonus a Inganno e Intrattenere; imiti voci e suoni.',
+  'Resiliente': 'Ottieni competenza in un tiro salvezza e +1 alla caratteristica collegata.',
+  'Esperto di Abilità': 'Competenza (o maestria) in abilità/strumenti a scelta.',
+  'Combattente con Due Armi': 'Bonus alla CA combattendo con due armi e puoi impugnarne di non leggere.',
+  'Cuoco': 'Prepari cibo che cura e concede punti ferita temporanei.',
+  'Padrone delle Armature Pesanti': 'Competenza nelle armature pesanti e +1 Costituzione.',
+  'Maestro di Scudo': 'Usi lo scudo per spingere e proteggerti meglio dagli effetti ad area.',
+};
+const SPIEG_TALENTI_LC = _lcMap(SPIEG_TALENTI);
+/** Spiegazione di un talento dal nome (o null), senza maiuscole, ignora parentesi. */
+function spiegaTalento(nome) {
+  const n = String(nome || '').trim().toLowerCase();
+  return SPIEG_TALENTI_LC[n] || SPIEG_TALENTI_LC[n.replace(/\s*\(.*$/, '').trim()] || null;
+}
+
+// Opzioni di Metamagia dello Stregone (5e), con riassunti nostri per la nuvoletta.
+const SPIEG_METAMAGIA = {
+  'Incantesimo Accurato': 'Spendi 1 punto stregoneria per escludere fino a 5 creature dall’area di un incantesimo.',
+  'Incantesimo Ammaliante': 'Spendi 1 punto stregoneria per rendere più difficile individuare che stai lanciando.',
+  'Incantesimo Celato': 'Spendi 1 punto stregoneria per lanciare senza componenti verbali e somatiche.',
+  'Incantesimo Empio': 'Cambi il tipo di danno di un incantesimo con un altro tra alcuni tipi (2024).',
+  'Incantesimo Esteso': 'Spendi 1 punto stregoneria per raddoppiare la durata (max 24 ore).',
+  'Incantesimo Gemello': 'Spendi punti pari al livello per far bersagliare a un incantesimo a bersaglio singolo una seconda creatura.',
+  'Incantesimo Persistente': 'Spendi 3 punti stregoneria per dare svantaggio ai TS del bersaglio contro il tuo incantesimo.',
+  'Incantesimo Potenziato': 'Spendi 1 punto stregoneria per ritirare fino a Carisma dadi di danno.',
+  'Incantesimo Preciso': 'Spendi punti stregoneria (in base al livello) per lanciare l’incantesimo come azione bonus.',
+  'Incantesimo Prolungato': 'Spendi 1 punto stregoneria per raddoppiare la gittata (o portare a 9 m un tocco).',
+  'Incantesimo Rapido': 'Spendi 2 punti stregoneria per lanciare un incantesimo da 1 azione come azione bonus.',
+  'Incantesimo Sottile': 'Spendi 1 punto stregoneria per lanciare senza componenti verbali e somatiche.',
+  'Incantesimo Trasmutato': 'Cambi il tipo di danno di un incantesimo con un altro tra alcuni tipi (2024).',
+};
+const METAMAGIA_5E = Object.keys(SPIEG_METAMAGIA).sort((a, b) => a.localeCompare(b, 'it'));
+const SPIEG_METAMAGIA_LC = _lcMap(SPIEG_METAMAGIA);
+/** Spiegazione di un'opzione di Metamagia dal nome (o null), senza maiuscole. */
+function spiegaMetamagia(nome) {
+  const n = String(nome || '').trim().toLowerCase();
+  return SPIEG_METAMAGIA_LC[n] || SPIEG_METAMAGIA_LC[n.replace(/\s*\(.*$/, '').trim()] || null;
+}
 /** Righe (di un testo libero) che hanno una spiegazione, come lista cliccabile ⓘ. */
 function renderSpiegazioni(testo, lookup, setInfo) {
   const trovate = String(testo || '')
@@ -2105,6 +2160,7 @@ function schedaVuota() {
     privilegiSottoclasse: '',
     trattiSpecie: '',
     talenti: '',
+    metamagie: '', // opzioni di Metamagia attive (solo Stregone)
     equipaggiamento: '',
     sintonia: '',
     lingue: '',
@@ -2369,7 +2425,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.26';
+const APP_VERSION = '1.9.27';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2553,6 +2609,7 @@ function normalizeImported(dati) {
     privilegiSottoclasse: str(dati.privilegiSottoclasse),
     trattiSpecie: str(dati.trattiSpecie),
     talenti: str(dati.talenti),
+    metamagie: str(dati.metamagie),
     equipaggiamento: str(dati.equipaggiamento),
     sintonia: str(dati.sintonia),
     lingue: str(dati.lingue),
@@ -2789,9 +2846,9 @@ function CampoModulo({ label, children, style }) {
  * Campo di testo libero (elementi separati da virgola) con un menù a tendina
  * "＋" per aggiungere velocemente voci da una lista, senza perdere il testo.
  */
-function CampoConTendina({ value, opzioni, onChange, width, title }) {
+function CampoConTendina({ value, opzioni, onChange, width, title, lookup, setInfo }) {
   const attuali = value ? value.split(',').map((s) => s.trim()).filter(Boolean) : [];
-  
+
   const aggiungi = (v) => {
     if (!v) return;
     if (attuali.some((x) => x.toLowerCase() === v.toLowerCase())) return;
@@ -2804,10 +2861,15 @@ function CampoConTendina({ value, opzioni, onChange, width, title }) {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', minHeight: 24 }} title={title}>
-      {attuali.map(t => (
-        <span key={t} title={t} style={{ background: 'rgba(255,255,255,0.08)', padding: '2px 6px', borderRadius: 6, fontSize: 11, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4, border: `1px solid rgba(255,255,255,0.15)` }}>
-          {t}
-          <button 
+      {attuali.map(t => {
+        const sp = lookup && setInfo ? lookup(t) : null;
+        return (
+        <span key={t} title={sp || t} style={{ background: 'rgba(255,255,255,0.08)', padding: '2px 6px', borderRadius: 6, fontSize: 11, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4, border: `1px solid rgba(255,255,255,0.15)` }}>
+          <span
+            style={sp ? { cursor: 'help', textDecoration: 'underline dotted' } : undefined}
+            onClick={sp ? () => setInfo({ titolo: t, testo: sp }) : undefined}
+          >{t}</span>
+          <button
             style={{ background: 'transparent', border: 'none', color: '#ff6b6b', cursor: 'pointer', padding: '0 2px', fontSize: 14, lineHeight: 0.8, marginTop: -2 }} 
             onClick={() => rimuovi(t)} 
             title={`Rimuovi ${t}`}
@@ -2815,7 +2877,8 @@ function CampoConTendina({ value, opzioni, onChange, width, title }) {
             ×
           </button>
         </span>
-      ))}
+        );
+      })}
       <select
         value=""
         onChange={(e) => aggiungi(e.target.value)}
@@ -3490,7 +3553,7 @@ export default function App() {
   function lanciaDanniDiretti(etichetta, espressione) {
     const parsata = parseEspressioneDado(espressione);
     if (!parsata) return;
-    const maxFacce = Math.max(...parsata.map(p => p.facce).filter(Boolean));
+    const maxFacce = Math.max(...parsata.termini.map((p) => p.facce).filter(Boolean));
     const esito = tiraDanni(parsata, false);
     conAnimazione(() => {
       setDanni({ etichetta, ...esito, critico: false });
@@ -3502,7 +3565,7 @@ export default function App() {
   function tiraDanniPerAttacco(attacco, critico) {
     const parsata = parseEspressioneDado(attacco?.danno || '');
     if (!parsata) return;
-    const maxFacce = Math.max(...parsata.map(p => p.facce).filter(Boolean));
+    const maxFacce = Math.max(...parsata.termini.map((p) => p.facce).filter(Boolean));
     const nome = attacco.nome;
     const esito = tiraDanni(parsata, critico);
     conAnimazione(() => {
@@ -3653,7 +3716,7 @@ export default function App() {
     }
     setErroreEspressione(false);
     const testo = espressioneLibera.trim();
-    const maxFacce = Math.max(...parsata.map(p => p.facce).filter(Boolean));
+    const maxFacce = Math.max(...parsata.termini.map((p) => p.facce).filter(Boolean));
     const esito = tiraDanni(parsata, false);
     conAnimazione(() => {
       setDanni({ etichetta: `Tiro libero: ${testo}`, ...esito, libero: true });
@@ -4911,7 +4974,7 @@ export default function App() {
                   <img
                     src={scheda.ritratto}
                     alt={`Ritratto di ${scheda.nome}`}
-                    style={{ width: '100%', height: '100%', objectFit: (scheda.ritratto || '').startsWith('data:image/svg') ? 'contain' : 'cover' }}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     onError={(e) => {
                       // offline / DiceBear non raggiungibile → avatar SVG locale
                       if (!e.currentTarget.dataset.fallback) {
@@ -4927,7 +4990,7 @@ export default function App() {
                     <img
                       src={generaAvatar(scheda.classe, scheda.specie, scheda.nome)}
                       alt={`Ritratto di ${scheda.nome}`}
-                      style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                     />
                     <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.35)', color: '#fff', fontSize: 9, letterSpacing: 1, textAlign: 'center', padding: '2px 0' }}>RITRATTO</div>
                   </div>
@@ -5163,7 +5226,7 @@ export default function App() {
 
             {/* Vista / Sensi — chip rimovibili + tendina (valore non fisso) */}
             <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>Vista e Sensi</div>
+              <div style={styles.vitalLabel}>Visione</div>
               <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <CampoConTendina
                   value={scheda.sensi}
@@ -5288,13 +5351,13 @@ export default function App() {
                     >
                       {conSegno(mod)}
                     </Rollable>
-                    <div>
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                       <div
                         style={{ fontSize: 13, color: C.ink, letterSpacing: 0.8, fontWeight: 'bold', cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
                         title="Cosa governa questa caratteristica?"
                         onClick={() => setInfo({ titolo: label, testo: SPIEG_CARATT[key] })}
                       >{label.toUpperCase()}</div>
-                      <div style={{ ...styles.detail, fontSize: 13 }} title="Punteggio di caratteristica (1 click per modificare)">
+                      <div style={{ fontSize: 17, fontWeight: 'bold', color: C.ink }} title="Punteggio di caratteristica (click per modificare)">
                         <Editable
                           value={scheda.caratteristiche[key]}
                           tipo="numero"
@@ -5349,14 +5412,7 @@ export default function App() {
                           {liv === 2 ? '★\uFE0E' : liv === 1 ? '●' : '○'}
                         </span>
                         <strong style={{ width: 32 }}>{conSegno(bonus)}</strong>
-                        <span
-                          style={{ cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
-                          title="Cosa copre questa abilità?"
-                          onPointerDown={(e) => e.stopPropagation()}
-                          onClick={(e) => { e.stopPropagation(); setInfo({ titolo: `${a.label} (${abbr})`, testo: SPIEG_ABILITA[a.key] }); }}
-                        >
-                          {a.label}
-                        </span>
+                        <span>{a.label}</span>
                       </Rollable>
                     );
                   })}
@@ -5466,16 +5522,18 @@ export default function App() {
                                   />
                                 </td>
                                 <td style={{ ...styles.td, color: dannoValido ? undefined : C.red }}>
+                                  {parseEspressioneDado(a.danno) && (
+                                    <button
+                                      style={{ ...styles.buttonMini, padding: '1px 6px', marginRight: 4 }}
+                                      title={`Tira i danni (${a.danno})`}
+                                      onClick={() => lanciaDanniDiretti(`Danni: ${a.nome}`, a.danno)}
+                                    >🎲</button>
+                                  )}
                                   <Editable
                                     value={a.danno}
-                                    width={80}
+                                    width={70}
                                     onChange={(v) => aggiornaAttacco({ danno: v })}
-                                    onRoll={
-                                      parseEspressioneDado(a.danno)
-                                        ? () => lanciaDanniDiretti(`Danni: ${a.nome}`, a.danno)
-                                        : undefined
-                                    }
-                                    title="1 click: modifica · doppio click: tira solo i danni"
+                                    title="Click per modificare · 🎲 per tirare i danni"
                                   />{' '}
                                   <Editable value={a.tipoDanno} width={90} onChange={(v) => aggiornaAttacco({ tipoDanno: v })} />
                                 </td>
@@ -5775,19 +5833,6 @@ export default function App() {
             </Sezione>
 
             <Sezione titolo="Privilegi di sottoclasse" {...apertoProps('privilegiSottoclasse')}>
-              {(() => {
-                const dati = privilegiSottoclasseFinoA(scheda.sottoclasse, scheda.livello);
-                if (dati === null) return null; // sottoclasse non ancora nel database
-                return (
-                  <button
-                    style={{ ...styles.button, marginBottom: 8, fontSize: 12 }}
-                    title={`Inserisce i privilegi di ${scheda.sottoclasse} fino al liv. ${scheda.livello}`}
-                    onClick={() => aggiorna({ privilegiSottoclasse: dati })}
-                  >
-                    ✨ Riempi dai dati ({scheda.sottoclasse}, liv. {scheda.livello})
-                  </button>
-                );
-              })()}
               <ListaQuadratini
                 value={scheda.privilegiSottoclasse}
                 lookup={spiegaPrivilegio}
@@ -5808,11 +5853,27 @@ export default function App() {
             <Sezione titolo="Talenti" {...propsSez('talenti')} {...apertoProps('talenti')}>
               <ListaQuadratini
                 value={scheda.talenti}
-                lookup={null}
-                placeholder="Es. Guerramaga, Guaritore, Attaccante Robusto…"
+                lookup={spiegaTalento}
+                placeholder="Es. Guerramaga, Guaritore, Robusto…"
                 onChange={(v) => aggiorna({ talenti: v })}
               />
             </Sezione>
+
+            {/(stregone|sorcerer)/i.test(scheda.classe || '') && (
+              <Sezione titolo="Metamagia" {...apertoProps('metamagia', false)}>
+                <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8 }}>
+                  Scegli dal menu ＋ le opzioni di Metamagia che hai imparato. Tocca il nome per la spiegazione.
+                </div>
+                <CampoConTendina
+                  value={scheda.metamagie}
+                  opzioni={METAMAGIA_5E}
+                  onChange={(v) => aggiorna({ metamagie: v })}
+                  lookup={spiegaMetamagia}
+                  setInfo={setInfo}
+                  title="Opzioni di Metamagia attive"
+                />
+              </Sezione>
+            )}
 
             <Sezione titolo="Addestramento e competenze nell'equipaggiamento" {...propsSez('addestramento')} {...apertoProps('addestramento', false)}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
@@ -5878,31 +5939,13 @@ export default function App() {
                 </span>
               </div>
               <div style={{ marginTop: 10 }}>
-                <span style={styles.detail}>
-                  Lingue:{' '}
-                  <Editable value={scheda.lingue} onChange={(v) => aggiorna({ lingue: v })} width={300} />
-                  <select
-                    value=""
-                    onChange={(e) => {
-                      const ling = e.target.value;
-                      if (!ling) return;
-                      const esistenti = scheda.lingue
-                        ? scheda.lingue.split(',').map((l) => l.trim()).filter(Boolean)
-                        : [];
-                      if (!esistenti.some((l) => l.toLowerCase() === ling.toLowerCase())) {
-                        esistenti.push(ling);
-                        aggiorna({ lingue: esistenti.join(', ') });
-                      }
-                    }}
-                    style={{ ...styles.inlineInput, fontSize: 12, padding: '1px 3px', marginLeft: 8, height: 20 }}
-                    title="Aggiungi una lingua"
-                  >
-                    <option value="">＋ aggiungi lingua</option>
-                    {LINGUE_5E.map((l) => (
-                      <option key={l} value={l}>{l}</option>
-                    ))}
-                  </select>
-                </span>
+                <div style={{ ...styles.detail, marginBottom: 4 }}>Lingue</div>
+                <CampoConTendina
+                  value={scheda.lingue}
+                  opzioni={LINGUE_5E}
+                  onChange={(v) => aggiorna({ lingue: v })}
+                  title="Lingue conosciute: aggiungi dalla tendina o scrivi"
+                />
               </div>
               
               <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
