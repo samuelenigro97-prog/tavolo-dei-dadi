@@ -2987,7 +2987,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.45';
+const APP_VERSION = '1.9.46';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -6648,7 +6648,7 @@ export default function App() {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <div>
-                  <div style={styles.moduloLabel}>Armi</div>
+                  <div style={{ ...styles.detail, marginBottom: 4 }}>Armi:</div>
                   <ListaQuadratini
                     value={scheda.addestramento.armi}
                     opzioni={COMP_ARMI_5E}
@@ -6657,7 +6657,7 @@ export default function App() {
                   />
                 </div>
                 <div>
-                  <div style={styles.moduloLabel}>Strumenti</div>
+                  <div style={{ ...styles.detail, marginBottom: 4 }}>Strumenti:</div>
                   <ListaQuadratini
                     value={scheda.addestramento.strumenti}
                     opzioni={STRUMENTI_5E}
