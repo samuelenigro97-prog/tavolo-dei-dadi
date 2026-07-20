@@ -2338,8 +2338,7 @@ function spiegaTratto(nome) {
 
 // Talenti comuni (5e), riassunti nostri. Per la nuvoletta sui Talenti.
 const SPIEG_TALENTI = {
-  'Guerramaga': 'Vantaggio ai TS di Concentrazione; lanci incantesimi anche con le mani occupate e come attacco di opportunità.',
-  'Incantatore da Guerra': 'Vantaggio ai TS di Concentrazione; lanci incantesimi anche con le mani occupate e come attacco di opportunità.',
+  'Incantatore da Guerra': 'Talento generale (dal 4° liv.): +1 a INT/SAG/CAR, vantaggio ai TS di Concentrazione e puoi lanciare incantesimi con le mani occupate.',
   'Guaritore': 'Con una borsa del guaritore puoi far recuperare PF a un alleato durante il combattimento.',
   'Robusto': '+2 punti ferita massimi per ogni livello.',
   'Fortunato': 'Hai punti fortuna per ritirare un attacco, una prova o un TS (tuoi o dei nemici).',
@@ -2702,6 +2701,36 @@ function attaccoDaArma(arma, scheda) {
   return { nome: arma.nome, danno, tipoDanno: arma.tipo, note: arma.note, bonus: mod + comp };
 }
 
+// Dotazione iniziale indicativa per classe (armi che diventano attacchi +
+// equipaggiamento + monete d'oro). Le armi devono combaciare con ARMI_5E.
+const KIT_CLASSE = {
+  barbaro:  { armi: ['Ascia bipenne'], equip: ['Ascia (Handaxe) ×4', 'Dotazione da esploratore'], denari: 15 },
+  bardo:    { armi: ['Stocco'], equip: ['Armatura di cuoio', 'Pugnale', 'Strumento musicale', 'Dotazione da intrattenitore'], denari: 19 },
+  chierico: { armi: ['Mazza'], equip: ['Armatura a scaglie', 'Scudo', 'Balestra leggera + 20 dardi', 'Simbolo sacro', 'Dotazione da sacerdote'], denari: 7 },
+  druido:   { armi: ['Scimitarra'], equip: ['Armatura di cuoio', 'Scudo (legno)', 'Focus druidico', 'Borsa da erborista', 'Dotazione da esploratore'], denari: 9 },
+  guerriero:{ armi: ['Spada lunga', 'Arco lungo'], equip: ['Cotta di maglia', 'Scudo', '20 frecce', 'Dotazione da avventuriero'], denari: 4 },
+  ladro:    { armi: ['Stocco', 'Arco corto'], equip: ['Armatura di cuoio', 'Pugnale ×2', 'Arnesi da scasso', 'Dotazione da scassinatore', '20 frecce'], denari: 8 },
+  mago:     { armi: ['Pugnale'], equip: ['Focus arcano', 'Libro degli incantesimi', 'Dotazione da studioso'], denari: 5 },
+  monaco:   { armi: ['Spada corta'], equip: ['Dardo ×10', 'Dotazione da esploratore', 'Attrezzi da artigiano o strumento musicale'], denari: 11 },
+  paladino: { armi: ['Spada lunga'], equip: ['Cotta di maglia', 'Scudo', 'Giavellotto ×6', 'Simbolo sacro', 'Dotazione da sacerdote'], denari: 9 },
+  ranger:   { armi: ['Spada corta', 'Arco lungo'], equip: ['Armatura di cuoio', '20 frecce', 'Dotazione da esploratore'], denari: 7 },
+  stregone: { armi: ['Pugnale'], equip: ['Focus arcano', 'Pugnale', 'Dotazione da avventuriero'], denari: 28 },
+  warlock:  { armi: ['Pugnale'], equip: ['Armatura di cuoio', 'Focus arcano', 'Pugnale', 'Libro degli occulti', 'Dotazione da studioso'], denari: 15 },
+};
+// Lingua tematica concessa dalla specie (oltre al Comune). Nella 5.5 le lingue
+// derivano dall'origine, ma diamo un default sensato modificabile a mano.
+const LINGUA_SPECIE = {
+  elfo: 'Elfico', 'elfo alto': 'Elfico', 'elfo dei boschi': 'Elfico', 'elfo oscuro': 'Elfico', drow: 'Elfico', mezzelf: 'Elfico',
+  nano: 'Nanico', gnomo: 'Gnomesco', halfling: 'Halfling', mezzorco: 'Orchesco', orco: 'Orchesco',
+  dragonide: 'Draconico', tiefling: 'Infernale', goliath: 'Gigante', aasimar: 'Celestiale',
+};
+/** Lingue iniziali: Comune + una lingua a tema specie (se riconosciuta). */
+function lingueIniziali(specie) {
+  const s = (specie || '').toLowerCase();
+  const extra = Object.keys(LINGUA_SPECIE).find((k) => s.includes(k));
+  return extra ? `Comune, ${LINGUA_SPECIE[extra]}` : 'Comune';
+}
+
 // Suggerimenti per l'autocompletamento dell'equipaggiamento comune (5e).
 const EQUIP_5E = [
   'Abiti da viaggiatore', 'Abiti comuni', 'Abiti eleganti', 'Acciarino ed esca', 'Ampolla',
@@ -2857,7 +2886,7 @@ const FLYORA_JSON = {
   privilegi: "Stregoneria Innata\nFonte di Magia\nOnde di Caos",
   metamagie: "Incantesimo Celato, Incantesimo Preciso",
   trattiSpecie: "Retaggio Fatato\nScurovisione 18 m\nSensi Acuti (Intuizione, Percezione o Sopravvivenza)\nTrance",
-  talenti: "Guerramaga (Incantatore da Guerra)\nGuaritore",
+  talenti: "Incantatore da Guerra\nGuaritore",
   equipaggiamento: "Focus Arcano (Cristallo)\nBorsa da erborista\nGiaciglio\nLibro (filosofia)\nDotazione da avventuriero\nAbiti da viaggiatore",
   lingue: "Comune, Elfico, Sottocomune",
   denari: { mr: 0, ma: 0, me: 0, mo: 74, mp: 0 },
@@ -2946,7 +2975,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.40';
+const APP_VERSION = '1.9.41';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3970,6 +3999,23 @@ export default function App() {
       if (piu2) s.caratteristiche[piu2] = (s.caratteristiche[piu2] || 10) + 2;
       if (piu1) s.caratteristiche[piu1] = (s.caratteristiche[piu1] || 10) + 1;
     }
+    // lingue iniziali (Comune + lingua a tema specie)
+    s.lingue = lingueIniziali(specie);
+    // bonus competenza coerente col livello (serve per gli attacchi iniziali)
+    s.bonusCompetenza = bonusCompetenzaDaLivello(s.livello);
+    // dotazione iniziale della classe: armi (come attacchi), equipaggiamento, monete
+    const kit = KIT_CLASSE[chiaveClasse(classe)];
+    if (kit) {
+      s.equipaggiamento = kit.equip.join('\n');
+      s.denari = { ...s.denari, mo: kit.denari };
+      const armi = kit.armi
+        .map((nomeArma, i) => {
+          const a = ARMI_5E.find((w) => w.nome === nomeArma);
+          return a ? { id: Date.now() + i, categoria: 'Azione', ...attaccoDaArma(a, s) } : null;
+        })
+        .filter(Boolean);
+      if (armi.length) s.attacchi = armi;
+    }
     // avatar e chiusura schermate
     s.ritratto = generaAvatar(classe, specie, s.nome);
     nuovoPersonaggio(s);
@@ -4853,6 +4899,17 @@ export default function App() {
         const slotStr = slotNuovi
           ? Object.keys(slotNuovi).filter((l) => slotNuovi[l].totale > 0).map((l) => `${l}° ×${slotNuovi[l].totale}`).join(' · ')
           : null;
+        // Quanti trucchetti/incantesimi in più si conoscono salendo di livello,
+        // e qual è il nuovo livello di incantesimo massimo sbloccato.
+        const trOld = trucchettiMax(scheda.classe, scheda.livello);
+        const trNew = trucchettiMax(scheda.classe, nuovoLivello);
+        const nuoviTrucchetti = (trOld != null && trNew != null) ? Math.max(0, trNew - trOld) : 0;
+        const incOld = incantesimiMaxAuto(scheda, versione);
+        const incNew = incantesimiMaxAuto({ ...scheda, livello: nuovoLivello }, versione);
+        const nuoviIncantesimi = (incOld != null && incNew != null) ? Math.max(0, incNew - incOld) : 0;
+        const slotVecchi = slotDaClasseLivello(scheda.classe, scheda.livello);
+        const maxLivSlot = (obj) => obj ? Math.max(0, ...Object.keys(obj).filter((l) => obj[l].totale > 0).map(Number)) : 0;
+        const nuovoLivInc = slotNuovi && maxLivSlot(slotNuovi) > maxLivSlot(slotVecchi) ? maxLivSlot(slotNuovi) : 0;
         const privNuoviTutti = privilegiClasseLivello(scheda.classe, nuovoLivello, versione);
         // Non ripetere righe già presenti nei privilegi attuali.
         const attualiPriv = (scheda.privilegi || '');
@@ -4989,8 +5046,17 @@ export default function App() {
               )}
               {slotStr && (
                 <div style={{ padding: '3px 0', borderBottom: `1px solid ${C.border}` }}>
-                  <div>Slot incantesimo</div>
+                  <div>Slot incantesimo (totali al {nuovoLivello}° liv.)</div>
                   <div style={{ color: C.inkDim, marginTop: 2 }}>{slotStr}</div>
+                  {nuovoLivInc > 0 && <div style={{ color: C.green, marginTop: 2 }}>✨ Sblocchi gli incantesimi di {nuovoLivInc}° livello!</div>}
+                </div>
+              )}
+              {(nuoviTrucchetti > 0 || nuoviIncantesimi > 0) && (
+                <div style={{ padding: '3px 0', borderBottom: `1px solid ${C.border}` }}>
+                  <div>Nuovi incantesimi da imparare</div>
+                  {nuoviTrucchetti > 0 && <div style={{ color: C.green, marginTop: 2 }}>• {nuoviTrucchetti} trucchetto{nuoviTrucchetti > 1 ? 'i' : ''} in più (livello 0)</div>}
+                  {nuoviIncantesimi > 0 && <div style={{ color: C.green, marginTop: 2 }}>• {nuoviIncantesimi} incantesimo{nuoviIncantesimi > 1 ? ' in più' : ' in più'} da preparare/conoscere</div>}
+                  <div style={{ ...styles.detail, fontSize: 11, color: C.inkDim, marginTop: 2 }}>Aggiungili poi nella sezione Incantesimi.</div>
                 </div>
               )}
               {privNuovi && (
@@ -5020,7 +5086,7 @@ export default function App() {
                       : '— da scegliere')}</strong>
                 </div>
               )}
-              {!slotStr && !privNuovi && !subPrivNuovi && !haSub && !haASI && !mostraSceltaSub && (
+              {!slotStr && !privNuovi && !subPrivNuovi && !haSub && !haASI && !mostraSceltaSub && !nuoviTrucchetti && !nuoviIncantesimi && (
                 <div style={{ padding: '3px 0', color: C.inkDim }}>Nessun altro cambiamento automatico a questo livello.</div>
               )}
             </div>
