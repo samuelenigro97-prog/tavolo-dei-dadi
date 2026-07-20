@@ -516,11 +516,9 @@ const PRIVILEGI_CLASSE_LIV = {
     20: 'Sterminatore di nemici',
   },
   stregone: {
-    2: 'Fonte di magia (Punti stregoneria)\nMetamagia',
+    2: 'Fonte di magia (Punti stregoneria)',
     5: 'Recupero stregonesco',
     7: 'Stregoneria incarnata',
-    10: 'Metamagia (opzioni aggiuntive)',
-    17: 'Metamagia (opzioni aggiuntive)',
     20: 'Apoteosi arcana',
   },
   warlock: {
@@ -638,9 +636,6 @@ const PRIVILEGI_CLASSE_LIV_2014 = {
   },
   stregone: {
     2: 'Fonte di magia (Punti stregoneria)',
-    3: 'Metamagia',
-    10: 'Metamagia (opzione aggiuntiva)',
-    17: 'Metamagia (opzione aggiuntiva)',
     20: 'Ristoro stregonesco',
   },
   warlock: {
@@ -2634,7 +2629,8 @@ const FLYORA_JSON = {
     { id: 2, nome: 'Stregoneria Innata', max: 2, attuali: 2, ricarica: 'Lungo' },
     { id: 3, nome: 'Borsa del Guaritore', max: 10, attuali: 10, ricarica: 'Nessuno' }
   ],
-  privilegi: "Stregoneria Innata\nFonte di Magia\nMetamagia: Incantesimo Celato, Preciso\nOnde di Caos",
+  privilegi: "Stregoneria Innata\nFonte di Magia\nOnde di Caos",
+  metamagie: "Incantesimo Celato, Incantesimo Preciso",
   trattiSpecie: "Retaggio Fatato\nScurovisione 18 m\nSensi Acuti (Intuizione, Percezione o Sopravvivenza)\nTrance",
   talenti: "Guerramaga (Incantatore da Guerra)\nGuaritore",
   equipaggiamento: "Focus Arcano (Cristallo)\nBorsa da erborista\nGiaciglio\nLibro (filosofia)\nDotazione da avventuriero\nAbiti da viaggiatore",
@@ -2725,7 +2721,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.30';
+const APP_VERSION = '1.9.31';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3159,19 +3155,21 @@ function CampoConTendina({ value, opzioni, onChange, width, title, lookup, setIn
     onChange(attuali.filter(x => x !== v).join(', '));
   };
 
+  // Stesso aspetto dei "quadratini" classici (ListaQuadratini), con la × per rimuovere.
+  const chip = { background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '5px 10px', fontSize: 13, color: C.ink, display: 'inline-flex', alignItems: 'center', gap: 6 };
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', minHeight: 24 }} title={title}>
       {attuali.map(t => {
         const sp = lookup && setInfo ? lookup(t) : null;
         return (
-        <span key={t} title={sp || t} style={{ background: 'rgba(255,255,255,0.08)', padding: '2px 6px', borderRadius: 6, fontSize: 11, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4, border: `1px solid rgba(255,255,255,0.15)` }}>
+        <span key={t} title={sp || t} style={chip}>
           <span
-            style={sp ? { cursor: 'help', textDecoration: 'underline dotted' } : undefined}
+            style={sp ? { cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 } : undefined}
             onClick={sp ? () => setInfo({ titolo: t, testo: sp }) : undefined}
           >{t}</span>
           <button
-            style={{ background: 'transparent', border: 'none', color: '#ff6b6b', cursor: 'pointer', padding: '0 2px', fontSize: 14, lineHeight: 0.8, marginTop: -2 }} 
-            onClick={() => rimuovi(t)} 
+            style={{ background: 'transparent', border: 'none', color: '#c0392b', cursor: 'pointer', padding: 0, fontSize: 16, lineHeight: 0.8 }}
+            onClick={() => rimuovi(t)}
             title={`Rimuovi ${t}`}
           >
             ×
@@ -3179,17 +3177,19 @@ function CampoConTendina({ value, opzioni, onChange, width, title, lookup, setIn
         </span>
         );
       })}
-      <select
-        value=""
-        onChange={(e) => aggiungi(e.target.value)}
-        style={{ ...styles.inlineInput, appearance: 'none', fontSize: 13, padding: '2px 4px', width: 24, height: 24, textAlign: 'center', cursor: 'pointer' }}
-        title="Aggiungi dalla lista"
-      >
-        <option value="">＋</option>
-        {opzioni.map((o) => (
-          <option key={o} value={o}>{o}</option>
-        ))}
-      </select>
+      <label style={{ ...chip, borderStyle: 'dashed', color: C.goldDark, cursor: 'pointer', position: 'relative' }} title="Aggiungi dalla lista">
+        ➕ Aggiungi
+        <select
+          value=""
+          onChange={(e) => aggiungi(e.target.value)}
+          style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }}
+        >
+          <option value="">Aggiungi…</option>
+          {opzioni.map((o) => (
+            <option key={o} value={o}>{o}</option>
+          ))}
+        </select>
+      </label>
     </div>
   );
 }
@@ -6160,6 +6160,22 @@ export default function App() {
               />
             </Sezione>
 
+            {/(stregone|sorcerer)/i.test(scheda.classe || '') && (
+              <Sezione titolo="Metamagia" {...apertoProps('metamagia', false)}>
+                <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8 }}>
+                  Scegli dal menu ➕ le opzioni di Metamagia che hai imparato. Tocca il nome per la spiegazione.
+                </div>
+                <CampoConTendina
+                  value={scheda.metamagie}
+                  opzioni={METAMAGIA_5E}
+                  onChange={(v) => aggiorna({ metamagie: v })}
+                  lookup={spiegaMetamagia}
+                  setInfo={setInfo}
+                  title="Opzioni di Metamagia attive"
+                />
+              </Sezione>
+            )}
+
             <Sezione titolo="Privilegi di sottoclasse" {...apertoProps('privilegiSottoclasse')}>
               <ListaQuadratini
                 value={scheda.privilegiSottoclasse}
@@ -6186,22 +6202,6 @@ export default function App() {
                 onChange={(v) => aggiorna({ talenti: v })}
               />
             </Sezione>
-
-            {/(stregone|sorcerer)/i.test(scheda.classe || '') && (
-              <Sezione titolo="Metamagia" {...apertoProps('metamagia', false)}>
-                <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8 }}>
-                  Scegli dal menu ＋ le opzioni di Metamagia che hai imparato. Tocca il nome per la spiegazione.
-                </div>
-                <CampoConTendina
-                  value={scheda.metamagie}
-                  opzioni={METAMAGIA_5E}
-                  onChange={(v) => aggiorna({ metamagie: v })}
-                  lookup={spiegaMetamagia}
-                  setInfo={setInfo}
-                  title="Opzioni di Metamagia attive"
-                />
-              </Sezione>
-            )}
 
             <Sezione titolo="Addestramento e competenze nell'equipaggiamento" {...propsSez('addestramento')} {...apertoProps('addestramento', false)}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
