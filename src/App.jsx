@@ -736,6 +736,16 @@ function incantesimiClasseLivello(classe, livello) {
   return (k && INCANTESIMI_CLASSE[k] && INCANTESIMI_CLASSE[k][livello]) || [];
 }
 
+/** Incantesimi con Concentrazione disponibili per la classe (dalle liste note). */
+function incantesimiConcentrazioneClasse(classe) {
+  const k = chiaveClasse(classe);
+  if (!k || !INCANTESIMI_CLASSE[k]) return [];
+  const tutti = [...new Set(Object.values(INCANTESIMI_CLASSE[k]).flat())];
+  return tutti
+    .filter((nome) => /concentrazione/i.test(spiegaIncantesimo(nome) || ''))
+    .sort((a, b) => a.localeCompare(b, 'it'));
+}
+
 // Numero di TRUCCHETTI conosciuti per classe (soglie ai livelli 1 / 4 / 10).
 // Le classi che non lanciano trucchetti non compaiono (nessun limite).
 const TRUCCHETTI_NOTI = {
@@ -1436,6 +1446,8 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
   .app-header-title { grid-column: auto; justify-self: auto; order: -1; flex: 1 1 100%; margin-bottom: 6px !important; }
   .app-header-group { flex: 1 1 100% !important; justify-content: center !important; flex-wrap: wrap; }
   .app-header-group > button { flex: 1 1 auto; justify-content: center; }
+  /* dadi: si distribuiscono uniformi su due righe piene invece di ammassarsi */
+  .dadi-riga .dado-btn { flex: 1 1 auto; text-align: center; }
 }
 @media (max-width: 820px) {
   .griglia-scheda { grid-template-columns: 1fr; }
@@ -2994,7 +3006,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.70';
+const APP_VERSION = '1.9.71';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -5750,34 +5762,37 @@ export default function App() {
           </section>
         )}
 
-        {/* Dado libero */}
-        <section style={{ ...styles.panel, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', padding: '6px 12px' }}>
-          <span style={{ ...styles.detail, marginRight: 2 }}>{t('roll.dado')}</span>
-          {[4, 6, 8, 10, 12, 20, 100].map((facce) => (
-            <button key={facce} style={styles.buttonDado(facce)} onClick={() => tiroLibero(facce)}>
-              d{facce}
+        {/* Dado libero: riga dei dadi + riga espressione (ordinata anche su mobile) */}
+        <section style={{ ...styles.panel, padding: '8px 12px' }}>
+          <div className="dadi-riga" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+            <span style={{ ...styles.detail, marginRight: 2, flexShrink: 0 }}>{t('roll.dado')}</span>
+            {[4, 6, 8, 10, 12, 20, 100].map((facce) => (
+              <button key={facce} className="dado-btn" style={styles.buttonDado(facce)} onClick={() => tiroLibero(facce)}>
+                d{facce}
+              </button>
+            ))}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
+            <input
+              style={{
+                ...styles.inlineInput,
+                flex: 1, minWidth: 0,
+                padding: '7px 10px',
+                ...(erroreEspressione ? { borderColor: C.red } : {}),
+              }}
+              placeholder={t('roll.espr_placeholder')}
+              value={espressioneLibera}
+              onChange={(e) => {
+                setEspressioneLibera(e.target.value);
+                setErroreEspressione(false);
+              }}
+              onKeyDown={(e) => e.key === 'Enter' && tiroEspressione()}
+            />
+            <button style={{ ...styles.button, flexShrink: 0 }} onClick={tiroEspressione}>
+              {t('roll.tira')}
             </button>
-          ))}
-          <span style={{ flex: 1 }} />
-          <input
-            style={{
-              ...styles.inlineInput,
-              width: 110,
-              padding: '6px 8px',
-              ...(erroreEspressione ? { borderColor: C.red } : {}),
-            }}
-            placeholder={t('roll.espr_placeholder')}
-            value={espressioneLibera}
-            onChange={(e) => {
-              setEspressioneLibera(e.target.value);
-              setErroreEspressione(false);
-            }}
-            onKeyDown={(e) => e.key === 'Enter' && tiroEspressione()}
-          />
-          <button style={styles.button} onClick={tiroEspressione}>
-            {t('roll.tira')}
-          </button>
-          {erroreEspressione && <span style={{ color: C.red, fontSize: 13 }}>{t('roll.espr_invalida')}</span>}
+          </div>
+          {erroreEspressione && <div style={{ color: C.red, fontSize: 13, marginTop: 4 }}>{t('roll.espr_invalida')}</div>}
         </section>
 
         {/* Personaggi: il riquadro blu È il nome/selettore. Cambia PG al volo; ✎ per rinominare */}
@@ -5818,13 +5833,17 @@ export default function App() {
               <span
                 aria-hidden
                 style={{
-                  position: 'absolute', right: 34, top: '50%', transform: 'translateY(-50%) rotate(-12deg)',
-                  fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: 'italic', fontWeight: 'bold',
-                  fontSize: 38, letterSpacing: 1, lineHeight: 1,
-                  color: C.inkDim, opacity: 0.3, pointerEvents: 'none', userSelect: 'none', whiteSpace: 'nowrap',
+                  position: 'absolute', right: 30, top: 0, bottom: 0, display: 'flex', alignItems: 'center',
+                  pointerEvents: 'none', userSelect: 'none',
                 }}
               >
-                {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
+                <span style={{
+                  fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: 'italic', fontWeight: 'bold',
+                  fontSize: 34, letterSpacing: 1, lineHeight: 1, transform: 'rotate(-12deg)',
+                  color: C.inkDim, opacity: 0.32, whiteSpace: 'nowrap',
+                }}>
+                  {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
+                </span>
               </span>
             </div>
           )}
@@ -6674,6 +6693,38 @@ export default function App() {
                   </div>
                 )}
               </div>
+
+              {/* Concentrazione: incantesimo attivo + TS di Costituzione al volo */}
+              {(() => {
+                const conc = incantesimiConcentrazioneClasse(scheda.classe);
+                const bonusCon = modificatore(scheda.caratteristiche.costituzione) + (scheda.tiriSalvezza?.costituzione ? scheda.bonusCompetenza : 0);
+                return (
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', margin: '10px 0', padding: '6px 8px', borderRadius: 8, background: scheda.concentrazione ? 'rgba(201,162,39,0.12)' : 'transparent', border: `1px solid ${scheda.concentrazione ? C.goldDark : C.border}` }}>
+                    <span style={{ ...styles.detail, fontWeight: 700, color: scheda.concentrazione ? C.goldDark : C.inkDim }}>🧠 {t('conc.label')}</span>
+                    <select
+                      value={scheda.concentrazione || ''}
+                      onChange={(e) => aggiorna({ concentrazione: e.target.value })}
+                      style={{ ...styles.inlineInput, minWidth: 150, maxWidth: 220, padding: '4px 6px' }}
+                      title={t('conc.scegli')}
+                    >
+                      <option value="">{t('conc.nessuna')}</option>
+                      {scheda.concentrazione && !conc.includes(scheda.concentrazione) && <option value={scheda.concentrazione}>{scheda.concentrazione}</option>}
+                      {conc.map((n) => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                    <button
+                      className="tirabile"
+                      style={{ ...styles.button, fontSize: 12, padding: '4px 10px' }}
+                      title={t('conc.ts_tooltip')}
+                      onClick={() => lanciaD20(t('conc.ts'), bonusCon)}
+                    >
+                      🎲 {t('conc.ts')} ({conSegno(bonusCon)})
+                    </button>
+                    {scheda.concentrazione && (
+                      <button style={{ ...styles.buttonMini, color: C.red }} title={t('conc.termina')} onClick={() => aggiorna({ concentrazione: '' })}>✕</button>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Slot incantesimo compatti: totale modificabile, rombi per gli spesi */}
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>

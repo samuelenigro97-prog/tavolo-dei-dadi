@@ -337,6 +337,12 @@ export const DIZIONARIO = {
     'ct.cura': 'Applica cura',
     'ct.condizione': 'Condizione',
     'ct.rimuovi_cond': 'Rimuovi condizione',
+    'conc.label': 'Concentrazione',
+    'conc.nessuna': 'Nessuna concentrazione',
+    'conc.scegli': 'Incantesimo su cui ti concentri',
+    'conc.ts': 'TS Concentrazione',
+    'conc.ts_tooltip': 'Tira il TS di Costituzione per mantenere la concentrazione (CD 10 o meta dei danni subiti, il valore piu alto)',
+    'conc.termina': 'Termina la concentrazione',
   },
   en: {
     'app.titolo': 'Dice Table',
@@ -676,6 +682,12 @@ export const DIZIONARIO = {
     'ct.cura': 'Apply healing',
     'ct.condizione': 'Condition',
     'ct.rimuovi_cond': 'Remove condition',
+    'conc.label': 'Concentration',
+    'conc.nessuna': 'No concentration',
+    'conc.scegli': 'Spell you are concentrating on',
+    'conc.ts': 'Concentration save',
+    'conc.ts_tooltip': 'Roll the Constitution save to keep concentration (DC 10 or half the damage taken, whichever is higher)',
+    'conc.termina': 'End concentration',
   }
 };
 
