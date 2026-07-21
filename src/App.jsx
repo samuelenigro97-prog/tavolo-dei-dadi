@@ -2994,7 +2994,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.69';
+const APP_VERSION = '1.9.70';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -6661,13 +6661,14 @@ export default function App() {
                     <div style={{ ...styles.vitalBox, flex: 1 }}>
                       <div style={styles.vitalLabel}>{t("vital.attacco_incantesimi")}</div>
                       <div style={styles.vitalValue}>
-                        <Rollable
-                          onRoll={() =>
-                            lanciaD20('Attacco con incantesimo', scheda.bonusCompetenza + modIncantatore)
-                          }
+                        <span
+                          className="tirabile"
+                          style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                          title={t('spell.tira_attacco')}
+                          onClick={() => lanciaD20(t('spell.attacco_inc'), scheda.bonusCompetenza + modIncantatore)}
                         >
-                          {conSegno(scheda.bonusCompetenza + modIncantatore)}
-                        </Rollable>
+                          🎲 {conSegno(scheda.bonusCompetenza + modIncantatore)}
+                        </span>
                       </div>
                     </div>
                   </div>
