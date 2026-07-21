@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { ICONE_CLASSE, ICONE_SPECIE } from './ritratti';
+import { t, setLinguaAttuale, DIZIONARIO } from './i18n';
 
 // ---------------------------------------------------------------------------
 // Palette e stili
@@ -2988,7 +2989,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.56';
+const APP_VERSION = '1.9.57';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3731,6 +3732,17 @@ export default function App() {
   const [storicoAperto, setStoricoAperto] = useState(false);
   // tema: 'auto' = scuro se è notte OPPURE se il sistema è in scuro; oppure forzato
   const [tema, setTema] = useState(() => localStorage.getItem('scheda-interattiva:tema') || 'auto');
+  const [lingua, setLingua] = useState(() => localStorage.getItem('scheda-interattiva:lingua') || 'it');
+  // Allinea SUBITO la lingua del dizionario durante il render: così tutti i
+  // {t('...')} in questo render usano già la lingua corrente (niente ritardo di
+  // un render come accadrebbe aspettando l'useEffect).
+  setLinguaAttuale(lingua);
+  useEffect(() => {
+    try {
+      localStorage.setItem('scheda-interattiva:lingua', lingua);
+      document.documentElement.lang = lingua;
+    } catch { /* niente */ }
+  }, [lingua]);
   const [sistemaScuro, setSistemaScuro] = useState(
     () => typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches
   );
@@ -3771,15 +3783,6 @@ export default function App() {
     try { localStorage.setItem('scheda-interattiva:versione', regoleVersione); } catch { /* niente */ }
   }, [regoleVersione]);
 
-  // lingua dell'interfaccia: 'it' (italiano) o 'en' (inglese). Il tasto mostra la
-  // bandiera della lingua ATTIVA e la commuta al click.
-  const [appLang, setAppLang] = useState(() => localStorage.getItem('scheda-interattiva:lingua-app') || 'it');
-  useEffect(() => {
-    try {
-      localStorage.setItem('scheda-interattiva:lingua-app', appLang);
-      document.documentElement.lang = appLang;
-    } catch { /* niente */ }
-  }, [appLang]);
 
   // Cloud Sync
   const [mostraCloud, setMostraCloud] = useState(false);
@@ -4083,8 +4086,8 @@ export default function App() {
 
   function eliminaPersonaggio() {
     setConferma({
-      titolo: 'Elimina personaggio',
-      testo: `Vuoi eliminare davvero "${scheda.nome || 'Senza nome'}"? L'operazione non si può annullare.`,
+      titolo: t('menu.elimina_titolo'),
+      testo: `Vuoi eliminare davvero "${scheda.nome || t('menu.senza_nome')}"? L'operazione non si può annullare.`,
       onConferma: () => setRoster((r) => {
         const personaggi = { ...r.personaggi };
         delete personaggi[r.attivo];
@@ -4729,10 +4732,10 @@ export default function App() {
               style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 14 }}
               onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' }); setMostraCrea(true); }}
             >
-              ➕ Nuovo personaggio
+              {t('menu.nuovo_personaggio')}
             </button>
 
-            <div style={{ ...styles.detail, marginBottom: 6, fontWeight: 'bold' }}>Carica un personaggio</div>
+            <div style={{ ...styles.detail, marginBottom: 6, fontWeight: 'bold' }}>{t('menu.carica_personaggio')}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
               {Object.entries(roster.personaggi).map(([id, p]) => (
                 <div key={id} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
@@ -4740,15 +4743,15 @@ export default function App() {
                     style={{ ...styles.button, flex: 1, display: 'flex', justifyContent: 'space-between', gap: 10, textAlign: 'left' }}
                     onClick={() => { setRoster((r) => ({ ...r, attivo: id })); setMostraMenu(false); }}
                   >
-                    <span>{p.nome || 'Senza nome'}</span>
+                    <span>{p.nome || t('menu.senza_nome')}</span>
                     <span style={styles.detail}>{p.classe ? `${p.classe}` : '—'}</span>
                   </button>
                   <button
                     style={{ ...styles.buttonDanger, padding: '4px 10px', fontSize: 13, flexShrink: 0 }}
-                    title={`Elimina ${p.nome || 'questo personaggio'}`}
+                    title={t('menu.elimina_tooltip', { nome: p.nome || t('menu.senza_nome') })}
                     onClick={() => setConferma({
-                      titolo: 'Elimina personaggio',
-                      testo: `Vuoi eliminare davvero "${p.nome || 'Senza nome'}"? L'azione è irreversibile.`,
+                      titolo: t('menu.elimina_titolo'),
+                      testo: `Vuoi eliminare davvero "${p.nome || t('menu.senza_nome')}"? L'azione è irreversibile.`,
                       onConferma: () => setRoster((r) => {
                         const nuovi = { ...r.personaggi };
                         delete nuovi[id];
@@ -4762,18 +4765,18 @@ export default function App() {
                 </div>
               ))}
               {Object.keys(roster.personaggi).length === 0 && (
-                <span style={styles.detail}>Nessun personaggio salvato.</span>
+                <span style={styles.detail}>{t('menu.nessun_personaggio')}</span>
               )}
             </div>
 
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <button style={styles.button} onClick={() => jsonRef.current?.click()}>📂 Da file JSON</button>
+              <button style={styles.button} onClick={() => jsonRef.current?.click()}>{t('menu.da_file')}</button>
               <button
                 style={styles.button}
                 onClick={() => generaPgCasuale()}
-                title="Genera un personaggio casuale ma coerente (classe, specie, background, stat, competenze e nome)"
+                title="{t('menu.pg_casuale_tooltip')}"
               >
-                🎲 PG casuale
+                {t('menu.pg_casuale')}
               </button>
             </div>
             {erroreImport && <div style={{ color: C.red, marginTop: 10 }}>{erroreImport}</div>}
@@ -4790,16 +4793,16 @@ export default function App() {
           onClick={(e) => { if (e.target === e.currentTarget) setMostraCloud(false); }}
         >
           <div style={{ ...styles.panel, maxWidth: 460, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
-            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 12 }}>☁️ Sincronizzazione Cloud</h1>
+            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 12 }}>☁️ {t('cloud.titolo')}</h1>
             <p style={{ ...styles.detail, marginBottom: 16, lineHeight: 1.4 }}>
-              Salva e carica i tuoi personaggi su un Gist privato di GitHub per sincronizzarli tra PC e telefono.
+              {t('cloud.descrizione_1')}
               <br />
               <a href="https://github.com/settings/tokens/new?scopes=gist&description=Tavolo+dei+Dadi+Cloud+Sync" target="_blank" rel="noreferrer" style={{ color: C.goldDark, textDecoration: 'underline' }}>
-                Clicca qui per generare un GitHub Token gratuito
-              </a> (seleziona lo scope "gist").
+                {t('cloud.link_token')}
+              </a> {t('cloud.descrizione_2')}
             </p>
 
-            <label style={{ ...styles.detail, display: 'block', marginBottom: 3, fontWeight: 'bold' }}>GitHub Personal Access Token</label>
+            <label style={{ ...styles.detail, display: 'block', marginBottom: 3, fontWeight: 'bold' }}>{t('cloud.label_token')}</label>
             <div style={{ display: 'flex', gap: 6, marginBottom: 4 }}>
               <input
                 type={mostraToken ? 'text' : 'password'}
@@ -4811,35 +4814,35 @@ export default function App() {
                   localStorage.setItem('scheda-interattiva:github-token', e.target.value);
                 }}
               />
-              <button style={styles.buttonMini} title={mostraToken ? 'Nascondi' : 'Mostra per copiarlo'} onClick={() => setMostraToken((v) => !v)}>{mostraToken ? '🙈' : '👁'}</button>
-              <button style={styles.buttonMini} title="Copia il token" onClick={() => navigator.clipboard?.writeText(githubToken).then(() => setCloudStatus({ text: 'Token copiato', type: 'success' }))}>📋</button>
+              <button style={styles.buttonMini} title={mostraToken ? t('cloud.nascondi') : t('cloud.mostra')} onClick={() => setMostraToken((v) => !v)}>{mostraToken ? '🙈' : '👁'}</button>
+              <button style={styles.buttonMini} title={t('cloud.copia_token')} onClick={() => navigator.clipboard?.writeText(githubToken).then(() => setCloudStatus({ text: 'Token copiato', type: 'success' }))}>📋</button>
             </div>
             <p style={{ ...styles.detail, fontSize: 11, marginTop: 0, marginBottom: 12 }}>
-              Il token si vede una sola volta su GitHub: <strong>salvalo</strong> (con 👁 e 📋 lo copi da qui). Sull'altro dispositivo incolla lo <strong>stesso</strong> token e Gist ID, oppure genera un nuovo token (stesso account, scope "gist").
+              {t('cloud.aiuto_token')}
             </p>
 
-            <label style={{ ...styles.detail, display: 'block', marginBottom: 3, fontWeight: 'bold' }}>Gist ID (creato automaticamente al primo salvataggio)</label>
+            <label style={{ ...styles.detail, display: 'block', marginBottom: 3, fontWeight: 'bold' }}>{t('cloud.label_gist')}</label>
             <div style={{ display: 'flex', gap: 6, marginBottom: 4 }}>
               <input
                 type="text"
                 style={{ ...styles.inlineInput, flex: 1, padding: '6px 8px', fontSize: 13, fontFamily: 'monospace' }}
-                placeholder="Lascia vuoto se è il primo salvataggio"
+                placeholder={t('cloud.placeholder_gist')}
                 value={gistId}
                 onChange={(e) => {
                   setGistId(e.target.value);
                   localStorage.setItem('scheda-interattiva:gist-id', e.target.value);
                 }}
               />
-              <button style={styles.buttonMini} title="Copia il Gist ID" onClick={() => navigator.clipboard?.writeText(gistId).then(() => setCloudStatus({ text: 'Gist ID copiato', type: 'success' }))}>📋</button>
-              {gistId && <a href={`https://gist.github.com/${gistId}`} target="_blank" rel="noreferrer" style={{ ...styles.buttonMini, textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }} title="Apri il Gist su GitHub">↗</a>}
+              <button style={styles.buttonMini} title={t('cloud.copia_gist')} onClick={() => navigator.clipboard?.writeText(gistId).then(() => setCloudStatus({ text: 'Gist ID copiato', type: 'success' }))}>📋</button>
+              {gistId && <a href={`https://gist.github.com/${gistId}`} target="_blank" rel="noreferrer" style={{ ...styles.buttonMini, textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }} title={t('cloud.apri_gist')}>↗</a>}
             </div>
             <p style={{ ...styles.detail, fontSize: 11, marginTop: 0, marginBottom: 16 }}>
-              Il Gist ID lo trovi qui dopo il primo salvataggio (o nell'URL del gist su github.com/…). Copialo con 📋 e incollalo sull'altro dispositivo, poi premi «Carica da Cloud».
+              {t('cloud.aiuto_gist')}
             </p>
 
             <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-              <button style={{ ...styles.buttonPrimary, flex: 1 }} onClick={() => salvaSuCloud(false)}>⬆️ Salva ora</button>
-              <button style={{ ...styles.button, flex: 1, borderColor: C.green, color: C.green }} onClick={caricaDaCloud}>⬇️ Carica da Cloud</button>
+              <button style={{ ...styles.buttonPrimary, flex: 1 }} onClick={() => salvaSuCloud(false)}>⬆️ {t('cloud.salva')}</button>
+              <button style={{ ...styles.button, flex: 1, borderColor: C.green, color: C.green }} onClick={caricaDaCloud}>⬇️ {t('cloud.carica')}</button>
             </div>
 
             {/* Auto-salvataggio: quando attivo, ogni modifica va sul cloud da sola */}
@@ -4850,8 +4853,8 @@ export default function App() {
                 onChange={(e) => { setAutoSync(e.target.checked); localStorage.setItem('scheda-interattiva:auto-sync', e.target.checked ? 'on' : 'off'); }}
               />
               <span style={styles.detail}>
-                <strong>Salvataggio automatico</strong> — sincronizza da solo a ogni modifica
-                {ultimoSync && <><br />Ultimo salvataggio: {ultimoSync}{sincronizzando ? ' · salvo…' : ''}</>}
+                {t('cloud.auto_sync')}
+                {ultimoSync && <><br />{t('cloud.ultimo_sync')}: {ultimoSync}{sincronizzando ? ` · ${t('cloud.salvando')}` : ''}</>}
               </span>
             </label>
 
@@ -4863,18 +4866,18 @@ export default function App() {
 
             {/* Import da PDF con l'IA — funzione avanzata, sotto la sincronizzazione Cloud */}
             <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 4, paddingTop: 12, marginBottom: 12 }}>
-              <label style={{ ...styles.detail, display: 'block', marginBottom: 6, fontWeight: 'bold' }}>Importa una scheda da PDF (IA)</label>
+              <label style={{ ...styles.detail, display: 'block', marginBottom: 6, fontWeight: 'bold' }}>{t('cloud.pdf_label')}</label>
               <input ref={pdfRef} type="file" accept="application/pdf,.pdf" style={{ display: 'none' }} onChange={transcribePdf} />
               <button
                 style={{ ...styles.button, width: '100%' }}
                 onClick={() => pdfRef.current?.click()}
                 disabled={pdfStato === 'loading'}
-                title="Trasforma un PDF di scheda D&D in personaggio, con l'IA (richiede endpoint configurato)"
+                title={t('cloud.pdf_tooltip')}
               >
-                {pdfStato === 'loading' ? '🤖 Leggo il PDF…' : '🤖 Importa da PDF (IA)'}
+                {pdfStato === 'loading' ? t('cloud.pdf_loading') : t('cloud.pdf_btn')}
               </button>
               <details style={{ marginTop: 8 }}>
-                <summary style={{ ...styles.detail, cursor: 'pointer' }}>⚙️ Configura import da PDF (IA)</summary>
+                <summary style={{ ...styles.detail, cursor: 'pointer' }}>{t('cloud.pdf_config')}</summary>
                 <p style={{ ...styles.detail, marginTop: 6 }}>
                   L'import da PDF usa l'IA e richiede un piccolo servizio con la tua
                   chiave API (un <strong>Cloudflare Worker</strong> gratuito). Incolla
@@ -4891,7 +4894,7 @@ export default function App() {
               {erroreImport && <div style={{ color: C.red, marginTop: 8, fontSize: 13 }}>{erroreImport}</div>}
             </div>
 
-            <button style={{ ...styles.button, width: '100%' }} onClick={() => setMostraCloud(false)}>Chiudi</button>
+            <button style={{ ...styles.button, width: '100%' }} onClick={() => setMostraCloud(false)}>{t('modal.chiudi')}</button>
           </div>
         </div>
       )}
@@ -4913,15 +4916,15 @@ export default function App() {
             onClick={(e) => { if (e.target === e.currentTarget) setMostraPrivilegi(false); }}
           >
             <div style={{ ...styles.panel, maxWidth: 520, width: '100%', maxHeight: '88vh', overflowY: 'auto' }}>
-              <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 4 }}>📖 Panoramica privilegi</h1>
+              <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 4 }}>📖 {t('priv.panoramica')}</h1>
               <div style={{ textAlign: 'center', ...styles.detail, marginBottom: 12 }}>
                 {scheda.classe || '—'}{scheda.sottoclasse ? ` · ${scheda.sottoclasse}` : ''} · Liv. {liv} · {versione === '2024' ? 'D&D 5.5' : 'D&D 5.0'}
               </div>
-              {righe.length === 0 && <p style={styles.detail}>Nessun privilegio da mostrare per questa classe.</p>}
+              {righe.length === 0 && <p style={styles.detail}>{t('priv.nessuno')}</p>}
               {righe.map(({ L, feat, asi, sub, futuro }) => (
                 <div key={L} style={{ display: 'flex', gap: 10, padding: '6px 0', borderBottom: `1px solid ${C.border}`, opacity: futuro ? 0.5 : 1 }}>
                   <div style={{ flexShrink: 0, width: 44, fontWeight: 'bold', color: futuro ? C.inkDim : C.goldDark }}>
-                    Liv {L}
+                    {t('priv.livello')} {L}
                   </div>
                   <div style={{ flex: 1, fontSize: 13 }}>
                     {feat && feat.split('\n').map((r, i) => {
@@ -4931,23 +4934,23 @@ export default function App() {
                           • {sp ? (
                             <span
                               style={{ cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
-                              title="Tocca per la spiegazione"
+                              title={t('priv.tocca_spiegazione')}
                               onClick={() => setInfo({ titolo: r, testo: sp })}
                             >{r}</span>
                           ) : r}
                         </div>
                       );
                     })}
-                    {sub && <div style={{ color: C.green }}>🌟 Privilegio di sottoclasse{scheda.sottoclasse ? ` (${scheda.sottoclasse})` : ''}</div>}
-                    {asi && <div style={{ color: C.inkDim }}>🎯 Aumento di Caratteristica o Talento</div>}
-                    {futuro && <span style={{ ...styles.detail, fontStyle: 'italic' }}>— non ancora raggiunto</span>}
+                    {sub && <div style={{ color: C.green }}>🌟 {t('priv.sottoclasse')}{scheda.sottoclasse ? ` (${scheda.sottoclasse})` : ''}</div>}
+                    {asi && <div style={{ color: C.inkDim }}>🎯 {t('priv.aumento_car')}</div>}
+                    {futuro && <span style={{ ...styles.detail, fontStyle: 'italic' }}>— {t('priv.futuro')}</span>}
                   </div>
                 </div>
               ))}
               <p style={{ ...styles.detail, marginTop: 10, fontSize: 11 }}>
-                🌟 = la tua sottoclasse guadagna un privilegio (scrivine il testo nella sezione «Privilegi di sottoclasse»). I nomi sono riassunti indicativi.
+                {t('priv.aiuto')}
               </p>
-              <button style={{ ...styles.button, width: '100%', marginTop: 6 }} onClick={() => setMostraPrivilegi(false)}>Chiudi</button>
+              <button style={{ ...styles.button, width: '100%', marginTop: 6 }} onClick={() => setMostraPrivilegi(false)}>{t('modal.chiudi')}</button>
             </div>
           </div>
         );
@@ -5011,13 +5014,13 @@ export default function App() {
           onClick={(e) => { if (e.target === e.currentTarget) setMostraLevelUp(false); }}
         >
           <div style={{ ...styles.panel, maxWidth: 400, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
-            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 12 }}>⬆️ Passaggio di Livello</h1>
+            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 12 }}>⬆️ {t('levelup.titolo')}</h1>
             <div style={{ textAlign: 'center', marginBottom: 16 }}>
-              Da livello <strong>{scheda.livello || 1}</strong> a livello <strong>{nuovoLivello}</strong>
+              {t('levelup.da_livello')} <strong>{scheda.livello || 1}</strong> {t('levelup.a_livello')} <strong>{nuovoLivello}</strong>
             </div>
 
             <p style={{ ...styles.detail, marginBottom: 16, lineHeight: 1.4 }}>
-              Scegli come ottenere i tuoi nuovi Punti Ferita massimi. Il tuo modificatore di Costituzione ({conSegno(levelUpBozza.modCos)}) viene aggiunto in automatico.
+              {t('levelup.desc_hp', { cos: conSegno(levelUpBozza.modCos) })}
             </p>
 
             <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
@@ -5054,7 +5057,7 @@ export default function App() {
                   value={levelUpBozza.sottoclasse || ''}
                   onChange={(e) => setLevelUpBozza((b) => ({ ...b, sottoclasse: e.target.value }))}
                 >
-                  <option value="">Scegli…</option>
+                  <option value="">{t('crea.scegli')}</option>
                   {scelteSub.map((n) => <option key={n} value={n}>{n}</option>)}
                 </select>
               </div>
@@ -5064,7 +5067,7 @@ export default function App() {
             {haASI && (
               <div style={{ marginBottom: 14 }}>
                 <label style={{ ...styles.detail, display: 'block', marginBottom: 4, fontWeight: 'bold' }}>
-                  🎯 Aumento di Caratteristica o Talento
+                  🎯 {t('priv.aumento_car')}
                 </label>
                 <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
                   {[['aumento', 'Aumento caratteristiche'], ['talento', 'Talento']].map(([m, lab]) => (
@@ -5109,7 +5112,7 @@ export default function App() {
                           onChange={(e) => setLevelUpBozza((b) => ({ ...b, [campo]: e.target.value }))}
                         >
                           <option value="">—</option>
-                          {CARATTERISTICHE.map(({ key, label }) => <option key={key} value={key}>{label}</option>)}
+                          {CARATTERISTICHE.map(({ key }) => <option key={key} value={key}>{t('attr.' + key)}</option>)}
                         </select>
                       </label>
                     ))}
@@ -5167,7 +5170,7 @@ export default function App() {
                   <strong>{levelUpBozza.asiMode === 'talento'
                     ? ((levelUpBozza.talento || '').trim() || '— talento da indicare')
                     : ((levelUpBozza.asiA || levelUpBozza.asiB)
-                      ? [levelUpBozza.asiA, levelUpBozza.asiB].filter(Boolean).map((k) => CARATTERISTICHE.find((c) => c.key === k)?.label).join(', ')
+                      ? [levelUpBozza.asiA, levelUpBozza.asiB].filter(Boolean).map((k) => t('attr.' + k)).join(', ')
                       : '— da scegliere')}</strong>
                 </div>
               )}
@@ -5232,10 +5235,10 @@ export default function App() {
             onClick={(e) => { if (e.target === e.currentTarget) setMostraCrea(false); }}
           >
             <div style={{ ...styles.panel, maxWidth: 460, width: '100%', maxHeight: '88vh', overflowY: 'auto' }}>
-              <h1 style={{ ...styles.title, marginBottom: 12 }}>➕ Nuovo personaggio</h1>
+              <h1 style={{ ...styles.title, marginBottom: 12 }}>{t('menu.nuovo_personaggio')}</h1>
 
               <div style={{ display: 'flex', gap: 6, justifyContent: 'center', alignItems: 'center', marginBottom: 14 }}>
-                <span style={styles.detail}>Versione:</span>
+                <span style={styles.detail}>{t('crea.versione')}</span>
                 {['2024', '2014'].map((v) => (
                   <button key={v} style={{ ...styles.modeButton(regoleVersione === v), fontSize: 12, padding: '3px 10px' }} onClick={() => setRegoleVersione(v)}>
                     {v === '2024' ? 'D&D 5.5' : 'D&D 5.0'}
@@ -5243,15 +5246,15 @@ export default function App() {
                 ))}
               </div>
 
-              <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>Nome</label>
+              <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{t('crea.nome')}</label>
               <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
-                <input style={{ ...stileSelect, flex: 1, marginBottom: 0 }} value={bozzaCrea.nome} placeholder="Nome del personaggio" onChange={(e) => setB({ nome: e.target.value })} />
-                <button style={styles.buttonMini} title="Genera un nome fantasy coerente con la specie" onClick={() => setB({ nome: nomeCasuale(bozzaCrea.specie) })}>🎲</button>
+                <input style={{ ...stileSelect, flex: 1, marginBottom: 0 }} value={bozzaCrea.nome} placeholder={t('crea.nome_placeholder')} onChange={(e) => setB({ nome: e.target.value })} />
+                <button style={styles.buttonMini} title={t('crea.genera_nome')} onClick={() => setB({ nome: nomeCasuale(bozzaCrea.specie) })}>🎲</button>
               </div>
 
-              <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{regoleVersione === '2024' ? 'Specie' : 'Razza'}</label>
+              <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{regoleVersione === '2024' ? t('crea.specie') : t('crea.razza')}</label>
               <select style={{ ...stileSelect, marginBottom: bozzaCrea.specie ? 4 : 12 }} value={bozzaCrea.specie} onChange={(e) => setB({ specie: e.target.value, competenzeSpecie: [] })}>
-                <option value="">Scegli…</option>
+                <option value="">{t('crea.scegli')}</option>
                 {Object.entries(SPECIE_5E).map(([g, opts]) => (
                   <optgroup key={g} label={g}>
                     {opts.map((n) => <option key={n} value={n}>{n}</option>)}
@@ -5262,31 +5265,31 @@ export default function App() {
                 const d = datiSpecieDi(bozzaCrea.specie);
                 return (
                   <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 10px', marginBottom: 12, fontSize: 11, lineHeight: 1.5 }}>
-                    {d && <div>🏃 Velocità {d.velocita} m · 📏 {d.taglia}{d.sensi ? ` · 👁 ${d.sensi}` : ''}</div>}
-                    {d && <div>✨ Tratti: {d.tratti}</div>}
+                    {d && <div>🏃 {t('vital.movimento')} {d.velocita} m · 📏 {d.taglia}{d.sensi ? ` · 👁 ${d.sensi}` : ''}</div>}
+                    {d && <div>✨ {t('crea.tratti')}: {d.tratti}</div>}
                     <div style={{ color: C.inkDim }}>
-                      💪 Bonus di caratteristica: {regoleVersione === '2024' ? 'dal background (nella 5.5 non dalla specie)' : 'assegnati dalla razza'}
+                      💪 {t('crea.bonus_car')}: {regoleVersione === '2024' ? t('crea.bonus_bg') : t('crea.bonus_razza')}
                     </div>
                   </div>
                 );
               })()}
 
-              <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>Classe</label>
+              <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{t('crea.classe')}</label>
               <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.classe} onChange={(e) => setB({ classe: e.target.value, competenzeClasse: [] })}>
-                <option value="">Scegli…</option>
+                <option value="">{t('crea.scegli')}</option>
                 {NOMI_CLASSI.map((n) => <option key={n} value={n}>{n}</option>)}
               </select>
 
-              <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>Background</label>
+              <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{t('crea.background')}</label>
               <select style={{ ...stileSelect, marginBottom: 6 }} value={bozzaCrea.background} onChange={(e) => setB({ background: e.target.value })}>
-                <option value="">Scegli…</option>
+                <option value="">{t('crea.scegli')}</option>
                 {BACKGROUND_5E.map((n) => <option key={n} value={n}>{n}</option>)}
               </select>
               {bozzaCrea.background && (
                 <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 10px', marginBottom: 12, fontSize: 11, lineHeight: 1.5 }}>
-                  <div>🎓 Competenze: {(BACKGROUND_COMPETENZE[bozzaCrea.background] || []).map((k) => ABILITA.find((a) => a.key === k)?.label).join(', ') || '—'}</div>
+                  <div>🎓 {t('crea.competenze')}: {(BACKGROUND_COMPETENZE[bozzaCrea.background] || []).map((k) => t('skill.' + k)).join(', ') || '—'}</div>
                   {regoleVersione === '2024' && bonusBg.length > 0 && (
-                    <div>💪 Caratteristiche: +2 {bonusBg[0]?.slice(0, 3).toUpperCase()}, +1 {bonusBg[1]?.slice(0, 3).toUpperCase()} (a scelta: +1 a tre diverse)</div>
+                    <div>💪 {t('crea.caratteristiche')}: +2 {bonusBg[0]?.slice(0, 3).toUpperCase()}, +1 {bonusBg[1]?.slice(0, 3).toUpperCase()} ({t('crea.a_scelta')})</div>
                   )}
                 </div>
               )}
@@ -5305,11 +5308,11 @@ export default function App() {
                 return (
                   <div style={{ marginBottom: 14 }}>
                     <label style={{ ...styles.detail, display: 'block', marginBottom: 4, fontWeight: 'bold' }}>
-                      Competenze di classe — scegli {cc.numero} <span style={{ fontWeight: 'normal', color: pieno ? C.green : C.inkDim }}>({scelte.length}/{cc.numero})</span>
+                      {t('crea.competenze_classe')} — {t('crea.scegli_n')} {cc.numero} <span style={{ fontWeight: 'normal', color: pieno ? C.green : C.inkDim }}>({scelte.length}/{cc.numero})</span>
                     </label>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                       {cc.lista.map((k) => {
-                        const lab = ABILITA.find((a) => a.key === k)?.label || k;
+                        const lab = t('skill.' + k);
                         const sel = scelte.includes(k);
                         const daBg = bgSkills.includes(k);
                         return (
@@ -5318,7 +5321,7 @@ export default function App() {
                             disabled={daBg || (!sel && pieno)}
                             onClick={() => toggle(k)}
                             style={{ ...styles.modeButton(sel), fontSize: 11, padding: '3px 8px', opacity: daBg ? 0.45 : 1 }}
-                            title={daBg ? 'Già concessa dal background' : (!sel && pieno ? `Hai già scelto ${cc.numero} competenze` : 'Click per scegliere')}
+                            title={daBg ? t('crea.gia_bg') : (!sel && pieno ? t('crea.gia_scelte', { n: cc.numero }) : t('crea.click_scegli'))}
                           >
                             {sel ? '★ ' : ''}{lab}{daBg ? ' (bg)' : ''}
                           </button>
@@ -5342,11 +5345,11 @@ export default function App() {
                 return (
                   <div style={{ marginBottom: 14 }}>
                     <label style={{ ...styles.detail, display: 'block', marginBottom: 4, fontWeight: 'bold' }}>
-                      Competenza di specie · {cs.tratto} — scegli {cs.numero} <span style={{ fontWeight: 'normal', color: pieno ? C.green : C.inkDim }}>({scelte.length}/{cs.numero})</span>
+                      {t('crea.competenze_specie')} · {cs.tratto} — {t('crea.scegli_n')} {cs.numero} <span style={{ fontWeight: 'normal', color: pieno ? C.green : C.inkDim }}>({scelte.length}/{cs.numero})</span>
                     </label>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                       {cs.lista.map((k) => {
-                        const lab = ABILITA.find((a) => a.key === k)?.label || k;
+                        const lab = t('skill.' + k);
                         const sel = scelte.includes(k);
                         return (
                           <button key={k} disabled={!sel && pieno} onClick={() => toggle(k)}
@@ -5396,11 +5399,11 @@ export default function App() {
                         Valori tirati: <strong>{bozzaCrea.pool.join(', ')}</strong>. Assegna ognuno a una caratteristica:
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
-                        {CARATTERISTICHE.map(({ key, label }) => {
+                        {CARATTERISTICHE.map(({ key }) => {
                           const usatiAltrove = Object.entries(bozzaCrea.assegna).filter(([k]) => k !== key).map(([, idx]) => idx);
                           return (
                             <label key={key} style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
-                              <span style={{ width: 66 }}>{label}</span>
+                              <span style={{ width: 66 }}>{t('attr.' + key)}</span>
                               <select
                                 value={bozzaCrea.assegna[key] ?? ''}
                                 onChange={(e) => setB({ assegna: { ...bozzaCrea.assegna, [key]: e.target.value === '' ? undefined : Number(e.target.value) } })}
@@ -5444,7 +5447,7 @@ export default function App() {
 
               <div style={{ display: 'flex', gap: 8 }}>
                 <button style={{ ...styles.buttonPrimary, flex: 1 }} onClick={() => creaPersonaggio(bozzaCrea)}>Crea personaggio</button>
-                <button style={styles.button} onClick={() => setMostraCrea(false)}>Annulla</button>
+                <button style={styles.button} onClick={() => setMostraCrea(false)}>{t('modal.annulla')}</button>
               </div>
             </div>
           </div>
@@ -5494,10 +5497,10 @@ export default function App() {
         <div className="app-header-group" style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
           <button
             style={styles.modeButton(false)}
-            title={appLang === 'it' ? 'Interfaccia in italiano — click per passare all’inglese' : 'Interface in English — click to switch to Italian'}
-            onClick={() => setAppLang((l) => (l === 'it' ? 'en' : 'it'))}
+            title={lingua === 'it' ? 'Interfaccia in italiano — click per passare all’inglese' : 'Interface in English — click to switch to Italian'}
+            onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
           >
-            {appLang === 'it' ? '🇮🇹 IT' : '🇬🇧 EN'}
+            {lingua === 'it' ? '🇮🇹 IT' : '🇬🇧 EN'}
           </button>
           <button
             className={nuovaVersione && !aggiornando ? 'aggiorna-pronto' : undefined}
@@ -5510,10 +5513,10 @@ export default function App() {
           </button>
           <button
             style={styles.modeButton(false)}
-            title="Tema: Auto diventa scuro di notte o se il sistema è in modalità scura. I colori della scheda seguono la classe del personaggio."
+            title={t('tooltip.tema')}
             onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}
           >
-            {tema === 'auto' ? '🌗 Auto' : tema === 'chiaro' ? '☀️ Chiaro' : '🌙 Scuro'}
+            {tema === 'auto' ? t('btn.tema.auto') : tema === 'chiaro' ? t('btn.tema.chiaro') : t('btn.tema.scuro')}
           </button>
         </div>
       </header>
@@ -5664,11 +5667,11 @@ export default function App() {
                 style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', padding: '9px 36px 9px 8px' }}
                 value={roster.attivo}
                 onChange={(e) => setRoster((r) => ({ ...r, attivo: e.target.value }))}
-                title="Personaggio attivo — scegli per cambiare al volo"
+                title={t('nome.tooltip_selettore')}
               >
                 {Object.entries(roster.personaggi).map(([id, p]) => (
                   <option key={id} value={id}>
-                    {p.nome || 'Senza nome'}{p.classe ? ` · ${p.classe}` : ''} · Liv. {p.livello || 1}
+                    {p.nome || t('menu.senza_nome')}{p.classe ? ` · ${p.classe}` : ''} · {t('nome.liv')} {p.livello || 1}
                   </option>
                 ))}
               </select>
@@ -5841,7 +5844,7 @@ export default function App() {
             {/* RIGA 1 — Classe Armatura | Punti Ferita (x2) | Riposo | TS Morte */}
             {/* Classe Armatura */}
             <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>Classe Armatura</div>
+              <div style={styles.vitalLabel}>{t("vital.ca")}</div>
               <div style={styles.vitalValue}>
                 {scheda.armatura.tipo === 'manuale' && !scheda.armatura.scudo && !scheda.armatura.bonus ? (
                   <Editable value={scheda.ca} tipo="numero" onChange={(v) => aggiorna({ ca: v })} width={40} />
@@ -5899,7 +5902,7 @@ export default function App() {
 
             {/* Punti Ferita — occupa 2 colonne */}
             <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
-              <div style={styles.vitalLabel}>Punti Ferita</div>
+              <div style={styles.vitalLabel}>{t("vital.pf")}</div>
               <div style={styles.vitalValue}>
                 <Editable value={scheda.pfAttuali} tipo="numero" onChange={(v) => aggiorna({ pfAttuali: v })} width={44} />
                 <span style={{ color: C.inkDim, fontSize: 14 }}>
@@ -5960,7 +5963,7 @@ export default function App() {
 
             {/* Riposo */}
             <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>Riposo</div>
+              <div style={styles.vitalLabel}>{t("vital.riposo")}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 4px' }} onClick={riposoBreve} title="Riposo breve">🔥 Breve</button>
                 <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 4px' }} onClick={riposoLungo} title="Riposo lungo">🌙 Lungo</button>
@@ -5989,7 +5992,7 @@ export default function App() {
             {/* RIGA 2 — Iniziativa | Velocità | Perc. Passiva | Resistenze | Vista */}
             {/* Iniziativa */}
             <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>Iniziativa</div>
+              <div style={styles.vitalLabel}>{t("vital.iniziativa")}</div>
               <div style={styles.vitalValue}>
                 <Rollable onRoll={() => lanciaD20('Iniziativa', modificatore(scheda.caratteristiche.destrezza))}>
                   {conSegno(modificatore(scheda.caratteristiche.destrezza))}
@@ -5999,7 +6002,7 @@ export default function App() {
 
             {/* Velocità */}
             <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>Velocità</div>
+              <div style={styles.vitalLabel}>{t("vital.movimento")}</div>
               <div style={styles.vitalValue}>
                 <Editable value={scheda.velocita} tipo="numero" onChange={(v) => aggiorna({ velocita: v })} width={38} />
                 <span style={{ fontSize: 12, color: C.inkDim }}> m</span>
@@ -6008,13 +6011,13 @@ export default function App() {
 
             {/* Percezione Passiva */}
             <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>Perc. Passiva</div>
+              <div style={styles.vitalLabel}>{t("vital.percezione_passiva")}</div>
               <div style={styles.vitalValue}>{percezionePassiva}</div>
             </div>
 
             {/* Resistenze — chip rimovibili + tendina */}
             <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>Resistenze</div>
+              <div style={styles.vitalLabel}>{t("vital.resistenze")}</div>
               <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <CampoConTendina
                   value={scheda.resistenze}
@@ -6027,7 +6030,7 @@ export default function App() {
 
             {/* Vista / Sensi — chip rimovibili + tendina (valore non fisso) */}
             <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>Visione</div>
+              <div style={styles.vitalLabel}>{t("vital.visione")}</div>
               <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <CampoConTendina
                   value={scheda.sensi}
@@ -6041,7 +6044,7 @@ export default function App() {
             {/* RIGA 3 — Bonus Comp. | Sfinimento | Ispirazione | Condizioni (span 2) */}
             {/* Bonus Competenza */}
             <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>Bonus Comp.</div>
+              <div style={styles.vitalLabel}>{t("vital.competenza")}</div>
               <div style={styles.vitalValue}>
                 <Editable value={conSegno(scheda.bonusCompetenza)} onChange={(v) => aggiorna({ bonusCompetenza: parseInt(v, 10) || 0 })} width={38} title="1 click: modifica" />
               </div>
@@ -6056,7 +6059,7 @@ export default function App() {
 
             {/* Sfinimento */}
             <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>Sfinimento</div>
+              <div style={styles.vitalLabel}>{t("vital.sfinimento")}</div>
               <div style={styles.vitalValue}>
                 <button style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 13 }} onClick={() => aggiorna({ sfinimento: Math.max(0, scheda.sfinimento - 1) })} title="Diminuisci">−</button>
                 {' '}
@@ -6080,7 +6083,7 @@ export default function App() {
               boxShadow: scheda.ispirazione ? '0 0 9px rgba(212,175,55,0.55)' : 'none',
               transition: 'background 0.25s, border-color 0.25s, box-shadow 0.25s',
             }}>
-              <div style={{ ...styles.vitalLabel, color: scheda.ispirazione ? '#c8991a' : C.inkDim }}>Ispirazione</div>
+              <div style={{ ...styles.vitalLabel, color: scheda.ispirazione ? '#c8991a' : C.inkDim }}>{t("vital.ispirazione")}</div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <button
                   className="tirabile"
@@ -6102,7 +6105,7 @@ export default function App() {
 
             {/* Condizioni */}
             <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
-              <div style={styles.vitalLabel}>Condizioni</div>
+              <div style={styles.vitalLabel}>{t("vital.condizioni")}</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center', alignItems: 'center', marginTop: 2 }}>
                 {scheda.condizioni.map((c) => (
                   <button
@@ -6138,7 +6141,7 @@ export default function App() {
         <div className="griglia-scheda">
           <div>
 
-            {CARATTERISTICHE.map(({ key, label, abbr }) => {
+            {CARATTERISTICHE.map(({ key }) => {
               const mod = modificatore(scheda.caratteristiche[key]);
               const bonusTS = bonusTiroSalvezza(scheda, key);
               const abilitaDellaCar = ABILITA.filter((a) => a.car === key);
@@ -6146,9 +6149,9 @@ export default function App() {
                 <div key={key} className="blocco-car" style={styles.abilityBlock}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
                     <Rollable
-                      onRoll={() => lanciaD20(`Prova di ${label}`, mod)}
+                      onRoll={() => lanciaD20(`Prova di ${t('attr.' + key)}`, mod)}
                       style={styles.abilityMod}
-                      title={`Tieni premuto e rilascia: prova di ${label}`}
+                      title={`Tieni premuto e rilascia: prova di ${t('attr.' + key)}`}
                     >
                       {conSegno(mod)}
                     </Rollable>
@@ -6156,8 +6159,8 @@ export default function App() {
                       <div
                         style={{ fontSize: 13, color: C.ink, letterSpacing: 0.8, fontWeight: 'bold', cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
                         title="Cosa governa questa caratteristica?"
-                        onClick={() => setInfo({ titolo: label, testo: SPIEG_CARATT[key] })}
-                      >{label.toUpperCase()}</div>
+                        onClick={() => setInfo({ titolo: t('attr.' + key), testo: t('spieg.' + key) })}
+                      >{t('attr.' + key).toUpperCase()}</div>
                       <div style={{ fontSize: 17, fontWeight: 'bold', color: C.goldDark }} title="Punteggio di caratteristica (click per modificare)">
                         <Editable
                           value={scheda.caratteristiche[key]}
@@ -6174,8 +6177,8 @@ export default function App() {
                   <Rollable
                     as="div"
                     style={{ ...styles.skillRow(true), opacity: scheda.tiriSalvezza[key] ? 1 : 0.5 }}
-                    title={`Tieni premuto e rilascia: tiro salvezza di ${label} · click sul pallino: competenza`}
-                    onRoll={() => lanciaD20(`Tiro salvezza: ${label}`, bonusTS)}
+                    title={`Tieni premuto e rilascia: tiro salvezza di ${t('attr.' + key)} · click sul pallino: competenza`}
+                    onRoll={() => lanciaD20(`Tiro salvezza: ${t('attr.' + key)}`, bonusTS)}
                   >
                     <span
                       style={styles.dot(scheda.tiriSalvezza[key] ? 1 : 0)}
@@ -6199,8 +6202,8 @@ export default function App() {
                         as="div"
                         key={a.key}
                         style={{ ...styles.skillRow(true), opacity: liv === 0 ? 0.5 : 1 }}
-                        title={`Tieni premuto e rilascia: prova di ${a.label} · click sul pallino: niente → competenza (●) → competenza di classe/razza (★)`}
-                        onRoll={() => lanciaD20(`${a.label} (${abbr})`, bonus)}
+                        title={`Tieni premuto e rilascia: prova di ${t('skill.' + a.key)} · click sul pallino: niente → competenza (●) → competenza di classe/razza (★)`}
+                        onRoll={() => lanciaD20(`${t('skill.' + a.key)}`, bonus)}
                       >
                         <span
                           style={styles.dot(liv)}
@@ -6213,7 +6216,7 @@ export default function App() {
                           {liv === 2 ? '★\uFE0E' : liv === 1 ? '●' : '○'}
                         </span>
                         <strong style={{ width: 32 }}>{conSegno(bonus)}</strong>
-                        <span>{a.label}</span>
+                        <span>{t('skill.' + a.key)}</span>
                       </Rollable>
                     );
                   })}
@@ -6222,7 +6225,7 @@ export default function App() {
             })}
 
             {/* Risorse di classe — compatte, sotto le caratteristiche (Carisma) */}
-            <Sezione titolo="Risorse di classe" {...apertoProps('risorse')}>
+            <Sezione titolo={t("sez.risorse")} {...apertoProps('risorse')}>
               {scheda.risorse.length === 0 && (
                 <p style={{ ...styles.detail, marginTop: 0, fontSize: 11 }}>
                   Nessuna risorsa. Aggiungi Ki, punti stregoneria, ira, ispirazione bardica, usi dei privilegi…
@@ -6272,7 +6275,7 @@ export default function App() {
               </button>
             </Sezione>
 
-            <Sezione titolo="Addestramento" {...propsSez('addestramento')} {...apertoProps('addestramento', false)}>
+            <Sezione titolo={t("sez.addestramento")} {...propsSez('addestramento')} {...apertoProps('addestramento', false)}>
               <div style={{ marginBottom: 10 }}>
                 <div style={{ ...styles.detail, marginBottom: 4 }}>Armature:</div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -6323,7 +6326,7 @@ export default function App() {
               </div>
             </Sezione>
 
-            <Sezione titolo="Tratti della specie" {...propsSez('trattiSpecie')} {...apertoProps('trattiSpecie')}>
+            <Sezione titolo={t("sez.tratti_specie")} {...propsSez('trattiSpecie')} {...apertoProps('trattiSpecie')}>
               <ListaQuadratini
                 value={scheda.trattiSpecie}
                 lookup={spiegaTratto}
@@ -6332,7 +6335,7 @@ export default function App() {
               />
             </Sezione>
 
-            <Sezione titolo="Privilegi di classe" {...propsSez('privilegi')} {...apertoProps('privilegi')}>
+            <Sezione titolo={t("sez.privilegi")} {...propsSez('privilegi')} {...apertoProps('privilegi')}>
               <button
                 style={{ ...styles.button, marginBottom: 8, fontSize: 12 }}
                 onClick={() => setMostraPrivilegi(true)}
@@ -6348,7 +6351,7 @@ export default function App() {
               />
             </Sezione>
 
-            <Sezione titolo="Privilegi di sottoclasse" {...apertoProps('privilegiSottoclasse')}>
+            <Sezione titolo={t("sez.privilegi_sottoclasse")} {...apertoProps('privilegiSottoclasse')}>
               <ListaQuadratini
                 value={scheda.privilegiSottoclasse}
                 lookup={spiegaPrivilegio}
@@ -6360,7 +6363,7 @@ export default function App() {
 
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {/* Armi e attacchi — sezione collassabile */}
-            <Sezione titolo="Combattimento" style={{ order: -2 }} {...apertoProps('attacchi')}>
+            <Sezione titolo={t("sez.combattimento")} style={{ order: -2 }} {...apertoProps('attacchi')}>
               <div style={{ overflowX: 'auto' }}>
                 {['Azione', 'Bonus', 'Reazione'].map((cat) => {
                   const arr = scheda.attacchi.filter((a) => (a.categoria || 'Azione') === cat);
@@ -6478,7 +6481,7 @@ export default function App() {
             </Sezione>
 
             {/* Incantesimi — sezione collassabile */}
-            <Sezione titolo="Incantesimi" style={{ order: -1 }} {...apertoProps('incantesimi')}>
+            <Sezione titolo={t("sez.incantesimi")} style={{ order: -1 }} {...apertoProps('incantesimi')}>
               <div style={{ display: 'flex', gap: 12, alignItems: 'stretch', flexWrap: 'wrap', marginBottom: 12 }}>
                 <label style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                   Caratteristica da incantatore:{' '}
@@ -6490,7 +6493,7 @@ export default function App() {
                     <option value="">— non incantatore —</option>
                     {CARATTERISTICHE.map((c) => (
                       <option key={c.key} value={c.key}>
-                        {c.label}
+                        {t('attr.' + c.key)}
                       </option>
                     ))}
                   </select>
@@ -6499,15 +6502,15 @@ export default function App() {
                   // i tre riquadri si allargano per riempire lo spazio a destra
                   <div style={{ display: 'flex', gap: 10, flex: 1, minWidth: 250 }}>
                     <div style={{ ...styles.vitalBox, flex: 1 }}>
-                      <div style={styles.vitalLabel}>Modificatore</div>
+                      <div style={styles.vitalLabel}>{t("vital.mod_incantesimi")}</div>
                       <div style={styles.vitalValue}>{conSegno(modIncantatore)}</div>
                     </div>
                     <div style={{ ...styles.vitalBox, flex: 1 }}>
-                      <div style={styles.vitalLabel}>CD Incantesimi</div>
+                      <div style={styles.vitalLabel}>{t("vital.cd_incantesimi")}</div>
                       <div style={styles.vitalValue}>{8 + scheda.bonusCompetenza + modIncantatore}</div>
                     </div>
                     <div style={{ ...styles.vitalBox, flex: 1 }}>
-                      <div style={styles.vitalLabel}>Attacco Incantesimo</div>
+                      <div style={styles.vitalLabel}>{t("vital.attacco_incantesimi")}</div>
                       <div style={styles.vitalValue}>
                         <Rollable
                           onRoll={() =>
@@ -6647,7 +6650,7 @@ export default function App() {
                                     title="Cosa fa questo incantesimo?"
                                     onClick={() => setInfo({ titolo: `${s.nome || 'Incantesimo'}${s.livello === 0 ? ' · Trucchetto' : ` · ${s.livello}° livello`}`, testo: eff || 'Nessuna descrizione disponibile per questo incantesimo. Aprilo con ✎ per aggiungere delle note.' })}
                                   >
-                                    {s.nome || 'Senza nome'}
+                                    {s.nome || t('menu.senza_nome')}
                                   </button>
                                 </td>
                                 <td style={{ ...styles.td, color: C.inkDim }}>{s.tempo}</td>
@@ -6712,7 +6715,7 @@ export default function App() {
             </Sezione>
 
             {/(stregone|sorcerer)/i.test(scheda.classe || '') && (
-              <Sezione titolo="Metamagia" {...apertoProps('metamagia', false)}>
+              <Sezione titolo={t("sez.metamagia")} {...apertoProps('metamagia', false)}>
                 <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8 }}>
                   Scegli dal menu ➕ le opzioni di Metamagia che hai imparato. Tocca il nome per la spiegazione.
                 </div>
@@ -6732,7 +6735,7 @@ export default function App() {
         {/* Sezioni descrittive a piena larghezza: riempiono lo spazio sotto le due colonne */}
         <div style={{ display: 'flex', flexDirection: 'column', marginTop: 10 }}>
             {/* Talenti, equipaggiamento, aspetto — collassabili */}
-            <Sezione titolo="Talenti" {...propsSez('talenti')} {...apertoProps('talenti')}>
+            <Sezione titolo={t("sez.talenti")} {...propsSez('talenti')} {...apertoProps('talenti')}>
               <ListaQuadratini
                 value={scheda.talenti}
                 lookup={spiegaTalento}
@@ -6741,7 +6744,7 @@ export default function App() {
               />
             </Sezione>
 
-            <Sezione titolo="Equipaggiamento e lingue" {...propsSez('equipaggiamento')} {...apertoProps('equipaggiamento')}>
+            <Sezione titolo={t("sez.equipaggiamento")} {...propsSez('equipaggiamento')} {...apertoProps('equipaggiamento')}>
               <ListaQuadratini
                 value={scheda.equipaggiamento}
                 opzioni={EQUIP_5E}
@@ -6781,7 +6784,7 @@ export default function App() {
               </div>
             </Sezione>
 
-            <Sezione titolo="Aspetto, Carattere, Storia" {...propsSez('aspetto')} {...apertoProps('aspetto', false)}>
+            <Sezione titolo={t("sez.aspetto")} {...propsSez('aspetto')} {...apertoProps('aspetto', false)}>
               <div style={styles.moduloLabel}>Aspetto</div>
               <AreaTesto
                 value={scheda.aspetto}
@@ -6801,7 +6804,6 @@ export default function App() {
                 onChange={(v) => aggiorna({ note: v })}
               />
             </Sezione>
-
         </div>
 
         <footer style={{ textAlign: 'center', margin: '18px 0 0', fontSize: 11, color: C.inkDim }}>
