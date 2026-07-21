@@ -2992,7 +2992,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.58';
+const APP_VERSION = '1.9.60';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3448,14 +3448,14 @@ function CampoConTendina({ value, opzioni, onChange, width, title, lookup, setIn
         </span>
         );
       })}
-      <label style={{ ...chip, borderStyle: 'dashed', color: C.goldDark, cursor: 'pointer', position: 'relative' }} title="Aggiungi dalla lista">
-        ➕ Aggiungi
+      <label style={{ ...chip, borderStyle: 'dashed', color: C.goldDark, cursor: 'pointer', position: 'relative' }} title={t('common.aggiungi_lista')}>
+        ➕ {t('common.aggiungi')}
         <select
           value=""
           onChange={(e) => aggiungi(e.target.value)}
           style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }}
         >
-          <option value="">Aggiungi…</option>
+          <option value="">{t('common.aggiungi')}…</option>
           {opzioni.map((o) => (
             <option key={o} value={o}>{o}</option>
           ))}
@@ -3494,7 +3494,7 @@ function CampoTendina({ value, opzioni, onChange, title }) {
         }}
         title={title}
       >
-        <option value="" style={{ background: C.panel }}>Scegli…</option>
+        <option value="" style={{ background: C.panel }}>{t("common.scegli")}</option>
         {Array.isArray(opzioni) ? opzioni.map((o) => (
           <option key={o} value={o} style={{ background: C.panel }}>{o}</option>
         )) : Object.entries(opzioni).map(([group, opts]) => (
@@ -3502,7 +3502,7 @@ function CampoTendina({ value, opzioni, onChange, title }) {
             {opts.map((o) => <option key={o} value={o} style={{ background: C.panel }}>{o}</option>)}
           </optgroup>
         ))}
-        <option value="__altro" style={{ background: C.panel }}>Altro…</option>
+        <option value="__altro" style={{ background: C.panel }}>{t("common.altro")}</option>
       </select>
       {!std && value !== '' && (
         <div style={{ marginTop: 2 }}>
@@ -3573,7 +3573,7 @@ function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni }) {
             </button>
           );
         })}
-        <button style={{ ...chip, borderStyle: 'dashed', color: C.goldDark }} onClick={() => setEdit({ index: -1, valore: '' })}>➕ Aggiungi</button>
+        <button style={{ ...chip, borderStyle: 'dashed', color: C.goldDark }} onClick={() => setEdit({ index: -1, valore: "" })}>➕ {t("common.aggiungi")}</button>
       </div>
       {edit && (
         <div
@@ -5570,37 +5570,36 @@ export default function App() {
                   {danni.critico && <span style={styles.badge(C.goldDark)}>⚔ CRITICO!</span>}
                 </div>
                 <div style={{ ...styles.detail, marginTop: 4 }}>
-                  Dettaglio: {danni.dettaglio}
+                  {t('roll.dettaglio')}: {danni.dettaglio}
                 </div>
               </div>
             ) : (
               <div style={{ ...styles.detail, marginLeft: 16 }}>
-                Tieni premuto un valore (caratteristiche, tiri salvezza, abilità, attacchi,
-                iniziativa…), rilascia e il dado rotola qui. Funziona anche il doppio click.
+                {t('roll.hint')}
               </div>
             )}
           </div>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
             {['normale', 'vantaggio', 'svantaggio'].map((m) => (
               <button key={m} style={styles.modeButton(modalita === m)} onClick={() => setModalita(m)}>
-                {m === 'normale' ? 'Normale' : m === 'vantaggio' ? 'Vantaggio' : 'Svantaggio'}
+                {m === 'normale' ? t('roll.normale') : m === 'vantaggio' ? t('roll.vantaggio') : t('roll.svantaggio')}
               </button>
             ))}
             <button
               style={styles.modeButton(storicoAperto)}
-              title="Cronologia dei tiri della sessione"
+              title={t('roll.cronologia_tooltip')}
               onClick={() => setStoricoAperto(!storicoAperto)}
             >
-              Cronologia
+              {t('roll.cronologia')}
             </button>
           </div>
         </div>
 
         {storicoAperto && (
           <section style={{ ...styles.panel, padding: '10px 16px' }}>
-            <h2 style={{ ...styles.panelTitle, fontSize: 13 }}>Cronologia</h2>
+            <h2 style={{ ...styles.panelTitle, fontSize: 13 }}>{t('roll.cronologia')}</h2>
             {storico.length === 0 ? (
-              <div style={styles.detail}>Ancora nessun tiro in questa sessione.</div>
+              <div style={styles.detail}>{t('roll.nessun_tiro')}</div>
             ) : (
               <ol style={{ margin: 0, paddingLeft: 20, fontSize: 13, color: C.ink }}>
                 {storico.map((voce, i) => (
@@ -5615,7 +5614,7 @@ export default function App() {
 
         {/* Dado libero */}
         <section style={{ ...styles.panel, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', padding: '6px 12px' }}>
-          <span style={{ ...styles.detail, marginRight: 2 }}>Dado:</span>
+          <span style={{ ...styles.detail, marginRight: 2 }}>{t('roll.dado')}</span>
           {[4, 6, 8, 10, 12, 20, 100].map((facce) => (
             <button key={facce} style={styles.buttonDado(facce)} onClick={() => tiroLibero(facce)}>
               d{facce}
@@ -5629,7 +5628,7 @@ export default function App() {
               padding: '6px 8px',
               ...(erroreEspressione ? { borderColor: C.red } : {}),
             }}
-            placeholder="es. 3d6+2"
+            placeholder={t('roll.espr_placeholder')}
             value={espressioneLibera}
             onChange={(e) => {
               setEspressioneLibera(e.target.value);
@@ -5638,9 +5637,9 @@ export default function App() {
             onKeyDown={(e) => e.key === 'Enter' && tiroEspressione()}
           />
           <button style={styles.button} onClick={tiroEspressione}>
-            Tira
+            {t('roll.tira')}
           </button>
-          {erroreEspressione && <span style={{ color: C.red, fontSize: 13 }}>Espressione non valida</span>}
+          {erroreEspressione && <span style={{ color: C.red, fontSize: 13 }}>{t('roll.espr_invalida')}</span>}
         </section>
 
         {/* Personaggi: il riquadro blu È il nome/selettore. Cambia PG al volo; ✎ per rinominare */}
@@ -5723,7 +5722,7 @@ export default function App() {
 
         {/* Testata: anagrafica + riquadri vitali uniformi */}
         <section style={styles.panel}>
-          <h2 style={styles.panelTitle}>Profilo</h2>
+          <h2 style={styles.panelTitle}>{t("profilo.titolo")}</h2>
           <div style={{ display: 'flex', gap: 14, alignItems: 'stretch' }}>
             <div style={{ flex: '0 0 160px', position: 'relative', display: 'flex', flexDirection: 'column' }}>
               <div
@@ -5760,7 +5759,7 @@ export default function App() {
                       alt={`Ritratto di ${scheda.nome}`}
                       style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                     />
-                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.35)', color: '#fff', fontSize: 9, letterSpacing: 1, textAlign: 'center', padding: '2px 0' }}>RITRATTO</div>
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.35)', color: '#fff', fontSize: 9, letterSpacing: 1, textAlign: 'center', padding: '2px 0' }}>{t("profilo.ritratto")}</div>
                   </div>
                 )}
               </div>
@@ -5777,19 +5776,19 @@ export default function App() {
             </div>
             <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px 10px', alignItems: 'end' }}>
-                <CampoModulo label={versione === '2024' ? 'Specie' : 'Razza'}>
+                <CampoModulo label={versione === "2024" ? t("profilo.specie") : t("profilo.razza")}>
                   <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => { const sp = SPECIE_DATI[v]; aggiorna({ specie: v, ...(sp ? { velocita: sp.velocita, sensi: sp.sensi, taglia: sp.taglia, trattiSpecie: sp.tratti } : {}), ...ritrattoAuto(scheda.classe, v, scheda.nome) }); }} title="Scegli la specie (imposta velocità, sensi, taglia, tratti e avatar)" />
                 </CampoModulo>
-                <CampoModulo label="Taglia">
+                <CampoModulo label={t("profilo.taglia")}>
                   <CampoTendina value={scheda.taglia} opzioni={TAGLIE_5E} onChange={(v) => aggiorna({ taglia: v })} title="Scegli la taglia" />
                 </CampoModulo>
-                <CampoModulo label="Allineamento">
+                <CampoModulo label={t("profilo.allineamento")}>
                   <CampoTendina value={scheda.allineamento} opzioni={ALLINEAMENTI_5E} onChange={(v) => aggiorna({ allineamento: v })} title="Scegli l'allineamento" />
                 </CampoModulo>
-                <CampoModulo label="Background">
+                <CampoModulo label={t("profilo.background")}>
                   <CampoTendina value={scheda.background} opzioni={BACKGROUND_5E} onChange={(v) => aggiorna({ background: v, ...abilitaConBackground(v) })} title="Scegli un background (imposta le competenze nelle abilità)" />
                 </CampoModulo>
-                <CampoModulo label="Classe">
+                <CampoModulo label={t("profilo.classe")}>
                   <CampoTendina
                     value={scheda.classe}
                     opzioni={NOMI_CLASSI}
@@ -5811,7 +5810,7 @@ export default function App() {
                     title="Scegli la classe (imposta TS, addestramento, incantatore, slot, dado vita e avatar)"
                   />
                 </CampoModulo>
-                <CampoModulo label="Sottoclasse">
+                <CampoModulo label={t("profilo.sottoclasse")}>
                   {(() => {
                     const livSub = livelloSceltaSottoclasse(scheda.classe, versione);
                     const sbloccata = !scheda.classe || !livSub || (scheda.livello || 1) >= livSub;
@@ -5868,9 +5867,9 @@ export default function App() {
                   aggiorna({ armatura: { ...scheda.armatura, tipo, base } });
                 }}
               >
-                {TIPI_ARMATURA.map((t) => {
-                  const bloccato = !competenteInArmatura(scheda, t.key);
-                  return <option key={t.key} value={t.key} disabled={bloccato}>{bloccato ? '🔒 ' : ''}{t.label}</option>;
+                {TIPI_ARMATURA.map((ta) => {
+                  const bloccato = !competenteInArmatura(scheda, ta.key);
+                  return <option key={ta.key} value={ta.key} disabled={bloccato}>{bloccato ? '🔒 ' : ''}{t('armor.' + ta.key)}</option>;
                 })}
               </select>
               <div style={{ fontSize: 10, color: C.inkDim, display: 'flex', gap: 5, alignItems: 'center', justifyContent: 'center', marginTop: 'auto', paddingTop: 6, flexWrap: 'wrap' }}>
@@ -5913,7 +5912,7 @@ export default function App() {
                   <Editable value={scheda.pfMax} tipo="numero" onChange={(v) => aggiorna({ pfMax: v })} width={44} />
                 </span>
                 <span style={{ color: C.inkDim, fontSize: 13 }}>
-                  {'  Temporanei '}
+                  {'  '}{t('vital.temporanei')}{' '}
                   <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={30} />
                 </span>
               </div>
@@ -5932,20 +5931,20 @@ export default function App() {
               })()}
               <div style={{ ...styles.detail, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: 4 }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
-                  Dadi vita{' '}
-                  <Rollable onRoll={tiraDadoVita} title="Tieni premuto e rilascia: spendi un dado vita per curarti. Il numero di dadi è pari al livello.">
+                  {t('vital.dadi_vita')}{' '}
+                  <Rollable onRoll={tiraDadoVita} title={t('vital.dadi_vita_tooltip')}>
                     <strong style={{ color: C.goldDark }}>{Math.max(1, scheda.livello || 1)}</strong>
                   </Rollable>
                   {' × d'}
-                  <strong style={{ color: C.goldDark }} title="Tipo di dado vita: fisso dalla classe (d6 mago/stregone, d8 la maggior parte, d10 guerriero/paladino/ranger, d12 barbaro)">
+                  <strong style={{ color: C.goldDark }} title={t('vital.dado_tipo_tooltip')}>
                     {facceDadoVita(scheda.dadiVita)}
                   </strong>
-                  {' · Spesi:'}{' '}
+                  {' · '}{t('vital.spesi')}{' '}
                   <select
                     style={{ ...styles.inlineInput, fontSize: 12, padding: '1px 3px' }}
                     value={Math.min(Math.max(0, scheda.dadiVitaSpesi || 0), Math.max(1, scheda.livello || 1))}
                     onChange={(e) => aggiorna({ dadiVitaSpesi: Number(e.target.value) })}
-                    title="Dadi vita spesi: scegli quanti ne hai usati (ne recuperi metà a ogni riposo lungo)"
+                    title={t('vital.spesi_tooltip')}
                   >
                     {Array.from({ length: Math.max(1, scheda.livello || 1) + 1 }, (_, i) => (
                       <option key={i} value={i}>{i}</option>
@@ -5954,11 +5953,11 @@ export default function App() {
                   <span style={{ color: C.inkDim }}>/ {Math.max(1, scheda.livello || 1)}</span>
                   <button
                     style={{ ...styles.buttonMini, padding: '2px 8px', color: C.green, borderColor: C.green }}
-                    title="Usa un dado vita: tira 1 dado + mod. Costituzione e recupera quei PF"
+                    title={t('vital.usa_tooltip')}
                     disabled={scheda.dadiVitaSpesi >= Math.max(1, scheda.livello || 1)}
                     onClick={tiraDadoVita}
                   >
-                    🎲 Usa
+                    🎲 {t('vital.usa')}
                   </button>
                 </span>
               </div>
@@ -5968,15 +5967,15 @@ export default function App() {
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>{t("vital.riposo")}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 4px' }} onClick={riposoBreve} title="Riposo breve">🔥 Breve</button>
-                <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 4px' }} onClick={riposoLungo} title="Riposo lungo">🌙 Lungo</button>
+                <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 4px' }} onClick={riposoBreve} title={t('vital.riposo_breve_tooltip')}>🔥 {t('vital.riposo_breve')}</button>
+                <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 4px' }} onClick={riposoLungo} title={t('vital.riposo_lungo_tooltip')}>🌙 {t('vital.riposo_lungo')}</button>
               </div>
             </div>
 
             {/* TS Morte */}
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>
-                <Rollable onRoll={tiroSalvezzaMorte} title="Tieni premuto e rilascia: TS contro morte">TS Morte</Rollable>
+                <Rollable onRoll={tiroSalvezzaMorte} title={t('vital.ts_morte_tooltip')}>{t('vital.ts_morte')}</Rollable>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, height: 16 }}>
                 {[1, 2, 3].map((i) => (
@@ -6194,7 +6193,7 @@ export default function App() {
                       {scheda.tiriSalvezza[key] ? '●' : '○'}
                     </span>
                     <strong style={{ width: 32 }}>{conSegno(bonusTS)}</strong>
-                    <em>Tiro salvezza</em>
+                    <em>{t('attr.tiro_salvezza')}</em>
                   </Rollable>
 
                   {abilitaDellaCar.map((a) => {
@@ -6258,9 +6257,9 @@ export default function App() {
                         onChange={(e) => modifica({ reset: e.target.value })}
                         title="Quando si ricarica"
                       >
-                        <option value="">manuale</option>
-                        <option value="breve">r. breve</option>
-                        <option value="lungo">r. lungo</option>
+                        <option value="">{t("res.manuale")}</option>
+                        <option value="breve">{t("res.breve")}</option>
+                        <option value="lungo">{t("res.lungo")}</option>
                       </select>
                     </div>
                   </div>
@@ -6270,17 +6269,17 @@ export default function App() {
                 style={{ ...styles.buttonMini, marginTop: 2 }}
                 onClick={() =>
                   aggiorna({
-                    risorse: [...scheda.risorse, { id: Date.now(), nome: 'Nuova risorsa', attuali: 0, max: 0, reset: 'lungo' }],
+                    risorse: [...scheda.risorse, { id: Date.now(), nome: t("res.nuova"), attuali: 0, max: 0, reset: 'lungo' }],
                   })
                 }
               >
-                + Aggiungi risorsa
+                + {t("res.aggiungi")}
               </button>
             </Sezione>
 
             <Sezione titolo={t("sez.addestramento")} {...propsSez('addestramento')} {...apertoProps('addestramento', false)}>
               <div style={{ marginBottom: 10 }}>
-                <div style={{ ...styles.detail, marginBottom: 4 }}>Armature:</div>
+                <div style={{ ...styles.detail, marginBottom: 4 }}>{t("train.armature")}</div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                   {[
                     ['leggera', 'leggera'],
@@ -6310,20 +6309,20 @@ export default function App() {
                 </div>
               </div>
               <div style={{ marginBottom: 10 }}>
-                <div style={{ ...styles.detail, marginBottom: 4 }}>Armi:</div>
+                <div style={{ ...styles.detail, marginBottom: 4 }}>{t("train.armi")}</div>
                 <ListaQuadratini
                   value={scheda.addestramento.armi}
                   opzioni={COMP_ARMI_5E}
-                  placeholder="Es. Armi semplici, Spada lunga…"
+                  placeholder={t("train.armi_ph")}
                   onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, armi: v } })}
                 />
               </div>
               <div>
-                <div style={{ ...styles.detail, marginBottom: 4 }}>Strumenti:</div>
+                <div style={{ ...styles.detail, marginBottom: 4 }}>{t("train.strumenti")}</div>
                 <ListaQuadratini
                   value={scheda.addestramento.strumenti}
                   opzioni={STRUMENTI_5E}
-                  placeholder="Es. Borsa da erborista, Arnesi da scasso…"
+                  placeholder={t("train.strumenti_ph")}
                   onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, strumenti: v } })}
                 />
               </div>
@@ -6333,7 +6332,7 @@ export default function App() {
               <ListaQuadratini
                 value={scheda.trattiSpecie}
                 lookup={spiegaTratto}
-                placeholder="Es. Scurovisione, Astuzia gnomesca, Trance, Fortuna halfling…"
+                placeholder={t("tratti.ph")}
                 onChange={(v) => aggiorna({ trattiSpecie: v })}
               />
             </Sezione>
@@ -6344,12 +6343,12 @@ export default function App() {
                 onClick={() => setMostraPrivilegi(true)}
                 title="Panoramica ordinata dei privilegi di classe e sottoclasse per livello"
               >
-                📖 Panoramica privilegi per livello
+                📖 {t("priv.panoramica_btn")}
               </button>
               <ListaQuadratini
                 value={scheda.privilegi}
                 lookup={spiegaPrivilegio}
-                placeholder="Nessun privilegio. Aggiungine uno."
+                placeholder={t("priv.ph")}
                 onChange={(v) => aggiorna({ privilegi: v })}
               />
             </Sezione>
@@ -6375,16 +6374,16 @@ export default function App() {
                     <div key={cat} style={{ marginBottom: 16 }}>
                       {cat !== 'Azione' && (
                         <h3 style={{ fontSize: 13, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 1, borderBottom: `1px solid ${C.border}`, paddingBottom: 4, marginBottom: 8 }}>
-                          {cat === 'Bonus' ? 'Azioni Bonus' : 'Reazioni'}
+                          {cat === 'Bonus' ? t('combat.azioni_bonus') : t('combat.reazioni')}
                         </h3>
                       )}
                       <table style={styles.table}>
                         <thead>
                           <tr>
-                            <th style={styles.th}>Nome</th>
-                            <th style={styles.th}>Bonus att.</th>
-                            <th style={styles.th}>Danno e tipo</th>
-                            <th style={styles.th}>Note</th>
+                            <th style={styles.th}>{t('combat.col_nome')}</th>
+                            <th style={styles.th}>{t('combat.col_bonus')}</th>
+                            <th style={styles.th}>{t('combat.col_danno')}</th>
+                            <th style={styles.th}>{t('combat.col_note')}</th>
                             <th style={styles.th} />
                           </tr>
                         </thead>
@@ -6470,7 +6469,7 @@ export default function App() {
                           })
                         }
                       >
-                        + Aggiungi {cat.toLowerCase()}
+                        + {t('common.aggiungi')}
                       </button>
                     </div>
                   );
@@ -6478,7 +6477,7 @@ export default function App() {
               </div>
               <div style={{ marginTop: 4, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
                 <span style={styles.detail}>
-                  Doppio click sul nome o sul bonus: tiro per colpire · sul danno: solo danni.
+                  {t('combat.hint')}
                 </span>
               </div>
             </Sezione>
@@ -6487,13 +6486,13 @@ export default function App() {
             <Sezione titolo={t("sez.incantesimi")} style={{ order: -1 }} {...apertoProps('incantesimi')}>
               <div style={{ display: 'flex', gap: 12, alignItems: 'stretch', flexWrap: 'wrap', marginBottom: 12 }}>
                 <label style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                  Caratteristica da incantatore:{' '}
+                  {t('spell.caratteristica')}{' '}
                   <select
                     style={{ ...styles.inlineInput, padding: '4px 6px' }}
                     value={scheda.incantatore.caratteristica}
                     onChange={(e) => aggiorna({ incantatore: { caratteristica: e.target.value } })}
                   >
-                    <option value="">— non incantatore —</option>
+                    <option value="">{t('spell.non_incantatore')}</option>
                     {CARATTERISTICHE.map((c) => (
                       <option key={c.key} value={c.key}>
                         {t('attr.' + c.key)}
@@ -6530,7 +6529,7 @@ export default function App() {
 
               {/* Slot incantesimo compatti: totale modificabile, rombi per gli spesi */}
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-                <span style={{ ...styles.detail, marginRight: 2 }}>Slot:</span>
+                <span style={{ ...styles.detail, marginRight: 2 }}>{t('spell.slot')}</span>
                 {(() => {
                   // mostra solo i livelli con slot + il primo vuoto successivo
                   // (niente file di riquadri "0" inutili per chi non li usa)
@@ -6583,7 +6582,7 @@ export default function App() {
 
               {/* Trucchetti e incantesimi */}
               <h3 style={{ ...styles.panelTitle, fontSize: 15, marginTop: 14 }}>
-                Trucchetti e incantesimi
+                {t('spell.trucchetti_e_incantesimi')}
               </h3>
               {(() => {
                 return (
@@ -6592,19 +6591,19 @@ export default function App() {
                       type="search"
                       value={filtroIncantesimo}
                       onChange={(e) => setFiltroIncantesimo(e.target.value)}
-                      placeholder="🔍 Cerca incantesimo…"
+                      placeholder={t('spell.cerca')}
                       style={{ ...styles.inlineInput, padding: '5px 8px', width: 200 }}
                     />
-                    <span style={styles.detail}>Tocca il nome per gli effetti · ✎ modifica · 🗑 elimina</span>
+                    <span style={styles.detail}>{t('spell.tocca_nome')}</span>
                     {/* Conteggi con massimo modificabile: al limite si bloccano gli "Aggiungi" */}
                     {maxTrucchetti != null && (
                       <span style={{ ...styles.detail, color: trucchettiPieno ? C.goldDark : C.inkDim, fontWeight: trucchettiPieno ? 700 : 400 }} title="Trucchetti conosciuti / massimo (modificabile). Al massimo il tasto Aggiungi si blocca.">
-                        Trucchetti <strong>{nTrucchetti}</strong>/<Editable value={maxTrucchetti} tipo="numero" width={24} onChange={(v) => aggiorna({ maxTrucchetti: Math.max(0, v) })} />
+                        {t('spell.trucchetti')} <strong>{nTrucchetti}</strong>/<Editable value={maxTrucchetti} tipo="numero" width={24} onChange={(v) => aggiorna({ maxTrucchetti: Math.max(0, v) })} />
                       </span>
                     )}
                     {maxIncantesimi != null && (
                       <span style={{ ...styles.detail, color: incantesimiPieno ? C.goldDark : C.inkDim, fontWeight: incantesimiPieno ? 700 : 400 }} title="Incantesimi (liv. 1+) noti o preparati / massimo (modificabile). Al massimo il tasto Aggiungi si blocca.">
-                        Incantesimi <strong>{nIncantesimi}</strong>/<Editable value={maxIncantesimi} tipo="numero" width={24} onChange={(v) => aggiorna({ maxIncantesimi: Math.max(0, v) })} />
+                        {t('spell.incantesimi')} <strong>{nIncantesimi}</strong>/<Editable value={maxIncantesimi} tipo="numero" width={24} onChange={(v) => aggiorna({ maxIncantesimi: Math.max(0, v) })} />
                       </span>
                     )}
                   </div>
@@ -6629,16 +6628,16 @@ export default function App() {
                   return (
                     <div key={liv} style={{ marginBottom: 16 }}>
                       <h4 style={{ fontSize: 12, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5, borderBottom: `1px solid ${C.border}`, paddingBottom: 2, marginBottom: 6, display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                        <span>{liv === 0 ? 'Trucchetti (Livello 0)' : `${liv}° Livello`}</span>
+                        <span>{liv === 0 ? t('spell.trucchetti_liv0') : t('spell.n_livello', { n: liv })}</span>
                         <span style={{ color: (liv === 0 && trucchettiPieno) ? C.goldDark : C.inkDim, fontWeight: 700 }}>{conteggio}</span>
                       </h4>
                       <table style={styles.table}>
                         <thead>
                           <tr>
-                            <th style={styles.th}>Nome</th>
-                            <th style={styles.th}>Tempo</th>
-                            <th style={styles.th}>Gittata</th>
-                            <th style={styles.th}>Note</th>
+                            <th style={styles.th}>{t('spell.col_nome')}</th>
+                            <th style={styles.th}>{t('spell.col_tempo')}</th>
+                            <th style={styles.th}>{t('spell.col_gittata')}</th>
+                            <th style={styles.th}>{t('spell.col_note')}</th>
                             <th style={styles.th} />
                           </tr>
                         </thead>
@@ -6681,8 +6680,8 @@ export default function App() {
                         // Lock come per le armature: al massimo per classe/livello si blocca.
                         const bloccato = liv === 0 ? trucchettiPieno : incantesimiPieno;
                         const etichetta = bloccato
-                          ? `🔒 Massimo ${liv === 0 ? 'trucchetti' : 'incantesimi'} raggiunto`
-                          : `➕ Aggiungi ${liv === 0 ? 'Trucchetto' : `Incantesimo Liv. ${liv}`}`;
+                          ? (liv === 0 ? t('spell.max_trucchetti') : t('spell.max_incantesimi'))
+                          : (liv === 0 ? t('spell.aggiungi_trucchetto') : t('spell.aggiungi_incantesimo_liv', { n: liv }));
                         return (
                           <select
                             className="add-spell"
@@ -6698,9 +6697,9 @@ export default function App() {
                             }}
                           >
                             <option value="">{etichetta}…</option>
-                            <option value="__manuale__">✍️ Scrivi a mano</option>
+                            <option value="__manuale__">{t('spell.scrivi_mano')}</option>
                             {suggeriti.length > 0 && (
-                              <optgroup label={`Incantesimi da ${scheda.classe}`}>
+                              <optgroup label={t('spell.incantesimi_da', { classe: scheda.classe })}>
                                 {suggeriti.map((n) => (
                                   <option key={n} value={n} disabled={gia.has(n.toLowerCase())}>
                                     {gia.has(n.toLowerCase()) ? `✓ ${n}` : n}
@@ -6720,7 +6719,7 @@ export default function App() {
             {/(stregone|sorcerer)/i.test(scheda.classe || '') && (
               <Sezione titolo={t("sez.metamagia")} {...apertoProps('metamagia', false)}>
                 <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8 }}>
-                  Scegli dal menu ➕ le opzioni di Metamagia che hai imparato. Tocca il nome per la spiegazione.
+                  {t("meta.desc")}
                 </div>
                 <CampoConTendina
                   value={scheda.metamagie}
@@ -6742,7 +6741,7 @@ export default function App() {
               <ListaQuadratini
                 value={scheda.talenti}
                 lookup={spiegaTalento}
-                placeholder="Es. Guerramaga, Guaritore, Robusto…"
+                placeholder={t("talenti.ph")}
                 onChange={(v) => aggiorna({ talenti: v })}
               />
             </Sezione>
@@ -6751,17 +6750,17 @@ export default function App() {
               <ListaQuadratini
                 value={scheda.equipaggiamento}
                 opzioni={EQUIP_5E}
-                placeholder="Zaino, corda, razioni… (scrivi o scegli dalla lista)"
+                placeholder={t("equip.ph")}
                 onChange={(v) => aggiorna({ equipaggiamento: v })}
               />
               <div style={{ marginTop: 10 }}>
                 <span style={styles.detail}>
-                  Sintonia con un oggetto magico:{' '}
+                  {t("equip.sintonia")}{" "}
                   <Editable value={scheda.sintonia} onChange={(v) => aggiorna({ sintonia: v })} width={300} />
                 </span>
               </div>
               <div style={{ marginTop: 10 }}>
-                <div style={{ ...styles.detail, marginBottom: 4 }}>Lingue</div>
+                <div style={{ ...styles.detail, marginBottom: 4 }}>{t("equip.lingue")}</div>
                 <CampoConTendina
                   value={scheda.lingue}
                   opzioni={LINGUE_5E}
@@ -6788,22 +6787,22 @@ export default function App() {
             </Sezione>
 
             <Sezione titolo={t("sez.aspetto")} {...propsSez('aspetto')} {...apertoProps('aspetto', false)}>
-              <div style={styles.moduloLabel}>Aspetto</div>
+              <div style={styles.moduloLabel}>{t("aspetto.aspetto")}</div>
               <AreaTesto
                 value={scheda.aspetto}
-                placeholder="Aspetto fisico del personaggio…"
+                placeholder={t("aspetto.aspetto_ph")}
                 onChange={(v) => aggiorna({ aspetto: v })}
               />
-              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>Carattere</div>
+              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>{t("aspetto.carattere")}</div>
               <AreaTesto
                 value={scheda.trattiCaratteriali}
-                placeholder="Ideali, legami, difetti, modi di fare… (chi è il personaggio)"
+                placeholder={t("aspetto.carattere_ph")}
                 onChange={(v) => aggiorna({ trattiCaratteriali: v })}
               />
-              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>Storia</div>
+              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>{t("aspetto.storia")}</div>
               <AreaTesto
                 value={scheda.note}
-                placeholder="Storia del personaggio, alleati, appunti di sessione…"
+                placeholder={t("aspetto.storia_ph")}
                 onChange={(v) => aggiorna({ note: v })}
               />
             </Sezione>
