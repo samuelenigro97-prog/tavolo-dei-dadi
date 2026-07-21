@@ -2994,7 +2994,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.65';
+const APP_VERSION = '1.9.66';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3734,6 +3734,18 @@ export default function App() {
   const [espressioneLibera, setEspressioneLibera] = useState('');
   const [erroreEspressione, setErroreEspressione] = useState(false);
   const [storico, setStorico] = useState([]);
+  // Combat tracker (barra fissa in basso, stile Fantasy Grounds)
+  const [combat, setCombat] = useState(() => {
+    try {
+      const s = JSON.parse(localStorage.getItem('scheda-interattiva:combat'));
+      if (s && Array.isArray(s.combattenti)) return s;
+    } catch { /* niente */ }
+    return { attivo: false, aperto: true, round: 1, turno: 0, combattenti: [] };
+  });
+  useEffect(() => {
+    try { localStorage.setItem('scheda-interattiva:combat', JSON.stringify(combat)); } catch { /* niente */ }
+  }, [combat]);
+  const [ctDmg, setCtDmg] = useState({}); // valore danno/cura per combattente (id → stringa)
   const [storicoAperto, setStoricoAperto] = useState(false);
   // tema: 'auto' = scuro se è notte OPPURE se il sistema è in scuro; oppure forzato
   const [tema, setTema] = useState(() => localStorage.getItem('scheda-interattiva:tema') || 'auto');
@@ -4148,6 +4160,75 @@ export default function App() {
       ...dati,
     };
     setStorico((s) => [voce, ...s].slice(0, 60));
+  }
+
+  // --- Combat tracker ---
+
+  /** Combattenti ordinati per iniziativa decrescente. */
+  const combatOrdinati = () => [...combat.combattenti].sort((a, b) => (b.iniziativa || 0) - (a.iniziativa || 0));
+
+  function aggiungiCombattente(tipo, dati = {}) {
+    const nome = dati.nome || (tipo === 'nemico' ? t('ct.nemico') : tipo === 'alleato' ? t('ct.alleato') : t('ct.pg'));
+    const pfMax = dati.pfMax ?? 10;
+    const nuovo = {
+      id: `c-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      nome, tipo,
+      iniziativa: dati.iniziativa ?? 10,
+      pfMax, pfAttuali: dati.pfAttuali ?? pfMax, pfTemp: 0,
+      ca: dati.ca ?? 10,
+      condizioni: [], concentrazione: false,
+      tsMorte: { successi: 0, fallimenti: 0 },
+    };
+    setCombat((c) => ({ ...c, attivo: true, aperto: true, combattenti: [...c.combattenti, nuovo] }));
+  }
+
+  /** Aggiunge il personaggio attivo al combattimento, tirando l'iniziativa. */
+  function aggiungiPgAlCombat() {
+    const initRoll = tiraDado(20) + modificatore(scheda.caratteristiche.destrezza);
+    aggiungiCombattente('pg', {
+      nome: scheda.nome, iniziativa: initRoll,
+      pfMax: scheda.pfMax, pfAttuali: scheda.pfAttuali, ca: caTotale(scheda),
+    });
+    registra({ etichetta: `${t('vital.iniziativa')}: ${scheda.nome}`, tipo: 'd20', totale: initRoll, dettaglio: `d20 ${conSegno(modificatore(scheda.caratteristiche.destrezza))}` });
+  }
+
+  const modCombat = (id, patch) =>
+    setCombat((c) => ({ ...c, combattenti: c.combattenti.map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
+
+  /** Applica danni (segno negativo) o cure (positivo) a un combattente, gestendo i PF temporanei. */
+  function dannoCura(id, delta) {
+    setCombat((c) => ({
+      ...c,
+      combattenti: c.combattenti.map((x) => {
+        if (x.id !== id) return x;
+        if (delta < 0) {
+          let dmg = -delta;
+          let temp = x.pfTemp || 0;
+          const assorbito = Math.min(temp, dmg);
+          temp -= assorbito; dmg -= assorbito;
+          return { ...x, pfTemp: temp, pfAttuali: Math.max(0, x.pfAttuali - dmg) };
+        }
+        return { ...x, pfAttuali: Math.min(x.pfMax, x.pfAttuali + delta) };
+      }),
+    }));
+  }
+
+  function prossimoTurno() {
+    setCombat((c) => {
+      const n = c.combattenti.length;
+      if (n === 0) return c;
+      const nuovo = c.turno + 1;
+      if (nuovo >= n) return { ...c, turno: 0, round: c.round + 1 };
+      return { ...c, turno: nuovo };
+    });
+  }
+  function turnoPrecedente() {
+    setCombat((c) => {
+      const n = c.combattenti.length;
+      if (n === 0) return c;
+      if (c.turno === 0) return { ...c, turno: Math.max(0, n - 1), round: Math.max(1, c.round - 1) };
+      return { ...c, turno: c.turno - 1 };
+    });
   }
 
   // --- tiri ---
@@ -6870,7 +6951,119 @@ export default function App() {
           <a href="https://game-icons.net" target="_blank" rel="noreferrer" style={{ color: C.inkDim }}>game-icons.net</a>{' '}
           (CC BY 3.0).
         </footer>
+        <div style={{ height: combat.attivo && combat.aperto ? 220 : 0 }} />
       </main>
+
+      {/* ===== Combat tracker: barra fissa in basso (stile Fantasy Grounds) ===== */}
+      {!(combat.attivo && combat.aperto) ? (
+        <button
+          onClick={() => (combat.combattenti.length ? setCombat((c) => ({ ...c, attivo: true, aperto: true })) : aggiungiPgAlCombat())}
+          style={{ position: 'fixed', right: 16, bottom: 16, zIndex: 1500, ...styles.buttonPrimary, borderRadius: 999, padding: '10px 16px', boxShadow: '0 4px 16px rgba(0,0,0,0.35)' }}
+          title={t('ct.apri')}
+        >
+          ⚔️ {t('ct.titolo')}{combat.combattenti.length ? ` (${combat.combattenti.length})` : ''}
+        </button>
+      ) : (
+        <div style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 1500, background: C.panel, borderTop: `2px solid var(--c-gold-dark)`, boxShadow: '0 -4px 20px rgba(0,0,0,0.4)' }}>
+          <div style={{ maxWidth: 1180, margin: '0 auto', padding: '8px 12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
+              <strong style={{ color: 'var(--c-title)', fontSize: 15, whiteSpace: 'nowrap' }}>⚔️ {t('ct.round')} {combat.round}</strong>
+              <button style={styles.buttonMini} onClick={turnoPrecedente} title={t('ct.prec')}>◀</button>
+              <button style={{ ...styles.buttonMini, fontWeight: 700 }} onClick={prossimoTurno} title={t('ct.succ')}>{t('ct.turno')} ▶</button>
+              <span style={{ flex: 1 }} />
+              <button style={styles.buttonMini} onClick={aggiungiPgAlCombat} title={t('ct.aggiungi_pg')}>➕ {t('ct.pg')}</button>
+              <button style={styles.buttonMini} onClick={() => aggiungiCombattente('alleato')}>➕ {t('ct.alleato')}</button>
+              <button style={styles.buttonMini} onClick={() => aggiungiCombattente('nemico')}>➕ {t('ct.nemico')}</button>
+              <button style={styles.buttonMini} onClick={() => setCombat((c) => ({ ...c, aperto: false }))} title={t('ct.minimizza')}>▁</button>
+              <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }} onClick={() => { if (window.confirm(t('ct.fine_conferma'))) setCombat({ attivo: false, aperto: true, round: 1, turno: 0, combattenti: [] }); }} title={t('ct.fine')}>✕</button>
+            </div>
+            {combat.combattenti.length === 0 ? (
+              <div style={{ ...styles.detail, padding: '10px 0' }}>{t('ct.vuoto')}</div>
+            ) : (
+              <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 6, alignItems: 'stretch' }}>
+                {combatOrdinati().map((cb, idx) => {
+                  const attivoTurno = idx === combat.turno;
+                  const col = cb.tipo === 'nemico' ? C.red : cb.tipo === 'alleato' ? C.green : C.gold;
+                  const morto = cb.pfAttuali <= 0;
+                  const applica = (segno) => { const v = Math.abs(parseInt(ctDmg[cb.id], 10) || 0); if (v) { dannoCura(cb.id, segno * v); setCtDmg((d) => ({ ...d, [cb.id]: '' })); } };
+                  return (
+                    <div key={cb.id} style={{ flex: '0 0 auto', width: 196, border: `2px solid ${attivoTurno ? 'var(--c-gold-dark)' : col}`, borderRadius: 10, padding: 8, background: attivoTurno ? C.panelLight : C.panel, display: 'flex', flexDirection: 'column', gap: 5 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <span title={t('ct.iniziativa')} style={{ minWidth: 26, textAlign: 'center', fontWeight: 800, color: col, fontSize: 15, border: `1px solid ${col}`, borderRadius: 6, padding: '1px 3px' }}>
+                          <Editable value={cb.iniziativa} tipo="numero" width={22} onChange={(v) => modCombat(cb.id, { iniziativa: v })} />
+                        </span>
+                        <span style={{ flex: 1, minWidth: 0, fontWeight: 700, fontSize: 13, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <Editable value={cb.nome} onChange={(v) => modCombat(cb.id, { nome: v })} width={100} />
+                        </span>
+                        <button style={{ ...styles.buttonMini, color: C.red, padding: '0 5px' }} title={t('ct.rimuovi')} onClick={() => setCombat((c) => ({ ...c, combattenti: c.combattenti.filter((x) => x.id !== cb.id) }))}>×</button>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: C.inkDim }}>
+                        <span title={t("vital.ca")} style={{ fontWeight: 700 }}>CA <Editable value={cb.ca} tipo="numero" width={24} onChange={(v) => modCombat(cb.id, { ca: v })} /></span>
+                        <span
+                          className="tirabile"
+                          style={{ cursor: 'pointer', color: cb.concentrazione ? C.gold : C.inkDim, fontWeight: cb.concentrazione ? 700 : 400 }}
+                          title={t('ct.concentrazione')}
+                          onClick={() => modCombat(cb.id, { concentrazione: !cb.concentrazione })}
+                        >🧠 {cb.concentrazione ? t('ct.conc_on') : t('ct.conc_off')}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 3, justifyContent: 'center' }}>
+                        <strong style={{ fontSize: 20, color: morto ? C.red : cb.pfAttuali / Math.max(1, cb.pfMax) > 0.5 ? C.green : C.gold }}>
+                          <Editable value={cb.pfAttuali} tipo="numero" width={34} onChange={(v) => modCombat(cb.id, { pfAttuali: Math.max(0, v) })} />
+                        </strong>
+                        <span style={{ color: C.inkDim, fontSize: 13 }}>/ <Editable value={cb.pfMax} tipo="numero" width={34} onChange={(v) => modCombat(cb.id, { pfMax: Math.max(1, v) })} /></span>
+                        {cb.pfTemp > 0 && <span style={{ color: '#4A90E2', fontSize: 12 }}>+{cb.pfTemp}</span>}
+                        <span style={{ marginLeft: 4, color: C.inkDim, fontSize: 11 }} title={t('vital.temporanei')}>➕<Editable value={cb.pfTemp} tipo="numero" width={20} onChange={(v) => modCombat(cb.id, { pfTemp: Math.max(0, v) })} /></span>
+                      </div>
+                      <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
+                        <input
+                          type="number"
+                          value={ctDmg[cb.id] || ''}
+                          onChange={(e) => setCtDmg((d) => ({ ...d, [cb.id]: e.target.value }))}
+                          onKeyDown={(e) => e.key === 'Enter' && applica(-1)}
+                          placeholder={t('ct.danno_ph')}
+                          style={{ ...styles.inlineInput, flex: 1, minWidth: 0, padding: '2px 4px', fontSize: 12 }}
+                        />
+                        <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 6px' }} title={t('ct.danno')} onClick={() => applica(-1)}>−</button>
+                        <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 6px' }} title={t('ct.cura')} onClick={() => applica(1)}>＋</button>
+                      </div>
+                      {(morto || cb.tipo === 'pg') && (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 11 }} title={t('vital.ts_morte')}>
+                          <span style={{ color: C.inkDim }}>💀</span>
+                          {[1, 2, 3].map((i) => (
+                            <span key={`s${i}`} style={styles.pip(cb.tsMorte.successi >= i, C.green)} onClick={() => modCombat(cb.id, { tsMorte: { ...cb.tsMorte, successi: cb.tsMorte.successi >= i ? i - 1 : i } })} />
+                          ))}
+                          <span style={{ color: C.border }}>|</span>
+                          {[1, 2, 3].map((i) => (
+                            <span key={`f${i}`} style={styles.pip(cb.tsMorte.fallimenti >= i, C.red)} onClick={() => modCombat(cb.id, { tsMorte: { ...cb.tsMorte, fallimenti: cb.tsMorte.fallimenti >= i ? i - 1 : i } })} />
+                          ))}
+                        </div>
+                      )}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'center' }}>
+                        {cb.condizioni.map((cond) => (
+                          <span key={cond} onClick={() => modCombat(cb.id, { condizioni: cb.condizioni.filter((x) => x !== cond) })}
+                            style={{ fontSize: 10, background: 'rgba(176,58,46,0.12)', color: C.red, border: `1px solid ${C.red}`, borderRadius: 6, padding: '0 5px', cursor: 'pointer' }} title={t('ct.rimuovi_cond')}>
+                            {cond} ×
+                          </span>
+                        ))}
+                        <select
+                          value=""
+                          onChange={(e) => { if (e.target.value) modCombat(cb.id, { condizioni: [...cb.condizioni, e.target.value] }); }}
+                          style={{ ...styles.inlineInput, fontSize: 10, padding: '1px 2px' }}
+                        >
+                          <option value="">＋ {t('ct.condizione')}</option>
+                          {CONDIZIONI_5E.filter((c) => !cb.condizioni.includes(c)).map((c) => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
