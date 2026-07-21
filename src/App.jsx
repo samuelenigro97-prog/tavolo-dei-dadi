@@ -2994,7 +2994,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.68';
+const APP_VERSION = '1.9.69';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -6823,13 +6823,35 @@ export default function App() {
                       {(() => {
                         const suggeriti = incantesimiClasseLivello(scheda.classe, liv);
                         const gia = new Set(scheda.incantesimiLista.filter((s) => s.livello === liv).map((s) => (s.nome || '').toLowerCase()));
-                        const aggiungiInc = (nome) =>
+                        // Ricava tempo/gittata/note dalla descrizione dell'incantesimo
+                        // (le meccaniche sono nel testo di SPIEG_INCANTESIMI), così
+                        // aggiungendo un incantesimo noto i dettagli si compilano da soli.
+                        const dettagliInc = (nome) => {
+                          const desc = spiegaIncantesimo(nome) || '';
+                          let tempo = 'AZ';
+                          if (/reazione/i.test(desc)) tempo = 'REAZ';
+                          else if (/azione bonus/i.test(desc)) tempo = 'AZ BONUS';
+                          let gittata = '';
+                          const mG = desc.match(/gittata\s*(\d+(?:[.,]\d+)?)\s*m/i);
+                          const mR = desc.match(/raggio\s*(\d+(?:[.,]\d+)?)\s*m/i);
+                          const mC = desc.match(/cono\s*(?:di\s*)?(\d+(?:[.,]\d+)?)\s*m/i);
+                          if (mG) gittata = `${mG[1]}m`;
+                          else if (/tocc|contatto/i.test(desc)) gittata = 'contatto';
+                          else if (/personale|te stesso|su di te|intorno a te/i.test(desc)) gittata = 'personale';
+                          else if (mR) gittata = `raggio ${mR[1]}m`;
+                          else if (mC) gittata = `cono ${mC[1]}m`;
+                          const note = [/\brituale\b/i.test(desc) && 'Rituale', /concentrazione/i.test(desc) && 'Conc.'].filter(Boolean).join(', ');
+                          return { tempo, gittata, note };
+                        };
+                        const aggiungiInc = (nome, manuale) => {
+                          const d = manuale ? { tempo: '1 Az.', gittata: '', note: '' } : dettagliInc(nome);
                           aggiorna({
                             incantesimiLista: [
                               ...scheda.incantesimiLista,
-                              { id: Date.now(), livello: liv, nome, tempo: '1 Az.', gittata: '', note: '', preparato: true },
+                              { id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, livello: liv, nome, tempo: d.tempo, gittata: d.gittata, note: d.note, preparato: true },
                             ],
                           });
+                        };
                         // Il massimo è solo un promemoria (esistono incantesimi bonus da
                         // sottoclasse, talenti, oggetti…): NON blocchiamo l'aggiunta, così
                         // puoi sempre ri-aggiungere un incantesimo tolto per errore.
@@ -6844,7 +6866,7 @@ export default function App() {
                             onChange={(e) => {
                               const v = e.target.value;
                               if (!v) return;
-                              aggiungiInc(v === '__manuale__' ? 'Nuovo incantesimo' : v);
+                              aggiungiInc(v === '__manuale__' ? 'Nuovo incantesimo' : v, v === '__manuale__');
                               e.target.value = '';
                             }}
                           >
