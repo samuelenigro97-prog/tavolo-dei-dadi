@@ -2994,7 +2994,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.67';
+const APP_VERSION = '1.9.68';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -6830,18 +6830,17 @@ export default function App() {
                               { id: Date.now(), livello: liv, nome, tempo: '1 Az.', gittata: '', note: '', preparato: true },
                             ],
                           });
-                        // Lock come per le armature: al massimo per classe/livello si blocca.
-                        const bloccato = liv === 0 ? trucchettiPieno : incantesimiPieno;
-                        const etichetta = bloccato
-                          ? (liv === 0 ? t('spell.max_trucchetti') : t('spell.max_incantesimi'))
-                          : (liv === 0 ? t('spell.aggiungi_trucchetto') : t('spell.aggiungi_incantesimo_liv', { n: liv }));
+                        // Il massimo è solo un promemoria (esistono incantesimi bonus da
+                        // sottoclasse, talenti, oggetti…): NON blocchiamo l'aggiunta, così
+                        // puoi sempre ri-aggiungere un incantesimo tolto per errore.
+                        const pieno = liv === 0 ? trucchettiPieno : incantesimiPieno;
+                        const etichetta = liv === 0 ? t('spell.aggiungi_trucchetto') : t('spell.aggiungi_incantesimo_liv', { n: liv });
                         return (
                           <select
                             className="add-spell"
                             value=""
-                            disabled={bloccato}
-                            title={bloccato ? 'Hai raggiunto il massimo per la tua classe a questo livello. Alza il numero accanto ai conteggi se ti serve.' : undefined}
-                            style={{ ...styles.button, marginTop: 6, fontSize: 13, padding: '7px 12px', fontWeight: 600, cursor: bloccato ? 'not-allowed' : 'pointer', opacity: bloccato ? 0.55 : 1, maxWidth: '100%' }}
+                            title={pieno ? t('spell.oltre_max') : undefined}
+                            style={{ ...styles.button, marginTop: 6, fontSize: 13, padding: '7px 12px', fontWeight: 600, cursor: 'pointer', maxWidth: '100%', ...(pieno ? { borderColor: C.goldDark } : {}) }}
                             onChange={(e) => {
                               const v = e.target.value;
                               if (!v) return;
