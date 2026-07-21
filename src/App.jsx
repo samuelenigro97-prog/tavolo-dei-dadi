@@ -2992,7 +2992,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.62';
+const APP_VERSION = '1.9.63';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4734,9 +4734,9 @@ export default function App() {
             maxWidth: '92vw',
           }}
         >
-          <span style={{ ...styles.detail, color: C.ink }}>🔄 È disponibile una nuova versione.</span>
-          <button style={styles.buttonPrimary} onClick={() => updateServiceWorker(true)}>Ricarica</button>
-          <button style={styles.buttonMini} title="Ignora" onClick={() => setNeedRefresh(false)}>✕</button>
+          <span style={{ ...styles.detail, color: C.ink }}>🔄 {t('update.disponibile')}</span>
+          <button style={styles.buttonPrimary} disabled={aggiornando} onClick={forzaAggiornamento}>{aggiornando ? t('btn.aggiorno') : t('update.ricarica')}</button>
+          <button style={styles.buttonMini} title={t('update.ignora')} onClick={() => setNeedRefresh(false)}>✕</button>
         </div>
       )}
 

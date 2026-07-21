@@ -304,6 +304,9 @@ export const DIZIONARIO = {
     'rest.breve_conferma': 'Riposo breve: ricarica le risorse a riposo breve e spendi un dado vita per curarti. Procedere?',
     'rest.lungo_fatto': 'PF al massimo, slot e risorse recuperati',
     'rest.breve_fatto': 'risorse brevi ricaricate + dado vita',
+    'update.disponibile': 'È disponibile una nuova versione.',
+    'update.ricarica': 'Ricarica',
+    'update.ignora': 'Ignora',
   },
   en: {
     'app.titolo': 'Dice Table',
@@ -610,6 +613,9 @@ export const DIZIONARIO = {
     'rest.breve_conferma': 'Short rest: recharge short-rest resources and spend a Hit Die to heal. Proceed?',
     'rest.lungo_fatto': 'Full HP, slots and resources recovered',
     'rest.breve_fatto': 'short-rest resources recharged + Hit Die',
+    'update.disponibile': 'A new version is available.',
+    'update.ricarica': 'Reload',
+    'update.ignora': 'Dismiss',
   }
 };
 
