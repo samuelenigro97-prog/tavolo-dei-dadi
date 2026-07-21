@@ -2612,6 +2612,8 @@ function schedaVuota() {
     talenti: '',
     metamagie: '', // opzioni di Metamagia attive (solo Stregone)
     equipaggiamento: '',
+    // inventario strutturato: { id, nome, qta, peso (kg, per unità), equip, categoria }
+    inventario: [],
     sintonia: '',
     lingue: '',
     aspetto: '',
@@ -2654,6 +2656,32 @@ const CONDIZIONI_5E = [
   'Incapacitato', 'Invisibile', 'Paralizzato', 'Pietrificato',
   'Privo di sensi', 'Prono', 'Spaventato', 'Stordito', 'Trattenuto',
 ];
+
+// Pesi indicativi (kg) di oggetti comuni 5e: auto-compilano il peso quando
+// aggiungi un oggetto noto e alimentano il calcolo dell'ingombro.
+const PESI_OGGETTI = {
+  // Armature e scudo
+  'Armatura di cuoio': 4.5, 'Cuoio borchiato': 6, 'Armatura di pelle': 5.5, 'Corazza di scaglie': 20,
+  'Corazza a strisce': 9, 'Corazza di maglia': 8, 'Cotta di maglia': 25, 'Corazza di piastre': 30,
+  'Corazza a piastre da torneo': 32.5, 'Scudo': 3,
+  // Armi
+  'Pugnale': 0.5, 'Spada corta': 1, 'Spada lunga': 1.5, 'Spadone': 3, 'Ascia': 1, 'Ascia bipenne': 3.5,
+  'Mazza': 2, 'Mazzafrusto': 1, 'Martello da guerra': 1, 'Bastone ferrato': 2, 'Lancia': 1.5,
+  'Alabarda': 3, 'Arco corto': 1, 'Arco lungo': 1, 'Balestra leggera': 2.5, 'Balestra pesante': 9,
+  'Fionda': 0, 'Giavellotto': 1, 'Tridente': 2, 'Randello': 1,
+  // Equipaggiamento comune
+  'Zaino': 2.5, 'Corda di canapa (15 m)': 5, 'Corda di seta (15 m)': 2.5, 'Razioni (1 giorno)': 1,
+  'Torcia': 0.5, 'Lanterna cieca': 1, 'Lanterna schermabile': 1, 'Otre': 2.5, 'Coperta': 1.5,
+  'Sacco a pelo': 3.5, 'Kit da sanitario': 1.5, 'Kit da scasso': 0.5, 'Piede di porco': 2.5,
+  'Rampino': 2, 'Martello': 1.5, 'Picchetti da tenda (10)': 2.5, 'Tenda per due': 10,
+  'Catena (3 m)': 5, 'Sacco': 0.25, 'Borsa per componenti': 1, 'Focus arcano': 1.5, 'Simbolo sacro': 0.5,
+  'Libro degli incantesimi': 1.5, 'Pergamena': 0, 'Pozione di guarigione': 0.25, 'Fiala': 0,
+  'Acciarino': 0.5, 'Specchietto d’acciaio': 0.25, 'Corda per rampino': 5, 'Piccone': 5,
+};
+const NOMI_OGGETTI = Object.keys(PESI_OGGETTI).sort((a, b) => a.localeCompare(b, 'it'));
+
+/** Capacità di carico massima (kg) = Forza × 7,5 (equivale a For × 15 lb). */
+function capacitaCarico(forza) { return Math.max(1, (forza || 10) * 7.5); }
 
 const LINGUE_5E = [
   'Abissale', 'Celestiale', 'Comune', 'Draconico', 'Elfico',
@@ -3006,7 +3034,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.71';
+const APP_VERSION = '1.9.72';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3192,6 +3220,22 @@ function normalizeImported(dati) {
     talenti: str(dati.talenti),
     metamagie: str(dati.metamagie),
     equipaggiamento: str(dati.equipaggiamento),
+    inventario: (() => {
+      if (Array.isArray(dati.inventario)) {
+        return dati.inventario.map((o, i) => ({
+          id: o.id || `inv-${i}-${Math.random().toString(36).slice(2, 6)}`,
+          nome: str(o.nome), qta: Math.max(1, num(o.qta, 1)), peso: Math.max(0, Number(o.peso) || 0),
+          equip: !!o.equip, categoria: str(o.categoria),
+        }));
+      }
+      // Migrazione: il vecchio equipaggiamento testuale (voci separate da ; o ,)
+      // diventa una lista di oggetti (peso 0, da compilare).
+      const testo = str(dati.equipaggiamento);
+      if (!testo) return [];
+      return testo.split(/[;,\n]/).map((s) => s.trim()).filter(Boolean).map((nome, i) => ({
+        id: `inv-mig-${i}`, nome, qta: 1, peso: 0, equip: false, categoria: '',
+      }));
+    })(),
     sintonia: Array.isArray(dati.sintonia) ? dati.sintonia.slice(0, 3).map(str) : str(dati.sintonia),
     lingue: str(dati.lingue),
     aspetto: str(dati.aspetto),
@@ -6973,12 +7017,74 @@ export default function App() {
         <div style={{ display: 'flex', flexDirection: 'column', marginTop: 10 }}>
             {/* Equipaggiamento, aspetto — collassabili */}
             <Sezione titolo={t("sez.equipaggiamento")} {...propsSez('equipaggiamento')} {...apertoProps('equipaggiamento')}>
-              <ListaQuadratini
-                value={scheda.equipaggiamento}
-                opzioni={EQUIP_5E}
-                placeholder={t("equip.ph")}
-                onChange={(v) => aggiorna({ equipaggiamento: v })}
-              />
+              {(() => {
+                const inv = scheda.inventario || [];
+                const pesoTot = inv.reduce((s, o) => s + (o.qta || 1) * (o.peso || 0), 0);
+                const forza = scheda.caratteristiche.forza || 10;
+                const cap = capacitaCarico(forza);
+                const soglia1 = forza * 2.5; // ingombrato
+                const soglia2 = forza * 5;   // gravemente ingombrato
+                const stato = pesoTot > cap ? 'sovraccarico' : pesoTot > soglia2 ? 'grave' : pesoTot > soglia1 ? 'ingombrato' : 'ok';
+                const colore = stato === 'ok' ? C.green : stato === 'ingombrato' ? C.gold : C.red;
+                const perc = Math.min(100, (pesoTot / cap) * 100);
+                const modInv = (id, patch) => aggiorna({ inventario: inv.map((x) => (x.id === id ? { ...x, ...patch } : x)) });
+                const addItem = (nome) => {
+                  const peso = PESI_OGGETTI[nome] ?? 0;
+                  aggiorna({ inventario: [...inv, { id: `inv-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`, nome: nome || '', qta: 1, peso, equip: false, categoria: '' }] });
+                };
+                return (
+                  <div>
+                    {/* Riepilogo ingombro automatico */}
+                    <div style={{ marginBottom: 10 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, ...styles.detail, flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: 700 }}>⚖️ {t('inv.ingombro')}: <span style={{ color: colore }}>{pesoTot.toFixed(1)} / {cap.toFixed(0)} kg</span></span>
+                        {stato !== 'ok' && <span style={{ color: colore, fontWeight: 700 }}>{t('inv.stato_' + stato)}</span>}
+                      </div>
+                      <div style={{ height: 6, borderRadius: 3, background: C.border, overflow: 'hidden', marginTop: 3 }} title={`${t('inv.soglie')}: ${(soglia1).toFixed(0)} / ${(soglia2).toFixed(0)} / ${cap.toFixed(0)} kg`}>
+                        <div style={{ width: `${perc}%`, height: '100%', background: colore, transition: 'width 0.25s ease' }} />
+                      </div>
+                    </div>
+                    {/* Lista oggetti */}
+                    {inv.length > 0 && (
+                      <div style={{ overflowX: 'auto' }}>
+                        <table style={styles.table}>
+                          <thead><tr>
+                            <th style={styles.th} title={t('inv.equip_tooltip')}>{t('inv.equip')}</th>
+                            <th style={styles.th}>{t('inv.nome')}</th>
+                            <th style={styles.th}>{t('inv.qta')}</th>
+                            <th style={styles.th}>{t('inv.peso')}</th>
+                            <th style={styles.th} />
+                          </tr></thead>
+                          <tbody>
+                            {inv.map((o) => (
+                              <tr key={o.id} style={{ opacity: o.equip ? 1 : 0.82 }}>
+                                <td style={{ ...styles.td, textAlign: 'center' }}>
+                                  <input type="checkbox" checked={!!o.equip} onChange={(e) => modInv(o.id, { equip: e.target.checked })} title={t('inv.equip_tooltip')} />
+                                </td>
+                                <td style={styles.td}><Editable value={o.nome} width={150} onChange={(v) => modInv(o.id, { nome: v })} /></td>
+                                <td style={styles.td}>×<Editable value={o.qta} tipo="numero" width={30} onChange={(v) => modInv(o.id, { qta: Math.max(1, v) })} /></td>
+                                <td style={{ ...styles.td, color: C.inkDim, whiteSpace: 'nowrap' }}><Editable value={o.peso} tipo="numero" width={40} onChange={(v) => modInv(o.id, { peso: Math.max(0, v) })} /> kg</td>
+                                <td style={{ ...styles.td, textAlign: 'right' }}><button style={{ ...styles.buttonMini, color: C.red }} title={t('modal.elimina')} onClick={() => aggiorna({ inventario: inv.filter((x) => x.id !== o.id) })}>🗑</button></td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                    {/* Aggiungi oggetto (con pesi noti auto-compilati) */}
+                    <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                      <input
+                        list="inv-presets"
+                        placeholder={t('inv.aggiungi_ph')}
+                        style={{ ...styles.inlineInput, flex: 1, minWidth: 150, padding: '6px 8px' }}
+                        onKeyDown={(e) => { if (e.key === 'Enter' && e.target.value.trim()) { addItem(e.target.value.trim()); e.target.value = ''; } }}
+                      />
+                      <datalist id="inv-presets">{NOMI_OGGETTI.map((n) => <option key={n} value={n} />)}</datalist>
+                      <button style={{ ...styles.buttonMini }} title={t('inv.aggiungi_vuoto')} onClick={() => addItem('')}>➕ {t('common.aggiungi')}</button>
+                    </div>
+                  </div>
+                );
+              })()}
               {(() => {
                 // Oggetti magici sintonizzati: massimo 3 (regola 5e) → 3 slot compilabili.
                 const arr = Array.isArray(scheda.sintonia) ? scheda.sintonia : (scheda.sintonia ? [scheda.sintonia] : []);
