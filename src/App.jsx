@@ -1454,6 +1454,9 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
      tasti azione (✎ 🗑) restano visibili senza scorrere in orizzontale */
   .spell-table { font-size: 12px; }
   .spell-table th, .spell-table td { padding: 5px 4px !important; }
+  /* nomi lunghi (es. "Prestidigitazione") vanno a capo invece di allargare
+     la tabella e spingere i tasti azione fuori schermo */
+  .spell-table td:first-child button { white-space: normal !important; overflow-wrap: anywhere; }
 }
 @media (max-width: 820px) {
   .griglia-scheda { grid-template-columns: 1fr; }
@@ -2194,7 +2197,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.76';
+const APP_VERSION = '1.9.77';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
