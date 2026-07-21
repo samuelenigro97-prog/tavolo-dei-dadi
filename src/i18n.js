@@ -197,6 +197,7 @@ export const DIZIONARIO = {
     'roll.dado': 'Dado:',
     'roll.espr_placeholder': 'es. 3d6+2',
     'roll.tira': 'Tira',
+    'roll.tiro_libero': 'Tiro libero d20',
     'roll.espr_invalida': 'Espressione non valida',
     // Profilo
     'profilo.titolo': 'Profilo',
@@ -291,6 +292,14 @@ export const DIZIONARIO = {
     'armor.leggera': 'Leggera (+DES)',
     'armor.media': 'Media (+DES max 2)',
     'armor.pesante': 'Pesante (fissa)',
+    // Registro dei tiri
+    'log.danni': 'Danni',
+    'log.svuota': 'Svuota',
+    'log.svuota_tooltip': 'Cancella tutto il registro dei tiri',
+    'log.critico': '⚔ CRITICO',
+    'log.fallimento': '💀 FALLIMENTO',
+    'log.nota_ph': 'Nota (facoltativa)…',
+    'log.elimina_tooltip': 'Elimina questa voce',
   },
   en: {
     'app.titolo': 'Dice Table',
@@ -490,6 +499,7 @@ export const DIZIONARIO = {
     'roll.dado': 'Die:',
     'roll.espr_placeholder': 'e.g. 3d6+2',
     'roll.tira': 'Roll',
+    'roll.tiro_libero': 'Free d20 roll',
     'roll.espr_invalida': 'Invalid expression',
     // Profile
     'profilo.titolo': 'Profile',
@@ -584,6 +594,14 @@ export const DIZIONARIO = {
     'armor.leggera': 'Light (+DEX)',
     'armor.media': 'Medium (+DEX max 2)',
     'armor.pesante': 'Heavy (fixed)',
+    // Roll log
+    'log.danni': 'Damage',
+    'log.svuota': 'Clear',
+    'log.svuota_tooltip': 'Clear the entire roll log',
+    'log.critico': '⚔ CRIT',
+    'log.fallimento': '💀 FUMBLE',
+    'log.nota_ph': 'Note (optional)…',
+    'log.elimina_tooltip': 'Delete this entry',
   }
 };
 

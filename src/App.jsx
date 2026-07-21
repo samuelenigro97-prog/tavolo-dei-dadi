@@ -2992,7 +2992,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.60';
+const APP_VERSION = '1.9.61';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4131,9 +4131,21 @@ export default function App() {
     }, 700);
   }
 
-  /** Registra una voce nello storico dei tiri della sessione. */
-  function registra(voce) {
-    setStorico((s) => [voce, ...s].slice(0, 30));
+  /**
+   * Registra un tiro nel registro della sessione come voce STRUTTURATA:
+   * { id, ora, personaggio, etichetta, totale, dettaglio, modalita, critico,
+   *   fumble, tipo, nota }. `dati` può contenere qualunque di questi campi.
+   */
+  function registra(dati) {
+    const voce = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      ts: Date.now(),
+      personaggio: scheda.nome,
+      modalita,
+      nota: '',
+      ...dati,
+    };
+    setStorico((s) => [voce, ...s].slice(0, 60));
   }
 
   // --- tiri ---
@@ -4157,11 +4169,15 @@ export default function App() {
       setFaccia(naturale);
       setRolling(false);
       setTiro({ etichetta, naturale, dadi, bonus: bonusEff, totale: naturale + bonusEff, modalita, sfinimento: penSfinimento, ...extra });
-      registra(
-        `${etichetta}: ${naturale}${bonusEff ? ` ${conSegno(bonusEff)}` : ''} = ${naturale + bonusEff}` +
-          (penSfinimento ? ` (sfinimento −${penSfinimento})` : '') +
-          (naturale === 20 ? ' ⚔ critico' : naturale === 1 ? ' 💀' : '')
-      );
+      registra({
+        etichetta,
+        tipo: 'd20',
+        naturale,
+        totale: naturale + bonusEff,
+        dettaglio: `d20 [${naturale}]${bonusEff ? ` ${conSegno(bonusEff)}` : ''}${penSfinimento ? ` · sfin. −${penSfinimento}` : ''}`,
+        critico: naturale === 20,
+        fumble: naturale === 1,
+      });
       // Tira automaticamente i danni dopo il tiro a colpire, tranne se il d20 fa 1 (fallimento critico)
       if (extra.attacco && naturale !== 1 && parseEspressioneDado(extra.attacco.danno || '')) {
         setTimeout(() => tiraDanniPerAttacco(extra.attacco, naturale === 20), 650);
@@ -4177,7 +4193,7 @@ export default function App() {
     const esito = tiraDanni(parsata, false);
     conAnimazione(() => {
       setDanni({ etichetta, ...esito, critico: false });
-      registra(`${etichetta}: ${esito.totale} (${esito.dettaglio})`);
+      registra({ etichetta, tipo: 'danni', totale: esito.totale, dettaglio: esito.dettaglio });
     }, esito.totale, maxFacce || 20);
   }
 
@@ -4190,7 +4206,7 @@ export default function App() {
     const esito = tiraDanni(parsata, critico);
     conAnimazione(() => {
       setDanni({ etichetta: `Danni: ${nome}`, ...esito, critico });
-      registra(`Danni ${nome}: ${esito.totale}${critico ? ' ⚔ critico' : ''} (${esito.dettaglio})`);
+      registra({ etichetta: `${t('log.danni')}: ${nome}`, tipo: 'danni', totale: esito.totale, dettaglio: esito.dettaglio, critico });
     }, esito.totale, maxFacce || 20);
   }
 
@@ -4280,7 +4296,7 @@ export default function App() {
         critico: false,
         guarigione: true,
       });
-      registra(`Dado vita: +${recupero} PF`);
+      registra({ etichetta: t('vital.dadi_vita'), tipo: 'cura', totale: recupero, dettaglio: `+${recupero} PF · 1d${facce} [${dado}] ${conSegno(mod)}` });
     }, dado);
   }
 
@@ -4319,11 +4335,11 @@ export default function App() {
 
   /** Tiro libero di un singolo dado (il d20 passa dal tiro animato). */
   function tiroLibero(facce) {
-    if (facce === 20) return lanciaD20('Tiro libero d20', 0);
+    if (facce === 20) return lanciaD20(t('roll.tiro_libero'), 0);
     const valore = tiraDado(facce);
     conAnimazione(() => {
       setDanni({ etichetta: 'Tiro libero', totale: valore, dettaglio: `1d${facce} [${valore}]`, libero: true });
-      registra(`d${facce}: ${valore}`);
+      registra({ etichetta: `d${facce}`, tipo: 'libero', totale: valore, dettaglio: `1d${facce} [${valore}]` });
     }, valore, facce);
   }
 
@@ -4340,7 +4356,7 @@ export default function App() {
     const esito = tiraDanni(parsata, false);
     conAnimazione(() => {
       setDanni({ etichetta: `Tiro libero: ${testo}`, ...esito, libero: true });
-      registra(`${testo}: ${esito.totale} (${esito.dettaglio})`);
+      registra({ etichetta: testo, tipo: 'libero', totale: esito.totale, dettaglio: esito.dettaglio });
     }, esito.totale, maxFacce || 20);
   }
 
@@ -5597,17 +5613,52 @@ export default function App() {
 
         {storicoAperto && (
           <section style={{ ...styles.panel, padding: '10px 16px' }}>
-            <h2 style={{ ...styles.panelTitle, fontSize: 13 }}>{t('roll.cronologia')}</h2>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
+              <h2 style={{ ...styles.panelTitle, fontSize: 13, margin: 0 }}>{t('roll.cronologia')}</h2>
+              {storico.length > 0 && (
+                <button style={{ ...styles.buttonMini, color: C.red }} title={t('log.svuota_tooltip')} onClick={() => setStorico([])}>🧹 {t('log.svuota')}</button>
+              )}
+            </div>
             {storico.length === 0 ? (
               <div style={styles.detail}>{t('roll.nessun_tiro')}</div>
             ) : (
-              <ol style={{ margin: 0, paddingLeft: 20, fontSize: 13, color: C.ink }}>
-                {storico.map((voce, i) => (
-                  <li key={`${i}-${voce}`} style={{ padding: '1px 0', color: i === 0 ? C.ink : C.inkDim }}>
-                    {voce}
-                  </li>
-                ))}
-              </ol>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 360, overflowY: 'auto' }}>
+                {storico.map((voce) => {
+                  const isObj = voce && typeof voce === 'object';
+                  if (!isObj) {
+                    return <div key={String(voce)} style={{ ...styles.detail, padding: '2px 0' }}>{voce}</div>;
+                  }
+                  const colore = voce.critico ? C.green : voce.fumble ? C.red : voce.tipo === 'cura' ? C.green : C.gold;
+                  const ora = new Date(voce.ts || Date.now()).toLocaleTimeString(lingua === 'it' ? 'it-IT' : 'en-GB', { hour: '2-digit', minute: '2-digit' });
+                  return (
+                    <div key={voce.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 8px', borderRadius: 6, background: 'rgba(0,0,0,0.04)', border: `1px solid ${voce.critico ? C.green : voce.fumble ? C.red : C.border}` }}>
+                      <div style={{ minWidth: 40, textAlign: 'center' }}>
+                        <div style={{ fontSize: 20, fontWeight: 800, lineHeight: 1, color: colore }}>{voce.totale != null ? voce.totale : '—'}</div>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, color: C.ink, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                          <span>{voce.etichetta}</span>
+                          {voce.critico && <span style={styles.badge(C.green)}>{t('log.critico')}</span>}
+                          {voce.fumble && <span style={styles.badge(C.red)}>{t('log.fallimento')}</span>}
+                          {voce.tipo === 'd20' && voce.modalita && voce.modalita !== 'normale' && (
+                            <span style={styles.badge(C.goldDark)}>{voce.modalita === 'vantaggio' ? t('roll.vantaggio') : t('roll.svantaggio')}</span>
+                          )}
+                        </div>
+                        <div style={{ ...styles.detail, fontSize: 11 }}>
+                          {ora}{voce.personaggio ? ` · ${voce.personaggio}` : ''}{voce.dettaglio ? ` · ${voce.dettaglio}` : ''}
+                        </div>
+                        <input
+                          value={voce.nota || ''}
+                          onChange={(e) => setStorico((s) => s.map((x) => (x.id === voce.id ? { ...x, nota: e.target.value } : x)))}
+                          placeholder={t('log.nota_ph')}
+                          style={{ ...styles.inlineInput, marginTop: 3, fontSize: 11, padding: '2px 6px', width: '100%', maxWidth: 260 }}
+                        />
+                      </div>
+                      <button style={{ ...styles.buttonMini, color: C.red, alignSelf: 'flex-start' }} title={t('log.elimina_tooltip')} onClick={() => setStorico((s) => s.filter((x) => x.id !== voce.id))}>×</button>
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </section>
         )}
