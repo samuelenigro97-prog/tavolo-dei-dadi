@@ -2683,6 +2683,30 @@ const NOMI_OGGETTI = Object.keys(PESI_OGGETTI).sort((a, b) => a.localeCompare(b,
 /** Capacità di carico massima (kg) = Forza × 7,5 (equivale a For × 15 lb). */
 function capacitaCarico(forza) { return Math.max(1, (forza || 10) * 7.5); }
 
+// Peso di ripiego per tipo di armatura, usato quando il nome non è nella tabella.
+const PESO_ARMATURA_TIPO = { leggera: 5, media: 9, pesante: 25 };
+
+/** Stima il peso (kg) di un oggetto dal nome: esatto → contenuto → 0. */
+function pesoStimato(nome) {
+  if (!nome) return 0;
+  if (PESI_OGGETTI[nome] != null) return PESI_OGGETTI[nome];
+  const n = nome.trim().toLowerCase();
+  for (const k of Object.keys(PESI_OGGETTI)) {
+    const kk = k.toLowerCase();
+    if (n.includes(kk) || kk.includes(n)) return PESI_OGGETTI[k];
+  }
+  return 0;
+}
+
+/** Peso stimato di un'armatura {nome,tipo,scudo}: nome → tipo, + scudo se presente. */
+function pesoArmatura(armatura) {
+  if (!armatura || armatura.tipo === 'nessuna') return armatura?.scudo ? PESI_OGGETTI['Scudo'] : 0;
+  let p = pesoStimato(armatura.nome);
+  if (!p) p = PESO_ARMATURA_TIPO[armatura.tipo] || 0;
+  if (armatura.scudo) p += PESI_OGGETTI['Scudo'];
+  return p;
+}
+
 const LINGUE_5E = [
   'Abissale', 'Celestiale', 'Comune', 'Draconico', 'Elfico',
   'Gigante', 'Gnomesco', 'Goblin', 'Halfling', 'Infernale',
@@ -3034,7 +3058,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.73';
+const APP_VERSION = '1.9.74';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -7057,7 +7081,12 @@ export default function App() {
             <Sezione titolo={t("sez.equipaggiamento")} {...propsSez('equipaggiamento')} {...apertoProps('equipaggiamento')}>
               {(() => {
                 const inv = scheda.inventario || [];
-                const pesoTot = inv.reduce((s, o) => s + (o.qta || 1) * (o.peso || 0), 0);
+                const pesoInv = inv.reduce((s, o) => s + (o.qta || 1) * (o.peso || 0), 0);
+                // Peso di armi e armatura equipaggiate (tutto ciò che ho addosso).
+                const attacchi = Array.isArray(scheda.attacchi) ? scheda.attacchi : [];
+                const pesoArmi = attacchi.reduce((s, a) => s + pesoStimato(a.nome), 0);
+                const pesoArm = pesoArmatura(scheda.armatura);
+                const pesoTot = pesoInv + pesoArmi + pesoArm;
                 const forza = scheda.caratteristiche.forza || 10;
                 const cap = capacitaCarico(forza);
                 const soglia1 = forza * 2.5; // ingombrato
