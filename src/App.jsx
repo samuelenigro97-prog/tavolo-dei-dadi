@@ -4740,8 +4740,11 @@ export default function App() {
 
   // Limiti di trucchetti/incantesimi (come il lock delle armature): quando sei al
   // massimo per la tua classe/livello, i pulsanti "Aggiungi" si bloccano.
-  const nTrucchetti = scheda.incantesimiLista.filter((s) => s.livello === 0).length;
-  const nIncantesimi = scheda.incantesimiLista.filter((s) => s.livello > 0).length;
+  // Gli incantesimi BONUS (da razza/sottoclasse/talento) non contano verso il
+  // limite: sono aggiunti "forzatamente" e marcati a parte.
+  const nTrucchetti = scheda.incantesimiLista.filter((s) => s.livello === 0 && !s.bonus).length;
+  const nIncantesimi = scheda.incantesimiLista.filter((s) => s.livello > 0 && !s.bonus).length;
+  const nBonus = scheda.incantesimiLista.filter((s) => s.bonus).length;
   // base = override manuale (>0) oppure automatico da classe/livello/versione
   const baseTrucchetti = (scheda.maxTrucchetti > 0) ? scheda.maxTrucchetti : trucchettiMax(scheda.classe, scheda.livello);
   const baseIncantesimi = (scheda.maxIncantesimi > 0) ? scheda.maxIncantesimi : incantesimiMaxAuto(scheda, versione);
@@ -6847,6 +6850,7 @@ export default function App() {
                     {maxIncantesimi != null && (
                       <span style={{ ...styles.detail, color: incantesimiPieno ? C.goldDark : C.inkDim, fontWeight: incantesimiPieno ? 700 : 400 }} title="Incantesimi (liv. 1+) noti o preparati / massimo (modificabile). Al massimo il tasto Aggiungi si blocca.">
                         {t('spell.incantesimi')} <strong>{nIncantesimi}</strong>/<Editable value={maxIncantesimi} tipo="numero" width={24} onChange={(v) => aggiorna({ maxIncantesimi: Math.max(0, v) })} />
+                        {nBonus > 0 && <span style={{ color: C.goldDark, fontWeight: 700 }}> · ✦ {nBonus} {t('spell.bonus_badge')}</span>}
                       </span>
                     )}
                   </div>
@@ -6903,6 +6907,13 @@ export default function App() {
                                   >
                                     {s.nome || t('menu.senza_nome')}
                                   </button>
+                                  {s.bonus && (
+                                    <span
+                                      title={t('spell.bonus_badge_tooltip')}
+                                      style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: C.goldDark, border: `1px solid ${C.goldDark}`, borderRadius: 6, padding: '0 4px', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                                      onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, bonus: false } : x)) })}
+                                    >✦ {t('spell.bonus_badge')}</span>
+                                  )}
                                 </td>
                                 <td style={{ ...styles.td, color: C.inkDim }}>{s.tempo}</td>
                                 <td style={{ ...styles.td, color: C.inkDim }}>{s.gittata}</td>
@@ -6939,45 +6950,72 @@ export default function App() {
                           const note = [/\brituale\b/i.test(desc) && 'Rituale', /concentrazione/i.test(desc) && 'Conc.'].filter(Boolean).join(', ');
                           return { tempo, gittata, note };
                         };
-                        const aggiungiInc = (nome, manuale) => {
+                        const aggiungiInc = (nome, manuale, bonus) => {
                           const d = manuale ? { tempo: '1 Az.', gittata: '', note: '' } : dettagliInc(nome);
                           aggiorna({
                             incantesimiLista: [
                               ...scheda.incantesimiLista,
-                              { id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, livello: liv, nome, tempo: d.tempo, gittata: d.gittata, note: d.note, preparato: true },
+                              { id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, livello: liv, nome, tempo: d.tempo, gittata: d.gittata, note: d.note, preparato: true, ...(bonus ? { bonus: true } : {}) },
                             ],
                           });
                         };
-                        // Il massimo è solo un promemoria (esistono incantesimi bonus da
-                        // sottoclasse, talenti, oggetti…): NON blocchiamo l'aggiunta, così
-                        // puoi sempre ri-aggiungere un incantesimo tolto per errore.
+                        // Blocco rigido: al massimo per classe/livello non aggiungi altri
+                        // incantesimi NORMALI. Quelli BONUS (razza/sottoclasse/talento) si
+                        // aggiungono comunque dal menu ✦ e non contano verso il limite.
                         const pieno = liv === 0 ? trucchettiPieno : incantesimiPieno;
-                        const etichetta = liv === 0 ? t('spell.aggiungi_trucchetto') : t('spell.aggiungi_incantesimo_liv', { n: liv });
+                        const etichetta = pieno
+                          ? (liv === 0 ? t('spell.max_trucchetti') : t('spell.max_incantesimi'))
+                          : (liv === 0 ? t('spell.aggiungi_trucchetto') : t('spell.aggiungi_incantesimo_liv', { n: liv }));
                         return (
-                          <select
-                            className="add-spell"
-                            value=""
-                            title={pieno ? t('spell.oltre_max') : undefined}
-                            style={{ ...styles.button, marginTop: 6, fontSize: 13, padding: '7px 12px', fontWeight: 600, cursor: 'pointer', maxWidth: '100%', ...(pieno ? { borderColor: C.goldDark } : {}) }}
-                            onChange={(e) => {
-                              const v = e.target.value;
-                              if (!v) return;
-                              aggiungiInc(v === '__manuale__' ? 'Nuovo incantesimo' : v, v === '__manuale__');
-                              e.target.value = '';
-                            }}
-                          >
-                            <option value="">{etichetta}…</option>
-                            <option value="__manuale__">{t('spell.scrivi_mano')}</option>
-                            {suggeriti.length > 0 && (
-                              <optgroup label={t('spell.incantesimi_da', { classe: scheda.classe })}>
-                                {suggeriti.map((n) => (
-                                  <option key={n} value={n} disabled={gia.has(n.toLowerCase())}>
-                                    {gia.has(n.toLowerCase()) ? `✓ ${n}` : n}
-                                  </option>
-                                ))}
-                              </optgroup>
-                            )}
-                          </select>
+                          <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                            <select
+                              className="add-spell"
+                              value=""
+                              disabled={pieno}
+                              title={pieno ? t('spell.max_tooltip') : undefined}
+                              style={{ ...styles.button, fontSize: 13, padding: '7px 12px', fontWeight: 600, cursor: pieno ? 'not-allowed' : 'pointer', opacity: pieno ? 0.55 : 1, maxWidth: '100%' }}
+                              onChange={(e) => {
+                                const v = e.target.value;
+                                if (!v) return;
+                                aggiungiInc(v === '__manuale__' ? 'Nuovo incantesimo' : v, v === '__manuale__', false);
+                                e.target.value = '';
+                              }}
+                            >
+                              <option value="">{etichetta}…</option>
+                              <option value="__manuale__">{t('spell.scrivi_mano')}</option>
+                              {suggeriti.length > 0 && (
+                                <optgroup label={t('spell.incantesimi_da', { classe: scheda.classe })}>
+                                  {suggeriti.map((n) => (
+                                    <option key={n} value={n} disabled={gia.has(n.toLowerCase())}>
+                                      {gia.has(n.toLowerCase()) ? `✓ ${n}` : n}
+                                    </option>
+                                  ))}
+                                </optgroup>
+                              )}
+                            </select>
+                            <select
+                              className="add-spell"
+                              value=""
+                              title={t('spell.bonus_tooltip')}
+                              style={{ ...styles.buttonMini, fontSize: 12, padding: '6px 8px', cursor: 'pointer', maxWidth: '100%', borderColor: C.goldDark, color: C.goldDark }}
+                              onChange={(e) => {
+                                const v = e.target.value;
+                                if (!v) return;
+                                aggiungiInc(v === '__manuale__' ? 'Nuovo incantesimo' : v, v === '__manuale__', true);
+                                e.target.value = '';
+                              }}
+                            >
+                              <option value="">✦ {t('spell.bonus_add')}…</option>
+                              <option value="__manuale__">{t('spell.scrivi_mano')}</option>
+                              {suggeriti.length > 0 && (
+                                <optgroup label={t('spell.incantesimi_da', { classe: scheda.classe })}>
+                                  {suggeriti.map((n) => (
+                                    <option key={n} value={n}>{n}</option>
+                                  ))}
+                                </optgroup>
+                              )}
+                            </select>
+                          </div>
                         );
                       })()}
                     </div>
