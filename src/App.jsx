@@ -2992,7 +2992,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.61';
+const APP_VERSION = '1.9.62';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4305,7 +4305,7 @@ export default function App() {
    * risorse (breve e lungo) ricaricate, uno sfinimento in meno.
    */
   function riposoLungo() {
-    if (!window.confirm('Riposo lungo: PF al massimo, slot incantesimo recuperati, metà dei dadi vita, risorse ricaricate e uno sfinimento in meno. Procedere?')) return;
+    if (!window.confirm(t('rest.lungo_conferma'))) return;
     setScheda((s) => {
       const slot = Object.fromEntries(
         Object.entries(s.slotIncantesimo).map(([liv, v]) => [liv, { ...v, spesi: 0 }])
@@ -4320,16 +4320,20 @@ export default function App() {
         dadiVitaSpesi: Math.max(0, s.dadiVitaSpesi - recuperoDadi),
         risorse: s.risorse.map((r) => (r.reset ? { ...r, attuali: r.max } : r)),
         sfinimento: Math.max(0, s.sfinimento - 1),
+        concentrazione: '',
       };
     });
+    registra({ etichetta: `🌙 ${t('vital.riposo_lungo_tooltip')}`, tipo: 'riposo', dettaglio: t('rest.lungo_fatto') });
   }
 
   /** Riposo breve: ricarica le risorse "brevi" e spende un dado vita per curarti. */
   function riposoBreve() {
+    if (!window.confirm(t('rest.breve_conferma'))) return;
     setScheda((s) => ({
       ...s,
       risorse: s.risorse.map((r) => (r.reset === 'breve' ? { ...r, attuali: r.max } : r)),
     }));
+    registra({ etichetta: `🔥 ${t('vital.riposo_breve_tooltip')}`, tipo: 'riposo', dettaglio: t('rest.breve_fatto') });
     tiraDadoVita();
   }
 

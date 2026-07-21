@@ -300,6 +300,10 @@ export const DIZIONARIO = {
     'log.fallimento': '💀 FALLIMENTO',
     'log.nota_ph': 'Nota (facoltativa)…',
     'log.elimina_tooltip': 'Elimina questa voce',
+    'rest.lungo_conferma': 'Riposo lungo: PF al massimo, slot incantesimo recuperati, meta dei dadi vita, risorse ricaricate, concentrazione annullata e uno sfinimento in meno. Procedere?',
+    'rest.breve_conferma': 'Riposo breve: ricarica le risorse a riposo breve e spendi un dado vita per curarti. Procedere?',
+    'rest.lungo_fatto': 'PF al massimo, slot e risorse recuperati',
+    'rest.breve_fatto': 'risorse brevi ricaricate + dado vita',
   },
   en: {
     'app.titolo': 'Dice Table',
@@ -602,6 +606,10 @@ export const DIZIONARIO = {
     'log.fallimento': '💀 FUMBLE',
     'log.nota_ph': 'Note (optional)…',
     'log.elimina_tooltip': 'Delete this entry',
+    'rest.lungo_conferma': 'Long rest: full HP, spell slots recovered, half your Hit Dice, resources recharged, concentration ended and one less exhaustion. Proceed?',
+    'rest.breve_conferma': 'Short rest: recharge short-rest resources and spend a Hit Die to heal. Proceed?',
+    'rest.lungo_fatto': 'Full HP, slots and resources recovered',
+    'rest.breve_fatto': 'short-rest resources recharged + Hit Die',
   }
 };
 
