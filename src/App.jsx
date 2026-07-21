@@ -1430,10 +1430,12 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
 @keyframes cloud-slide { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
 .app-header-group { flex: 0 0 auto; }
 @media (max-width: 560px) {
-  /* su schermi stretti: titolo su una riga sopra, i due gruppi di pulsanti sotto */
+  /* su schermi stretti: titolo su una riga sopra, poi ciascun gruppo di pulsanti
+     su una propria riga a piena larghezza, centrata e ordinata */
   .app-header { display: flex; flex-wrap: wrap; justify-content: center; }
   .app-header-title { grid-column: auto; justify-self: auto; order: -1; flex: 1 1 100%; margin-bottom: 6px !important; }
-  .app-header-group { flex: 1 1 auto; justify-self: auto; }
+  .app-header-group { flex: 1 1 100% !important; justify-content: center !important; flex-wrap: wrap; }
+  .app-header-group > button { flex: 1 1 auto; justify-content: center; }
 }
 @media (max-width: 820px) {
   .griglia-scheda { grid-template-columns: 1fr; }
@@ -2992,7 +2994,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.64';
+const APP_VERSION = '1.9.65';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -5721,7 +5723,7 @@ export default function App() {
           ) : (
             <div style={{ position: 'relative', flex: '1 1 180px', minWidth: 150, display: 'flex', overflow: 'visible' }}>
               <select
-                style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', padding: '9px 36px 9px 8px' }}
+                style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', padding: '9px 84px 9px 8px', textOverflow: 'ellipsis' }}
                 value={roster.attivo}
                 onChange={(e) => setRoster((r) => ({ ...r, attivo: e.target.value }))}
                 title={t('nome.tooltip_selettore')}
