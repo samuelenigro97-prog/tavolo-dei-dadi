@@ -2992,7 +2992,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.63';
+const APP_VERSION = '1.9.64';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -6381,6 +6381,15 @@ export default function App() {
                   onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, strumenti: v } })}
                 />
               </div>
+              <div style={{ marginTop: 10 }}>
+                <div style={{ ...styles.detail, marginBottom: 4 }}>{t("equip.lingue")}</div>
+                <CampoConTendina
+                  value={scheda.lingue}
+                  opzioni={LINGUE_5E}
+                  onChange={(v) => aggiorna({ lingue: v })}
+                  title={t("equip.lingue_tooltip")}
+                />
+              </div>
             </Sezione>
 
             <Sezione titolo={t("sez.tratti_specie")} {...propsSez('trattiSpecie')} {...apertoProps('trattiSpecie')}>
@@ -6786,12 +6795,7 @@ export default function App() {
                 />
               </Sezione>
             )}
-          </div>
-        </div>
 
-        {/* Sezioni descrittive a piena larghezza: riempiono lo spazio sotto le due colonne */}
-        <div style={{ display: 'flex', flexDirection: 'column', marginTop: 10 }}>
-            {/* Talenti, equipaggiamento, aspetto — collassabili */}
             <Sezione titolo={t("sez.talenti")} {...propsSez('talenti')} {...apertoProps('talenti')}>
               <ListaQuadratini
                 value={scheda.talenti}
@@ -6800,7 +6804,12 @@ export default function App() {
                 onChange={(v) => aggiorna({ talenti: v })}
               />
             </Sezione>
+          </div>
+        </div>
 
+        {/* Sezioni descrittive a piena larghezza: riempiono lo spazio sotto le due colonne */}
+        <div style={{ display: 'flex', flexDirection: 'column', marginTop: 10 }}>
+            {/* Equipaggiamento, aspetto — collassabili */}
             <Sezione titolo={t("sez.equipaggiamento")} {...propsSez('equipaggiamento')} {...apertoProps('equipaggiamento')}>
               <ListaQuadratini
                 value={scheda.equipaggiamento}
@@ -6814,16 +6823,7 @@ export default function App() {
                   <Editable value={scheda.sintonia} onChange={(v) => aggiorna({ sintonia: v })} width={300} />
                 </span>
               </div>
-              <div style={{ marginTop: 10 }}>
-                <div style={{ ...styles.detail, marginBottom: 4 }}>{t("equip.lingue")}</div>
-                <CampoConTendina
-                  value={scheda.lingue}
-                  opzioni={LINGUE_5E}
-                  onChange={(v) => aggiorna({ lingue: v })}
-                  title="Lingue conosciute: aggiungi dalla tendina o scrivi"
-                />
-              </div>
-              
+
               <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
                 {DENARI.map(({ key, label }) => (
                   <div key={key} style={{ ...styles.vitalBox, minHeight: 'auto', padding: '6px 4px' }}>

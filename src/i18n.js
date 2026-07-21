@@ -173,7 +173,7 @@ export const DIZIONARIO = {
     'sez.tratti_specie': 'Tratti della specie',
     'sez.talenti': 'Talenti',
     'sez.addestramento': 'Addestramento',
-    'sez.equipaggiamento': 'Equipaggiamento e lingue',
+    'sez.equipaggiamento': 'Equipaggiamento',
     'sez.aspetto': 'Aspetto, Carattere, Storia',
     'sez.importa': 'Importa / esporta scheda',
     // Barra del nome
@@ -276,6 +276,7 @@ export const DIZIONARIO = {
     'talenti.ph': 'Es. Guerramaga, Guaritore, Robusto…',
     'equip.ph': 'Zaino, corda, razioni… (scrivi o scegli dalla lista)',
     'equip.lingue': 'Lingue',
+    'equip.lingue_tooltip': 'Lingue conosciute: aggiungi dalla tendina o scrivi',
     'equip.sintonia': 'Sintonia con un oggetto magico:',
     'aspetto.aspetto': 'Aspetto',
     'aspetto.aspetto_ph': 'Aspetto fisico del personaggio…',
@@ -482,7 +483,7 @@ export const DIZIONARIO = {
     'sez.tratti_specie': 'Species Traits',
     'sez.talenti': 'Feats',
     'sez.addestramento': 'Training',
-    'sez.equipaggiamento': 'Equipment & Languages',
+    'sez.equipaggiamento': 'Equipment',
     'sez.aspetto': 'Appearance, Character, Backstory',
     'sez.importa': 'Import / Export Sheet',
     // Name bar
@@ -585,6 +586,7 @@ export const DIZIONARIO = {
     'talenti.ph': 'E.g. War Caster, Healer, Tough…',
     'equip.ph': 'Backpack, rope, rations… (type or pick from the list)',
     'equip.lingue': 'Languages',
+    'equip.lingue_tooltip': 'Known languages: add from the dropdown or type',
     'equip.sintonia': 'Attunement to a magic item:',
     'aspetto.aspetto': 'Appearance',
     'aspetto.aspetto_ph': 'Physical appearance of the character…',
