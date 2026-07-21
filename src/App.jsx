@@ -1007,14 +1007,17 @@ function generaAvatar(classe, specie, nome) {
   const iniziale = ((nome || specie || '?').trim()[0] || '?').toUpperCase();
 
   const eroe = dClasse
-    ? `<g transform="translate(96,78) scale(0.62)">
+    ? `<g transform="translate(112,26) scale(0.56)">
          <path d="${dClasse}" fill="rgba(0,0,0,0.28)" transform="translate(6,8)"/>
          <path d="${dClasse}" fill="#fdf6e3"/>
        </g>`
-    : `<text x="256" y="330" font-size="300" font-family="Georgia,serif" fill="#fdf6e3" text-anchor="middle">${iniziale}</text>`;
+    : `<text x="256" y="250" font-size="260" font-family="Georgia,serif" fill="#fdf6e3" text-anchor="middle">${iniziale}</text>`;
+  // Distintivo di specie: in basso al CENTRO (non a destra) così resta visibile
+  // anche quando il ritratto è un rettangolo verticale con object-fit: cover,
+  // che ritaglia i lati dell'immagine quadrata.
   const distintivo = dSpecie
-    ? `<circle cx="398" cy="400" r="92" fill="rgba(0,0,0,0.4)" stroke="#fdf6e3" stroke-width="6"/>
-       <g transform="translate(338,340) scale(0.235)"><path d="${dSpecie}" fill="#fdf6e3"/></g>`
+    ? `<circle cx="256" cy="420" r="74" fill="rgba(0,0,0,0.42)" stroke="#fdf6e3" stroke-width="6"/>
+       <g transform="translate(202,366) scale(0.21)"><path d="${dSpecie}" fill="#fdf6e3"/></g>`
     : '';
 
   const svg =
@@ -2989,7 +2992,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.57';
+const APP_VERSION = '1.9.58';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
