@@ -2994,7 +2994,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.66';
+const APP_VERSION = '1.9.67';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3180,7 +3180,7 @@ function normalizeImported(dati) {
     talenti: str(dati.talenti),
     metamagie: str(dati.metamagie),
     equipaggiamento: str(dati.equipaggiamento),
-    sintonia: str(dati.sintonia),
+    sintonia: Array.isArray(dati.sintonia) ? dati.sintonia.slice(0, 3).map(str) : str(dati.sintonia),
     lingue: str(dati.lingue),
     aspetto: str(dati.aspetto),
     trattiCaratteriali: str(dati.trattiCaratteriali),
@@ -6762,9 +6762,15 @@ export default function App() {
                   const spells = scheda.incantesimiLista.filter((s) => s.livello === liv && (!q || (s.nome || '').toLowerCase().includes(q)));
                   const haSlot = liv === 0 || ((scheda.slotIncantesimo[liv]?.totale || 0) > 0);
                   const haSpells = spells.length > 0;
+                  // Livello massimo incantabile: il più alto con slot (o almeno 1 se
+                  // sei un incantatore). Mostriamo SEMPRE i livelli fino a lì, così
+                  // puoi ri-aggiungere un incantesimo anche dopo aver tolto l'ultimo
+                  // di quel livello (bug: prima la riga spariva e non era più aggiungibile).
+                  const livelliSlot = Array.from({ length: 9 }, (_, i) => i + 1).filter((l) => (scheda.slotIncantesimo[l]?.totale || 0) > 0);
+                  const maxLivIncantabile = livelliSlot.length ? Math.max(...livelliSlot) : (scheda.incantatore?.caratteristica ? 1 : 0);
 
                   if (q && !haSpells) return null;
-                  if (!haSlot && !haSpells) return null;
+                  if (!haSlot && !haSpells && liv > maxLivIncantabile) return null;
 
                   const countLiv = scheda.incantesimiLista.filter((x) => x.livello === liv).length;
                   // Conteggio accanto al titolo: trucchetti = selezionati/conosciuti;
@@ -6900,12 +6906,29 @@ export default function App() {
                 placeholder={t("equip.ph")}
                 onChange={(v) => aggiorna({ equipaggiamento: v })}
               />
-              <div style={{ marginTop: 10 }}>
-                <span style={styles.detail}>
-                  {t("equip.sintonia")}{" "}
-                  <Editable value={scheda.sintonia} onChange={(v) => aggiorna({ sintonia: v })} width={300} />
-                </span>
-              </div>
+              {(() => {
+                // Oggetti magici sintonizzati: massimo 3 (regola 5e) → 3 slot compilabili.
+                const arr = Array.isArray(scheda.sintonia) ? scheda.sintonia : (scheda.sintonia ? [scheda.sintonia] : []);
+                const slots = [arr[0] || '', arr[1] || '', arr[2] || ''];
+                const setSlot = (i, v) => { const n = [...slots]; n[i] = v; aggiorna({ sintonia: n }); };
+                const usati = slots.filter((x) => x.trim()).length;
+                return (
+                  <div style={{ marginTop: 10 }}>
+                    <div style={{ ...styles.detail, marginBottom: 4 }}>{t("equip.sintonia")} <span style={{ color: usati >= 3 ? C.gold : C.inkDim }}>({usati}/3)</span></div>
+                    {[0, 1, 2].map((i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                        <span style={{ ...styles.detail, minWidth: 14 }}>{i + 1}.</span>
+                        <input
+                          value={slots[i]}
+                          onChange={(e) => setSlot(i, e.target.value)}
+                          placeholder={t("equip.sintonia_ph")}
+                          style={{ ...styles.inlineInput, flex: 1, minWidth: 0, maxWidth: 340, padding: '4px 8px' }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
 
               <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
                 {DENARI.map(({ key, label }) => (
