@@ -166,7 +166,7 @@ export const DIZIONARIO = {
     // Sezioni Scheda
     'sez.risorse': 'Risorse di classe',
     'sez.combattimento': 'Combattimento',
-    'sez.incantesimi': 'Incantesimi',
+    'sez.incantesimi': 'Magia',
     'sez.privilegi': 'Privilegi di classe',
     'sez.metamagia': 'Metamagia',
     'sez.privilegi_sottoclasse': 'Privilegi di sottoclasse',
@@ -245,7 +245,7 @@ export const DIZIONARIO = {
     'spell.tocca_nome': 'Tocca il nome per gli effetti · ✎ modifica · 🗑 elimina',
     'spell.trucchetti': 'Trucchetti',
     'spell.incantesimi': 'Incantesimi',
-    'spell.trucchetti_liv0': 'Trucchetti (Livello 0)',
+    'spell.trucchetti_liv0': 'Livello 0',
     'spell.n_livello': '{n}° Livello',
     'spell.col_nome': 'Nome',
     'spell.col_tempo': 'Tempo',
@@ -359,7 +359,8 @@ export const DIZIONARIO = {
     'inv.qta': 'Qta',
     'inv.peso': 'Peso',
     'inv.aggiungi_ph': 'Aggiungi oggetto (scrivi o scegli: il peso si compila)',
-    'inv.aggiungi_vuoto': 'Aggiungi una riga vuota',
+    'inv.aggiungi_vuoto': 'Aggiungi la riga scritta',
+    'inv.scegli_menu': 'Scegli dal menu',
   },
   en: {
     'app.titolo': 'Dice Table',
@@ -528,7 +529,7 @@ export const DIZIONARIO = {
     // Sezioni Scheda
     'sez.risorse': 'Class Resources',
     'sez.combattimento': 'Combat',
-    'sez.incantesimi': 'Spells',
+    'sez.incantesimi': 'Magic',
     'sez.privilegi': 'Class Features',
     'sez.metamagia': 'Metamagic',
     'sez.privilegi_sottoclasse': 'Subclass Features',
@@ -607,7 +608,7 @@ export const DIZIONARIO = {
     'spell.tocca_nome': 'Tap the name for effects · ✎ edit · 🗑 delete',
     'spell.trucchetti': 'Cantrips',
     'spell.incantesimi': 'Spells',
-    'spell.trucchetti_liv0': 'Cantrips (Level 0)',
+    'spell.trucchetti_liv0': 'Level 0',
     'spell.n_livello': 'Level {n}',
     'spell.col_nome': 'Name',
     'spell.col_tempo': 'Time',
@@ -721,7 +722,8 @@ export const DIZIONARIO = {
     'inv.qta': 'Qty',
     'inv.peso': 'Weight',
     'inv.aggiungi_ph': 'Add item (type or pick: weight auto-fills)',
-    'inv.aggiungi_vuoto': 'Add a blank row',
+    'inv.aggiungi_vuoto': 'Add the typed row',
+    'inv.scegli_menu': 'Pick from menu',
   }
 };
 

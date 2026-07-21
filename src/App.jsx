@@ -1446,8 +1446,10 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
   .app-header-title { grid-column: auto; justify-self: auto; order: -1; flex: 1 1 100%; margin-bottom: 6px !important; }
   .app-header-group { flex: 1 1 100% !important; justify-content: center !important; flex-wrap: wrap; }
   .app-header-group > button { flex: 1 1 auto; justify-content: center; }
-  /* dadi: si distribuiscono uniformi su due righe piene invece di ammassarsi */
-  .dadi-riga .dado-btn { flex: 1 1 auto; text-align: center; }
+  /* dadi: dimensione naturale e centrati quando vanno a capo (niente barra
+     larga per il d100 rimasto solo sulla riga) */
+  .dadi-riga { justify-content: center; }
+  .dadi-riga .dado-btn { flex: 0 0 auto; text-align: center; }
 }
 @media (max-width: 820px) {
   .griglia-scheda { grid-template-columns: 1fr; }
@@ -2188,7 +2190,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.74';
+const APP_VERSION = '1.9.75';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2214,6 +2216,26 @@ function loadState() {
           // così ognuno è modificabile singolarmente nel sottomenu
           if (Array.isArray(s.incantesimiLista)) {
             s.incantesimiLista = s.incantesimiLista.map((sp, i) => (sp && sp.id != null ? sp : { ...sp, id: Date.now() + i }));
+          }
+          // Migrazione legacy: se l'inventario strutturato è vuoto ma esiste il
+          // vecchio equipaggiamento testuale, converti le voci in oggetti (con
+          // peso stimato) e svuota il testo, così gli oggetti non spariscono.
+          if ((!Array.isArray(s.inventario) || s.inventario.length === 0) && typeof s.equipaggiamento === 'string' && s.equipaggiamento.trim()) {
+            s.inventario = s.equipaggiamento.split(/[;,\n]/).map((x) => x.trim()).filter(Boolean).map((nome, i) => ({
+              id: `inv-mig-${i}`, nome, qta: 1, peso: pesoStimato(nome), equip: false, categoria: '',
+            }));
+            s.equipaggiamento = '';
+          }
+          // "Fissa" il massimo di trucchetti/incantesimi per le schede che ne
+          // conoscono più di quanti la classe suggerirebbe (import da PDF): senza
+          // questo, togliere un incantesimo non sblocca mai il selettore.
+          if (Array.isArray(s.incantesimiLista)) {
+            const nTruc = s.incantesimiLista.filter((x) => x.livello === 0 && !x.bonus).length;
+            const nInc = s.incantesimiLista.filter((x) => x.livello > 0 && !x.bonus).length;
+            const baseTruc = trucchettiMax(s.classe, s.livello);
+            const baseInc = incantesimiMaxAuto(s, s.versione === '2014' ? '2014' : '2024');
+            if (!(s.maxTrucchetti > 0) && baseTruc != null && nTruc > baseTruc) s.maxTrucchetti = nTruc;
+            if (!(s.maxIncantesimi > 0) && baseInc != null && nInc > baseInc) s.maxIncantesimi = nInc;
           }
           roster.personaggi[id] = s;
         }
@@ -2326,6 +2348,20 @@ function normalizeImported(dati) {
 
   const clampTs = (v) => Math.max(0, Math.min(3, num(v, 0)));
   const pfMax = num(dati.pfMax, base.pfMax);
+  // "Fissa" il massimo di trucchetti/incantesimi quando una scheda importata ne
+  // ha PIÙ di quanti la classe/livello suggerirebbe: senza questo, il massimo
+  // seguiva il conteggio verso il basso e togliere un incantesimo non sbloccava
+  // mai il selettore (restava sempre "pieno"). Fissandolo, rimuoverne uno ti
+  // riporta sotto il tetto e riabilita l'aggiunta.
+  const versionePin = dati.versione === '2014' ? '2014' : '2024';
+  const livelloPin = num(dati.livello, base.livello);
+  const schedaPin = { classe: str(dati.classe), livello: livelloPin, incantatore: { caratteristica: carIncantatore }, caratteristiche: car };
+  const nTruccPin = incantesimiLista.filter((s) => s.livello === 0 && !s.bonus).length;
+  const nIncPin = incantesimiLista.filter((s) => s.livello > 0 && !s.bonus).length;
+  const baseTruccPin = trucchettiMax(str(dati.classe), livelloPin);
+  const baseIncPin = incantesimiMaxAuto(schedaPin, versionePin);
+  const maxTruccIniziale = num(dati.maxTrucchetti, 0) || (baseTruccPin != null && nTruccPin > baseTruccPin ? nTruccPin : 0);
+  const maxIncIniziale = num(dati.maxIncantesimi, 0) || (baseIncPin != null && nIncPin > baseIncPin ? nIncPin : 0);
   return {
     ...base,
     pfTemp: num(dati.pfTemp, 0),
@@ -2347,8 +2383,8 @@ function normalizeImported(dati) {
     specie: str(dati.specie),
     allineamento: str(dati.allineamento),
     versione: dati.versione === '2014' ? '2014' : '2024',
-    maxTrucchetti: num(dati.maxTrucchetti, 0),
-    maxIncantesimi: num(dati.maxIncantesimi, 0),
+    maxTrucchetti: maxTruccIniziale,
+    maxIncantesimi: maxIncIniziale,
     livello: num(dati.livello, base.livello),
     pe: num(dati.pe, 0),
     ca: num(dati.ca, base.ca),
@@ -2375,19 +2411,22 @@ function normalizeImported(dati) {
     metamagie: str(dati.metamagie),
     equipaggiamento: str(dati.equipaggiamento),
     inventario: (() => {
-      if (Array.isArray(dati.inventario)) {
+      // Usa l'inventario strutturato solo se NON è vuoto: un array vuoto salvato
+      // in precedenza non deve nascondere l'equipaggiamento testuale da migrare
+      // (bug: gli oggetti sparivano perché [] aveva la precedenza sul testo).
+      if (Array.isArray(dati.inventario) && dati.inventario.length > 0) {
         return dati.inventario.map((o, i) => ({
           id: o.id || `inv-${i}-${Math.random().toString(36).slice(2, 6)}`,
           nome: str(o.nome), qta: Math.max(1, num(o.qta, 1)), peso: Math.max(0, Number(o.peso) || 0),
           equip: !!o.equip, categoria: str(o.categoria),
         }));
       }
-      // Migrazione: il vecchio equipaggiamento testuale (voci separate da ; o ,)
-      // diventa una lista di oggetti (peso 0, da compilare).
+      // Migrazione: il vecchio equipaggiamento testuale (voci separate da ; , o
+      // a capo) diventa una lista di oggetti, con peso stimato dal nome.
       const testo = str(dati.equipaggiamento);
       if (!testo) return [];
       return testo.split(/[;,\n]/).map((s) => s.trim()).filter(Boolean).map((nome, i) => ({
-        id: `inv-mig-${i}`, nome, qta: 1, peso: 0, equip: false, categoria: '',
+        id: `inv-mig-${i}`, nome, qta: 1, peso: pesoStimato(nome), equip: false, categoria: '',
       }));
     })(),
     sintonia: Array.isArray(dati.sintonia) ? dati.sintonia.slice(0, 3).map(str) : str(dati.sintonia),
@@ -5987,13 +6026,11 @@ export default function App() {
                 })}
               </div>
 
-              {/* Trucchetti e incantesimi */}
-              <h3 style={{ ...styles.panelTitle, fontSize: 15, marginTop: 14 }}>
-                {t('spell.trucchetti_e_incantesimi')}
-              </h3>
+              {/* Controlli: ricerca + conteggi. I gruppi "Trucchetti" e
+                  "Incantesimi" hanno ciascuno la propria intestazione qui sotto. */}
               {(() => {
                 return (
-                  <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginTop: 14, marginBottom: 8 }}>
                     <input
                       type="search"
                       value={filtroIncantesimo}
@@ -6018,7 +6055,15 @@ export default function App() {
                 );
               })()}
               <div style={{ overflowX: 'auto' }}>
-                {Array.from({ length: 10 }, (_, liv) => {
+                {(() => {
+                const bannerStyle = { ...styles.panelTitle, fontSize: 15, marginTop: 14, marginBottom: 8, borderBottom: `2px solid ${C.border}`, paddingBottom: 4 };
+                const qBanner = filtroIncantesimo.trim().toLowerCase();
+                const livelliConSlot = Array.from({ length: 9 }, (_, i) => i + 1).filter((l) => (scheda.slotIncantesimo[l]?.totale || 0) > 0);
+                const maxLivBanner = livelliConSlot.length ? Math.max(...livelliConSlot) : (scheda.incantatore?.caratteristica ? 1 : 0);
+                const mostraIncantesimi = qBanner
+                  ? scheda.incantesimiLista.some((s) => s.livello >= 1 && (s.nome || '').toLowerCase().includes(qBanner))
+                  : (maxLivBanner >= 1 || scheda.incantesimiLista.some((s) => s.livello >= 1));
+                const renderLivello = (liv) => {
                   const q = filtroIncantesimo.trim().toLowerCase();
                   const spells = scheda.incantesimiLista.filter((s) => s.livello === liv && (!q || (s.nome || '').toLowerCase().includes(q)));
                   const haSlot = liv === 0 || ((scheda.slotIncantesimo[liv]?.totale || 0) > 0);
@@ -6181,7 +6226,16 @@ export default function App() {
                       })()}
                     </div>
                   );
-                })}
+                };
+                return (
+                  <>
+                    <h3 style={bannerStyle}>{t('spell.trucchetti')}</h3>
+                    {renderLivello(0)}
+                    {mostraIncantesimi && <h3 style={bannerStyle}>{t('spell.incantesimi')}</h3>}
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((liv) => renderLivello(liv))}
+                  </>
+                );
+                })()}
               </div>
             </Sezione>
 
@@ -6275,16 +6329,37 @@ export default function App() {
                         </table>
                       </div>
                     )}
-                    {/* Aggiungi oggetto (con pesi noti auto-compilati) */}
+                    {/* Aggiungi oggetto: puoi SCRIVERLO nel campo (autocomplete +
+                        Invio o tasto Aggiungi) OPPURE SCEGLIERLO dal menu a
+                        tendina, che lo inserisce subito con il peso noto. */}
                     <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                       <input
+                        id="inv-add-input"
                         list="inv-presets"
                         placeholder={t('inv.aggiungi_ph')}
-                        style={{ ...styles.inlineInput, flex: 1, minWidth: 150, padding: '6px 8px' }}
+                        style={{ ...styles.inlineInput, flex: 1, minWidth: 140, padding: '6px 8px' }}
                         onKeyDown={(e) => { if (e.key === 'Enter' && e.target.value.trim()) { addItem(e.target.value.trim()); e.target.value = ''; } }}
                       />
                       <datalist id="inv-presets">{NOMI_OGGETTI.map((n) => <option key={n} value={n} />)}</datalist>
-                      <button style={{ ...styles.buttonMini }} title={t('inv.aggiungi_vuoto')} onClick={() => addItem('')}>➕ {t('common.aggiungi')}</button>
+                      <button
+                        style={{ ...styles.buttonMini }}
+                        title={t('inv.aggiungi_vuoto')}
+                        onClick={() => {
+                          const el = document.getElementById('inv-add-input');
+                          const v = el && el.value.trim();
+                          addItem(v || '');
+                          if (el) el.value = '';
+                        }}
+                      >➕ {t('common.aggiungi')}</button>
+                      <select
+                        value=""
+                        style={{ ...styles.inlineInput, padding: '6px 8px', minWidth: 130 }}
+                        title={t('inv.scegli_menu')}
+                        onChange={(e) => { if (e.target.value) { addItem(e.target.value); e.target.value = ''; } }}
+                      >
+                        <option value="">🔽 {t('inv.scegli_menu')}</option>
+                        {NOMI_OGGETTI.map((n) => <option key={n} value={n}>{n}</option>)}
+                      </select>
                     </div>
                   </div>
                 );
