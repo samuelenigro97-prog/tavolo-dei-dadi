@@ -1450,6 +1450,10 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
      larga per il d100 rimasto solo sulla riga) */
   .dadi-riga { justify-content: center; }
   .dadi-riga .dado-btn { flex: 0 0 auto; text-align: center; }
+  /* tabelle incantesimi più compatte sul telefono: celle strette così i
+     tasti azione (✎ 🗑) restano visibili senza scorrere in orizzontale */
+  .spell-table { font-size: 12px; }
+  .spell-table th, .spell-table td { padding: 5px 4px !important; }
 }
 @media (max-width: 820px) {
   .griglia-scheda { grid-template-columns: 1fr; }
@@ -2190,7 +2194,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.75';
+const APP_VERSION = '1.9.76';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2980,6 +2984,8 @@ export default function App() {
   }, [transcribeUrl]);
   const [pdfStato, setPdfStato] = useState(''); // '' | 'loading'
   const [filtroIncantesimo, setFiltroIncantesimo] = useState('');
+  const [addLivIncantesimo, setAddLivIncantesimo] = useState(0); // livello scelto nella barra "aggiungi"
+  const [addBonusIncantesimo, setAddBonusIncantesimo] = useState(false); // aggiungi come incantesimo bonus ✦
   const [espressioneLibera, setEspressioneLibera] = useState('');
   const [erroreEspressione, setErroreEspressione] = useState(false);
   const [storico, setStorico] = useState([]);
@@ -6026,71 +6032,103 @@ export default function App() {
                 })}
               </div>
 
-              {/* Controlli: ricerca + conteggi. I gruppi "Trucchetti" e
-                  "Incantesimi" hanno ciascuno la propria intestazione qui sotto. */}
+              {/* Barra unica: "aggiungi" (livello + incantesimo + ✦ bonus),
+                  poi ricerca e conteggi. Niente più selettori ripetuti sotto
+                  ogni livello: molto più ordinato. */}
               {(() => {
+                const dettagliInc = (nome) => {
+                  const desc = spiegaIncantesimo(nome) || '';
+                  let tempo = 'AZ';
+                  if (/reazione/i.test(desc)) tempo = 'REAZ';
+                  else if (/azione bonus/i.test(desc)) tempo = 'AZ BONUS';
+                  let gittata = '';
+                  const mG = desc.match(/gittata\s*(\d+(?:[.,]\d+)?)\s*m/i);
+                  const mR = desc.match(/raggio\s*(\d+(?:[.,]\d+)?)\s*m/i);
+                  const mC = desc.match(/cono\s*(?:di\s*)?(\d+(?:[.,]\d+)?)\s*m/i);
+                  if (mG) gittata = `${mG[1]}m`;
+                  else if (/tocc|contatto/i.test(desc)) gittata = 'contatto';
+                  else if (/personale|te stesso|su di te|intorno a te/i.test(desc)) gittata = 'personale';
+                  else if (mR) gittata = `raggio ${mR[1]}m`;
+                  else if (mC) gittata = `cono ${mC[1]}m`;
+                  const note = [/\brituale\b/i.test(desc) && 'Rituale', /concentrazione/i.test(desc) && 'Conc.'].filter(Boolean).join(', ');
+                  return { tempo, gittata, note };
+                };
+                const aggiungiInc = (nome, liv, manuale, bonus) => {
+                  const d = manuale ? { tempo: '1 Az.', gittata: '', note: '' } : dettagliInc(nome);
+                  aggiorna({ incantesimiLista: [...scheda.incantesimiLista,
+                    { id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, livello: liv, nome, tempo: d.tempo, gittata: d.gittata, note: d.note, preparato: true, ...(bonus ? { bonus: true } : {}) }] });
+                };
+                const livSlot = Array.from({ length: 9 }, (_, i) => i + 1).filter((l) => (scheda.slotIncantesimo[l]?.totale || 0) > 0);
+                const maxLiv = livSlot.length ? Math.max(...livSlot) : (scheda.incantatore?.caratteristica ? 1 : 0);
+                const livelliAdd = Array.from({ length: maxLiv + 1 }, (_, i) => i); // 0..maxLiv
+                const addLiv = Math.min(addLivIncantesimo, maxLiv);
+                const suggeriti = incantesimiClasseLivello(scheda.classe, addLiv);
+                const gia = new Set(scheda.incantesimiLista.filter((s) => s.livello === addLiv).map((s) => (s.nome || '').toLowerCase()));
+                const pieno = addLiv === 0 ? trucchettiPieno : incantesimiPieno;
+                const bloccato = pieno && !addBonusIncantesimo; // i bonus ✦ bypassano il limite
                 return (
-                  <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginTop: 14, marginBottom: 8 }}>
-                    <input
-                      type="search"
-                      value={filtroIncantesimo}
-                      onChange={(e) => setFiltroIncantesimo(e.target.value)}
-                      placeholder={t('spell.cerca')}
-                      style={{ ...styles.inlineInput, padding: '5px 8px', width: 200 }}
-                    />
-                    <span style={styles.detail}>{t('spell.tocca_nome')}</span>
-                    {/* Conteggi con massimo modificabile: al limite si bloccano gli "Aggiungi" */}
-                    {maxTrucchetti != null && (
-                      <span style={{ ...styles.detail, color: trucchettiPieno ? C.goldDark : C.inkDim, fontWeight: trucchettiPieno ? 700 : 400 }} title="Trucchetti conosciuti / massimo (modificabile). Al massimo il tasto Aggiungi si blocca.">
-                        {t('spell.trucchetti')} <strong>{nTrucchetti}</strong>/<Editable value={maxTrucchetti} tipo="numero" width={24} onChange={(v) => aggiorna({ maxTrucchetti: Math.max(0, v) })} />
-                      </span>
-                    )}
-                    {maxIncantesimi != null && (
-                      <span style={{ ...styles.detail, color: incantesimiPieno ? C.goldDark : C.inkDim, fontWeight: incantesimiPieno ? 700 : 400 }} title="Incantesimi (liv. 1+) noti o preparati / massimo (modificabile). Al massimo il tasto Aggiungi si blocca.">
-                        {t('spell.incantesimi')} <strong>{nIncantesimi}</strong>/<Editable value={maxIncantesimi} tipo="numero" width={24} onChange={(v) => aggiorna({ maxIncantesimi: Math.max(0, v) })} />
-                        {nBonus > 0 && <span style={{ color: C.goldDark, fontWeight: 700 }}> · ✦ {nBonus} {t('spell.bonus_badge')}</span>}
-                      </span>
-                    )}
+                  <div style={{ marginTop: 14, marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {/* Riga aggiungi */}
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', padding: 8, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}` }}>
+                      <span style={{ ...styles.detail, fontWeight: 700, flexShrink: 0 }}>＋ {t('spell.aggiungi')}</span>
+                      <select value={addLiv} onChange={(e) => setAddLivIncantesimo(Number(e.target.value))}
+                        style={{ ...styles.inlineInput, padding: '6px 8px', flexShrink: 0 }} title={t('spell.livello_scelto')}>
+                        {livelliAdd.map((l) => <option key={l} value={l}>{l === 0 ? t('spell.trucchetto') : t('spell.n_livello', { n: l })}</option>)}
+                      </select>
+                      <select className="add-spell" value="" disabled={bloccato}
+                        title={bloccato ? t('spell.max_tooltip') : undefined}
+                        style={{ ...styles.button, fontSize: 13, padding: '7px 12px', fontWeight: 600, cursor: bloccato ? 'not-allowed' : 'pointer', opacity: bloccato ? 0.55 : 1, flex: 1, minWidth: 170, maxWidth: '100%' }}
+                        onChange={(e) => { const v = e.target.value; if (!v) return; aggiungiInc(v === '__manuale__' ? 'Nuovo incantesimo' : v, addLiv, v === '__manuale__', addBonusIncantesimo); e.target.value = ''; }}>
+                        <option value="">{bloccato ? (addLiv === 0 ? t('spell.max_trucchetti') : t('spell.max_incantesimi')) : t('spell.scegli_incantesimo')}…</option>
+                        <option value="__manuale__">{t('spell.scrivi_mano')}</option>
+                        {suggeriti.length > 0 && (
+                          <optgroup label={t('spell.incantesimi_da', { classe: scheda.classe })}>
+                            {suggeriti.map((n) => <option key={n} value={n} disabled={gia.has(n.toLowerCase())}>{gia.has(n.toLowerCase()) ? `✓ ${n}` : n}</option>)}
+                          </optgroup>
+                        )}
+                      </select>
+                      <label style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', flexShrink: 0, color: addBonusIncantesimo ? C.goldDark : C.inkDim, fontWeight: addBonusIncantesimo ? 700 : 400 }} title={t('spell.bonus_tooltip')}>
+                        <input type="checkbox" checked={addBonusIncantesimo} onChange={(e) => setAddBonusIncantesimo(e.target.checked)} /> ✦ {t('spell.bonus_badge')}
+                      </label>
+                    </div>
+                    {/* Riga ricerca + conteggi */}
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <input type="search" value={filtroIncantesimo} onChange={(e) => setFiltroIncantesimo(e.target.value)} placeholder={t('spell.cerca')} style={{ ...styles.inlineInput, padding: '5px 8px', width: 180 }} />
+                      {maxTrucchetti != null && (
+                        <span style={{ ...styles.detail, color: trucchettiPieno ? C.goldDark : C.inkDim, fontWeight: trucchettiPieno ? 700 : 400 }} title="Trucchetti conosciuti / massimo (modificabile).">
+                          {t('spell.trucchetti')} <strong>{nTrucchetti}</strong>/<Editable value={maxTrucchetti} tipo="numero" width={24} onChange={(v) => aggiorna({ maxTrucchetti: Math.max(0, v) })} />
+                        </span>
+                      )}
+                      {maxIncantesimi != null && (
+                        <span style={{ ...styles.detail, color: incantesimiPieno ? C.goldDark : C.inkDim, fontWeight: incantesimiPieno ? 700 : 400 }} title="Incantesimi (liv. 1+) noti o preparati / massimo (modificabile).">
+                          {t('spell.incantesimi')} <strong>{nIncantesimi}</strong>/<Editable value={maxIncantesimi} tipo="numero" width={24} onChange={(v) => aggiorna({ maxIncantesimi: Math.max(0, v) })} />
+                          {nBonus > 0 && <span style={{ color: C.goldDark, fontWeight: 700 }}> · ✦ {nBonus}</span>}
+                        </span>
+                      )}
+                      <span style={{ ...styles.detail, fontSize: 11 }}>{t('spell.tocca_nome')}</span>
+                    </div>
                   </div>
                 );
               })()}
               <div style={{ overflowX: 'auto' }}>
                 {(() => {
                 const bannerStyle = { ...styles.panelTitle, fontSize: 15, marginTop: 14, marginBottom: 8, borderBottom: `2px solid ${C.border}`, paddingBottom: 4 };
-                const qBanner = filtroIncantesimo.trim().toLowerCase();
-                const livelliConSlot = Array.from({ length: 9 }, (_, i) => i + 1).filter((l) => (scheda.slotIncantesimo[l]?.totale || 0) > 0);
-                const maxLivBanner = livelliConSlot.length ? Math.max(...livelliConSlot) : (scheda.incantatore?.caratteristica ? 1 : 0);
-                const mostraIncantesimi = qBanner
-                  ? scheda.incantesimiLista.some((s) => s.livello >= 1 && (s.nome || '').toLowerCase().includes(qBanner))
-                  : (maxLivBanner >= 1 || scheda.incantesimiLista.some((s) => s.livello >= 1));
+                const q = filtroIncantesimo.trim().toLowerCase();
+                const match = (s) => !q || (s.nome || '').toLowerCase().includes(q);
+                const haTrucchetti = scheda.incantesimiLista.some((s) => s.livello === 0 && match(s));
+                const haIncantesimi = scheda.incantesimiLista.some((s) => s.livello >= 1 && match(s));
                 const renderLivello = (liv) => {
-                  const q = filtroIncantesimo.trim().toLowerCase();
-                  const spells = scheda.incantesimiLista.filter((s) => s.livello === liv && (!q || (s.nome || '').toLowerCase().includes(q)));
-                  const haSlot = liv === 0 || ((scheda.slotIncantesimo[liv]?.totale || 0) > 0);
-                  const haSpells = spells.length > 0;
-                  // Livello massimo incantabile: il più alto con slot (o almeno 1 se
-                  // sei un incantatore). Mostriamo SEMPRE i livelli fino a lì, così
-                  // puoi ri-aggiungere un incantesimo anche dopo aver tolto l'ultimo
-                  // di quel livello (bug: prima la riga spariva e non era più aggiungibile).
-                  const livelliSlot = Array.from({ length: 9 }, (_, i) => i + 1).filter((l) => (scheda.slotIncantesimo[l]?.totale || 0) > 0);
-                  const maxLivIncantabile = livelliSlot.length ? Math.max(...livelliSlot) : (scheda.incantatore?.caratteristica ? 1 : 0);
-
-                  if (q && !haSpells) return null;
-                  if (!haSlot && !haSpells && liv > maxLivIncantabile) return null;
-
+                  const spells = scheda.incantesimiLista.filter((s) => s.livello === liv && match(s));
+                  if (spells.length === 0) return null; // mostra solo i livelli con incantesimi
                   const countLiv = scheda.incantesimiLista.filter((x) => x.livello === liv).length;
-                  // Conteggio accanto al titolo: trucchetti = selezionati/conosciuti;
-                  // livelli 1+ = quanti ne hai a quel livello.
-                  const conteggio = liv === 0
-                    ? (maxTrucchetti != null ? `${countLiv}/${maxTrucchetti}` : `${countLiv}`)
-                    : `${countLiv}`;
+                  const conteggio = liv === 0 ? (maxTrucchetti != null ? `${countLiv}/${maxTrucchetti}` : `${countLiv}`) : `${countLiv}`;
                   return (
-                    <div key={liv} style={{ marginBottom: 16 }}>
+                    <div key={liv} style={{ marginBottom: 14 }}>
                       <h4 style={{ fontSize: 12, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5, borderBottom: `1px solid ${C.border}`, paddingBottom: 2, marginBottom: 6, display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                         <span>{liv === 0 ? t('spell.trucchetti_liv0') : t('spell.n_livello', { n: liv })}</span>
                         <span style={{ color: (liv === 0 && trucchettiPieno) ? C.goldDark : C.inkDim, fontWeight: 700 }}>{conteggio}</span>
                       </h4>
-                      <table style={styles.table}>
+                      <table className="spell-table" style={styles.table}>
                         <thead>
                           <tr>
                             <th style={styles.th}>{t('spell.col_nome')}</th>
@@ -6133,105 +6171,17 @@ export default function App() {
                           })}
                         </tbody>
                       </table>
-                      {(() => {
-                        const suggeriti = incantesimiClasseLivello(scheda.classe, liv);
-                        const gia = new Set(scheda.incantesimiLista.filter((s) => s.livello === liv).map((s) => (s.nome || '').toLowerCase()));
-                        // Ricava tempo/gittata/note dalla descrizione dell'incantesimo
-                        // (le meccaniche sono nel testo di SPIEG_INCANTESIMI), così
-                        // aggiungendo un incantesimo noto i dettagli si compilano da soli.
-                        const dettagliInc = (nome) => {
-                          const desc = spiegaIncantesimo(nome) || '';
-                          let tempo = 'AZ';
-                          if (/reazione/i.test(desc)) tempo = 'REAZ';
-                          else if (/azione bonus/i.test(desc)) tempo = 'AZ BONUS';
-                          let gittata = '';
-                          const mG = desc.match(/gittata\s*(\d+(?:[.,]\d+)?)\s*m/i);
-                          const mR = desc.match(/raggio\s*(\d+(?:[.,]\d+)?)\s*m/i);
-                          const mC = desc.match(/cono\s*(?:di\s*)?(\d+(?:[.,]\d+)?)\s*m/i);
-                          if (mG) gittata = `${mG[1]}m`;
-                          else if (/tocc|contatto/i.test(desc)) gittata = 'contatto';
-                          else if (/personale|te stesso|su di te|intorno a te/i.test(desc)) gittata = 'personale';
-                          else if (mR) gittata = `raggio ${mR[1]}m`;
-                          else if (mC) gittata = `cono ${mC[1]}m`;
-                          const note = [/\brituale\b/i.test(desc) && 'Rituale', /concentrazione/i.test(desc) && 'Conc.'].filter(Boolean).join(', ');
-                          return { tempo, gittata, note };
-                        };
-                        const aggiungiInc = (nome, manuale, bonus) => {
-                          const d = manuale ? { tempo: '1 Az.', gittata: '', note: '' } : dettagliInc(nome);
-                          aggiorna({
-                            incantesimiLista: [
-                              ...scheda.incantesimiLista,
-                              { id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, livello: liv, nome, tempo: d.tempo, gittata: d.gittata, note: d.note, preparato: true, ...(bonus ? { bonus: true } : {}) },
-                            ],
-                          });
-                        };
-                        // Blocco rigido: al massimo per classe/livello non aggiungi altri
-                        // incantesimi NORMALI. Quelli BONUS (razza/sottoclasse/talento) si
-                        // aggiungono comunque dal menu ✦ e non contano verso il limite.
-                        const pieno = liv === 0 ? trucchettiPieno : incantesimiPieno;
-                        const etichetta = pieno
-                          ? (liv === 0 ? t('spell.max_trucchetti') : t('spell.max_incantesimi'))
-                          : (liv === 0 ? t('spell.aggiungi_trucchetto') : t('spell.aggiungi_incantesimo_liv', { n: liv }));
-                        return (
-                          <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-                            <select
-                              className="add-spell"
-                              value=""
-                              disabled={pieno}
-                              title={pieno ? t('spell.max_tooltip') : undefined}
-                              style={{ ...styles.button, fontSize: 13, padding: '7px 12px', fontWeight: 600, cursor: pieno ? 'not-allowed' : 'pointer', opacity: pieno ? 0.55 : 1, maxWidth: '100%' }}
-                              onChange={(e) => {
-                                const v = e.target.value;
-                                if (!v) return;
-                                aggiungiInc(v === '__manuale__' ? 'Nuovo incantesimo' : v, v === '__manuale__', false);
-                                e.target.value = '';
-                              }}
-                            >
-                              <option value="">{etichetta}…</option>
-                              <option value="__manuale__">{t('spell.scrivi_mano')}</option>
-                              {suggeriti.length > 0 && (
-                                <optgroup label={t('spell.incantesimi_da', { classe: scheda.classe })}>
-                                  {suggeriti.map((n) => (
-                                    <option key={n} value={n} disabled={gia.has(n.toLowerCase())}>
-                                      {gia.has(n.toLowerCase()) ? `✓ ${n}` : n}
-                                    </option>
-                                  ))}
-                                </optgroup>
-                              )}
-                            </select>
-                            <select
-                              className="add-spell"
-                              value=""
-                              title={t('spell.bonus_tooltip')}
-                              style={{ ...styles.buttonMini, fontSize: 12, padding: '6px 8px', cursor: 'pointer', maxWidth: '100%', borderColor: C.goldDark, color: C.goldDark }}
-                              onChange={(e) => {
-                                const v = e.target.value;
-                                if (!v) return;
-                                aggiungiInc(v === '__manuale__' ? 'Nuovo incantesimo' : v, v === '__manuale__', true);
-                                e.target.value = '';
-                              }}
-                            >
-                              <option value="">✦ {t('spell.bonus_add')}…</option>
-                              <option value="__manuale__">{t('spell.scrivi_mano')}</option>
-                              {suggeriti.length > 0 && (
-                                <optgroup label={t('spell.incantesimi_da', { classe: scheda.classe })}>
-                                  {suggeriti.map((n) => (
-                                    <option key={n} value={n}>{n}</option>
-                                  ))}
-                                </optgroup>
-                              )}
-                            </select>
-                          </div>
-                        );
-                      })()}
                     </div>
                   );
                 };
+                if (!haTrucchetti && !haIncantesimi) {
+                  return <p style={{ ...styles.detail, textAlign: 'center', padding: '12px 0', opacity: 0.8 }}>{q ? t('spell.nessun_risultato') : t('spell.vuoto')}</p>;
+                }
                 return (
                   <>
-                    <h3 style={bannerStyle}>{t('spell.trucchetti')}</h3>
+                    {haTrucchetti && <h3 style={bannerStyle}>{t('spell.trucchetti')}</h3>}
                     {renderLivello(0)}
-                    {mostraIncantesimi && <h3 style={bannerStyle}>{t('spell.incantesimi')}</h3>}
+                    {haIncantesimi && <h3 style={bannerStyle}>{t('spell.incantesimi')}</h3>}
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((liv) => renderLivello(liv))}
                   </>
                 );
