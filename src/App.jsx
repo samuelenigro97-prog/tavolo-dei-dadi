@@ -955,7 +955,7 @@ const SFINIMENTO_2014 = [
 
 // Ordine di default delle sezioni collassabili (riordinabili via drag).
 // Sezioni riordinabili via drag. 'import' NON è qui: resta sempre fissa in fondo.
-const ORDINE_SEZIONI_DEFAULT = ['privilegi', 'trattiSpecie', 'talenti', 'addestramento', 'equipaggiamento', 'aspetto'];
+const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'risorse', 'privilegi', 'privilegiSottoclasse', 'metamagia', 'trattiSpecie', 'talenti', 'addestramento', 'equipaggiamento', 'aspetto'];
 
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 function coloreClasse(classe) {
@@ -6455,7 +6455,7 @@ export default function App() {
             })}
 
             {/* Risorse di classe — compatte, sotto le caratteristiche (Carisma) */}
-            <Sezione titolo={t("sez.risorse")} {...apertoProps('risorse')}>
+            <Sezione titolo={t("sez.risorse")} {...propsSez('risorse')} {...apertoProps('risorse')}>
               {scheda.risorse.length === 0 && (
                 <p style={{ ...styles.detail, marginTop: 0, fontSize: 11 }}>
                   Nessuna risorsa. Aggiungi Ki, punti stregoneria, ira, ispirazione bardica, usi dei privilegi…
@@ -6590,7 +6590,7 @@ export default function App() {
               />
             </Sezione>
 
-            <Sezione titolo={t("sez.privilegi_sottoclasse")} {...apertoProps('privilegiSottoclasse')}>
+            <Sezione titolo={t("sez.privilegi_sottoclasse")} {...propsSez('privilegiSottoclasse')} {...apertoProps('privilegiSottoclasse')}>
               <ListaQuadratini
                 value={scheda.privilegiSottoclasse}
                 lookup={spiegaPrivilegio}
@@ -6602,7 +6602,7 @@ export default function App() {
 
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {/* Armi e attacchi — sezione collassabile */}
-            <Sezione titolo={t("sez.combattimento")} style={{ order: -2 }} {...apertoProps('attacchi')}>
+            <Sezione titolo={t("sez.combattimento")} {...propsSez('attacchi')} {...apertoProps('attacchi')}>
               <div style={{ overflowX: 'auto' }}>
                 {['Azione', 'Bonus', 'Reazione'].map((cat) => {
                   const arr = scheda.attacchi.filter((a) => (a.categoria || 'Azione') === cat);
@@ -6720,7 +6720,7 @@ export default function App() {
             </Sezione>
 
             {/* Incantesimi — sezione collassabile */}
-            <Sezione titolo={t("sez.incantesimi")} style={{ order: -1 }} {...apertoProps('incantesimi')}>
+            <Sezione titolo={t("sez.incantesimi")} {...propsSez('incantesimi')} {...apertoProps('incantesimi')}>
               <div style={{ display: 'flex', gap: 12, alignItems: 'stretch', flexWrap: 'wrap', marginBottom: 12 }}>
                 <label style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                   {t('spell.caratteristica')}{' '}
@@ -7049,7 +7049,7 @@ export default function App() {
             </Sezione>
 
             {/(stregone|sorcerer)/i.test(scheda.classe || '') && (
-              <Sezione titolo={t("sez.metamagia")} {...apertoProps('metamagia', false)}>
+              <Sezione titolo={t("sez.metamagia")} {...propsSez('metamagia')} {...apertoProps('metamagia', false)}>
                 <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8 }}>
                   {t("meta.desc")}
                 </div>
