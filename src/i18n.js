@@ -454,6 +454,8 @@ export const DIZIONARIO = {
     'cloud.caricamento': 'Carico i personaggi dal cloud…',
     'cloud.attendi': 'Un attimo di pazienza',
     'crea.crea_pg': 'Crea personaggio',
+    'atk.danno_invalido': 'Danno non impostato o non valido per questo attacco.',
+    'reset.conferma': 'Azzerare tutti i campi di "{nome}"? Il personaggio resta nella lista ma torna vuoto.',
   },
   en: {
     'app.titolo': 'Dice Table',
@@ -910,6 +912,8 @@ export const DIZIONARIO = {
     'cloud.caricamento': 'Loading characters from the cloud…',
     'cloud.attendi': 'One moment please',
     'crea.crea_pg': 'Create character',
+    'atk.danno_invalido': 'Damage not set or invalid for this attack.',
+    'reset.conferma': 'Reset all fields of "{nome}"? The character stays in the list but becomes empty.',
   }
 };
 

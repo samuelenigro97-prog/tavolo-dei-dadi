@@ -2197,7 +2197,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.79';
+const APP_VERSION = '1.9.80';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2861,8 +2861,8 @@ function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni }) {
               </datalist>
             )}
             <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-              {edit.index !== -1 && <button style={{ ...styles.buttonDanger, flex: 1 }} onClick={elimina}>🗑 Elimina</button>}
-              <button style={{ ...styles.buttonPrimary, flex: 1 }} onClick={conferma}>Salva</button>
+              {edit.index !== -1 && <button style={{ ...styles.buttonDanger, flex: 1 }} onClick={elimina}>🗑 {t('modal.elimina')}</button>}
+              <button style={{ ...styles.buttonPrimary, flex: 1 }} onClick={conferma}>{t('modal.salva')}</button>
             </div>
           </div>
         </div>
@@ -3376,7 +3376,7 @@ export default function App() {
 
   /** Azzera la scheda del personaggio attivo, mantenendolo nel roster. */
   function resetScheda() {
-    if (!window.confirm(`Azzerare tutti i campi di "${scheda.nome}"? Il personaggio resta nella lista ma torna vuoto.`)) return;
+    if (!window.confirm(t('reset.conferma', { nome: scheda.nome }))) return;
     setScheda(schedaVuota());
     setTiro(null);
     setDanni(null);
@@ -3996,7 +3996,7 @@ export default function App() {
             <div style={{ fontSize: 14, lineHeight: 1.45, color: C.ink, marginBottom: 16 }}>{conferma.testo}</div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button style={{ ...styles.button, flex: 1 }} onClick={() => setConferma(null)}>Annulla</button>
-              <button style={{ ...styles.buttonDanger, flex: 1 }} onClick={() => { const f = conferma.onConferma; setConferma(null); if (f) f(); }}>🗑 Elimina</button>
+              <button style={{ ...styles.buttonDanger, flex: 1 }} onClick={() => { const f = conferma.onConferma; setConferma(null); if (f) f(); }}>🗑 {t('modal.elimina')}</button>
             </div>
           </div>
         </div>
@@ -4035,13 +4035,13 @@ export default function App() {
                   </select>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label style={etichetta}>Tempo</label>
+                  <label style={etichetta}>{t('spell.col_tempo')}</label>
                   <input style={campo} value={s.tempo} onChange={(e) => upd({ tempo: e.target.value })} />
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <div style={{ flex: 1 }}>
-                  <label style={etichetta}>Gittata</label>
+                  <label style={etichetta}>{t('spell.col_gittata')}</label>
                   <input style={campo} value={s.gittata} onChange={(e) => upd({ gittata: e.target.value })} />
                 </div>
                 <div style={{ flex: 1 }} />
@@ -4053,7 +4053,7 @@ export default function App() {
                 <button
                   style={{ ...styles.buttonDanger, flex: 1 }}
                   onClick={() => { aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) }); setDettaglioInc(null); }}
-                >🗑 Elimina</button>
+                >🗑 {t('modal.elimina')}</button>
                 <button style={{ ...styles.buttonPrimary, flex: 1 }} onClick={() => setDettaglioInc(null)}>Fatto</button>
               </div>
             </div>
@@ -4926,7 +4926,7 @@ export default function App() {
                       </button>
                     )
                   ) : (
-                    <div style={styles.detail}>Danno non impostato o non valido per questo attacco.</div>
+                    <div style={styles.detail}>{t('atk.danno_invalido')}</div>
                   )
                 )}
               </div>
