@@ -1446,10 +1446,10 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
   .app-header-title { grid-column: auto; justify-self: auto; order: -1; flex: 1 1 100%; margin-bottom: 6px !important; }
   .app-header-group { flex: 1 1 100% !important; justify-content: center !important; flex-wrap: wrap; }
   .app-header-group > button { flex: 1 1 auto; justify-content: center; }
-  /* dadi: dimensione naturale e centrati quando vanno a capo (niente barra
-     larga per il d100 rimasto solo sulla riga) */
-  .dadi-riga { justify-content: center; }
-  .dadi-riga .dado-btn { flex: 0 0 auto; text-align: center; }
+  /* dadi: tutti su UNA sola riga (d4…d100). Si stringono in egual misura per
+     entrarci, invece di mandare il d100 a capo da solo. */
+  .dadi-riga { justify-content: center; flex-wrap: nowrap !important; gap: 4px !important; }
+  .dadi-riga .dado-btn { flex: 1 1 0; min-width: 0; padding: 6px 2px !important; text-align: center; }
   /* tabelle incantesimi più compatte sul telefono: celle strette così i
      tasti azione (✎ 🗑) restano visibili senza scorrere in orizzontale */
   .spell-table { font-size: 12px; }
@@ -2197,7 +2197,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.77';
+const APP_VERSION = '1.9.78';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
