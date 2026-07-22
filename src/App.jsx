@@ -2197,7 +2197,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.78';
+const APP_VERSION = '1.9.79';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4019,9 +4019,9 @@ export default function App() {
                 <strong style={{ color: C.goldDark, fontSize: 17 }}>{s.nome || 'Incantesimo'}</strong>
                 <button style={styles.buttonMini} onClick={() => setDettaglioInc(null)} title={t('tip.chiudi')}>✕</button>
               </div>
-              <div style={{ ...styles.detail, marginBottom: 4 }}>Modifica · {s.livello === 0 ? 'Trucchetto' : `Incantesimo di ${s.livello}° livello`}</div>
+              <div style={{ ...styles.detail, marginBottom: 4 }}>{t('modal.modifica')} · {s.livello === 0 ? t('spell.trucchetto') : t('spell.inc_liv', { n: s.livello })}</div>
 
-              <label style={etichetta}>Nome</label>
+              <label style={etichetta}>{t('crea.nome')}</label>
               <input style={campo} value={s.nome} onChange={(e) => upd({ nome: e.target.value })} list="lista-incantesimi" placeholder={t('ph.inc_nome')} />
               <datalist id="lista-incantesimi">
                 {INCANTESIMI_NOMI.map((n) => <option key={n} value={n} />)}
@@ -4029,7 +4029,7 @@ export default function App() {
               {eff && <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 12px', fontSize: 13, lineHeight: 1.4, marginTop: 6 }}>{eff}</div>}
               <div style={{ display: 'flex', gap: 8 }}>
                 <div style={{ flex: 1 }}>
-                  <label style={etichetta}>Livello</label>
+                  <label style={etichetta}>{t('spell.livello_scelto_label')}</label>
                   <select style={campo} value={s.livello} onChange={(e) => upd({ livello: Number(e.target.value) })}>
                     {Array.from({ length: 10 }, (_, i) => <option key={i} value={i}>{i === 0 ? 'Trucchetto' : `${i}° livello`}</option>)}
                   </select>
@@ -4068,8 +4068,8 @@ export default function App() {
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18,
         }}>
           <div className="cloud-spinner" style={{ fontSize: 54 }}>☁️</div>
-          <div style={{ color: '#fff', fontSize: 18, fontWeight: 700, letterSpacing: 0.5 }}>Carico i personaggi dal cloud…</div>
-          <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>Un attimo di pazienza</div>
+          <div style={{ color: '#fff', fontSize: 18, fontWeight: 700, letterSpacing: 0.5 }}>{t('cloud.caricamento')}</div>
+          <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>{t('cloud.attendi')}</div>
           <div style={{ width: 180, height: 5, borderRadius: 3, overflow: 'hidden', background: 'rgba(255,255,255,0.2)' }}>
             <div className="cloud-bar" style={{ height: '100%', background: 'linear-gradient(90deg,#e0521c,#d6a90f,#3f9a3a,#1f74d4)' }} />
           </div>
@@ -4402,20 +4402,20 @@ export default function App() {
                 style={{ ...styles.button, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, borderColor: levelUpBozza.metodo === 'media' ? C.goldDark : C.border, background: levelUpBozza.metodo === 'media' ? 'rgba(255,215,0,0.1)' : 'transparent' }}
                 onClick={() => setLevelUpBozza((b) => ({ ...b, metodo: 'media' }))}
               >
-                <div style={{ fontWeight: 'bold' }}>Media Fissa</div>
-                <div style={{ fontSize: 24, color: C.goldDark }}>+{levelUpBozza.hpGainMedia} PF</div>
-                <div style={styles.detail}>Veloce e sicuro</div>
+                <div style={{ fontWeight: 'bold' }}>{t('levelup.media_fissa')}</div>
+                <div style={{ fontSize: 24, color: C.goldDark }}>+{levelUpBozza.hpGainMedia} {t('levelup.pf')}</div>
+                <div style={styles.detail}>{t('levelup.veloce_sicuro')}</div>
               </div>
               <div
                 style={{ ...styles.button, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, borderColor: levelUpBozza.metodo === 'tiro' ? C.goldDark : C.border, background: levelUpBozza.metodo === 'tiro' ? 'rgba(255,215,0,0.1)' : 'transparent' }}
                 onClick={() => setLevelUpBozza((b) => ({ ...b, metodo: 'tiro' }))}
               >
-                <div style={{ fontWeight: 'bold' }}>Tira il Dado (1d{levelUpBozza.facceDV})</div>
+                <div style={{ fontWeight: 'bold' }}>{t('levelup.tira_dado', { facce: levelUpBozza.facceDV })}</div>
                 <div style={{ fontSize: 24, color: C.goldDark }}>
-                  {levelUpBozza.tiroFatto > 0 ? `+${Math.max(1, levelUpBozza.tiroFatto + levelUpBozza.modCos)} PF` : '?'}
+                  {levelUpBozza.tiroFatto > 0 ? `+${Math.max(1, levelUpBozza.tiroFatto + levelUpBozza.modCos)} ${t('levelup.pf')}` : '?'}
                 </div>
                 <div style={styles.detail}>
-                  {levelUpBozza.tiroFatto > 0 ? `(Hai tirato ${levelUpBozza.tiroFatto})` : <button style={{ ...styles.buttonMini, fontSize: 12 }} onClick={(e) => { e.stopPropagation(); setLevelUpBozza((b) => ({ ...b, tiroFatto: Math.floor(Math.random() * b.facceDV) + 1, metodo: 'tiro' })); }}>Tira Ora</button>}
+                  {levelUpBozza.tiroFatto > 0 ? t('levelup.hai_tirato', { n: levelUpBozza.tiroFatto }) : <button style={{ ...styles.buttonMini, fontSize: 12 }} onClick={(e) => { e.stopPropagation(); setLevelUpBozza((b) => ({ ...b, tiroFatto: Math.floor(Math.random() * b.facceDV) + 1, metodo: 'tiro' })); }}>{t('levelup.tira_ora')}</button>}
                 </div>
               </div>
             </div>
@@ -4424,7 +4424,7 @@ export default function App() {
             {mostraSceltaSub && (
               <div style={{ marginBottom: 14 }}>
                 <label style={{ ...styles.detail, display: 'block', marginBottom: 4, fontWeight: 'bold' }}>
-                  🌟 Sottoclasse — scegli la tua specializzazione
+                  🌟 {t('levelup.scegli_sottoclasse')}
                 </label>
                 <select
                   style={{ ...styles.inlineInput, width: '100%', padding: '6px 8px', fontSize: 15 }}
@@ -4444,7 +4444,7 @@ export default function App() {
                   🎯 {t('priv.aumento_car')}
                 </label>
                 <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
-                  {[['aumento', 'Aumento caratteristiche'], ['talento', 'Talento']].map(([m, lab]) => (
+                  {[['aumento', t('levelup.aumento_car')], ['talento', t('levelup.talento')]].map(([m, lab]) => (
                     <button key={m} style={{ ...styles.modeButton(levelUpBozza.asiMode === m), fontSize: 12, padding: '4px 10px' }}
                       onClick={() => setLevelUpBozza((b) => ({ ...b, asiMode: m }))}>{lab}</button>
                   ))}
@@ -4459,9 +4459,9 @@ export default function App() {
                         setLevelUpBozza((b) => ({ ...b, talento: v === '__altro' ? '' : v }));
                       }}
                     >
-                      <option value="">Scegli un talento…</option>
+                      <option value="">{t('levelup.scegli_talento')}</option>
                       {TALENTI_NOMI.map((t) => <option key={t} value={t}>{t}</option>)}
-                      <option value="__altro">Altro (scrivi a mano)…</option>
+                      <option value="__altro">{t('levelup.altro_mano')}</option>
                     </select>
                     {!TALENTI_NOMI.includes(levelUpBozza.talento) && (
                       <input
@@ -4479,7 +4479,7 @@ export default function App() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                     {['asiA', 'asiB'].map((campo) => (
                       <label key={campo} style={{ ...styles.detail, fontSize: 12 }}>
-                        <span style={{ display: 'block', marginBottom: 2 }}>+1 a…</span>
+                        <span style={{ display: 'block', marginBottom: 2 }}>{t('levelup.piu1_a')}</span>
                         <select
                           style={{ ...styles.inlineInput, width: '100%', fontSize: 13, padding: '4px 6px' }}
                           value={levelUpBozza[campo] || ''}
@@ -4491,7 +4491,7 @@ export default function App() {
                       </label>
                     ))}
                     <div style={{ gridColumn: '1 / -1', ...styles.detail, fontSize: 11, color: C.inkDim }}>
-                      Stessa caratteristica due volte = +2; due diverse = +1 ciascuna (massimo 20).
+                      {t('levelup.asi_nota')}
                     </div>
                   </div>
                 )}
@@ -4500,56 +4500,56 @@ export default function App() {
 
             {/* Riepilogo: cosa cambia salendo di livello */}
             <div style={{ ...styles.panelSoft || {}, background: 'rgba(0,0,0,0.03)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 12px', marginBottom: 14, fontSize: 13 }}>
-              <div style={{ fontWeight: 'bold', color: C.goldDark, marginBottom: 6 }}>📋 Cosa cambia</div>
-              <div style={rigaCambio}><span>Punti Ferita massimi</span><strong>{gain != null ? `+${gain}` : '—'}</strong></div>
-              <div style={rigaCambio}><span>Dadi vita</span><strong>{nuovoLivello}d{levelUpBozza.facceDV}</strong></div>
+              <div style={{ fontWeight: 'bold', color: C.goldDark, marginBottom: 6 }}>📋 {t('levelup.cosa_cambia')}</div>
+              <div style={rigaCambio}><span>{t('levelup.pf_massimi')}</span><strong>{gain != null ? `+${gain}` : '—'}</strong></div>
+              <div style={rigaCambio}><span>{t('levelup.dadi_vita')}</span><strong>{nuovoLivello}d{levelUpBozza.facceDV}</strong></div>
               {bcNuovo !== bcVecchio && (
-                <div style={rigaCambio}><span>Bonus competenza</span><strong>{conSegno(bcVecchio)} → {conSegno(bcNuovo)} ⬆️</strong></div>
+                <div style={rigaCambio}><span>{t('levelup.bonus_comp')}</span><strong>{conSegno(bcVecchio)} → {conSegno(bcNuovo)} ⬆️</strong></div>
               )}
               {slotStr && (
                 <div style={{ padding: '3px 0', borderBottom: `1px solid ${C.border}` }}>
-                  <div>Slot incantesimo (totali al {nuovoLivello}° liv.)</div>
+                  <div>{t('levelup.slot_inc', { n: nuovoLivello })}</div>
                   <div style={{ color: C.inkDim, marginTop: 2 }}>{slotStr}</div>
-                  {nuovoLivInc > 0 && <div style={{ color: C.green, marginTop: 2 }}>✨ Sblocchi gli incantesimi di {nuovoLivInc}° livello!</div>}
+                  {nuovoLivInc > 0 && <div style={{ color: C.green, marginTop: 2 }}>{t('levelup.sblocchi', { n: nuovoLivInc })}</div>}
                 </div>
               )}
               {(nuoviTrucchetti > 0 || nuoviIncantesimi > 0) && (
                 <div style={{ padding: '3px 0', borderBottom: `1px solid ${C.border}` }}>
-                  <div>Nuovi incantesimi da imparare</div>
-                  {nuoviTrucchetti > 0 && <div style={{ color: C.green, marginTop: 2 }}>• {nuoviTrucchetti} trucchetto{nuoviTrucchetti > 1 ? 'i' : ''} in più (livello 0)</div>}
-                  {nuoviIncantesimi > 0 && <div style={{ color: C.green, marginTop: 2 }}>• {nuoviIncantesimi} incantesimo{nuoviIncantesimi > 1 ? ' in più' : ' in più'} da preparare/conoscere</div>}
-                  <div style={{ ...styles.detail, fontSize: 11, color: C.inkDim, marginTop: 2 }}>Aggiungili poi nella sezione Incantesimi.</div>
+                  <div>{t('levelup.nuovi_inc')}</div>
+                  {nuoviTrucchetti > 0 && <div style={{ color: C.green, marginTop: 2 }}>• {t('levelup.piu_trucchetti', { n: nuoviTrucchetti })}</div>}
+                  {nuoviIncantesimi > 0 && <div style={{ color: C.green, marginTop: 2 }}>• {t('levelup.piu_incantesimi', { n: nuoviIncantesimi })}</div>}
+                  <div style={{ ...styles.detail, fontSize: 11, color: C.inkDim, marginTop: 2 }}>{t('levelup.aggiungi_dopo')}</div>
                 </div>
               )}
               {privNuovi && (
                 <div style={{ padding: '5px 0', borderBottom: `1px solid ${C.border}` }}>
-                  <div style={{ marginBottom: 2 }}>Nuovi privilegi di classe</div>
+                  <div style={{ marginBottom: 2 }}>{t('levelup.nuovi_priv')}</div>
                   {privNuovi.split('\n').map((r, i) => <div key={i} style={{ color: C.green }}>• {r}</div>)}
                 </div>
               )}
               {mostraSceltaSub && (
-                <div style={rigaCambio}><span>Sottoclasse</span><strong>{levelUpBozza.sottoclasse || '— da scegliere'}</strong></div>
+                <div style={rigaCambio}><span>{t('levelup.sottoclasse')}</span><strong>{levelUpBozza.sottoclasse || t('levelup.da_scegliere')}</strong></div>
               )}
               {subPrivNuovi ? (
                 <div style={{ padding: '5px 0', borderBottom: `1px solid ${C.border}` }}>
-                  <div style={{ marginBottom: 2 }}>Nuovi privilegi di sottoclasse</div>
+                  <div style={{ marginBottom: 2 }}>{t('levelup.nuovi_priv_sub')}</div>
                   {subPrivNuovi.split('\n').map((r, i) => <div key={i} style={{ color: C.green }}>• {r}</div>)}
                 </div>
               ) : haSub && !mostraSceltaSub ? (
-                <div style={{ padding: '5px 0', color: C.inkDim }}>🌟 La tua sottoclasse guadagna un nuovo privilegio (aggiungilo a mano nei Privilegi di sottoclasse).</div>
+                <div style={{ padding: '5px 0', color: C.inkDim }}>🌟 {t('levelup.sub_guadagna')}</div>
               ) : null}
               {haASI && (
                 <div style={rigaCambio}>
-                  <span>Aumento / Talento</span>
+                  <span>{t('levelup.aumento_talento')}</span>
                   <strong>{levelUpBozza.asiMode === 'talento'
-                    ? ((levelUpBozza.talento || '').trim() || '— talento da indicare')
+                    ? ((levelUpBozza.talento || '').trim() || t('levelup.talento_da_indicare'))
                     : ((levelUpBozza.asiA || levelUpBozza.asiB)
                       ? [levelUpBozza.asiA, levelUpBozza.asiB].filter(Boolean).map((k) => t('attr.' + k)).join(', ')
-                      : '— da scegliere')}</strong>
+                      : t('levelup.da_scegliere'))}</strong>
                 </div>
               )}
               {!slotStr && !privNuovi && !subPrivNuovi && !haSub && !haASI && !mostraSceltaSub && !nuoviTrucchetti && !nuoviIncantesimi && (
-                <div style={{ padding: '3px 0', color: C.inkDim }}>Nessun altro cambiamento automatico a questo livello.</div>
+                <div style={{ padding: '3px 0', color: C.inkDim }}>{t('levelup.nessun_cambio')}</div>
               )}
             </div>
 
@@ -4820,7 +4820,7 @@ export default function App() {
               )}
 
               <div style={{ display: 'flex', gap: 8 }}>
-                <button style={{ ...styles.buttonPrimary, flex: 1 }} onClick={() => creaPersonaggio(bozzaCrea)}>Crea personaggio</button>
+                <button style={{ ...styles.buttonPrimary, flex: 1 }} onClick={() => creaPersonaggio(bozzaCrea)}>{t('crea.crea_pg')}</button>
                 <button style={styles.button} onClick={() => setMostraCrea(false)}>{t('modal.annulla')}</button>
               </div>
             </div>
