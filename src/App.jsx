@@ -2221,7 +2221,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.87';
+const APP_VERSION = '1.9.88';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3986,15 +3986,25 @@ export default function App() {
   const nTrucchetti = scheda.incantesimiLista.filter((s) => s.livello === 0 && !s.bonus).length;
   const nIncantesimi = scheda.incantesimiLista.filter((s) => s.livello > 0 && !s.bonus).length;
   const nBonus = scheda.incantesimiLista.filter((s) => s.bonus).length;
+  // Incantatori che PREPARANO (Mago, Chierico, Druido, Paladino): il "libro/lista"
+  // dei conosciuti è illimitato, ma ogni giorno se ne preparano fino a un massimo.
+  // Gli altri (Stregone, Bardo, Warlock, Ranger) CONOSCONO un numero fisso, sempre
+  // pronto: nessuna preparazione separata.
+  const classePreparata = /(\bmago\b|wizard|chierico|cleric|druido|druid|paladino|paladin)/i.test(scheda.classe || '');
+  const nPreparati = scheda.incantesimiLista.filter((s) => s.livello > 0 && !s.bonus && s.preparato !== false).length;
   // base = override manuale (>0) oppure automatico da classe/livello/versione
   const baseTrucchetti = (scheda.maxTrucchetti > 0) ? scheda.maxTrucchetti : trucchettiMax(scheda.classe, scheda.livello);
   const baseIncantesimi = (scheda.maxIncantesimi > 0) ? scheda.maxIncantesimi : incantesimiMaxAuto(scheda, versione);
-  // "pieno" (e quindi blocco) quando sei al limite base; il massimo mostrato non
-  // scende mai sotto quanti ne hai già, così le schede esistenti non risultano "oltre".
   const trucchettiPieno = baseTrucchetti != null && nTrucchetti >= baseTrucchetti;
-  const incantesimiPieno = baseIncantesimi != null && nIncantesimi >= baseIncantesimi;
+  // Blocco AGGIUNTA: per chi prepara il libro è illimitato (mai pieno); per chi
+  // conosce, pieno al cap dei conosciuti.
+  const incantesimiPieno = !classePreparata && baseIncantesimi != null && nIncantesimi >= baseIncantesimi;
+  // Blocco PREPARAZIONE (solo classi che preparano): non puoi preparare più del cap.
+  const preparatiPieni = classePreparata && baseIncantesimi != null && nPreparati >= baseIncantesimi;
   const maxTrucchetti = baseTrucchetti == null ? null : Math.max(baseTrucchetti, nTrucchetti);
-  const maxIncantesimi = baseIncantesimi == null ? null : Math.max(baseIncantesimi, nIncantesimi);
+  // Per chi prepara il massimo mostrato è il cap dei preparati (fisso); per chi
+  // conosce non scende mai sotto quanti ne ha già.
+  const maxIncantesimi = baseIncantesimi == null ? null : (classePreparata ? baseIncantesimi : Math.max(baseIncantesimi, nIncantesimi));
 
   return (
     <div style={styles.app}>
@@ -6127,9 +6137,14 @@ export default function App() {
                         {t('spell.trucchetti')} <strong>{nTrucchetti}</strong>/<Editable value={maxTrucchetti} tipo="numero" width={24} onChange={(v) => aggiorna({ maxTrucchetti: Math.max(0, v) })} />
                       </span>
                     )}
+                    {maxIncantesimi != null && classePreparata && (
+                      <span style={{ ...styles.detail, color: C.inkDim, fontWeight: 500 }} title={t('spell.conosciuti_tip')}>
+                        {t('spell.conosciuti')} <strong>{nIncantesimi}</strong>
+                      </span>
+                    )}
                     {maxIncantesimi != null && (
-                      <span style={{ ...styles.detail, color: incantesimiPieno ? C.goldDark : C.inkDim, fontWeight: incantesimiPieno ? 700 : 500 }} title={t('tip.conteggio_incantesimi')}>
-                        {t('spell.incantesimi')} <strong>{nIncantesimi}</strong>/<Editable value={maxIncantesimi} tipo="numero" width={24} onChange={(v) => aggiorna({ maxIncantesimi: Math.max(0, v) })} />
+                      <span style={{ ...styles.detail, color: (classePreparata ? preparatiPieni : incantesimiPieno) ? C.goldDark : C.inkDim, fontWeight: (classePreparata ? preparatiPieni : incantesimiPieno) ? 700 : 500 }} title={classePreparata ? t('spell.preparati_tip') : t('tip.conteggio_incantesimi')}>
+                        {classePreparata ? t('spell.preparati') : t('spell.incantesimi')} <strong>{classePreparata ? nPreparati : nIncantesimi}</strong>/<Editable value={maxIncantesimi} tipo="numero" width={24} onChange={(v) => aggiorna({ maxIncantesimi: Math.max(0, v) })} />
                         {nBonus > 0 && <span style={{ color: C.goldDark, fontWeight: 700 }}> · ✦ {nBonus}</span>}
                       </span>
                     )}
@@ -6205,7 +6220,7 @@ export default function App() {
                               </span>
                             );
                             return (
-                              <div key={s.id} style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', background: C.panelLight }}>
+                              <div key={s.id} style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', background: C.panelLight, opacity: (classePreparata && s.livello >= 1 && s.preparato === false) ? 0.5 : 1 }}>
                                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
                                   <div style={{ minWidth: 0 }}>
                                     <button
@@ -6224,6 +6239,13 @@ export default function App() {
                                     )}
                                   </div>
                                   <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                                    {classePreparata && s.livello >= 1 && (
+                                      <button
+                                        style={{ ...styles.buttonMini, color: s.preparato !== false ? C.goldDark : C.inkDim, borderColor: s.preparato !== false ? C.goldDark : C.border }}
+                                        title={s.preparato !== false ? t('spell.preparato_si') : t('spell.preparato_no')}
+                                        onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, preparato: x.preparato === false } : x)) })}
+                                      >{s.preparato !== false ? '⭐' : '☆'}</button>
+                                    )}
                                     <button style={styles.buttonMini} title={t('tip.modifica')} onClick={() => setDettaglioInc(s.id)}>✎</button>
                                     <button style={{ ...styles.buttonMini, color: C.red }} title={t('tip.elimina_inc')} onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })}>🗑</button>
                                   </div>

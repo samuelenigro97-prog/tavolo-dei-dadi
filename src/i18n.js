@@ -469,6 +469,12 @@ export const DIZIONARIO = {
     'conc.auto_cd': 'CD {cd}',
     'conc.mantieni': 'Concentrazione mantenuta',
     'conc.persa': 'Concentrazione persa',
+    'spell.conosciuti': 'Conosciuti',
+    'spell.conosciuti_tip': 'Incantesimi conosciuti/nel libro (nessun limite per chi prepara)',
+    'spell.preparati': 'Preparati',
+    'spell.preparati_tip': 'Incantesimi preparati oggi / massimo preparabile (modificabile)',
+    'spell.preparato_si': 'Preparato (tocca per non prepararlo)',
+    'spell.preparato_no': 'Non preparato (tocca per prepararlo)',
   },
   en: {
     'app.titolo': 'Dice Table',
@@ -940,6 +946,12 @@ export const DIZIONARIO = {
     'conc.auto_cd': 'DC {cd}',
     'conc.mantieni': 'Concentration held',
     'conc.persa': 'Concentration lost',
+    'spell.conosciuti': 'Known',
+    'spell.conosciuti_tip': 'Known/spellbook spells (no limit for preparers)',
+    'spell.preparati': 'Prepared',
+    'spell.preparati_tip': 'Spells prepared today / max preparable (editable)',
+    'spell.preparato_si': 'Prepared (tap to unprepare)',
+    'spell.preparato_no': 'Not prepared (tap to prepare)',
   }
 };
 
