@@ -456,6 +456,12 @@ export const DIZIONARIO = {
     'crea.crea_pg': 'Crea personaggio',
     'atk.danno_invalido': 'Danno non impostato o non valido per questo attacco.',
     'reset.conferma': 'Azzerare tutti i campi di "{nome}"? Il personaggio resta nella lista ma torna vuoto.',
+    'spell.tempo_azione': 'Azione',
+    'spell.tempo_reazione': 'Reazione',
+    'spell.tempo_bonus': 'Az. bonus',
+    'spell.chip_tempo': 'Tempo',
+    'spell.chip_gittata': 'Gittata',
+    'spell.chip_note': 'Note',
   },
   en: {
     'app.titolo': 'Dice Table',
@@ -914,6 +920,12 @@ export const DIZIONARIO = {
     'crea.crea_pg': 'Create character',
     'atk.danno_invalido': 'Damage not set or invalid for this attack.',
     'reset.conferma': 'Reset all fields of "{nome}"? The character stays in the list but becomes empty.',
+    'spell.tempo_azione': 'Action',
+    'spell.tempo_reazione': 'Reaction',
+    'spell.tempo_bonus': 'Bonus action',
+    'spell.chip_tempo': 'Time',
+    'spell.chip_gittata': 'Range',
+    'spell.chip_note': 'Notes',
   }
 };
 

@@ -2221,7 +2221,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.81';
+const APP_VERSION = '1.9.82';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -6153,24 +6153,30 @@ export default function App() {
                         <span>{liv === 0 ? t('spell.trucchetti_liv0') : t('spell.n_livello', { n: liv })}</span>
                         <span style={{ color: (liv === 0 && trucchettiPieno) ? C.goldDark : C.inkDim, fontWeight: 700 }}>{conteggio}</span>
                       </h4>
-                      <table className="spell-table" style={styles.table}>
-                        <thead>
-                          <tr>
-                            <th style={styles.th}>{t('spell.col_nome')}</th>
-                            <th style={styles.th}>{t('spell.col_tempo')}</th>
-                            <th style={styles.th}>{t('spell.col_gittata')}</th>
-                            <th style={styles.th}>{t('spell.col_note')}</th>
-                            <th style={styles.th} />
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {spells.map((s) => {
-                            const eff = spiegaIncantesimo(s.nome);
-                            return (
-                              <tr key={s.id}>
-                                <td style={styles.td}>
+                      {/* Ogni incantesimo è una "card" leggibile: nome grande e
+                          toccabile, azioni in alto a destra, dettagli come
+                          chip con etichetta (niente più tabella stretta con
+                          sigle criptiche e nomi spezzati). */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {spells.map((s) => {
+                          const eff = spiegaIncantesimo(s.nome);
+                          const tp = s.tempo || '';
+                          const tempoLabel = /reaz/i.test(tp) ? t('spell.tempo_reazione')
+                            : /bonus/i.test(tp) ? t('spell.tempo_bonus')
+                            : /^(az|1 az|azione)/i.test(tp) ? t('spell.tempo_azione')
+                            : tp;
+                          const chip = (icona, etichetta, testo) => (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: C.inkDim, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 6, padding: '2px 8px' }}>
+                              <span aria-hidden style={{ opacity: 0.75 }}>{icona}</span>
+                              <span style={{ opacity: 0.7 }}>{etichetta}:</span> <span style={{ color: C.ink }}>{testo}</span>
+                            </span>
+                          );
+                          return (
+                            <div key={s.id} style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', background: C.panelLight }}>
+                              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                                <div style={{ minWidth: 0 }}>
                                   <button
-                                    style={{ background: 'transparent', border: 'none', color: C.ink, fontWeight: 600, cursor: 'pointer', textAlign: 'left', padding: 0, fontSize: 14, textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
+                                    style={{ background: 'transparent', border: 'none', color: C.ink, fontWeight: 700, cursor: 'pointer', textAlign: 'left', padding: 0, fontSize: 15, lineHeight: 1.2, textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
                                     title={t('tip.cosa_fa_inc')}
                                     onClick={() => setInfo({ titolo: `${s.nome || 'Incantesimo'}${s.livello === 0 ? ' · Trucchetto' : ` · ${s.livello}° livello`}`, testo: eff || 'Nessuna descrizione disponibile per questo incantesimo. Aprilo con ✎ per aggiungere delle note.' })}
                                   >
@@ -6183,19 +6189,23 @@ export default function App() {
                                       onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, bonus: false } : x)) })}
                                     >✦ {t('spell.bonus_badge')}</span>
                                   )}
-                                </td>
-                                <td style={{ ...styles.td, color: C.inkDim }}>{s.tempo}</td>
-                                <td style={{ ...styles.td, color: C.inkDim }}>{s.gittata}</td>
-                                <td style={{ ...styles.td, color: C.inkDim }}>{s.note}</td>
-                                <td style={{ ...styles.td, textAlign: 'right', whiteSpace: 'nowrap' }}>
-                                  <button style={styles.buttonMini} title={t('tip.modifica')} onClick={() => setDettaglioInc(s.id)}>✎</button>{' '}
+                                </div>
+                                <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                                  <button style={styles.buttonMini} title={t('tip.modifica')} onClick={() => setDettaglioInc(s.id)}>✎</button>
                                   <button style={{ ...styles.buttonMini, color: C.red }} title={t('tip.elimina_inc')} onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })}>🗑</button>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
+                                </div>
+                              </div>
+                              {(tempoLabel || s.gittata || s.note) && (
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+                                  {tempoLabel && chip('⏱', t('spell.chip_tempo'), tempoLabel)}
+                                  {s.gittata && chip('🎯', t('spell.chip_gittata'), s.gittata)}
+                                  {s.note && chip('📝', t('spell.chip_note'), s.note)}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   );
                 };
