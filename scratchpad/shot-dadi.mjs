@@ -1,0 +1,11 @@
+import { chromium } from '/opt/node22/lib/node_modules/playwright/index.mjs';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const p=await b.newPage();
+await p.setViewportSize({width:430,height:900});
+await p.goto('http://localhost:4173/tavolo-dei-dadi/',{waitUntil:'networkidle'});
+await p.waitForTimeout(400);
+const el=await p.$('.dadi-riga');
+const box=await el.boundingBox();
+await p.screenshot({path:'/home/user/tavolo-dei-dadi/scratchpad/dadi.png', clip:{x:0,y:Math.max(0,box.y-20),width:430,height:110}});
+await b.close();
+console.log('done');

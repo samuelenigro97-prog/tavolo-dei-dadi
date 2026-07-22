@@ -2764,7 +2764,7 @@ function CampoTendina({ value, opzioni, onChange, title }) {
       </select>
       {!std && value !== '' && (
         <div style={{ marginTop: 2 }}>
-          <Editable value={value} onChange={onChange} width={80} style={{ fontSize: 13, borderBottom: 'none' }} title="Valore personalizzato" />
+          <Editable value={value} onChange={onChange} width={80} style={{ fontSize: 13, borderBottom: 'none' }} title={t('tip.valore_pers')} />
         </div>
       )}
     </>
@@ -2826,7 +2826,7 @@ function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni }) {
         {righe.map((r, i) => {
           const sp = lookup ? lookup(r) : null;
           return (
-            <button key={i} style={chip} title="Apri: dettagli e modifica" onClick={() => setEdit({ index: i, valore: r })}>
+            <button key={i} style={chip} title={t('tip.apri_dettagli')} onClick={() => setEdit({ index: i, valore: r })}>
               {r}
             </button>
           );
@@ -2841,7 +2841,7 @@ function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni }) {
           <div style={{ ...styles.panel, maxWidth: 420, width: '100%' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
               <strong style={{ color: C.goldDark, fontSize: 16 }}>{edit.index === -1 ? 'Nuova voce' : 'Voce'}</strong>
-              <button style={styles.buttonMini} onClick={() => setEdit(null)} title="Chiudi">✕</button>
+              <button style={styles.buttonMini} onClick={() => setEdit(null)} title={t('tip.chiudi')}>✕</button>
             </div>
             {spEdit && (
               <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 12px', fontSize: 14, lineHeight: 1.4, marginBottom: 8 }}>{spEdit}</div>
@@ -2889,7 +2889,7 @@ function Sezione({ titolo, children, aperto = true, onToggleAperto, manigliaProp
         {manigliaProps && (
           <span
             className="tirabile"
-            title="Trascina per riordinare le sezioni"
+            title={t('tip.trascina_sezioni')}
             style={{ cursor: 'grab', color: C.inkDim, fontSize: 15, lineHeight: 1, touchAction: 'none' }}
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
             {...manigliaProps}
@@ -3972,7 +3972,7 @@ export default function App() {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 }}>
               <strong style={{ color: C.goldDark, fontSize: 16 }}>{info.titolo}</strong>
-              <button style={styles.buttonMini} onClick={() => setInfo(null)} title="Chiudi">✕</button>
+              <button style={styles.buttonMini} onClick={() => setInfo(null)} title={t('tip.chiudi')}>✕</button>
             </div>
             <div 
               style={{ fontSize: 14, lineHeight: 1.45, color: C.ink }}
@@ -4017,12 +4017,12 @@ export default function App() {
             <div style={{ ...styles.panel, maxWidth: 420, width: '100%', maxHeight: '88vh', overflowY: 'auto' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                 <strong style={{ color: C.goldDark, fontSize: 17 }}>{s.nome || 'Incantesimo'}</strong>
-                <button style={styles.buttonMini} onClick={() => setDettaglioInc(null)} title="Chiudi">✕</button>
+                <button style={styles.buttonMini} onClick={() => setDettaglioInc(null)} title={t('tip.chiudi')}>✕</button>
               </div>
               <div style={{ ...styles.detail, marginBottom: 4 }}>Modifica · {s.livello === 0 ? 'Trucchetto' : `Incantesimo di ${s.livello}° livello`}</div>
 
               <label style={etichetta}>Nome</label>
-              <input style={campo} value={s.nome} onChange={(e) => upd({ nome: e.target.value })} list="lista-incantesimi" placeholder="Scrivi o scegli dalla lista…" />
+              <input style={campo} value={s.nome} onChange={(e) => upd({ nome: e.target.value })} list="lista-incantesimi" placeholder={t('ph.inc_nome')} />
               <datalist id="lista-incantesimi">
                 {INCANTESIMI_NOMI.map((n) => <option key={n} value={n} />)}
               </datalist>
@@ -4047,7 +4047,7 @@ export default function App() {
                 <div style={{ flex: 1 }} />
               </div>
               <label style={etichetta}>Note</label>
-              <input style={campo} value={s.note} onChange={(e) => upd({ note: e.target.value })} placeholder="Componenti, TS, concentrazione…" />
+              <input style={campo} value={s.note} onChange={(e) => upd({ note: e.target.value })} placeholder={t('ph.inc_note')} />
 
               <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
                 <button
@@ -4148,7 +4148,7 @@ export default function App() {
               <button
                 style={styles.button}
                 onClick={() => generaPgCasuale()}
-                title="{t('menu.pg_casuale_tooltip')}"
+                title={t('menu.pg_casuale_tooltip')}
               >
                 {t('menu.pg_casuale')}
               </button>
@@ -4466,7 +4466,7 @@ export default function App() {
                     {!TALENTI_NOMI.includes(levelUpBozza.talento) && (
                       <input
                         style={{ ...styles.inlineInput, width: '100%', padding: '6px 8px', fontSize: 14, marginTop: 6 }}
-                        placeholder="Nome del talento"
+                        placeholder={t('ph.talento')}
                         value={levelUpBozza.talento || ''}
                         onChange={(e) => setLevelUpBozza((b) => ({ ...b, talento: e.target.value }))}
                       />
@@ -4832,7 +4832,7 @@ export default function App() {
         <div className="app-header-group" style={{ display: 'flex', gap: 6 }}>
           <button
             style={styles.modeButton(false)}
-            title="Menu iniziale: nuovo personaggio, carica"
+            title={t('tip.menu_iniziale')}
             onClick={() => setMostraMenu(true)}
           >
             🏠 Menu
@@ -4847,14 +4847,14 @@ export default function App() {
           <input ref={jsonRef} type="file" accept="application/json,.json" style={{ display: 'none' }} onChange={importaJson} />
           <button
             style={styles.modeButton(false)}
-            title="Esporta la scheda come file JSON (backup o trasferimento)"
+            title={t('tip.esporta')}
             onClick={esportaJson}
           >
             💾 Esporta
           </button>
           <button
             style={styles.modeButton(false)}
-            title="Importa una scheda da file JSON (crea un nuovo personaggio)"
+            title={t('tip.importa')}
             onClick={() => jsonRef.current?.click()}
           >
             📂 Importa
@@ -5109,7 +5109,7 @@ export default function App() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', flexShrink: 0 }}>
             <button
               style={styles.buttonMini}
-              title="Assistente al Passaggio di Livello"
+              title={t('tip.levelup')}
               onClick={() => {
                 const dvMatch = String(scheda.dadiVita || '').match(/d(\d+)/i);
                 const facceDV = dvMatch ? parseInt(dvMatch[1]) : 8;
@@ -5125,11 +5125,11 @@ export default function App() {
             >
               ⬆️
             </button>
-            <button style={styles.buttonMini} onClick={() => setRinominando(!rinominando)} title="Rinomina il personaggio">✎</button>
-            <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' }); setMostraCrea(true); }} title="Nuovo personaggio">＋</button>
-            <button style={styles.buttonMini} onClick={duplicaPersonaggio} title="Duplica il personaggio attivo">⧉</button>
-            <button style={styles.buttonMini} onClick={resetScheda} title="Azzera i campi del personaggio attivo">↺</button>
-            <button style={{ ...styles.buttonMini, borderColor: C.red, color: C.red }} onClick={eliminaPersonaggio} title="Elimina il personaggio attivo">🗑</button>
+            <button style={styles.buttonMini} onClick={() => setRinominando(!rinominando)} title={t('tip.rinomina')}>✎</button>
+            <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' }); setMostraCrea(true); }} title={t('tip.nuovo_pg')}>＋</button>
+            <button style={styles.buttonMini} onClick={duplicaPersonaggio} title={t('tip.duplica')}>⧉</button>
+            <button style={styles.buttonMini} onClick={resetScheda} title={t('tip.azzera')}>↺</button>
+            <button style={{ ...styles.buttonMini, borderColor: C.red, color: C.red }} onClick={eliminaPersonaggio} title={t('tip.elimina_pg')}>🗑</button>
           </div>
         </section>
 
@@ -5166,7 +5166,7 @@ export default function App() {
                 ) : (
                   // Nessuna foto: mostra l'emblema tematico di classe/specie
                   // (icone game-icons.net), cliccabile per caricare una foto.
-                  <div style={{ position: 'relative', width: '100%', height: '100%' }} title="Click: carica l'immagine del personaggio">
+                  <div style={{ position: 'relative', width: '100%', height: '100%' }} title={t('tip.carica_img')}>
                     <img
                       src={generaAvatar(scheda.classe, scheda.specie, scheda.nome)}
                       alt={`Ritratto di ${scheda.nome}`}
@@ -5179,7 +5179,7 @@ export default function App() {
               {scheda.ritratto && (
                 <button
                   style={{ ...styles.buttonDanger, position: 'absolute', top: -8, right: -8, padding: '0 6px', background: C.panel }}
-                  title="Rimuovi immagine"
+                  title={t('tip.rimuovi_img')}
                   onClick={() => aggiorna({ ritratto: '' })}
                 >
                   ×
@@ -5190,16 +5190,16 @@ export default function App() {
             <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px 10px', alignItems: 'end' }}>
                 <CampoModulo label={versione === "2024" ? t("profilo.specie") : t("profilo.razza")}>
-                  <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => { const sp = SPECIE_DATI[v]; aggiorna({ specie: v, ...(sp ? { velocita: sp.velocita, sensi: sp.sensi, taglia: sp.taglia, trattiSpecie: sp.tratti } : {}), ...ritrattoAuto(scheda.classe, v, scheda.nome) }); }} title="Scegli la specie (imposta velocità, sensi, taglia, tratti e avatar)" />
+                  <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => { const sp = SPECIE_DATI[v]; aggiorna({ specie: v, ...(sp ? { velocita: sp.velocita, sensi: sp.sensi, taglia: sp.taglia, trattiSpecie: sp.tratti } : {}), ...ritrattoAuto(scheda.classe, v, scheda.nome) }); }} title={t('tip.scegli_specie')} />
                 </CampoModulo>
                 <CampoModulo label={t("profilo.taglia")}>
-                  <CampoTendina value={scheda.taglia} opzioni={TAGLIE_5E} onChange={(v) => aggiorna({ taglia: v })} title="Scegli la taglia" />
+                  <CampoTendina value={scheda.taglia} opzioni={TAGLIE_5E} onChange={(v) => aggiorna({ taglia: v })} title={t('tip.scegli_taglia')} />
                 </CampoModulo>
                 <CampoModulo label={t("profilo.allineamento")}>
-                  <CampoTendina value={scheda.allineamento} opzioni={ALLINEAMENTI_5E} onChange={(v) => aggiorna({ allineamento: v })} title="Scegli l'allineamento" />
+                  <CampoTendina value={scheda.allineamento} opzioni={ALLINEAMENTI_5E} onChange={(v) => aggiorna({ allineamento: v })} title={t('tip.scegli_allineamento')} />
                 </CampoModulo>
                 <CampoModulo label={t("profilo.background")}>
-                  <CampoTendina value={scheda.background} opzioni={BACKGROUND_5E} onChange={(v) => aggiorna({ background: v, ...abilitaConBackground(v) })} title="Scegli un background (imposta le competenze nelle abilità)" />
+                  <CampoTendina value={scheda.background} opzioni={BACKGROUND_5E} onChange={(v) => aggiorna({ background: v, ...abilitaConBackground(v) })} title={t('tip.scegli_background')} />
                 </CampoModulo>
                 <CampoModulo label={t("profilo.classe")}>
                   <CampoTendina
@@ -5220,7 +5220,7 @@ export default function App() {
                         ...ritrattoAuto(v, scheda.specie, scheda.nome),
                       });
                     }}
-                    title="Scegli la classe (imposta TS, addestramento, incantatore, slot, dado vita e avatar)"
+                    title={t('tip.scegli_classe')}
                   />
                 </CampoModulo>
                 <CampoModulo label={t("profilo.sottoclasse")}>
@@ -5249,7 +5249,7 @@ export default function App() {
                           if (auto) patch.privilegiSottoclasse = auto;
                           aggiorna(patch);
                         }}
-                        title="Sottoclasse (imposta anche i privilegi di sottoclasse fino al tuo livello)"
+                        title={t('tip.scegli_sottoclasse')}
                       />
                     );
                   })()}
@@ -5264,7 +5264,7 @@ export default function App() {
                 {scheda.armatura.tipo === 'manuale' && !scheda.armatura.scudo && !scheda.armatura.bonus ? (
                   <Editable value={scheda.ca} tipo="numero" onChange={(v) => aggiorna({ ca: v })} width={40} />
                 ) : (
-                  <span title="CA calcolata da armatura, scudo e bonus">{caTotale(scheda)}</span>
+                  <span title={t('tip.ca_calcolata')}>{caTotale(scheda)}</span>
                 )}
               </div>
               <select
@@ -5309,7 +5309,7 @@ export default function App() {
                 <span>+ <Editable value={scheda.armatura.bonus} tipo="numero" width={22} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, bonus: v } })} /></span>
               </div>
               {(!competenteInArmatura(scheda, scheda.armatura.tipo) || (scheda.armatura.scudo && !scheda.addestramento?.armature?.scudi)) && (
-                <div style={{ fontSize: 9, color: C.red, marginTop: 3, lineHeight: 1.2 }} title="Senza competenza: svantaggio a prove, TS e attacchi basati su Forza e Destrezza, e non puoi lanciare incantesimi.">
+                <div style={{ fontSize: 9, color: C.red, marginTop: 3, lineHeight: 1.2 }} title={t('tip.senza_comp_armatura')}>
                   ⚠️ Non competente{!competenteInArmatura(scheda, scheda.armatura.tipo) ? ` (${scheda.armatura.tipo})` : ''}{scheda.armatura.scudo && !scheda.addestramento?.armature?.scudi ? ' (scudo)' : ''}
                 </div>
               )}
@@ -5438,7 +5438,7 @@ export default function App() {
                   value={scheda.resistenze}
                   opzioni={DANNI_5E}
                   onChange={(v) => aggiorna({ resistenze: v })}
-                  title="Resistenze ai danni: scegli dalla tendina o scrivi"
+                  title={t('tip.resistenze')}
                 />
               </div>
             </div>
@@ -5451,7 +5451,7 @@ export default function App() {
                   value={scheda.sensi}
                   opzioni={SENSI_5E}
                   onChange={(v) => aggiorna({ sensi: v })}
-                  title="Sensi: scegli dalla tendina o scrivi (es. Scurovisione 18 m)"
+                  title={t('tip.sensi')}
                 />
               </div>
             </div>
@@ -5461,7 +5461,7 @@ export default function App() {
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>{t("vital.competenza")}</div>
               <div style={styles.vitalValue}>
-                <Editable value={conSegno(scheda.bonusCompetenza)} onChange={(v) => aggiorna({ bonusCompetenza: parseInt(v, 10) || 0 })} width={38} title="1 click: modifica" />
+                <Editable value={conSegno(scheda.bonusCompetenza)} onChange={(v) => aggiorna({ bonusCompetenza: parseInt(v, 10) || 0 })} width={38} title={t('tip.click_modifica')} />
               </div>
               {scheda.bonusCompetenza !== bonusCompetenzaDaLivello(scheda.livello) && (
                 <span className="tirabile" style={{ fontSize: 9, color: C.goldDark, cursor: 'pointer', marginTop: 1 }}
@@ -5476,11 +5476,11 @@ export default function App() {
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>{t("vital.sfinimento")}</div>
               <div style={styles.vitalValue}>
-                <button style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 13 }} onClick={() => aggiorna({ sfinimento: Math.max(0, scheda.sfinimento - 1) })} title="Diminuisci">−</button>
+                <button style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 13 }} onClick={() => aggiorna({ sfinimento: Math.max(0, scheda.sfinimento - 1) })} title={t('tip.diminuisci')}>−</button>
                 {' '}
                 <strong style={{ color: scheda.sfinimento ? C.red : C.ink }}>{scheda.sfinimento}</strong>
                 {' '}
-                <button style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 13 }} onClick={() => aggiorna({ sfinimento: Math.min(6, scheda.sfinimento + 1) })} title="Aumenta">+</button>
+                <button style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 13 }} onClick={() => aggiorna({ sfinimento: Math.min(6, scheda.sfinimento + 1) })} title={t('tip.aumenta')}>+</button>
               </div>
               {scheda.sfinimento > 0 && (
                 <div style={{ fontSize: 9, color: C.red }} title={versione === '2024' ? 'Regole 2024: −2 ai tiri di d20 per livello' : `Regole 2014: ${SFINIMENTO_2014[scheda.sfinimento]}`}>
@@ -5511,7 +5511,7 @@ export default function App() {
                     cursor: 'pointer', transition: 'all 0.2s',
                   }}
                   onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
-                  title="Ispirazione: spendila per avere vantaggio a un tiro o ripetere un dado"
+                  title={t('tip.ispirazione')}
                 >
                   {scheda.ispirazione ? '★' : '☆'}
                 </button>
@@ -5527,7 +5527,7 @@ export default function App() {
                     key={c}
                     className="tirabile"
                     style={{ ...styles.modeButton(true), fontSize: 9, padding: '1px 4px', margin: 0, lineHeight: 1.4 }}
-                    title="Click per rimuovere"
+                    title={t('tip.click_rimuovi')}
                     onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
                   >
                     {c} ✕
@@ -5537,7 +5537,7 @@ export default function App() {
                   value=""
                   onChange={(e) => { if (e.target.value) aggiorna({ condizioni: [...scheda.condizioni, e.target.value] }); }}
                   style={{ ...styles.inlineInput, fontSize: 10, padding: '1px 2px', height: 18 }}
-                  title="Aggiungi una condizione"
+                  title={t('tip.aggiungi_condizione')}
                 >
                   <option value="">＋ aggiungi</option>
                   {CONDIZIONI_5E.filter((c) => !scheda.condizioni.includes(c)).map((c) => (
@@ -5573,10 +5573,10 @@ export default function App() {
                     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8 }}>
                       <div
                         style={{ fontSize: 13, color: C.ink, letterSpacing: 0.8, fontWeight: 'bold', cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
-                        title="Cosa governa questa caratteristica?"
+                        title={t('tip.cosa_governa')}
                         onClick={() => setInfo({ titolo: t('attr.' + key), testo: t('spieg.' + key) })}
                       >{t('attr.' + key).toUpperCase()}</div>
-                      <div style={{ fontSize: 17, fontWeight: 'bold', color: C.goldDark }} title="Punteggio di caratteristica (click per modificare)">
+                      <div style={{ fontSize: 17, fontWeight: 'bold', color: C.goldDark }} title={t('tip.punteggio_car')}>
                         <Editable
                           value={scheda.caratteristiche[key]}
                           tipo="numero"
@@ -5652,23 +5652,23 @@ export default function App() {
                 return (
                   <div key={r.id} style={{ marginBottom: 8, fontSize: 12 }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
-                      <Editable value={r.nome} onChange={(v) => modifica({ nome: v })} width={110} title="Nome della risorsa" />
+                      <Editable value={r.nome} onChange={(v) => modifica({ nome: v })} width={110} title={t('tip.nome_risorsa')} />
                       <button
                         style={{ ...styles.buttonMini, padding: '0 6px', color: C.red }}
-                        title="Rimuovi la risorsa"
+                        title={t('tip.rimuovi_risorsa')}
                         onClick={() => aggiorna({ risorse: scheda.risorse.filter((x) => x.id !== r.id) })}
                       >✕</button>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 3, flexWrap: 'wrap' }}>
-                      <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title="Spendi" onClick={() => modifica({ attuali: Math.max(0, r.attuali - 1) })}>−</button>
+                      <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title={t('tip.spendi')} onClick={() => modifica({ attuali: Math.max(0, r.attuali - 1) })}>−</button>
                       <strong style={{ minWidth: 16, textAlign: 'center', display: 'inline-block', color: r.attuali === 0 ? C.inkDim : C.ink }}>{r.attuali}</strong>
-                      <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title="Recupera" onClick={() => modifica({ attuali: Math.min(r.max, r.attuali + 1) })}>+</button>
+                      <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title={t('tip.recupera')} onClick={() => modifica({ attuali: Math.min(r.max, r.attuali + 1) })}>+</button>
                       <span style={styles.detail}>/ <Editable value={r.max} tipo="numero" width={30} onChange={(v) => modifica({ max: Math.max(0, v), attuali: Math.min(Math.max(0, v), r.attuali) })} /></span>
                       <select
                         style={{ ...styles.inlineInput, fontSize: 11, padding: '1px 3px' }}
                         value={r.reset}
                         onChange={(e) => modifica({ reset: e.target.value })}
-                        title="Quando si ricarica"
+                        title={t('tip.quando_ricarica')}
                       >
                         <option value="">{t("res.manuale")}</option>
                         <option value="breve">{t("res.breve")}</option>
@@ -5763,7 +5763,7 @@ export default function App() {
               <button
                 style={{ ...styles.button, marginBottom: 8, fontSize: 12 }}
                 onClick={() => setMostraPrivilegi(true)}
-                title="Panoramica ordinata dei privilegi di classe e sottoclasse per livello"
+                title={t('tip.panoramica_priv')}
               >
                 📖 {t("priv.panoramica_btn")}
               </button>
@@ -5822,7 +5822,7 @@ export default function App() {
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                     <select
                                       value=""
-                                      title="Scegli un'arma standard: compila danno, tipo, proprietà e bonus"
+                                      title={t('tip.scegli_arma')}
                                       onChange={(e) => {
                                         const arma = ARMI_5E.find((w) => w.nome === e.target.value);
                                         if (arma) aggiornaAttacco(attaccoDaArma(arma, scheda));
@@ -5860,7 +5860,7 @@ export default function App() {
                                     value={a.danno}
                                     width={70}
                                     onChange={(v) => aggiornaAttacco({ danno: v })}
-                                    title="Click per modificare · 🎲 per tirare i danni"
+                                    title={t('tip.click_mod_danni')}
                                   />{' '}
                                   <Editable value={a.tipoDanno} width={90} onChange={(v) => aggiornaAttacco({ tipoDanno: v })} />
                                 </td>
@@ -6020,7 +6020,7 @@ export default function App() {
                         onChange={(v) =>
                           aggiornaSlot({ totale: Math.max(0, Math.min(9, v)), spesi: Math.min(slot.spesi, Math.max(0, v)) })
                         }
-                        title="Slot totali del livello"
+                        title={t('tip.slot_totali')}
                       />
                       {Array.from({ length: slot.totale }, (_, i) => i + 1).map((i) => (
                         <span
@@ -6098,12 +6098,12 @@ export default function App() {
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
                       <input type="search" value={filtroIncantesimo} onChange={(e) => setFiltroIncantesimo(e.target.value)} placeholder={t('spell.cerca')} style={{ ...styles.inlineInput, padding: '5px 8px', width: 180 }} />
                       {maxTrucchetti != null && (
-                        <span style={{ ...styles.detail, color: trucchettiPieno ? C.goldDark : C.inkDim, fontWeight: trucchettiPieno ? 700 : 400 }} title="Trucchetti conosciuti / massimo (modificabile).">
+                        <span style={{ ...styles.detail, color: trucchettiPieno ? C.goldDark : C.inkDim, fontWeight: trucchettiPieno ? 700 : 400 }} title={t('tip.conteggio_trucchetti')}>
                           {t('spell.trucchetti')} <strong>{nTrucchetti}</strong>/<Editable value={maxTrucchetti} tipo="numero" width={24} onChange={(v) => aggiorna({ maxTrucchetti: Math.max(0, v) })} />
                         </span>
                       )}
                       {maxIncantesimi != null && (
-                        <span style={{ ...styles.detail, color: incantesimiPieno ? C.goldDark : C.inkDim, fontWeight: incantesimiPieno ? 700 : 400 }} title="Incantesimi (liv. 1+) noti o preparati / massimo (modificabile).">
+                        <span style={{ ...styles.detail, color: incantesimiPieno ? C.goldDark : C.inkDim, fontWeight: incantesimiPieno ? 700 : 400 }} title={t('tip.conteggio_incantesimi')}>
                           {t('spell.incantesimi')} <strong>{nIncantesimi}</strong>/<Editable value={maxIncantesimi} tipo="numero" width={24} onChange={(v) => aggiorna({ maxIncantesimi: Math.max(0, v) })} />
                           {nBonus > 0 && <span style={{ color: C.goldDark, fontWeight: 700 }}> · ✦ {nBonus}</span>}
                         </span>
@@ -6149,7 +6149,7 @@ export default function App() {
                                 <td style={styles.td}>
                                   <button
                                     style={{ background: 'transparent', border: 'none', color: C.ink, fontWeight: 600, cursor: 'pointer', textAlign: 'left', padding: 0, fontSize: 14, textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
-                                    title="Cosa fa questo incantesimo?"
+                                    title={t('tip.cosa_fa_inc')}
                                     onClick={() => setInfo({ titolo: `${s.nome || 'Incantesimo'}${s.livello === 0 ? ' · Trucchetto' : ` · ${s.livello}° livello`}`, testo: eff || 'Nessuna descrizione disponibile per questo incantesimo. Aprilo con ✎ per aggiungere delle note.' })}
                                   >
                                     {s.nome || t('menu.senza_nome')}
@@ -6166,8 +6166,8 @@ export default function App() {
                                 <td style={{ ...styles.td, color: C.inkDim }}>{s.gittata}</td>
                                 <td style={{ ...styles.td, color: C.inkDim }}>{s.note}</td>
                                 <td style={{ ...styles.td, textAlign: 'right', whiteSpace: 'nowrap' }}>
-                                  <button style={styles.buttonMini} title="Modifica" onClick={() => setDettaglioInc(s.id)}>✎</button>{' '}
-                                  <button style={{ ...styles.buttonMini, color: C.red }} title="Elimina incantesimo" onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })}>🗑</button>
+                                  <button style={styles.buttonMini} title={t('tip.modifica')} onClick={() => setDettaglioInc(s.id)}>✎</button>{' '}
+                                  <button style={{ ...styles.buttonMini, color: C.red }} title={t('tip.elimina_inc')} onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })}>🗑</button>
                                 </td>
                               </tr>
                             );
@@ -6203,7 +6203,7 @@ export default function App() {
                   onChange={(v) => aggiorna({ metamagie: v })}
                   lookup={spiegaMetamagia}
                   setInfo={setInfo}
-                  title="Opzioni di Metamagia attive"
+                  title={t('tip.metamagia_attive')}
                 />
               </Sezione>
             )}
