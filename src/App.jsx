@@ -2221,7 +2221,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.85';
+const APP_VERSION = '1.9.86';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3972,6 +3972,8 @@ export default function App() {
   const fallimento = tiro?.naturale === 1;
   const dannoAttaccoValido = tiro?.attacco && parseEspressioneDado(tiro.attacco.danno || '');
   const percezionePassiva = 10 + bonusAbilita(scheda, 'percezione');
+  const indagarePassivo = 10 + bonusAbilita(scheda, 'indagare');
+  const intuizionePassiva = 10 + bonusAbilita(scheda, 'intuizione');
   const modIncantatore = scheda.incantatore.caratteristica
     ? modificatore(scheda.caratteristiche[scheda.incantatore.caratteristica])
     : null;
@@ -5460,10 +5462,11 @@ export default function App() {
               </div>
             </div>
 
-            {/* Percezione Passiva */}
-            <div style={styles.vitalBox}>
+            {/* Percezione Passiva (+ Indagare/Intuizione passive, compatte) */}
+            <div style={styles.vitalBox} title={t('vital.passive_tooltip')}>
               <div style={styles.vitalLabel}>{t("vital.percezione_passiva")}</div>
               <div style={styles.vitalValue}>{percezionePassiva}</div>
+              <div style={{ fontSize: 9, color: C.inkDim, marginTop: 1, lineHeight: 1.2 }}>{t('vital.passive_extra', { ind: indagarePassivo, intu: intuizionePassiva })}</div>
             </div>
 
             {/* Resistenze — chip rimovibili + tendina */}

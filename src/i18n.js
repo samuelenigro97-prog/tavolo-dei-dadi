@@ -462,6 +462,8 @@ export const DIZIONARIO = {
     'spell.chip_tempo': 'Tempo',
     'spell.chip_gittata': 'Gittata',
     'spell.chip_note': 'Note',
+    'vital.passive_extra': 'Ind. {ind} · Intu. {intu}',
+    'vital.passive_tooltip': 'Punteggi passivi: Percezione, Indagare, Intuizione (10 + bonus)',
   },
   en: {
     'app.titolo': 'Dice Table',
@@ -926,6 +928,8 @@ export const DIZIONARIO = {
     'spell.chip_tempo': 'Time',
     'spell.chip_gittata': 'Range',
     'spell.chip_note': 'Notes',
+    'vital.passive_extra': 'Inv. {ind} · Ins. {intu}',
+    'vital.passive_tooltip': 'Passive scores: Perception, Investigation, Insight (10 + bonus)',
   }
 };
 
