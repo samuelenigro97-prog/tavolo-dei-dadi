@@ -2221,7 +2221,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.82';
+const APP_VERSION = '1.9.83';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -6093,16 +6093,22 @@ export default function App() {
                 const bloccato = pieno && !addBonusIncantesimo; // i bonus ✦ bypassano il limite
                 return (
                   <div style={{ marginTop: 14, marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {/* Riga aggiungi */}
-                    <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', padding: 8, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}` }}>
-                      <span style={{ ...styles.detail, fontWeight: 700, flexShrink: 0 }}>＋ {t('spell.aggiungi')}</span>
-                      <select value={addLiv} onChange={(e) => setAddLivIncantesimo(Number(e.target.value))}
-                        style={{ ...styles.inlineInput, padding: '6px 8px', flexShrink: 0 }} title={t('spell.livello_scelto')}>
-                        {livelliAdd.map((l) => <option key={l} value={l}>{l === 0 ? t('spell.trucchetto') : t('spell.n_livello', { n: l })}</option>)}
-                      </select>
+                    {/* Blocco AGGIUNGI: riga con livello + ✦ bonus, poi il menu
+                        dell'incantesimo a piena larghezza (ordinato su mobile). */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: 8, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}` }}>
+                      <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                        <span style={{ ...styles.detail, fontWeight: 700, flexShrink: 0 }}>＋ {t('spell.aggiungi')}</span>
+                        <select value={addLiv} onChange={(e) => setAddLivIncantesimo(Number(e.target.value))}
+                          style={{ ...styles.inlineInput, padding: '6px 8px', flexShrink: 0 }} title={t('spell.livello_scelto')}>
+                          {livelliAdd.map((l) => <option key={l} value={l}>{l === 0 ? t('spell.trucchetto') : t('spell.n_livello', { n: l })}</option>)}
+                        </select>
+                        <label style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', flexShrink: 0, marginLeft: 'auto', color: addBonusIncantesimo ? C.goldDark : C.inkDim, fontWeight: addBonusIncantesimo ? 700 : 400 }} title={t('spell.bonus_tooltip')}>
+                          <input type="checkbox" checked={addBonusIncantesimo} onChange={(e) => setAddBonusIncantesimo(e.target.checked)} /> ✦ {t('spell.bonus_badge')}
+                        </label>
+                      </div>
                       <select className="add-spell" value="" disabled={bloccato}
                         title={bloccato ? t('spell.max_tooltip') : undefined}
-                        style={{ ...styles.button, fontSize: 13, padding: '7px 12px', fontWeight: 600, cursor: bloccato ? 'not-allowed' : 'pointer', opacity: bloccato ? 0.55 : 1, flex: 1, minWidth: 170, maxWidth: '100%' }}
+                        style={{ ...styles.button, fontSize: 13, padding: '8px 12px', fontWeight: 600, cursor: bloccato ? 'not-allowed' : 'pointer', opacity: bloccato ? 0.55 : 1, width: '100%' }}
                         onChange={(e) => { const v = e.target.value; if (!v) return; aggiungiInc(v === '__manuale__' ? 'Nuovo incantesimo' : v, addLiv, v === '__manuale__', addBonusIncantesimo); e.target.value = ''; }}>
                         <option value="">{bloccato ? (addLiv === 0 ? t('spell.max_trucchetti') : t('spell.max_incantesimi')) : t('spell.scegli_incantesimo')}…</option>
                         <option value="__manuale__">{t('spell.scrivi_mano')}</option>
@@ -6112,26 +6118,25 @@ export default function App() {
                           </optgroup>
                         )}
                       </select>
-                      <label style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', flexShrink: 0, color: addBonusIncantesimo ? C.goldDark : C.inkDim, fontWeight: addBonusIncantesimo ? 700 : 400 }} title={t('spell.bonus_tooltip')}>
-                        <input type="checkbox" checked={addBonusIncantesimo} onChange={(e) => setAddBonusIncantesimo(e.target.checked)} /> ✦ {t('spell.bonus_badge')}
-                      </label>
                     </div>
-                    {/* Riga ricerca + conteggi */}
-                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                      <input type="search" value={filtroIncantesimo} onChange={(e) => setFiltroIncantesimo(e.target.value)} placeholder={t('spell.cerca')} style={{ ...styles.inlineInput, padding: '5px 8px', width: 180 }} />
-                      {maxTrucchetti != null && (
-                        <span style={{ ...styles.detail, color: trucchettiPieno ? C.goldDark : C.inkDim, fontWeight: trucchettiPieno ? 700 : 400 }} title={t('tip.conteggio_trucchetti')}>
-                          {t('spell.trucchetti')} <strong>{nTrucchetti}</strong>/<Editable value={maxTrucchetti} tipo="numero" width={24} onChange={(v) => aggiorna({ maxTrucchetti: Math.max(0, v) })} />
-                        </span>
-                      )}
-                      {maxIncantesimi != null && (
-                        <span style={{ ...styles.detail, color: incantesimiPieno ? C.goldDark : C.inkDim, fontWeight: incantesimiPieno ? 700 : 400 }} title={t('tip.conteggio_incantesimi')}>
-                          {t('spell.incantesimi')} <strong>{nIncantesimi}</strong>/<Editable value={maxIncantesimi} tipo="numero" width={24} onChange={(v) => aggiorna({ maxIncantesimi: Math.max(0, v) })} />
-                          {nBonus > 0 && <span style={{ color: C.goldDark, fontWeight: 700 }}> · ✦ {nBonus}</span>}
-                        </span>
-                      )}
-                      <span style={{ ...styles.detail, fontSize: 11 }}>{t('spell.tocca_nome')}</span>
-                    </div>
+                    {/* Conteggi (su una riga sola) + ricerca a piena larghezza */}
+                    {(maxTrucchetti != null || maxIncantesimi != null) && (
+                      <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', padding: '4px 8px', borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}` }}>
+                        {maxTrucchetti != null && (
+                          <span style={{ ...styles.detail, color: trucchettiPieno ? C.goldDark : C.inkDim, fontWeight: trucchettiPieno ? 700 : 500 }} title={t('tip.conteggio_trucchetti')}>
+                            {t('spell.trucchetti')} <strong>{nTrucchetti}</strong>/<Editable value={maxTrucchetti} tipo="numero" width={24} onChange={(v) => aggiorna({ maxTrucchetti: Math.max(0, v) })} />
+                          </span>
+                        )}
+                        {maxIncantesimi != null && (
+                          <span style={{ ...styles.detail, color: incantesimiPieno ? C.goldDark : C.inkDim, fontWeight: incantesimiPieno ? 700 : 500 }} title={t('tip.conteggio_incantesimi')}>
+                            {t('spell.incantesimi')} <strong>{nIncantesimi}</strong>/<Editable value={maxIncantesimi} tipo="numero" width={24} onChange={(v) => aggiorna({ maxIncantesimi: Math.max(0, v) })} />
+                            {nBonus > 0 && <span style={{ color: C.goldDark, fontWeight: 700 }}> · ✦ {nBonus}</span>}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <input type="search" value={filtroIncantesimo} onChange={(e) => setFiltroIncantesimo(e.target.value)} placeholder={t('spell.cerca')} style={{ ...styles.inlineInput, padding: '7px 10px', width: '100%' }} />
+                    <span style={{ ...styles.detail, fontSize: 11, textAlign: 'center', opacity: 0.75 }}>{t('spell.tocca_nome')}</span>
                   </div>
                 );
               })()}
