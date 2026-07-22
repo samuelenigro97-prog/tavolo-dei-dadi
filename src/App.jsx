@@ -1549,6 +1549,30 @@ const ABILITA = [
 ];
 
 import { SPIEG_CARATT, spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spiegaMetamagia, METAMAGIA_5E } from './data/spiegazioni.js';
+
+/**
+ * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
+ * sono nel testo di SPIEG_INCANTESIMI). Restituisce null se non c'è descrizione,
+ * così chi chiama può decidere se lasciare i valori esistenti o usare un default.
+ */
+function dettagliIncantesimo(nome) {
+  const desc = spiegaIncantesimo(nome) || '';
+  if (!desc) return null;
+  let tempo = 'AZ';
+  if (/reazione/i.test(desc)) tempo = 'REAZ';
+  else if (/azione bonus/i.test(desc)) tempo = 'AZ BONUS';
+  let gittata = '';
+  const mG = desc.match(/gittata\s*(\d+(?:[.,]\d+)?)\s*m/i);
+  const mR = desc.match(/raggio\s*(\d+(?:[.,]\d+)?)\s*m/i);
+  const mC = desc.match(/cono\s*(?:di\s*)?(\d+(?:[.,]\d+)?)\s*m/i);
+  if (mG) gittata = `${mG[1]}m`;
+  else if (/tocc|contatto/i.test(desc)) gittata = 'contatto';
+  else if (/personale|te stesso|su di te|intorno a te/i.test(desc)) gittata = 'personale';
+  else if (mR) gittata = `raggio ${mR[1]}m`;
+  else if (mC) gittata = `cono ${mC[1]}m`;
+  const note = [/\brituale\b/i.test(desc) && 'Rituale', /concentrazione/i.test(desc) && 'Conc.'].filter(Boolean).join(', ');
+  return { tempo, gittata, note };
+}
 /** Righe (di un testo libero) che hanno una spiegazione, come lista cliccabile ⓘ. */
 function renderSpiegazioni(testo, lookup, setInfo) {
   const trovate = String(testo || '')
@@ -2197,7 +2221,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.80';
+const APP_VERSION = '1.9.81';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2222,7 +2246,19 @@ function loadState() {
           // assegna un id agli incantesimi che ne fossero privi (schede legacy),
           // così ognuno è modificabile singolarmente nel sottomenu
           if (Array.isArray(s.incantesimiLista)) {
-            s.incantesimiLista = s.incantesimiLista.map((sp, i) => (sp && sp.id != null ? sp : { ...sp, id: Date.now() + i }));
+            s.incantesimiLista = s.incantesimiLista.map((sp, i) => {
+              const base = sp && sp.id != null ? sp : { ...sp, id: Date.now() + i };
+              // Auto-completa i dettagli mancanti (gittata/tempo/note vuoti) per
+              // gli incantesimi noti: le righe importate o riaggiunte a mano non
+              // restano più "vuote" (es. Dardo Incantato → gittata 36m).
+              const d = dettagliIncantesimo(base.nome);
+              if (!d) return base;
+              const patch = {};
+              if (!base.gittata && d.gittata) patch.gittata = d.gittata;
+              if (!base.note && d.note) patch.note = d.note;
+              if ((!base.tempo || base.tempo === '1 Az.') && d.tempo) patch.tempo = d.tempo;
+              return Object.keys(patch).length ? { ...base, ...patch } : base;
+            });
           }
           // Migrazione legacy: se l'inventario strutturato è vuoto ma esiste il
           // vecchio equipaggiamento testuale, converti le voci in oggetti (con
@@ -6039,25 +6075,11 @@ export default function App() {
                   poi ricerca e conteggi. Niente più selettori ripetuti sotto
                   ogni livello: molto più ordinato. */}
               {(() => {
-                const dettagliInc = (nome) => {
-                  const desc = spiegaIncantesimo(nome) || '';
-                  let tempo = 'AZ';
-                  if (/reazione/i.test(desc)) tempo = 'REAZ';
-                  else if (/azione bonus/i.test(desc)) tempo = 'AZ BONUS';
-                  let gittata = '';
-                  const mG = desc.match(/gittata\s*(\d+(?:[.,]\d+)?)\s*m/i);
-                  const mR = desc.match(/raggio\s*(\d+(?:[.,]\d+)?)\s*m/i);
-                  const mC = desc.match(/cono\s*(?:di\s*)?(\d+(?:[.,]\d+)?)\s*m/i);
-                  if (mG) gittata = `${mG[1]}m`;
-                  else if (/tocc|contatto/i.test(desc)) gittata = 'contatto';
-                  else if (/personale|te stesso|su di te|intorno a te/i.test(desc)) gittata = 'personale';
-                  else if (mR) gittata = `raggio ${mR[1]}m`;
-                  else if (mC) gittata = `cono ${mC[1]}m`;
-                  const note = [/\brituale\b/i.test(desc) && 'Rituale', /concentrazione/i.test(desc) && 'Conc.'].filter(Boolean).join(', ');
-                  return { tempo, gittata, note };
-                };
                 const aggiungiInc = (nome, liv, manuale, bonus) => {
-                  const d = manuale ? { tempo: '1 Az.', gittata: '', note: '' } : dettagliInc(nome);
+                  // Prova sempre a ricavare i dettagli dal nome: se l'incantesimo è
+                  // noto (anche scritto a mano), tempo/gittata/note si compilano da
+                  // soli; altrimenti si usa un default modificabile.
+                  const d = dettagliIncantesimo(nome) || { tempo: manuale ? '1 Az.' : 'AZ', gittata: '', note: '' };
                   aggiorna({ incantesimiLista: [...scheda.incantesimiLista,
                     { id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, livello: liv, nome, tempo: d.tempo, gittata: d.gittata, note: d.note, preparato: true, ...(bonus ? { bonus: true } : {}) }] });
                 };
