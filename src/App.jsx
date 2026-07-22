@@ -984,6 +984,7 @@ const ABILITA = [
 import { SPIEG_CARATT, spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spiegaMetamagia, METAMAGIA_5E } from './data/spiegazioni.js';
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
+import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -1038,112 +1039,42 @@ const DENARI = [
   { key: 'mp', label: 'MP' },
 ];
 
-function modificatore(punteggio) {
-  const p = Number(punteggio);
-  if (!Number.isFinite(p)) return 0;
-  return Math.floor((p - 10) / 2);
-}
 
-function conSegno(n) {
-  return n >= 0 ? `+${n}` : `${n}`;
-}
 
-function tiraDado(facce) {
-  return 1 + Math.floor(Math.random() * facce);
-}
+
+
+
 
 /**
  * Parser per espressioni di dado tipo "2d6+3", "1d8", "1d10+1d6+2", "d8-1".
  * Ritorna { termini: [{tipo:'dado', quantita, facce, segno} | {tipo:'fisso', valore, segno}] }
  * oppure null se l'espressione non è valida. Non lancia mai eccezioni.
  */
-export function parseEspressioneDado(espressione) {
-  if (typeof espressione !== 'string') return null;
-  const pulita = espressione.toLowerCase().replace(/\s+/g, '');
-  if (!pulita || /[^0-9d+\-]/.test(pulita)) return null;
 
-  // Spezza in token con il proprio segno: "1d8+2-1d4" -> ["1d8", "+2", "-1d4"]
-  const token = pulita.match(/[+-]?[^+-]+/g);
-  if (!token || token.length > 20) return null;
-
-  const termini = [];
-  let dadiTotali = 0;
-  for (const t of token) {
-    const dado = t.match(/^([+-]?)(\d*)d(\d+)$/);
-    if (dado) {
-      const segno = dado[1] === '-' ? -1 : 1;
-      const quantita = dado[2] === '' ? 1 : parseInt(dado[2], 10);
-      const facce = parseInt(dado[3], 10);
-      if (quantita < 1 || quantita > 100 || facce < 2 || facce > 1000) return null;
-      dadiTotali += quantita;
-      if (dadiTotali > 200) return null;
-      termini.push({ tipo: 'dado', quantita, facce, segno });
-      continue;
-    }
-    const fisso = t.match(/^([+-]?)(\d+)$/);
-    if (fisso) {
-      const segno = fisso[1] === '-' ? -1 : 1;
-      termini.push({ tipo: 'fisso', valore: parseInt(fisso[2], 10), segno });
-      continue;
-    }
-    return null;
-  }
-  if (!termini.some((t) => t.tipo === 'dado')) return null;
-  return { termini };
-}
 
 // --- Dadi vita ------------------------------------------------------------
 // In 5e il NUMERO di dadi vita è sempre pari al livello del personaggio; il
 // TIPO di dado (d6…d12) dipende dalla classe. Ricaviamo le facce dalla stringa
 // salvata e teniamo la quantità agganciata al livello.
-const FACCE_DADO_VITA = [6, 8, 10, 12];
 
-function facceDadoVita(espressione) {
-  const dado = parseEspressioneDado(espressione)?.termini.find((t) => t.tipo === 'dado');
-  return dado ? dado.facce : 8;
-}
+
+
 
 /** Espressione dei dadi vita coerente col livello, es. livello 3 + d8 → "3d8". */
-function esprDadiVita(livello, facce) {
-  return `${Math.max(1, Math.floor(livello) || 1)}d${facce}`;
-}
+
 
 /** Bonus di competenza corretto per il livello in 5e: +2 a lv 1, +1 ogni 4 livelli. */
-function bonusCompetenzaDaLivello(livello) {
-  return 2 + Math.floor((Math.max(1, Math.floor(livello) || 1) - 1) / 4);
-}
+
 
 /**
  * Tira un'espressione di danno già parsata.
  * Regola del critico 5e: con `critico` = true raddoppiano SOLO i dadi
  * (2d6+3 -> 4d6+3); il modificatore fisso resta invariato.
  */
-export function tiraDanni(parsata, critico = false) {
-  const dettagli = [];
-  let totale = 0;
-  for (const t of parsata.termini) {
-    if (t.tipo === 'dado') {
-      const quantita = t.quantita * (critico ? 2 : 1);
-      const tiri = Array.from({ length: quantita }, () => tiraDado(t.facce));
-      const somma = tiri.reduce((a, b) => a + b, 0);
-      totale += t.segno * somma;
-      dettagli.push(`${t.segno < 0 ? '-' : ''}${quantita}d${t.facce} [${tiri.join(', ')}]`);
-    } else {
-      totale += t.segno * t.valore;
-      dettagli.push(`${t.segno < 0 ? '-' : '+'}${t.valore}`);
-    }
-  }
-  return { totale: Math.max(0, totale), dettaglio: dettagli.join(' ') };
-}
+
 
 /** Tira il d20 nella modalità scelta: normale, vantaggio o svantaggio. */
-function tiraD20(modalita) {
-  const a = tiraDado(20);
-  if (modalita === 'normale') return { naturale: a, dadi: [a] };
-  const b = tiraDado(20);
-  const naturale = modalita === 'vantaggio' ? Math.max(a, b) : Math.min(a, b);
-  return { naturale, dadi: [a, b] };
-}
+
 
 // ---------------------------------------------------------------------------
 // Modello della scheda
@@ -1254,7 +1185,7 @@ const TIPI_ARMATURA = [
 
 
 /** Capacità di carico massima (kg) = Forza × 7,5 (equivale a For × 15 lb). */
-function capacitaCarico(forza) { return Math.max(1, (forza || 10) * 7.5); }
+
 
 // Peso di ripiego per tipo di armatura, usato quando il nome non è nella tabella.
 
@@ -1589,7 +1520,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.91';
+const APP_VERSION = '1.9.92';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
