@@ -478,6 +478,13 @@ export const DIZIONARIO = {
     'spell.pact': 'Patto (riposo breve)',
     'spell.pact_tip': 'Magia del Patto: gli slot del Warlock sono tutti dello stesso livello e si recuperano col riposo breve',
     'rest.breve_fatto_warlock': 'Risorse brevi e slot del Patto recuperati',
+    'mc.titolo': 'Multiclasse',
+    'mc.liv_totale': 'Livello totale',
+    'mc.liv': 'Liv.',
+    'mc.aggiungi': 'Aggiungi classe',
+    'mc.applica': 'Applica',
+    'mc.applica_tip': 'Aggiungi classi secondarie: poi "Applica" imposta competenza e slot incantesimo combinati (regola 5e).',
+    'mc.nota': '“Applica” aggiorna bonus di competenza (livello totale) e slot combinati. Privilegi e incantesimi di ogni classe vanno aggiunti a mano.',
   },
   en: {
     'app.titolo': 'Dice Table',
@@ -958,6 +965,13 @@ export const DIZIONARIO = {
     'spell.pact': 'Pact (short rest)',
     'spell.pact_tip': 'Pact Magic: the Warlock\'s slots are all the same level and recover on a short rest',
     'rest.breve_fatto_warlock': 'Short-rest resources and Pact slots recovered',
+    'mc.titolo': 'Multiclass',
+    'mc.liv_totale': 'Total level',
+    'mc.liv': 'Lv.',
+    'mc.aggiungi': 'Add class',
+    'mc.applica': 'Apply',
+    'mc.applica_tip': 'Add secondary classes: then "Apply" sets combined proficiency and spell slots (5e rule).',
+    'mc.nota': '“Apply” updates proficiency bonus (total level) and combined slots. Each class\'s features and spells are added manually.',
   }
 };
 

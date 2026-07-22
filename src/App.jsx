@@ -928,6 +928,34 @@ function slotDaClasseLivello(classe, livello) {
   return slot;
 }
 
+/** Livello da incantatore combinato per il multiclasse (regola 5e): full caster
+ *  = livello pieno, mezzo caster (paladino/ranger) = livello/2 arrotondato per
+ *  difetto. Il Warlock (Pact Magic) NON entra in questa somma. */
+function livelloIncantatoreCombinato(classi) {
+  let lv = 0;
+  for (const { classe, livello } of classi) {
+    const c = coloreClasse(classe);
+    if (!c) continue;
+    const k = c.match[0];
+    if (CLASSI_FULL_CASTER.includes(k)) lv += Math.floor(livello) || 0;
+    else if (CLASSI_MEZZO_CASTER.includes(k)) lv += Math.floor((Math.floor(livello) || 0) / 2);
+  }
+  return lv;
+}
+
+/** Slot incantesimo combinati per un personaggio multiclasse: usa la tabella
+ *  del full caster al livello da incantatore combinato. Restituisce null se
+ *  nessuna classe è incantatrice. */
+function slotMulticlasse(classi) {
+  const lv = livelloIncantatoreCombinato(classi);
+  if (lv < 1) return null;
+  const tabella = SLOT_FULL_CASTER[Math.min(20, lv)];
+  if (!tabella) return null;
+  const slot = {};
+  for (let i = 1; i <= 9; i++) slot[i] = { totale: tabella[i - 1] || 0, spesi: 0 };
+  return slot;
+}
+
 // Tipi di danno (per resistenze/immunità/vulnerabilità) e sensi comuni.
 const DANNI_5E = [
   'Acido', 'Contundente', 'Freddo', 'Fuoco', 'Fulmine', 'Necrotico',
@@ -1721,6 +1749,7 @@ function schedaVuota() {
     background: '',
     classe: '',
     sottoclasse: '',
+    multiclasse: [], // classi secondarie: [{ classe, livello }] (opzionale)
     specie: '',
     allineamento: '',
     versione: '2024', // regole del personaggio: '2024' (5.5) o '2014' (5.0)
@@ -2221,7 +2250,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.89';
+const APP_VERSION = '1.9.90';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2423,6 +2452,9 @@ function normalizeImported(dati) {
     background: str(dati.background),
     classe: str(dati.classe),
     sottoclasse: str(dati.sottoclasse),
+    multiclasse: Array.isArray(dati.multiclasse)
+      ? dati.multiclasse.map((m) => ({ classe: str(m && m.classe), livello: Math.max(1, num(m && m.livello, 1)) })).filter((m) => m.classe)
+      : [],
     specie: str(dati.specie),
     allineamento: str(dati.allineamento),
     versione: dati.versione === '2014' ? '2014' : '2024',
@@ -5341,6 +5373,55 @@ export default function App() {
                   })()}
                 </CampoModulo>
               </div>
+          {/* Multiclasse (opzionale, non invasivo): quando vuoto è solo un
+              tastino; aggiungendo classi secondarie puoi applicare competenza e
+              slot incantesimo combinati (regola 5e). */}
+          {(() => {
+            const mc = scheda.multiclasse || [];
+            if (mc.length === 0) {
+              return (
+                <div style={{ margin: '2px 0 8px' }}>
+                  <button style={{ ...styles.buttonMini }} title={t('mc.applica_tip')} onClick={() => aggiorna({ multiclasse: [{ classe: '', livello: 1 }] })}>➕ {t('mc.titolo')}</button>
+                </div>
+              );
+            }
+            const livTot = (scheda.livello || 1) + mc.reduce((a, m) => a + (m.livello || 0), 0);
+            const setMc = (arr) => aggiorna({ multiclasse: arr });
+            return (
+              <div style={{ ...styles.panel, padding: '8px 10px', margin: '2px 0 8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                  <span style={{ ...styles.detail, fontWeight: 700 }}>⚔️ {t('mc.titolo')}</span>
+                  <span style={{ ...styles.detail }}>{t('mc.liv_totale')}: <strong>{livTot}</strong> ({traduciDato(scheda.classe) || '—'} {scheda.livello || 1}{mc.map((m) => ` / ${traduciDato(m.classe) || '—'} ${m.livello}`).join('')})</span>
+                </div>
+                {mc.map((m, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 6, flexWrap: 'wrap' }}>
+                    <select value={m.classe} onChange={(e) => setMc(mc.map((x, j) => (j === i ? { ...x, classe: e.target.value } : x)))} style={{ ...styles.inlineInput, padding: '4px 6px', flex: 1, minWidth: 120 }}>
+                      <option value="">{t('crea.scegli')}</option>
+                      {NOMI_CLASSI.map((n) => <option key={n} value={n}>{traduciDato(n)}</option>)}
+                    </select>
+                    <span style={{ ...styles.detail }}>{t('mc.liv')}</span>
+                    <Editable value={m.livello} tipo="numero" width={28} onChange={(v) => setMc(mc.map((x, j) => (j === i ? { ...x, livello: Math.max(1, v) } : x)))} />
+                    <button style={{ ...styles.buttonMini, color: C.red }} title={t('modal.elimina')} onClick={() => setMc(mc.filter((_, j) => j !== i))}>🗑</button>
+                  </div>
+                ))}
+                <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                  <button style={{ ...styles.buttonMini }} onClick={() => setMc([...mc, { classe: '', livello: 1 }])}>➕ {t('mc.aggiungi')}</button>
+                  <button style={{ ...styles.button, fontSize: 12, padding: '5px 12px' }} title={t('mc.applica_tip')} onClick={() => {
+                    const classi = [{ classe: scheda.classe, livello: scheda.livello || 1 }, ...mc.filter((m) => m.classe)];
+                    const slot = slotMulticlasse(classi);
+                    const patch = { bonusCompetenza: bonusCompetenzaDaLivello(livTot) };
+                    if (slot) {
+                      const cur = scheda.slotIncantesimo || {};
+                      for (let i = 1; i <= 9; i++) slot[i].spesi = Math.min(slot[i].totale, cur[i]?.spesi || 0);
+                      patch.slotIncantesimo = slot;
+                    }
+                    aggiorna(patch);
+                  }}>🔄 {t('mc.applica')}</button>
+                </div>
+                <div style={{ ...styles.detail, fontSize: 11, opacity: 0.75, marginTop: 6 }}>{t('mc.nota')}</div>
+              </div>
+            );
+          })()}
           <div className="vitali">
             {/* RIGA 1 — Classe Armatura | Punti Ferita (x2) | Riposo | TS Morte */}
             {/* Classe Armatura */}
