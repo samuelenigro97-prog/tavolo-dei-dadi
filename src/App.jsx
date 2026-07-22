@@ -2221,7 +2221,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.88';
+const APP_VERSION = '1.9.89';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3704,14 +3704,17 @@ export default function App() {
     registra({ etichetta: `🌙 ${t('vital.riposo_lungo_tooltip')}`, tipo: 'riposo', dettaglio: t('rest.lungo_fatto') });
   }
 
-  /** Riposo breve: ricarica le risorse "brevi" e spende un dado vita per curarti. */
+  /** Riposo breve: ricarica le risorse "brevi" e spende un dado vita per curarti.
+   *  Pact Magic: il Warlock recupera anche gli slot incantesimo col riposo breve. */
   function riposoBreve() {
     if (!window.confirm(t('rest.breve_conferma'))) return;
+    const isWarlock = /warlock|patto/i.test(scheda.classe || '');
     setScheda((s) => ({
       ...s,
       risorse: s.risorse.map((r) => (r.reset === 'breve' ? { ...r, attuali: r.max } : r)),
+      ...(isWarlock ? { slotIncantesimo: Object.fromEntries(Object.entries(s.slotIncantesimo).map(([liv, v]) => [liv, { ...v, spesi: 0 }])) } : {}),
     }));
-    registra({ etichetta: `🔥 ${t('vital.riposo_breve_tooltip')}`, tipo: 'riposo', dettaglio: t('rest.breve_fatto') });
+    registra({ etichetta: `🔥 ${t('vital.riposo_breve_tooltip')}`, tipo: 'riposo', dettaglio: isWarlock ? t('rest.breve_fatto_warlock') : t('rest.breve_fatto') });
     tiraDadoVita();
   }
 
@@ -6077,6 +6080,9 @@ export default function App() {
               {/* Slot incantesimo compatti: totale modificabile, rombi per gli spesi */}
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
                 <span style={{ ...styles.detail, marginRight: 2 }}>{t('spell.slot')}</span>
+                {/(warlock|patto)/i.test(scheda.classe || '') && (
+                  <span style={{ ...styles.detail, fontSize: 11, color: C.goldDark, fontWeight: 700 }} title={t('spell.pact_tip')}>🌙 {t('spell.pact')}</span>
+                )}
                 {(() => {
                   // mostra solo i livelli con slot + il primo vuoto successivo
                   // (niente file di riquadri "0" inutili per chi non li usa)

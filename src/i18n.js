@@ -475,6 +475,9 @@ export const DIZIONARIO = {
     'spell.preparati_tip': 'Incantesimi preparati oggi / massimo preparabile (modificabile)',
     'spell.preparato_si': 'Preparato (tocca per non prepararlo)',
     'spell.preparato_no': 'Non preparato (tocca per prepararlo)',
+    'spell.pact': 'Patto (riposo breve)',
+    'spell.pact_tip': 'Magia del Patto: gli slot del Warlock sono tutti dello stesso livello e si recuperano col riposo breve',
+    'rest.breve_fatto_warlock': 'Risorse brevi e slot del Patto recuperati',
   },
   en: {
     'app.titolo': 'Dice Table',
@@ -952,6 +955,9 @@ export const DIZIONARIO = {
     'spell.preparati_tip': 'Spells prepared today / max preparable (editable)',
     'spell.preparato_si': 'Prepared (tap to unprepare)',
     'spell.preparato_no': 'Not prepared (tap to prepare)',
+    'spell.pact': 'Pact (short rest)',
+    'spell.pact_tip': 'Pact Magic: the Warlock\'s slots are all the same level and recover on a short rest',
+    'rest.breve_fatto_warlock': 'Short-rest resources and Pact slots recovered',
   }
 };
 
