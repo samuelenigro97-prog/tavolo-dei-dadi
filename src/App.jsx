@@ -2221,7 +2221,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.86';
+const APP_VERSION = '1.9.87';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3111,6 +3111,7 @@ export default function App() {
   const [mostraLevelUp, setMostraLevelUp] = useState(false);
   const [mostraPrivilegi, setMostraPrivilegi] = useState(false); // panoramica privilegi per livello
   const [info, setInfo] = useState(null); // nuvoletta esplicativa: { titolo, testo }
+  const [checkConc, setCheckConc] = useState(null); // TS concentrazione automatico: { danno, cd, spell, esito }
   const [dettaglioInc, setDettaglioInc] = useState(null); // id incantesimo aperto nel sottomenu
   const [conferma, setConferma] = useState(null); // { titolo, testo, onConferma } per la conferma in-app
   const [levelUpBozza, setLevelUpBozza] = useState({ metodo: 'media', hpLanciato: 0 });
@@ -4033,12 +4034,46 @@ export default function App() {
             <strong style={{ color: C.red, fontSize: 16, display: 'block', marginBottom: 8 }}>{conferma.titolo}</strong>
             <div style={{ fontSize: 14, lineHeight: 1.45, color: C.ink, marginBottom: 16 }}>{conferma.testo}</div>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button style={{ ...styles.button, flex: 1 }} onClick={() => setConferma(null)}>Annulla</button>
+              <button style={{ ...styles.button, flex: 1 }} onClick={() => setConferma(null)}>{t('modal.annulla')}</button>
               <button style={{ ...styles.buttonDanger, flex: 1 }} onClick={() => { const f = conferma.onConferma; setConferma(null); if (f) f(); }}>🗑 {t('modal.elimina')}</button>
             </div>
           </div>
         </div>
       )}
+
+      {/* TS Concentrazione automatico: appare quando i PF calano mentre concentri */}
+      {checkConc && (() => {
+        const bonusCon = modificatore(scheda.caratteristiche.costituzione) + (scheda.tiriSalvezza?.costituzione ? scheda.bonusCompetenza : 0);
+        const esito = checkConc.esito;
+        return (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 3300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'rgba(0,0,0,0.55)' }} onClick={() => setCheckConc(null)}>
+            <div style={{ ...styles.panel, maxWidth: 380, width: '100%', boxShadow: '0 8px 30px rgba(0,0,0,0.4)' }} onClick={(e) => e.stopPropagation()}>
+              <strong style={{ color: C.goldDark, fontSize: 16, display: 'block', marginBottom: 8 }}>🧠 {t('conc.auto_titolo')}</strong>
+              <div style={{ fontSize: 14, lineHeight: 1.45, color: C.ink, marginBottom: 12 }}>
+                {t('conc.auto_desc', { danno: checkConc.danno, spell: checkConc.spell })} <strong>{t('conc.auto_cd', { cd: checkConc.cd })}</strong>
+              </div>
+              {!esito ? (
+                <button style={{ ...styles.button, width: '100%', marginBottom: 8 }} onClick={() => {
+                  const d20 = Math.floor(Math.random() * 20) + 1;
+                  const tot = d20 + bonusCon;
+                  const passa = d20 === 20 ? true : d20 === 1 ? false : tot >= checkConc.cd;
+                  registra({ etichetta: t('conc.ts'), tipo: 'd20', naturale: d20, totale: tot, dettaglio: `d20 [${d20}] ${conSegno(bonusCon)} · CD ${checkConc.cd} → ${passa ? '✅' : '❌'}`, critico: d20 === 20, fumble: d20 === 1 });
+                  if (!passa) aggiorna({ concentrazione: '' });
+                  setCheckConc({ ...checkConc, esito: { d20, tot, passa } });
+                }}>🎲 {t('conc.ts')} ({conSegno(bonusCon)})</button>
+              ) : (
+                <div style={{ textAlign: 'center', marginBottom: 8 }}>
+                  <div style={{ fontSize: 13, color: C.inkDim }}>d20 [{esito.d20}] {conSegno(bonusCon)} = <strong>{esito.tot}</strong> · CD {checkConc.cd}</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, marginTop: 6, color: esito.passa ? C.green : C.red }}>
+                    {esito.passa ? `✅ ${t('conc.mantieni')}` : `❌ ${t('conc.persa')}`}
+                  </div>
+                </div>
+              )}
+              <button style={{ ...styles.buttonMini, width: '100%' }} onClick={() => setCheckConc(null)}>{t('modal.chiudi')}</button>
+            </div>
+          </div>
+        );
+      })()}
 
       {dettaglioInc != null && (() => {
         const s = scheda.incantesimiLista.find((x) => x.id === dettaglioInc);
@@ -5357,7 +5392,15 @@ export default function App() {
             <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
               <div style={styles.vitalLabel}>{t("vital.pf")}</div>
               <div style={styles.vitalValue}>
-                <Editable value={scheda.pfAttuali} tipo="numero" onChange={(v) => aggiorna({ pfAttuali: v })} width={44} />
+                <Editable value={scheda.pfAttuali} tipo="numero" onChange={(v) => {
+                  // TS Concentrazione automatico: se i PF calano mentre concentri,
+                  // proponi il tiro (CD = 10 oppure metà dei danni, il più alto).
+                  const danno = scheda.pfAttuali - v;
+                  aggiorna({ pfAttuali: v });
+                  if (danno > 0 && scheda.concentrazione) {
+                    setCheckConc({ danno, cd: Math.max(10, Math.floor(danno / 2)), spell: scheda.concentrazione, esito: null });
+                  }
+                }} width={44} />
                 <span style={{ color: C.inkDim, fontSize: 14 }}>
                   {' / '}
                   <Editable value={scheda.pfMax} tipo="numero" onChange={(v) => aggiorna({ pfMax: v })} width={44} />

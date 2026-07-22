@@ -464,6 +464,11 @@ export const DIZIONARIO = {
     'spell.chip_note': 'Note',
     'vital.passive_extra': 'Ind. {ind} · Intu. {intu}',
     'vital.passive_tooltip': 'Punteggi passivi: Percezione, Indagare, Intuizione (10 + bonus)',
+    'conc.auto_titolo': 'Concentrazione — tiro salvezza',
+    'conc.auto_desc': 'Hai subìto {danno} danni mentre concentri su "{spell}".',
+    'conc.auto_cd': 'CD {cd}',
+    'conc.mantieni': 'Concentrazione mantenuta',
+    'conc.persa': 'Concentrazione persa',
   },
   en: {
     'app.titolo': 'Dice Table',
@@ -930,6 +935,11 @@ export const DIZIONARIO = {
     'spell.chip_note': 'Notes',
     'vital.passive_extra': 'Inv. {ind} · Ins. {intu}',
     'vital.passive_tooltip': 'Passive scores: Perception, Investigation, Insight (10 + bonus)',
+    'conc.auto_titolo': 'Concentration — saving throw',
+    'conc.auto_desc': 'You took {danno} damage while concentrating on "{spell}".',
+    'conc.auto_cd': 'DC {cd}',
+    'conc.mantieni': 'Concentration held',
+    'conc.persa': 'Concentration lost',
   }
 };
 
