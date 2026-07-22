@@ -939,10 +939,68 @@ export function setLinguaAttuale(lang) {
 
 export function t(chiave, valori = {}) {
   let testo = DIZIONARIO[linguaAttuale]?.[chiave] || DIZIONARIO['it']?.[chiave] || chiave;
-  
+
   for (const [key, val] of Object.entries(valori)) {
     testo = testo.replace(`{${key}}`, val);
   }
-  
+
   return testo;
+}
+
+// Traduzione dei CONTENUTI DI GIOCO (valori canonici in italiano → inglese).
+// Il valore salvato nella scheda resta in italiano; qui si traduce solo ciò che
+// si MOSTRA quando la lingua è "en". Le unità (m) restano invariate.
+const DATI_EN = {
+  // Taglie
+  'Minuscola': 'Tiny', 'Piccola': 'Small', 'Media': 'Medium', 'Grande': 'Large', 'Enorme': 'Huge', 'Mastodontica': 'Gargantuan',
+  // Allineamenti
+  'Legale Buono': 'Lawful Good', 'Neutrale Buono': 'Neutral Good', 'Caotico Buono': 'Chaotic Good',
+  'Legale Neutrale': 'Lawful Neutral', 'Neutrale': 'Neutral', 'Caotico Neutrale': 'Chaotic Neutral',
+  'Legale Malvagio': 'Lawful Evil', 'Neutrale Malvagio': 'Neutral Evil', 'Caotico Malvagio': 'Chaotic Evil',
+  // Classi
+  'Barbaro': 'Barbarian', 'Bardo': 'Bard', 'Chierico': 'Cleric', 'Druido': 'Druid', 'Guerriero': 'Fighter',
+  'Ladro': 'Rogue', 'Mago': 'Wizard', 'Monaco': 'Monk', 'Paladino': 'Paladin', 'Ranger': 'Ranger',
+  'Stregone': 'Sorcerer', 'Warlock': 'Warlock',
+  // Tipi di danno
+  'Contundente': 'Bludgeoning', 'Perforante': 'Piercing', 'Tagliente': 'Slashing', 'Acido': 'Acid',
+  'Freddo': 'Cold', 'Fuoco': 'Fire', 'Forza': 'Force', 'Fulmine': 'Lightning', 'Necrotico': 'Necrotic',
+  'Veleno': 'Poison', 'Psichico': 'Psychic', 'Radiante': 'Radiant', 'Tuono': 'Thunder',
+  // Sensi (token, così anche i compositi tipo "Scurovisione 18 m" si traducono)
+  'Scurovisione': 'Darkvision', 'Vista vera': 'Truesight', 'Vista Vera': 'Truesight',
+  'Percezione cieca': 'Blindsight', 'Percezione tremorsensitiva': 'Tremorsense',
+  // Lingue
+  'Abissale': 'Abyssal', 'Celestiale': 'Celestial', 'Comune': 'Common', 'Draconico': 'Draconic',
+  'Elfico': 'Elvish', 'Gigante': 'Giant', 'Gnomesco': 'Gnomish', 'Goblin': 'Goblin', 'Halfling': 'Halfling',
+  'Infernale': 'Infernal', 'Nanico': 'Dwarvish', 'Orchesco': 'Orc', 'Primordiale': 'Primordial',
+  'Silvano': 'Sylvan', 'Sottocomune': 'Undercommon',
+  // Background
+  'Accolito': 'Acolyte', 'Artigiano': 'Artisan', 'Ciarlatano': 'Charlatan', 'Contadino': 'Farmer',
+  'Criminale': 'Criminal', 'Eremita': 'Hermit', 'Guardia': 'Guard', 'Guida': 'Guide',
+  'Intrattenitore': 'Entertainer', 'Marinaio': 'Sailor', 'Mercante': 'Merchant', 'Nobile': 'Noble',
+  'Saggio': 'Sage', 'Scriba': 'Scribe', 'Soldato': 'Soldier', 'Viandante': 'Wayfarer',
+  // Specie e sotto-varianti comuni
+  'Aasimar': 'Aasimar', 'Dragonide': 'Dragonborn', 'Elfo': 'Elf', 'Elfo Alto': 'High Elf',
+  'Elfo dei Boschi': 'Wood Elf', 'Elfo Oscuro (Drow)': 'Drow', 'Gnomo': 'Gnome',
+  'Gnomo delle Foreste': 'Forest Gnome', 'Gnomo delle Rocce': 'Rock Gnome', 'Goliath': 'Goliath',
+  'Halfling Piedelesto': 'Lightfoot Halfling', 'Halfling Tozzo': 'Stout Halfling', 'Nano': 'Dwarf',
+  'Nano delle Colline': 'Hill Dwarf', 'Nano delle Montagne': 'Mountain Dwarf', 'Orco': 'Orc',
+  'Mezzorco': 'Half-Orc', 'Tiefling': 'Tiefling', 'Umano': 'Human', 'Mezzelfo': 'Half-Elf',
+};
+
+const _DATI_EN_TOKENS = Object.keys(DATI_EN).sort((a, b) => b.length - a.length); // più lunghi prima
+function _escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+/**
+ * Traduce un valore di dato di gioco quando la lingua è inglese. Se il valore
+ * è esatto usa la mappa; se è composto (es. "Scurovisione 18 m", "Comune, Elfico")
+ * traduce i token noti al suo interno. In italiano restituisce il valore invariato.
+ */
+export function traduciDato(v) {
+  if (linguaAttuale !== 'en' || !v || typeof v !== 'string') return v;
+  if (DATI_EN[v]) return DATI_EN[v];
+  let out = v;
+  for (const it of _DATI_EN_TOKENS) {
+    out = out.replace(new RegExp(`\\b${_escapeRe(it)}\\b`, 'g'), DATI_EN[it]);
+  }
+  return out;
 }

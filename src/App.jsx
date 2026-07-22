@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { ICONE_CLASSE, ICONE_SPECIE } from './ritratti';
-import { t, setLinguaAttuale, DIZIONARIO } from './i18n';
+import { t, setLinguaAttuale, DIZIONARIO, traduciDato } from './i18n';
 
 // ---------------------------------------------------------------------------
 // Palette e stili
@@ -2221,7 +2221,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.84';
+const APP_VERSION = '1.9.85';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2730,8 +2730,8 @@ function CampoConTendina({ value, opzioni, onChange, width, title, lookup, setIn
         <span key={t} title={sp || t} style={chip}>
           <span
             style={sp ? { cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 } : undefined}
-            onClick={sp ? () => setInfo({ titolo: t, testo: sp }) : undefined}
-          >{t}</span>
+            onClick={sp ? () => setInfo({ titolo: traduciDato(t), testo: sp }) : undefined}
+          >{traduciDato(t)}</span>
           <button
             style={{ background: 'transparent', border: 'none', color: '#c0392b', cursor: 'pointer', padding: 0, fontSize: 16, lineHeight: 0.8 }}
             onClick={() => rimuovi(t)}
@@ -2751,7 +2751,7 @@ function CampoConTendina({ value, opzioni, onChange, width, title, lookup, setIn
         >
           <option value="">{t('common.aggiungi')}…</option>
           {opzioni.map((o) => (
-            <option key={o} value={o}>{o}</option>
+            <option key={o} value={o}>{traduciDato(o)}</option>
           ))}
         </select>
       </label>
@@ -2790,10 +2790,10 @@ function CampoTendina({ value, opzioni, onChange, title }) {
       >
         <option value="" style={{ background: C.panel }}>{t("common.scegli")}</option>
         {Array.isArray(opzioni) ? opzioni.map((o) => (
-          <option key={o} value={o} style={{ background: C.panel }}>{o}</option>
+          <option key={o} value={o} style={{ background: C.panel }}>{traduciDato(o)}</option>
         )) : Object.entries(opzioni).map(([group, opts]) => (
-          <optgroup key={group} label={group} style={{ background: C.panel }}>
-            {opts.map((o) => <option key={o} value={o} style={{ background: C.panel }}>{o}</option>)}
+          <optgroup key={group} label={traduciDato(group)} style={{ background: C.panel }}>
+            {opts.map((o) => <option key={o} value={o} style={{ background: C.panel }}>{traduciDato(o)}</option>)}
           </optgroup>
         ))}
         <option value="__altro" style={{ background: C.panel }}>{t("common.altro")}</option>
