@@ -42,20 +42,7 @@ const BASE_TEMA = {
 // Colore identità per ogni classe (variante chiara e scura per restare leggibile).
 // `match` = sottostringhe riconosciute nel campo classe (italiano + inglese).
 // Palette a 12 tinte ben distinte (una per classe), sia in chiaro sia in scuro.
-const CLASSI = [
-  { match: ['barbaro', 'barbarian'], chiaro: '#b0281b', scuro: '#ec6f5e' },   // rosso
-  { match: ['bardo', 'bard'], chiaro: '#c02a9c', scuro: '#ee78d0' },          // magenta
-  { match: ['chierico', 'cleric'], chiaro: '#d6a90f', scuro: '#f0cb44' },     // oro
-  { match: ['druido', 'druid'], chiaro: '#3f9a3a', scuro: '#79ce6f' },        // verde foglia
-  { match: ['guerriero', 'fighter'], chiaro: '#4a6a8a', scuro: '#8aa6c8' },   // blu acciaio
-  { match: ['ladro', 'rogue'], chiaro: '#566070', scuro: '#99a4b4' },         // grigio ardesia
-  { match: ['mago', 'wizard'], chiaro: '#1f74d4', scuro: '#66acf0' },         // azzurro
-  { match: ['monaco', 'monk'], chiaro: '#12a08e', scuro: '#57d6c4' },         // giada
-  { match: ['paladino', 'paladin'], chiaro: '#b07d2f', scuro: '#e0a851' },    // bronzo
-  { match: ['ranger'], chiaro: '#7d8a26', scuro: '#b3c257' },                 // verde oliva
-  { match: ['stregone', 'sorcerer'], chiaro: '#e0521c', scuro: '#f4885a' },   // arancio fuoco
-  { match: ['warlock', 'patto'], chiaro: '#7b30b0', scuro: '#b07be0' },       // viola indaco
-];
+
 
 // Le 12 classi base (2024), per il menù a tendina della classe.
 
@@ -231,13 +218,7 @@ function incantesimiConcentrazioneClasse(classe) {
 // Le classi che non lanciano trucchetti non compaiono (nessun limite).
 
 /** Massimo di trucchetti conosciuti per classe e livello (null = nessun limite). */
-function trucchettiMax(classe, livello) {
-  const k = chiaveClasse(classe);
-  const base = TRUCCHETTI_NOTI[k];
-  if (!base) return null;
-  const lv = Math.max(1, Math.floor(livello) || 1);
-  return lv >= 10 ? base[2] : lv >= 4 ? base[1] : base[0];
-}
+
 // Incantesimi (livello 1+) noti/preparati per classe e livello (indice 0 = liv.1).
 // 2024: quasi tutte le classi "preparano". 2014: i conoscitori hanno tabelle fisse,
 // i preparatori usano mod. da incantatore + livello. Valori indicativi, modificabili.
@@ -247,52 +228,19 @@ function trucchettiMax(classe, livello) {
  * Massimo di incantesimi (livello 1+) per classe/livello/versione (o null se non
  * incantatore). È un default modificabile a mano dall'utente.
  */
-function incantesimiMaxAuto(scheda, versione = '2024') {
-  const k = chiaveClasse(scheda?.classe);
-  if (!k) return null;
-  const idx = Math.min(19, Math.max(1, Math.floor(scheda.livello) || 1) - 1);
-  const carKey = scheda.incantatore?.caratteristica;
-  const mod = carKey ? modificatore(scheda.caratteristiche?.[carKey]) : 0;
-  const lv = idx + 1;
-  if (versione === '2014') {
-    if (['chierico', 'druido', 'mago'].includes(k)) return Math.max(1, mod + lv);
-    if (k === 'paladino') return Math.max(1, mod + Math.floor(lv / 2));
-    const noti = INC_MAX_2014_NOTI[k];
-    return noti ? noti[idx] : null;
-  }
-  const t = INC_MAX_2024[k];
-  return t ? t[idx] : null;
-}
+
 
 // Livelli in cui si sceglie o si potenzia la sottoclasse (2024).
 
 // Livelli di sottoclasse nella 5.0 (2014): alcune classi la scelgono già al 1°/2°.
 
-function sottoclasseLivPer(versione) {
-  return versione === '2014' ? SOTTOCLASSE_LIV_2014 : SOTTOCLASSE_LIV;
-}
 
-function chiaveClasse(classe) {
-  const c = coloreClasse(classe);
-  return c ? c.match[0] : null;
-}
+
+
 /** Privilegi di classe guadagnati esattamente a questo livello (testo, o ''). */
-function privilegiClasseLivello(classe, livello, versione = '2024') {
-  const k = chiaveClasse(classe);
-  if (!k) return '';
-  const tabella = versione === '2014' ? PRIVILEGI_CLASSE_LIV_2014 : PRIVILEGI_CLASSE_LIV;
-  let extra = (tabella[k] && tabella[k][livello]) || '';
-  if (k === 'ladro' && livello % 2 === 1) {
-    // Attacco furtivo del ladro: +1d6 a ogni livello dispari (uguale in 5.0 e 5.5).
-    extra = (extra ? extra + '\n' : '') + `Attacco furtivo ${Math.ceil(livello / 2)}d6`;
-  }
-  return extra;
-}
+
 /** Vero se a questo livello scatta un Aumento di Caratteristica/Talento. */
-function asiAlLivello(classe, livello) {
-  const k = chiaveClasse(classe);
-  return ((k && ASI_LIV[k]) || ASI_LIV._default).includes(livello);
-}
+
 /** Vero se a questo livello si sceglie/potenzia la sottoclasse (per versione). */
 function sottoclasseAlLivello(classe, livello, versione = '2024') {
   const k = chiaveClasse(classe);
@@ -336,46 +284,17 @@ function datiSpecieDi(specie) {
 
 
 /** Slot incantesimo coerenti con classe e livello (null se non applicabile: manuale). */
-function slotDaClasseLivello(classe, livello) {
-  const c = coloreClasse(classe);
-  if (!c) return null;
-  const lv = Math.max(1, Math.min(20, Math.floor(livello) || 1));
-  let tabella = null;
-  if (CLASSI_FULL_CASTER.includes(c.match[0])) tabella = SLOT_FULL_CASTER[lv];
-  else if (CLASSI_MEZZO_CASTER.includes(c.match[0])) tabella = SLOT_MEZZO_CASTER[lv];
-  if (!tabella) return null;
-  const slot = {};
-  for (let i = 1; i <= 9; i++) slot[i] = { totale: tabella[i - 1] || 0, spesi: 0 };
-  return slot;
-}
+
 
 /** Livello da incantatore combinato per il multiclasse (regola 5e): full caster
  *  = livello pieno, mezzo caster (paladino/ranger) = livello/2 arrotondato per
  *  difetto. Il Warlock (Pact Magic) NON entra in questa somma. */
-function livelloIncantatoreCombinato(classi) {
-  let lv = 0;
-  for (const { classe, livello } of classi) {
-    const c = coloreClasse(classe);
-    if (!c) continue;
-    const k = c.match[0];
-    if (CLASSI_FULL_CASTER.includes(k)) lv += Math.floor(livello) || 0;
-    else if (CLASSI_MEZZO_CASTER.includes(k)) lv += Math.floor((Math.floor(livello) || 0) / 2);
-  }
-  return lv;
-}
+
 
 /** Slot incantesimo combinati per un personaggio multiclasse: usa la tabella
  *  del full caster al livello da incantatore combinato. Restituisce null se
  *  nessuna classe è incantatrice. */
-function slotMulticlasse(classi) {
-  const lv = livelloIncantatoreCombinato(classi);
-  if (lv < 1) return null;
-  const tabella = SLOT_FULL_CASTER[Math.min(20, lv)];
-  if (!tabella) return null;
-  const slot = {};
-  for (let i = 1; i <= 9; i++) slot[i] = { totale: tabella[i - 1] || 0, spesi: 0 };
-  return slot;
-}
+
 
 // Tipi di danno (per resistenze/immunità/vulnerabilità) e sensi comuni.
 
@@ -391,11 +310,7 @@ function slotMulticlasse(classi) {
 const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'risorse', 'privilegi', 'privilegiSottoclasse', 'metamagia', 'trattiSpecie', 'talenti', 'addestramento', 'equipaggiamento', 'aspetto'];
 
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
-function coloreClasse(classe) {
-  if (typeof classe !== 'string' || !classe) return null;
-  const c = classe.toLowerCase();
-  return CLASSI.find((x) => x.match.some((m) => c.includes(m))) || null;
-}
+
 
 function hexToRgb(h) {
   const s = h.replace('#', '');
@@ -985,30 +900,14 @@ import { SPIEG_CARATT, spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiega
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, pesoStimato, pesoArmatura } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
  * sono nel testo di SPIEG_INCANTESIMI). Restituisce null se non c'è descrizione,
  * così chi chiama può decidere se lasciare i valori esistenti o usare un default.
  */
-function dettagliIncantesimo(nome) {
-  const desc = spiegaIncantesimo(nome) || '';
-  if (!desc) return null;
-  let tempo = 'AZ';
-  if (/reazione/i.test(desc)) tempo = 'REAZ';
-  else if (/azione bonus/i.test(desc)) tempo = 'AZ BONUS';
-  let gittata = '';
-  const mG = desc.match(/gittata\s*(\d+(?:[.,]\d+)?)\s*m/i);
-  const mR = desc.match(/raggio\s*(\d+(?:[.,]\d+)?)\s*m/i);
-  const mC = desc.match(/cono\s*(?:di\s*)?(\d+(?:[.,]\d+)?)\s*m/i);
-  if (mG) gittata = `${mG[1]}m`;
-  else if (/tocc|contatto/i.test(desc)) gittata = 'contatto';
-  else if (/personale|te stesso|su di te|intorno a te/i.test(desc)) gittata = 'personale';
-  else if (mR) gittata = `raggio ${mR[1]}m`;
-  else if (mC) gittata = `cono ${mC[1]}m`;
-  const note = [/\brituale\b/i.test(desc) && 'Rituale', /concentrazione/i.test(desc) && 'Conc.'].filter(Boolean).join(', ');
-  return { tempo, gittata, note };
-}
+
 /** Righe (di un testo libero) che hanno una spiegazione, come lista cliccabile ⓘ. */
 function renderSpiegazioni(testo, lookup, setInfo) {
   const trovate = String(testo || '')
@@ -1191,25 +1090,10 @@ const TIPI_ARMATURA = [
 
 
 /** Stima il peso (kg) di un oggetto dal nome: esatto → contenuto → 0. */
-function pesoStimato(nome) {
-  if (!nome) return 0;
-  if (PESI_OGGETTI[nome] != null) return PESI_OGGETTI[nome];
-  const n = nome.trim().toLowerCase();
-  for (const k of Object.keys(PESI_OGGETTI)) {
-    const kk = k.toLowerCase();
-    if (n.includes(kk) || kk.includes(n)) return PESI_OGGETTI[k];
-  }
-  return 0;
-}
+
 
 /** Peso stimato di un'armatura {nome,tipo,scudo}: nome → tipo, + scudo se presente. */
-function pesoArmatura(armatura) {
-  if (!armatura || armatura.tipo === 'nessuna') return armatura?.scudo ? PESI_OGGETTI['Scudo'] : 0;
-  let p = pesoStimato(armatura.nome);
-  if (!p) p = PESO_ARMATURA_TIPO[armatura.tipo] || 0;
-  if (armatura.scudo) p += PESI_OGGETTI['Scudo'];
-  return p;
-}
+
 
 
 
@@ -1520,7 +1404,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '1.9.92';
+const APP_VERSION = '1.9.93';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
