@@ -2249,13 +2249,11 @@ export default function App() {
   const [ordineSezioni, setOrdineSezioni] = useState(() => {
     let salvato = [];
     try {
-      const s = JSON.parse(localStorage.getItem('scheda-interattiva:ordine-sezioni'));
+      const s = JSON.parse(localStorage.getItem('scheda-interattiva:ordine-sezioni-v2'));
       if (Array.isArray(s)) salvato = s;
     } catch {
       /* niente */
     }
-    const vecchioDefault = 'attacchi,incantesimi,risorse,privilegi,privilegiSottoclasse,trattiSpecie,talenti,addestramento,equipaggiamento,aspetto';
-    if (salvato.join(',') === vecchioDefault) salvato = []; // Se è il vecchio default intatto, applica il nuovo
 
     // mantieni l'ordine salvato, scarta id sconosciuti, aggiungi le sezioni nuove
     const ordinato = salvato.filter((id) => ORDINE_SEZIONI_DEFAULT.includes(id));
@@ -2311,7 +2309,7 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem('scheda-interattiva:ordine-sezioni', JSON.stringify(ordineSezioni));
+      localStorage.setItem('scheda-interattiva:ordine-sezioni-v2', JSON.stringify(ordineSezioni));
     } catch {
       /* niente */
     }
