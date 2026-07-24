@@ -2033,7 +2033,7 @@ function AreaTesto({ value, onChange, righe = 2, placeholder }) {
  * i campi per modificare/eliminare la voce. In fondo un pulsante per aggiungere.
  * Il valore resta un unico testo con a-capo (nessun cambio al modello dati).
  */
-function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni }) {
+function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni, onRoll }) {
   const righe = String(value || '').split('\n').map((r) => r.trim()).filter(Boolean);
   const [edit, setEdit] = useState(null); // { index, valore }  (index -1 = nuova)
   const listId = useId();
@@ -2056,10 +2056,25 @@ function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni }) {
         {righe.length === 0 && <span style={{ ...styles.detail, fontStyle: 'italic' }}>{placeholder || 'Nessuna voce.'}</span>}
         {righe.map((r, i) => {
           const sp = lookup ? lookup(r) : null;
+          const isMagiaSelvaggia = /magia selvaggia/i.test(r) && onRoll;
           return (
-            <button key={i} style={chip} title={t('tip.apri_dettagli')} onClick={() => setEdit({ index: i, valore: r })}>
-              {r}
-            </button>
+            <div key={i} style={{ display: 'flex', alignItems: 'center' }}>
+              <button style={{ ...chip, borderRight: isMagiaSelvaggia ? 'none' : chip.border, borderTopRightRadius: isMagiaSelvaggia ? 0 : 8, borderBottomRightRadius: isMagiaSelvaggia ? 0 : 8 }} title={t('tip.apri_dettagli')} onClick={() => setEdit({ index: i, valore: r })}>
+                {r}
+              </button>
+              {isMagiaSelvaggia && (
+                <button
+                  style={{ ...chip, background: C.gold, color: '#fff', borderLeft: '1px solid rgba(0,0,0,0.1)', borderTopLeftRadius: 0, borderBottomLeftRadius: 0, paddingLeft: 6, paddingRight: 6 }}
+                  title="Tira 1d100 (Impulso di Magia Selvaggia)"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRoll("Impulso di Magia Selvaggia", "1d100");
+                  }}
+                >
+                  🎲
+                </button>
+              )}
+            </div>
           );
         })}
         <button style={{ ...chip, borderStyle: 'dashed', color: C.goldDark }} onClick={() => setEdit({ index: -1, valore: "" })}>➕ {t("common.aggiungi")}</button>
@@ -5116,6 +5131,7 @@ export default function App() {
                 lookup={spiegaPrivilegio}
                 placeholder={t("priv.ph")}
                 onChange={(v) => aggiorna({ privilegi: v })}
+                onRoll={lanciaDanniDiretti}
               />
             </Sezione>
 
@@ -5125,6 +5141,7 @@ export default function App() {
                 lookup={spiegaPrivilegio}
                 placeholder={`Privilegi della sottoclasse${scheda.sottoclasse ? ` (${scheda.sottoclasse})` : ''}: aggiungili qui.`}
                 onChange={(v) => aggiorna({ privilegiSottoclasse: v })}
+                onRoll={lanciaDanniDiretti}
               />
             </Sezione>
 

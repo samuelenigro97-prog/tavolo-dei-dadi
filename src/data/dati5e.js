@@ -160,6 +160,11 @@ export const PESI_OGGETTI = {
   'Catena (3 m)': 5, 'Sacco': 0.25, 'Borsa per componenti': 1, 'Focus arcano': 1.5, 'Simbolo sacro': 0.5,
   'Libro degli incantesimi': 1.5, 'Pergamena': 0, 'Pozione di guarigione': 0.25, 'Fiala': 0,
   'Acciarino': 0.5, 'Specchietto d’acciaio': 0.25, 'Corda per rampino': 5, 'Piccone': 5,
+  // Aggiunte Comuni
+  'Borsa da erborista': 1.5, 'Giaciglio': 3.5, 'Dotazione da avventuriero': 29.5, 'Dotazione da studioso': 5.5,
+  'Dotazione da diplomatico': 18, 'Dotazione da intrattenitore': 19, 'Dotazione da sacerdote': 12.5,
+  'Dotazione da dungeoneer': 30.5, 'Dotazione da scassinatore': 23, 'Abiti da viaggiatore': 2,
+  'Abiti comuni': 1.5, 'Abiti pregiati': 3, 'Focus druidico': 1.5, 'Libro (filosofia)': 2.5,
 };
 export const NOMI_OGGETTI = Object.keys(PESI_OGGETTI).sort((a, b) => a.localeCompare(b, 'it'));
 export const PESO_ARMATURA_TIPO = { leggera: 5, media: 9, pesante: 25 };
@@ -521,7 +526,7 @@ export const PRIVILEGI_CLASSE_LIV = {
     20: 'Sterminatore di nemici',
   },
   stregone: {
-    2: 'Fonte di magia (Punti stregoneria)',
+    2: 'Fonte di magia (Punti stregoneria)\nMetamagia',
     5: 'Recupero stregonesco',
     7: 'Stregoneria incarnata',
     20: 'Apoteosi arcana',
