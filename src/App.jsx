@@ -4634,7 +4634,7 @@ export default function App() {
                 }} width={44} />
                 <span style={{ color: C.inkDim, fontSize: 14 }}>
                   {' / '}
-                  <Editable value={scheda.pfMax} tipo="numero" onChange={(v) => aggiorna({ pfMax: v })} width={44} />
+                  <span title={t('vital.max_pf_tooltip') || "I Punti Ferita massimi si modificano solo dal Level Up."} style={{ display: 'inline-block', minWidth: 24, textAlign: 'center' }}>{scheda.pfMax}</span>
                 </span>
                 <span style={{ color: C.inkDim, fontSize: 13 }}>
                   {'  '}{t('vital.temporanei')}{' '}
@@ -5241,7 +5241,21 @@ export default function App() {
             </Sezione>
 
             {/* Incantesimi — sezione collassabile */}
-            <Sezione titolo={t("sez.incantesimi")} {...propsSez('incantesimi')} {...apertoProps('incantesimi')}>
+            <Sezione 
+              titolo={
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <span>{t("sez.incantesimi")}</span>
+                  {maxIncantesimi != null && (
+                    <span style={{ fontSize: 13, color: (classePreparata ? preparatiPieni : incantesimiPieno) ? C.goldDark : C.inkDim, fontWeight: 'normal', display: 'flex', alignItems: 'center', textTransform: 'none', letterSpacing: 'normal' }}>
+                      ({classePreparata ? t('spell.preparati') : t('spell.conosciuti')}: {classePreparata ? nPreparati : nIncantesimi} / <Editable value={maxIncantesimi} tipo="numero" width={24} onChange={(v) => aggiorna({ maxIncantesimi: Math.max(0, v) })} />)
+                      {nBonus > 0 && <span style={{ color: C.goldDark, fontWeight: 700, marginLeft: 4 }}>✦ {nBonus}</span>}
+                    </span>
+                  )}
+                </div>
+              } 
+              {...propsSez('incantesimi')} 
+              {...apertoProps('incantesimi')}
+            >
               <div style={{ display: 'flex', gap: 12, alignItems: 'stretch', flexWrap: 'wrap', marginBottom: 12 }}>
                 <label style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                   {t('spell.caratteristica')}{' '}
@@ -5323,26 +5337,6 @@ export default function App() {
               {/* Conteggi (compatti) + ricerca. L'aggiunta è un tastino piccolo
                   sotto la lista di ogni livello (vedi più in basso). */}
               <div style={{ marginTop: 14, marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {(maxTrucchetti != null || maxIncantesimi != null) && (
-                  <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', padding: '4px 8px', borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}` }}>
-                    {maxTrucchetti != null && (
-                      <span style={{ ...styles.detail, color: trucchettiPieno ? C.goldDark : C.inkDim, fontWeight: trucchettiPieno ? 700 : 500 }} title={t('tip.conteggio_trucchetti')}>
-                        {t('spell.trucchetti')} <strong>{nTrucchetti}</strong>/<Editable value={maxTrucchetti} tipo="numero" width={24} onChange={(v) => aggiorna({ maxTrucchetti: Math.max(0, v) })} />
-                      </span>
-                    )}
-                    {maxIncantesimi != null && classePreparata && (
-                      <span style={{ ...styles.detail, color: C.inkDim, fontWeight: 500 }} title={t('spell.conosciuti_tip')}>
-                        {t('spell.conosciuti')} <strong>{nIncantesimi}</strong>
-                      </span>
-                    )}
-                    {maxIncantesimi != null && (
-                      <span style={{ ...styles.detail, color: (classePreparata ? preparatiPieni : incantesimiPieno) ? C.goldDark : C.inkDim, fontWeight: (classePreparata ? preparatiPieni : incantesimiPieno) ? 700 : 500 }} title={classePreparata ? t('spell.preparati_tip') : t('tip.conteggio_incantesimi')}>
-                        {classePreparata ? t('spell.preparati') : t('spell.incantesimi')} <strong>{classePreparata ? nPreparati : nIncantesimi}</strong>/<Editable value={maxIncantesimi} tipo="numero" width={24} onChange={(v) => aggiorna({ maxIncantesimi: Math.max(0, v) })} />
-                        {nBonus > 0 && <span style={{ color: C.goldDark, fontWeight: 700 }}> · ✦ {nBonus}</span>}
-                      </span>
-                    )}
-                  </div>
-                )}
                 <input type="search" value={filtroIncantesimo} onChange={(e) => setFiltroIncantesimo(e.target.value)} placeholder={t('spell.cerca')} style={{ ...styles.inlineInput, padding: '7px 10px', width: '100%' }} />
                 <span style={{ ...styles.detail, fontSize: 11, textAlign: 'center', opacity: 0.75 }}>{t('spell.tocca_nome')}</span>
               </div>
@@ -5391,12 +5385,18 @@ export default function App() {
                   const spells = scheda.incantesimiLista.filter((s) => s.livello === liv && match(s));
                   if (q && spells.length === 0) return null; // durante la ricerca salta i livelli senza risultati
                   const countLiv = scheda.incantesimiLista.filter((x) => x.livello === liv).length;
-                  const conteggio = liv === 0 ? (maxTrucchetti != null ? `${countLiv}/${maxTrucchetti}` : `${countLiv}`) : `${countLiv}`;
                   return (
                     <div key={liv} style={{ marginBottom: 14 }}>
                       <h4 style={{ fontSize: 12, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5, borderBottom: `1px solid ${C.border}`, paddingBottom: 2, marginBottom: 6, display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                         <span>{liv === 0 ? t('spell.trucchetti_liv0') : t('spell.n_livello', { n: liv })}</span>
-                        <span style={{ color: (liv === 0 && trucchettiPieno) ? C.goldDark : C.inkDim, fontWeight: 700 }}>{conteggio}</span>
+                        <span style={{ color: (liv === 0 && trucchettiPieno) ? C.goldDark : C.inkDim, fontWeight: 700, display: 'flex', alignItems: 'center' }}>
+                          {countLiv}
+                          {liv === 0 && maxTrucchetti != null && (
+                            <span style={{ fontWeight: 'normal', color: C.inkDim, marginLeft: 2, display: 'flex', alignItems: 'center', textTransform: 'none', letterSpacing: 'normal' }}>
+                              / <Editable value={maxTrucchetti} tipo="numero" width={24} onChange={(v) => aggiorna({ maxTrucchetti: Math.max(0, v) })} />
+                            </span>
+                          )}
+                        </span>
                       </h4>
                       {liv >= 1 && (() => {
                         const slot = scheda.slotIncantesimo[liv] || { totale: 0, spesi: 0 };
