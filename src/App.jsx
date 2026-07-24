@@ -4244,7 +4244,7 @@ export default function App() {
           </div>
 
           <div style={{ width: '100%', height: 1, background: C.border, margin: '6px 0 2px' }} />
-          <div className="dadi-riga" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', width: '100%', padding: '2px 0 4px' }}>
+          <div className="dadi-riga" style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', width: '100%', padding: '2px 0 4px' }}>
             <span style={{ ...styles.detail, marginRight: 2, flexShrink: 0, fontWeight: 700 }}>{t('roll.dado')}:</span>
             {[4, 6, 8, 10, 12, 20, 100].map((facce) => {
               let pts = "";
@@ -4260,21 +4260,21 @@ export default function App() {
                   className="dado-btn"
                   onClick={() => tiroLibero(facce)}
                   style={{
-                    position: 'relative', width: 44, height: 44, background: 'none', border: 'none', cursor: 'pointer',
+                    position: 'relative', width: 36, height: 36, background: 'none', border: 'none', cursor: 'pointer',
                     padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.1s'
                   }}
                   onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.9)'}
                   onMouseUp={(e) => e.currentTarget.style.transform = 'none'}
                   onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
                 >
-                  <svg width="44" height="44" viewBox="0 0 40 40" style={{ position: 'absolute', top: 0, left: 0 }}>
+                  <svg width="36" height="36" viewBox="0 0 40 40" style={{ position: 'absolute', top: 0, left: 0 }}>
                     {facce === 100 ? (
                       <circle cx="20" cy="20" r="16" fill="var(--c-gold)" stroke="var(--c-gold-dark)" strokeWidth="2" />
                     ) : (
                       <polygon points={pts} fill="var(--c-gold)" stroke="var(--c-gold-dark)" strokeWidth="2" strokeLinejoin="round" />
                     )}
                   </svg>
-                  <span style={{ position: 'relative', zIndex: 1, fontWeight: 800, color: '#000', fontSize: 13, marginTop: facce === 4 ? 8 : facce === 10 ? 4 : 0 }}>
+                  <span style={{ position: 'relative', zIndex: 1, fontWeight: 800, color: '#000', fontSize: 11, marginTop: facce === 4 ? 6 : facce === 10 ? 3 : 0 }}>
                     d{facce}
                   </span>
                 </button>
@@ -5264,19 +5264,40 @@ export default function App() {
                           })}
                         </tbody>
                       </table>
-                      <button
-                        style={{ ...styles.button, marginTop: 6, fontSize: 12, padding: '2px 8px' }}
-                        onClick={() =>
-                          aggiorna({
-                            attacchi: [
-                              ...scheda.attacchi,
-                              { id: Date.now(), nome: 'Nuovo', categoria: cat, bonus: 0, danno: '', tipoDanno: '', note: '' },
-                            ],
-                          })
-                        }
-                      >
-                        + {t('common.aggiungi')}
-                      </button>
+                      <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                        <input
+                          id={`wpn-add-input-${cat}`}
+                          list="wpn-presets"
+                          placeholder={t('combat.aggiungi_ph', { defaultValue: "Nome arma..." })}
+                          style={{ ...styles.inlineInput, flex: 1, minWidth: 140, padding: '6px 8px' }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && e.target.value.trim()) {
+                              const nomeArma = e.target.value.trim();
+                              const arma = ARMI_5E.find((w) => w.nome === nomeArma);
+                              const nuova = arma ? attaccoDaArma(arma, scheda) : { nome: nomeArma, bonus: 0, danno: '', tipoDanno: '', note: '' };
+                              aggiorna({
+                                attacchi: [...scheda.attacchi, { id: Date.now(), categoria: cat, ...nuova }]
+                              });
+                              e.target.value = '';
+                            }
+                          }}
+                        />
+                        {cat === 'Azione' && <datalist id="wpn-presets">{ARMI_5E.map((w) => <option key={w.nome} value={w.nome} />)}</datalist>}
+                        <button
+                          style={{ ...styles.buttonMini }}
+                          title={t('common.aggiungi')}
+                          onClick={() => {
+                            const el = document.getElementById(`wpn-add-input-${cat}`);
+                            const nomeArma = el && el.value.trim();
+                            const arma = ARMI_5E.find((w) => w.nome === nomeArma);
+                            const nuova = arma ? attaccoDaArma(arma, scheda) : { nome: nomeArma || 'Nuovo', bonus: 0, danno: '', tipoDanno: '', note: '' };
+                            aggiorna({
+                              attacchi: [...scheda.attacchi, { id: Date.now(), categoria: cat, ...nuova }]
+                            });
+                            if (el) el.value = '';
+                          }}
+                        >➕ {t('common.aggiungi')}</button>
+                      </div>
                     </div>
                   );
                 })}
@@ -5290,17 +5311,7 @@ export default function App() {
 
             {/* Incantesimi — sezione collassabile */}
             <Sezione 
-              titolo={
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                  <span>{t("sez.incantesimi")}</span>
-                  {maxIncantesimi != null && (
-                    <span style={{ fontSize: 13, color: (classePreparata ? preparatiPieni : incantesimiPieno) ? C.goldDark : C.inkDim, fontWeight: 'normal', display: 'flex', alignItems: 'center', textTransform: 'none', letterSpacing: 'normal' }}>
-                      ({classePreparata ? t('spell.preparati') : t('spell.conosciuti')}: {classePreparata ? nPreparati : nIncantesimi} / <Editable value={maxIncantesimi} tipo="numero" width={24} onChange={(v) => aggiorna({ maxIncantesimi: Math.max(0, v) })} />)
-                      {nBonus > 0 && <span style={{ color: C.goldDark, fontWeight: 700, marginLeft: 4 }}>✦ {nBonus}</span>}
-                    </span>
-                  )}
-                </div>
-              } 
+              titolo={t("sez.incantesimi")} 
               {...propsSez('incantesimi')} 
               {...apertoProps('incantesimi')}
             >
@@ -5437,13 +5448,8 @@ export default function App() {
                     <div key={liv} style={{ marginBottom: 14 }}>
                       <h4 style={{ fontSize: 12, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5, borderBottom: `1px solid ${C.border}`, paddingBottom: 2, marginBottom: 6, display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                         <span>{liv === 0 ? t('spell.trucchetti_liv0') : t('spell.n_livello', { n: liv })}</span>
-                        <span style={{ color: (liv === 0 && trucchettiPieno) ? C.goldDark : C.inkDim, fontWeight: 700, display: 'flex', alignItems: 'center' }}>
+                        <span style={{ color: C.inkDim, fontWeight: 700 }}>
                           {countLiv}
-                          {liv === 0 && maxTrucchetti != null && (
-                            <span style={{ fontWeight: 'normal', color: C.inkDim, marginLeft: 2, display: 'flex', alignItems: 'center', textTransform: 'none', letterSpacing: 'normal' }}>
-                              / <Editable value={maxTrucchetti} tipo="numero" width={24} onChange={(v) => aggiorna({ maxTrucchetti: Math.max(0, v) })} />
-                            </span>
-                          )}
                         </span>
                       </h4>
                       {liv >= 1 && (() => {
@@ -5532,9 +5538,26 @@ export default function App() {
                 }
                 return (
                   <>
-                    <h3 style={bannerStyle}>{t('spell.trucchetti')}</h3>
+                    <h3 style={{ ...bannerStyle, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>{t('spell.trucchetti')}</span>
+                      {maxTrucchetti != null && (
+                        <span style={{ fontSize: 13, color: trucchettiPieno ? C.goldDark : C.inkDim, fontWeight: 'normal', display: 'flex', alignItems: 'center', textTransform: 'none', letterSpacing: 'normal' }}>
+                          {nTrucchetti} / <Editable value={maxTrucchetti} tipo="numero" width={24} onChange={(v) => aggiorna({ maxTrucchetti: Math.max(0, v) })} />
+                        </span>
+                      )}
+                    </h3>
                     {renderLivello(0)}
-                    {maxLiv >= 1 && <h3 style={bannerStyle}>{t('spell.incantesimi')}</h3>}
+                    {maxLiv >= 1 && (
+                      <h3 style={{ ...bannerStyle, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span>{t('spell.incantesimi')}</span>
+                        {maxIncantesimi != null && (
+                          <span style={{ fontSize: 13, color: (classePreparata ? preparatiPieni : incantesimiPieno) ? C.goldDark : C.inkDim, fontWeight: 'normal', display: 'flex', alignItems: 'center', textTransform: 'none', letterSpacing: 'normal' }}>
+                            ({classePreparata ? t('spell.preparati') : t('spell.conosciuti')}: {classePreparata ? nPreparati : nIncantesimi} / <Editable value={maxIncantesimi} tipo="numero" width={24} onChange={(v) => aggiorna({ maxIncantesimi: Math.max(0, v) })} />)
+                            {nBonus > 0 && <span style={{ color: C.goldDark, fontWeight: 700, marginLeft: 4 }}>✦ {nBonus}</span>}
+                          </span>
+                        )}
+                      </h3>
+                    )}
                     {livelliInc.map((liv) => renderLivello(liv))}
                   </>
                 );
