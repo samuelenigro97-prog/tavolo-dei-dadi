@@ -1648,11 +1648,16 @@ function normalizeImported(dati) {
       // in precedenza non deve nascondere l'equipaggiamento testuale da migrare
       // (bug: gli oggetti sparivano perché [] aveva la precedenza sul testo).
       if (Array.isArray(dati.inventario) && dati.inventario.length > 0) {
-        return dati.inventario.map((o, i) => ({
-          id: o.id || `inv-${i}-${Math.random().toString(36).slice(2, 6)}`,
-          nome: str(o.nome), qta: Math.max(1, num(o.qta, 1)), peso: Math.max(0, Number(o.peso) || 0),
-          equip: !!o.equip, categoria: str(o.categoria),
-        }));
+        return dati.inventario.map((o, i) => {
+          let pesoVal = Math.max(0, Number(o.peso) || 0);
+          const nomeVal = str(o.nome);
+          if (pesoVal === 0 && nomeVal) pesoVal = pesoStimato(nomeVal);
+          return {
+            id: o.id || `inv-${i}-${Math.random().toString(36).slice(2, 6)}`,
+            nome: nomeVal, qta: Math.max(1, num(o.qta, 1)), peso: pesoVal,
+            equip: !!o.equip, categoria: str(o.categoria),
+          };
+        });
       }
       // Migrazione: il vecchio equipaggiamento testuale (voci separate da ; , o
       // a capo) diventa una lista di oggetti, con peso stimato dal nome.
@@ -2896,7 +2901,7 @@ export default function App() {
         tsMorte: { successi: 0, fallimenti: 0 },
         slotIncantesimo: slot,
         dadiVitaSpesi: Math.max(0, s.dadiVitaSpesi - recuperoDadi),
-        risorse: s.risorse.map((r) => (r.reset ? { ...r, attuali: r.max } : r)),
+        risorse: s.risorse.map((r) => (r.reset ? { ...r, attuali: 0 } : r)),
         sfinimento: Math.max(0, s.sfinimento - 1),
         concentrazione: '',
       };
@@ -2911,7 +2916,7 @@ export default function App() {
     const isWarlock = /warlock|patto/i.test(scheda.classe || '');
     setScheda((s) => ({
       ...s,
-      risorse: s.risorse.map((r) => (r.reset === 'breve' ? { ...r, attuali: r.max } : r)),
+      risorse: s.risorse.map((r) => (r.reset === 'breve' ? { ...r, attuali: 0 } : r)),
       ...(isWarlock ? { slotIncantesimo: Object.fromEntries(Object.entries(s.slotIncantesimo).map(([liv, v]) => [liv, { ...v, spesi: 0 }])) } : {}),
     }));
     registra({ etichetta: `🔥 ${t('vital.riposo_breve_tooltip')}`, tipo: 'riposo', dettaglio: isWarlock ? t('rest.breve_fatto_warlock') : t('rest.breve_fatto') });
@@ -4222,6 +4227,63 @@ export default function App() {
               {t('roll.cronologia')}
             </button>
           </div>
+
+          <div style={{ width: '100%', height: 1, background: C.border, margin: '6px 0 2px' }} />
+          <div className="dadi-riga" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', width: '100%', padding: '2px 0 4px' }}>
+            <span style={{ ...styles.detail, marginRight: 2, flexShrink: 0, fontWeight: 700 }}>{t('roll.dado')}:</span>
+            {[4, 6, 8, 10, 12, 20, 100].map((facce) => {
+              let pts = "";
+              if (facce === 4) pts = "20,4 36,36 4,36";
+              else if (facce === 6) pts = "6,6 34,6 34,34 6,34";
+              else if (facce === 8) pts = "20,4 36,20 20,36 4,20";
+              else if (facce === 10) pts = "20,4 36,16 20,36 4,16";
+              else if (facce === 12) pts = "20,4 36,14 30,36 10,36 4,14";
+              else if (facce === 20) pts = "10,4 30,4 38,20 30,36 10,36 2,20";
+              return (
+                <button
+                  key={facce}
+                  className="dado-btn"
+                  onClick={() => tiroLibero(facce)}
+                  style={{
+                    position: 'relative', width: 44, height: 44, background: 'none', border: 'none', cursor: 'pointer',
+                    padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.1s'
+                  }}
+                  onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.9)'}
+                  onMouseUp={(e) => e.currentTarget.style.transform = 'none'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
+                >
+                  <svg width="44" height="44" viewBox="0 0 40 40" style={{ position: 'absolute', top: 0, left: 0 }}>
+                    {facce === 100 ? (
+                      <circle cx="20" cy="20" r="16" fill="var(--c-gold)" stroke="var(--c-gold-dark)" strokeWidth="2" />
+                    ) : (
+                      <polygon points={pts} fill="var(--c-gold)" stroke="var(--c-gold-dark)" strokeWidth="2" strokeLinejoin="round" />
+                    )}
+                  </svg>
+                  <span style={{ position: 'relative', zIndex: 1, fontWeight: 800, color: '#000', fontSize: 13, marginTop: facce === 4 ? 8 : facce === 10 ? 4 : 0 }}>
+                    d{facce}
+                  </span>
+                </button>
+              );
+            })}
+            <input
+              style={{
+                ...styles.inlineInput,
+                flex: 1, minWidth: 120,
+                padding: '6px 10px',
+                marginLeft: 4,
+                ...(erroreEspressione ? { borderColor: C.red } : {}),
+              }}
+              placeholder={t('roll.espr_placeholder') || 'Es. 1d6+2 (Invio)'}
+              title="Premi Invio per tirare"
+              value={espressioneLibera}
+              onChange={(e) => {
+                setEspressioneLibera(e.target.value);
+                setErroreEspressione(false);
+              }}
+              onKeyDown={(e) => e.key === 'Enter' && tiroEspressione()}
+            />
+          </div>
+          {erroreEspressione && <div style={{ color: C.red, fontSize: 13, width: '100%' }}>{t('roll.espr_invalida')}</div>}
         </div>
 
         {storicoAperto && (
@@ -4276,38 +4338,7 @@ export default function App() {
           </section>
         )}
 
-        {/* Dado libero: riga dei dadi + riga espressione (ordinata anche su mobile) */}
-        <section style={{ ...styles.panel, padding: '8px 12px' }}>
-          <div className="dadi-riga" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-            <span style={{ ...styles.detail, marginRight: 2, flexShrink: 0 }}>{t('roll.dado')}</span>
-            {[4, 6, 8, 10, 12, 20, 100].map((facce) => (
-              <button key={facce} className="dado-btn" style={styles.buttonDado(facce)} onClick={() => tiroLibero(facce)}>
-                d{facce}
-              </button>
-            ))}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
-            <input
-              style={{
-                ...styles.inlineInput,
-                flex: 1, minWidth: 0,
-                padding: '7px 10px',
-                ...(erroreEspressione ? { borderColor: C.red } : {}),
-              }}
-              placeholder={t('roll.espr_placeholder')}
-              value={espressioneLibera}
-              onChange={(e) => {
-                setEspressioneLibera(e.target.value);
-                setErroreEspressione(false);
-              }}
-              onKeyDown={(e) => e.key === 'Enter' && tiroEspressione()}
-            />
-            <button style={{ ...styles.button, flexShrink: 0 }} onClick={tiroEspressione}>
-              {t('roll.tira')}
-            </button>
-          </div>
-          {erroreEspressione && <div style={{ color: C.red, fontSize: 13, marginTop: 4 }}>{t('roll.espr_invalida')}</div>}
-        </section>
+
 
         {/* Personaggi: il riquadro blu È il nome/selettore. Cambia PG al volo; ✎ per rinominare */}
         <section className="selettore-personaggio" style={{ ...styles.panel, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: '6px 12px' }}>
@@ -4973,9 +5004,9 @@ export default function App() {
                       >✕</button>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 3, flexWrap: 'wrap' }}>
-                      <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title={t('tip.spendi')} onClick={() => modifica({ attuali: Math.max(0, r.attuali - 1) })}>−</button>
-                      <strong style={{ minWidth: 16, textAlign: 'center', display: 'inline-block', color: r.attuali === 0 ? C.inkDim : C.ink }}>{r.attuali}</strong>
-                      <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title={t('tip.recupera')} onClick={() => modifica({ attuali: Math.min(r.max, r.attuali + 1) })}>+</button>
+                      <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title={t('tip.recupera')} onClick={() => modifica({ attuali: Math.max(0, r.attuali - 1) })}>−</button>
+                      <strong style={{ minWidth: 16, textAlign: 'center', display: 'inline-block', color: r.attuali === r.max ? C.goldDark : (r.attuali === 0 ? C.inkDim : C.ink) }}>{r.attuali}</strong>
+                      <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title={t('tip.spendi')} onClick={() => modifica({ attuali: Math.min(r.max, r.attuali + 1) })}>+</button>
                       <span style={styles.detail}>/ <Editable value={r.max} tipo="numero" width={30} onChange={(v) => modifica({ max: Math.max(0, v), attuali: Math.min(Math.max(0, v), r.attuali) })} /></span>
                       <select
                         style={{ ...styles.inlineInput, fontSize: 11, padding: '1px 3px' }}
