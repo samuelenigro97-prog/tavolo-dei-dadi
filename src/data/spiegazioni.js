@@ -820,16 +820,16 @@ export function spiegaTalento(nome) {
 const SPIEG_METAMAGIA = {
   'Incantesimo Accurato': 'Spendi 1 punto stregoneria per escludere fino a 5 creature dall’area di un incantesimo.',
   'Incantesimo Ammaliante': 'Spendi 1 punto stregoneria per rendere più difficile individuare che stai lanciando.',
-  'Incantesimo Celato': 'Spendi 1 punto stregoneria per lanciare senza componenti verbali e somatiche.',
+  'Incantesimo Celato': "Costo: 1 punto stregoneria. L'incantesimo viene lanciato senza alcuna componente Verbale, Somatica o Materiale (a meno che la componente Materiale non venga consumata o abbia un costo indicato in monete d'oro).",
   'Incantesimo Empio': 'Cambi il tipo di danno di un incantesimo con un altro tra alcuni tipi (2024).',
   'Incantesimo Esteso': 'Spendi 1 punto stregoneria per raddoppiare la durata (max 24 ore).',
   'Incantesimo Gemello': 'Spendi punti pari al livello per far bersagliare a un incantesimo a bersaglio singolo una seconda creatura.',
   'Incantesimo Persistente': 'Spendi 3 punti stregoneria per dare svantaggio ai TS del bersaglio contro il tuo incantesimo.',
   'Incantesimo Potenziato': 'Spendi 1 punto stregoneria per ritirare fino a Carisma dadi di danno.',
-  'Incantesimo Preciso': 'Spendi punti stregoneria (in base al livello) per lanciare l’incantesimo come azione bonus.',
+  'Incantesimo Preciso': "Costo: 1 punto stregoneria. Quando lo stregone lancia un incantesimo che obbliga altre creature a effettuare un tiro salvezza, può proteggere alcune di esse dalla piena forza dell'incantesimo. Per farlo, spende 1 punto stregoneria e sceglie un numero massimo di creature pari al suo modificatore di Carisma (minimo una creatura). Le creature scelte superano automaticamente i loro tiri salvezza contro l'incantesimo e non subiscono alcun danno se normalmente subirebbero la metà dei danni in caso di tiro salvezza superato.",
   'Incantesimo Prolungato': 'Spendi 1 punto stregoneria per raddoppiare la gittata (o portare a 9 m un tocco).',
   'Incantesimo Rapido': 'Spendi 2 punti stregoneria per lanciare un incantesimo da 1 azione come azione bonus.',
-  'Incantesimo Sottile': 'Spendi 1 punto stregoneria per lanciare senza componenti verbali e somatiche.',
+  'Incantesimo Sottile': "Costo: 1 punto stregoneria. L'incantesimo viene lanciato senza alcuna componente Verbale, Somatica o Materiale (a meno che la componente Materiale non venga consumata o abbia un costo indicato in monete d'oro).",
   'Incantesimo Trasmutato': 'Cambi il tipo di danno di un incantesimo con un altro tra alcuni tipi (2024).',
 };
 export const METAMAGIA_5E = Object.keys(SPIEG_METAMAGIA).sort((a, b) => a.localeCompare(b, 'it'));
