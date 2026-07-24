@@ -307,7 +307,7 @@ function datiSpecieDi(specie) {
 
 // Ordine di default delle sezioni collassabili (riordinabili via drag).
 // Sezioni riordinabili via drag. 'import' NON è qui: resta sempre fissa in fondo.
-const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'risorse', 'privilegi', 'privilegiSottoclasse', 'talenti', 'trattiSpecie', 'addestramento', 'equipaggiamento', 'aspetto'];
+const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'risorse', 'privilegi', 'talenti', 'privilegiSottoclasse', 'trattiSpecie', 'addestramento', 'equipaggiamento', 'aspetto'];
 
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 
@@ -2249,7 +2249,7 @@ export default function App() {
   const [ordineSezioni, setOrdineSezioni] = useState(() => {
     let salvato = [];
     try {
-      const s = JSON.parse(localStorage.getItem('scheda-interattiva:ordine-sezioni-v2'));
+      const s = JSON.parse(localStorage.getItem('scheda-interattiva:ordine-sezioni-v3'));
       if (Array.isArray(s)) salvato = s;
     } catch {
       /* niente */
@@ -2309,7 +2309,7 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem('scheda-interattiva:ordine-sezioni-v2', JSON.stringify(ordineSezioni));
+      localStorage.setItem('scheda-interattiva:ordine-sezioni-v3', JSON.stringify(ordineSezioni));
     } catch {
       /* niente */
     }
