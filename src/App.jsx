@@ -307,7 +307,7 @@ function datiSpecieDi(specie) {
 
 // Ordine di default delle sezioni collassabili (riordinabili via drag).
 // Sezioni riordinabili via drag. 'import' NON è qui: resta sempre fissa in fondo.
-const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'risorse', 'privilegi', 'privilegiSottoclasse', 'trattiSpecie', 'talenti', 'addestramento', 'equipaggiamento', 'aspetto'];
+const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'risorse', 'privilegi', 'privilegiSottoclasse', 'talenti', 'trattiSpecie', 'addestramento', 'equipaggiamento', 'aspetto'];
 
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 
@@ -3519,35 +3519,7 @@ export default function App() {
               </div>
             )}
 
-            {/* Import da PDF con l'IA — funzione avanzata, sotto la sincronizzazione Cloud */}
-            <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 4, paddingTop: 12, marginBottom: 12 }}>
-              <label style={{ ...styles.detail, display: 'block', marginBottom: 6, fontWeight: 'bold' }}>{t('cloud.pdf_label')}</label>
-              <input ref={pdfRef} type="file" accept="application/pdf,.pdf" style={{ display: 'none' }} onChange={transcribePdf} />
-              <button
-                style={{ ...styles.button, width: '100%' }}
-                onClick={() => pdfRef.current?.click()}
-                disabled={pdfStato === 'loading'}
-                title={t('cloud.pdf_tooltip')}
-              >
-                {pdfStato === 'loading' ? t('cloud.pdf_loading') : t('cloud.pdf_btn')}
-              </button>
-              <details style={{ marginTop: 8 }}>
-                <summary style={{ ...styles.detail, cursor: 'pointer' }}>{t('cloud.pdf_config')}</summary>
-                <p style={{ ...styles.detail, marginTop: 6 }}>
-                  L'import da PDF usa l'IA e richiede un piccolo servizio con la tua
-                  chiave API (un <strong>Cloudflare Worker</strong> gratuito). Incolla
-                  qui l'URL del Worker; istruzioni nel file <code>worker/LEGGIMI.md</code> del progetto.
-                </p>
-                <input
-                  type="url"
-                  value={transcribeUrl}
-                  onChange={(e) => setTranscribeUrl(e.target.value)}
-                  placeholder="https://il-tuo-worker.workers.dev"
-                  style={{ ...styles.inlineInput, width: '100%', maxWidth: 420, padding: '6px 8px' }}
-                />
-              </details>
-              {erroreImport && <div style={{ color: C.red, marginTop: 8, fontSize: 13 }}>{erroreImport}</div>}
-            </div>
+
 
             <button style={{ ...styles.button, width: '100%' }} onClick={() => setMostraCloud(false)}>{t('modal.chiudi')}</button>
           </div>
