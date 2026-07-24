@@ -138,12 +138,12 @@ export const DIZIONARIO = {
     'skill.storia': 'Storia',
 
     // Spiegazioni Caratteristiche
-    'spieg.forza': 'Potenza fisica. Governa gli attacchi in mischia, l\'abilità Atletica, la capacità di carico e le prove di forza bruta (spaccare, sollevare, spingere).',
-    'spieg.destrezza': 'Agilità e riflessi. Influenza Classe Armatura, Iniziativa, gli attacchi a distanza e con armi accurate, e le abilità Acrobazia, Furtività e Rapidità di Mano.',
-    'spieg.costituzione': 'Salute e vigore. Determina i Punti Ferita e i tiri salvezza contro fatica, veleni, malattie e freddo. Non ha abilità associate.',
-    'spieg.intelligenza': 'Ragionamento e memoria. Governa Arcano, Indagare, Natura, Religione e Storia, e la magia del Mago.',
-    'spieg.saggezza': 'Percezione e intuito. Governa Addestrare Animali, Intuizione, Medicina, Percezione e Sopravvivenza, e la magia di Chierico, Druido e Ranger.',
-    'spieg.carisma': 'Forza di personalità. Governa Inganno, Intimidire, Intrattenere e Persuasione, e la magia di Bardo, Stregone, Warlock e Paladino.',
+    'spieg.forza': "**Forza**\\nMisura la potenza fisica e l'allenamento atletico.\\n\\n**Influenza:**\\n- Tiri per colpire e danni per le armi in mischia.\\n- Abilità: **Atletica**.\\n- Capacità di carico e di spinta.",
+    'spieg.destrezza': "**Destrezza**\\nMisura l'agilità, i riflessi e l'equilibrio.\\n\\n**Influenza:**\\n- Tiri per colpire e danni per le armi a distanza e accurate.\\n- Classe Armatura (CA) e Iniziativa.\\n- Abilità: **Acrobazia**, **Furtività**, **Rapidità di Mano**.",
+    'spieg.costituzione': "**Costituzione**\\nMisura la salute, la resistenza e la vitalità.\\n\\n**Influenza:**\\n- Punti Ferita massimi.\\n- Tiri Salvezza per mantenere la Concentrazione sugli incantesimi.",
+    'spieg.intelligenza': "**Intelligenza**\\nMisura l'acutezza mentale, il richiamo di informazioni e l'istruzione.\\n\\n**Influenza:**\\n- Incantesimi per Maghi, Artefici e alcuni Ladri/Guerrieri.\\n- Abilità: **Arcano**, **Indagare**, **Natura**, **Religione**, **Storia**.",
+    'spieg.saggezza': "**Saggezza**\\nMisura la consapevolezza del mondo, l'intuito e la sintonia con l'ambiente.\\n\\n**Influenza:**\\n- Incantesimi per Chierici, Druidi, Ranger e Monaci.\\n- Abilità: **Addestrare Animali**, **Intuizione**, **Medicina**, **Percezione**, **Sopravvivenza**.",
+    'spieg.carisma': "**Carisma**\\nMisura la forza di personalità, la persuasione e il magnetismo.\\n\\n**Influenza:**\\n- Incantesimi per Bardi, Paladini, Stregoni e Warlock.\\n- Abilità: **Inganno**, **Intimidire**, **Intrattenere**, **Persuasione**.",
 
     // Stats Vitali e di Combattimento
     'vital.ca': 'Classe Armatura',
@@ -625,12 +625,12 @@ export const DIZIONARIO = {
     'skill.storia': 'History',
 
     // Spiegazioni Caratteristiche
-    'spieg.forza': 'Physical power. Governs melee attacks, Athletics, carrying capacity, and feats of raw strength.',
-    'spieg.destrezza': 'Agility and reflexes. Influences Armor Class, Initiative, ranged/finesse attacks, Acrobatics, Stealth, and Sleight of Hand.',
-    'spieg.costituzione': 'Health and stamina. Determines Hit Points and saving throws against fatigue, poison, disease, and cold. No associated skills.',
-    'spieg.intelligenza': 'Reasoning and memory. Governs Arcana, Investigation, Nature, Religion, History, and Wizard spells.',
-    'spieg.saggezza': 'Perception and intuition. Governs Animal Handling, Insight, Medicine, Perception, Survival, and Cleric/Druid/Ranger spells.',
-    'spieg.carisma': 'Force of personality. Governs Deception, Intimidation, Performance, Persuasion, and Bard/Sorcerer/Warlock/Paladin spells.',
+    'spieg.forza': "**Strength**\\nMeasures physical power and athletic training.\\n\\n**Influences:**\\n- Attack rolls and damage for melee weapons.\\n- Skill: **Athletics**.\\n- Carrying and pushing capacity.",
+    'spieg.destrezza': "**Dexterity**\\nMeasures agility, reflexes, and balance.\\n\\n**Influences:**\\n- Attack rolls and damage for ranged and finesse weapons.\\n- Armor Class (AC) and Initiative.\\n- Skills: **Acrobatics**, **Stealth**, **Sleight of Hand**.",
+    'spieg.costituzione': "**Constitution**\\nMeasures health, stamina, and vital force.\\n\\n**Influences:**\\n- Maximum Hit Points.\\n- Saving Throws to maintain Concentration on spells.",
+    'spieg.intelligenza': "**Intelligence**\\nMeasures mental acuity, information recall, and analytical skill.\\n\\n**Influences:**\\n- Spells for Wizards, Artificers, and some Fighters/Rogues.\\n- Skills: **Arcana**, **History**, **Investigation**, **Nature**, **Religion**.",
+    'spieg.saggezza': "**Wisdom**\\nMeasures awareness, intuition, and attunement to the world.\\n\\n**Influences:**\\n- Spells for Clerics, Druids, Rangers, and Monks.\\n- Skills: **Animal Handling**, **Insight**, **Medicine**, **Perception**, **Survival**.",
+    'spieg.carisma': "**Charisma**\\nMeasures force of personality, persuasiveness, and leadership.\\n\\n**Influences:**\\n- Spells for Bards, Paladins, Sorcerers, and Warlocks.\\n- Skills: **Deception**, **Intimidation**, **Performance**, **Persuasion**.",
 
     // Stats Vitali e di Combattimento
     'vital.ca': 'Armor Class',

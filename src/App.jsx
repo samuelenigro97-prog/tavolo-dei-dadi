@@ -307,7 +307,7 @@ function datiSpecieDi(specie) {
 
 // Ordine di default delle sezioni collassabili (riordinabili via drag).
 // Sezioni riordinabili via drag. 'import' NON è qui: resta sempre fissa in fondo.
-const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'risorse', 'privilegi', 'privilegiSottoclasse', 'metamagia', 'trattiSpecie', 'talenti', 'addestramento', 'equipaggiamento', 'aspetto'];
+const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'risorse', 'privilegi', 'privilegiSottoclasse', 'trattiSpecie', 'talenti', 'addestramento', 'equipaggiamento', 'aspetto'];
 
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 
@@ -896,7 +896,7 @@ const ABILITA = [
   { key: 'storia', label: 'Storia', car: 'intelligenza' },
 ];
 
-import { SPIEG_CARATT, spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spiegaMetamagia, METAMAGIA_5E } from './data/spiegazioni.js';
+import { spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spiegaMetamagia, METAMAGIA_5E } from './data/spiegazioni.js';
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
@@ -2645,16 +2645,25 @@ export default function App() {
 
   // --- Combat tracker ---
 
-  /** Combattenti ordinati per iniziativa decrescente. */
-  const combatOrdinati = () => [...combat.combattenti].sort((a, b) => (b.iniziativa || 0) - (a.iniziativa || 0));
+  /** Ordina esplicitamente i combattenti per iniziativa. Mantiene invariato il turno attivo. */
+  function ordinaIniziativa() {
+    setCombat((c) => {
+      if (!c.combattenti.length) return c;
+      const idAttivo = c.combattenti[c.turno]?.id;
+      const ordinati = [...c.combattenti].sort((a, b) => (b.iniziativa || 0) - (a.iniziativa || 0));
+      const nuovoTurno = idAttivo ? Math.max(0, ordinati.findIndex(x => x.id === idAttivo)) : 0;
+      return { ...c, combattenti: ordinati, turno: nuovoTurno };
+    });
+  }
 
   function aggiungiCombattente(tipo, dati = {}) {
     const nome = dati.nome || (tipo === 'nemico' ? t('ct.nemico') : tipo === 'alleato' ? t('ct.alleato') : t('ct.pg'));
     const pfMax = dati.pfMax ?? 10;
+    const initRandom = Math.floor(Math.random() * 20) + 1; // Tiro d20 default per png
     const nuovo = {
       id: `c-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       nome, tipo,
-      iniziativa: dati.iniziativa ?? 10,
+      iniziativa: dati.iniziativa ?? initRandom,
       pfMax, pfAttuali: dati.pfAttuali ?? pfMax, pfTemp: 0,
       ca: dati.ca ?? 10,
       condizioni: [], concentrazione: false,
@@ -4361,13 +4370,14 @@ export default function App() {
               <span
                 aria-hidden
                 style={{
-                  position: 'absolute', right: 30, top: 0, bottom: 0, display: 'flex', alignItems: 'center',
-                  pointerEvents: 'none', userSelect: 'none',
+                  position: 'absolute', left: 0, right: 0, top: 0, bottom: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  pointerEvents: 'none', userSelect: 'none', overflow: 'hidden',
                 }}
               >
                 <span style={{
                   fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: 'italic', fontWeight: 'bold',
-                  fontSize: 34, letterSpacing: 1, lineHeight: 1, transform: 'rotate(-12deg)',
+                  fontSize: 34, letterSpacing: 1, lineHeight: 1,
                   color: C.inkDim, opacity: 0.32, whiteSpace: 'nowrap',
                 }}>
                   {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
@@ -5113,6 +5123,22 @@ export default function App() {
                 onChange={(v) => aggiorna({ privilegiSottoclasse: v })}
               />
             </Sezione>
+
+            {/(stregone|sorcerer)/i.test(scheda.classe || '') && (
+              <Sezione titolo={t("sez.metamagia")} {...apertoProps('metamagia', false)}>
+                <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8 }}>
+                  {t("meta.desc")}
+                </div>
+                <CampoConTendina
+                  value={scheda.metamagie}
+                  opzioni={METAMAGIA_5E}
+                  onChange={(v) => aggiorna({ metamagie: v })}
+                  lookup={spiegaMetamagia}
+                  setInfo={setInfo}
+                  title={t('tip.metamagia_attive')}
+                />
+              </Sezione>
+            )}
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -5523,21 +5549,7 @@ export default function App() {
               </div>
             </Sezione>
 
-            {/(stregone|sorcerer)/i.test(scheda.classe || '') && (
-              <Sezione titolo={t("sez.metamagia")} {...propsSez('metamagia')} {...apertoProps('metamagia', false)}>
-                <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8 }}>
-                  {t("meta.desc")}
-                </div>
-                <CampoConTendina
-                  value={scheda.metamagie}
-                  opzioni={METAMAGIA_5E}
-                  onChange={(v) => aggiorna({ metamagie: v })}
-                  lookup={spiegaMetamagia}
-                  setInfo={setInfo}
-                  title={t('tip.metamagia_attive')}
-                />
-              </Sezione>
-            )}
+
 
             <Sezione titolo={t("sez.talenti")} {...propsSez('talenti')} {...apertoProps('talenti')}>
               <ListaQuadratini
@@ -5637,15 +5649,6 @@ export default function App() {
                           if (el) el.value = '';
                         }}
                       >➕ {t('common.aggiungi')}</button>
-                      <select
-                        value=""
-                        style={{ ...styles.inlineInput, padding: '6px 8px', minWidth: 130 }}
-                        title={t('inv.scegli_menu')}
-                        onChange={(e) => { if (e.target.value) { addItem(e.target.value); e.target.value = ''; } }}
-                      >
-                        <option value="">🔽 {t('inv.scegli_menu')}</option>
-                        {NOMI_OGGETTI.map((n) => <option key={n} value={n}>{n}</option>)}
-                      </select>
                     </div>
                   </div>
                 );
@@ -5738,6 +5741,7 @@ export default function App() {
               <button style={styles.buttonMini} onClick={turnoPrecedente} title={t('ct.prec')}>◀</button>
               <button style={{ ...styles.buttonMini, fontWeight: 700 }} onClick={prossimoTurno} title={t('ct.succ')}>{t('ct.turno')} ▶</button>
               <span style={{ flex: 1 }} />
+              <button style={styles.buttonMini} onClick={ordinaIniziativa} title="Ordina i combattenti per iniziativa decrescente">🔃 Ordina</button>
               <button style={styles.buttonMini} onClick={aggiungiPgAlCombat} title={t('ct.aggiungi_pg')}>➕ {t('ct.pg')}</button>
               <button style={styles.buttonMini} onClick={() => aggiungiCombattente('alleato')}>➕ {t('ct.alleato')}</button>
               <button style={styles.buttonMini} onClick={() => aggiungiCombattente('nemico')}>➕ {t('ct.nemico')}</button>
@@ -5748,7 +5752,7 @@ export default function App() {
               <div style={{ ...styles.detail, padding: '10px 0' }}>{t('ct.vuoto')}</div>
             ) : (
               <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 6, alignItems: 'stretch' }}>
-                {combatOrdinati().map((cb, idx) => {
+                {combat.combattenti.map((cb, idx) => {
                   const attivoTurno = idx === combat.turno;
                   const col = cb.tipo === 'nemico' ? C.red : cb.tipo === 'alleato' ? C.green : C.gold;
                   const morto = cb.pfAttuali <= 0;

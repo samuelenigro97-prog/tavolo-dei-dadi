@@ -1,34 +1,4 @@
-// Spiegazioni brevi per la "nuvoletta" informativa (click su caratteristica/abilità).
-export const SPIEG_CARATT = {
-  forza: '**Forza**\nMisura la potenza fisica e l\'allenamento atletico.\n\n**Influenza:**\n- Tiri per colpire e danni per le armi in mischia.\n- Abilità: **Atletica**.\n- Capacità di carico e di spinta.',
-  destrezza: '**Destrezza**\nMisura l\'agilità, i riflessi e l\'equilibrio.\n\n**Influenza:**\n- Tiri per colpire e danni per le armi a distanza e accurate.\n- Classe Armatura (CA) e Iniziativa.\n- Abilità: **Acrobazia**, **Furtività**, **Rapidità di Mano**.',
-  costituzione: '**Costituzione**\nMisura la salute, la resistenza e la vitalità.\n\n**Influenza:**\n- Punti Ferita massimi.\n- Tiri Salvezza per mantenere la Concentrazione sugli incantesimi.',
-  intelligenza: '**Intelligenza**\nMisura l\'acutezza mentale, il richiamo di informazioni e l\'istruzione.\n\n**Influenza:**\n- Incantesimi per Maghi, Artefici e alcuni Ladri/Guerrieri.\n- Abilità: **Arcano**, **Indagare**, **Natura**, **Religione**, **Storia**.',
-  saggezza: '**Saggezza**\nMisura la consapevolezza del mondo, l\'intuito e la sintonia con l\'ambiente.\n\n**Influenza:**\n- Incantesimi per Chierici, Druidi, Ranger e Monaci.\n- Abilità: **Addestrare Animali**, **Intuizione**, **Medicina**, **Percezione**, **Sopravvivenza**.',
-  carisma: '**Carisma**\nMisura la forza di personalità, la persuasione e il magnetismo.\n\n**Influenza:**\n- Incantesimi per Bardi, Paladini, Stregoni e Warlock.\n- Abilità: **Inganno**, **Intimidire**, **Intrattenere**, **Persuasione**.'
-};
-const SPIEG_ABILITA = {
-  acrobazia: '**Acrobazia (Des)**\nMantenere l\'equilibrio su superfici precarie, eseguire capriole, tuffi, o divincolarsi da una lotta.',
-  addestrareAnimali: '**Addestrare Animali (Sag)**\nCalmare animali domestici, calmare una cavalcatura spaventata, o intuire le intenzioni di un animale.',
-  arcano: '**Arcano (Int)**\nConoscenze su incantesimi, oggetti magici, simboli arcani, tradizioni magiche, e piani di esistenza.',
-  atletica: '**Atletica (For)**\nArrampicarsi su superfici difficili, nuotare in acque agitate, saltare distanze inusuali, e le prove di lotta.',
-  furtivita: '**Furtività (Des)**\nNascondersi, muoversi silenziosamente, seguire qualcuno senza farsi notare.',
-  indagare: '**Indagare (Int)**\nDedurre indizi, trovare porte segrete, capire illusioni o cercare informazioni specifiche in un tomo.',
-  inganno: '**Inganno (Car)**\nMentire in modo convincente, raggirare, usare travestimenti per passare inosservati, giocare d\'azzardo.',
-  intimidire: '**Intimidire (Car)**\nEstorcere informazioni o piegare qualcuno alla propria volontà tramite minacce verbali o atti ostili.',
-  intrattenere: '**Intrattenere (Car)**\nAllietare un pubblico con musica, danza, recitazione, narrazione o altre forme di esibizione.',
-  intuizione: '**Intuizione (Sag)**\nCapire le vere intenzioni di una creatura, capire se qualcuno mente, prevedere le mosse di qualcuno.',
-  medicina: '**Medicina (Sag)**\nStabilizzare un compagno morente, diagnosticare una malattia o identificare la causa di una ferita.',
-  natura: '**Natura (Int)**\nConoscenze su terreno, piante, animali, condizioni atmosferiche, e cicli naturali.',
-  percezione: '**Percezione (Sag)**\nLa tua consapevolezza dell\'ambiente. Individuare cose nascoste, ascoltare rumori, notare dettagli lontani.',
-  persuasione: '**Persuasione (Car)**\nInfluenzare persone o creature agendo in buona fede, fare amicizia, o negoziare paci.',
-  rapiditaDiMano: '**Rapidità di Mano (Des)**\nBorseggiare, nascondere piccoli oggetti sulla propria persona, fare giochi di prestigio.',
-  religione: '**Religione (Int)**\nConoscenze su divinità, riti, miti, gerarchie ecclesiastiche, e culti segreti.',
-  sopravvivenza: '**Sopravvivenza (Sag)**\nSeguire tracce, cacciare, orientarsi nelle terre selvagge, evitare pericoli naturali.',
-  storia: '**Storia (Int)**\nConoscenze su eventi passati, leggende antiche, guerre, imperi perduti e nobiltà storiche.'
-};
-// Spiegazioni brevi dei privilegi di classe/sottoclasse (per la nuvoletta nella
-// Panoramica). Le chiavi combaciano col nome "base" (senza parentesi né "dN").
+// Spiegazioni brevi per la "nuvoletta" informativa (privilegi, incantesimi, tratti).
 const SPIEG_PRIVILEGI = {
   'Lancio di incantesimi': 'Puoi lanciare incantesimi della tua classe, usando la caratteristica da incantatore per CD e attacchi.',
   'Maestria nelle armi': 'Applichi una proprietà di maestria (es. Sanguinare, Spingere, Rallentare) alle armi in cui sei competente. (2024)',
@@ -816,11 +786,11 @@ export function spiegaTratto(nome) {
 
 // Talenti comuni (5e), riassunti nostri. Per la nuvoletta sui Talenti.
 const SPIEG_TALENTI = {
-  'Incantatore da Guerra': 'Talento generale (dal 4° liv.): +1 a INT/SAG/CAR, vantaggio ai TS di Concentrazione e puoi lanciare incantesimi con le mani occupate.',
+  'Incantatore da Guerra': '**Incantatore da Guerra**\\n*Prerequisito: Capacità di lanciare almeno un incantesimo.*\\n\\n- Vantaggio ai Tiri Salvezza su Costituzione per mantenere la Concentrazione.\\n- Puoi eseguire le componenti somatiche degli incantesimi anche se hai armi o scudi in una o entrambe le mani.\\n- Puoi lanciare un incantesimo come Attacco di Opportunità invece di fare un attacco in mischia.',
   'Guaritore': 'Con una borsa del guaritore puoi far recuperare PF a un alleato durante il combattimento.',
-  'Robusto': '+2 punti ferita massimi per ogni livello.',
-  'Fortunato': 'Hai punti fortuna per ritirare un attacco, una prova o un TS (tuoi o dei nemici).',
-  'Vigile': "+ all'iniziativa e non puoi essere colto di sorpresa.",
+  'Robusto': '**Robusto**\\n*Il tuo corpo è eccezionalmente resistente.*\\n\\n- I tuoi Punti Ferita massimi aumentano di un ammontare pari al doppio del tuo livello quando acquisisci questo talento.\\n- Ogni volta che sali di livello in seguito, i tuoi Punti Ferita massimi aumentano di 2 punti aggiuntivi.',
+  'Fortunato': '**Fortunato**\\n*Hai una fortuna inspiegabile che ti protegge.*\\n\\n- Hai 3 punti fortuna.\\n- Quando fai un tiro per colpire, una prova di abilità o un tiro salvezza, puoi spendere un punto per tirare un d20 aggiuntivo e scegliere quale usare.\\n- Puoi spendere un punto anche quando un attacco è fatto contro di te per fargli ritirare il dado.',
+  'Vigile': "**Vigile**\\n*Sei sempre all'erta per il pericolo.*\\n\\n- Ottieni un bonus di +5 all'Iniziativa.\\n- Non puoi essere sorpreso mentre sei cosciente.\\n- Le creature nascoste non hanno vantaggio ai tiri per colpire contro di te.",
   'Attaccante Selvaggio': 'Una volta per turno puoi ritirare i dadi di danno di un attacco in mischia.',
   'Tiratore Scelto': 'Ignori copertura e penalità a lunga gittata, niente svantaggio a distanza; opzione di danno extra.',
   'Grande Maestro d’Armi': 'Danni potenziati con armi pesanti e attacco bonus dopo un critico o unʼuccisione.',
