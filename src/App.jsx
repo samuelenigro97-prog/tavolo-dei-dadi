@@ -1431,6 +1431,9 @@ function loadState() {
           if (Array.isArray(s.incantesimiLista)) {
             s.incantesimiLista = s.incantesimiLista.map((sp, i) => {
               const base = sp && sp.id != null ? sp : { ...sp, id: Date.now() + i };
+              if (base.nome === 'Vampa') {
+                base.nome = 'Stregoneria Esplosiva';
+              }
               // Auto-completa i dettagli mancanti (gittata/tempo/note vuoti) per
               // gli incantesimi noti: le righe importate o riaggiunte a mano non
               // restano più "vuote" (es. Dardo Incantato → gittata 36m).
@@ -1440,6 +1443,7 @@ function loadState() {
               if (!base.gittata && d.gittata) patch.gittata = d.gittata;
               if (!base.note && d.note) patch.note = d.note;
               if ((!base.tempo || base.tempo === '1 Az.') && d.tempo) patch.tempo = d.tempo;
+              
               return Object.keys(patch).length ? { ...base, ...patch } : base;
             });
           }
@@ -4478,6 +4482,16 @@ export default function App() {
                         </div>
                       );
                     }
+                    if (scheda.sottoclasse) {
+                      return (
+                        <div
+                          style={{ fontSize: 13, color: C.inkDim, fontStyle: 'italic', padding: '2px 0', cursor: 'not-allowed', userSelect: 'none' }}
+                          title="La sottoclasse non può essere cambiata dopo essere stata scelta."
+                        >
+                          🔒 {traduciDato(scheda.sottoclasse)}
+                        </div>
+                      );
+                    }
                     return (
                       <CampoTendina
                         value={scheda.sottoclasse}
@@ -5156,12 +5170,19 @@ export default function App() {
                                   </div>
                                 </td>
                                 <td style={styles.td}>
-                                  <Editable
-                                    value={conSegno(a.bonus)}
-                                    width={44}
-                                    onChange={(v) => aggiornaAttacco({ bonus: Number(String(v).replace('+', '')) || 0 })}
-                                    onRoll={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a })}
-                                  />
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                    <button
+                                      style={{ ...styles.buttonMini, padding: '1px 6px' }}
+                                      title={`Tira per colpire con ${a.nome}`}
+                                      onClick={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a })}
+                                    >🎲</button>
+                                    <Editable
+                                      value={conSegno(a.bonus)}
+                                      width={44}
+                                      onChange={(v) => aggiornaAttacco({ bonus: Number(String(v).replace('+', '')) || 0 })}
+                                      onRoll={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a })}
+                                    />
+                                  </div>
                                 </td>
                                 <td style={{ ...styles.td, color: dannoValido ? undefined : C.red }}>
                                   {parseEspressioneDado(a.danno) && (
