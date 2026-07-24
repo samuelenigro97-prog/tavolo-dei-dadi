@@ -712,7 +712,7 @@ const SPIEG_INCANTESIMI = {
   'Tocco Folgorante': 'Attacco magico in mischia (gittata tocco): 1d8 fulmine e niente reazioni fino al suo prossimo turno (aumenta a 5/11/17). (Trucchetto)',
   'Tocco Vampirico': 'Liv. 3 · Attacco magico in mischia: 3d6 necrotici e curi metà dei danni inflitti; ripetibile ogni turno. Concentrazione, 1 min.',
   'Trovare Destriero': 'Liv. 2 · Evochi una cavalcatura celestiale/fatata/immonda fedele, legata a te (rito di 10 min).',
-  'Vampa': 'Fiamme su un nemico entro 9 m: 1d8 fuoco e, se scelto, un secondo bersaglio vicino subisce metà (aumenta a 5/11/17). (Trucchetto)',
+  'Stregoneria Esplosiva': 'Attacco a distanza (36m): 1d8 danni (scegli acido, freddo, fuoco, fulmine, veleno o tuono). Se tiri un 8 sul d8, tiri un altro d8 e lo sommi ai danni (può succedere più volte). (Aumenta di 1d8 al 5°/11°/17°). (Trucchetto)',
   'Vedere Invisibilità': 'Liv. 2 · Per 1 ora vedi le creature e gli oggetti invisibili e nel Piano Etereo (tocco su di te).',
   'Velocità': "Liv. 3 · Raddoppi la velocità di un alleato (gittata 9 m), +2 CA, vantaggio ai TS su Destrezza e un'azione extra. Concentrazione, 1 min.",
   'Vite Afferrante': 'Liv. 4 · Una vite (gittata 9 m) afferra una creatura (TS Forza) e la trascina fino a 9 m verso di essa. Concentrazione, 1 min.',

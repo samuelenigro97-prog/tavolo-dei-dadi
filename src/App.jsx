@@ -4456,26 +4456,12 @@ export default function App() {
                   <CampoTendina value={scheda.background} opzioni={BACKGROUND_5E} onChange={(v) => aggiorna({ background: v, ...abilitaConBackground(v) })} title={t('tip.scegli_background')} />
                 </CampoModulo>
                 <CampoModulo label={t("profilo.classe")}>
-                  <CampoTendina
-                    value={scheda.classe}
-                    opzioni={NOMI_CLASSI}
-                    onChange={(v) => {
-                      const car = caratteristicaIncantatorePerClasse(v);
-                      const ts = tiriSalvezzaPerClasse(v);
-                      const add = addestramentoPerClasse(v);
-                      const slot = slotDaClasseLivello(v, scheda.livello);
-                      aggiorna({
-                        classe: v,
-                        ...(car ? { incantatore: { caratteristica: car } } : {}),
-                        ...(ts ? { tiriSalvezza: ts } : {}),
-                        ...(add ? { addestramento: { ...scheda.addestramento, armature: { ...add.armature }, armi: add.armi } } : {}),
-                        ...(slot ? { slotIncantesimo: slot } : {}),
-                        dadiVita: esprDadiVita(scheda.livello, dadoVitaClasse(v)),
-                        ...ritrattoAuto(v, scheda.specie, scheda.nome),
-                      });
-                    }}
-                    title={t('tip.scegli_classe')}
-                  />
+                  <div
+                    style={{ fontSize: 13, color: C.inkDim, fontStyle: 'italic', padding: '2px 0', cursor: 'not-allowed', userSelect: 'none' }}
+                    title="La classe principale non può essere cambiata dopo la creazione."
+                  >
+                    🔒 {traduciDato(scheda.classe) || 'Nessuna'}
+                  </div>
                 </CampoModulo>
                 <CampoModulo label={t("profilo.sottoclasse")}>
                   {(() => {
