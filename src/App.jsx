@@ -2254,6 +2254,9 @@ export default function App() {
     } catch {
       /* niente */
     }
+    const vecchioDefault = 'attacchi,incantesimi,risorse,privilegi,privilegiSottoclasse,trattiSpecie,talenti,addestramento,equipaggiamento,aspetto';
+    if (salvato.join(',') === vecchioDefault) salvato = []; // Se è il vecchio default intatto, applica il nuovo
+
     // mantieni l'ordine salvato, scarta id sconosciuti, aggiungi le sezioni nuove
     const ordinato = salvato.filter((id) => ORDINE_SEZIONI_DEFAULT.includes(id));
     for (const id of ORDINE_SEZIONI_DEFAULT) if (!ordinato.includes(id)) ordinato.push(id);
