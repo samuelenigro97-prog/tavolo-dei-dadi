@@ -5338,61 +5338,7 @@ export default function App() {
                 );
               })()}
 
-              {/* Slot incantesimo compatti: totale modificabile, rombi per gli spesi */}
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-                <span style={{ ...styles.detail, marginRight: 2 }}>{t('spell.slot')}</span>
-                {/(warlock|patto)/i.test(scheda.classe || '') && (
-                  <span style={{ ...styles.detail, fontSize: 11, color: C.goldDark, fontWeight: 700 }} title={t('spell.pact_tip')}>🌙 {t('spell.pact')}</span>
-                )}
-                {(() => {
-                  // mostra solo i livelli con slot + il primo vuoto successivo
-                  // (niente file di riquadri "0" inutili per chi non li usa)
-                  const conSlot = Array.from({ length: 9 }, (_, i) => i + 1)
-                    .filter((l) => (scheda.slotIncantesimo[l]?.totale || 0) > 0);
-                  const maxLiv = conSlot.length ? Math.max(...conSlot) : 0;
-                  return Array.from({ length: Math.min(9, Math.max(1, maxLiv + 1)) }, (_, i) => i + 1);
-                })().map((liv) => {
-                  const slot = scheda.slotIncantesimo[liv] || { totale: 0, spesi: 0 };
-                  const aggiornaSlot = (patch) =>
-                    aggiorna({
-                      slotIncantesimo: { ...scheda.slotIncantesimo, [liv]: { ...slot, ...patch } },
-                    });
-                  return (
-                    <div
-                      key={liv}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 5,
-                        border: `1px solid ${C.border}`,
-                        borderRadius: 6,
-                        padding: '2px 7px',
-                        background: C.panelLight,
-                        opacity: slot.totale > 0 ? 1 : 0.55,
-                      }}
-                    >
-                      <span style={{ fontSize: 11, color: C.inkDim }}>L{liv}</span>
-                      <Editable
-                        value={slot.totale}
-                        tipo="numero"
-                        width={26}
-                        onChange={(v) =>
-                          aggiornaSlot({ totale: Math.max(0, Math.min(9, v)), spesi: Math.min(slot.spesi, Math.max(0, v)) })
-                        }
-                        title={t('tip.slot_totali')}
-                      />
-                      {Array.from({ length: slot.totale }, (_, i) => i + 1).map((i) => (
-                        <span
-                          key={i}
-                          style={styles.pip(slot.spesi >= i, COLORE_DADO[6])}
-                          title={`Spesi: ${slot.spesi}/${slot.totale} (click per segnare)`}
-                          onClick={() => aggiornaSlot({ spesi: slot.spesi >= i ? i - 1 : i })}
-                        />
-                      ))}
-                    </div>
-                  );
-                })}
-              </div>
+              {/* Gli slot sono ora mostrati all'interno di ciascun livello nella lista. */}
 
               {/* Conteggi (compatti) + ricerca. L'aggiunta è un tastino piccolo
                   sotto la lista di ogni livello (vedi più in basso). */}
@@ -5425,8 +5371,9 @@ export default function App() {
                 const bannerStyle = { ...styles.panelTitle, fontSize: 15, marginTop: 14, marginBottom: 8, borderBottom: `2px solid ${C.border}`, paddingBottom: 4 };
                 const q = filtroIncantesimo.trim().toLowerCase();
                 const match = (s) => !q || (s.nome || '').toLowerCase().includes(q);
-                const livSlot = Array.from({ length: 9 }, (_, i) => i + 1).filter((l) => (scheda.slotIncantesimo[l]?.totale || 0) > 0);
-                const maxLiv = livSlot.length ? Math.max(...livSlot) : (scheda.incantatore?.caratteristica ? 1 : 0);
+                const maxSpellLiv = Math.max(0, ...scheda.incantesimiLista.map(s => s.livello || 0));
+                const maxSlotLiv = Math.max(0, ...Object.entries(scheda.slotIncantesimo || {}).filter(([_, v]) => v.totale > 0).map(([k]) => parseInt(k, 10)));
+                const maxLiv = Math.min(9, Math.max(scheda.incantatore?.caratteristica ? 1 : 0, maxSpellLiv, maxSlotLiv + 1));
                 const aggiungiInc = (nome, liv, manuale, bonus) => {
                   const d = dettagliIncantesimo(nome) || { tempo: manuale ? '1 Az.' : 'AZ', gittata: '', note: '' };
                   aggiorna({ incantesimiLista: [...scheda.incantesimiLista,
@@ -5471,6 +5418,24 @@ export default function App() {
                         <span>{liv === 0 ? t('spell.trucchetti_liv0') : t('spell.n_livello', { n: liv })}</span>
                         <span style={{ color: (liv === 0 && trucchettiPieno) ? C.goldDark : C.inkDim, fontWeight: 700 }}>{conteggio}</span>
                       </h4>
+                      {liv >= 1 && (() => {
+                        const slot = scheda.slotIncantesimo[liv] || { totale: 0, spesi: 0 };
+                        const aggiornaSlot = (patch) => aggiorna({ slotIncantesimo: { ...scheda.slotIncantesimo, [liv]: { ...slot, ...patch } } });
+                        return (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, opacity: slot.totale > 0 ? 1 : 0.6 }}>
+                            <span style={{ fontSize: 12, color: C.inkDim, fontWeight: 500 }}>{t('spell.slot')}:</span>
+                            <Editable value={slot.totale} tipo="numero" width={26} onChange={(v) => aggiornaSlot({ totale: Math.max(0, Math.min(9, v)), spesi: Math.min(slot.spesi, Math.max(0, v)) })} title={t('tip.slot_totali')} />
+                            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
+                              {Array.from({ length: slot.totale }, (_, i) => i + 1).map((i) => (
+                                <span key={i} style={styles.pip(slot.spesi >= i, COLORE_DADO[6])} title={`Spesi: ${slot.spesi}/${slot.totale} (click per segnare)`} onClick={() => aggiornaSlot({ spesi: slot.spesi >= i ? i - 1 : i })} />
+                              ))}
+                            </div>
+                            {/(warlock|patto)/i.test(scheda.classe || '') && (
+                              <span style={{ fontSize: 11, color: C.goldDark, fontWeight: 700, marginLeft: 'auto' }} title={t('spell.pact_tip')}>🌙 {t('spell.pact')}</span>
+                            )}
+                          </div>
+                        );
+                      })()}
                       {spells.length > 0 && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                           {spells.map((s) => {
