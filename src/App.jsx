@@ -2226,6 +2226,17 @@ export default function App() {
   // il pulsante lampeggia se c'è una nuova versione (rilevata in un modo o nell'altro)
   const nuovaVersione = aggiornamentoPronto || needRefresh;
 
+  // Auto-aggiornamento silenzioso: se rileva un update su GitHub e non stai scrivendo, aggiorna da solo!
+  useEffect(() => {
+    if (nuovaVersione && !aggiornando) {
+      const active = document.activeElement;
+      const staScrivendo = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable);
+      if (!staScrivendo) {
+        forzaAggiornamento();
+      }
+    }
+  }, [nuovaVersione, aggiornando]);
+
   const [roster, setRoster] = useState(loadState);
   const [modalita, setModalita] = useState('normale'); // normale | vantaggio | svantaggio
   const [rolling, setRolling] = useState(false);

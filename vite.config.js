@@ -31,11 +31,8 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      // 'prompt': la nuova versione NON si installa a sorpresa; l'app avvisa con
-      // il pulsante 🔄 che lampeggia di verde e l'utente sceglie quando aggiornare.
-      // skipWaiting/clientsClaim: quando si aggiorna, il nuovo SW prende subito il
-      // controllo (niente stato "in attesa" bloccato).
-      registerType: 'prompt',
+      // 'autoUpdate': la nuova versione si installa e si attiva automaticamente non appena rilevata.
+      registerType: 'autoUpdate',
       injectRegister: 'auto',
       includeAssets: ['icona-192.png', 'icona-512.png', 'icona-maskable-512.png'],
       manifest: {
