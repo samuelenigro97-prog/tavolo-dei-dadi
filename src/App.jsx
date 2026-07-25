@@ -4479,7 +4479,7 @@ export default function App() {
                 aria-hidden
                 style={{
                   position: 'absolute', left: 0, right: 0, top: 0, bottom: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', paddingLeft: 24,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
                   pointerEvents: 'none', userSelect: 'none', overflow: 'hidden',
                 }}
               >
