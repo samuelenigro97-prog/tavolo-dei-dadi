@@ -602,28 +602,36 @@ const styles = {
     padding: '8px 6px',
     display: 'flex',
     flexDirection: 'column',
-    // titolo in alto e valore sotto: così le etichette di tutti i riquadri
-    // (anche quelli con chip più alti, es. Visione/Resistenze) restano allineate
-    justifyContent: 'flex-start',
-    minHeight: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: 56,
   },
   vitalLabel: {
-    fontSize: 10.5,
+    fontSize: 11,
     color: C.inkDim,
     letterSpacing: 0.8,
     textTransform: 'uppercase',
-    marginBottom: 6,
-    fontWeight: 600,
+    marginBottom: 4,
+    fontWeight: 700,
     lineHeight: 1.15,
-    // altezza fissa per ~2 righe: i titoli corti e quelli lunghi occupano lo
-    // stesso spazio, così i valori sotto restano tutti allineati
-    minHeight: '2.3em',
+    minHeight: '2.2em',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     textAlign: 'center',
+    width: '100%',
   },
-  vitalValue: { fontSize: 17, color: C.ink },
+  vitalValue: {
+    fontSize: 25,
+    fontWeight: 800,
+    color: C.ink,
+    display: 'flex',
+    alignItems: 'baseline',
+    justifyContent: 'center',
+    lineHeight: 1.1,
+    flexWrap: 'wrap',
+    width: '100%',
+  },
   abilityBlock: {
     background: C.panel,
     border: `1px solid ${C.border}`,
@@ -4742,7 +4750,7 @@ export default function App() {
               <div style={styles.vitalLabel}>{t("vital.ca")}</div>
               <div style={styles.vitalValue}>
                 {scheda.armatura.tipo === 'manuale' && !scheda.armatura.scudo && !scheda.armatura.bonus ? (
-                  <Editable value={scheda.ca} tipo="numero" onChange={(v) => aggiorna({ ca: v })} width={40} />
+                  <Editable value={scheda.ca} tipo="numero" onChange={(v) => aggiorna({ ca: v })} width={48} />
                 ) : (
                   <span title={t('tip.ca_calcolata')}>{caTotale(scheda)}</span>
                 )}
@@ -4807,14 +4815,14 @@ export default function App() {
                   if (danno > 0 && scheda.concentrazione) {
                     setCheckConc({ danno, cd: Math.max(10, Math.floor(danno / 2)), spell: scheda.concentrazione, esito: null });
                   }
-                }} width={44} />
-                <span style={{ color: C.inkDim, fontSize: 14 }}>
+                }} width={54} />
+                <span style={{ color: C.inkDim, fontSize: 16 }}>
                   {' / '}
                   <span title={t('vital.max_pf_tooltip') || "I Punti Ferita massimi si modificano solo dal Level Up."} style={{ display: 'inline-block', minWidth: 24, textAlign: 'center' }}>{scheda.pfMax}</span>
                 </span>
-                <span style={{ color: C.inkDim, fontSize: 13 }}>
+                <span style={{ color: C.inkDim, fontSize: 14 }}>
                   {'  '}{t('vital.temporanei')}{' '}
-                  <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={30} />
+                  <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={36} />
                 </span>
               </div>
               {(() => {
@@ -4907,16 +4915,15 @@ export default function App() {
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>{t("vital.movimento")}</div>
               <div style={styles.vitalValue}>
-                <Editable value={scheda.velocita} tipo="numero" onChange={(v) => aggiorna({ velocita: v })} width={38} />
-                <span style={{ fontSize: 12, color: C.inkDim }}> m</span>
+                <Editable value={scheda.velocita} tipo="numero" onChange={(v) => aggiorna({ velocita: v })} width={48} />
+                <span style={{ fontSize: 17, color: C.inkDim, marginLeft: 2, fontWeight: 600 }}> m</span>
               </div>
             </div>
 
-            {/* Percezione Passiva (+ Indagare/Intuizione passive, compatte) */}
+            {/* Percezione Passiva */}
             <div style={styles.vitalBox} title={t('vital.passive_tooltip')}>
               <div style={styles.vitalLabel}>{t("vital.percezione_passiva")}</div>
               <div style={styles.vitalValue}>{percezionePassiva}</div>
-              <div style={{ fontSize: 9, color: C.inkDim, marginTop: 1, lineHeight: 1.2 }}>{t('vital.passive_extra', { ind: indagarePassivo, intu: intuizionePassiva })}</div>
             </div>
 
             {/* Resistenze — chip rimovibili + tendina */}
@@ -4950,7 +4957,7 @@ export default function App() {
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>{t("vital.competenza")}</div>
               <div style={styles.vitalValue}>
-                <Editable value={conSegno(scheda.bonusCompetenza)} onChange={(v) => aggiorna({ bonusCompetenza: parseInt(v, 10) || 0 })} width={38} title={t('tip.click_modifica')} />
+                <Editable value={conSegno(scheda.bonusCompetenza)} onChange={(v) => aggiorna({ bonusCompetenza: parseInt(v, 10) || 0 })} width={48} title={t('tip.click_modifica')} />
               </div>
               {scheda.bonusCompetenza !== bonusCompetenzaDaLivello(scheda.livello) && (
                 <span className="tirabile" style={{ fontSize: 9, color: C.goldDark, cursor: 'pointer', marginTop: 1 }}
@@ -4993,7 +5000,7 @@ export default function App() {
                   className="tirabile"
                   style={{
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    padding: '0 8px', fontSize: 22, border: 'none', lineHeight: 1,
+                    padding: '0 8px', fontSize: 28, border: 'none', lineHeight: 1,
                     background: 'transparent',
                     color: scheda.ispirazione ? '#d4af37' : C.inkDim,
                     textShadow: scheda.ispirazione ? '0 0 7px rgba(212,175,55,0.7)' : 'none',
@@ -5827,7 +5834,7 @@ export default function App() {
                         {DENARI.map(({ key, label }) => (
                           <div key={key} style={{ ...styles.vitalBox, minHeight: 'auto', padding: '6px 4px' }}>
                             <div style={{ ...styles.vitalLabel, fontSize: 10, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={label}>{label}</div>
-                            <div style={styles.vitalValue}>
+                            <div style={{ ...styles.vitalValue, fontSize: 18 }}>
                               <Editable
                                 value={scheda.denari[key]}
                                 tipo="numero"
