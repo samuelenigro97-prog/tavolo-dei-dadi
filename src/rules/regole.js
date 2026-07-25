@@ -4,6 +4,7 @@ import { CLASSI, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, SLOT_FULL_CASTER, SLOT
   PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, PESI_OGGETTI, PESO_ARMATURA_TIPO } from '../data/dati5e.js';
 import { modificatore } from './dadi.js';
 import { spiegaIncantesimo } from '../data/spiegazioni.js';
+import { datiIncantesimo } from '../data/incantesimi.js';
 
 export function trucchettiMax(classe, livello) {
   const k = chiaveClasse(classe);
@@ -98,22 +99,33 @@ export function coloreClasse(classe) {
 }
 
 export function dettagliIncantesimo(nome) {
-  const desc = spiegaIncantesimo(nome) || '';
-  if (!desc) return null;
-  let tempo = 'AZ';
-  if (/reazione/i.test(desc)) tempo = 'REAZ';
-  else if (/azione bonus/i.test(desc)) tempo = 'AZ BONUS';
-  let gittata = '';
-  const mG = desc.match(/gittata\s*(\d+(?:[.,]\d+)?)\s*m/i);
-  const mR = desc.match(/raggio\s*(\d+(?:[.,]\d+)?)\s*m/i);
-  const mC = desc.match(/cono\s*(?:di\s*)?(\d+(?:[.,]\d+)?)\s*m/i);
-  if (mG) gittata = `${mG[1]}m`;
-  else if (/tocc|contatto/i.test(desc)) gittata = 'contatto';
-  else if (/personale|te stesso|su di te|intorno a te/i.test(desc)) gittata = 'personale';
-  else if (mR) gittata = `raggio ${mR[1]}m`;
-  else if (mC) gittata = `cono ${mC[1]}m`;
+  const db = datiIncantesimo(nome) || {};
+  const desc = db.desc || spiegaIncantesimo(nome) || '';
+  if (!desc && !db.scuola && !db.tempo) return null;
+  let tempo = db.tempo || 'AZ';
+  if (/reazione/i.test(desc) || /reaz/i.test(tempo)) tempo = 'REAZ';
+  else if (/azione bonus/i.test(desc) || /bonus/i.test(tempo)) tempo = 'AZ BONUS';
+  let gittata = db.gittata || '';
+  if (!gittata) {
+    const mG = desc.match(/gittata\s*(\d+(?:[.,]\d+)?)\s*m/i);
+    const mR = desc.match(/raggio\s*(\d+(?:[.,]\d+)?)\s*m/i);
+    const mC = desc.match(/cono\s*(?:di\s*)?(\d+(?:[.,]\d+)?)\s*m/i);
+    if (mG) gittata = `${mG[1]}m`;
+    else if (/tocc|contatto/i.test(desc)) gittata = 'contatto';
+    else if (/personale|te stesso|su di te|intorno a te/i.test(desc)) gittata = 'personale';
+    else if (mR) gittata = `raggio ${mR[1]}m`;
+    else if (mC) gittata = `cono ${mC[1]}m`;
+  }
   const note = [/\brituale\b/i.test(desc) && 'Rituale', /concentrazione/i.test(desc) && 'Conc.'].filter(Boolean).join(', ');
-  return { tempo, gittata, note };
+  return {
+    tempo,
+    gittata,
+    note,
+    scuola: db.scuola || '',
+    area: db.area || '',
+    danno: db.danno || '',
+    tipoDanno: db.tipoDanno || '',
+  };
 }
 
 export function pesoStimato(nome) {

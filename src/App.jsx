@@ -485,14 +485,13 @@ const styles = {
     background: C.panel,
     border: `1px solid ${C.gold}`,
     borderRadius: 8,
-    padding: '4px 8px',
-    marginBottom: 6,
+    padding: '6px 12px',
+    marginBottom: 8,
     display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    flexWrap: 'wrap',
+    flexDirection: 'column',
+    gap: 4,
     boxShadow: '0 2px 8px rgba(60,50,30,0.15)',
-    minHeight: 36,
+    minHeight: 38,
   },
   dado: (rolling, crit, fumble, facce = 20) => {
     let clipPath = 'polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)'; // default d20 hexagon
@@ -802,9 +801,9 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
   .app-header-title { grid-column: auto; justify-self: auto; order: -1; flex: 1 1 100%; margin-bottom: 6px !important; }
   .app-header-group { flex: 1 1 100% !important; justify-content: center !important; flex-wrap: wrap; }
   .app-header-group > button { flex: 1 1 auto; justify-content: center; }
-  /* dadi: pulsanti compatti per entrare comodamente su telefono senza occupare troppo spazio verticale */
-  .dadi-riga { justify-content: center; flex-wrap: wrap !important; gap: 2px !important; }
-  .dadi-riga .dado-btn { flex: 0 0 auto; min-width: 24px !important; width: 24px !important; height: 24px !important; padding: 0 !important; text-align: center; }
+  /* dadi: pulsanti compatti e leggibili su telefono in riga singola */
+  .dadi-riga { justify-content: space-between; flex-wrap: wrap !important; gap: 4px !important; }
+  .dadi-riga .dado-btn { flex: 0 0 auto; min-width: 28px !important; width: 28px !important; height: 28px !important; padding: 0 !important; text-align: center; }
   /* tabelle incantesimi più compatte sul telefono: celle strette così i
      tasti azione (✎ 🗑) restano visibili senza scorrere in orizzontale */
   .spell-table { font-size: 12px; }
@@ -1453,6 +1452,10 @@ function loadState() {
               if (!base.gittata && d.gittata) patch.gittata = d.gittata;
               if (!base.note && d.note) patch.note = d.note;
               if ((!base.tempo || base.tempo === '1 Az.') && d.tempo) patch.tempo = d.tempo;
+              if (!base.scuola && d.scuola) patch.scuola = d.scuola;
+              if (!base.area && d.area) patch.area = d.area;
+              if (!base.danno && d.danno) patch.danno = d.danno;
+              if (!base.tipoDanno && d.tipoDanno) patch.tipoDanno = d.tipoDanno;
               
               return Object.keys(patch).length ? { ...base, ...patch } : base;
             });
@@ -4285,127 +4288,134 @@ export default function App() {
       <main style={styles.main}>
         {/* Barra del tiro */}
         <div style={styles.rollBar}>
-          <div style={styles.dado(rolling, !rolling && (tiro?.naturale === 20 || danni?.critico), !rolling && (tiro?.naturale === 1), tipoDadoInUso)}>{faccia}</div>
-          <div style={{ flex: 1, minWidth: 220, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            {rolling ? (
-              <div style={{ fontSize: 24, fontWeight: 'bold', color: C.inkDim, marginLeft: 16 }}>Tirando...</div>
-            ) : tiro ? (
-              <div style={{ marginLeft: 16 }}>
-                <div style={{ fontSize: 13, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>{tiro.etichetta}</div>
-                <div style={{ fontSize: 28, fontWeight: 'bold', display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                  {tiro.naturale} {tiro.bonus !== 0 && `${conSegno(tiro.bonus)} `}= <strong>{tiro.totale}</strong>
-                </div>
-                <div style={styles.detail}>
-                  {tiro.dadi.length > 1 && ` · ${tiro.modalita} [${tiro.dadi.join(', ')}] → ${tiro.naturale}`}
-                </div>
-                {tiro.naturale === 20 && <span style={styles.badge(C.goldDark)}>⚔ CRITICO! 20 naturale</span>}
-                {tiro.naturale === 1 && <span style={styles.badge(C.red)}>💀 1 naturale</span>}
-                {tiro.esito && <span style={styles.badge(C.goldDark)}>{tiro.esito}</span>}
-                {tiro.attacco && tiro.naturale !== 1 && (
-                  parseEspressioneDado(tiro.attacco.danno || '') ? (
-                    tiro.naturale === 20 ? (
-                      <div style={{ ...styles.detail, marginTop: 6, color: C.goldDark, fontWeight: 'bold' }}>
-                        ⚔ Critico! Tiro i danni raddoppiati…
-                      </div>
-                    ) : (
-                      <button style={{ ...styles.buttonPrimary, marginTop: 6 }} onClick={lanciaDanniAttacco}>
-                        🗡 Tira danni ({tiro.attacco.danno})
-                      </button>
-                    )
-                  ) : (
-                    <div style={styles.detail}>{t('atk.danno_invalido')}</div>
-                  )
-                )}
-              </div>
-            ) : danni ? (
-              <div style={{ marginLeft: 16 }}>
-                <div style={{ fontSize: 13, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>
-                  {danni.etichetta}
-                </div>
-                <div style={{ fontSize: 24, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {danni.libero ? '' : danni.guarigione ? '✚' : '💥'} <strong>{danni.totale}</strong>
-                  {danni.libero ? '' : danni.guarigione ? ' PF recuperati' : ' danni'}
-                  {danni.critico && <span style={styles.badge(C.goldDark)}>⚔ CRITICO!</span>}
-                </div>
-                <div style={{ ...styles.detail, marginTop: 4 }}>
-                  {t('roll.dettaglio')}: {danni.dettaglio}
-                </div>
-              </div>
-            ) : (
-              <div style={{ ...styles.detail, marginLeft: 16 }}>
-                {t('roll.hint')}
-              </div>
-            )}
-          </div>
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            {['normale', 'vantaggio', 'svantaggio'].map((m) => (
-              <button key={m} style={styles.modeButton(modalita === m)} onClick={() => setModalita(m)}>
-                {m === 'normale' ? t('roll.normale') : m === 'vantaggio' ? t('roll.vantaggio') : t('roll.svantaggio')}
-              </button>
-            ))}
-            <button
-              style={styles.modeButton(storicoAperto)}
-              title={t('roll.cronologia_tooltip')}
-              onClick={() => setStoricoAperto(!storicoAperto)}
-            >
-              {t('roll.cronologia')}
-            </button>
-          </div>
-
-          <div style={{ width: '100%', height: 1, background: C.border, margin: '2px 0 1px' }} />
-          <div className="dadi-riga" style={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', width: '100%', padding: '1px 0 2px' }}>
-            <span style={{ ...styles.detail, marginRight: 2, flexShrink: 0, fontWeight: 700, fontSize: 11 }}>{t('roll.dado')}:</span>
-            {[4, 6, 8, 10, 12, 20, 100].map((facce) => {
-              let pts = "";
-              if (facce === 4) pts = "20,4 36,36 4,36";
-              else if (facce === 6) pts = "6,6 34,6 34,34 6,34";
-              else if (facce === 8) pts = "20,4 36,20 20,36 4,20";
-              else if (facce === 10) pts = "20,4 36,16 20,36 4,16";
-              else if (facce === 12) pts = "20,4 36,14 30,36 10,36 4,14";
-              else if (facce === 20) pts = "10,4 30,4 38,20 30,36 10,36 2,20";
-              return (
-                <button
-                  key={facce}
-                  className="dado-btn"
-                  onClick={() => tiroLibero(facce)}
-                  style={{
-                    position: 'relative', width: 26, height: 26, background: 'none', border: 'none', cursor: 'pointer',
-                    padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.1s'
-                  }}
-                  onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.9)'}
-                  onMouseUp={(e) => e.currentTarget.style.transform = 'none'}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
-                >
-                  <svg width="26" height="26" viewBox="0 0 40 40" style={{ position: 'absolute', top: 0, left: 0 }}>
-                    {facce === 100 ? (
-                      <circle cx="20" cy="20" r="16" fill="var(--c-gold)" stroke="var(--c-gold-dark)" strokeWidth="2" />
-                    ) : (
-                      <polygon points={pts} fill="var(--c-gold)" stroke="var(--c-gold-dark)" strokeWidth="2" strokeLinejoin="round" />
+          {(rolling || tiro || danni) && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', paddingBottom: 6, borderBottom: `1px solid ${C.border}`, marginBottom: 2 }}>
+              <div style={styles.dado(rolling, !rolling && (tiro?.naturale === 20 || danni?.critico), !rolling && (tiro?.naturale === 1), tipoDadoInUso)}>{faccia}</div>
+              <div style={{ flex: 1, minWidth: 200, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                {rolling ? (
+                  <div style={{ fontSize: 24, fontWeight: 'bold', color: C.inkDim, marginLeft: 8 }}>Tirando...</div>
+                ) : tiro ? (
+                  <div style={{ marginLeft: 8 }}>
+                    <div style={{ fontSize: 13, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>{tiro.etichetta}</div>
+                    <div style={{ fontSize: 28, fontWeight: 'bold', display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                      {tiro.naturale} {tiro.bonus !== 0 && `${conSegno(tiro.bonus)} `}= <strong>{tiro.totale}</strong>
+                    </div>
+                    <div style={styles.detail}>
+                      {tiro.dadi.length > 1 && ` · ${tiro.modalita} [${tiro.dadi.join(', ')}] → ${tiro.naturale}`}
+                    </div>
+                    {tiro.naturale === 20 && <span style={styles.badge(C.goldDark)}>⚔ CRITICO! 20 naturale</span>}
+                    {tiro.naturale === 1 && <span style={styles.badge(C.red)}>💀 1 naturale</span>}
+                    {tiro.esito && <span style={styles.badge(C.goldDark)}>{tiro.esito}</span>}
+                    {tiro.attacco && tiro.naturale !== 1 && (
+                      parseEspressioneDado(tiro.attacco.danno || '') ? (
+                        tiro.naturale === 20 ? (
+                          <div style={{ ...styles.detail, marginTop: 6, color: C.goldDark, fontWeight: 'bold' }}>
+                            ⚔ Critico! Tiro i danni raddoppiati…
+                          </div>
+                        ) : (
+                          <button style={{ ...styles.buttonPrimary, marginTop: 6 }} onClick={lanciaDanniAttacco}>
+                            🗡 Tira danni ({tiro.attacco.danno})
+                          </button>
+                        )
+                      ) : (
+                        <div style={styles.detail}>{t('atk.danno_invalido')}</div>
+                      )
                     )}
-                  </svg>
-                  <span style={{ position: 'relative', zIndex: 1, fontWeight: 800, color: '#000', fontSize: 9, marginTop: facce === 4 ? 4 : facce === 10 ? 2 : 0 }}>
-                    d{facce}
-                  </span>
+                  </div>
+                ) : danni ? (
+                  <div style={{ marginLeft: 8 }}>
+                    <div style={{ fontSize: 13, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>
+                      {danni.etichetta}
+                    </div>
+                    <div style={{ fontSize: 24, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {danni.libero ? '' : danni.guarigione ? '✚' : '💥'} <strong>{danni.totale}</strong>
+                      {danni.libero ? '' : danni.guarigione ? ' PF recuperati' : ' danni'}
+                      {danni.critico && <span style={styles.badge(C.goldDark)}>⚔ CRITICO!</span>}
+                    </div>
+                    <div style={{ ...styles.detail, marginTop: 4 }}>
+                      {t('roll.dettaglio')}: {danni.dettaglio}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+              <button
+                style={{ ...styles.buttonMini, color: C.inkDim, alignSelf: 'flex-start', padding: '4px 8px' }}
+                title="Chiudi risultato tiro"
+                onClick={() => { setTiro(null); setDanni(null); }}
+              >✖</button>
+            </div>
+          )}
+
+          <div className="dadi-riga" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', width: '100%', padding: '1px 0' }}>
+            <span style={{ ...styles.detail, marginRight: 2, flexShrink: 0, fontWeight: 700, fontSize: 13 }}>{t('roll.dado')}:</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+              {[4, 6, 8, 10, 12, 20, 100].map((facce) => {
+                let pts = "";
+                if (facce === 4) pts = "20,4 36,36 4,36";
+                else if (facce === 6) pts = "6,6 34,6 34,34 6,34";
+                else if (facce === 8) pts = "20,4 36,20 20,36 4,20";
+                else if (facce === 10) pts = "20,4 36,16 20,36 4,16";
+                else if (facce === 12) pts = "20,4 36,14 30,36 10,36 4,14";
+                else if (facce === 20) pts = "10,4 30,4 38,20 30,36 10,36 2,20";
+                return (
+                  <button
+                    key={facce}
+                    className="dado-btn"
+                    onClick={() => tiroLibero(facce)}
+                    style={{
+                      position: 'relative', width: 30, height: 30, background: 'none', border: 'none', cursor: 'pointer',
+                      padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.1s'
+                    }}
+                    onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.9)'}
+                    onMouseUp={(e) => e.currentTarget.style.transform = 'none'}
+                    onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
+                  >
+                    <svg width="30" height="30" viewBox="0 0 40 40" style={{ position: 'absolute', top: 0, left: 0 }}>
+                      {facce === 100 ? (
+                        <circle cx="20" cy="20" r="16" fill="var(--c-gold)" stroke="var(--c-gold-dark)" strokeWidth="2" />
+                      ) : (
+                        <polygon points={pts} fill="var(--c-gold)" stroke="var(--c-gold-dark)" strokeWidth="2" strokeLinejoin="round" />
+                      )}
+                    </svg>
+                    <span style={{ position: 'relative', zIndex: 1, fontWeight: 800, color: '#000', fontSize: 10, marginTop: facce === 4 ? 4 : facce === 10 ? 2 : 0 }}>
+                      d{facce}
+                    </span>
+                  </button>
+                );
+              })}
+              <input
+                style={{
+                  ...styles.inlineInput,
+                  flex: '0 1 95px', minWidth: 70, maxWidth: 120,
+                  padding: '3px 8px', height: 28, fontSize: 13,
+                  marginLeft: 4,
+                  ...(erroreEspressione ? { borderColor: C.red } : {}),
+                }}
+                placeholder={t('roll.espr_placeholder') || 'Es. 1d6+2'}
+                title="Premi Invio per tirare"
+                value={espressioneLibera}
+                onChange={(e) => {
+                  setEspressioneLibera(e.target.value);
+                  setErroreEspressione(false);
+                }}
+                onKeyDown={(e) => e.key === 'Enter' && tiroEspressione()}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginLeft: 'auto', flexWrap: 'wrap' }}>
+              {['normale', 'vantaggio', 'svantaggio'].map((m) => (
+                <button key={m} style={styles.modeButton(modalita === m)} onClick={() => setModalita(m)}>
+                  {m === 'normale' ? t('roll.normale') : m === 'vantaggio' ? t('roll.vantaggio') : t('roll.svantaggio')}
                 </button>
-              );
-            })}
-            <input
-              style={{
-                ...styles.inlineInput,
-                flex: '1 1 70px', minWidth: 65, maxWidth: 110,
-                padding: '2px 6px', height: 24, fontSize: 12,
-                marginLeft: 4,
-                ...(erroreEspressione ? { borderColor: C.red } : {}),
-              }}
-              placeholder={t('roll.espr_placeholder') || 'Es. 1d6+2'}
-              title="Premi Invio per tirare"
-              value={espressioneLibera}
-              onChange={(e) => {
-                setEspressioneLibera(e.target.value);
-                setErroreEspressione(false);
-              }}
-              onKeyDown={(e) => e.key === 'Enter' && tiroEspressione()}
-            />
+              ))}
+              <button
+                style={styles.modeButton(storicoAperto)}
+                title={t('roll.cronologia_tooltip')}
+                onClick={() => setStoricoAperto(!storicoAperto)}
+              >
+                {t('roll.cronologia')}
+              </button>
+            </div>
           </div>
           {erroreEspressione && <div style={{ color: C.red, fontSize: 13, width: '100%' }}>{t('roll.espr_invalida')}</div>}
         </div>
@@ -5504,7 +5514,7 @@ export default function App() {
                 const aggiungiInc = (nome, liv, manuale, bonus) => {
                   const d = dettagliIncantesimo(nome) || { tempo: manuale ? '1 Az.' : 'AZ', gittata: '', note: '' };
                   aggiorna({ incantesimiLista: [...scheda.incantesimiLista,
-                    { id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, livello: liv, nome, tempo: d.tempo, gittata: d.gittata, note: d.note, preparato: true, ...(bonus ? { bonus: true } : {}) }] });
+                    { id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, livello: liv, nome, tempo: d.tempo, gittata: d.gittata, note: d.note, scuola: d.scuola || '', area: d.area || '', danno: d.danno || '', tipoDanno: d.tipoDanno || '', preparato: true, ...(bonus ? { bonus: true } : {}) }] });
                 };
                 // Tastino piccolo di aggiunta sotto ogni livello: menu compatto con
                 // i suggerimenti di quel livello + "scrivi a mano", e toggle ✦ bonus.
@@ -5542,9 +5552,6 @@ export default function App() {
                     <div key={liv} style={{ marginBottom: 14 }}>
                       <h4 style={{ fontSize: 12, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5, borderBottom: `1px solid ${C.border}`, paddingBottom: 2, marginBottom: 6, display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                         <span>{liv === 0 ? t('spell.trucchetti_liv0') : t('spell.n_livello', { n: liv })}</span>
-                        <span style={{ color: C.inkDim, fontWeight: 700 }}>
-                          {countLiv}
-                        </span>
                       </h4>
                       {liv >= 1 && (() => {
                         const slot = scheda.slotIncantesimo[liv] || { totale: 0, spesi: 0 };
@@ -5568,11 +5575,19 @@ export default function App() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                           {spells.map((s) => {
                             const eff = spiegaIncantesimo(s.nome);
-                            const tp = s.tempo || '';
+                            const dbInc = datiIncantesimo(s.nome) || {};
+                            const det = dettagliIncantesimo(s.nome) || {};
+                            const tp = s.tempo || dbInc.tempo || det.tempo || '';
                             const tempoLabel = /reaz/i.test(tp) ? t('spell.tempo_reazione')
                               : /bonus/i.test(tp) ? t('spell.tempo_bonus')
                               : /^(az|1 az|azione)/i.test(tp) ? t('spell.tempo_azione')
                               : tp;
+                            const gittata = s.gittata || dbInc.gittata || det.gittata || '';
+                            const scuola = s.scuola || dbInc.scuola || det.scuola || '';
+                            const area = s.area || dbInc.area || det.area || '';
+                            const danno = s.danno || dbInc.danno || det.danno || '';
+                            const tipoDanno = s.tipoDanno || dbInc.tipoDanno || det.tipoDanno || '';
+                            const note = s.note || det.note || '';
                             const chip = (icona, etichetta, testo) => (
                               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: C.inkDim, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 6, padding: '2px 8px' }}>
                                 <span aria-hidden style={{ opacity: 0.75 }}>{icona}</span>
@@ -5610,14 +5625,14 @@ export default function App() {
                                     <button style={{ ...styles.buttonMini, color: C.red }} title={t('tip.elimina_inc')} onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })}>🗑</button>
                                   </div>
                                 </div>
-                                {(tempoLabel || s.gittata || s.scuola || s.area || s.danno || s.tipoDanno || s.note) && (
+                                {(tempoLabel || gittata || scuola || area || danno || tipoDanno || note) && (
                                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
                                     {tempoLabel && chip('⏱', t('spell.chip_tempo'), tempoLabel)}
-                                    {s.gittata && chip('🎯', t('spell.chip_gittata'), s.gittata)}
-                                    {s.scuola && chip('🔮', 'Scuola', s.scuola)}
-                                    {s.area && chip('📐', 'Area', s.area)}
-                                    {(s.danno || s.tipoDanno) && chip('💥', 'Danno', [s.danno, s.tipoDanno].filter(Boolean).join(' '))}
-                                    {s.note && chip('📝', t('spell.chip_note'), s.note)}
+                                    {gittata && chip('🎯', t('spell.chip_gittata'), gittata)}
+                                    {scuola && chip('🔮', 'Scuola', scuola)}
+                                    {area && chip('📐', 'Area', area)}
+                                    {(danno || tipoDanno) && chip('💥', 'Danno', [danno, tipoDanno].filter(Boolean).join(' '))}
+                                    {note && chip('📝', t('spell.chip_note'), note)}
                                   </div>
                                 )}
                               </div>
