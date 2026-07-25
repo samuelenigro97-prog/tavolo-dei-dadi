@@ -3902,6 +3902,7 @@ export default function App() {
                     <div style={{ gridColumn: '1 / -1', ...styles.detail, fontSize: 11, color: C.inkDim }}>
                       {t('levelup.asi_nota')}
                     </div>
+                  </div>
                 )}
               </div>
             )}
