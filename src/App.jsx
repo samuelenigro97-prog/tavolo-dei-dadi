@@ -3902,10 +3902,65 @@ export default function App() {
                     <div style={{ gridColumn: '1 / -1', ...styles.detail, fontSize: 11, color: C.inkDim }}>
                       {t('levelup.asi_nota')}
                     </div>
-                  </div>
                 )}
               </div>
             )}
+
+            {/* Opzione MULTICLASSE nel Level Up */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ ...styles.detail, display: 'block', marginBottom: 4, fontWeight: 'bold' }}>
+                ⚔️ {t('mc.titolo')}
+              </label>
+              <div style={{ background: 'rgba(0,0,0,0.03)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px' }}>
+                {!(scheda.multiclasse && scheda.multiclasse.length > 0) ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                    <span style={{ fontSize: 13, color: C.ink }}>Vuoi prendere un livello in una seconda classe?</span>
+                    <button
+                      style={{ ...styles.buttonMini, padding: '4px 10px', fontSize: 13 }}
+                      onClick={() => aggiorna({ multiclasse: [{ classe: '', livello: 1 }] })}
+                    >
+                      ➕ Aggiungi Multiclasse
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700 }}>Classi secondarie:</span>
+                      <span style={{ ...styles.detail }}>
+                        Livello totale: <strong>{(scheda.livello || 1) + (scheda.multiclasse || []).reduce((a, m) => a + (m.livello || 0), 0)}</strong>
+                      </span>
+                    </div>
+                    {(scheda.multiclasse || []).map((m, i) => (
+                      <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 6, flexWrap: 'wrap' }}>
+                        <select value={m.classe} onChange={(e) => aggiorna({ multiclasse: (scheda.multiclasse || []).map((x, j) => (j === i ? { ...x, classe: e.target.value } : x)) })} style={{ ...styles.inlineInput, padding: '4px 6px', flex: 1, minWidth: 120 }}>
+                          <option value="">{t('crea.scegli')}</option>
+                          {NOMI_CLASSI.map((n) => <option key={n} value={n}>{traduciDato(n)}</option>)}
+                        </select>
+                        <span style={{ ...styles.detail }}>{t('mc.liv')}</span>
+                        <Editable value={m.livello} tipo="numero" width={28} onChange={(v) => aggiorna({ multiclasse: (scheda.multiclasse || []).map((x, j) => (j === i ? { ...x, livello: Math.max(1, v) } : x)) })} />
+                        <button style={{ ...styles.buttonMini, color: C.red }} title={t('modal.elimina')} onClick={() => aggiorna({ multiclasse: (scheda.multiclasse || []).filter((_, j) => j !== i) })}>🗑</button>
+                      </div>
+                    ))}
+                    <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                      <button style={{ ...styles.buttonMini }} onClick={() => aggiorna({ multiclasse: [...(scheda.multiclasse || []), { classe: '', livello: 1 }] })}>➕ {t('mc.aggiungi')}</button>
+                      <button style={{ ...styles.button, fontSize: 12, padding: '4px 10px' }} title={t('mc.applica_tip')} onClick={() => {
+                        const mc = scheda.multiclasse || [];
+                        const livTot = (scheda.livello || 1) + mc.reduce((a, m) => a + (m.livello || 0), 0);
+                        const classi = [{ classe: scheda.classe, livello: scheda.livello || 1 }, ...mc.filter((m) => m.classe)];
+                        const slot = slotMulticlasse(classi);
+                        const patch = { bonusCompetenza: bonusCompetenzaDaLivello(livTot) };
+                        if (slot) {
+                          const cur = scheda.slotIncantesimo || {};
+                          for (let idx = 1; idx <= 9; idx++) if (slot[idx]) slot[idx].spesi = Math.min(slot[idx].totale, cur[idx]?.spesi || 0);
+                          patch.slotIncantesimo = slot;
+                        }
+                        aggiorna(patch);
+                      }}>🔄 Ricalcola Slot e Competenza</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
 
             {/* Riepilogo: cosa cambia salendo di livello */}
             <div style={{ ...styles.panelSoft || {}, background: 'rgba(0,0,0,0.03)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 12px', marginBottom: 14, fontSize: 13 }}>
@@ -3975,8 +4030,21 @@ export default function App() {
                   dadiVita: `${nuovoLivello}d${dvAttuale}`, // Aggiorna formula dadi vita totali
                   bonusCompetenza: bcNuovo,
                 };
-                // Slot incantesimo aggiornati (e ricaricati) secondo la tabella della classe
-                if (slotNuovi) patch.slotIncantesimo = { ...scheda.slotIncantesimo, ...slotNuovi };
+                // Slot incantesimo aggiornati (e ricaricati) secondo la tabella della classe o multiclasse
+                if ((scheda.multiclasse || []).length > 0) {
+                  const mc = scheda.multiclasse || [];
+                  const livTot = nuovoLivello + mc.reduce((a, m) => a + (m.livello || 0), 0);
+                  const classi = [{ classe: scheda.classe, livello: nuovoLivello }, ...mc.filter((m) => m.classe)];
+                  const slotMc = slotMulticlasse(classi);
+                  if (slotMc) {
+                    const cur = scheda.slotIncantesimo || {};
+                    for (let idx = 1; idx <= 9; idx++) if (slotMc[idx]) slotMc[idx].spesi = Math.min(slotMc[idx].totale, cur[idx]?.spesi || 0);
+                    patch.slotIncantesimo = slotMc;
+                  }
+                  patch.bonusCompetenza = bonusCompetenzaDaLivello(livTot);
+                } else if (slotNuovi) {
+                  patch.slotIncantesimo = { ...scheda.slotIncantesimo, ...slotNuovi };
+                }
                 // Appende i nuovi privilegi di classe (senza duplicare le righe)
                 if (privNuovi) patch.privilegi = attualiPriv.trim() ? `${attualiPriv.trim()}\n${privNuovi}` : privNuovi;
                 // Sottoclasse scelta (solo al livello di scelta)
@@ -4700,11 +4768,7 @@ export default function App() {
           {(() => {
             const mc = scheda.multiclasse || [];
             if (mc.length === 0) {
-              return (
-                <div style={{ margin: '2px 0 8px' }}>
-                  <button style={{ ...styles.buttonMini }} title={t('mc.applica_tip')} onClick={() => aggiorna({ multiclasse: [{ classe: '', livello: 1 }] })}>➕ {t('mc.titolo')}</button>
-                </div>
-              );
+              return null;
             }
             const livTot = (scheda.livello || 1) + mc.reduce((a, m) => a + (m.livello || 0), 0);
             const setMc = (arr) => aggiorna({ multiclasse: arr });
