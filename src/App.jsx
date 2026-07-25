@@ -273,7 +273,8 @@ function nomeCasuale(specie) {
 function datiSpecieDi(specie) {
   if (!specie) return null;
   const s = String(specie).toLowerCase();
-  const k = Object.keys(SPECIE_DATI).find((x) => s.includes(x.toLowerCase()));
+  const k = Object.keys(SPECIE_DATI).find((x) => x.toLowerCase() === s) ||
+            Object.keys(SPECIE_DATI).sort((a, b) => b.length - a.length).find((x) => s.includes(x.toLowerCase()));
   return k ? { ...SPECIE_DATI[k], nome: k } : null;
 }
 
@@ -2550,7 +2551,7 @@ export default function App() {
     const slot = slotDaClasseLivello(classe, s.livello);
     if (slot) s.slotIncantesimo = slot;
     // dati dalla specie: velocità, sensi, taglia, tratti
-    const sp = SPECIE_DATI[specie];
+    const sp = datiSpecieDi(specie);
     if (sp) { s.velocita = sp.velocita; s.sensi = sp.sensi; s.taglia = sp.taglia; s.trattiSpecie = sp.tratti; }
     // caratteristiche secondo il metodo scelto:
     //  'auto'    → 4d6 assegnate per priorità di classe
@@ -2849,11 +2850,12 @@ export default function App() {
     
     if (etichetta === 'Impulso di Magia Selvaggia') {
       esito.dettaglio = getEffettoMagiaSelvaggia(esito.totale);
+      esito.tabella = true;
     }
     
     conAnimazione(() => {
       setDanni({ etichetta, ...esito, critico: false });
-      registra({ etichetta, tipo: 'danni', totale: esito.totale, dettaglio: esito.dettaglio });
+      registra({ etichetta, tipo: esito.tabella ? 'tiro' : 'danni', totale: esito.totale, dettaglio: esito.dettaglio });
     }, esito.totale, maxFacce || 20);
   }
 
@@ -4416,8 +4418,8 @@ export default function App() {
                       {danni.etichetta}
                     </div>
                     <div style={{ fontSize: 24, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 8 }}>
-                      {danni.libero ? '' : danni.guarigione ? '✚' : '💥'} <strong>{danni.totale}</strong>
-                      {danni.libero ? '' : danni.guarigione ? ' PF recuperati' : ' danni'}
+                      {danni.libero || danni.tabella || /magia selvaggia/i.test(danni.etichetta) ? '✨' : danni.guarigione ? '✚' : '💥'} <strong>{danni.totale}</strong>
+                      {danni.libero || danni.tabella || /magia selvaggia/i.test(danni.etichetta) ? '' : danni.guarigione ? ' PF recuperati' : ' danni'}
                       {danni.critico && <span style={styles.badge(C.goldDark)}>⚔ CRITICO!</span>}
                     </div>
                     <div style={{ ...styles.detail, marginTop: 4 }}>
@@ -4702,7 +4704,7 @@ export default function App() {
             <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px 10px', alignItems: 'end' }}>
                 <CampoModulo label={versione === "2024" ? t("profilo.specie") : t("profilo.razza")}>
-                  <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => { const sp = SPECIE_DATI[v]; aggiorna({ specie: v, ...(sp ? { velocita: sp.velocita, sensi: sp.sensi, taglia: sp.taglia, trattiSpecie: sp.tratti } : {}), ...ritrattoAuto(scheda.classe, v, scheda.nome) }); }} title={t('tip.scegli_specie')} />
+                  <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => { const sp = datiSpecieDi(v); aggiorna({ specie: v, ...(sp ? { velocita: sp.velocita, sensi: sp.sensi, taglia: sp.taglia, trattiSpecie: sp.tratti } : {}), ...ritrattoAuto(scheda.classe, v, scheda.nome) }); }} title={t('tip.scegli_specie')} />
                 </CampoModulo>
                 <CampoModulo label={t("profilo.taglia")}>
                   <CampoTendina value={scheda.taglia} opzioni={TAGLIE_5E} onChange={(v) => aggiorna({ taglia: v })} title={t('tip.scegli_taglia')} />

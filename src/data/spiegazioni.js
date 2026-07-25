@@ -819,16 +819,18 @@ const SPIEG_INCANTESIMI = {
 const SPIEG_INCANTESIMI_LC = _lcMap(SPIEG_INCANTESIMI);
 // Elenco ordinato dei nomi di incantesimo noti (per l'autocompletamento).
 export const INCANTESIMI_NOMI = Object.keys(SPIEG_INCANTESIMI).sort((a, b) => a.localeCompare(b, 'it'));
-/** Spiegazione di un incantesimo dal nome (o null), senza distinzione maiuscole. */
 export function spiegaIncantesimo(nome) {
   const n = String(nome || '').trim();
   const searchName = n.toLowerCase();
+  const clean = searchName.replace(/\s*\(.*$/, '').trim();
   
   if (SPIEG_INCANTESIMI_LC[searchName]) return SPIEG_INCANTESIMI_LC[searchName];
-  if (SPIEG_INCANTESIMI_LC[n.replace(/\s*\(.*$/, '').trim().toLowerCase()]) return SPIEG_INCANTESIMI_LC[n.replace(/\s*\(.*$/, '').trim().toLowerCase()];
+  if (SPIEG_INCANTESIMI_LC[clean]) return SPIEG_INCANTESIMI_LC[clean];
 
   // Cerca in INCANTESIMI_DB come fallback
-  const dbKey = Object.keys(INCANTESIMI_DB).find(k => k.toLowerCase() === searchName);
+  const dbKey = Object.keys(INCANTESIMI_DB).find(k => k.toLowerCase() === searchName) ||
+                Object.keys(INCANTESIMI_DB).find(k => k.toLowerCase() === clean) ||
+                Object.keys(INCANTESIMI_DB).sort((a, b) => a.length - b.length).find(k => k.toLowerCase().includes(clean) || clean.includes(k.toLowerCase()));
   if (dbKey && INCANTESIMI_DB[dbKey].desc) {
     return INCANTESIMI_DB[dbKey].desc;
   }

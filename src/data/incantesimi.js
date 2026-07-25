@@ -227,9 +227,13 @@ export const INCANTESIMI_DB = {
   'Resurrezione Vera':     { livello:9, scuola:'Necromanzia', classi:['Chierico','Druido'], tempo:'1 ora', gittata:'Tocco', desc:'Riporti in vita qualsiasi creatura morta da qualsiasi causa (25.000 mo).' },
 };
 
-// Estrae dati per autocompletamento quando si aggiunge un incantesimo
 export function datiIncantesimo(nome) {
-  const key = Object.keys(INCANTESIMI_DB).find(k => k.toLowerCase() === nome.toLowerCase());
+  if (!nome) return null;
+  const n = String(nome).trim().toLowerCase();
+  const clean = n.replace(/\s*\(.*$/, '').trim();
+  const key = Object.keys(INCANTESIMI_DB).find(k => k.toLowerCase() === n) ||
+              Object.keys(INCANTESIMI_DB).find(k => k.toLowerCase() === clean) ||
+              Object.keys(INCANTESIMI_DB).sort((a, b) => a.length - b.length).find(k => k.toLowerCase().includes(clean) || clean.includes(k.toLowerCase()));
   if (!key) return null;
   const d = INCANTESIMI_DB[key];
   return {
