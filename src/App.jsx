@@ -39,6 +39,48 @@ const BASE_TEMA = {
   scuro: { bg: '#171310', panel: '#211b16', panelLight: '#2a231c', border: '#46392b', ink: '#e9dfcd', inkDim: '#a0937f', gold: '#c9a227', goldDark: '#dcb84f', red: '#d0685a', green: '#7fb069', title: '#de8f88' },
 };
 
+// Preset di colori aggiuntivi: sovrascrivono solo i valori di palette,
+// il meccanismo tinta-classe funziona sopra come prima.
+const PRESET_COLORI = [
+  {
+    id: 'default', nome: '🟤 Pergamena',
+    chiaro: {},
+    scuro: {},
+  },
+  {
+    id: 'foresta', nome: '🌿 Foresta',
+    chiaro: { bg: '#eef3ec', panel: '#f5faf4', panelLight: '#edf7eb', border: '#b8d9b0', ink: '#1a2e19', inkDim: '#5a7a55', gold: '#5a8c3a', goldDark: '#3e6d22', title: '#3e6d22' },
+    scuro:  { bg: '#0f1a0f', panel: '#162116', panelLight: '#1e2c1e', border: '#2e4a2e', ink: '#d4edcc', inkDim: '#7aaa70', gold: '#6dba48', goldDark: '#8fd868', title: '#8fd868' },
+  },
+  {
+    id: 'oceano', nome: '🌊 Oceano',
+    chiaro: { bg: '#eaf2fa', panel: '#f4f9ff', panelLight: '#e9f3fb', border: '#aacfe0', ink: '#12283a', inkDim: '#4a7a96', gold: '#1a6a9a', goldDark: '#0f4f78', title: '#0f4f78' },
+    scuro:  { bg: '#090f19', panel: '#0f1a2e', panelLight: '#172338', border: '#1a3550', ink: '#c8dff0', inkDim: '#6098b8', gold: '#3a9ad4', goldDark: '#5ab8f0', title: '#5ab8f0' },
+  },
+  {
+    id: 'crepuscolo', nome: '🌅 Crepuscolo',
+    chiaro: { bg: '#faf0ea', panel: '#fff8f5', panelLight: '#fdf2ec', border: '#e0c0a8', ink: '#2e1a10', inkDim: '#9a6a50', gold: '#c05020', goldDark: '#9a3a10', title: '#9a3a10' },
+    scuro:  { bg: '#160d08', panel: '#241510', panelLight: '#2e1a12', border: '#4a2c1a', ink: '#f0d8c8', inkDim: '#b07058', gold: '#e06030', goldDark: '#f08050', title: '#f08050' },
+  },
+  {
+    id: 'viola', nome: '🔮 Arcano',
+    chiaro: { bg: '#f0eaf8', panel: '#faf6ff', panelLight: '#f3eeff', border: '#c8b0e0', ink: '#1e1030', inkDim: '#7a5a9a', gold: '#7030b0', goldDark: '#521888', title: '#521888' },
+    scuro:  { bg: '#0f0a1a', panel: '#1a1128', panelLight: '#221633', border: '#3a2252', ink: '#e0d0f4', inkDim: '#9a78c0', gold: '#a060e0', goldDark: '#c890ff', title: '#c890ff' },
+  },
+];
+
+// Simbolo (emoji / testo) associato a ogni caratteristica — usato come sfondo opaco
+// all'interno del blocco caratteristica per evocare visivamente l'attributo.
+const SFONDO_CARATTERISTICA = {
+  forza:        { symbol: '⚔️', label: 'Forza' },
+  destrezza:    { symbol: '🏹', label: 'Destrezza' },
+  costituzione: { symbol: '🛡️', label: 'Costituzione' },
+  intelligenza: { symbol: '📚', label: 'Intelligenza' },
+  saggezza:     { symbol: '🔮', label: 'Saggezza' },
+  carisma:      { symbol: '✨', label: 'Carisma' },
+};
+
+
 // Colore identità per ogni classe (variante chiara e scura per restare leggibile).
 // `match` = sottostringhe riconosciute nel campo classe (italiano + inglese).
 // Palette a 12 tinte ben distinte (una per classe), sia in chiaro sia in scuro.
@@ -612,12 +654,13 @@ const styles = {
     color: C.inkDim,
     letterSpacing: 0.8,
     textTransform: 'uppercase',
+    paddingTop: 6,
     marginBottom: 4,
     fontWeight: 700,
     lineHeight: 1.15,
-    minHeight: '2.2em',
+    height: '2.2em',
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
     textAlign: 'center',
     width: '100%',
@@ -2337,6 +2380,11 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem('scheda-interattiva:versione', regoleVersione); } catch { /* niente */ }
   }, [regoleVersione]);
+  // Preset colori UI
+  const [presetColori, setPresetColori] = useState(() => localStorage.getItem('scheda-interattiva:preset-colori') || 'default');
+  useEffect(() => {
+    try { localStorage.setItem('scheda-interattiva:preset-colori', presetColori); } catch { /* niente */ }
+  }, [presetColori]);
 
 
   // Cloud Sync
@@ -2443,7 +2491,9 @@ export default function App() {
     const scuroEff =
       tema === 'scuro' || (tema === 'auto' && (sistemaScuro || eNotte()));
     const modo = scuroEff ? 'scuro' : 'chiaro';
-    const t = { ...BASE_TEMA[modo] };
+    // Parti dal tema base, poi applica l'override del preset colori
+    const presetDati = PRESET_COLORI.find((p) => p.id === presetColori) || PRESET_COLORI[0];
+    const t = { ...BASE_TEMA[modo], ...presetDati[modo] };
     const acc = coloreClasse(classeAttiva);
     if (acc) {
       const colore = acc[modo];
@@ -2457,6 +2507,7 @@ export default function App() {
     }
     const root = document.documentElement;
     root.dataset.tema = modo;
+    root.dataset.preset = presetColori;
     const set = (k, v) => root.style.setProperty(k, v);
     set('--c-bg', t.bg); set('--c-panel', t.panel); set('--c-panel-light', t.panelLight);
     set('--c-border', t.border); set('--c-ink', t.ink); set('--c-ink-dim', t.inkDim);
@@ -2476,7 +2527,7 @@ export default function App() {
     } catch {
       // storage non disponibile: pazienza
     }
-  }, [tema, sistemaScuro, oraTick, classeAttiva]);
+  }, [tema, sistemaScuro, oraTick, classeAttiva, presetColori]);
   const intervalRef = useRef(null);
   const jsonRef = useRef(null);
   const pdfRef = useRef(null);
@@ -4372,7 +4423,19 @@ export default function App() {
           >
             {tema === 'auto' ? t('btn.tema.auto') : tema === 'chiaro' ? t('btn.tema.chiaro') : t('btn.tema.scuro')}
           </button>
+          <button
+            style={{ ...styles.modeButton(presetColori !== 'default'), fontSize: 13 }}
+            title={`Tema colori: ${PRESET_COLORI.find(p => p.id === presetColori)?.nome || '—'} · click per cambiare`}
+            onClick={() => {
+              const idx = PRESET_COLORI.findIndex((p) => p.id === presetColori);
+              const next = PRESET_COLORI[(idx + 1) % PRESET_COLORI.length];
+              setPresetColori(next.id);
+            }}
+          >
+            🎨 {PRESET_COLORI.find(p => p.id === presetColori)?.nome?.split(' ')[1] || 'Colori'}
+          </button>
         </div>
+
       </header>
 
       <main style={styles.main}>
@@ -4586,9 +4649,9 @@ export default function App() {
               }}
             />
           ) : (
-            <div style={{ position: 'relative', flex: '1 1 180px', minWidth: 150, display: 'flex', overflow: 'visible' }}>
+            <div style={{ position: 'relative', flex: '1 1 180px', minWidth: 150, display: 'flex', overflow: 'hidden', borderRadius: 8 }}>
               <select
-                style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', padding: '9px 84px 9px 8px', textOverflow: 'ellipsis' }}
+                style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', padding: '9px 28px 9px 8px', textOverflow: 'ellipsis', background: 'transparent', position: 'relative', zIndex: 2 }}
                 value={roster.attivo}
                 onChange={(e) => setRoster((r) => ({ ...r, attivo: e.target.value }))}
                 title={t('nome.tooltip_selettore')}
@@ -4602,15 +4665,15 @@ export default function App() {
               <span
                 aria-hidden
                 style={{
-                  position: 'absolute', right: 26, top: '50%', transform: 'translateY(-50%)',
-                  display: 'flex', alignItems: 'center',
-                  pointerEvents: 'none', userSelect: 'none',
+                  position: 'absolute', left: 0, right: 0, top: 0, bottom: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  pointerEvents: 'none', userSelect: 'none', zIndex: 1,
                 }}
               >
                 <span style={{
                   fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: 'italic', fontWeight: 'bold',
-                  fontSize: 24, letterSpacing: 0.5, lineHeight: 1,
-                  color: C.goldDark, opacity: 0.75, whiteSpace: 'nowrap',
+                  fontSize: 32, letterSpacing: 6, lineHeight: 1,
+                  color: C.goldDark, opacity: 0.32, whiteSpace: 'nowrap',
                 }}>
                   {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
                 </span>
@@ -4893,13 +4956,15 @@ export default function App() {
                 </span>
               </div>
               {(() => {
+                const att = Number(scheda.pfAttuali) || 0;
+                const maxPf = Number(scheda.pfMax) || 10;
                 const temp = Number(scheda.pfTemp) || 0;
-                const max = Math.max(1, scheda.pfMax + temp);
-                const percNormale = Math.max(0, Math.min(100, (scheda.pfAttuali / max) * 100));
+                const max = Math.max(1, maxPf + temp);
+                const percNormale = Math.max(0, Math.min(100, (att / max) * 100));
                 const percTemp = Math.max(0, Math.min(100, (temp / max) * 100));
-                const coloreNormale = (scheda.pfAttuali / Math.max(1, scheda.pfMax)) > 0.5 ? C.green : (scheda.pfAttuali / Math.max(1, scheda.pfMax)) > 0.25 ? C.gold : C.red;
+                const coloreNormale = (att / Math.max(1, maxPf)) > 0.5 ? C.green : (att / Math.max(1, maxPf)) > 0.25 ? C.gold : C.red;
                 return (
-                  <div style={{ height: 5, borderRadius: 3, background: C.border, overflow: 'hidden', margin: '4px 10px 0', display: 'flex' }} title={`${scheda.pfAttuali} / ${scheda.pfMax} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
+                  <div style={{ height: 10, borderRadius: 5, background: 'rgba(0,0,0,0.4)', border: `1px solid ${C.border}`, overflow: 'hidden', margin: '8px 4px 4px', display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
                     <div style={{ width: `${percNormale}%`, height: '100%', background: coloreNormale, transition: 'width 0.25s ease' }} />
                     {temp > 0 && <div style={{ width: `${percTemp}%`, height: '100%', background: '#4A90E2', transition: 'width 0.25s ease' }} />}
                   </div>
@@ -5123,8 +5188,21 @@ export default function App() {
               const mod = modificatore(scheda.caratteristiche[key]);
               const bonusTS = bonusTiroSalvezza(scheda, key);
               const abilitaDellaCar = ABILITA.filter((a) => a.car === key);
+              const sfondoCar = SFONDO_CARATTERISTICA[key];
               return (
-                <div key={key} className="blocco-car" style={styles.abilityBlock}>
+                <div key={key} className="blocco-car" style={{ ...styles.abilityBlock, position: 'relative', overflow: 'hidden' }}>
+                  {/* Sfondo emoji opaco che rappresenta la caratteristica */}
+                  {sfondoCar && (
+                    <span aria-hidden style={{
+                      position: 'absolute', right: -2, bottom: -8,
+                      fontSize: 58, opacity: 0.07, pointerEvents: 'none',
+                      lineHeight: 1, userSelect: 'none',
+                      transform: 'rotate(-8deg)',
+                      filter: 'grayscale(20%)',
+                    }}>
+                      {sfondoCar.symbol}
+                    </span>
+                  )}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
                     <Rollable
                       onRoll={() => lanciaD20(`Prova di ${t('attr.' + key)}`, mod)}
@@ -5506,7 +5584,7 @@ export default function App() {
               {...apertoProps('incantesimi')}
             >
               <div style={{ marginBottom: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10, flexWrap: 'wrap' }}>
                   <label style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6 }}>
                     {t('spell.caratteristica')}{' '}
                     <select
@@ -5522,9 +5600,41 @@ export default function App() {
                       ))}
                     </select>
                   </label>
+
+                  {/* Concentrazione rimpicciolita e affiancata alla caratteristica */}
+                  {(() => {
+                    const conc = incantesimiConcentrazioneClasse(scheda.classe);
+                    const bonusCon = modificatore(scheda.caratteristiche.costituzione) + (scheda.tiriSalvezza?.costituzione ? scheda.bonusCompetenza : 0);
+                    return (
+                      <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', padding: '3px 8px', borderRadius: 6, background: scheda.concentrazione ? 'rgba(201,162,39,0.15)' : 'rgba(0,0,0,0.15)', border: `1px solid ${scheda.concentrazione ? C.goldDark : C.border}` }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: scheda.concentrazione ? C.goldDark : C.inkDim }}>🧠 {t('conc.label')}</span>
+                        <select
+                          value={scheda.concentrazione || ''}
+                          onChange={(e) => aggiorna({ concentrazione: e.target.value })}
+                          style={{ ...styles.inlineInput, fontSize: 12, minWidth: 120, maxWidth: 170, padding: '2px 6px', height: 26 }}
+                          title={t('conc.scegli')}
+                        >
+                          <option value="">{t('conc.nessuna')}</option>
+                          {scheda.concentrazione && !conc.includes(scheda.concentrazione) && <option value={scheda.concentrazione}>{scheda.concentrazione}</option>}
+                          {conc.map((n) => <option key={n} value={n}>{n}</option>)}
+                        </select>
+                        <button
+                          className="tirabile"
+                          style={{ ...styles.button, fontSize: 11, padding: '2px 8px', height: 26 }}
+                          title={t('conc.ts_tooltip')}
+                          onClick={() => lanciaD20(t('conc.ts'), bonusCon)}
+                        >
+                          🎲 {t('conc.ts')} ({conSegno(bonusCon)})
+                        </button>
+                        {scheda.concentrazione && (
+                          <button style={{ ...styles.buttonMini, fontSize: 10, padding: '0 5px', height: 22, color: C.red }} title={t('conc.termina')} onClick={() => aggiorna({ concentrazione: '' })}>✕</button>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
                 {modIncantatore !== null && (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, width: '100%' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, width: '100%', marginTop: 8 }}>
                     <div style={{ ...styles.vitalBox, padding: '10px 6px' }}>
                       <div style={styles.vitalLabel}>{t("vital.mod_incantesimi")}</div>
                       <div style={styles.vitalValue}>{conSegno(modIncantatore)}</div>
@@ -5549,38 +5659,6 @@ export default function App() {
                   </div>
                 )}
               </div>
-
-              {/* Concentrazione: incantesimo attivo + TS di Costituzione al volo */}
-              {(() => {
-                const conc = incantesimiConcentrazioneClasse(scheda.classe);
-                const bonusCon = modificatore(scheda.caratteristiche.costituzione) + (scheda.tiriSalvezza?.costituzione ? scheda.bonusCompetenza : 0);
-                return (
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', margin: '10px 0', padding: '6px 8px', borderRadius: 8, background: scheda.concentrazione ? 'rgba(201,162,39,0.12)' : 'transparent', border: `1px solid ${scheda.concentrazione ? C.goldDark : C.border}` }}>
-                    <span style={{ ...styles.detail, fontWeight: 700, color: scheda.concentrazione ? C.goldDark : C.inkDim }}>🧠 {t('conc.label')}</span>
-                    <select
-                      value={scheda.concentrazione || ''}
-                      onChange={(e) => aggiorna({ concentrazione: e.target.value })}
-                      style={{ ...styles.inlineInput, minWidth: 150, maxWidth: 220, padding: '4px 6px' }}
-                      title={t('conc.scegli')}
-                    >
-                      <option value="">{t('conc.nessuna')}</option>
-                      {scheda.concentrazione && !conc.includes(scheda.concentrazione) && <option value={scheda.concentrazione}>{scheda.concentrazione}</option>}
-                      {conc.map((n) => <option key={n} value={n}>{n}</option>)}
-                    </select>
-                    <button
-                      className="tirabile"
-                      style={{ ...styles.button, fontSize: 12, padding: '4px 10px' }}
-                      title={t('conc.ts_tooltip')}
-                      onClick={() => lanciaD20(t('conc.ts'), bonusCon)}
-                    >
-                      🎲 {t('conc.ts')} ({conSegno(bonusCon)})
-                    </button>
-                    {scheda.concentrazione && (
-                      <button style={{ ...styles.buttonMini, color: C.red }} title={t('conc.termina')} onClick={() => aggiorna({ concentrazione: '' })}>✕</button>
-                    )}
-                  </div>
-                );
-              })()}
 
               {/* Gli slot sono ora mostrati all'interno di ciascun livello nella lista. */}
 
@@ -5663,13 +5741,13 @@ export default function App() {
                             const eff = spiegaIncantesimo(s.nome);
                             const dbInc = datiIncantesimo(s.nome) || {};
                             const det = dettagliIncantesimo(s.nome) || {};
-                            const tp = s.tempo || dbInc.tempo || det.tempo || '';
+                            const tp = s.tempo || dbInc.tempo || det.tempo || '1 Az.';
                             const tempoLabel = /reaz/i.test(tp) ? t('spell.tempo_reazione')
                               : /bonus/i.test(tp) ? t('spell.tempo_bonus')
                               : /^(az|1 az|azione)/i.test(tp) ? t('spell.tempo_azione')
                               : tp;
-                            const gittata = s.gittata || dbInc.gittata || det.gittata || '';
-                            const scuola = s.scuola || dbInc.scuola || det.scuola || '';
+                            const gittata = s.gittata || dbInc.gittata || det.gittata || 'Personale';
+                            const scuola = s.scuola || dbInc.scuola || det.scuola || 'Universale';
                             const area = s.area || dbInc.area || det.area || '';
                             const danno = s.danno || dbInc.danno || det.danno || '';
                             const tipoDanno = s.tipoDanno || dbInc.tipoDanno || det.tipoDanno || '';
@@ -5682,22 +5760,32 @@ export default function App() {
                             );
                             return (
                               <div key={s.id} style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', background: C.panelLight, opacity: (classePreparata && s.livello >= 1 && s.preparato === false) ? 0.5 : 1 }}>
-                                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-                                  <div style={{ minWidth: 0 }}>
-                                    <button
-                                      style={{ background: 'transparent', border: 'none', color: C.ink, fontWeight: 700, cursor: 'pointer', textAlign: 'left', padding: 0, fontSize: 15, lineHeight: 1.2, textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
-                                      title={t('tip.cosa_fa_inc')}
-                                      onClick={() => setInfo({ titolo: `${s.nome || 'Incantesimo'}${s.livello === 0 ? ' · Trucchetto' : ` · ${s.livello}° livello`}`, testo: eff || 'Nessuna descrizione disponibile per questo incantesimo. Aprilo con ✎ per aggiungere delle note.' })}
-                                    >
-                                      {s.nome || t('menu.senza_nome')}
-                                    </button>
-                                    {s.bonus && (
-                                      <span
-                                        title={t('spell.bonus_badge_tooltip')}
-                                        style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: C.goldDark, border: `1px solid ${C.goldDark}`, borderRadius: 6, padding: '0 4px', cursor: 'pointer', whiteSpace: 'nowrap' }}
-                                        onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, bonus: false } : x)) })}
-                                      >✦ {t('spell.bonus_badge')}</span>
-                                    )}
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', flex: '1 1 auto', minWidth: 0 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                      <button
+                                        style={{ background: 'transparent', border: 'none', color: C.ink, fontWeight: 700, cursor: 'pointer', textAlign: 'left', padding: 0, fontSize: 15, lineHeight: 1.2, textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
+                                        title={t('tip.cosa_fa_inc')}
+                                        onClick={() => setInfo({ titolo: `${s.nome || 'Incantesimo'}${s.livello === 0 ? ' · Trucchetto' : ` · ${s.livello}° livello`}`, testo: eff || 'Nessuna descrizione disponibile per questo incantesimo. Aprilo con ✎ per aggiungere delle note.' })}
+                                      >
+                                        {s.nome || t('menu.senza_nome')}
+                                      </button>
+                                      {s.bonus && (
+                                        <span
+                                          title={t('spell.bonus_badge_tooltip')}
+                                          style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: C.goldDark, border: `1px solid ${C.goldDark}`, borderRadius: 6, padding: '0 4px', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                                          onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, bonus: false } : x)) })}
+                                        >✦ {t('spell.bonus_badge')}</span>
+                                      )}
+                                    </div>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginLeft: 'auto' }}>
+                                      {chip('⏱', t('spell.chip_tempo'), tempoLabel)}
+                                      {chip('🎯', t('spell.chip_gittata'), gittata)}
+                                      {chip('🔮', 'Scuola', scuola)}
+                                      {area && chip('📐', 'Area', area)}
+                                      {(danno || tipoDanno) && chip('💥', 'Danno', [danno, tipoDanno].filter(Boolean).join(' '))}
+                                      {note && chip('📝', t('spell.chip_note'), note)}
+                                    </div>
                                   </div>
                                   <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
                                     {classePreparata && s.livello >= 1 && (
@@ -5711,16 +5799,6 @@ export default function App() {
                                     <button style={{ ...styles.buttonMini, color: C.red }} title={t('tip.elimina_inc')} onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })}>🗑</button>
                                   </div>
                                 </div>
-                                {(tempoLabel || gittata || scuola || area || danno || tipoDanno || note) && (
-                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
-                                    {tempoLabel && chip('⏱', t('spell.chip_tempo'), tempoLabel)}
-                                    {gittata && chip('🎯', t('spell.chip_gittata'), gittata)}
-                                    {scuola && chip('🔮', 'Scuola', scuola)}
-                                    {area && chip('📐', 'Area', area)}
-                                    {(danno || tipoDanno) && chip('💥', 'Danno', [danno, tipoDanno].filter(Boolean).join(' '))}
-                                    {note && chip('📝', t('spell.chip_note'), note)}
-                                  </div>
-                                )}
                               </div>
                             );
                           })}
@@ -5880,33 +5958,33 @@ export default function App() {
                 const setSlot = (i, v) => { const n = [...slots]; n[i] = v; aggiorna({ sintonia: n }); };
                 const usati = slots.filter((x) => x.trim()).length;
                 return (
-                  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start', marginTop: 12 }}>
-                    <div style={{ flex: '1 1 260px' }}>
-                      <div style={{ ...styles.detail, marginBottom: 4 }}>{t("equip.sintonia")} <span style={{ color: usati >= 3 ? C.gold : C.inkDim }}>({usati}/3)</span></div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20, alignItems: 'flex-start', marginTop: 24, paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
+                    <div style={{ background: C.panelLight, padding: '12px 14px', borderRadius: 8, border: `1px solid ${C.border}` }}>
+                      <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700, fontSize: 13 }}>{t("equip.sintonia")} <span style={{ color: usati >= 3 ? C.gold : C.inkDim }}>({usati}/3)</span></div>
                       {[0, 1, 2].map((i) => (
-                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                          <span style={{ ...styles.detail, minWidth: 14 }}>{i + 1}.</span>
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                          <span style={{ ...styles.detail, minWidth: 16, fontWeight: 600 }}>{i + 1}.</span>
                           <input
                             value={slots[i]}
                             onChange={(e) => setSlot(i, e.target.value)}
                             placeholder={t("equip.sintonia_ph")}
-                            style={{ ...styles.inlineInput, flex: 1, minWidth: 0, padding: '4px 8px' }}
+                            style={{ ...styles.inlineInput, flex: 1, minWidth: 0, padding: '6px 10px', fontSize: 13 }}
                           />
                         </div>
                       ))}
                     </div>
                     
-                    <div style={{ flex: '1 1 300px' }}>
-                      <div style={{ ...styles.detail, marginBottom: 4 }}>Monete</div>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+                    <div style={{ background: C.panelLight, padding: '12px 14px', borderRadius: 8, border: `1px solid ${C.border}` }}>
+                      <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700, fontSize: 13 }}>Monete</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
                         {DENARI.map(({ key, label }) => (
-                          <div key={key} style={{ ...styles.vitalBox, minHeight: 'auto', padding: '6px 4px' }}>
-                            <div style={{ ...styles.vitalLabel, fontSize: 10, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={label}>{label}</div>
+                          <div key={key} style={{ ...styles.vitalBox, minHeight: 'auto', padding: '8px 4px', background: C.bg }}>
+                            <div style={{ ...styles.vitalLabel, fontSize: 11, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={label}>{label}</div>
                             <div style={{ ...styles.vitalValue, fontSize: 18 }}>
                               <Editable
                                 value={scheda.denari[key]}
                                 tipo="numero"
-                                width={40}
+                                width={44}
                                 onChange={(v) => aggiorna({ denari: { ...scheda.denari, [key]: Math.max(0, v) } })}
                               />
                             </div>
