@@ -4600,15 +4600,15 @@ export default function App() {
               <span
                 aria-hidden
                 style={{
-                  position: 'absolute', left: 0, right: 0, top: 0, bottom: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  pointerEvents: 'none', userSelect: 'none', overflow: 'hidden',
+                  position: 'absolute', right: 26, top: '50%', transform: 'translateY(-50%)',
+                  display: 'flex', alignItems: 'center',
+                  pointerEvents: 'none', userSelect: 'none',
                 }}
               >
                 <span style={{
                   fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: 'italic', fontWeight: 'bold',
-                  fontSize: 44, letterSpacing: 1, lineHeight: 1,
-                  color: C.inkDim, opacity: 0.32, whiteSpace: 'nowrap',
+                  fontSize: 24, letterSpacing: 0.5, lineHeight: 1,
+                  color: C.goldDark, opacity: 0.75, whiteSpace: 'nowrap',
                 }}>
                   {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
                 </span>
