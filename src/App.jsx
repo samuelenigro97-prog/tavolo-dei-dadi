@@ -5503,34 +5503,35 @@ export default function App() {
               {...propsSez('incantesimi')} 
               {...apertoProps('incantesimi')}
             >
-              <div style={{ display: 'flex', gap: 12, alignItems: 'stretch', flexWrap: 'wrap', marginBottom: 12 }}>
-                <label style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                  {t('spell.caratteristica')}{' '}
-                  <select
-                    style={{ ...styles.inlineInput, padding: '4px 6px' }}
-                    value={scheda.incantatore.caratteristica}
-                    onChange={(e) => aggiorna({ incantatore: { caratteristica: e.target.value } })}
-                  >
-                    <option value="">{t('spell.non_incantatore')}</option>
-                    {CARATTERISTICHE.map((c) => (
-                      <option key={c.key} value={c.key}>
-                        {t('attr.' + c.key)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
+                  <label style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {t('spell.caratteristica')}{' '}
+                    <select
+                      style={{ ...styles.inlineInput, padding: '4px 8px' }}
+                      value={scheda.incantatore.caratteristica}
+                      onChange={(e) => aggiorna({ incantatore: { caratteristica: e.target.value } })}
+                    >
+                      <option value="">{t('spell.non_incantatore')}</option>
+                      {CARATTERISTICHE.map((c) => (
+                        <option key={c.key} value={c.key}>
+                          {t('attr.' + c.key)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
                 {modIncantatore !== null && (
-                  // i tre riquadri si allargano per riempire lo spazio a destra
-                  <div style={{ display: 'flex', gap: 10, flex: 1, minWidth: 250 }}>
-                    <div style={{ ...styles.vitalBox, flex: 1 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, width: '100%' }}>
+                    <div style={{ ...styles.vitalBox, padding: '10px 6px' }}>
                       <div style={styles.vitalLabel}>{t("vital.mod_incantesimi")}</div>
                       <div style={styles.vitalValue}>{conSegno(modIncantatore)}</div>
                     </div>
-                    <div style={{ ...styles.vitalBox, flex: 1 }}>
+                    <div style={{ ...styles.vitalBox, padding: '10px 6px' }}>
                       <div style={styles.vitalLabel}>{t("vital.cd_incantesimi")}</div>
                       <div style={styles.vitalValue}>{8 + scheda.bonusCompetenza + modIncantatore}</div>
                     </div>
-                    <div style={{ ...styles.vitalBox, flex: 1 }}>
+                    <div style={{ ...styles.vitalBox, padding: '10px 6px' }}>
                       <div style={styles.vitalLabel}>{t("vital.attacco_incantesimi")}</div>
                       <div style={styles.vitalValue}>
                         <span
