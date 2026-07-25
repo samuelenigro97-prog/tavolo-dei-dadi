@@ -4819,7 +4819,7 @@ export default function App() {
                   </div>
                 );
               })()}
-              <div style={{ ...styles.detail, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: 4 }}>
+              <div style={{ ...styles.detail, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: 14 }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
                   {t('vital.dadi_vita')}{' '}
                   <Rollable onRoll={tiraDadoVita} title={t('vital.dadi_vita_tooltip')}>
