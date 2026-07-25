@@ -480,19 +480,19 @@ const styles = {
   // Barra del tiro (sticky in alto)
   rollBar: {
     position: 'sticky',
-    top: 8,
+    top: 4,
     zIndex: 10,
     background: C.panel,
-    border: `2px solid ${C.gold}`,
-    borderRadius: 12,
-    padding: '8px 12px',
-    marginBottom: 10,
+    border: `1px solid ${C.gold}`,
+    borderRadius: 8,
+    padding: '4px 8px',
+    marginBottom: 6,
     display: 'flex',
     alignItems: 'center',
-    gap: 16,
+    gap: 8,
     flexWrap: 'wrap',
-    boxShadow: '0 4px 12px rgba(60,50,30,0.18)',
-    minHeight: 48,
+    boxShadow: '0 2px 8px rgba(60,50,30,0.15)',
+    minHeight: 36,
   },
   dado: (rolling, crit, fumble, facce = 20) => {
     let clipPath = 'polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)'; // default d20 hexagon
@@ -503,21 +503,21 @@ const styles = {
     else if (facce === 12) clipPath = 'polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)'; // Dodecagon approximation (use hexagon for now)
 
     return {
-      width: 64,
-      height: 64,
+      width: 38,
+      height: 38,
       flexShrink: 0,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      fontSize: facce === 20 ? 26 : 22,
+      fontSize: facce === 20 ? 16 : 14,
       fontWeight: 'bold',
       color: crit ? C.goldDark : fumble ? C.red : C.ink,
       background: C.panelLight,
-      border: `3px solid ${crit ? C.gold : fumble ? C.red : (COLORE_DADO[facce] || COLORE_DADO[20])}`,
+      border: `2px solid ${crit ? C.gold : fumble ? C.red : (COLORE_DADO[facce] || COLORE_DADO[20])}`,
       clipPath,
       animation: rolling ? 'd20-spin 0.5s linear infinite' : 'd20-settle 0.35s ease-out',
       userSelect: 'none',
-      paddingTop: facce === 4 ? 12 : 0,
+      paddingTop: facce === 4 ? 6 : 0,
     };
   },
   badge: (color) => ({
@@ -802,10 +802,9 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
   .app-header-title { grid-column: auto; justify-self: auto; order: -1; flex: 1 1 100%; margin-bottom: 6px !important; }
   .app-header-group { flex: 1 1 100% !important; justify-content: center !important; flex-wrap: wrap; }
   .app-header-group > button { flex: 1 1 auto; justify-content: center; }
-  /* dadi: tutti su UNA sola riga (d4…d100). Si stringono in egual misura per
-     entrarci, invece di mandare il d100 a capo da solo. */
-  .dadi-riga { justify-content: center; flex-wrap: nowrap !important; gap: 4px !important; }
-  .dadi-riga .dado-btn { flex: 1 1 0; min-width: 0; padding: 6px 2px !important; text-align: center; }
+  /* dadi: pulsanti compatti per entrare comodamente su telefono senza occupare troppo spazio verticale */
+  .dadi-riga { justify-content: center; flex-wrap: wrap !important; gap: 2px !important; }
+  .dadi-riga .dado-btn { flex: 0 0 auto; min-width: 24px !important; width: 24px !important; height: 24px !important; padding: 0 !important; text-align: center; }
   /* tabelle incantesimi più compatte sul telefono: celle strette così i
      tasti azione (✎ 🗑) restano visibili senza scorrere in orizzontale */
   .spell-table { font-size: 12px; }
@@ -4353,9 +4352,9 @@ export default function App() {
             </button>
           </div>
 
-          <div style={{ width: '100%', height: 1, background: C.border, margin: '6px 0 2px' }} />
-          <div className="dadi-riga" style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', width: '100%', padding: '2px 0 4px' }}>
-            <span style={{ ...styles.detail, marginRight: 2, flexShrink: 0, fontWeight: 700 }}>{t('roll.dado')}:</span>
+          <div style={{ width: '100%', height: 1, background: C.border, margin: '2px 0 1px' }} />
+          <div className="dadi-riga" style={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', width: '100%', padding: '1px 0 2px' }}>
+            <span style={{ ...styles.detail, marginRight: 2, flexShrink: 0, fontWeight: 700, fontSize: 11 }}>{t('roll.dado')}:</span>
             {[4, 6, 8, 10, 12, 20, 100].map((facce) => {
               let pts = "";
               if (facce === 4) pts = "20,4 36,36 4,36";
@@ -4370,21 +4369,21 @@ export default function App() {
                   className="dado-btn"
                   onClick={() => tiroLibero(facce)}
                   style={{
-                    position: 'relative', width: 32, height: 32, background: 'none', border: 'none', cursor: 'pointer',
+                    position: 'relative', width: 26, height: 26, background: 'none', border: 'none', cursor: 'pointer',
                     padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.1s'
                   }}
                   onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.9)'}
                   onMouseUp={(e) => e.currentTarget.style.transform = 'none'}
                   onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
                 >
-                  <svg width="32" height="32" viewBox="0 0 40 40" style={{ position: 'absolute', top: 0, left: 0 }}>
+                  <svg width="26" height="26" viewBox="0 0 40 40" style={{ position: 'absolute', top: 0, left: 0 }}>
                     {facce === 100 ? (
                       <circle cx="20" cy="20" r="16" fill="var(--c-gold)" stroke="var(--c-gold-dark)" strokeWidth="2" />
                     ) : (
                       <polygon points={pts} fill="var(--c-gold)" stroke="var(--c-gold-dark)" strokeWidth="2" strokeLinejoin="round" />
                     )}
                   </svg>
-                  <span style={{ position: 'relative', zIndex: 1, fontWeight: 800, color: '#000', fontSize: 10, marginTop: facce === 4 ? 6 : facce === 10 ? 3 : 0 }}>
+                  <span style={{ position: 'relative', zIndex: 1, fontWeight: 800, color: '#000', fontSize: 9, marginTop: facce === 4 ? 4 : facce === 10 ? 2 : 0 }}>
                     d{facce}
                   </span>
                 </button>
@@ -4393,12 +4392,12 @@ export default function App() {
             <input
               style={{
                 ...styles.inlineInput,
-                flex: 1, minWidth: 100,
-                padding: '4px 8px',
+                flex: '1 1 70px', minWidth: 65, maxWidth: 110,
+                padding: '2px 6px', height: 24, fontSize: 12,
                 marginLeft: 4,
                 ...(erroreEspressione ? { borderColor: C.red } : {}),
               }}
-              placeholder={t('roll.espr_placeholder') || 'Es. 1d6+2 (Invio)'}
+              placeholder={t('roll.espr_placeholder') || 'Es. 1d6+2'}
               title="Premi Invio per tirare"
               value={espressioneLibera}
               onChange={(e) => {
