@@ -904,7 +904,10 @@ const ABILITA = [
   { key: 'storia', label: 'Storia', car: 'intelligenza' },
 ];
 
-import { spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spiegaMetamagia, METAMAGIA_5E } from './data/spiegazioni.js';
+import { spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spiegaMetamagia, METAMAGIA_5E, INCANTESIMI_NOMI as NOMI_SPIEG_INC } from './data/spiegazioni.js';
+import { INCANTESIMI_DB, datiIncantesimo } from './data/incantesimi.js';
+
+const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(INCANTESIMI_DB)])).sort((a, b) => a.localeCompare(b, 'it'));
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
@@ -3366,7 +3369,29 @@ export default function App() {
               <div style={{ ...styles.detail, marginBottom: 4 }}>{t('modal.modifica')} · {s.livello === 0 ? t('spell.trucchetto') : t('spell.inc_liv', { n: s.livello })}</div>
 
               <label style={etichetta}>{t('crea.nome')}</label>
-              <input style={campo} value={s.nome} onChange={(e) => upd({ nome: e.target.value })} list="lista-incantesimi" placeholder={t('ph.inc_nome')} />
+              <input 
+                style={campo} 
+                value={s.nome} 
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const auto = datiIncantesimo(val);
+                  if (auto) {
+                    upd({ 
+                      nome: val, 
+                      livello: auto.livello ?? s.livello,
+                      tempo: auto.tempo ?? s.tempo,
+                      scuola: auto.scuola ?? s.scuola,
+                      area: auto.area ?? s.area,
+                      danno: auto.danno ?? s.danno,
+                      tipoDanno: auto.tipoDanno ?? s.tipoDanno
+                    });
+                  } else {
+                    upd({ nome: val });
+                  }
+                }} 
+                list="lista-incantesimi" 
+                placeholder={t('ph.inc_nome')} 
+              />
               <datalist id="lista-incantesimi">
                 {INCANTESIMI_NOMI.map((n) => <option key={n} value={n} />)}
               </datalist>

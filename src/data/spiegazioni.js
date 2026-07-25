@@ -348,7 +348,7 @@ const SPIEG_PRIVILEGI = {
   'Schivata Ombrosa': 'Come reazione, se sei nell’ombra imponi svantaggio a un attacco contro di te.',
   // Stregone
   'Ondata di Magia Selvaggia': 'La tua magia può scatenare effetti casuali (tabella del caos).',
-  'Onde di Caos': 'Puoi forzare un effetto di Magia Selvaggia per manipolare la sorte.',
+  'Onde di Caos': 'Puoi ottenere Vantaggio a un tiro per colpire, prova di caratteristica o tiro salvezza. Dopo averlo usato, devi completare un riposo lungo per usarlo di nuovo. Prima di allora, se lanci un incantesimo da Stregone di 1° livello o superiore, il DM può farti tirare sulla tabella della Magia Selvaggia: in quel caso recuperi l\'uso di Onde di Caos.',
   'Piega la Sorte': 'Spendi Punti Stregoneria per aggiungere o togliere a un tiro d20.',
   'Caos Controllato': 'Puoi tirare due volte sulla tabella del caos e scegliere il risultato.',
   'Bombardamento Magico': 'Con un colpo critico o un’uccisione ritiri e potenzi i dadi di danno.',
@@ -519,6 +519,100 @@ const SPIEG_PRIVILEGI = {
   'Scudo Mentale': 'Come reazione ottieni vantaggio ai TS mentali con energia psionica.',
   'Baluardo della Forza': 'Crei una barriera di forza che protegge te e gli alleati.',
   'Maestro della Telecinesi': 'Sollevi telecineticamente una creatura o un oggetto (come Mano Potente).',
+
+  // Meccaniche base varie
+  'Difesa senza armatura (CA = 10 + DES + COS)': 'Finché non indossi armature, la tua Classe Armatura è 10 + mod. Destrezza + mod. Costituzione. Puoi usare uno scudo.',
+  'Difesa senza armatura (CA = 10 + DES + SAG)': 'Finché non indossi armature né usi scudi, la tua Classe Armatura è 10 + mod. Destrezza + mod. Saggezza.',
+  'Lancio di incantesimi (Carisma)': 'Usi il Carisma come caratteristica da incantatore per i tuoi incantesimi.',
+  'Lancio di incantesimi (Saggezza)': 'Usi la Saggezza come caratteristica da incantatore per i tuoi incantesimi.',
+  'Lancio di incantesimi (Intelligenza)': 'Usi l\'Intelligenza come caratteristica da incantatore per i tuoi incantesimi.',
+  'Ispirazione bardica (d6)': 'Puoi usare un\'azione bonus per donare un d6 di Ispirazione a un alleato. Può sommarlo a un tiro del d20.',
+  'Ispirazione bardica d8': 'Il tuo dado di Ispirazione Bardica diventa un d8.',
+  'Ordine divino (Protettore o Taumaturgo)': 'Scegli se ottenere competenze marziali (Protettore) o bonus ai trucchetti e abilità (Taumaturgo).',
+  'Ordine primordiale': 'Scegli se concentrarti sulle armature e le armi, o sulla magia.',
+  'Recuperare energie (azione bonus)': 'Come azione bonus, puoi recuperare 1d10 + livello da Guerriero Punti Ferita.',
+  'Attacco furtivo (1d6)': 'Una volta per turno, infliggi 1d6 danni extra se hai vantaggio sull\'attacco o un alleato è vicino al bersaglio.',
+  'Maestria (doppia competenza in 2 abilità)': 'Raddoppi il tuo bonus di competenza per le prove con due abilità a tua scelta.',
+  'Maestria (competenza doppia in 2 abilità)': 'Raddoppi il tuo bonus di competenza per le prove con due abilità a tua scelta.',
+  'Maestria (competenza doppia)': 'Raddoppi il tuo bonus di competenza per le prove che usi con un\'abilità o uno strumento scelti.',
+  'Imposizione delle mani (cura 5 × livello)': 'Hai una riserva di cura pari a 5 volte il tuo livello. Come azione, puoi curare una creatura toccata spendendo punti dalla riserva.',
+  'Colpo divino (Divine Smite)': 'Quando colpisci con un attacco in mischia, puoi spendere uno slot incantesimo per infliggere danni radianti extra.',
+  'Aure potenziate (9 m)': 'L\'estensione di tutte le tue aure protettive aumenta a 9 metri.',
+  'Fonte di magia (Punti stregoneria)': 'Possiedi una riserva di punti stregoneria che puoi usare per creare slot incantesimo o alimentare i tuoi privilegi.',
+  'Magia del patto (Carisma)': 'Gli slot dei tuoi incantesimi sono tutti dello stesso livello, il più alto a te accessibile. Si ricaricano con un riposo breve.',
+  'Suppliche occulte (invocazioni)': 'Scopri segreti mistici chiamati suppliche occulte che ti infondono poteri magici e tratti unici.',
+  'Dominio divino (sottoclasse)': 'Scegli il dominio legato alla tua divinità, da cui trai privilegi unici.',
+  'Origine stregonesca (sottoclasse)': 'Scegli l\'origine innata della tua magia, che definisce i tuoi poteri aggiuntivi.',
+  'Patrono ultraterreno (sottoclasse)': 'Stringi un patto con un\'entità sovrannaturale che ti concede privilegi unici.',
+  'Movimento veloce (+3 m)': 'La tua velocità aumenta di 3 metri finché non indossi un\'armatura pesante.',
+  'Critico brutale (1 dado extra)': 'Puoi tirare un dado di danno extra quando metti a segno un colpo critico in mischia.',
+  'Critico brutale (2 dadi extra)': 'Puoi tirare due dadi di danno extra quando metti a segno un colpo critico in mischia.',
+  'Critico brutale (3 dadi extra)': 'Puoi tirare tre dadi di danno extra quando metti a segno un colpo critico in mischia.',
+  'Campione primordiale (+4 FOR e COS, max 25)': 'I tuoi punteggi di Forza e Costituzione aumentano di 4. Il massimo ora è 25.',
+  'Campione primordiale (+4 FOR e COS, max 24)': 'I tuoi punteggi di Forza e Costituzione aumentano di 4. Il massimo ora è 24.',
+  'Factotum (metà competenza)': 'Aggiungi metà del tuo bonus di competenza (arrotondato per difetto) a ogni prova di caratteristica in cui non sei già competente.',
+  'Canzone di riposo (d6)': 'Durante un riposo breve, gli alleati che ti ascoltano recuperano 1d6 Punti Ferita extra.',
+  'Competenza (2 abilità)': 'Ottieni competenza in due abilità a tua scelta.',
+  'Linguaggio druidico': 'Conosci il linguaggio segreto dei druidi. Chi conosce questo linguaggio può lasciare messaggi nascosti e decifrarli.',
+  'Druidico': 'Conosci il linguaggio segreto dei druidi. Puoi lasciare o trovare messaggi nascosti in natura.',
+  
+  // Warlock Arcanum
+  'Arcanum mistico (6° livello)': 'Scegli un incantesimo da Warlock di 6° livello che puoi lanciare una volta senza usare uno slot (ricarica con riposo lungo).',
+  'Arcanum mistico (7° livello)': 'Scegli un incantesimo da Warlock di 7° livello che puoi lanciare una volta senza usare uno slot (ricarica con riposo lungo).',
+  'Arcanum mistico (8° livello)': 'Scegli un incantesimo da Warlock di 8° livello che puoi lanciare una volta senza usare uno slot (ricarica con riposo lungo).',
+  'Arcanum mistico (9° livello)': 'Scegli un incantesimo da Warlock di 9° livello che puoi lanciare una volta senza usare uno slot (ricarica con riposo lungo).',
+  
+  // NOMI DELLE SOTTOCLASSI
+  'Berserker': 'Sottoclasse del Barbaro: ti abbandoni alla pura furia in battaglia (Frenesia).',
+  'Cuore Selvaggio': 'Sottoclasse del Barbaro: entri in sintonia con gli spiriti animali (Orso, Aquila, Lupo).',
+  'Albero del Mondo': 'Sottoclasse del Barbaro: incanali la forza dell\'Albero Cosmico.',
+  'Zelota': 'Sottoclasse del Barbaro: un guerriero spinto da un fervore divino inarrestabile.',
+  'Collegio della Danza': 'Sottoclasse del Bardo: combatti usando l\'eleganza letale e il movimento.',
+  'Collegio del Fascino': 'Sottoclasse del Bardo: controlli le menti e il campo di battaglia tramite la suggestione.',
+  'Collegio della Sapienza': 'Sottoclasse del Bardo: maestro di conoscenza, incantesimi segreti e abilità.',
+  'Collegio del Valore': 'Sottoclasse del Bardo: canti di eroi e combatti in prima linea con armi e armature.',
+  'Dominio della Vita': 'Sottoclasse del Chierico: incentrata sulla massima efficacia delle cure.',
+  'Dominio della Luce': 'Sottoclasse del Chierico: usa fiamme purificatrici e fulgore per scacciare l\'oscurità.',
+  'Dominio dell’Inganno': 'Sottoclasse del Chierico: specializzata in illusioni, furtività e sotterfugi.',
+  'Dominio della Guerra': 'Sottoclasse del Chierico: abile nel combattimento marziale e negli incantesimi offensivi.',
+  'Circolo della Terra': 'Sottoclasse del Druido: padroneggia gli elementi e la magia legata agli ambienti naturali.',
+  'Circolo della Luna': 'Sottoclasse del Druido: maestro della Forma Selvatica per combattere come bestia in mischia.',
+  'Circolo del Mare': 'Sottoclasse del Druido: domina le maree e il potere distruttivo degli oceani.',
+  'Circolo delle Stelle': 'Sottoclasse del Druido: trae potere e divinazione dalle costellazioni.',
+  'Maestro di Battaglia': 'Sottoclasse del Guerriero: usa Manovre tattiche e Dadi Superiorità in combattimento.',
+  'Campione': 'Sottoclasse del Guerriero: concentra le sue capacità sulla massima potenza fisica e sui critici.',
+  'Cavaliere Mistico': 'Sottoclasse del Guerriero: combina la prodezza marziale con gli incantesimi arcani.',
+  'Guerriero Psionico': 'Sottoclasse del Guerriero: usa poteri telecinetici e mentali in battaglia.',
+  'Mistificatore Arcano': 'Sottoclasse del Ladro: unisce le doti furtive agli incantesimi di Illusione e Ammaliamento.',
+  'Assassino': 'Sottoclasse del Ladro: specializzato nei colpi mortali a sorpresa e nei travestimenti.',
+  'Lama Spirituale': 'Sottoclasse del Ladro: manifesta lame psioniche e sfrutta il potere della mente.',
+  'Furfante': 'Sottoclasse del Ladro: acrobata velocissimo, specializzato nei colpi di mano e nel disimpegno.',
+  'Guerriero della Mano Aperta': 'Sottoclasse del Monaco: maestro del combattimento a mani nude e controllo dell\'avversario.',
+  'Guerriero della Misericordia': 'Sottoclasse del Monaco: usa il ki sia per curare sia per avvelenare i nemici.',
+  'Guerriero degli Elementi': 'Sottoclasse del Monaco: manipola gli elementi (fuoco, aria, terra, acqua) coi suoi colpi.',
+  'Guerriero dell’Ombra': 'Sottoclasse del Monaco: ninja che sfrutta l\'oscurità, l\'invisibilità e il teletrasporto.',
+  'Giuramento di Devozione': 'Sottoclasse del Paladino: il classico cavaliere sacro e portatore di luce.',
+  'Giuramento di Gloria': 'Sottoclasse del Paladino: destinato a gesta epiche, velocità e imprese atletiche.',
+  'Giuramento degli Antichi': 'Sottoclasse del Paladino: difensore della natura e della gioia contro l\'oscurità.',
+  'Giuramento di Vendetta': 'Sottoclasse del Paladino: cacciatore spietato del male maggiore a ogni costo.',
+  'Signore delle Bestie': 'Sottoclasse del Ranger: combatte fianco a fianco con un fedele compagno animale.',
+  'Viandante Fatato': 'Sottoclasse del Ranger: intriso della magia e del fascino ammaliante della Selva Fatata.',
+  'Cacciatore delle Tenebre': 'Sottoclasse del Ranger: dominatore del buio, specializzato nelle imboscate al primo turno.',
+  'Cacciatore': 'Sottoclasse del Ranger: addestrato ad abbattere colossi o respingere sciami di nemici.',
+  'Stregoneria Aberrante': 'Sottoclasse dello Stregone: usa una magia aliena, telepatia e poteri psichici.',
+  'Stregoneria Draconica': 'Sottoclasse dello Stregone: resiliente e affine agli elementi grazie al sangue di drago.',
+  'Stregoneria della Magia Selvaggia': 'Sottoclasse dello Stregone: imprevedibile, la magia sgorga scatenando ondate di caos.',
+  'Stregoneria Meccanica': 'Sottoclasse dello Stregone: attinge all\'ordine assoluto per equilibrare le probabilità.',
+  'Patrono Signore Fatato': 'Sottoclasse del Warlock: ha stretto un patto per magie di illusione, mobilità e fascino.',
+  'Patrono Celestiale': 'Sottoclasse del Warlock: ha stretto un patto con entità celesti per incantesimi radianti e curativi.',
+  'Patrono Immondo': 'Sottoclasse del Warlock: ha stretto un patto per magie distruttive legate al fuoco e agli inferi.',
+  'Patrono Grande Antico': 'Sottoclasse del Warlock: ha stretto un patto con un\'entità aliena per poteri mentali oscuri.',
+  'Abiuratore': 'Sottoclasse del Mago: specializzato nella magia difensiva, interdizioni e protezioni.',
+  'Divinatore': 'Sottoclasse del Mago: specializzato nel prevedere il futuro e scoprire segreti nascosti.',
+  'Invocatore': 'Sottoclasse del Mago: specializzato in potenti magie distruttive elementali (es. Palla di Fuoco).',
+  'Illusionista': 'Sottoclasse del Mago: specializzato nell\'ingannare i sensi e creare immagini realistiche.',
+  'Attacco Extra': 'Puoi attaccare due volte, invece che una, quando usi l\'azione di Attacco durante il tuo turno.',
+  'ispirazione': 'Puoi spendere Ispirazione per ritirare un dado quando fallisci una prova, tiro per colpire o TS.',
 };
 // Indice minuscolo per ricerche senza distinzione di maiuscole.
 const _lcMap = (obj) => { const m = {}; for (const k in obj) m[k.toLowerCase()] = obj[k]; return m; };
@@ -532,6 +626,8 @@ export function spiegaPrivilegio(nome) {
 
 // Riassunti funzionali (nostri) di cosa fa ogni incantesimo. Per la nuvoletta ⓘ
 // sulle righe di incantesimi/trucchetti. Non sono i testi del manuale.
+import { INCANTESIMI_DB } from './incantesimi.js';
+
 const SPIEG_INCANTESIMI = {
   'Aggiustare': 'Ripari un oggetto rotto o una crepa non più larga di ~30 cm (tocco, istantaneo). (Trucchetto)',
   'Aiuto': 'Liv. 1 · Fino a 3 creature entro 9 m: +5 PF massimi e attuali per 8 ore (+5 per slot oltre il 1°).',
@@ -722,11 +818,22 @@ const SPIEG_INCANTESIMI = {
 };
 const SPIEG_INCANTESIMI_LC = _lcMap(SPIEG_INCANTESIMI);
 // Elenco ordinato dei nomi di incantesimo noti (per l'autocompletamento).
-const INCANTESIMI_NOMI = Object.keys(SPIEG_INCANTESIMI).sort((a, b) => a.localeCompare(b, 'it'));
+export const INCANTESIMI_NOMI = Object.keys(SPIEG_INCANTESIMI).sort((a, b) => a.localeCompare(b, 'it'));
 /** Spiegazione di un incantesimo dal nome (o null), senza distinzione maiuscole. */
 export function spiegaIncantesimo(nome) {
   const n = String(nome || '').trim();
-  return SPIEG_INCANTESIMI_LC[n.toLowerCase()] || SPIEG_INCANTESIMI_LC[n.replace(/\s*\(.*$/, '').trim().toLowerCase()] || null;
+  const searchName = n.toLowerCase();
+  
+  if (SPIEG_INCANTESIMI_LC[searchName]) return SPIEG_INCANTESIMI_LC[searchName];
+  if (SPIEG_INCANTESIMI_LC[n.replace(/\s*\(.*$/, '').trim().toLowerCase()]) return SPIEG_INCANTESIMI_LC[n.replace(/\s*\(.*$/, '').trim().toLowerCase()];
+
+  // Cerca in INCANTESIMI_DB come fallback
+  const dbKey = Object.keys(INCANTESIMI_DB).find(k => k.toLowerCase() === searchName);
+  if (dbKey && INCANTESIMI_DB[dbKey].desc) {
+    return INCANTESIMI_DB[dbKey].desc;
+  }
+  
+  return null;
 }
 
 // Tratti di razza/specie e sensi comuni (tutte le razze), riassunti nostri.
