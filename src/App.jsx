@@ -787,6 +787,14 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
 .cloud-bar { width: 40%; animation: cloud-slide 1.1s ease-in-out infinite; }
 @keyframes cloud-slide { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
 .app-header-group { flex: 0 0 auto; }
+@media (max-width: 780px) {
+  /* schermo medio: titolo centrato in prima riga, poi i due gruppi di bottoni
+     allineati sulle due righe successive ciascuno a piena larghezza */
+  .app-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; }
+  .app-header-title { order: -1; flex: 1 1 100%; text-align: center; margin-bottom: 4px !important; }
+  .app-header-group { flex: 1 1 auto !important; flex-wrap: wrap; justify-content: center; }
+  .app-header-group > button { flex: 0 1 auto; }
+}
 @media (max-width: 560px) {
   /* su schermi stretti: titolo su una riga sopra, poi ciascun gruppo di pulsanti
      su una propria riga a piena larghezza, centrata e ordinata */
@@ -931,11 +939,11 @@ function renderSpiegazioni(testo, lookup, setInfo) {
 }
 
 const DENARI = [
-  { key: 'mr', label: 'MR' },
-  { key: 'ma', label: 'MA' },
-  { key: 'me', label: 'ME' },
-  { key: 'mo', label: 'MO' },
-  { key: 'mp', label: 'MP' },
+  { key: 'mr', label: 'Monete di Rame' },
+  { key: 'ma', label: "Monete d'Argento" },
+  { key: 'me', label: 'Monete di Elettro' },
+  { key: 'mo', label: "Monete d'Oro" },
+  { key: 'mp', label: 'Monete di Platino' },
 ];
 
 
@@ -2776,11 +2784,36 @@ export default function App() {
         critico: naturale === 20,
         fumble: naturale === 1,
       });
-      // Tira automaticamente i danni dopo il tiro a colpire, tranne se il d20 fa 1 (fallimento critico)
-      if (extra.attacco && naturale !== 1 && parseEspressioneDado(extra.attacco.danno || '')) {
-        setTimeout(() => tiraDanniPerAttacco(extra.attacco, naturale === 20), 650);
-      }
     }, 850);
+  }
+
+  function getEffettoMagiaSelvaggia(roll) {
+    if (roll >= 1 && roll <= 4) return "Tira su questa tabella all'inizio di ciascun turno per il prossimo minuto. Se nei tiri successivi ottieni questo stesso risultato, ignoralo.";
+    if (roll >= 5 && roll <= 8) return "Appare una creatura amichevole entro 18 m. Tira 1d4: 1 duodrone modron, 2 flumph, 3 monodrone modron, 4 unicorno. Scompare dopo 1 min.";
+    if (roll >= 9 && roll <= 12) return "Per il prossimo minuto, ripristini 5 punti ferita a ogni turno.";
+    if (roll >= 13 && roll <= 16) return "Per il prossimo minuto, le creature hanno svantaggio ai TS contro il tuo prossimo incantesimo che richiede un TS.";
+    if (roll >= 17 && roll <= 20) return "Effetto per 1 minuto (tira 1d8): 1 musica eterea, 2 taglia aumenta, 3 barba di piume, 4 urli invece di parlare, 5 farfalle illusorie, 6 occhio sulla fronte (vantaggio Percezione), 7 bolle rosa dalla bocca, 8 pelle blu (24 ore).";
+    if (roll >= 21 && roll <= 24) return "Per 1 minuto, gli incantesimi con tempo di lancio di un'azione diventano azioni bonus.";
+    if (roll >= 25 && roll <= 28) return "Vieni trasportato sul Piano Astrale fino al termine del tuo turno successivo.";
+    if (roll >= 29 && roll <= 32) return "Nel prossimo minuto, i danni dei tuoi incantesimi sono massimizzati (nessun tiro richiesto).";
+    if (roll >= 33 && roll <= 36) return "Per il minuto successivo, hai resistenza a tutti i danni.";
+    if (roll >= 37 && roll <= 40) return "Diventi una pianta in vaso fino all'inizio del tuo prossimo turno. Incapacitato e vulnerabile a tutti i danni. Se scendi a 0 PF, la pianta muore e torni normale.";
+    if (roll >= 41 && roll <= 44) return "Per il minuto successivo, puoi teletrasportarti fino a 6 metri come azione bonus in ogni tuo turno.";
+    if (roll >= 45 && roll <= 48) return "Tu e altre creature a scelta entro 9 m diventate invisibili per 1 minuto. Termina se la creatura attacca, infligge danni o lancia un incantesimo.";
+    if (roll >= 49 && roll <= 52) return "Appare uno scudo spettrale per 1 minuto: +2 alla CA e immunità a dardo incantato.";
+    if (roll >= 53 && roll <= 56) return "Puoi effettuare un'azione extra durante questo turno.";
+    if (roll >= 57 && roll <= 60) return "Lanci un incantesimo casuale (tira 1d10, no conc.): 1 confusione, 2 palla di fuoco, 3 nube di nebbia, 4 volare, 5 unto, 6 levitazione, 7 dardo incantato (5° liv.), 8 immagine speculare, 9 metamorfosi (capra), 10 vedere invisibilità.";
+    if (roll >= 61 && roll <= 64) return "Per 1 minuto, qualsiasi oggetto non magico e infiammabile che tocchi (non indossato/trasportato) prende fuoco (1d4 danni da fuoco).";
+    if (roll >= 65 && roll <= 68) return "Se muori entro 1 ora, vieni riportato subito in vita (come reincarnazione).";
+    if (roll >= 69 && roll <= 72) return "Sei spaventato fino al termine del tuo turno successivo (fonte decisa dal DM).";
+    if (roll >= 73 && roll <= 76) return "Ti teletrasporti fino a 18 metri in uno spazio libero che vedi.";
+    if (roll >= 77 && roll <= 80) return "Una creatura casuale entro 18 metri è avvelenata per 1d4 ore.";
+    if (roll >= 81 && roll <= 84) return "Per 1 minuto emani luce intensa (9m). Chi termina il turno entro 1,5m da te è accecato fino al suo turno successivo.";
+    if (roll >= 85 && roll <= 88) return "Infliggi 1d10 danni necrotici a max 3 creature che vedi. Ripristini PF pari ai danni inflitti.";
+    if (roll >= 89 && roll <= 92) return "Infliggi 4d10 danni da fulmine a max 3 creature che vedi.";
+    if (roll >= 93 && roll <= 96) return "Tu e le creature entro 9 m diventate vulnerabili ai danni perforanti per 1 minuto.";
+    if (roll >= 97 && roll <= 100) return "Tira 1d6: 1 tu recuperi 2d10 PF, 2 un alleato (90m) recupera 2d10 PF, 3 recuperi i tuoi slot di liv più basso, 4 un alleato recupera i suoi slot di liv più basso, 5 recuperi i punti stregoneria, 6 tutti gli effetti riga 17-20.";
+    return "";
   }
 
   /** Tiro di danni diretto (senza tiro per colpire): mai critico. */
@@ -2789,6 +2822,11 @@ export default function App() {
     if (!parsata) return;
     const maxFacce = Math.max(...parsata.termini.map((p) => p.facce).filter(Boolean));
     const esito = tiraDanni(parsata, false);
+    
+    if (etichetta === 'Impulso di Magia Selvaggia') {
+      esito.dettaglio = getEffettoMagiaSelvaggia(esito.totale);
+    }
+    
     conAnimazione(() => {
       setDanni({ etichetta, ...esito, critico: false });
       registra({ etichetta, tipo: 'danni', totale: esito.totale, dettaglio: esito.dettaglio });
@@ -3347,10 +3385,57 @@ export default function App() {
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <div style={{ flex: 1 }}>
-                  <label style={etichetta}>{t('spell.col_gittata')}</label>
-                  <input style={campo} value={s.gittata} onChange={(e) => upd({ gittata: e.target.value })} />
+                  <label style={etichetta}>Scuola di Magia</label>
+                  <select style={campo} value={s.scuola || ''} onChange={(e) => upd({ scuola: e.target.value })}>
+                    <option value="">— Nessuna —</option>
+                    <option value="Abiurazione">Abiurazione</option>
+                    <option value="Ammaliamento">Ammaliamento</option>
+                    <option value="Chiaroveggenza">Chiaroveggenza</option>
+                    <option value="Conjurazione">Conjurazione</option>
+                    <option value="Divinazione">Divinazione</option>
+                    <option value="Evocazione">Evocazione</option>
+                    <option value="Illusione">Illusione</option>
+                    <option value="Invocazione">Invocazione</option>
+                    <option value="Necromanza">Necromanza</option>
+                    <option value="Trasmutazione">Trasmutazione</option>
+                  </select>
                 </div>
-                <div style={{ flex: 1 }} />
+                <div style={{ flex: 1 }}>
+                  <label style={etichetta}>Area d'Effetto</label>
+                  <select style={campo} value={s.area || ''} onChange={(e) => upd({ area: e.target.value })}>
+                    <option value="">— Nessuna —</option>
+                    <option value="Cono">Cono</option>
+                    <option value="Cubo">Cubo</option>
+                    <option value="Cilindro">Cilindro</option>
+                    <option value="Linea">Linea</option>
+                    <option value="Sfera">Sfera</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={etichetta}>Danno (es. 8d6, 3d8+5)</label>
+                  <input style={campo} value={s.danno || ''} onChange={(e) => upd({ danno: e.target.value })} placeholder="es. 8d6 fuoco" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={etichetta}>Tipo di Danno</label>
+                  <select style={campo} value={s.tipoDanno || ''} onChange={(e) => upd({ tipoDanno: e.target.value })}>
+                    <option value="">—</option>
+                    <option value="Acido">Acido</option>
+                    <option value="Freddo">Freddo</option>
+                    <option value="Fuoco">Fuoco</option>
+                    <option value="Forza">Forza</option>
+                    <option value="Fulmine">Fulmine</option>
+                    <option value="Necrotico">Necrotico</option>
+                    <option value="Perforante">Perforante</option>
+                    <option value="Psichico">Psichico</option>
+                    <option value="Radiante">Radiante</option>
+                    <option value="Rottura">Rottura</option>
+                    <option value="Tagliente">Tagliente</option>
+                    <option value="Tuono">Tuono</option>
+                    <option value="Veleno">Veleno</option>
+                  </select>
+                </div>
               </div>
               <label style={etichetta}>Note</label>
               <input style={campo} value={s.note} onChange={(e) => upd({ note: e.target.value })} placeholder={t('ph.inc_note')} />
@@ -4260,21 +4345,21 @@ export default function App() {
                   className="dado-btn"
                   onClick={() => tiroLibero(facce)}
                   style={{
-                    position: 'relative', width: 36, height: 36, background: 'none', border: 'none', cursor: 'pointer',
+                    position: 'relative', width: 32, height: 32, background: 'none', border: 'none', cursor: 'pointer',
                     padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.1s'
                   }}
                   onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.9)'}
                   onMouseUp={(e) => e.currentTarget.style.transform = 'none'}
                   onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
                 >
-                  <svg width="36" height="36" viewBox="0 0 40 40" style={{ position: 'absolute', top: 0, left: 0 }}>
+                  <svg width="32" height="32" viewBox="0 0 40 40" style={{ position: 'absolute', top: 0, left: 0 }}>
                     {facce === 100 ? (
                       <circle cx="20" cy="20" r="16" fill="var(--c-gold)" stroke="var(--c-gold-dark)" strokeWidth="2" />
                     ) : (
                       <polygon points={pts} fill="var(--c-gold)" stroke="var(--c-gold-dark)" strokeWidth="2" strokeLinejoin="round" />
                     )}
                   </svg>
-                  <span style={{ position: 'relative', zIndex: 1, fontWeight: 800, color: '#000', fontSize: 11, marginTop: facce === 4 ? 6 : facce === 10 ? 3 : 0 }}>
+                  <span style={{ position: 'relative', zIndex: 1, fontWeight: 800, color: '#000', fontSize: 10, marginTop: facce === 4 ? 6 : facce === 10 ? 3 : 0 }}>
                     d{facce}
                   </span>
                 </button>
@@ -4283,8 +4368,8 @@ export default function App() {
             <input
               style={{
                 ...styles.inlineInput,
-                flex: 1, minWidth: 120,
-                padding: '6px 10px',
+                flex: 1, minWidth: 100,
+                padding: '4px 8px',
                 marginLeft: 4,
                 ...(erroreEspressione ? { borderColor: C.red } : {}),
               }}
@@ -4394,13 +4479,13 @@ export default function App() {
                 aria-hidden
                 style={{
                   position: 'absolute', left: 0, right: 0, top: 0, bottom: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 36,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', paddingLeft: 24,
                   pointerEvents: 'none', userSelect: 'none', overflow: 'hidden',
                 }}
               >
                 <span style={{
                   fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: 'italic', fontWeight: 'bold',
-                  fontSize: 34, letterSpacing: 1, lineHeight: 1,
+                  fontSize: 44, letterSpacing: 1, lineHeight: 1,
                   color: C.inkDim, opacity: 0.32, whiteSpace: 'nowrap',
                 }}>
                   {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
@@ -5283,20 +5368,6 @@ export default function App() {
                           }}
                         />
                         {cat === 'Azione' && <datalist id="wpn-presets">{ARMI_5E.map((w) => <option key={w.nome} value={w.nome} />)}</datalist>}
-                        <button
-                          style={{ ...styles.buttonMini }}
-                          title={t('common.aggiungi')}
-                          onClick={() => {
-                            const el = document.getElementById(`wpn-add-input-${cat}`);
-                            const nomeArma = el && el.value.trim();
-                            const arma = ARMI_5E.find((w) => w.nome === nomeArma);
-                            const nuova = arma ? attaccoDaArma(arma, scheda) : { nome: nomeArma || 'Nuovo', bonus: 0, danno: '', tipoDanno: '', note: '' };
-                            aggiorna({
-                              attacchi: [...scheda.attacchi, { id: Date.now(), categoria: cat, ...nuova }]
-                            });
-                            if (el) el.value = '';
-                          }}
-                        >➕ {t('common.aggiungi')}</button>
                       </div>
                     </div>
                   );
@@ -5396,7 +5467,6 @@ export default function App() {
               {/* Conteggi (compatti) + ricerca. L'aggiunta è un tastino piccolo
                   sotto la lista di ogni livello (vedi più in basso). */}
               <div style={{ marginTop: 14, marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <input type="search" value={filtroIncantesimo} onChange={(e) => setFiltroIncantesimo(e.target.value)} placeholder={t('spell.cerca')} style={{ ...styles.inlineInput, padding: '7px 10px', width: '100%' }} />
                 <span style={{ ...styles.detail, fontSize: 11, textAlign: 'center', opacity: 0.75 }}>{t('spell.tocca_nome')}</span>
               </div>
               <div>
@@ -5516,10 +5586,13 @@ export default function App() {
                                     <button style={{ ...styles.buttonMini, color: C.red }} title={t('tip.elimina_inc')} onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })}>🗑</button>
                                   </div>
                                 </div>
-                                {(tempoLabel || s.gittata || s.note) && (
+                                {(tempoLabel || s.gittata || s.scuola || s.area || s.danno || s.tipoDanno || s.note) && (
                                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
                                     {tempoLabel && chip('⏱', t('spell.chip_tempo'), tempoLabel)}
                                     {s.gittata && chip('🎯', t('spell.chip_gittata'), s.gittata)}
+                                    {s.scuola && chip('🔮', 'Scuola', s.scuola)}
+                                    {s.area && chip('📐', 'Area', s.area)}
+                                    {(s.danno || s.tipoDanno) && chip('💥', 'Danno', [s.danno, s.tipoDanno].filter(Boolean).join(' '))}
                                     {s.note && chip('📝', t('spell.chip_note'), s.note)}
                                   </div>
                                 )}
@@ -5566,7 +5639,12 @@ export default function App() {
             </Sezione>
 
 
+          </div>
+        </div>
 
+        {/* Sezioni descrittive a piena larghezza: riempiono lo spazio sotto le due colonne */}
+        <div style={{ display: 'flex', flexDirection: 'column', marginTop: 10, gap: 10 }}>
+            
             <Sezione titolo={t("sez.talenti")} {...propsSez('talenti')} {...apertoProps('talenti')}>
               <ListaQuadratini
                 value={scheda.talenti}
@@ -5575,11 +5653,7 @@ export default function App() {
                 onChange={(v) => aggiorna({ talenti: v })}
               />
             </Sezione>
-          </div>
-        </div>
 
-        {/* Sezioni descrittive a piena larghezza: riempiono lo spazio sotto le due colonne */}
-        <div style={{ display: 'flex', flexDirection: 'column', marginTop: 10 }}>
             {/* Equipaggiamento, aspetto — collassabili */}
             <Sezione titolo={t("sez.equipaggiamento")} {...propsSez('equipaggiamento')} {...apertoProps('equipaggiamento')}>
               {(() => {
@@ -5598,6 +5672,21 @@ export default function App() {
                 const colore = stato === 'ok' ? C.green : stato === 'ingombrato' ? C.gold : C.red;
                 const perc = Math.min(100, (pesoTot / cap) * 100);
                 const modInv = (id, patch) => aggiorna({ inventario: inv.map((x) => (x.id === id ? { ...x, ...patch } : x)) });
+                const toggleEquip = (o, checked) => {
+                  const isWeapon = ARMI_5E.find((w) => w.nome === o.nome);
+                  let newAttacchi = Array.isArray(scheda.attacchi) ? [...scheda.attacchi] : [];
+                  if (checked && isWeapon) {
+                    if (!newAttacchi.find((a) => a.nome === o.nome)) {
+                      newAttacchi.push({ id: Date.now(), categoria: 'Azione', ...attaccoDaArma(isWeapon, scheda) });
+                    }
+                  } else if (!checked && isWeapon) {
+                    newAttacchi = newAttacchi.filter((a) => a.nome !== o.nome);
+                  }
+                  aggiorna({
+                    inventario: inv.map((x) => (x.id === o.id ? { ...x, equip: checked } : x)),
+                    attacchi: newAttacchi
+                  });
+                };
                 const addItem = (nome) => {
                   // Peso automatico dal nome (match esatto → parziale): l'oggetto
                   // viene salvato già col suo peso noto, senza doverlo scrivere.
@@ -5631,7 +5720,7 @@ export default function App() {
                             {inv.map((o) => (
                               <tr key={o.id} style={{ opacity: o.equip ? 1 : 0.82 }}>
                                 <td style={{ ...styles.td, textAlign: 'center' }}>
-                                  <input type="checkbox" checked={!!o.equip} onChange={(e) => modInv(o.id, { equip: e.target.checked })} title={t('inv.equip_tooltip')} />
+                                  <input type="checkbox" checked={!!o.equip} onChange={(e) => toggleEquip(o, e.target.checked)} title={t('inv.equip_tooltip')} />
                                 </td>
                                 <td style={styles.td}><Editable value={o.nome} width={150} onChange={(v) => modInv(o.id, { nome: v })} /></td>
                                 <td style={styles.td}>×<Editable value={o.qta} tipo="numero" width={30} onChange={(v) => modInv(o.id, { qta: Math.max(1, v) })} /></td>
@@ -5655,16 +5744,6 @@ export default function App() {
                         onKeyDown={(e) => { if (e.key === 'Enter' && e.target.value.trim()) { addItem(e.target.value.trim()); e.target.value = ''; } }}
                       />
                       <datalist id="inv-presets">{NOMI_OGGETTI.map((n) => <option key={n} value={n} />)}</datalist>
-                      <button
-                        style={{ ...styles.buttonMini }}
-                        title={t('inv.aggiungi_vuoto')}
-                        onClick={() => {
-                          const el = document.getElementById('inv-add-input');
-                          const v = el && el.value.trim();
-                          addItem(v || '');
-                          if (el) el.value = '';
-                        }}
-                      >➕ {t('common.aggiungi')}</button>
                     </div>
                   </div>
                 );
@@ -5676,38 +5755,43 @@ export default function App() {
                 const setSlot = (i, v) => { const n = [...slots]; n[i] = v; aggiorna({ sintonia: n }); };
                 const usati = slots.filter((x) => x.trim()).length;
                 return (
-                  <div style={{ marginTop: 10 }}>
-                    <div style={{ ...styles.detail, marginBottom: 4 }}>{t("equip.sintonia")} <span style={{ color: usati >= 3 ? C.gold : C.inkDim }}>({usati}/3)</span></div>
-                    {[0, 1, 2].map((i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                        <span style={{ ...styles.detail, minWidth: 14 }}>{i + 1}.</span>
-                        <input
-                          value={slots[i]}
-                          onChange={(e) => setSlot(i, e.target.value)}
-                          placeholder={t("equip.sintonia_ph")}
-                          style={{ ...styles.inlineInput, flex: 1, minWidth: 0, maxWidth: 340, padding: '4px 8px' }}
-                        />
+                  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start', marginTop: 12 }}>
+                    <div style={{ flex: '1 1 260px' }}>
+                      <div style={{ ...styles.detail, marginBottom: 4 }}>{t("equip.sintonia")} <span style={{ color: usati >= 3 ? C.gold : C.inkDim }}>({usati}/3)</span></div>
+                      {[0, 1, 2].map((i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                          <span style={{ ...styles.detail, minWidth: 14 }}>{i + 1}.</span>
+                          <input
+                            value={slots[i]}
+                            onChange={(e) => setSlot(i, e.target.value)}
+                            placeholder={t("equip.sintonia_ph")}
+                            style={{ ...styles.inlineInput, flex: 1, minWidth: 0, padding: '4px 8px' }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div style={{ flex: '1 1 300px' }}>
+                      <div style={{ ...styles.detail, marginBottom: 4 }}>Monete</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+                        {DENARI.map(({ key, label }) => (
+                          <div key={key} style={{ ...styles.vitalBox, minHeight: 'auto', padding: '6px 4px' }}>
+                            <div style={{ ...styles.vitalLabel, fontSize: 10, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={label}>{label}</div>
+                            <div style={styles.vitalValue}>
+                              <Editable
+                                value={scheda.denari[key]}
+                                tipo="numero"
+                                width={40}
+                                onChange={(v) => aggiorna({ denari: { ...scheda.denari, [key]: Math.max(0, v) } })}
+                              />
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    </div>
                   </div>
                 );
               })()}
-
-              <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
-                {DENARI.map(({ key, label }) => (
-                  <div key={key} style={{ ...styles.vitalBox, minHeight: 'auto', padding: '6px 4px' }}>
-                    <div style={styles.vitalLabel}>{label}</div>
-                    <div style={styles.vitalValue}>
-                      <Editable
-                        value={scheda.denari[key]}
-                        tipo="numero"
-                        width={40}
-                        onChange={(v) => aggiorna({ denari: { ...scheda.denari, [key]: Math.max(0, v) } })}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
             </Sezione>
 
             <Sezione titolo={t("sez.aspetto")} {...propsSez('aspetto')} {...apertoProps('aspetto', false)}>

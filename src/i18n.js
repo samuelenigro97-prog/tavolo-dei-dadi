@@ -161,7 +161,7 @@ export const DIZIONARIO = {
     'vital.condizioni': 'Condizioni',
     'vital.mod_incantesimi': 'Modificatore',
     'vital.cd_incantesimi': 'CD Incantesimi',
-    'vital.attacco_incantesimi': 'Attacco Incantesimo',
+    'vital.attacco_incantesimi': 'Attacco Inc.',
     
     // Sezioni Scheda
     'sez.risorse': 'Risorse di classe',
@@ -648,7 +648,7 @@ export const DIZIONARIO = {
     'vital.condizioni': 'Conditions',
     'vital.mod_incantesimi': 'Modifier',
     'vital.cd_incantesimi': 'Spell DC',
-    'vital.attacco_incantesimi': 'Spell Attack',
+    'vital.attacco_incantesimi': 'Spell Atk.',
 
     // Sezioni Scheda
     'sez.risorse': 'Class Resources',
