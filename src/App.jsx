@@ -2759,7 +2759,7 @@ export default function App() {
     setCombat((c) => {
       if (!c.combattenti.length) return c;
       const idAttivo = c.combattenti[c.turno]?.id;
-      const ordinati = [...c.combattenti].sort((a, b) => (b.iniziativa || 0) - (a.iniziativa || 0));
+      const ordinati = [...c.combattenti].sort((a, b) => (Number(b.iniziativa) || 0) - (Number(a.iniziativa) || 0));
       const nuovoTurno = idAttivo ? Math.max(0, ordinati.findIndex(x => x.id === idAttivo)) : 0;
       return { ...c, combattenti: ordinati, turno: nuovoTurno };
     });
@@ -2778,7 +2778,12 @@ export default function App() {
       condizioni: [], concentrazione: false,
       tsMorte: { successi: 0, fallimenti: 0 },
     };
-    setCombat((c) => ({ ...c, attivo: true, aperto: true, combattenti: [...c.combattenti, nuovo] }));
+    setCombat((c) => {
+      const lista = [...c.combattenti, nuovo].sort((a, b) => (Number(b.iniziativa) || 0) - (Number(a.iniziativa) || 0));
+      const idAttivo = c.combattenti[c.turno]?.id;
+      const nuovoTurno = idAttivo ? Math.max(0, lista.findIndex(x => x.id === idAttivo)) : 0;
+      return { ...c, attivo: true, aperto: true, combattenti: lista, turno: nuovoTurno };
+    });
   }
 
   /** Aggiunge il personaggio attivo al combattimento, tirando l'iniziativa. */
@@ -2816,17 +2821,23 @@ export default function App() {
     setCombat((c) => {
       const n = c.combattenti.length;
       if (n === 0) return c;
-      const nuovo = c.turno + 1;
-      if (nuovo >= n) return { ...c, turno: 0, round: c.round + 1 };
-      return { ...c, turno: nuovo };
+      const idAttivo = c.combattenti[c.turno]?.id;
+      const ordinati = [...c.combattenti].sort((a, b) => (Number(b.iniziativa) || 0) - (Number(a.iniziativa) || 0));
+      const curIdx = idAttivo ? Math.max(0, ordinati.findIndex(x => x.id === idAttivo)) : 0;
+      const nuovo = curIdx + 1;
+      if (nuovo >= n) return { ...c, combattenti: ordinati, turno: 0, round: c.round + 1 };
+      return { ...c, combattenti: ordinati, turno: nuovo };
     });
   }
   function turnoPrecedente() {
     setCombat((c) => {
       const n = c.combattenti.length;
       if (n === 0) return c;
-      if (c.turno === 0) return { ...c, turno: Math.max(0, n - 1), round: Math.max(1, c.round - 1) };
-      return { ...c, turno: c.turno - 1 };
+      const idAttivo = c.combattenti[c.turno]?.id;
+      const ordinati = [...c.combattenti].sort((a, b) => (Number(b.iniziativa) || 0) - (Number(a.iniziativa) || 0));
+      const curIdx = idAttivo ? Math.max(0, ordinati.findIndex(x => x.id === idAttivo)) : 0;
+      if (curIdx === 0) return { ...c, combattenti: ordinati, turno: Math.max(0, n - 1), round: Math.max(1, c.round - 1) };
+      return { ...c, combattenti: ordinati, turno: curIdx - 1 };
     });
   }
 
@@ -3538,6 +3549,14 @@ export default function App() {
               </div>
               <label style={etichetta}>Note</label>
               <input style={campo} value={s.note} onChange={(e) => upd({ note: e.target.value })} placeholder={t('ph.inc_note')} />
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600, color: C.ink }}>
+                <input
+                  type="checkbox"
+                  checked={!s.nascondiAttacco}
+                  onChange={(e) => upd({ nascondiAttacco: !e.target.checked })}
+                />
+                ✨ Mostra tra gli attacchi e le armi (se offensivo)
+              </label>
 
               <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
                 <button
@@ -4424,7 +4443,7 @@ export default function App() {
             {tema === 'auto' ? t('btn.tema.auto') : tema === 'chiaro' ? t('btn.tema.chiaro') : t('btn.tema.scuro')}
           </button>
           <button
-            style={{ ...styles.modeButton(presetColori !== 'default'), fontSize: 13 }}
+            style={{ ...styles.modeButton(presetColori !== 'default'), fontSize: 16, padding: '3px 8px' }}
             title={`Tema colori: ${PRESET_COLORI.find(p => p.id === presetColori)?.nome || '—'} · click per cambiare`}
             onClick={() => {
               const idx = PRESET_COLORI.findIndex((p) => p.id === presetColori);
@@ -4432,7 +4451,7 @@ export default function App() {
               setPresetColori(next.id);
             }}
           >
-            🎨 {PRESET_COLORI.find(p => p.id === presetColori)?.nome?.split(' ')[1] || 'Colori'}
+            🎨
           </button>
         </div>
 
@@ -4873,7 +4892,22 @@ export default function App() {
               </div>
             );
           })()}
-          <div className="vitali">
+          {/* Intestazione e pulsante toggle per la mini scheda vitali */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '4px 0 8px', padding: '6px 10px', background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: C.inkDim, display: 'flex', alignItems: 'center', gap: 6 }}>
+              🛡️ {scheda.vitaliNascondi ? 'Statistiche di Battaglia Nascoste' : 'Statistiche Vitali e di Battaglia'}
+            </span>
+            <button
+              style={{ ...styles.buttonMini, fontSize: 12, padding: '3px 10px', fontWeight: 600, color: scheda.vitaliNascondi ? C.goldDark : C.ink, border: `1px solid ${scheda.vitaliNascondi ? C.goldDark : C.border}` }}
+              onClick={() => aggiorna({ vitaliNascondi: !scheda.vitaliNascondi })}
+              title="Nascondi CA, PF, Iniziativa ecc. per risparmiare spazio, lasciando a vista solo Concentrazione, Condizioni e Sfinimento"
+            >
+              {scheda.vitaliNascondi ? '👁️ Mostra CA, PF e Statistiche' : '🔻 Nascondi CA e PF'}
+            </button>
+          </div>
+          <div className="vitali" style={scheda.vitaliNascondi ? { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 } : undefined}>
+            {!scheda.vitaliNascondi && (
+              <>
             {/* RIGA 1 — Classe Armatura | Punti Ferita (x2) | Riposo | TS Morte */}
             {/* Classe Armatura */}
             <div style={styles.vitalBox}>
@@ -4970,6 +5004,12 @@ export default function App() {
                   </div>
                 );
               })()}
+              <div style={{ display: 'flex', gap: 4, marginTop: 6, justifyContent: 'center' }}>
+                <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }} onClick={() => aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 1) })} title={t('vital.danno')}>-1</button>
+                <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }} onClick={() => aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 5) })} title={t('vital.danno')}>-5</button>
+                <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green }} onClick={() => aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 1) })} title={t('vital.cura')}>+1</button>
+                <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green }} onClick={() => aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 5) })} title={t('vital.cura')}>+5</button>
+              </div>
               <div style={{ ...styles.detail, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: 14 }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
                   {t('vital.dadi_vita')}{' '}
@@ -5007,100 +5047,138 @@ export default function App() {
             {/* Riposo */}
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>{t("vital.riposo")}</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 4px' }} onClick={riposoBreve} title={t('vital.riposo_breve_tooltip')}>🔥 {t('vital.riposo_breve')}</button>
-                <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 4px' }} onClick={riposoLungo} title={t('vital.riposo_lungo_tooltip')}>🌙 {t('vital.riposo_lungo')}</button>
-              </div>
-            </div>
+                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
+                    <button style={{ ...styles.buttonMini, fontSize: 11 }} onClick={() => riposoBreve()} title={t('vital.riposo_breve_tip')}>☕ {t("vital.breve")}</button>
+                    <button style={{ ...styles.buttonMini, fontSize: 11, borderColor: C.goldDark, color: C.goldDark }} onClick={() => riposoLungo()} title={t('vital.riposo_lungo_tip')}>🌙 {t("vital.lungo")}</button>
+                  </div>
+                </div>
 
-            {/* TS Morte */}
-            <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>
-                <Rollable onRoll={tiroSalvezzaMorte} title={t('vital.ts_morte_tooltip')}>{t('vital.ts_morte')}</Rollable>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, height: 16 }}>
-                {[1, 2, 3].map((i) => (
-                  <span key={`s${i}`} style={styles.pip(scheda.tsMorte.successi >= i, C.green)} title={`Successi: ${scheda.tsMorte.successi}`}
-                    onClick={() => aggiorna({ tsMorte: { ...scheda.tsMorte, successi: scheda.tsMorte.successi >= i ? i - 1 : i } })} />
-                ))}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, height: 16, marginTop: 3 }}>
-                {[1, 2, 3].map((i) => (
-                  <span key={`f${i}`} style={styles.pip(scheda.tsMorte.fallimenti >= i, C.red)} title={`Fallimenti: ${scheda.tsMorte.fallimenti}`}
-                    onClick={() => aggiorna({ tsMorte: { ...scheda.tsMorte, fallimenti: scheda.tsMorte.fallimenti >= i ? i - 1 : i } })} />
-                ))}
-              </div>
-            </div>
+                {/* TS Morte */}
+                <div style={styles.vitalBox}>
+                  <div style={styles.vitalLabel}>{t("vital.ts_morte")}</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3, fontSize: 11 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ color: C.green, fontWeight: 600 }}>✔</span>
+                      {[1, 2, 3].map((n) => (
+                        <input key={`s-${n}`} type="checkbox" checked={(scheda.tsMorte?.successi || 0) >= n} onChange={() => {
+                          const att = scheda.tsMorte?.successi || 0;
+                          aggiorna({ tsMorte: { ...scheda.tsMorte, successi: att === n ? n - 1 : n } });
+                        }} />
+                      ))}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ color: C.red, fontWeight: 600 }}>✘</span>
+                      {[1, 2, 3].map((n) => (
+                        <input key={`f-${n}`} type="checkbox" checked={(scheda.tsMorte?.fallimenti || 0) >= n} onChange={() => {
+                          const att = scheda.tsMorte?.fallimenti || 0;
+                          aggiorna({ tsMorte: { ...scheda.tsMorte, fallimenti: att === n ? n - 1 : n } });
+                        }} />
+                      ))}
+                    </div>
+                  </div>
+                  <button style={{ ...styles.buttonMini, fontSize: 10, marginTop: 2 }} onClick={() => aggiorna({ tsMorte: { successi: 0, fallimenti: 0 } })}>{t("vital.reset_ts")}</button>
+                </div>
 
-            {/* RIGA 2 — Iniziativa | Velocità | Perc. Passiva | Resistenze | Vista */}
-            {/* Iniziativa */}
-            <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>{t("vital.iniziativa")}</div>
-              <div style={styles.vitalValue}>
-                <Rollable onRoll={() => lanciaD20('Iniziativa', modificatore(scheda.caratteristiche.destrezza))}>
-                  {conSegno(modificatore(scheda.caratteristiche.destrezza))}
-                </Rollable>
-              </div>
-            </div>
+                {/* RIGA 2 — Iniziativa | Velocità | Percezione Passiva | Resistenze | Visione */}
+                {/* Iniziativa */}
+                <div style={styles.vitalBox}>
+                  <div style={styles.vitalLabel}>{t("vital.iniziativa")}</div>
+                  <div style={styles.vitalValue}>
+                    <Rollable onRoll={() => lanciaD20('Iniziativa', modificatore(scheda.caratteristiche.destrezza))}>
+                      {conSegno(modificatore(scheda.caratteristiche.destrezza))}
+                    </Rollable>
+                  </div>
+                </div>
 
-            {/* Velocità */}
-            <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>{t("vital.movimento")}</div>
-              <div style={styles.vitalValue}>
-                <Editable value={scheda.velocita} tipo="numero" onChange={(v) => aggiorna({ velocita: v })} width={48} />
-                <span style={{ fontSize: 17, color: C.inkDim, marginLeft: 2, fontWeight: 600 }}> m</span>
-              </div>
-            </div>
+                {/* Velocità */}
+                <div style={styles.vitalBox}>
+                  <div style={styles.vitalLabel}>{t("vital.movimento")}</div>
+                  <div style={styles.vitalValue}>
+                    <Editable value={scheda.velocita} tipo="numero" onChange={(v) => aggiorna({ velocita: v })} width={48} />
+                    <span style={{ fontSize: 17, color: C.inkDim, marginLeft: 2, fontWeight: 600 }}> m</span>
+                  </div>
+                </div>
 
-            {/* Percezione Passiva */}
-            <div style={styles.vitalBox} title={t('vital.passive_tooltip')}>
-              <div style={styles.vitalLabel}>{t("vital.percezione_passiva")}</div>
-              <div style={styles.vitalValue}>{percezionePassiva}</div>
-            </div>
+                {/* Percezione Passiva */}
+                <div style={styles.vitalBox} title={t('vital.passive_tooltip')}>
+                  <div style={styles.vitalLabel}>{t("vital.percezione_passiva")}</div>
+                  <div style={styles.vitalValue}>{percezionePassiva}</div>
+                </div>
 
-            {/* Resistenze — chip rimovibili + tendina */}
-            <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>{t("vital.resistenze")}</div>
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <CampoConTendina
-                  value={scheda.resistenze}
-                  opzioni={DANNI_5E}
-                  onChange={(v) => aggiorna({ resistenze: v })}
-                  title={t('tip.resistenze')}
-                />
-              </div>
-            </div>
+                {/* Resistenze — chip rimovibili + tendina */}
+                <div style={styles.vitalBox}>
+                  <div style={styles.vitalLabel}>{t("vital.resistenze")}</div>
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <CampoConTendina
+                      value={scheda.resistenze}
+                      opzioni={DANNI_5E}
+                      onChange={(v) => aggiorna({ resistenze: v })}
+                      title={t('tip.resistenze')}
+                    />
+                  </div>
+                </div>
 
-            {/* Vista / Sensi — chip rimovibili + tendina (valore non fisso) */}
-            <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>{t("vital.visione")}</div>
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <CampoConTendina
-                  value={scheda.sensi}
-                  opzioni={SENSI_5E}
-                  onChange={(v) => aggiorna({ sensi: v })}
-                  title={t('tip.sensi')}
-                />
-              </div>
-            </div>
+                {/* Vista / Sensi — chip rimovibili + tendina */}
+                <div style={styles.vitalBox}>
+                  <div style={styles.vitalLabel}>{t("vital.visione")}</div>
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <CampoConTendina
+                      value={scheda.sensi}
+                      opzioni={SENSI_5E}
+                      onChange={(v) => aggiorna({ sensi: v })}
+                      title={t('tip.sensi')}
+                    />
+                  </div>
+                </div>
 
-            {/* RIGA 3 — Bonus Comp. | Sfinimento | Ispirazione | Condizioni (span 2) */}
-            {/* Bonus Competenza */}
-            <div style={styles.vitalBox}>
-              <div style={styles.vitalLabel}>{t("vital.competenza")}</div>
-              <div style={styles.vitalValue}>
-                <Editable value={conSegno(scheda.bonusCompetenza)} onChange={(v) => aggiorna({ bonusCompetenza: parseInt(v, 10) || 0 })} width={48} title={t('tip.click_modifica')} />
-              </div>
-              {scheda.bonusCompetenza !== bonusCompetenzaDaLivello(scheda.livello) && (
-                <span className="tirabile" style={{ fontSize: 9, color: C.goldDark, cursor: 'pointer', marginTop: 1 }}
-                  title={`Bonus corretto per liv. ${scheda.livello}: ${conSegno(bonusCompetenzaDaLivello(scheda.livello))}`}
-                  onClick={() => aggiorna({ bonusCompetenza: bonusCompetenzaDaLivello(scheda.livello) })}>
-                  auto {conSegno(bonusCompetenzaDaLivello(scheda.livello))}
-                </span>
-              )}
-            </div>
+                {/* RIGA 3 — Bonus Comp. | Ispirazione */}
+                {/* Bonus Competenza */}
+                <div style={styles.vitalBox}>
+                  <div style={styles.vitalLabel}>{t("vital.competenza")}</div>
+                  <div style={styles.vitalValue}>
+                    <Editable value={conSegno(scheda.bonusCompetenza)} onChange={(v) => aggiorna({ bonusCompetenza: parseInt(v, 10) || 0 })} width={48} title={t('tip.click_modifica')} />
+                  </div>
+                  {scheda.bonusCompetenza !== bonusCompetenzaDaLivello(scheda.livello) && (
+                    <span className="tirabile" style={{ fontSize: 9, color: C.goldDark, cursor: 'pointer', marginTop: 1 }}
+                      title={`Bonus corretto per liv. ${scheda.livello}: ${conSegno(bonusCompetenzaDaLivello(scheda.livello))}`}
+                      onClick={() => aggiorna({ bonusCompetenza: bonusCompetenzaDaLivello(scheda.livello) })}>
+                      auto {conSegno(bonusCompetenzaDaLivello(scheda.livello))}
+                    </span>
+                  )}
+                </div>
 
-            {/* Sfinimento */}
+                {/* Ispirazione */}
+                <div style={{
+                  ...styles.vitalBox,
+                  border: `1px solid ${scheda.ispirazione ? '#d4af37' : C.border}`,
+                  background: scheda.ispirazione ? 'rgba(212,175,55,0.16)' : C.panelLight,
+                  boxShadow: scheda.ispirazione ? '0 0 9px rgba(212,175,55,0.55)' : 'none',
+                  transition: 'background 0.25s, border-color 0.25s, box-shadow 0.25s',
+                }}>
+                  <div style={{ ...styles.vitalLabel, color: scheda.ispirazione ? '#c8991a' : C.inkDim }}>{t("vital.ispirazione")}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <button
+                      className="tirabile"
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                        padding: '0 8px', fontSize: 28, border: 'none', lineHeight: 1,
+                        background: 'transparent',
+                        color: scheda.ispirazione ? '#d4af37' : C.inkDim,
+                        textShadow: scheda.ispirazione ? '0 0 7px rgba(212,175,55,0.7)' : 'none',
+                        cursor: 'pointer', transition: 'all 0.2s',
+                      }}
+                      onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
+                      title={t('tip.ispirazione')}
+                    >
+                      {scheda.ispirazione ? '★' : '☆'}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* ELEMENTI SEMPRE A VISTA: Sfinimento (Affaticamento), Concentrazione e Condizioni */}
+            {/* Sfinimento / Affaticamento */}
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>{t("vital.sfinimento")}</div>
               <div style={styles.vitalValue}>
@@ -5117,37 +5195,38 @@ export default function App() {
               )}
             </div>
 
-            {/* Ispirazione — quando è accesa: bordo, stella e scritta tutti dorati.
-                Uso un oro fisso (non `--c-gold`, che è tinto col colore classe). */}
+            {/* Concentrazione */}
             <div style={{
               ...styles.vitalBox,
-              border: `1px solid ${scheda.ispirazione ? '#d4af37' : C.border}`,
-              background: scheda.ispirazione ? 'rgba(212,175,55,0.16)' : C.panelLight,
-              boxShadow: scheda.ispirazione ? '0 0 9px rgba(212,175,55,0.55)' : 'none',
-              transition: 'background 0.25s, border-color 0.25s, box-shadow 0.25s',
+              border: `1px solid ${scheda.concentrazione ? C.goldDark : C.border}`,
+              background: scheda.concentrazione ? 'rgba(201,162,39,0.15)' : C.panelLight,
+              boxShadow: scheda.concentrazione ? '0 0 9px rgba(201,162,39,0.45)' : 'none',
+              gridColumn: !scheda.vitaliNascondi ? 'span 2' : undefined,
             }}>
-              <div style={{ ...styles.vitalLabel, color: scheda.ispirazione ? '#c8991a' : C.inkDim }}>{t("vital.ispirazione")}</div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <button
-                  className="tirabile"
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    padding: '0 8px', fontSize: 28, border: 'none', lineHeight: 1,
-                    background: 'transparent',
-                    color: scheda.ispirazione ? '#d4af37' : C.inkDim,
-                    textShadow: scheda.ispirazione ? '0 0 7px rgba(212,175,55,0.7)' : 'none',
-                    cursor: 'pointer', transition: 'all 0.2s',
-                  }}
-                  onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
-                  title={t('tip.ispirazione')}
+              <div style={{ ...styles.vitalLabel, color: scheda.concentrazione ? C.goldDark : C.inkDim }}>🧠 Concentrazione</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, width: '100%', padding: '0 4px' }}>
+                <select
+                  style={{ ...styles.inlineInput, fontSize: 11, padding: '2px 4px', fontWeight: scheda.concentrazione ? 700 : 400, color: scheda.concentrazione ? C.goldDark : C.ink, flex: 1, minWidth: 0 }}
+                  value={scheda.concentrazione || ''}
+                  onChange={(e) => aggiorna({ concentrazione: e.target.value })}
+                  title="Seleziona l'incantesimo su cui ti stai concentrando"
                 >
-                  {scheda.ispirazione ? '★' : '☆'}
-                </button>
+                  <option value="">— Nessuna —</option>
+                  {scheda.incantesimiLista?.filter(x => /conc/i.test(x.note || '')).map((s) => (
+                    <option key={s.id} value={s.nome}>{s.nome}</option>
+                  ))}
+                  {scheda.concentrazione && !scheda.incantesimiLista?.some(x => x.nome === scheda.concentrazione) && (
+                    <option value={scheda.concentrazione}>{scheda.concentrazione}</option>
+                  )}
+                </select>
+                {scheda.concentrazione && (
+                  <button style={{ ...styles.buttonMini, fontSize: 12, padding: '1px 5px', color: C.red }} title="Termina concentrazione" onClick={() => aggiorna({ concentrazione: '' })}>✕</button>
+                )}
               </div>
             </div>
 
             {/* Condizioni */}
-            <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
+            <div style={{ ...styles.vitalBox, gridColumn: !scheda.vitaliNascondi ? '1 / -1' : 'span 2' }}>
               <div style={styles.vitalLabel}>{t("vital.condizioni")}</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center', alignItems: 'center', marginTop: 2 }}>
                 {scheda.condizioni.map((c) => (
@@ -5447,128 +5526,219 @@ export default function App() {
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {/* Armi e attacchi — sezione collassabile */}
             <Sezione titolo={t("sez.combattimento")} {...propsSez('attacchi')} {...apertoProps('attacchi')}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+                <button
+                  style={{ ...styles.buttonMini, fontSize: 11, padding: '3px 8px', color: scheda.mostraIncantesimiAttacco !== false ? C.accentDark : C.inkDim, border: `1px solid ${scheda.mostraIncantesimiAttacco !== false ? C.accentDark : C.border}` }}
+                  onClick={() => aggiorna({ mostraIncantesimiAttacco: scheda.mostraIncantesimiAttacco === false })}
+                  title="Mostra o nascondi automaticamente i tuoi incantesimi offensivi nella tabella degli attacchi"
+                >
+                  ✨ Incantesimi offensivi: {scheda.mostraIncantesimiAttacco !== false ? 'ON' : 'OFF'}
+                </button>
+              </div>
               <div style={{ overflowX: 'auto' }}>
-                {['Azione', 'Bonus', 'Reazione'].map((cat) => {
-                  const arr = scheda.attacchi.filter((a) => (a.categoria || 'Azione') === cat);
-                  if (arr.length === 0 && cat !== 'Azione') return null;
-                  return (
-                    <div key={cat} style={{ marginBottom: 16 }}>
-                      {cat !== 'Azione' && (
-                        <h3 style={{ fontSize: 13, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 1, borderBottom: `1px solid ${C.border}`, paddingBottom: 4, marginBottom: 8 }}>
-                          {cat === 'Bonus' ? t('combat.azioni_bonus') : t('combat.reazioni')}
-                        </h3>
-                      )}
-                      <table style={styles.table}>
-                        <thead>
-                          <tr>
-                            <th style={styles.th}>{t('combat.col_nome')}</th>
-                            <th style={styles.th}>{t('combat.col_bonus')}</th>
-                            <th style={styles.th}>{t('combat.col_danno')}</th>
-                            <th style={styles.th}>{t('combat.col_note')}</th>
-                            <th style={styles.th} />
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {arr.map((a) => {
-                            const aggiornaAttacco = (patch) =>
-                              aggiorna({
-                                attacchi: scheda.attacchi.map((x) => (x.id === a.id ? { ...x, ...patch } : x)),
-                              });
-                            const dannoValido = a.danno.trim() === '' || parseEspressioneDado(a.danno);
-                            return (
-                              <tr key={a.id}>
-                                <td style={styles.td}>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                    <select
-                                      value=""
-                                      title={t('tip.scegli_arma')}
-                                      onChange={(e) => {
-                                        const arma = ARMI_5E.find((w) => w.nome === e.target.value);
-                                        if (arma) aggiornaAttacco(attaccoDaArma(arma, scheda));
+                {(() => {
+                  const attacchiSpettro = (scheda.incantesimiLista || []).filter((s) => {
+                    if (scheda.mostraIncantesimiAttacco === false || s.nascondiAttacco) return false;
+                    const d = dettagliIncantesimo(s.nome) || {};
+                    const db = datiIncantesimo(s.nome) || {};
+                    const desc = (s.note || '') + ' ' + (db.desc || '');
+                    const danno = s.danno || d.danno || '';
+                    const area = s.area || d.area || '';
+                    return Boolean(danno || area || /attacco magico|tiro per colpire|ts \w+|tiro salvezza|danni/i.test(desc));
+                  }).map((s) => {
+                    const d = dettagliIncantesimo(s.nome) || {};
+                    const db = datiIncantesimo(s.nome) || {};
+                    const desc = (s.note || '') + ' ' + (db.desc || '');
+                    const danno = s.danno || d.danno || '';
+                    const tipoDanno = s.tipoDanno || d.tipoDanno || '';
+                    const isTS = /ts (\w+)|tiro salvezza/i.test(desc);
+                    const tsMatch = desc.match(/ts\s+(destrezza|saggezza|costituzione|forza|intelligenza|carisma)/i);
+                    const nomeTS = tsMatch ? ` (TS ${tsMatch[1].charAt(0).toUpperCase() + tsMatch[1].slice(1)})` : isTS ? ' (TS)' : '';
+                    
+                    const modInc = scheda.incantatore?.caratteristica ? modificatore(scheda.caratteristiche[scheda.incantatore.caratteristica]) : 0;
+                    const bonusComp = scheda.bonusCompetenza || 2;
+                    const bonus = isTS ? 0 : bonusComp + modInc;
+                    const cd = 8 + bonusComp + modInc;
+                    const note = (isTS ? `CD ${cd}${nomeTS}` : `Attacco Magico`) + (s.gittata || d.gittata ? ` • ${s.gittata || d.gittata}` : '') + (s.note ? ` • ${s.note}` : '');
+
+                    let categoria = 'Azione';
+                    const tempo = (s.tempo || d.tempo || '').toUpperCase();
+                    if (tempo.includes('BONUS')) categoria = 'Bonus';
+                    else if (tempo.includes('REAZ')) categoria = 'Reazione';
+
+                    return {
+                      id: `spell-${s.id}`,
+                      idIncantesimo: s.id,
+                      isSpell: true,
+                      isTS,
+                      cd,
+                      nome: `${s.nome}`,
+                      categoria,
+                      bonus,
+                      danno,
+                      tipoDanno,
+                      note
+                    };
+                  });
+                  const listaAttacchiCompleta = [...(scheda.attacchi || []), ...attacchiSpettro];
+                  return ['Azione', 'Bonus', 'Reazione'].map((cat) => {
+                    const arr = listaAttacchiCompleta.filter((a) => (a.categoria || 'Azione') === cat);
+                    if (arr.length === 0 && cat !== 'Azione') return null;
+                    return (
+                      <div key={cat} style={{ marginBottom: 16 }}>
+                        {cat !== 'Azione' && (
+                          <h3 style={{ fontSize: 13, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 1, borderBottom: `1px solid ${C.border}`, paddingBottom: 4, marginBottom: 8 }}>
+                            {cat === 'Bonus' ? t('combat.azioni_bonus') : t('combat.reazioni')}
+                          </h3>
+                        )}
+                        <table style={styles.table}>
+                          <thead>
+                            <tr>
+                              <th style={styles.th}>{t('combat.col_nome')}</th>
+                              <th style={styles.th}>{t('combat.col_bonus')}</th>
+                              <th style={styles.th}>{t('combat.col_danno')}</th>
+                              <th style={styles.th}>{t('combat.col_note')}</th>
+                              <th style={styles.th} />
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {arr.map((a) => {
+                              const aggiornaAttacco = (patch) => {
+                                if (a.isSpell) {
+                                  const cleanPatch = { ...patch };
+                                  if (cleanPatch.nome !== undefined) cleanPatch.nome = cleanPatch.nome.replace(/^✨\s*/, '');
+                                  aggiorna({
+                                    incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === a.idIncantesimo ? { ...x, ...cleanPatch } : x)),
+                                  });
+                                } else {
+                                  aggiorna({
+                                    attacchi: scheda.attacchi.map((x) => (x.id === a.id ? { ...x, ...patch } : x)),
+                                  });
+                                }
+                              };
+                              const dannoValido = a.danno.trim() === '' || parseEspressioneDado(a.danno);
+                              return (
+                                <tr key={a.id}>
+                                  <td style={styles.td}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                      {a.isSpell ? (
+                                        <span style={{ fontSize: 16, cursor: 'help', display: 'inline-block', width: 22, textAlign: 'center' }} title="Incantesimo offensivo (integrato automaticamente)">✨</span>
+                                      ) : (
+                                        <select
+                                          value=""
+                                          title={t('tip.scegli_arma')}
+                                          onChange={(e) => {
+                                            const arma = ARMI_5E.find((w) => w.nome === e.target.value);
+                                            if (arma) aggiornaAttacco(attaccoDaArma(arma, scheda));
+                                          }}
+                                          style={{ ...styles.inlineInput, appearance: 'none', width: 22, height: 22, padding: 0, textAlign: 'center', cursor: 'pointer', flexShrink: 0 }}
+                                        >
+                                          <option value="">⚔️</option>
+                                          {ARMI_5E.map((w) => <option key={w.nome} value={w.nome}>{w.nome}</option>)}
+                                        </select>
+                                      )}
+                                      <Editable
+                                        value={a.nome}
+                                        width={130}
+                                        onChange={(v) => aggiornaAttacco({ nome: v })}
+                                        onRoll={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a })}
+                                      />
+                                    </div>
+                                  </td>
+                                  <td style={styles.td}>
+                                    {a.isTS ? (
+                                      <span style={{ ...styles.badge, background: 'rgba(201,162,39,0.15)', color: C.goldDark, border: `1px solid ${C.goldDark}`, padding: '2px 6px', fontWeight: 700 }} title="Tiro salvezza richiesto">
+                                        CD {a.cd}
+                                      </span>
+                                    ) : (
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                        <button
+                                          style={{ ...styles.buttonMini, padding: '1px 6px' }}
+                                          title={`Tira per colpire con ${a.nome}`}
+                                          onClick={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a })}
+                                        >🎲</button>
+                                        <Editable
+                                          value={conSegno(a.bonus)}
+                                          width={44}
+                                          onChange={(v) => aggiornaAttacco({ bonus: Number(String(v).replace('+', '')) || 0 })}
+                                          onRoll={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a })}
+                                        />
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td style={{ ...styles.td, color: dannoValido ? undefined : C.red }}>
+                                    {parseEspressioneDado(a.danno) && (
+                                      <button
+                                        style={{ ...styles.buttonMini, padding: '1px 6px', marginRight: 4 }}
+                                        title={`Tira i danni (${a.danno})`}
+                                        onClick={() => lanciaDanniDiretti(`Danni: ${a.nome}`, a.danno)}
+                                      >🎲</button>
+                                    )}
+                                    <Editable
+                                      value={a.danno}
+                                      width={70}
+                                      onChange={(v) => aggiornaAttacco({ danno: v })}
+                                      title={t('tip.click_mod_danni')}
+                                    />{' '}
+                                    <Editable value={a.tipoDanno} width={90} onChange={(v) => aggiornaAttacco({ tipoDanno: v })} />
+                                  </td>
+                                  <td style={styles.td}>
+                                    <Editable value={a.note} width={130} onChange={(v) => aggiornaAttacco({ note: v })} />
+                                  </td>
+                                  <td style={{ ...styles.td, textAlign: 'right' }}>
+                                    <button
+                                      style={styles.buttonDanger}
+                                      title={a.isSpell ? "Nascondi questo incantesimo dalla sezione Armi e attacchi" : "Elimina attacco"}
+                                      onClick={() => {
+                                        if (a.isSpell) {
+                                          aggiorna({
+                                            incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === a.idIncantesimo ? { ...x, nascondiAttacco: true } : x))
+                                          });
+                                        } else {
+                                          const inv = scheda.inventario || [];
+                                          aggiorna({
+                                            attacchi: scheda.attacchi.filter((x) => x.id !== a.id),
+                                            inventario: inv.map((x) => (x.nome === a.nome ? { ...x, equip: false } : x))
+                                          });
+                                        }
                                       }}
-                                      style={{ ...styles.inlineInput, appearance: 'none', width: 22, height: 22, padding: 0, textAlign: 'center', cursor: 'pointer', flexShrink: 0 }}
                                     >
-                                      <option value="">⚔️</option>
-                                      {ARMI_5E.map((w) => <option key={w.nome} value={w.nome}>{w.nome}</option>)}
-                                    </select>
-                                    <Editable
-                                      value={a.nome}
-                                      width={130}
-                                      onChange={(v) => aggiornaAttacco({ nome: v })}
-                                      onRoll={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a })}
-                                    />
-                                  </div>
-                                </td>
-                                <td style={styles.td}>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                    <button
-                                      style={{ ...styles.buttonMini, padding: '1px 6px' }}
-                                      title={`Tira per colpire con ${a.nome}`}
-                                      onClick={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a })}
-                                    >🎲</button>
-                                    <Editable
-                                      value={conSegno(a.bonus)}
-                                      width={44}
-                                      onChange={(v) => aggiornaAttacco({ bonus: Number(String(v).replace('+', '')) || 0 })}
-                                      onRoll={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a })}
-                                    />
-                                  </div>
-                                </td>
-                                <td style={{ ...styles.td, color: dannoValido ? undefined : C.red }}>
-                                  {parseEspressioneDado(a.danno) && (
-                                    <button
-                                      style={{ ...styles.buttonMini, padding: '1px 6px', marginRight: 4 }}
-                                      title={`Tira i danni (${a.danno})`}
-                                      onClick={() => lanciaDanniDiretti(`Danni: ${a.nome}`, a.danno)}
-                                    >🎲</button>
-                                  )}
-                                  <Editable
-                                    value={a.danno}
-                                    width={70}
-                                    onChange={(v) => aggiornaAttacco({ danno: v })}
-                                    title={t('tip.click_mod_danni')}
-                                  />{' '}
-                                  <Editable value={a.tipoDanno} width={90} onChange={(v) => aggiornaAttacco({ tipoDanno: v })} />
-                                </td>
-                                <td style={styles.td}>
-                                  <Editable value={a.note} width={130} onChange={(v) => aggiornaAttacco({ note: v })} />
-                                </td>
-                                <td style={{ ...styles.td, textAlign: 'right' }}>
-                                  <button
-                                    style={styles.buttonDanger}
-                                    onClick={() => aggiorna({ attacchi: scheda.attacchi.filter((x) => x.id !== a.id) })}
-                                  >
-                                    ×
-                                  </button>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                      <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                        <input
-                          id={`wpn-add-input-${cat}`}
-                          list="wpn-presets"
-                          placeholder={t('combat.aggiungi_ph', { defaultValue: "Nome arma..." })}
-                          style={{ ...styles.inlineInput, flex: 1, minWidth: 140, padding: '6px 8px' }}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' && e.target.value.trim()) {
-                              const nomeArma = e.target.value.trim();
-                              const arma = ARMI_5E.find((w) => w.nome === nomeArma);
-                              const nuova = arma ? attaccoDaArma(arma, scheda) : { nome: nomeArma, bonus: 0, danno: '', tipoDanno: '', note: '' };
-                              aggiorna({
-                                attacchi: [...scheda.attacchi, { id: Date.now(), categoria: cat, ...nuova }]
-                              });
-                              e.target.value = '';
-                            }
-                          }}
-                        />
-                        {cat === 'Azione' && <datalist id="wpn-presets">{ARMI_5E.map((w) => <option key={w.nome} value={w.nome} />)}</datalist>}
+                                      ×
+                                    </button>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                        <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                          <input
+                            id={`wpn-add-input-${cat}`}
+                            list="wpn-presets"
+                            placeholder={t('combat.aggiungi_ph', { defaultValue: "Nome arma..." })}
+                            style={{ ...styles.inlineInput, flex: 1, minWidth: 140, padding: '6px 8px' }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && e.target.value.trim()) {
+                                const nomeArma = e.target.value.trim();
+                                const arma = ARMI_5E.find((w) => w.nome === nomeArma);
+                                const nuova = arma ? attaccoDaArma(arma, scheda) : { nome: nomeArma, bonus: 0, danno: '', tipoDanno: '', note: '' };
+                                const inv = scheda.inventario || [];
+                                aggiorna({
+                                  attacchi: [...scheda.attacchi, { ...nuova, id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, categoria: cat }],
+                                  inventario: inv.some((x) => x.nome === nuova.nome)
+                                    ? inv.map((x) => (x.nome === nuova.nome ? { ...x, equip: true } : x))
+                                    : [...inv, { nome: nuova.nome, qta: 1, peso: pesoStimato(nuova.nome), equip: true }]
+                                });
+                                e.target.value = '';
+                              }
+                            }}
+                          />
+                          {cat === 'Azione' && <datalist id="wpn-presets">{ARMI_5E.map((w) => <option key={w.nome} value={w.nome} />)}</datalist>}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  });
+                })()}
               </div>
               <div style={{ marginTop: 4, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
                 <span style={styles.detail}>
@@ -5760,32 +5930,22 @@ export default function App() {
                             );
                             return (
                               <div key={s.id} style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', background: C.panelLight, opacity: (classePreparata && s.livello >= 1 && s.preparato === false) ? 0.5 : 1 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', flex: '1 1 auto', minWidth: 0 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                      <button
-                                        style={{ background: 'transparent', border: 'none', color: C.ink, fontWeight: 700, cursor: 'pointer', textAlign: 'left', padding: 0, fontSize: 15, lineHeight: 1.2, textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
-                                        title={t('tip.cosa_fa_inc')}
-                                        onClick={() => setInfo({ titolo: `${s.nome || 'Incantesimo'}${s.livello === 0 ? ' · Trucchetto' : ` · ${s.livello}° livello`}`, testo: eff || 'Nessuna descrizione disponibile per questo incantesimo. Aprilo con ✎ per aggiungere delle note.' })}
-                                      >
-                                        {s.nome || t('menu.senza_nome')}
-                                      </button>
-                                      {s.bonus && (
-                                        <span
-                                          title={t('spell.bonus_badge_tooltip')}
-                                          style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: C.goldDark, border: `1px solid ${C.goldDark}`, borderRadius: 6, padding: '0 4px', cursor: 'pointer', whiteSpace: 'nowrap' }}
-                                          onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, bonus: false } : x)) })}
-                                        >✦ {t('spell.bonus_badge')}</span>
-                                      )}
-                                    </div>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginLeft: 'auto' }}>
-                                      {chip('⏱', t('spell.chip_tempo'), tempoLabel)}
-                                      {chip('🎯', t('spell.chip_gittata'), gittata)}
-                                      {chip('🔮', 'Scuola', scuola)}
-                                      {area && chip('📐', 'Area', area)}
-                                      {(danno || tipoDanno) && chip('💥', 'Danno', [danno, tipoDanno].filter(Boolean).join(' '))}
-                                      {note && chip('📝', t('spell.chip_note'), note)}
-                                    </div>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                                    <button
+                                      style={{ background: 'transparent', border: 'none', color: C.ink, fontWeight: 700, cursor: 'pointer', textAlign: 'left', padding: 0, fontSize: 15, lineHeight: 1.2, textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
+                                      title={t('tip.cosa_fa_inc')}
+                                      onClick={() => setInfo({ titolo: `${s.nome || 'Incantesimo'}${s.livello === 0 ? ' · Trucchetto' : ` · ${s.livello}° livello`}`, testo: eff || 'Nessuna descrizione disponibile per questo incantesimo. Aprilo con ✎ per aggiungere delle note.' })}
+                                    >
+                                      {s.nome || t('menu.senza_nome')}
+                                    </button>
+                                    {s.bonus && (
+                                      <span
+                                        title={t('spell.bonus_badge_tooltip')}
+                                        style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: C.goldDark, border: `1px solid ${C.goldDark}`, borderRadius: 6, padding: '0 4px', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                                        onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, bonus: false } : x)) })}
+                                      >✦ {t('spell.bonus_badge')}</span>
+                                    )}
                                   </div>
                                   <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
                                     {classePreparata && s.livello >= 1 && (
@@ -5798,6 +5958,14 @@ export default function App() {
                                     <button style={styles.buttonMini} title={t('tip.modifica')} onClick={() => setDettaglioInc(s.id)}>✎</button>
                                     <button style={{ ...styles.buttonMini, color: C.red }} title={t('tip.elimina_inc')} onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })}>🗑</button>
                                   </div>
+                                </div>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+                                  {chip('⏱', t('spell.chip_tempo'), tempoLabel)}
+                                  {chip('🎯', t('spell.chip_gittata'), gittata)}
+                                  {chip('🔮', 'Scuola', scuola)}
+                                  {area && chip('📐', 'Area', area)}
+                                  {(danno || tipoDanno) && chip('💥', 'Danno', [danno, tipoDanno].filter(Boolean).join(' '))}
+                                  {note && chip('📝', t('spell.chip_note'), note)}
                                 </div>
                               </div>
                             );
@@ -5876,13 +6044,13 @@ export default function App() {
                 const perc = Math.min(100, (pesoTot / cap) * 100);
                 const modInv = (id, patch) => aggiorna({ inventario: inv.map((x) => (x.id === id ? { ...x, ...patch } : x)) });
                 const toggleEquip = (o, checked) => {
-                  const isWeapon = ARMI_5E.find((w) => w.nome === o.nome);
+                  const isWeapon = ARMI_5E.find((w) => w.nome === o.nome) || (scheda.attacchi?.find((a) => a.nome === o.nome) ? { nome: o.nome, danno: '1d6', tipoDanno: 'Contundente', categoria: 'Mischia' } : null);
                   let newAttacchi = Array.isArray(scheda.attacchi) ? [...scheda.attacchi] : [];
                   if (checked && isWeapon) {
                     if (!newAttacchi.find((a) => a.nome === o.nome)) {
                       newAttacchi.push({ id: Date.now(), categoria: 'Azione', ...attaccoDaArma(isWeapon, scheda) });
                     }
-                  } else if (!checked && isWeapon) {
+                  } else if (!checked) {
                     newAttacchi = newAttacchi.filter((a) => a.nome !== o.nome);
                   }
                   aggiorna({
@@ -5920,17 +6088,21 @@ export default function App() {
                             <th style={styles.th} />
                           </tr></thead>
                           <tbody>
-                            {inv.map((o) => (
-                              <tr key={o.id} style={{ opacity: o.equip ? 1 : 0.82 }}>
-                                <td style={{ ...styles.td, textAlign: 'center' }}>
-                                  <input type="checkbox" checked={!!o.equip} onChange={(e) => toggleEquip(o, e.target.checked)} title={t('inv.equip_tooltip')} />
-                                </td>
-                                <td style={styles.td}><Editable value={o.nome} width={150} onChange={(v) => modInv(o.id, { nome: v })} /></td>
-                                <td style={styles.td}>×<Editable value={o.qta} tipo="numero" width={30} onChange={(v) => modInv(o.id, { qta: Math.max(1, v) })} /></td>
-                                <td style={{ ...styles.td, color: C.inkDim, whiteSpace: 'nowrap' }}><Editable value={o.peso} tipo="numero" width={40} onChange={(v) => modInv(o.id, { peso: Math.max(0, v) })} /> kg</td>
-                                <td style={{ ...styles.td, textAlign: 'right' }}><button style={{ ...styles.buttonMini, color: C.red }} title={t('modal.elimina')} onClick={() => aggiorna({ inventario: inv.filter((x) => x.id !== o.id) })}>🗑</button></td>
-                              </tr>
-                            ))}
+                            {inv.map((o) => {
+                              const isWeapon = ARMI_5E.some((w) => w.nome === o.nome) || attacchi.some((a) => a.nome === o.nome);
+                              const isEquip = isWeapon ? attacchi.some((a) => a.nome === o.nome) : !!o.equip;
+                              return (
+                                <tr key={o.id} style={{ opacity: isEquip ? 1 : 0.82 }}>
+                                  <td style={{ ...styles.td, textAlign: 'center' }}>
+                                    <input type="checkbox" checked={isEquip} onChange={(e) => toggleEquip(o, e.target.checked)} title={t('inv.equip_tooltip')} />
+                                  </td>
+                                  <td style={styles.td}><Editable value={o.nome} width={150} onChange={(v) => modInv(o.id, { nome: v })} /></td>
+                                  <td style={styles.td}>×<Editable value={o.qta} tipo="numero" width={30} onChange={(v) => modInv(o.id, { qta: Math.max(1, v) })} /></td>
+                                  <td style={{ ...styles.td, color: C.inkDim, whiteSpace: 'nowrap' }}><Editable value={o.peso} tipo="numero" width={40} onChange={(v) => modInv(o.id, { peso: Math.max(0, v) })} /> kg</td>
+                                  <td style={{ ...styles.td, textAlign: 'right' }}><button style={{ ...styles.buttonMini, color: C.red }} title={t('modal.elimina')} onClick={() => aggiorna({ inventario: inv.filter((x) => x.id !== o.id) })}>🗑</button></td>
+                                </tr>
+                              );
+                            })}
                           </tbody>
                         </table>
                       </div>
@@ -6063,9 +6235,26 @@ export default function App() {
                   return (
                     <div key={cb.id} style={{ flex: '0 0 auto', width: 196, border: `2px solid ${attivoTurno ? 'var(--c-gold-dark)' : col}`, borderRadius: 10, padding: 8, background: attivoTurno ? C.panelLight : C.panel, display: 'flex', flexDirection: 'column', gap: 5 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                        <span title={t('ct.iniziativa')} style={{ minWidth: 26, textAlign: 'center', fontWeight: 800, color: col, fontSize: 15, border: `1px solid ${col}`, borderRadius: 6, padding: '1px 3px' }}>
-                          <Editable value={cb.iniziativa} tipo="numero" width={22} onChange={(v) => modCombat(cb.id, { iniziativa: v })} />
-                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 2, background: C.bg, border: `1.5px solid ${col}`, borderRadius: 6, padding: '1px 4px' }} title={t('ct.iniziativa')}>
+                          <span style={{ fontSize: 11, color: col, fontWeight: 800 }}>⚡</span>
+                          <input
+                            type="number"
+                            value={cb.iniziativa ?? 0}
+                            onChange={(e) => modCombat(cb.id, { iniziativa: parseInt(e.target.value, 10) || 0 })}
+                            onBlur={() => ordinaIniziativa()}
+                            onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
+                            style={{ ...styles.inlineInput, width: 34, textAlign: 'center', fontWeight: 800, fontSize: 15, color: col, padding: 0, border: 'none', background: 'transparent', height: 22 }}
+                          />
+                          <button
+                            style={{ ...styles.buttonMini, padding: '0 3px', fontSize: 11, border: 'none', color: C.inkDim, height: 20 }}
+                            title="Tira d20 per iniziativa e ordina"
+                            onClick={() => {
+                              const roll = tiraDado(20) + (cb.tipo === 'pg' ? modificatore(scheda.caratteristiche?.destrezza || 10) : Math.floor(Math.random() * 5));
+                              modCombat(cb.id, { iniziativa: roll });
+                              setTimeout(ordinaIniziativa, 10);
+                            }}
+                          >🎲</button>
+                        </div>
                         <span style={{ flex: 1, minWidth: 0, fontWeight: 700, fontSize: 13, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           <Editable value={cb.nome} onChange={(v) => modCombat(cb.id, { nome: v })} width={100} />
                         </span>
@@ -6087,6 +6276,9 @@ export default function App() {
                         <span style={{ color: C.inkDim, fontSize: 13 }}>/ <Editable value={cb.pfMax} tipo="numero" width={34} onChange={(v) => modCombat(cb.id, { pfMax: Math.max(1, v) })} /></span>
                         {cb.pfTemp > 0 && <span style={{ color: '#4A90E2', fontSize: 12 }}>+{cb.pfTemp}</span>}
                         <span style={{ marginLeft: 4, color: C.inkDim, fontSize: 11 }} title={t('vital.temporanei')}>➕<Editable value={cb.pfTemp} tipo="numero" width={20} onChange={(v) => modCombat(cb.id, { pfTemp: Math.max(0, v) })} /></span>
+                      </div>
+                      <div style={{ height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.35)', border: `1px solid ${C.border}`, overflow: 'hidden', margin: '2px 0 4px', display: 'flex', width: '100%' }}>
+                        <div style={{ width: `${Math.min(100, Math.max(0, (cb.pfAttuali / Math.max(1, cb.pfMax)) * 100))}%`, height: '100%', background: cb.pfAttuali / Math.max(1, cb.pfMax) > 0.5 ? C.green : cb.pfAttuali / Math.max(1, cb.pfMax) > 0.25 ? C.gold : C.red, transition: 'width 0.2s' }} />
                       </div>
                       <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
                         <input
