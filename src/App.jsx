@@ -2309,6 +2309,7 @@ export default function App() {
   }, [transcribeUrl]);
   const [pdfStato, setPdfStato] = useState(''); // '' | 'loading'
   const [filtroIncantesimo, setFiltroIncantesimo] = useState('');
+  const [filtroInventario, setFiltroInventario] = useState('');
   const [addLivIncantesimo, setAddLivIncantesimo] = useState(0); // livello scelto nella barra "aggiungi"
   const [addBonusIncantesimo, setAddBonusIncantesimo] = useState(false); // aggiungi come incantesimo bonus ✦
   const [espressioneLibera, setEspressioneLibera] = useState('');
@@ -5013,12 +5014,18 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Velocità */}
-                <div style={styles.vitalBox}>
+                {/* Velocità + Calcolatore Salto & Respiro */}
+                <div
+                  style={styles.vitalBox}
+                  title={`🏃 Salto in Lungo (con rincorsa): ${(scheda.caratteristiche?.forza || 10)} piedi (${((scheda.caratteristiche?.forza || 10) * 0.3).toFixed(1)} m) • ⬆️ Salto in Alto: ${3 + modificatore(scheda.caratteristiche?.forza || 10)} piedi (${((3 + modificatore(scheda.caratteristiche?.forza || 10)) * 0.3).toFixed(1)} m) • 🫁 Trattenere il Respiro: ${Math.max(1, 1 + modificatore(scheda.caratteristiche?.costituzione || 10))} minuti`}
+                >
                   <div style={styles.vitalLabel}>{t("vital.movimento")}</div>
                   <div style={styles.vitalValue}>
                     <Editable value={scheda.velocita} tipo="numero" onChange={(v) => aggiorna({ velocita: v })} width={48} />
                     <span style={{ fontSize: 17, color: C.inkDim, marginLeft: 2, fontWeight: 600 }}> m</span>
+                  </div>
+                  <div style={{ fontSize: 10, color: C.goldDark, marginTop: 2, textAlign: 'center', fontWeight: 600 }}>
+                    🏃 Salto: {((scheda.caratteristiche?.forza || 10) * 0.3).toFixed(1)}m
                   </div>
                 </div>
 
@@ -6076,6 +6083,30 @@ export default function App() {
                         <div style={{ width: `${perc}%`, height: '100%', background: colore, transition: 'width 0.25s ease' }} />
                       </div>
                     </div>
+                    {/* Barra di ricerca e pulizia esauriti */}
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10, flexWrap: 'wrap' }}>
+                      <input
+                        type="text"
+                        value={filtroInventario}
+                        onChange={(e) => setFiltroInventario(e.target.value)}
+                        placeholder="🔍 Cerca nell'inventario..."
+                        style={{ ...styles.inlineInput, flex: 1, minWidth: 200, padding: '4px 8px', fontSize: 13 }}
+                      />
+                      {filtroInventario && (
+                        <button style={styles.buttonMini} onClick={() => setFiltroInventario('')}>✕</button>
+                      )}
+                      <button
+                        style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, fontSize: 11 }}
+                        title="Rimuovi automaticamente dal tuo inventario tutti gli oggetti con quantità pari a 0"
+                        onClick={() => {
+                          if (window.confirm("Vuoi rimuovere dall'inventario tutti gli oggetti esauriti (quantità 0)?")) {
+                            aggiorna({ inventario: inv.filter((x) => (Number(x.qta) || 0) > 0) });
+                          }
+                        }}
+                      >
+                        🧹 Pulisci esauriti (qta 0)
+                      </button>
+                    </div>
                     {/* Lista oggetti */}
                     {inv.length > 0 && (
                       <div style={{ overflowX: 'auto' }}>
@@ -6088,7 +6119,7 @@ export default function App() {
                             <th style={styles.th} />
                           </tr></thead>
                           <tbody>
-                            {inv.map((o) => {
+                            {inv.filter((o) => !filtroInventario || (o.nome || '').toLowerCase().includes(filtroInventario.trim().toLowerCase())).map((o) => {
                               const isWeapon = ARMI_5E.some((w) => w.nome === o.nome) || attacchi.some((a) => a.nome === o.nome);
                               const isEquip = isWeapon ? attacchi.some((a) => a.nome === o.nome) : !!o.equip;
                               return (
@@ -6148,6 +6179,37 @@ export default function App() {
                     
                     <div style={{ background: C.panelLight, padding: '12px 14px', borderRadius: 8, border: `1px solid ${C.border}` }}>
                       <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700, fontSize: 13 }}>Monete</div>
+                      {(() => {
+                        const d = scheda.denari || {};
+                        const totMo = ((d.mr || 0) / 100) + ((d.ma || 0) / 10) + ((d.me || 0) / 2) + (d.mo || 0) + ((d.mp || 0) * 10);
+                        const numMonete = (d.mr || 0) + (d.ma || 0) + (d.me || 0) + (d.mo || 0) + (d.mp || 0);
+                        const pesoMonete = numMonete * 0.01; // 50 monete = 0.5 kg (0.01 kg a moneta)
+                        return (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 8, ...styles.detail }}>
+                            <span>💎 <strong>Patrimonio:</strong> ~{totMo.toFixed(2)} MO • ⚖️ <strong>Peso monete:</strong> {pesoMonete.toFixed(2)} kg ({numMonete})</span>
+                            <button
+                              style={{ ...styles.buttonMini, fontSize: 11, color: C.goldDark, borderColor: C.goldDark }}
+                              title="Converte tutte le Monete di Rame (100 MR = 1 MO) e d'Argento (10 MA = 1 MO) in equivalenti Monete d'Oro, tenendo i resti"
+                              onClick={() => {
+                                const mr = d.mr || 0;
+                                const ma = d.ma || 0;
+                                const moFromMr = Math.floor(mr / 100);
+                                const moFromMa = Math.floor(ma / 10);
+                                const remMr = mr % 100;
+                                const remMa = ma % 10;
+                                const addMo = moFromMr + moFromMa;
+                                if (addMo > 0) {
+                                  aggiorna({ denari: { ...d, mr: remMr, ma: remMa, mo: (d.mo || 0) + addMo } });
+                                } else {
+                                  alert("Non hai abbastanza monete di rame o argento per convertire in 1 MO!");
+                                }
+                              }}
+                            >
+                              🔄 Semplifica in Oro (MO)
+                            </button>
+                          </div>
+                        );
+                      })()}
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
                         {DENARI.map(({ key, label }) => (
                           <div key={key} style={{ ...styles.vitalBox, minHeight: 'auto', padding: '8px 4px', background: C.bg }}>
@@ -6217,6 +6279,37 @@ export default function App() {
               <button style={{ ...styles.buttonMini, fontWeight: 700 }} onClick={prossimoTurno} title={t('ct.succ')}>{t('ct.turno')} ▶</button>
               <span style={{ flex: 1 }} />
               <button style={styles.buttonMini} onClick={ordinaIniziativa} title="Ordina i combattenti per iniziativa decrescente">🔃 Ordina</button>
+              <button
+                style={{ ...styles.buttonMini, color: C.goldDark, borderColor: C.goldDark }}
+                title="Tira automaticamente 1d20 per tutti i combattenti che hanno Iniziativa a 0, poi ordina la lista"
+                onClick={() => {
+                  setCombat((c) => ({
+                    ...c,
+                    combattenti: c.combattenti.map((cb) => ({
+                      ...cb,
+                      iniziativa: cb.iniziativa ? cb.iniziativa : tiraDado(20) + (cb.tipo === 'pg' ? modificatore(scheda.caratteristiche?.destrezza || 10) : Math.floor(Math.random() * 5))
+                    }))
+                  }));
+                  setTimeout(ordinaIniziativa, 50);
+                }}
+              >
+                🎲 Tira Iniziative (0)
+              </button>
+              <button
+                style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }}
+                title="Applica un danno ad area (Es. Palla di Fuoco) a tutti i nemici presenti nel Combat Tracker"
+                onClick={() => {
+                  const dmg = parseInt(window.prompt("Inserisci i danni ad area da applicare a TUTTI i nemici:"), 10);
+                  if (dmg > 0) {
+                    setCombat((c) => ({
+                      ...c,
+                      combattenti: c.combattenti.map((cb) => cb.tipo === 'nemico' ? { ...cb, pfAttuali: Math.max(0, cb.pfAttuali - dmg) } : cb)
+                    }));
+                  }
+                }}
+              >
+                💥 Danno ad Area (Nemici)
+              </button>
               <button style={styles.buttonMini} onClick={aggiungiPgAlCombat} title={t('ct.aggiungi_pg')}>➕ {t('ct.pg')}</button>
               <button style={styles.buttonMini} onClick={() => aggiungiCombattente('alleato')}>➕ {t('ct.alleato')}</button>
               <button style={styles.buttonMini} onClick={() => aggiungiCombattente('nemico')}>➕ {t('ct.nemico')}</button>
