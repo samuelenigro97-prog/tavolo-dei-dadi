@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { ICONE_CLASSE, ICONE_SPECIE } from './ritratti';
 import { t, setLinguaAttuale, DIZIONARIO, traduciDato } from './i18n';
+import { AMBIENTI_AUDIO, avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro } from './utils/audioAmbiente';
 
 // ---------------------------------------------------------------------------
 // Palette e stili
@@ -19,6 +20,7 @@ const C = {
   goldDark: 'var(--c-gold-dark)',
   red: 'var(--c-red)',
   green: 'var(--c-green)',
+  title: 'var(--c-title)',
 };
 
 // Un colore per ogni tipo di dado.
@@ -32,40 +34,48 @@ const COLORE_DADO = {
   100: '#5b6770',
 };
 
-// Valori base del tema (devono combaciare con le variabili in GLOBAL_CSS):
-// da qui il tema viene ricostruito in JS per poterlo tingere in base alla classe.
-const BASE_TEMA = {
-  chiaro: { bg: '#f4f1ea', panel: '#ffffff', panelLight: '#f7f4ee', border: '#ddd5c6', ink: '#2b2620', inkDim: '#8d8272', gold: '#b8860b', goldDark: '#8a6508', red: '#b03a2e', green: '#3e7d32', title: '#9e2b25' },
-  scuro: { bg: '#171310', panel: '#211b16', panelLight: '#2a231c', border: '#46392b', ink: '#e9dfcd', inkDim: '#a0937f', gold: '#c9a227', goldDark: '#dcb84f', red: '#d0685a', green: '#7fb069', title: '#de8f88' },
-};
-
-// Preset di colori aggiuntivi: sovrascrivono solo i valori di palette,
-// il meccanismo tinta-classe funziona sopra come prima.
+// Preset di colori aggiuntivi (Temi di Ambientazione D&D):
+// sovrascrivono i valori di palette, il meccanismo tinta-classe funziona sopra come prima.
 const PRESET_COLORI = [
   {
-    id: 'default', nome: '🟤 Pergamena',
+    id: 'default', nome: '🟤 Pergamena & Taverna',
     chiaro: {},
     scuro: {},
   },
   {
-    id: 'foresta', nome: '🌿 Foresta',
-    chiaro: { bg: '#eef3ec', panel: '#f5faf4', panelLight: '#edf7eb', border: '#b8d9b0', ink: '#1a2e19', inkDim: '#5a7a55', gold: '#5a8c3a', goldDark: '#3e6d22', title: '#3e6d22' },
-    scuro:  { bg: '#0f1a0f', panel: '#162116', panelLight: '#1e2c1e', border: '#2e4a2e', ink: '#d4edcc', inkDim: '#7aaa70', gold: '#6dba48', goldDark: '#8fd868', title: '#8fd868' },
+    id: 'foresta', nome: '🌲 Foresta di Criptaferro',
+    chiaro: { bg: '#eef3ec', panel: '#f5faf4', panelLight: '#edf7eb', border: '#a3cba0', ink: '#182b17', inkDim: '#4e6d49', gold: '#4d7c30', goldDark: '#355c1d', title: '#355c1d' },
+    scuro:  { bg: '#0b140b', panel: '#121e12', panelLight: '#182818', border: '#284428', ink: '#d2ecc9', inkDim: '#70a065', gold: '#5caa3b', goldDark: '#7dcf5a', title: '#7dcf5a' },
   },
   {
-    id: 'oceano', nome: '🌊 Oceano',
-    chiaro: { bg: '#eaf2fa', panel: '#f4f9ff', panelLight: '#e9f3fb', border: '#aacfe0', ink: '#12283a', inkDim: '#4a7a96', gold: '#1a6a9a', goldDark: '#0f4f78', title: '#0f4f78' },
-    scuro:  { bg: '#090f19', panel: '#0f1a2e', panelLight: '#172338', border: '#1a3550', ink: '#c8dff0', inkDim: '#6098b8', gold: '#3a9ad4', goldDark: '#5ab8f0', title: '#5ab8f0' },
+    id: 'dungeon', nome: '🏰 Dungeon Oscuro & Cripte',
+    chiaro: { bg: '#eef0f2', panel: '#f6f7f9', panelLight: '#e4e7ec', border: '#b0b8c4', ink: '#1c222c', inkDim: '#546070', gold: '#b87d1a', goldDark: '#8a5a0c', title: '#8a5a0c' },
+    scuro:  { bg: '#0d1015', panel: '#141922', panelLight: '#1b222f', border: '#283244', ink: '#d8e0ec', inkDim: '#6b7a94', gold: '#d4982a', goldDark: '#f0b440', title: '#f0b440' },
   },
   {
-    id: 'crepuscolo', nome: '🌅 Crepuscolo',
-    chiaro: { bg: '#faf0ea', panel: '#fff8f5', panelLight: '#fdf2ec', border: '#e0c0a8', ink: '#2e1a10', inkDim: '#9a6a50', gold: '#c05020', goldDark: '#9a3a10', title: '#9a3a10' },
-    scuro:  { bg: '#160d08', panel: '#241510', panelLight: '#2e1a12', border: '#4a2c1a', ink: '#f0d8c8', inkDim: '#b07058', gold: '#e06030', goldDark: '#f08050', title: '#f08050' },
+    id: 'taverna', nome: '🍺 Locanda del Puledro Impennato',
+    chiaro: { bg: '#f7f1e8', panel: '#fdfbfa', panelLight: '#f2e8dc', border: '#d8c0a4', ink: '#321c10', inkDim: '#885c40', gold: '#b86214', goldDark: '#8c440a', title: '#8c440a' },
+    scuro:  { bg: '#160d08', panel: '#22140c', panelLight: '#2c1a10', border: '#482c18', ink: '#eddccc', inkDim: '#a87454', gold: '#d47620', goldDark: '#f09440', title: '#f09440' },
   },
   {
-    id: 'viola', nome: '🔮 Arcano',
+    id: 'vallegelata', nome: '❄️ Valle Gelata (Icewind Dale)',
+    chiaro: { bg: '#ebf4fa', panel: '#f5fbff', panelLight: '#e0f0fa', border: '#9cc4e0', ink: '#102436', inkDim: '#447294', gold: '#1474b0', goldDark: '#0a5280', title: '#0a5280' },
+    scuro:  { bg: '#08101a', panel: '#0f1b2b', panelLight: '#16253b', border: '#1f3a58', ink: '#cae4f8', inkDim: '#5a90ba', gold: '#2aa2f0', goldDark: '#60c0ff', title: '#60c0ff' },
+  },
+  {
+    id: 'averno', nome: '🌋 Abisso Infuocato (Averno)',
+    chiaro: { bg: '#fbeeed', panel: '#fff7f7', panelLight: '#f7e2e2', border: '#e0a8a8', ink: '#381010', inkDim: '#904040', gold: '#d03020', goldDark: '#9a1a10', title: '#9a1a10' },
+    scuro:  { bg: '#170808', panel: '#240f0f', panelLight: '#301414', border: '#502020', ink: '#f8d2d2', inkDim: '#ba6060', gold: '#f04030', goldDark: '#ff7060', title: '#ff7060' },
+  },
+  {
+    id: 'viola', nome: '🔮 Piano Astrale & Spelljammer',
     chiaro: { bg: '#f0eaf8', panel: '#faf6ff', panelLight: '#f3eeff', border: '#c8b0e0', ink: '#1e1030', inkDim: '#7a5a9a', gold: '#7030b0', goldDark: '#521888', title: '#521888' },
     scuro:  { bg: '#0f0a1a', panel: '#1a1128', panelLight: '#221633', border: '#3a2252', ink: '#e0d0f4', inkDim: '#9a78c0', gold: '#a060e0', goldDark: '#c890ff', title: '#c890ff' },
+  },
+  {
+    id: 'deserto', nome: '🏜️ Tomba delle Sabbie (Calimshan)',
+    chiaro: { bg: '#f8f2e4', panel: '#fffdf9', panelLight: '#f2e8d4', border: '#d4be94', ink: '#342814', inkDim: '#8a7244', gold: '#b89020', goldDark: '#8a6a10', title: '#8a6a10' },
+    scuro:  { bg: '#161208', panel: '#221c0e', panelLight: '#2c2514', border: '#4a3d20', ink: '#ede4cc', inkDim: '#a89460', gold: '#d4aa30', goldDark: '#f0c850', title: '#f0c850' },
   },
 ];
 
@@ -2408,6 +2418,31 @@ export default function App() {
     try { localStorage.setItem('scheda-interattiva:preset-colori', presetColori); } catch { /* niente */ }
   }, [presetColori]);
 
+  // Audio e Sottofondo Ambientale
+  const [ambienteAudio, setAmbienteAudio] = useState(() => localStorage.getItem('scheda-interattiva:ambiente-audio') || 'spento');
+  const [volumeAudio, setVolumeAudio] = useState(() => Number(localStorage.getItem('scheda-interattiva:volume-audio') || 0.5));
+  const [urlCustomAudio, setUrlCustomAudio] = useState(() => localStorage.getItem('scheda-interattiva:url-audio-custom') || '');
+  const [mostraPannelloAudio, setMostraPannelloAudio] = useState(false);
+  const [effettiSonoriAttivi, setEffettiSonoriAttivi] = useState(() => localStorage.getItem('scheda-interattiva:effetti-sonori') !== 'false');
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('scheda-interattiva:ambiente-audio', ambienteAudio);
+      localStorage.setItem('scheda-interattiva:volume-audio', volumeAudio);
+      localStorage.setItem('scheda-interattiva:url-audio-custom', urlCustomAudio);
+      localStorage.setItem('scheda-interattiva:effetti-sonori', effettiSonoriAttivi ? 'true' : 'false');
+    } catch { /* niente */ }
+  }, [ambienteAudio, volumeAudio, urlCustomAudio, effettiSonoriAttivi]);
+
+  useEffect(() => {
+    avviaAmbiente(ambienteAudio, volumeAudio, urlCustomAudio);
+  }, [ambienteAudio]);
+
+  useEffect(() => {
+    setVolumeAmbiente(volumeAudio);
+  }, [volumeAudio]);
+
+
 
   // Cloud Sync
   const [mostraCloud, setMostraCloud] = useState(false);
@@ -2748,6 +2783,7 @@ export default function App() {
     setDanni(null);
     setRolling(true);
     setTipoDadoInUso(tipoDado);
+    if (effettiSonoriAttivi) eseguiEffettoSonoro('tiro', volumeAudio);
     intervalRef.current = setInterval(() => setFaccia(tiraDado(tipoDado)), 70);
     setTimeout(() => {
       clearInterval(intervalRef.current);
@@ -2872,6 +2908,7 @@ export default function App() {
     setTiro(null);
     setRolling(true);
     setTipoDadoInUso(20);
+    if (effettiSonoriAttivi) eseguiEffettoSonoro('tiro', volumeAudio);
     intervalRef.current = setInterval(() => setFaccia(tiraDado(20)), 70);
 
     // Sfinimento: nella 5.5 (2024) −2 a ogni tiro di d20 per livello; nella
@@ -2883,6 +2920,10 @@ export default function App() {
       clearInterval(intervalRef.current);
       setFaccia(naturale);
       setRolling(false);
+      if (effettiSonoriAttivi) {
+        if (naturale === 20) eseguiEffettoSonoro('critico', volumeAudio);
+        else if (naturale === 1) eseguiEffettoSonoro('fallimento', volumeAudio);
+      }
       setTiro({ etichetta, naturale, dadi, bonus: bonusEff, totale: naturale + bonusEff, modalita, sfinimento: penSfinimento, ...extra });
       registra({
         etichetta,
@@ -2969,6 +3010,7 @@ export default function App() {
     setTiro(null);
     setRolling(true);
     setTipoDadoInUso(20);
+    if (effettiSonoriAttivi) eseguiEffettoSonoro('tiro', volumeAudio);
     intervalRef.current = setInterval(() => setFaccia(tiraDado(20)), 70);
 
     const { naturale, dadi } = tiraD20(modalita);
@@ -2976,6 +3018,10 @@ export default function App() {
       clearInterval(intervalRef.current);
       setFaccia(naturale);
       setRolling(false);
+      if (effettiSonoriAttivi) {
+        if (naturale === 20) eseguiEffettoSonoro('critico', volumeAudio);
+        else if (naturale === 1) eseguiEffettoSonoro('fallimento', volumeAudio);
+      }
       let esito;
       setScheda((s) => {
         let { successi, fallimenti } = s.tsMorte;
@@ -4552,21 +4598,91 @@ export default function App() {
             {tema === 'auto' ? t('btn.tema.auto') : tema === 'chiaro' ? t('btn.tema.chiaro') : t('btn.tema.scuro')}
           </button>
           <button
-            style={{ ...styles.modeButton(presetColori !== 'default'), fontSize: 16, padding: '3px 8px' }}
-            title={`Tema colori: ${PRESET_COLORI.find(p => p.id === presetColori)?.nome || '—'} · click per cambiare`}
+            style={{ ...styles.modeButton(presetColori !== 'default'), fontSize: 14, padding: '3px 8px' }}
+            title={`Tema Ambientazione: ${PRESET_COLORI.find(p => p.id === presetColori)?.nome || '—'} · click per cambiare`}
             onClick={() => {
               const idx = PRESET_COLORI.findIndex((p) => p.id === presetColori);
               const next = PRESET_COLORI[(idx + 1) % PRESET_COLORI.length];
               setPresetColori(next.id);
             }}
           >
-            🎨
+            🎨 {PRESET_COLORI.find(p => p.id === presetColori)?.nome.split(' ')[0] || '🟤'}
+          </button>
+          <button
+            style={{ ...styles.modeButton(ambienteAudio !== 'spento'), fontSize: 14, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}
+            title="Sottofondo e Suoni Ambientali"
+            onClick={() => setMostraPannelloAudio(!mostraPannelloAudio)}
+          >
+            🎧 {AMBIENTI_AUDIO.find(a => a.id === ambienteAudio)?.icona || '🔇'}
           </button>
         </div>
 
       </header>
 
+      {mostraPannelloAudio && (
+        <div style={{
+          background: C.panelLight, borderBottom: `1px solid ${C.border}`, padding: '10px 16px',
+          display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13, boxShadow: ombra(C.border)
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+            <div style={{ fontWeight: 'bold', color: C.goldDark, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span>🎧 Sottofondo Audio & Atmosfera D&D</span>
+              <span style={{ fontSize: 11, fontWeight: 'normal', color: C.inkDim }}>(Generazione sonora offline Web Audio)</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 12, color: C.inkDim }}>Volume:</span>
+              <input
+                type="range" min="0" max="1" step="0.05"
+                value={volumeAudio}
+                onChange={(e) => setVolumeAudio(e.target.value)}
+                style={{ width: 100, accentColor: C.gold }}
+              />
+              <span style={{ minWidth: 35, textAlign: 'right', fontSize: 12, fontWeight: 'bold' }}>{Math.round(volumeAudio * 100)}%</span>
+              <button
+                style={{ ...styles.btnMini, marginLeft: 8 }}
+                onClick={() => setMostraPannelloAudio(false)}
+              >✕</button>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {AMBIENTI_AUDIO.map((a) => {
+              const attivo = ambienteAudio === a.id;
+              return (
+                <button
+                  key={a.id}
+                  onClick={() => setAmbienteAudio(a.id)}
+                  title={a.desc}
+                  style={{
+                    padding: '6px 10px', borderRadius: 6, border: `1px solid ${attivo ? C.gold : C.border}`,
+                    background: attivo ? C.gold : C.panel, color: attivo ? '#ffffff' : C.ink,
+                    cursor: 'pointer', fontWeight: attivo ? 'bold' : 'normal', display: 'flex', alignItems: 'center', gap: 5,
+                    transition: 'all 0.15s ease', boxShadow: attivo ? `0 2px 6px ${C.gold}` : 'none'
+                  }}
+                >
+                  <span>{a.nome}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {ambienteAudio === 'custom' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+              <span style={{ fontWeight: 'bold' }}>🔗 URL MP3 / Audio:</span>
+              <input
+                type="text"
+                placeholder="https://esempio.com/suono-dungeon.mp3"
+                value={urlCustomAudio}
+                onChange={(e) => setUrlCustomAudio(e.target.value)}
+                style={{ flex: 1, padding: '6px 10px', borderRadius: 4, border: `1px solid ${C.border}`, background: C.panel, color: C.ink }}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
       <main style={styles.main}>
+
         {/* Barra del tiro */}
         <div style={styles.rollBar}>
           {(rolling || tiro || danni) && (
@@ -5218,27 +5334,16 @@ export default function App() {
 
             {/* ELEMENTI SEMPRE A VISTA: Punti Ferita (La Vita), Sfinimento (Affaticamento), Concentrazione e Condizioni */}
             {/* Punti Ferita — occupa sempre 2 colonne (o tutta la larghezza in griglia compatta) */}
-            <div style={{ ...styles.vitalBox, gridColumn: !scheda.vitaliNascondi ? 'span 2' : 'span 2' }}>
-              <div style={styles.vitalLabel}>{t("vital.pf")}</div>
-              <div style={styles.vitalValue}>
-                <Editable value={scheda.pfAttuali} tipo="numero" onChange={(v) => {
-                  // TS Concentrazione automatico: se i PF calano mentre concentri,
-                  // proponi il tiro (CD = 10 oppure metà dei danni, il più alto).
-                  const danno = scheda.pfAttuali - v;
-                  aggiorna({ pfAttuali: v });
-                  if (danno > 0 && scheda.concentrazione) {
-                    setCheckConc({ danno, cd: Math.max(10, Math.floor(danno / 2)), spell: scheda.concentrazione, esito: null });
-                  }
-                }} width={54} />
-                <span style={{ color: C.inkDim, fontSize: 16 }}>
-                  {' / '}
-                  <span title={t('vital.max_pf_tooltip') || "I Punti Ferita massimi si modificano solo dal Level Up."} style={{ display: 'inline-block', minWidth: 24, textAlign: 'center' }}>{scheda.pfMax}</span>
-                </span>
-                <span style={{ color: C.inkDim, fontSize: 14 }}>
-                  {'  '}{t('vital.temporanei')}{' '}
-                  <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={36} />
-                </span>
+            <div style={{ ...styles.vitalBox, gridColumn: !scheda.vitaliNascondi ? 'span 2' : 'span 2', padding: '12px 14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
+                <div style={{ ...styles.vitalLabel, margin: 0, fontSize: 13 }}>❤️ {t("vital.pf")}</div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(0,0,0,0.2)', padding: '2px 8px', borderRadius: 12, border: `1px solid ${C.border}` }}>
+                  <span style={{ fontSize: 12, color: C.inkDim }}>🛡️ {t("vital.temporanei")}</span>
+                  <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={32} style={{ fontSize: 13, fontWeight: 'bold', color: '#42a5f5' }} />
+                </div>
               </div>
+
+              {/* BARRA DELLA VITA STILE VIDEOGIOCO */}
               {(() => {
                 const att = Number(scheda.pfAttuali) || 0;
                 const maxPf = Number(scheda.pfMax) || 10;
@@ -5248,19 +5353,43 @@ export default function App() {
                 const percTemp = Math.max(0, Math.min(100, (temp / max) * 100));
                 const coloreNormale = (att / Math.max(1, maxPf)) > 0.5 ? 'linear-gradient(90deg, #2e7d32, #4caf50)' : (att / Math.max(1, maxPf)) > 0.25 ? 'linear-gradient(90deg, #f57f17, #ffb300)' : 'linear-gradient(90deg, #c62828, #e53935)';
                 return (
-                  <div style={{ height: 14, borderRadius: 7, background: 'rgba(0,0,0,0.5)', border: `1px solid ${C.border}`, boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.6), 0 1px 2px rgba(255,255,255,0.05)', overflow: 'hidden', margin: '10px 6px 6px', display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
-                    <div style={{ width: `${percNormale}%`, height: '100%', background: coloreNormale, transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: '0 0 8px rgba(255,255,255,0.2)' }} />
-                    {temp > 0 && <div style={{ width: `${percTemp}%`, height: '100%', background: 'linear-gradient(90deg, #1565c0, #42a5f5)', transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }} />}
+                  <div style={{ position: 'relative', height: 26, borderRadius: 13, background: 'rgba(0,0,0,0.7)', border: `2px solid ${C.goldDark}`, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.3)', overflow: 'hidden', marginBottom: 10, display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
+                    <div style={{ width: `${percNormale}%`, height: '100%', background: coloreNormale, transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: '0 0 10px rgba(76,175,80,0.5)', position: 'relative' }}>
+                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)' }} />
+                    </div>
+                    {temp > 0 && (
+                      <div style={{ width: `${percTemp}%`, height: '100%', background: 'linear-gradient(90deg, #1565c0, #42a5f5)', transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)', position: 'relative' }}>
+                        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)' }} />
+                      </div>
+                    )}
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 13, textShadow: '0 1px 3px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.8)', letterSpacing: 0.5, pointerEvents: 'none' }}>
+                      {att} / {maxPf} {temp > 0 ? `(+${temp})` : ''}
+                    </div>
                   </div>
                 );
               })()}
-              <div style={{ display: 'flex', gap: 4, marginTop: 6, justifyContent: 'center' }}>
-                <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }} onClick={() => aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 1) })} title={t('vital.danno')}>-1</button>
-                <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }} onClick={() => aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 5) })} title={t('vital.danno')}>-5</button>
-                <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green }} onClick={() => aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 1) })} title={t('vital.cura')}>+1</button>
-                <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green }} onClick={() => aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 5) })} title={t('vital.cura')}>+5</button>
+
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 8 }}>
+                <span style={{ fontSize: 20, fontWeight: 800, color: C.ink }}>
+                  <Editable value={scheda.pfAttuali} tipo="numero" onChange={(v) => {
+                    const danno = scheda.pfAttuali - v;
+                    aggiorna({ pfAttuali: v });
+                    if (danno > 0 && scheda.concentrazione) {
+                      setCheckConc({ danno, cd: Math.max(10, Math.floor(danno / 2)), spell: scheda.concentrazione, esito: null });
+                    }
+                  }} width={48} />
+                </span>
+                <span style={{ fontSize: 16, color: C.inkDim, fontWeight: 600 }}>/ <span title={t('vital.max_pf_tooltip')} style={{ display: 'inline-block', textAlign: 'center' }}>{scheda.pfMax}</span></span>
               </div>
-              <div style={{ ...styles.detail, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: 14 }}>
+
+              <div style={{ display: 'flex', gap: 6, marginBottom: 6, justifyContent: 'center' }}>
+                <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '3px 10px', fontWeight: 'bold' }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 1) }); }} title={t('vital.danno')}>-1</button>
+                <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '3px 10px', fontWeight: 'bold' }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 5) }); }} title={t('vital.danno')}>-5</button>
+                <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '3px 10px', fontWeight: 'bold' }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 1) }); }} title={t('vital.cura')}>+1</button>
+                <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '3px 10px', fontWeight: 'bold' }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 5) }); }} title={t('vital.cura')}>+5</button>
+              </div>
+
+              <div style={{ ...styles.detail, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: 10, paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
                   {t('vital.dadi_vita')}{' '}
                   <Rollable onRoll={tiraDadoVita} title={t('vital.dadi_vita_tooltip')}>
@@ -5309,36 +5438,6 @@ export default function App() {
                   {versione === '2024' ? `−${scheda.sfinimento * 2}` : SFINIMENTO_2014[scheda.sfinimento]}
                 </div>
               )}
-            </div>
-
-            {/* Concentrazione */}
-            <div style={{
-              ...styles.vitalBox,
-              border: `1px solid ${scheda.concentrazione ? C.goldDark : C.border}`,
-              background: scheda.concentrazione ? 'rgba(201,162,39,0.15)' : C.panelLight,
-              boxShadow: scheda.concentrazione ? '0 0 9px rgba(201,162,39,0.45)' : 'none',
-              gridColumn: !scheda.vitaliNascondi ? 'span 2' : undefined,
-            }}>
-              <div style={{ ...styles.vitalLabel, color: scheda.concentrazione ? C.goldDark : C.inkDim }}>🧠 Concentrazione</div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, width: '100%', padding: '0 4px' }}>
-                <select
-                  style={{ ...styles.inlineInput, fontSize: 11, padding: '2px 4px', fontWeight: scheda.concentrazione ? 700 : 400, color: scheda.concentrazione ? C.goldDark : C.ink, flex: 1, minWidth: 0 }}
-                  value={scheda.concentrazione || ''}
-                  onChange={(e) => aggiorna({ concentrazione: e.target.value })}
-                  title="Seleziona l'incantesimo su cui ti stai concentrando"
-                >
-                  <option value="">— Nessuna —</option>
-                  {scheda.incantesimiLista?.filter(x => /conc/i.test(x.note || '')).map((s) => (
-                    <option key={s.id} value={s.nome}>{s.nome}</option>
-                  ))}
-                  {scheda.concentrazione && !scheda.incantesimiLista?.some(x => x.nome === scheda.concentrazione) && (
-                    <option value={scheda.concentrazione}>{scheda.concentrazione}</option>
-                  )}
-                </select>
-                {scheda.concentrazione && (
-                  <button style={{ ...styles.buttonMini, fontSize: 12, padding: '1px 5px', color: C.red }} title="Termina concentrazione" onClick={() => aggiorna({ concentrazione: '' })}>✕</button>
-                )}
-              </div>
             </div>
 
             {/* Condizioni */}
