@@ -4900,15 +4900,15 @@ export default function App() {
             <button
               style={{ ...styles.buttonMini, fontSize: 12, padding: '3px 10px', fontWeight: 600, color: scheda.vitaliNascondi ? C.goldDark : C.ink, border: `1px solid ${scheda.vitaliNascondi ? C.goldDark : C.border}` }}
               onClick={() => aggiorna({ vitaliNascondi: !scheda.vitaliNascondi })}
-              title="Nascondi CA, PF, Iniziativa ecc. per risparmiare spazio, lasciando a vista solo Concentrazione, Condizioni e Sfinimento"
+              title="Nascondi CA, Iniziativa ecc. per risparmiare spazio, lasciando a vista la Vita (PF), Concentrazione, Condizioni e Sfinimento"
             >
-              {scheda.vitaliNascondi ? '👁️ Mostra CA, PF e Statistiche' : '🔻 Nascondi CA e PF'}
+              {scheda.vitaliNascondi ? '👁️ Mostra CA, Iniziativa e Statistiche' : '🔻 Nascondi CA e Statistiche'}
             </button>
           </div>
           <div className="vitali" style={scheda.vitaliNascondi ? { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 } : undefined}>
             {!scheda.vitaliNascondi && (
               <>
-            {/* RIGA 1 — Classe Armatura | Punti Ferita (x2) | Riposo | TS Morte */}
+            {/* RIGA 1 — Classe Armatura | Riposo | TS Morte */}
             {/* Classe Armatura */}
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>{t("vital.ca")}</div>
@@ -4965,83 +4965,6 @@ export default function App() {
                   ⚠️ Non competente{!competenteInArmatura(scheda, scheda.armatura.tipo) ? ` (${scheda.armatura.tipo})` : ''}{scheda.armatura.scudo && !scheda.addestramento?.armature?.scudi ? ' (scudo)' : ''}
                 </div>
               )}
-            </div>
-
-            {/* Punti Ferita — occupa 2 colonne */}
-            <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
-              <div style={styles.vitalLabel}>{t("vital.pf")}</div>
-              <div style={styles.vitalValue}>
-                <Editable value={scheda.pfAttuali} tipo="numero" onChange={(v) => {
-                  // TS Concentrazione automatico: se i PF calano mentre concentri,
-                  // proponi il tiro (CD = 10 oppure metà dei danni, il più alto).
-                  const danno = scheda.pfAttuali - v;
-                  aggiorna({ pfAttuali: v });
-                  if (danno > 0 && scheda.concentrazione) {
-                    setCheckConc({ danno, cd: Math.max(10, Math.floor(danno / 2)), spell: scheda.concentrazione, esito: null });
-                  }
-                }} width={54} />
-                <span style={{ color: C.inkDim, fontSize: 16 }}>
-                  {' / '}
-                  <span title={t('vital.max_pf_tooltip') || "I Punti Ferita massimi si modificano solo dal Level Up."} style={{ display: 'inline-block', minWidth: 24, textAlign: 'center' }}>{scheda.pfMax}</span>
-                </span>
-                <span style={{ color: C.inkDim, fontSize: 14 }}>
-                  {'  '}{t('vital.temporanei')}{' '}
-                  <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={36} />
-                </span>
-              </div>
-              {(() => {
-                const att = Number(scheda.pfAttuali) || 0;
-                const maxPf = Number(scheda.pfMax) || 10;
-                const temp = Number(scheda.pfTemp) || 0;
-                const max = Math.max(1, maxPf + temp);
-                const percNormale = Math.max(0, Math.min(100, (att / max) * 100));
-                const percTemp = Math.max(0, Math.min(100, (temp / max) * 100));
-                const coloreNormale = (att / Math.max(1, maxPf)) > 0.5 ? C.green : (att / Math.max(1, maxPf)) > 0.25 ? C.gold : C.red;
-                return (
-                  <div style={{ height: 10, borderRadius: 5, background: 'rgba(0,0,0,0.4)', border: `1px solid ${C.border}`, overflow: 'hidden', margin: '8px 4px 4px', display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
-                    <div style={{ width: `${percNormale}%`, height: '100%', background: coloreNormale, transition: 'width 0.25s ease' }} />
-                    {temp > 0 && <div style={{ width: `${percTemp}%`, height: '100%', background: '#4A90E2', transition: 'width 0.25s ease' }} />}
-                  </div>
-                );
-              })()}
-              <div style={{ display: 'flex', gap: 4, marginTop: 6, justifyContent: 'center' }}>
-                <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }} onClick={() => aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 1) })} title={t('vital.danno')}>-1</button>
-                <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }} onClick={() => aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 5) })} title={t('vital.danno')}>-5</button>
-                <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green }} onClick={() => aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 1) })} title={t('vital.cura')}>+1</button>
-                <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green }} onClick={() => aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 5) })} title={t('vital.cura')}>+5</button>
-              </div>
-              <div style={{ ...styles.detail, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: 14 }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
-                  {t('vital.dadi_vita')}{' '}
-                  <Rollable onRoll={tiraDadoVita} title={t('vital.dadi_vita_tooltip')}>
-                    <strong style={{ color: C.goldDark }}>{Math.max(1, scheda.livello || 1)}</strong>
-                  </Rollable>
-                  {' × d'}
-                  <strong style={{ color: C.goldDark }} title={t('vital.dado_tipo_tooltip')}>
-                    {facceDadoVita(scheda.dadiVita)}
-                  </strong>
-                  {' · '}{t('vital.spesi')}{' '}
-                  <select
-                    style={{ ...styles.inlineInput, fontSize: 12, padding: '1px 3px' }}
-                    value={Math.min(Math.max(0, scheda.dadiVitaSpesi || 0), Math.max(1, scheda.livello || 1))}
-                    onChange={(e) => aggiorna({ dadiVitaSpesi: Number(e.target.value) })}
-                    title={t('vital.spesi_tooltip')}
-                  >
-                    {Array.from({ length: Math.max(1, scheda.livello || 1) + 1 }, (_, i) => (
-                      <option key={i} value={i}>{i}</option>
-                    ))}
-                  </select>
-                  <span style={{ color: C.inkDim }}>/ {Math.max(1, scheda.livello || 1)}</span>
-                  <button
-                    style={{ ...styles.buttonMini, padding: '2px 8px', color: C.green, borderColor: C.green }}
-                    title={t('vital.usa_tooltip')}
-                    disabled={scheda.dadiVitaSpesi >= Math.max(1, scheda.livello || 1)}
-                    onClick={tiraDadoVita}
-                  >
-                    🎲 {t('vital.usa')}
-                  </button>
-                </span>
-              </div>
             </div>
 
             {/* Riposo */}
@@ -5177,7 +5100,84 @@ export default function App() {
               </>
             )}
 
-            {/* ELEMENTI SEMPRE A VISTA: Sfinimento (Affaticamento), Concentrazione e Condizioni */}
+            {/* ELEMENTI SEMPRE A VISTA: Punti Ferita (La Vita), Sfinimento (Affaticamento), Concentrazione e Condizioni */}
+            {/* Punti Ferita — occupa sempre 2 colonne (o tutta la larghezza in griglia compatta) */}
+            <div style={{ ...styles.vitalBox, gridColumn: !scheda.vitaliNascondi ? 'span 2' : 'span 2' }}>
+              <div style={styles.vitalLabel}>{t("vital.pf")}</div>
+              <div style={styles.vitalValue}>
+                <Editable value={scheda.pfAttuali} tipo="numero" onChange={(v) => {
+                  // TS Concentrazione automatico: se i PF calano mentre concentri,
+                  // proponi il tiro (CD = 10 oppure metà dei danni, il più alto).
+                  const danno = scheda.pfAttuali - v;
+                  aggiorna({ pfAttuali: v });
+                  if (danno > 0 && scheda.concentrazione) {
+                    setCheckConc({ danno, cd: Math.max(10, Math.floor(danno / 2)), spell: scheda.concentrazione, esito: null });
+                  }
+                }} width={54} />
+                <span style={{ color: C.inkDim, fontSize: 16 }}>
+                  {' / '}
+                  <span title={t('vital.max_pf_tooltip') || "I Punti Ferita massimi si modificano solo dal Level Up."} style={{ display: 'inline-block', minWidth: 24, textAlign: 'center' }}>{scheda.pfMax}</span>
+                </span>
+                <span style={{ color: C.inkDim, fontSize: 14 }}>
+                  {'  '}{t('vital.temporanei')}{' '}
+                  <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={36} />
+                </span>
+              </div>
+              {(() => {
+                const att = Number(scheda.pfAttuali) || 0;
+                const maxPf = Number(scheda.pfMax) || 10;
+                const temp = Number(scheda.pfTemp) || 0;
+                const max = Math.max(1, maxPf + temp);
+                const percNormale = Math.max(0, Math.min(100, (att / max) * 100));
+                const percTemp = Math.max(0, Math.min(100, (temp / max) * 100));
+                const coloreNormale = (att / Math.max(1, maxPf)) > 0.5 ? C.green : (att / Math.max(1, maxPf)) > 0.25 ? C.gold : C.red;
+                return (
+                  <div style={{ height: 10, borderRadius: 5, background: 'rgba(0,0,0,0.4)', border: `1px solid ${C.border}`, overflow: 'hidden', margin: '8px 4px 4px', display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
+                    <div style={{ width: `${percNormale}%`, height: '100%', background: coloreNormale, transition: 'width 0.25s ease' }} />
+                    {temp > 0 && <div style={{ width: `${percTemp}%`, height: '100%', background: '#4A90E2', transition: 'width 0.25s ease' }} />}
+                  </div>
+                );
+              })()}
+              <div style={{ display: 'flex', gap: 4, marginTop: 6, justifyContent: 'center' }}>
+                <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }} onClick={() => aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 1) })} title={t('vital.danno')}>-1</button>
+                <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }} onClick={() => aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 5) })} title={t('vital.danno')}>-5</button>
+                <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green }} onClick={() => aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 1) })} title={t('vital.cura')}>+1</button>
+                <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green }} onClick={() => aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 5) })} title={t('vital.cura')}>+5</button>
+              </div>
+              <div style={{ ...styles.detail, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: 14 }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
+                  {t('vital.dadi_vita')}{' '}
+                  <Rollable onRoll={tiraDadoVita} title={t('vital.dadi_vita_tooltip')}>
+                    <strong style={{ color: C.goldDark }}>{Math.max(1, scheda.livello || 1)}</strong>
+                  </Rollable>
+                  {' × d'}
+                  <strong style={{ color: C.goldDark }} title={t('vital.dado_tipo_tooltip')}>
+                    {facceDadoVita(scheda.dadiVita)}
+                  </strong>
+                  {' · '}{t('vital.spesi')}{' '}
+                  <select
+                    style={{ ...styles.inlineInput, fontSize: 12, padding: '1px 3px' }}
+                    value={Math.min(Math.max(0, scheda.dadiVitaSpesi || 0), Math.max(1, scheda.livello || 1))}
+                    onChange={(e) => aggiorna({ dadiVitaSpesi: Number(e.target.value) })}
+                    title={t('vital.spesi_tooltip')}
+                  >
+                    {Array.from({ length: Math.max(1, scheda.livello || 1) + 1 }, (_, i) => (
+                      <option key={i} value={i}>{i}</option>
+                    ))}
+                  </select>
+                  <span style={{ color: C.inkDim }}>/ {Math.max(1, scheda.livello || 1)}</span>
+                  <button
+                    style={{ ...styles.buttonMini, padding: '2px 8px', color: C.green, borderColor: C.green }}
+                    title={t('vital.usa_tooltip')}
+                    disabled={scheda.dadiVitaSpesi >= Math.max(1, scheda.livello || 1)}
+                    onClick={tiraDadoVita}
+                  >
+                    🎲 {t('vital.usa')}
+                  </button>
+                </span>
+              </div>
+            </div>
+
             {/* Sfinimento / Affaticamento */}
             <div style={styles.vitalBox}>
               <div style={styles.vitalLabel}>{t("vital.sfinimento")}</div>
