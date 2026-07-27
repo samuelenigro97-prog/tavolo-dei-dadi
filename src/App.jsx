@@ -1558,7 +1558,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.0.7';
+const APP_VERSION = '2.1.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4784,6 +4784,10 @@ export default function App() {
                 style={{ flex: 1, minWidth: 200, padding: '6px 10px', borderRadius: 4, border: `1px solid ${C.border}`, background: C.panel, color: C.ink }}
               />
             )}
+          </div>
+
+          <div style={{ fontSize: 10, color: C.inkDim, opacity: 0.8, textAlign: 'center' }}>
+            🔊 Suoni ambientali reali da Freesound.com · licenza CC0 (dominio pubblico)
           </div>
         </div>
       )}

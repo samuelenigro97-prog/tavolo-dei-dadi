@@ -30,6 +30,20 @@ let keepAliveEl = null; // <audio> near-silenzioso per l'override della modalit�
 // Tenuta moderata: il limiter sul master evita comunque il clipping.
 const MASTER_BOOST = 1.8;
 
+// Ambientazioni con un vero loop registrato (MP3 CC0 in public/audio/).
+// Per queste si usa un <audio> HTML reale (qualità vera + funziona meglio in
+// modalità silenziosa iOS); la sintesi procedurale resta solo come fallback.
+const AMBIENTI_CON_FILE = new Set([
+  'taverna', 'mercato', 'citta', 'vento', 'dungeon',
+  'foresta', 'notte', 'mare', 'pioggia', 'fuoco', 'arcano',
+]);
+
+function ambienteFileUrl(id) {
+  if (!AMBIENTI_CON_FILE.has(id)) return null;
+  const base = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/';
+  return `${base}audio/${id}.mp3`;
+}
+
 /**
  * Costruisce un data URI WAV di puro silenzio (8-bit mono) della durata indicata.
  * Serve come sorgente "innocua" per l'elemento <audio> di keep-alive iOS.
@@ -217,8 +231,23 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '') {
     htmlAudioElement = new Audio(urlCustom);
     htmlAudioElement.loop = true;
     htmlAudioElement.volume = currentVolume;
+    htmlAudioElement.setAttribute('playsinline', '');
     htmlAudioElement.play().catch(err => {
       console.warn("Impossibile riprodurre l'URL custom:", err);
+    });
+    return;
+  }
+
+  // Loop registrato reale (MP3 CC0): riproduzione via <audio> HTML.
+  const fileUrl = ambienteFileUrl(id);
+  if (fileUrl) {
+    htmlAudioElement = new Audio(fileUrl);
+    htmlAudioElement.loop = true;
+    htmlAudioElement.volume = currentVolume;
+    htmlAudioElement.setAttribute('playsinline', '');
+    htmlAudioElement.setAttribute('webkit-playsinline', '');
+    htmlAudioElement.play().catch(err => {
+      console.warn('Impossibile riprodurre il loop ambientale:', err);
     });
     return;
   }

@@ -1,0 +1,112 @@
+{
+  "taverna": {
+    "file": "taverna.mp3",
+    "freesoundId": "326313",
+    "author": "ivolipa",
+    "page": "https://freesound.org/s/326313/",
+    "license": "CC0",
+    "quality": "lq",
+    "bytes": 320904,
+    "query": "tavern ambience"
+  },
+  "mercato": {
+    "file": "mercato.mp3",
+    "freesoundId": "407165",
+    "author": "kyles",
+    "page": "https://freesound.org/s/407165/",
+    "license": "CC0",
+    "quality": "lq",
+    "bytes": 293520,
+    "query": "market crowd"
+  },
+  "citta": {
+    "file": "citta.mp3",
+    "freesoundId": "861594",
+    "author": "bassimat",
+    "page": "https://freesound.org/s/861594/",
+    "license": "CC0",
+    "quality": "lq",
+    "bytes": 340680,
+    "query": "town ambience"
+  },
+  "vento": {
+    "file": "vento.mp3",
+    "freesoundId": "841982",
+    "author": "kevinklang",
+    "page": "https://freesound.org/s/841982/",
+    "license": "CC0",
+    "quality": "lq",
+    "bytes": 168144,
+    "query": "wind loop"
+  },
+  "dungeon": {
+    "file": "dungeon.mp3",
+    "freesoundId": "512513",
+    "author": "shelbyshark",
+    "page": "https://freesound.org/s/512513/",
+    "license": "CC0",
+    "quality": "lq",
+    "bytes": 311064,
+    "query": "cave ambience"
+  },
+  "foresta": {
+    "file": "foresta.mp3",
+    "freesoundId": "860231",
+    "author": "BayTsai",
+    "page": "https://freesound.org/s/860231/",
+    "license": "CC0",
+    "quality": "lq",
+    "bytes": 337344,
+    "query": "forest ambience birds"
+  },
+  "notte": {
+    "file": "notte.mp3",
+    "freesoundId": "535765",
+    "author": "PostProdDog",
+    "page": "https://freesound.org/s/535765/",
+    "license": "CC0",
+    "quality": "lq",
+    "bytes": 293856,
+    "query": "crickets night"
+  },
+  "mare": {
+    "file": "mare.mp3",
+    "freesoundId": "852826",
+    "author": "kkenny101",
+    "page": "https://freesound.org/s/852826/",
+    "license": "CC0",
+    "quality": "lq",
+    "bytes": 190800,
+    "query": "ocean waves loop"
+  },
+  "pioggia": {
+    "file": "pioggia.mp3",
+    "freesoundId": "679176",
+    "author": "Krokulator",
+    "page": "https://freesound.org/s/679176/",
+    "license": "CC0",
+    "quality": "lq",
+    "bytes": 111600,
+    "query": "rain loop"
+  },
+  "fuoco": {
+    "file": "fuoco.mp3",
+    "freesoundId": "813328",
+    "author": "NickTayloe",
+    "page": "https://freesound.org/s/813328/",
+    "license": "CC0",
+    "quality": "lq",
+    "bytes": 374088,
+    "query": "campfire loop"
+  },
+  "arcano": {
+    "file": "arcano.mp3",
+    "freesoundId": "799351",
+    "author": "CVLTIV8R",
+    "page": "https://freesound.org/s/799351/",
+    "license": "CC0",
+    "quality": "lq",
+    "bytes": 318696,
+    "query": "drone ambience dark"
+  }
+}
