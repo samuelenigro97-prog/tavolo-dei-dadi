@@ -26,7 +26,8 @@ let currentVolume = 0.5;
 let intervalTimer = null;
 
 // Amplificazione del sottofondo procedurale (di natura molto soffuso).
-const MASTER_BOOST = 3.2;
+// Tenuta moderata: il limiter sul master evita comunque il clipping.
+const MASTER_BOOST = 1.8;
 
 /**
  * Inizializza il contesto Web Audio in modo sicuro (richiede interazione utente).
@@ -143,9 +144,9 @@ function createNoiseBuffer(ctx, type = 'pink', duration = 4) {
     let lastOut = 0.0;
     for (let i = 0; i < bufferSize; i++) {
       const white = Math.random() * 2 - 1;
-      output[i] = (lastOut + (0.02 * white)) / 1.02;
-      lastOut = output[i];
-      output[i] *= 3.5;
+      lastOut = (lastOut + (0.02 * white)) / 1.02;
+      // Guadagno contenuto per restare entro ±1 (evita clipping nel buffer stesso).
+      output[i] = Math.max(-1, Math.min(1, lastOut * 3.5));
     }
   }
   return buffer;
@@ -175,12 +176,20 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '') {
   if (!ctx) return;
 
   const masterGain = ctx.createGain();
-  // Boost: i generatori procedurali sono di per sé molto soffusi; amplifichiamo
-  // per farli sentire davvero (soprattutto sugli altoparlanti dei telefoni).
+  // Boost moderato: i generatori procedurali sono soffusi, ma senza esagerare
+  // per non distorcere. Un limiter a valle evita il clipping ("suono glitchato").
   masterGain.gain.setValueAtTime(currentVolume * MASTER_BOOST, ctx.currentTime);
-  masterGain.connect(ctx.destination);
+  // Limiter/compressore sul master: schiaccia i picchi ed elimina il clipping.
+  const limiter = ctx.createDynamicsCompressor();
+  limiter.threshold.setValueAtTime(-6, ctx.currentTime);
+  limiter.knee.setValueAtTime(6, ctx.currentTime);
+  limiter.ratio.setValueAtTime(12, ctx.currentTime);
+  limiter.attack.setValueAtTime(0.003, ctx.currentTime);
+  limiter.release.setValueAtTime(0.25, ctx.currentTime);
+  masterGain.connect(limiter);
+  limiter.connect(ctx.destination);
   masterGain._isMasterGain = true;
-  activeNodes.push(masterGain);
+  activeNodes.push(masterGain, limiter);
 
   if (id === 'pioggia') {
     const noise = ctx.createBufferSource();
