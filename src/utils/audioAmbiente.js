@@ -38,6 +38,19 @@ function getAudioContext() {
 }
 
 /**
+ * Sblocca l'audio: crea/riprende l'AudioContext in modo sincrono durante un
+ * gesto utente (click). Le policy autoplay del browser bloccano l'audio finché
+ * non c'è un'interazione: va chiamata dentro l'onClick del controllo ambientazione.
+ */
+export function sbloccaAudio() {
+  const ctx = getAudioContext();
+  if (ctx && ctx.state === 'suspended') {
+    ctx.resume();
+  }
+  return ctx;
+}
+
+/**
  * Ferma qualsiasi suono o loop attivo.
  */
 export function fermaAmbiente() {

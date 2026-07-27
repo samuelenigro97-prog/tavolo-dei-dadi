@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { ICONE_CLASSE, ICONE_SPECIE } from './ritratti';
 import { t, setLinguaAttuale, DIZIONARIO, traduciDato } from './i18n';
-import { AMBIENTI_AUDIO, avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro } from './utils/audioAmbiente';
+import { AMBIENTI_AUDIO, avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro, sbloccaAudio } from './utils/audioAmbiente';
 
 // ---------------------------------------------------------------------------
 // Palette e stili
@@ -46,44 +46,54 @@ const BASE_TEMA = {
 
 // Preset di colori aggiuntivi (Temi di Ambientazione D&D):
 // sovrascrivono i valori di palette, il meccanismo tinta-classe funziona sopra come prima.
+// Ogni preset è un'AMBIENTAZIONE completa: palette colori (chiaro/scuro) +
+// audio abbinato (id di AMBIENTI_AUDIO) + sfondo atmosferico per i margini
+// pagina (gradienti CSS leggeri, offline). Un solo controllo li applica insieme.
 const PRESET_COLORI = [
   {
-    id: 'default', nome: '🟤 Pergamena & Taverna',
+    id: 'default', nome: '🟤 Pergamena & Taverna', audio: 'spento', sfondo: '',
     chiaro: {},
     scuro: {},
   },
   {
-    id: 'foresta', nome: '🌲 Foresta di Criptaferro',
+    id: 'foresta', nome: '🌲 Foresta di Criptaferro', audio: 'foresta',
+    sfondo: 'radial-gradient(55% 50% at 0% 0%, rgba(60,140,50,0.14), transparent 62%), radial-gradient(55% 50% at 100% 100%, rgba(40,110,40,0.14), transparent 62%)',
     chiaro: { bg: '#eef3ec', panel: '#f5faf4', panelLight: '#edf7eb', border: '#a3cba0', ink: '#182b17', inkDim: '#4e6d49', gold: '#4d7c30', goldDark: '#355c1d', title: '#355c1d' },
     scuro:  { bg: '#0b140b', panel: '#121e12', panelLight: '#182818', border: '#284428', ink: '#d2ecc9', inkDim: '#70a065', gold: '#5caa3b', goldDark: '#7dcf5a', title: '#7dcf5a' },
   },
   {
-    id: 'dungeon', nome: '🏰 Dungeon Oscuro & Cripte',
+    id: 'dungeon', nome: '🏰 Dungeon Oscuro & Cripte', audio: 'dungeon',
+    sfondo: 'radial-gradient(50% 60% at 0% 30%, rgba(70,90,120,0.16), transparent 62%), radial-gradient(50% 60% at 100% 70%, rgba(45,60,90,0.16), transparent 62%)',
     chiaro: { bg: '#eef0f2', panel: '#f6f7f9', panelLight: '#e4e7ec', border: '#b0b8c4', ink: '#1c222c', inkDim: '#546070', gold: '#b87d1a', goldDark: '#8a5a0c', title: '#8a5a0c' },
     scuro:  { bg: '#0d1015', panel: '#141922', panelLight: '#1b222f', border: '#283244', ink: '#d8e0ec', inkDim: '#6b7a94', gold: '#d4982a', goldDark: '#f0b440', title: '#f0b440' },
   },
   {
-    id: 'taverna', nome: '🍺 Locanda del Puledro Impennato',
+    id: 'taverna', nome: '🍺 Locanda del Puledro Impennato', audio: 'taverna',
+    sfondo: 'radial-gradient(55% 60% at 0% 20%, rgba(210,120,40,0.15), transparent 62%), radial-gradient(55% 60% at 100% 80%, rgba(180,90,20,0.13), transparent 62%)',
     chiaro: { bg: '#f7f1e8', panel: '#fdfbfa', panelLight: '#f2e8dc', border: '#d8c0a4', ink: '#321c10', inkDim: '#885c40', gold: '#b86214', goldDark: '#8c440a', title: '#8c440a' },
     scuro:  { bg: '#160d08', panel: '#22140c', panelLight: '#2c1a10', border: '#482c18', ink: '#eddccc', inkDim: '#a87454', gold: '#d47620', goldDark: '#f09440', title: '#f09440' },
   },
   {
-    id: 'vallegelata', nome: '❄️ Valle Gelata (Icewind Dale)',
+    id: 'vallegelata', nome: '❄️ Valle Gelata (Icewind Dale)', audio: 'mare',
+    sfondo: 'radial-gradient(55% 60% at 0% 15%, rgba(60,160,230,0.15), transparent 62%), radial-gradient(55% 60% at 100% 85%, rgba(90,190,255,0.13), transparent 62%)',
     chiaro: { bg: '#ebf4fa', panel: '#f5fbff', panelLight: '#e0f0fa', border: '#9cc4e0', ink: '#102436', inkDim: '#447294', gold: '#1474b0', goldDark: '#0a5280', title: '#0a5280' },
     scuro:  { bg: '#08101a', panel: '#0f1b2b', panelLight: '#16253b', border: '#1f3a58', ink: '#cae4f8', inkDim: '#5a90ba', gold: '#2aa2f0', goldDark: '#60c0ff', title: '#60c0ff' },
   },
   {
-    id: 'averno', nome: '🌋 Abisso Infuocato (Averno)',
+    id: 'averno', nome: '🌋 Abisso Infuocato (Averno)', audio: 'fuoco',
+    sfondo: 'radial-gradient(75% 55% at 50% 118%, rgba(220,60,30,0.22), transparent 60%), radial-gradient(45% 50% at 0% 0%, rgba(240,90,40,0.13), transparent 60%)',
     chiaro: { bg: '#fbeeed', panel: '#fff7f7', panelLight: '#f7e2e2', border: '#e0a8a8', ink: '#381010', inkDim: '#904040', gold: '#d03020', goldDark: '#9a1a10', title: '#9a1a10' },
     scuro:  { bg: '#170808', panel: '#240f0f', panelLight: '#301414', border: '#502020', ink: '#f8d2d2', inkDim: '#ba6060', gold: '#f04030', goldDark: '#ff7060', title: '#ff7060' },
   },
   {
-    id: 'viola', nome: '🔮 Piano Astrale & Spelljammer',
+    id: 'viola', nome: '🔮 Piano Astrale & Spelljammer', audio: 'arcano',
+    sfondo: 'radial-gradient(60% 60% at 12% 8%, rgba(150,90,220,0.20), transparent 60%), radial-gradient(60% 60% at 88% 92%, rgba(110,60,180,0.18), transparent 60%)',
     chiaro: { bg: '#f0eaf8', panel: '#faf6ff', panelLight: '#f3eeff', border: '#c8b0e0', ink: '#1e1030', inkDim: '#7a5a9a', gold: '#7030b0', goldDark: '#521888', title: '#521888' },
     scuro:  { bg: '#0f0a1a', panel: '#1a1128', panelLight: '#221633', border: '#3a2252', ink: '#e0d0f4', inkDim: '#9a78c0', gold: '#a060e0', goldDark: '#c890ff', title: '#c890ff' },
   },
   {
-    id: 'deserto', nome: '🏜️ Tomba delle Sabbie (Calimshan)',
+    id: 'deserto', nome: '🏜️ Tomba delle Sabbie (Calimshan)', audio: 'foresta',
+    sfondo: 'radial-gradient(60% 55% at 0% 100%, rgba(210,170,60,0.15), transparent 62%), radial-gradient(60% 55% at 100% 0%, rgba(190,150,40,0.13), transparent 62%)',
     chiaro: { bg: '#f8f2e4', panel: '#fffdf9', panelLight: '#f2e8d4', border: '#d4be94', ink: '#342814', inkDim: '#8a7244', gold: '#b89020', goldDark: '#8a6a10', title: '#8a6a10' },
     scuro:  { bg: '#161208', panel: '#221c0e', panelLight: '#2c2514', border: '#4a3d20', ink: '#ede4cc', inkDim: '#a89460', gold: '#d4aa30', goldDark: '#f0c850', title: '#f0c850' },
   },
@@ -853,7 +863,7 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
 /* consente alle colonne della griglia di stringersi (niente overflow orizzontale) */
 .griglia-scheda > * { min-width: 0; }
 /* riquadri vitali: 5 colonne fisse → riga 1: CA | PF(x2) | Riposo | TsMorte ; riga 2: BonusComp | Iniziativa | Velocità | PercPass */
-.vitali { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 8px; align-items: stretch; }
+.vitali { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 8px; align-items: stretch; grid-auto-flow: row dense; }
 /* consente ai riquadri di stringersi sotto la larghezza del contenuto (niente overflow) */
 .vitali > * { min-width: 0; }
 .vitali > * > * { min-width: 0; }
@@ -1506,7 +1516,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.0.3';
+const APP_VERSION = '2.0.4';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2587,7 +2597,11 @@ export default function App() {
     const glowClasse = `radial-gradient(135% 95% at 50% -14%, ${mescola(t.bg, tintaClasse, scuroEff ? 0.26 : 0.17)}, transparent 60%)`;
     const ambra = `radial-gradient(70% 46% at 50% -2%, rgba(224,162,74,${scuroEff ? 0.13 : 0.06}), transparent 66%)`;
     const vignetta = `radial-gradient(116% 116% at 50% 42%, transparent 52%, ${mescola(t.bg, '#000000', scuroEff ? 0.42 : 0.13)} 100%)`;
-    document.body.style.background = `${glowClasse}, ${ambra}, ${vignetta}, ${t.bg}`;
+    // sfondo atmosferico dell'ambientazione (gradienti tematici nei margini pagina)
+    const sfondoAmbiente = presetDati.sfondo || '';
+    document.body.style.background = [sfondoAmbiente, glowClasse, ambra, vignetta, t.bg]
+      .filter(Boolean)
+      .join(', ');
     document.body.style.backgroundAttachment = 'fixed';
     try {
       localStorage.setItem('scheda-interattiva:tema', tema);
@@ -2864,6 +2878,29 @@ export default function App() {
     registra({ etichetta: `${t('vital.iniziativa')}: ${scheda.nome}`, tipo: 'd20', totale: initRoll, dettaglio: `d20 ${conSegno(modificatore(scheda.caratteristiche.destrezza))}` });
   }
 
+  /** Aggiorna (o inserisce) il PG attivo nel combat tracker con l'iniziativa tirata,
+   *  poi riordina la lista. Usato quando si tira l'Iniziativa dalla scheda. */
+  function sincronizzaIniziativaPg(valore) {
+    setCombat((c) => {
+      const idx = c.combattenti.findIndex((x) => x.tipo === 'pg' && x.nome === scheda.nome);
+      let lista;
+      if (idx >= 0) {
+        lista = c.combattenti.map((x, i) => (i === idx ? { ...x, iniziativa: valore } : x));
+      } else {
+        lista = [...c.combattenti, {
+          id: `c-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          nome: scheda.nome, tipo: 'pg', iniziativa: valore,
+          pfMax: scheda.pfMax, pfAttuali: scheda.pfAttuali, pfTemp: 0, ca: caTotale(scheda),
+          condizioni: [], concentrazione: false, tsMorte: { successi: 0, fallimenti: 0 },
+        }];
+      }
+      const idAttivo = c.combattenti[c.turno]?.id;
+      const ordinati = lista.sort((a, b) => (Number(b.iniziativa) || 0) - (Number(a.iniziativa) || 0));
+      const nuovoTurno = idAttivo ? Math.max(0, ordinati.findIndex((x) => x.id === idAttivo)) : 0;
+      return { ...c, attivo: true, aperto: true, combattenti: ordinati, turno: nuovoTurno };
+    });
+  }
+
   const modCombat = (id, patch) =>
     setCombat((c) => ({ ...c, combattenti: c.combattenti.map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
 
@@ -2913,6 +2950,7 @@ export default function App() {
 
   /** Tiro di d20 generico con animazione. `extra` finisce nello stato del tiro. */
   function lanciaD20(etichetta, bonus, extra = {}) {
+    const { dopoTiro, ...restExtra } = extra;
     clearInterval(intervalRef.current);
     setDanni(null);
     setTiro(null);
@@ -2934,7 +2972,7 @@ export default function App() {
         if (naturale === 20) eseguiEffettoSonoro('critico', volumeAudio);
         else if (naturale === 1) eseguiEffettoSonoro('fallimento', volumeAudio);
       }
-      setTiro({ etichetta, naturale, dadi, bonus: bonusEff, totale: naturale + bonusEff, modalita, sfinimento: penSfinimento, ...extra });
+      setTiro({ etichetta, naturale, dadi, bonus: bonusEff, totale: naturale + bonusEff, modalita, sfinimento: penSfinimento, ...restExtra });
       registra({
         etichetta,
         tipo: 'd20',
@@ -2944,6 +2982,7 @@ export default function App() {
         critico: naturale === 20,
         fumble: naturale === 1,
       });
+      if (dopoTiro) dopoTiro(naturale + bonusEff, naturale);
     }, 850);
   }
 
@@ -4608,22 +4647,11 @@ export default function App() {
             {tema === 'auto' ? t('btn.tema.auto') : tema === 'chiaro' ? t('btn.tema.chiaro') : t('btn.tema.scuro')}
           </button>
           <button
-            style={{ ...styles.modeButton(presetColori !== 'default'), fontSize: 14, padding: '3px 8px' }}
-            title={`Tema Ambientazione: ${PRESET_COLORI.find(p => p.id === presetColori)?.nome || '—'} · click per cambiare`}
-            onClick={() => {
-              const idx = PRESET_COLORI.findIndex((p) => p.id === presetColori);
-              const next = PRESET_COLORI[(idx + 1) % PRESET_COLORI.length];
-              setPresetColori(next.id);
-            }}
+            style={{ ...styles.modeButton(presetColori !== 'default'), fontSize: 14, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}
+            title="Ambientazione: cambia insieme colori, sfondo e audio · click per aprire"
+            onClick={() => { sbloccaAudio(); setMostraPannelloAudio(!mostraPannelloAudio); }}
           >
-            🎨 {PRESET_COLORI.find(p => p.id === presetColori)?.nome.split(' ')[0] || '🟤'}
-          </button>
-          <button
-            style={{ ...styles.modeButton(ambienteAudio !== 'spento'), fontSize: 14, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}
-            title="Sottofondo e Suoni Ambientali"
-            onClick={() => setMostraPannelloAudio(!mostraPannelloAudio)}
-          >
-            🎧 {AMBIENTI_AUDIO.find(a => a.id === ambienteAudio)?.icona || '🔇'}
+            🎭 {PRESET_COLORI.find(p => p.id === presetColori)?.nome.split(' ')[0] || '🟤'}
           </button>
         </div>
 
@@ -4632,62 +4660,89 @@ export default function App() {
       {mostraPannelloAudio && (
         <div style={{
           background: C.panelLight, borderBottom: `1px solid ${C.border}`, padding: '10px 16px',
-          display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13, boxShadow: ombra(C.border)
+          display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13, boxShadow: '0 4px 12px rgba(0,0,0,0.25)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
             <div style={{ fontWeight: 'bold', color: C.goldDark, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span>🎧 Sottofondo Audio & Atmosfera D&D</span>
-              <span style={{ fontSize: 11, fontWeight: 'normal', color: C.inkDim }}>(Generazione sonora offline Web Audio)</span>
+              <span>🎭 Ambientazione</span>
+              <span style={{ fontSize: 11, fontWeight: 'normal', color: C.inkDim }}>(colori, sfondo e audio insieme · tutto offline)</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 12, color: C.inkDim }}>Volume:</span>
+              <span style={{ fontSize: 12, color: C.inkDim }}>🔊</span>
               <input
                 type="range" min="0" max="1" step="0.05"
                 value={volumeAudio}
                 onChange={(e) => setVolumeAudio(e.target.value)}
                 style={{ width: 100, accentColor: C.gold }}
+                title="Volume del sottofondo"
               />
               <span style={{ minWidth: 35, textAlign: 'right', fontSize: 12, fontWeight: 'bold' }}>{Math.round(volumeAudio * 100)}%</span>
               <button
-                style={{ ...styles.btnMini, marginLeft: 8 }}
+                onClick={() => setEffettiSonoriAttivi((v) => !v)}
+                title={effettiSonoriAttivi ? 'Effetti sonori dei dadi attivi' : 'Effetti sonori dei dadi disattivati'}
+                style={{
+                  ...styles.btnMini, marginLeft: 4,
+                  border: `1px solid ${effettiSonoriAttivi ? C.gold : C.border}`,
+                  background: effettiSonoriAttivi ? C.gold : C.panel,
+                  color: effettiSonoriAttivi ? '#fff' : C.inkDim, fontWeight: 'bold'
+                }}
+              >🎲 FX {effettiSonoriAttivi ? 'ON' : 'OFF'}</button>
+              <button
+                style={{ ...styles.btnMini, marginLeft: 4 }}
                 onClick={() => setMostraPannelloAudio(false)}
               >✕</button>
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {AMBIENTI_AUDIO.map((a) => {
-              const attivo = ambienteAudio === a.id;
+          {/* Ambientazioni: un click applica palette + sfondo + audio abbinato */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: 6 }}>
+            {PRESET_COLORI.map((p) => {
+              const attivo = presetColori === p.id;
+              const suono = AMBIENTI_AUDIO.find((a) => a.id === p.audio);
               return (
                 <button
-                  key={a.id}
-                  onClick={() => setAmbienteAudio(a.id)}
-                  title={a.desc}
+                  key={p.id}
+                  onClick={() => { sbloccaAudio(); setPresetColori(p.id); setAmbienteAudio(p.audio); }}
+                  title={`${p.nome}${suono && suono.id !== 'spento' ? ` · ${suono.nome}` : ' · nessun sottofondo'}`}
                   style={{
-                    padding: '6px 10px', borderRadius: 6, border: `1px solid ${attivo ? C.gold : C.border}`,
+                    padding: '7px 10px', borderRadius: 6, border: `1px solid ${attivo ? C.gold : C.border}`,
                     background: attivo ? C.gold : C.panel, color: attivo ? '#ffffff' : C.ink,
-                    cursor: 'pointer', fontWeight: attivo ? 'bold' : 'normal', display: 'flex', alignItems: 'center', gap: 5,
+                    cursor: 'pointer', fontWeight: attivo ? 'bold' : 'normal', textAlign: 'left',
+                    display: 'flex', flexDirection: 'column', gap: 2,
                     transition: 'all 0.15s ease', boxShadow: attivo ? `0 2px 6px ${C.gold}` : 'none'
                   }}
                 >
-                  <span>{a.nome}</span>
+                  <span>{p.nome}</span>
+                  <span style={{ fontSize: 10, opacity: 0.85 }}>
+                    {p.audio === 'spento' ? '🔇 silenzio' : `${suono?.icona || '🎧'} ${suono?.nome.replace(/^\S+\s/, '') || p.audio}`}
+                  </span>
                 </button>
               );
             })}
           </div>
 
-          {ambienteAudio === 'custom' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-              <span style={{ fontWeight: 'bold' }}>🔗 URL MP3 / Audio:</span>
+          {/* Audio personalizzato (facoltativo): sovrascrive il sottofondo con un MP3/stream */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <button
+              onClick={() => { sbloccaAudio(); setAmbienteAudio(ambienteAudio === 'custom' ? 'spento' : 'custom'); }}
+              title="Usa un file/stream audio da URL al posto del sottofondo generato"
+              style={{
+                ...styles.btnMini,
+                border: `1px solid ${ambienteAudio === 'custom' ? C.gold : C.border}`,
+                background: ambienteAudio === 'custom' ? C.gold : C.panel,
+                color: ambienteAudio === 'custom' ? '#fff' : C.ink
+              }}
+            >🔗 Audio personalizzato</button>
+            {ambienteAudio === 'custom' && (
               <input
                 type="text"
                 placeholder="https://esempio.com/suono-dungeon.mp3"
                 value={urlCustomAudio}
                 onChange={(e) => setUrlCustomAudio(e.target.value)}
-                style={{ flex: 1, padding: '6px 10px', borderRadius: 4, border: `1px solid ${C.border}`, background: C.panel, color: C.ink }}
+                style={{ flex: 1, minWidth: 200, padding: '6px 10px', borderRadius: 4, border: `1px solid ${C.border}`, background: C.panel, color: C.ink }}
               />
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
 
@@ -5128,21 +5183,14 @@ export default function App() {
               </div>
             );
           })()}
-          {/* Intestazione e pulsante toggle per la mini scheda vitali */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '4px 0 8px', padding: '6px 10px', background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8 }}>
+          {/* Intestazione della mini scheda vitali (sempre visibile) */}
+          <div style={{ margin: '4px 0 8px', padding: '6px 10px', background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8 }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: C.inkDim, display: 'flex', alignItems: 'center', gap: 6 }}>
-              🛡️ {scheda.vitaliNascondi ? 'Statistiche di Battaglia Nascoste' : 'Statistiche Vitali e di Battaglia'}
+              🛡️ {t('vital.statistiche_titolo')}
             </span>
-            <button
-              style={{ ...styles.buttonMini, fontSize: 12, padding: '3px 10px', fontWeight: 600, color: scheda.vitaliNascondi ? C.goldDark : C.ink, border: `1px solid ${scheda.vitaliNascondi ? C.goldDark : C.border}` }}
-              onClick={() => aggiorna({ vitaliNascondi: !scheda.vitaliNascondi })}
-              title="Nascondi CA, Iniziativa ecc. per risparmiare spazio, lasciando a vista la Vita (PF), Concentrazione, Condizioni e Sfinimento"
-            >
-              {scheda.vitaliNascondi ? '👁️ Mostra CA, Iniziativa e Statistiche' : '🔻 Nascondi CA e Statistiche'}
-            </button>
           </div>
-          <div className="vitali" style={scheda.vitaliNascondi ? { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 } : undefined}>
-            {!scheda.vitaliNascondi && (
+          <div className="vitali">
+            {(
               <>
             {/* RIGA 1 — Classe Armatura | Riposo | TS Morte */}
             {/* Classe Armatura */}
@@ -5243,7 +5291,7 @@ export default function App() {
                 <div style={styles.vitalBox}>
                   <div style={styles.vitalLabel}>{t("vital.iniziativa")}</div>
                   <div style={styles.vitalValue}>
-                    <Rollable onRoll={() => lanciaD20('Iniziativa', modificatore(scheda.caratteristiche.destrezza))}>
+                    <Rollable onRoll={() => lanciaD20(t('vital.iniziativa'), modificatore(scheda.caratteristiche.destrezza), { dopoTiro: (tot) => sincronizzaIniziativaPg(tot) })}>
                       {conSegno(modificatore(scheda.caratteristiche.destrezza))}
                     </Rollable>
                   </div>
@@ -5344,7 +5392,7 @@ export default function App() {
 
             {/* ELEMENTI SEMPRE A VISTA: Punti Ferita (La Vita), Sfinimento (Affaticamento), Concentrazione e Condizioni */}
             {/* Punti Ferita — occupa sempre 2 colonne (o tutta la larghezza in griglia compatta) */}
-            <div style={{ ...styles.vitalBox, gridColumn: !scheda.vitaliNascondi ? 'span 2' : 'span 2', padding: '12px 14px' }}>
+            <div style={{ ...styles.vitalBox, gridColumn: 'span 2', padding: '12px 14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
                 <div style={{ ...styles.vitalLabel, margin: 0, fontSize: 13 }}>❤️ {t("vital.pf")}</div>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(0,0,0,0.2)', padding: '2px 8px', borderRadius: 12, border: `1px solid ${C.border}` }}>
@@ -5451,7 +5499,7 @@ export default function App() {
             </div>
 
             {/* Condizioni */}
-            <div style={{ ...styles.vitalBox, gridColumn: !scheda.vitaliNascondi ? '1 / -1' : 'span 2' }}>
+            <div style={{ ...styles.vitalBox, gridColumn: '1 / -1' }}>
               <div style={styles.vitalLabel}>{t("vital.condizioni")}</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center', alignItems: 'center', marginTop: 2 }}>
                 {scheda.condizioni.map((c) => (
@@ -6192,6 +6240,20 @@ export default function App() {
                                   {(danno || tipoDanno) && chip('💥', 'Danno', [danno, tipoDanno].filter(Boolean).join(' '))}
                                   {note && chip('📝', t('spell.chip_note'), note)}
                                 </div>
+                                {parseEspressioneDado(danno) && (
+                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+                                    <button
+                                      style={{ ...styles.buttonMini, fontSize: 12, padding: '4px 10px', fontWeight: 600, borderColor: C.goldDark, color: C.goldDark }}
+                                      title={t('spell.tira_attacco')}
+                                      onClick={() => lanciaD20(`${t('spell.attacco_inc')}: ${s.nome}`, scheda.bonusCompetenza + (modIncantatore || 0), { attacco: { nome: s.nome, danno, tipoDanno } })}
+                                    >🎯 {t('spell.colpire')} {conSegno(scheda.bonusCompetenza + (modIncantatore || 0))}</button>
+                                    <button
+                                      style={{ ...styles.buttonMini, fontSize: 12, padding: '4px 10px', fontWeight: 600, borderColor: C.red, color: C.red }}
+                                      title={t('spell.tira_danni_diretti')}
+                                      onClick={() => lanciaDanniDiretti(`${s.nome}${tipoDanno ? ` · ${tipoDanno}` : ''}`, danno)}
+                                    >💥 {t('spell.danni')} ({danno})</button>
+                                  </div>
+                                )}
                               </div>
                             );
                           })}
