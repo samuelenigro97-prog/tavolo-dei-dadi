@@ -24,10 +24,55 @@ let activeNodes = [];
 let htmlAudioElement = null;
 let currentVolume = 0.5;
 let intervalTimer = null;
+let keepAliveEl = null; // <audio> near-silenzioso per l'override della modalità silenziosa iOS
 
 // Amplificazione del sottofondo procedurale (di natura molto soffuso).
 // Tenuta moderata: il limiter sul master evita comunque il clipping.
 const MASTER_BOOST = 1.8;
+
+/**
+ * Costruisce un data URI WAV di puro silenzio (8-bit mono) della durata indicata.
+ * Serve come sorgente "innocua" per l'elemento <audio> di keep-alive iOS.
+ */
+function silenzioWavDataUri(durataSec = 1) {
+  const sampleRate = 8000;
+  const numSamples = Math.max(1, Math.floor(sampleRate * durataSec));
+  const dataSize = numSamples; // 8-bit mono → 1 byte per campione
+  const buffer = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(buffer);
+  const scrivi = (o, s) => { for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); };
+  scrivi(0, 'RIFF'); view.setUint32(4, 36 + dataSize, true); scrivi(8, 'WAVE');
+  scrivi(12, 'fmt '); view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate, true);
+  view.setUint16(32, 1, true); view.setUint16(34, 8, true);
+  scrivi(36, 'data'); view.setUint32(40, dataSize, true);
+  for (let i = 0; i < numSamples; i++) view.setUint8(44 + i, 128); // 128 = silenzio in 8-bit
+  const bytes = new Uint8Array(buffer);
+  let binario = '';
+  for (let i = 0; i < bytes.length; i++) binario += String.fromCharCode(bytes[i]);
+  return 'data:audio/wav;base64,' + btoa(binario);
+}
+
+/**
+ * Trucco iOS: iOS zittisce la Web Audio quando l'interruttore Silenzioso è attivo.
+ * Tenendo in loop un elemento <audio> HTML (non muto) avviato durante un gesto
+ * utente, la sessione audio passa alla categoria "playback", che IGNORA il tasto
+ * Silenzioso — così anche il sottofondo generato torna udibile. Best-effort:
+ * dipende dalla versione di iOS, ma è la tecnica standard (usata da Howler/Tone).
+ */
+function attivaOverrideSilenzioso() {
+  try {
+    if (!keepAliveEl) {
+      keepAliveEl = new Audio(silenzioWavDataUri(1));
+      keepAliveEl.loop = true;
+      keepAliveEl.setAttribute('playsinline', '');
+      keepAliveEl.setAttribute('webkit-playsinline', '');
+      keepAliveEl.volume = 0.02; // quasi-silenzioso ma NON muto (serve per l'override)
+    }
+    const p = keepAliveEl.play();
+    if (p && p.catch) p.catch(() => { /* ignorato: senza gesto valido non parte */ });
+  } catch { /* ignorato */ }
+}
 
 /**
  * Inizializza il contesto Web Audio in modo sicuro (richiede interazione utente).
@@ -51,6 +96,8 @@ function getAudioContext() {
  * non c'è un'interazione: va chiamata dentro l'onClick del controllo ambientazione.
  */
 export function sbloccaAudio() {
+  // Override della modalità silenziosa iOS (va avviato dentro il gesto utente).
+  attivaOverrideSilenzioso();
   const ctx = getAudioContext();
   if (!ctx) return ctx;
   if (ctx.state === 'suspended') ctx.resume();
@@ -159,7 +206,11 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '') {
   fermaAmbiente();
   currentVolume = Math.max(0, Math.min(1, Number(volume) || 0));
 
-  if (!id || id === 'spento') return;
+  if (!id || id === 'spento') {
+    // Silenzio: rilascia anche l'override iOS così il telefono torna normale.
+    if (keepAliveEl) { try { keepAliveEl.pause(); } catch { /* ignorato */ } }
+    return;
+  }
 
   if (id === 'custom') {
     if (!urlCustom) return;
