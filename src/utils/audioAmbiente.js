@@ -4,15 +4,19 @@
  */
 
 export const AMBIENTI_AUDIO = [
-  { id: 'spento', nome: '🔇 Silenzio (Spento)', icona: '🔇', desc: 'Nessun suono di sottofondo' },
-  { id: 'pioggia', nome: '🌧️ Locanda nella Tempesta', icona: '🌧️', desc: 'Pioggia battente e rombo di tuoni in lontananza' },
-  { id: 'taverna', nome: '🍺 Taverna Affollata', icona: '🍺', desc: 'Focolare caldo e brusio accogliente da locanda' },
-  { id: 'foresta', nome: '🌲 Foresta di Criptaferro', icona: '🌲', desc: 'Vento tra gli alberi, fruscii di foglie e natura' },
-  { id: 'dungeon', nome: '🏰 Dungeon Oscuro e Cripte', icona: '🏰', desc: 'Eco sotterraneo profondo e gocce nelle caverne' },
-  { id: 'mare', nome: '🌊 Costa di Spada', icona: '🌊', desc: 'Risacca oceanica e onde lente sulla spiaggia' },
-  { id: 'arcano', nome: '🔮 Risonanza Magica / Tempio', icona: '🔮', desc: 'Sinfonia astrale, cristalli e vibrazioni mistiche' },
-  { id: 'fuoco', nome: '🔥 Focolare da Accampamento', icona: '🔥', desc: 'Crepitio intenso della legna ardente all\'aperto' },
-  { id: 'custom', nome: '🔗 Link Audio / MP3 Custom', icona: '🔗', desc: 'Riproduci un file o stream MP3 personalizzato da URL' },
+  { id: 'spento', nome: '🔇 Silenzio', icona: '🔇', desc: 'Nessun suono di sottofondo' },
+  { id: 'taverna', nome: '🍺 Taverna', icona: '🍺', desc: 'Focolare caldo e brusio da locanda' },
+  { id: 'mercato', nome: '🏪 Mercato', icona: '🏪', desc: 'Brusio di folla e voci di venditori' },
+  { id: 'citta', nome: '🏘️ Città', icona: '🏘️', desc: 'Vociare e vita di una città medievale' },
+  { id: 'vento', nome: '🌬️ Vento', icona: '🌬️', desc: 'Vento e raffiche (castello, tundra, deserto)' },
+  { id: 'dungeon', nome: '⛓️ Dungeon', icona: '⛓️', desc: 'Eco sotterraneo e gocce nelle cripte' },
+  { id: 'foresta', nome: '🌲 Foresta', icona: '🌲', desc: 'Vento tra gli alberi e fruscii di foglie' },
+  { id: 'notte', nome: '🌙 Notte', icona: '🌙', desc: 'Brezza notturna e grilli' },
+  { id: 'mare', nome: '🌊 Mare / Costa', icona: '🌊', desc: 'Risacca e onde lente sulla spiaggia' },
+  { id: 'pioggia', nome: '🌧️ Pioggia / Tempesta', icona: '🌧️', desc: 'Pioggia battente e tuoni lontani' },
+  { id: 'fuoco', nome: '🔥 Accampamento', icona: '🔥', desc: 'Crepitio del fuoco da campo' },
+  { id: 'arcano', nome: '🔮 Tempio / Magia', icona: '🔮', desc: 'Risonanza arcana e vibrazioni mistiche' },
+  { id: 'custom', nome: '🔗 Audio personalizzato', icona: '🔗', desc: 'Riproduci un file o stream MP3 da URL' },
 ];
 
 let audioCtx = null;
@@ -20,6 +24,9 @@ let activeNodes = [];
 let htmlAudioElement = null;
 let currentVolume = 0.5;
 let intervalTimer = null;
+
+// Amplificazione del sottofondo procedurale (di natura molto soffuso).
+const MASTER_BOOST = 3.2;
 
 /**
  * Inizializza il contesto Web Audio in modo sicuro (richiede interazione utente).
@@ -44,9 +51,25 @@ function getAudioContext() {
  */
 export function sbloccaAudio() {
   const ctx = getAudioContext();
-  if (ctx && ctx.state === 'suspended') {
-    ctx.resume();
-  }
+  if (!ctx) return ctx;
+  if (ctx.state === 'suspended') ctx.resume();
+  // Blip di conferma udibile: sblocca davvero l'audio su iOS (dev'essere
+  // avviato DENTRO il gesto utente) e dà un riscontro immediato "audio attivo".
+  try {
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(660, t);
+    osc.frequency.exponentialRampToValueAtTime(990, t + 0.12);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.25, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+    osc.connect(g);
+    g.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.24);
+  } catch { /* ignored */ }
   return ctx;
 }
 
@@ -82,7 +105,7 @@ export function setVolumeAmbiente(val) {
   currentVolume = Math.max(0, Math.min(1, Number(val) || 0));
   activeNodes.forEach(node => {
     if (node._isMasterGain && node.gain) {
-      node.gain.setTargetAtTime(currentVolume, (audioCtx ? audioCtx.currentTime : 0), 0.1);
+      node.gain.setTargetAtTime(currentVolume * MASTER_BOOST, (audioCtx ? audioCtx.currentTime : 0), 0.1);
     }
   });
   if (htmlAudioElement) {
@@ -152,7 +175,9 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '') {
   if (!ctx) return;
 
   const masterGain = ctx.createGain();
-  masterGain.gain.setValueAtTime(currentVolume, ctx.currentTime);
+  // Boost: i generatori procedurali sono di per sé molto soffusi; amplifichiamo
+  // per farli sentire davvero (soprattutto sugli altoparlanti dei telefoni).
+  masterGain.gain.setValueAtTime(currentVolume * MASTER_BOOST, ctx.currentTime);
   masterGain.connect(ctx.destination);
   masterGain._isMasterGain = true;
   activeNodes.push(masterGain);
@@ -321,6 +346,117 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '') {
       osc.start();
       activeNodes.push(osc, oscGain);
     });
+  }
+  else if (id === 'mercato' || id === 'citta') {
+    // Brusio di folla di un mercato/città: murmure di fondo + voci sparse.
+    const noise = ctx.createBufferSource();
+    noise.buffer = createNoiseBuffer(ctx, 'brown', 6);
+    noise.loop = true;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 600;
+    filter.Q.value = 0.8;
+    const gain = ctx.createGain();
+    gain.gain.value = 0.75;
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(masterGain);
+    noise.start();
+    activeNodes.push(noise, filter, gain);
+
+    intervalTimer = setInterval(() => {
+      if (Math.random() < 0.6 && ctx.state === 'running') {
+        const voce = ctx.createOscillator();
+        voce.type = 'sawtooth';
+        const f = 180 + Math.random() * 260;
+        voce.frequency.setValueAtTime(f, ctx.currentTime);
+        voce.frequency.linearRampToValueAtTime(f * (0.85 + Math.random() * 0.3), ctx.currentTime + 0.3);
+        const vFilter = ctx.createBiquadFilter();
+        vFilter.type = 'bandpass';
+        vFilter.frequency.value = 500 + Math.random() * 400;
+        const vGain = ctx.createGain();
+        vGain.gain.setValueAtTime(0.0001, ctx.currentTime);
+        vGain.gain.exponentialRampToValueAtTime(0.05, ctx.currentTime + 0.08);
+        vGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.4);
+        voce.connect(vFilter);
+        vFilter.connect(vGain);
+        vGain.connect(masterGain);
+        voce.start();
+        voce.stop(ctx.currentTime + 0.45);
+      }
+    }, 700);
+  }
+  else if (id === 'vento') {
+    // Vento (castello ventoso, tundra, deserto): rumore filtrato con raffiche.
+    const noise = ctx.createBufferSource();
+    noise.buffer = createNoiseBuffer(ctx, 'pink', 8);
+    noise.loop = true;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 500;
+    filter.Q.value = 0.7;
+
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = 0.08;
+    const lfoGain = ctx.createGain();
+    lfoGain.gain.value = 350;
+    lfo.connect(lfoGain);
+    lfoGain.connect(filter.frequency);
+
+    const gain = ctx.createGain();
+    gain.gain.value = 0.2;
+    // Raffiche: seconda LFO che modula il volume.
+    const lfo2 = ctx.createOscillator();
+    lfo2.frequency.value = 0.06;
+    const lfo2Gain = ctx.createGain();
+    lfo2Gain.gain.value = 0.5;
+    lfo2.connect(lfo2Gain);
+    lfo2Gain.connect(gain.gain);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(masterGain);
+    noise.start();
+    lfo.start();
+    lfo2.start();
+    activeNodes.push(noise, filter, lfo, lfoGain, lfo2, lfo2Gain, gain);
+  }
+  else if (id === 'notte') {
+    // Notte all'aperto: brezza tenue + grilli che friniscono a intermittenza.
+    const noise = ctx.createBufferSource();
+    noise.buffer = createNoiseBuffer(ctx, 'pink', 8);
+    noise.loop = true;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 350;
+    const gain = ctx.createGain();
+    gain.gain.value = 0.25;
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(masterGain);
+    noise.start();
+    activeNodes.push(noise, filter, gain);
+
+    intervalTimer = setInterval(() => {
+      if (Math.random() < 0.7 && ctx.state === 'running') {
+        const chirps = 2 + Math.floor(Math.random() * 4);
+        const base = ctx.currentTime;
+        for (let i = 0; i < chirps; i++) {
+          const cr = ctx.createOscillator();
+          cr.type = 'square';
+          cr.frequency.value = 4200 + Math.random() * 400;
+          const crGain = ctx.createGain();
+          const at = base + i * 0.09;
+          crGain.gain.setValueAtTime(0.0001, at);
+          crGain.gain.exponentialRampToValueAtTime(0.04, at + 0.01);
+          crGain.gain.exponentialRampToValueAtTime(0.0001, at + 0.05);
+          cr.connect(crGain);
+          crGain.connect(masterGain);
+          cr.start(at);
+          cr.stop(at + 0.06);
+        }
+      }
+    }, 2500);
   }
 }
 
