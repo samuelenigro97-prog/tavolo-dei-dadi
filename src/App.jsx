@@ -823,7 +823,7 @@ const styles = {
   inlineInput: {
     background: C.panel,
     border: `1px solid ${C.gold}`,
-    borderRadius: 4,
+    borderRadius: 6,
     color: C.ink,
     fontFamily: 'inherit',
     fontSize: 'inherit',
@@ -892,6 +892,47 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
 *, *::before, *::after { box-sizing: border-box; }
 /* touch: il doppio tap deve tirare il dado, non zoomare la pagina */
 * { touch-action: manipulation; }
+
+/* ===================== SISTEMA GRAFICO UNIFICATO =====================
+   Regole di base condivise da TUTTE le sezioni, così menu a tendina, campi e
+   bottoni hanno lo stesso aspetto e le stesse interazioni ovunque. */
+:root { --raggio-s: 6px; --raggio-m: 8px; --raggio-l: 10px; }
+
+/* Campi modulo (tendine, input, aree di testo): stessa famiglia, stesse
+   transizioni e stesso anello di focus dorato in ogni sezione. */
+select, input[type="text"], input[type="number"], input[type="search"],
+input[type="url"], input[type="tel"], input:not([type]), textarea {
+  font-family: inherit;
+  color: var(--c-ink);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+select:hover, input:hover, textarea:hover { border-color: var(--c-gold); }
+select:focus-visible, input:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--c-gold);
+  outline-offset: 1px;
+}
+
+/* Menu a tendina: freccia personalizzata IDENTICA su ogni browser e sistema
+   operativo (iOS/Safari/Chrome hanno frecce native diverse: qui le uniformiamo).
+   !important per prevalere anche sugli sfondi impostati inline sui singoli select. */
+select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1.5l5 5 5-5' fill='none' stroke='%23998f7a' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/></svg>") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 9px center !important;
+  padding-right: 28px !important;
+  cursor: pointer;
+}
+
+/* Bottoni: interazione coerente ovunque (focus da tastiera, hover, pressione).
+   Non tocchiamo i colori scelti inline: aggiungiamo solo il comportamento. */
+button { font-family: inherit; cursor: pointer; transition: filter 0.12s ease, transform 0.05s ease; }
+button:focus-visible { outline: 2px solid var(--c-gold); outline-offset: 1px; }
+button:not(:disabled):hover { filter: brightness(1.07); }
+button:not(:disabled):active { transform: translateY(1px); }
+button:disabled { cursor: not-allowed; opacity: 0.55; }
+/* ==================================================================== */
 /* sezioni collassabili: niente marcatore nativo, freccia che ruota */
 .sezione > summary::-webkit-details-marker { display: none; }
 .sezione .freccia { display: inline-block; transition: transform 0.15s; font-size: 11px; color: var(--c-ink-dim); }
@@ -911,7 +952,7 @@ html, body { margin: 0; padding: 0; background: ${C.bg}; }
 .vitali > * > * { min-width: 0; }
 /* i campi anagrafica (con le tendine): font piccolo, padding compatto, allineati in basso */
 .campi-anagrafica > * { min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; }
-.campi-anagrafica select { max-width: 100%; font-size: 11px !important; padding: 1px 2px !important; height: 20px; line-height: 1.2; }
+.campi-anagrafica select { max-width: 100%; font-size: 11px !important; padding: 1px 15px 1px 3px !important; height: 20px; line-height: 1.2; background-position: right 3px center !important; background-size: 8px !important; }
 .campi-anagrafica .campo-modulo-box { padding: 0 4px !important; min-height: 28px !important; height: 28px; display: flex; align-items: center; overflow: hidden; }
 .campi-anagrafica .campo-modulo-label { font-size: 9px !important; margin-top: 2px; }
 .selettore-personaggio {
@@ -1558,7 +1599,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.1.0';
+const APP_VERSION = '2.1.1';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
