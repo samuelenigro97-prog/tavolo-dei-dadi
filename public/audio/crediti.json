@@ -1,112 +1,204 @@
 {
   "taverna": {
     "file": "taverna.mp3",
-    "freesoundId": "326313",
-    "author": "ivolipa",
-    "page": "https://freesound.org/s/326313/",
+    "freesoundId": "651364",
+    "author": "dazzamoo",
     "license": "CC0",
-    "quality": "lq",
-    "bytes": 320904,
-    "query": "tavern ambience"
+    "page": "https://freesound.org/s/651364/",
+    "bytes": 579096,
+    "query": "tavern ambience",
+    "matchTags": [
+      "crowd",
+      "pub",
+      "tavern"
+    ]
   },
   "mercato": {
     "file": "mercato.mp3",
-    "freesoundId": "407165",
-    "author": "kyles",
-    "page": "https://freesound.org/s/407165/",
+    "freesoundId": "406128",
+    "author": "spidervis",
     "license": "CC0",
-    "quality": "lq",
-    "bytes": 293520,
-    "query": "market crowd"
+    "page": "https://freesound.org/s/406128/",
+    "bytes": 418584,
+    "query": "bazaar crowd",
+    "matchTags": [
+      "bazaar",
+      "crowd",
+      "people"
+    ]
   },
   "citta": {
     "file": "citta.mp3",
-    "freesoundId": "861594",
-    "author": "bassimat",
-    "page": "https://freesound.org/s/861594/",
+    "freesoundId": "578072",
+    "author": "ramonmineiro",
     "license": "CC0",
-    "quality": "lq",
-    "bytes": 340680,
-    "query": "town ambience"
+    "page": "https://freesound.org/s/578072/",
+    "bytes": 355104,
+    "query": "medieval village ambience",
+    "matchTags": [
+      "medieval",
+      "village"
+    ]
   },
-  "vento": {
-    "file": "vento.mp3",
-    "freesoundId": "841982",
-    "author": "kevinklang",
-    "page": "https://freesound.org/s/841982/",
+  "castello": {
+    "file": "castello.mp3",
+    "freesoundId": "657538",
+    "author": "LilMati",
     "license": "CC0",
-    "quality": "lq",
-    "bytes": 168144,
-    "query": "wind loop"
+    "page": "https://freesound.org/s/657538/",
+    "bytes": 182376,
+    "query": "castle hall ambience",
+    "matchTags": [
+      "castle",
+      "hall"
+    ]
   },
   "dungeon": {
     "file": "dungeon.mp3",
-    "freesoundId": "512513",
-    "author": "shelbyshark",
-    "page": "https://freesound.org/s/512513/",
+    "freesoundId": "176395",
+    "author": "fawkes027",
     "license": "CC0",
-    "quality": "lq",
-    "bytes": 311064,
-    "query": "cave ambience"
+    "page": "https://freesound.org/s/176395/",
+    "bytes": 114528,
+    "query": "dungeon ambience",
+    "matchTags": [
+      "dark",
+      "dungeon"
+    ]
   },
   "foresta": {
     "file": "foresta.mp3",
     "freesoundId": "860231",
     "author": "BayTsai",
-    "page": "https://freesound.org/s/860231/",
     "license": "CC0",
-    "quality": "lq",
+    "page": "https://freesound.org/s/860231/",
     "bytes": 337344,
-    "query": "forest ambience birds"
+    "query": "forest ambience birds",
+    "matchTags": [
+      "birds",
+      "forest",
+      "nature"
+    ]
   },
   "notte": {
     "file": "notte.mp3",
-    "freesoundId": "535765",
-    "author": "PostProdDog",
-    "page": "https://freesound.org/s/535765/",
+    "freesoundId": "805466",
+    "author": "Vrymaa",
     "license": "CC0",
-    "quality": "lq",
-    "bytes": 293856,
-    "query": "crickets night"
+    "page": "https://freesound.org/s/805466/",
+    "bytes": 507504,
+    "query": "night crickets nature",
+    "matchTags": [
+      "cricket",
+      "crickets",
+      "insects",
+      "nature",
+      "night"
+    ]
   },
   "mare": {
     "file": "mare.mp3",
-    "freesoundId": "852826",
-    "author": "kkenny101",
-    "page": "https://freesound.org/s/852826/",
+    "freesoundId": "574546",
+    "author": "TRP",
     "license": "CC0",
-    "quality": "lq",
-    "bytes": 190800,
-    "query": "ocean waves loop"
+    "page": "https://freesound.org/s/574546/",
+    "bytes": 455208,
+    "query": "ocean waves shore",
+    "matchTags": [
+      "ocean",
+      "shore",
+      "water",
+      "waves"
+    ]
   },
-  "pioggia": {
-    "file": "pioggia.mp3",
-    "freesoundId": "679176",
-    "author": "Krokulator",
-    "page": "https://freesound.org/s/679176/",
+  "tundra": {
+    "file": "tundra.mp3",
+    "freesoundId": "117136",
+    "author": "cobratronik",
     "license": "CC0",
-    "quality": "lq",
-    "bytes": 111600,
-    "query": "rain loop"
+    "page": "https://freesound.org/s/117136/",
+    "bytes": 486216,
+    "query": "blizzard wind snow",
+    "matchTags": [
+      "arctic",
+      "blizzard",
+      "cold",
+      "snow",
+      "storm",
+      "wind"
+    ]
   },
-  "fuoco": {
-    "file": "fuoco.mp3",
-    "freesoundId": "813328",
-    "author": "NickTayloe",
-    "page": "https://freesound.org/s/813328/",
+  "tempesta": {
+    "file": "tempesta.mp3",
+    "freesoundId": "698811",
+    "author": "Audeption",
     "license": "CC0",
-    "quality": "lq",
-    "bytes": 374088,
-    "query": "campfire loop"
+    "page": "https://freesound.org/s/698811/",
+    "bytes": 174816,
+    "query": "thunderstorm rain",
+    "matchTags": [
+      "lightning",
+      "rain",
+      "thunder",
+      "thunderstorm"
+    ]
   },
-  "arcano": {
-    "file": "arcano.mp3",
-    "freesoundId": "799351",
-    "author": "CVLTIV8R",
-    "page": "https://freesound.org/s/799351/",
+  "accampamento": {
+    "file": "accampamento.mp3",
+    "freesoundId": "454745",
+    "author": "roumahum",
     "license": "CC0",
-    "quality": "lq",
-    "bytes": 318696,
-    "query": "drone ambience dark"
+    "page": "https://freesound.org/s/454745/",
+    "bytes": 173568,
+    "query": "campfire crackling night",
+    "matchTags": [
+      "campfire",
+      "crackle",
+      "crackling",
+      "fire",
+      "night"
+    ]
+  },
+  "deserto": {
+    "file": "deserto.mp3",
+    "freesoundId": "740051",
+    "author": "Vrymaa",
+    "license": "CC0",
+    "page": "https://freesound.org/s/740051/",
+    "bytes": 398856,
+    "query": "desert wind sand",
+    "matchTags": [
+      "desert",
+      "dune",
+      "sand",
+      "wind"
+    ]
+  },
+  "tempio": {
+    "file": "tempio.mp3",
+    "freesoundId": "752274",
+    "author": "IENBA",
+    "license": "CC0",
+    "page": "https://freesound.org/s/752274/",
+    "bytes": 382152,
+    "query": "mystical magic drone",
+    "matchTags": [
+      "fantasy",
+      "magic",
+      "magical",
+      "mystical"
+    ]
+  },
+  "averno": {
+    "file": "averno.mp3",
+    "freesoundId": "724667",
+    "author": "MadGravityStudio",
+    "license": "CC0",
+    "page": "https://freesound.org/s/724667/",
+    "bytes": 479280,
+    "query": "dark ominous drone horror",
+    "matchTags": [
+      "sinister"
+    ]
   }
 }

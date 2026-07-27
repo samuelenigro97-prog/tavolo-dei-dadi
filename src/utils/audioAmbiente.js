@@ -33,9 +33,10 @@ const MASTER_BOOST = 1.8;
 // Ambientazioni con un vero loop registrato (MP3 CC0 in public/audio/).
 // Per queste si usa un <audio> HTML reale (qualità vera + funziona meglio in
 // modalità silenziosa iOS); la sintesi procedurale resta solo come fallback.
+// Un file dedicato e DISTINTO per ogni ambientazione (id = id del preset).
 const AMBIENTI_CON_FILE = new Set([
-  'taverna', 'mercato', 'citta', 'vento', 'dungeon',
-  'foresta', 'notte', 'mare', 'pioggia', 'fuoco', 'arcano',
+  'taverna', 'mercato', 'citta', 'castello', 'dungeon', 'foresta', 'notte',
+  'mare', 'tundra', 'tempesta', 'accampamento', 'averno', 'deserto', 'tempio',
 ]);
 
 function ambienteFileUrl(id) {

@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { ICONE_CLASSE, ICONE_SPECIE } from './ritratti';
 import { t, setLinguaAttuale, DIZIONARIO, traduciDato } from './i18n';
-import { AMBIENTI_AUDIO, avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro, sbloccaAudio } from './utils/audioAmbiente';
+import { avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro, sbloccaAudio } from './utils/audioAmbiente';
 
 // ---------------------------------------------------------------------------
 // Palette e stili
@@ -74,7 +74,7 @@ const PRESET_COLORI = [
     scuro:  { bg: '#12100c', panel: '#1c1912', panelLight: '#252118', border: '#3d3628', ink: '#e4ddce', inkDim: '#9a8f78', gold: '#c89848', goldDark: '#e4b464', title: '#e4b464' },
   },
   {
-    id: 'castello', nome: '🏰 Castello', audio: 'vento',
+    id: 'castello', nome: '🏰 Castello', audio: 'castello',
     sfondo: 'radial-gradient(52% 58% at 0% 20%, rgba(110,130,160,0.16), transparent 62%), radial-gradient(52% 58% at 100% 80%, rgba(90,110,140,0.15), transparent 62%)',
     chiaro: { bg: '#eef0f3', panel: '#f8f9fb', panelLight: '#e4e8ee', border: '#b4bccb', ink: '#232a34', inkDim: '#5e6878', gold: '#5a7a9a', goldDark: '#3c5878', title: '#3c5878' },
     scuro:  { bg: '#0e1116', panel: '#161b23', panelLight: '#1e2530', border: '#303a48', ink: '#d6deea', inkDim: '#7788a0', gold: '#6e9ac4', goldDark: '#8fb8e0', title: '#8fb8e0' },
@@ -104,37 +104,37 @@ const PRESET_COLORI = [
     scuro:  { bg: '#06110f', panel: '#0d1c1a', panelLight: '#132724', border: '#1e4440', ink: '#c6ece6', inkDim: '#54a09a', gold: '#20b0a4', goldDark: '#50d0c4', title: '#50d0c4' },
   },
   {
-    id: 'tundra', nome: '❄️ Tundra Gelata', audio: 'vento',
+    id: 'tundra', nome: '❄️ Tundra Gelata', audio: 'tundra',
     sfondo: 'radial-gradient(55% 60% at 0% 15%, rgba(60,160,230,0.15), transparent 62%), radial-gradient(55% 60% at 100% 85%, rgba(90,190,255,0.13), transparent 62%)',
     chiaro: { bg: '#ebf4fa', panel: '#f5fbff', panelLight: '#e0f0fa', border: '#9cc4e0', ink: '#102436', inkDim: '#447294', gold: '#1474b0', goldDark: '#0a5280', title: '#0a5280' },
     scuro:  { bg: '#08101a', panel: '#0f1b2b', panelLight: '#16253b', border: '#1f3a58', ink: '#cae4f8', inkDim: '#5a90ba', gold: '#2aa2f0', goldDark: '#60c0ff', title: '#60c0ff' },
   },
   {
-    id: 'tempesta', nome: '🌧️ Pioggia / Tempesta', audio: 'pioggia',
+    id: 'tempesta', nome: '🌧️ Pioggia / Tempesta', audio: 'tempesta',
     sfondo: 'radial-gradient(55% 60% at 0% 15%, rgba(90,110,140,0.17), transparent 62%), radial-gradient(55% 60% at 100% 85%, rgba(70,90,120,0.15), transparent 62%)',
     chiaro: { bg: '#edeff2', panel: '#f6f8fa', panelLight: '#e2e6ec', border: '#aeb8c6', ink: '#1e242e', inkDim: '#586474', gold: '#5878a0', goldDark: '#3a5678', title: '#3a5678' },
     scuro:  { bg: '#0b0e13', panel: '#13171f', panelLight: '#1a1f2a', border: '#2a3340', ink: '#d2dae6', inkDim: '#68758c', gold: '#6890c0', goldDark: '#88acd8', title: '#88acd8' },
   },
   {
-    id: 'accampamento', nome: '🔥 Accampamento', audio: 'fuoco',
+    id: 'accampamento', nome: '🔥 Accampamento', audio: 'accampamento',
     sfondo: 'radial-gradient(70% 55% at 50% 115%, rgba(220,110,30,0.20), transparent 60%), radial-gradient(45% 50% at 0% 0%, rgba(230,130,40,0.12), transparent 60%)',
     chiaro: { bg: '#f9efe5', panel: '#fff8f2', panelLight: '#f4e4d4', border: '#dcb890', ink: '#3a2410', inkDim: '#8c6038', gold: '#c86818', goldDark: '#96460c', title: '#96460c' },
     scuro:  { bg: '#170e06', panel: '#23160b', panelLight: '#2e1e10', border: '#4c3418', ink: '#f0dcc4', inkDim: '#b0804c', gold: '#e07818', goldDark: '#ff9c3c', title: '#ff9c3c' },
   },
   {
-    id: 'averno', nome: '🌋 Averno Infuocato', audio: 'fuoco',
+    id: 'averno', nome: '🌋 Averno Infuocato', audio: 'averno',
     sfondo: 'radial-gradient(75% 55% at 50% 118%, rgba(220,60,30,0.22), transparent 60%), radial-gradient(45% 50% at 0% 0%, rgba(240,90,40,0.13), transparent 60%)',
     chiaro: { bg: '#fbeeed', panel: '#fff7f7', panelLight: '#f7e2e2', border: '#e0a8a8', ink: '#381010', inkDim: '#904040', gold: '#d03020', goldDark: '#9a1a10', title: '#9a1a10' },
     scuro:  { bg: '#170808', panel: '#240f0f', panelLight: '#301414', border: '#502020', ink: '#f8d2d2', inkDim: '#ba6060', gold: '#f04030', goldDark: '#ff7060', title: '#ff7060' },
   },
   {
-    id: 'deserto', nome: '🏜️ Deserto', audio: 'vento',
+    id: 'deserto', nome: '🏜️ Deserto', audio: 'deserto',
     sfondo: 'radial-gradient(60% 55% at 0% 100%, rgba(210,170,60,0.15), transparent 62%), radial-gradient(60% 55% at 100% 0%, rgba(190,150,40,0.13), transparent 62%)',
     chiaro: { bg: '#f8f2e4', panel: '#fffdf9', panelLight: '#f2e8d4', border: '#d4be94', ink: '#342814', inkDim: '#8a7244', gold: '#b89020', goldDark: '#8a6a10', title: '#8a6a10' },
     scuro:  { bg: '#161208', panel: '#221c0e', panelLight: '#2c2514', border: '#4a3d20', ink: '#ede4cc', inkDim: '#a89460', gold: '#d4aa30', goldDark: '#f0c850', title: '#f0c850' },
   },
   {
-    id: 'tempio', nome: '🔮 Tempio Arcano', audio: 'arcano',
+    id: 'tempio', nome: '🔮 Tempio Arcano', audio: 'tempio',
     sfondo: 'radial-gradient(60% 60% at 12% 8%, rgba(150,90,220,0.20), transparent 60%), radial-gradient(60% 60% at 88% 92%, rgba(110,60,180,0.18), transparent 60%)',
     chiaro: { bg: '#f0eaf8', panel: '#faf6ff', panelLight: '#f3eeff', border: '#c8b0e0', ink: '#1e1030', inkDim: '#7a5a9a', gold: '#7030b0', goldDark: '#521888', title: '#521888' },
     scuro:  { bg: '#0f0a1a', panel: '#1a1128', panelLight: '#221633', border: '#3a2252', ink: '#e0d0f4', inkDim: '#9a78c0', gold: '#a060e0', goldDark: '#c890ff', title: '#c890ff' },
@@ -1599,7 +1599,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.1.1';
+const APP_VERSION = '2.2.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4781,12 +4781,12 @@ export default function App() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: 6 }}>
             {PRESET_COLORI.map((p) => {
               const attivo = presetColori === p.id;
-              const suono = AMBIENTI_AUDIO.find((a) => a.id === p.audio);
+              const conSuono = p.audio && p.audio !== 'spento';
               return (
                 <button
                   key={p.id}
                   onClick={() => { sbloccaAudio(); setPresetColori(p.id); setAmbienteAudio(p.audio); }}
-                  title={`${p.nome}${suono && suono.id !== 'spento' ? ` · ${suono.nome}` : ' · nessun sottofondo'}`}
+                  title={`${p.nome}${conSuono ? ' · con sottofondo' : ' · nessun sottofondo'}`}
                   style={{
                     padding: '7px 10px', borderRadius: 6, border: `1px solid ${attivo ? C.gold : C.border}`,
                     background: attivo ? C.gold : C.panel, color: attivo ? '#ffffff' : C.ink,
@@ -4796,8 +4796,8 @@ export default function App() {
                   }}
                 >
                   <span>{p.nome}</span>
-                  <span style={{ fontSize: 10, opacity: 0.85 }}>
-                    {p.audio === 'spento' ? '🔇 silenzio' : `${suono?.icona || '🎧'} ${suono?.nome.replace(/^\S+\s/, '') || p.audio}`}
+                  <span style={{ fontSize: 10, opacity: 0.8 }}>
+                    {conSuono ? '🔊 sottofondo' : '🔇 silenzio'}
                   </span>
                 </button>
               );
