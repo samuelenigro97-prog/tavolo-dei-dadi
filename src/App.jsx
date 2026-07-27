@@ -23,6 +23,9 @@ const C = {
   title: 'var(--c-title)',
 };
 
+/** Numero valido o fallback (helper condiviso: usato da loader e dal Level Up). */
+function num(v, fallback) { return Number.isFinite(Number(v)) ? Number(v) : fallback; }
+
 // Un colore per ogni tipo di dado.
 const COLORE_DADO = {
   4: '#2e8b57',
@@ -32,6 +35,13 @@ const COLORE_DADO = {
   12: '#d97b12',
   20: '#b8860b',
   100: '#5b6770',
+};
+
+// Palette base del tema (chiaro/scuro): i preset qui sotto la sovrascrivono, e la
+// tinta per classe agisce sopra. NON rimuovere: è usata per costruire il tema.
+const BASE_TEMA = {
+  chiaro: { bg: '#f4f1ea', panel: '#ffffff', panelLight: '#f7f4ee', border: '#ddd5c6', ink: '#2b2620', inkDim: '#8d8272', gold: '#b8860b', goldDark: '#8a6508', red: '#b03a2e', green: '#3e7d32', title: '#9e2b25' },
+  scuro: { bg: '#171310', panel: '#211b16', panelLight: '#2a231c', border: '#46392b', ink: '#e9dfcd', inkDim: '#a0937f', gold: '#c9a227', goldDark: '#dcb84f', red: '#d0685a', green: '#7fb069', title: '#de8f88' },
 };
 
 // Preset di colori aggiuntivi (Temi di Ambientazione D&D):
@@ -1496,7 +1506,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.0.1';
+const APP_VERSION = '2.0.2';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
