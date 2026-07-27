@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { ICONE_CLASSE, ICONE_SPECIE } from './ritratti';
 import { t, setLinguaAttuale, DIZIONARIO, traduciDato } from './i18n';
-import { avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro, sbloccaAudio } from './utils/audioAmbiente';
+import { avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro, sbloccaAudio, precaricaSfx } from './utils/audioAmbiente';
 
 // ---------------------------------------------------------------------------
 // Palette e stili
@@ -1587,7 +1587,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.2.4';
+const APP_VERSION = '2.3.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2533,7 +2533,13 @@ export default function App() {
     setVolumeAmbiente(volumeAudio);
   }, [volumeAudio]);
 
-
+  // Pre-carica gli effetti sonori (colpo d'arma/incantesimo) al PRIMO tocco:
+  // così il primo tiro suona subito, senza ritardo (l'audio va sbloccato da un gesto).
+  useEffect(() => {
+    const warm = () => { precaricaSfx(); window.removeEventListener('pointerdown', warm); };
+    window.addEventListener('pointerdown', warm, { once: true });
+    return () => window.removeEventListener('pointerdown', warm);
+  }, []);
 
   // Cloud Sync
   const [mostraCloud, setMostraCloud] = useState(false);
@@ -2872,13 +2878,13 @@ export default function App() {
    * Usato da TUTTI i tiri così il dado "rotola" sempre, anche per danni,
    * dado libero, espressioni e dado vita.
    */
-  function conAnimazione(alFine, facciaFinale, tipoDado = 20) {
+  function conAnimazione(alFine, facciaFinale, tipoDado = 20, magia = false) {
     clearInterval(intervalRef.current);
     setTiro(null);
     setDanni(null);
     setRolling(true);
     setTipoDadoInUso(tipoDado);
-    if (effettiSonoriAttivi) eseguiEffettoSonoro('tiro', volumeAudio);
+    if (effettiSonoriAttivi) eseguiEffettoSonoro(magia ? 'magia' : 'tiro', volumeAudio);
     intervalRef.current = setInterval(() => setFaccia(tiraDado(tipoDado)), 70);
     setTimeout(() => {
       clearInterval(intervalRef.current);
@@ -3021,13 +3027,13 @@ export default function App() {
 
   /** Tiro di d20 generico con animazione. `extra` finisce nello stato del tiro. */
   function lanciaD20(etichetta, bonus, extra = {}) {
-    const { dopoTiro, ...restExtra } = extra;
+    const { dopoTiro, magia, ...restExtra } = extra;
     clearInterval(intervalRef.current);
     setDanni(null);
     setTiro(null);
     setRolling(true);
     setTipoDadoInUso(20);
-    if (effettiSonoriAttivi) eseguiEffettoSonoro('tiro', volumeAudio);
+    if (effettiSonoriAttivi) eseguiEffettoSonoro(magia ? 'magia' : 'tiro', volumeAudio);
     intervalRef.current = setInterval(() => setFaccia(tiraDado(20)), 70);
 
     // Sfinimento: nella 5.5 (2024) −2 a ogni tiro di d20 per livello; nella
@@ -3087,21 +3093,21 @@ export default function App() {
   }
 
   /** Tiro di danni diretto (senza tiro per colpire): mai critico. */
-  function lanciaDanniDiretti(etichetta, espressione) {
+  function lanciaDanniDiretti(etichetta, espressione, magia = false) {
     const parsata = parseEspressioneDado(espressione);
     if (!parsata) return;
     const maxFacce = Math.max(...parsata.termini.map((p) => p.facce).filter(Boolean));
     const esito = tiraDanni(parsata, false);
-    
+
     if (etichetta === 'Impulso di Magia Selvaggia') {
       esito.dettaglio = getEffettoMagiaSelvaggia(esito.totale);
       esito.tabella = true;
     }
-    
+
     conAnimazione(() => {
       setDanni({ etichetta, ...esito, critico: false });
       registra({ etichetta, tipo: esito.tabella ? 'tiro' : 'danni', totale: esito.totale, dettaglio: esito.dettaglio });
-    }, esito.totale, maxFacce || 20);
+    }, esito.totale, maxFacce || 20, magia);
   }
 
   /** Tira i danni di un attacco (con eventuale critico), indipendente dallo stato. */
@@ -6168,7 +6174,7 @@ export default function App() {
                           className="tirabile"
                           style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
                           title={t('spell.tira_attacco')}
-                          onClick={() => lanciaD20(t('spell.attacco_inc'), scheda.bonusCompetenza + modIncantatore)}
+                          onClick={() => lanciaD20(t('spell.attacco_inc'), scheda.bonusCompetenza + modIncantatore, { magia: true })}
                         >
                           🎲 {conSegno(scheda.bonusCompetenza + modIncantatore)}
                         </span>
@@ -6320,12 +6326,12 @@ export default function App() {
                                     <button
                                       style={{ ...styles.buttonMini, fontSize: 12, padding: '4px 10px', fontWeight: 600, borderColor: C.goldDark, color: C.goldDark }}
                                       title={t('spell.tira_attacco')}
-                                      onClick={() => lanciaD20(`${t('spell.attacco_inc')}: ${s.nome}`, scheda.bonusCompetenza + (modIncantatore || 0), { attacco: { nome: s.nome, danno, tipoDanno } })}
+                                      onClick={() => lanciaD20(`${t('spell.attacco_inc')}: ${s.nome}`, scheda.bonusCompetenza + (modIncantatore || 0), { attacco: { nome: s.nome, danno, tipoDanno }, magia: true })}
                                     >🎯 {t('spell.colpire')} {conSegno(scheda.bonusCompetenza + (modIncantatore || 0))}</button>
                                     <button
                                       style={{ ...styles.buttonMini, fontSize: 12, padding: '4px 10px', fontWeight: 600, borderColor: C.red, color: C.red }}
                                       title={t('spell.tira_danni_diretti')}
-                                      onClick={() => lanciaDanniDiretti(`${s.nome}${tipoDanno ? ` · ${tipoDanno}` : ''}`, danno)}
+                                      onClick={() => lanciaDanniDiretti(`${s.nome}${tipoDanno ? ` · ${tipoDanno}` : ''}`, danno, true)}
                                     >💥 {t('spell.danni')} ({danno})</button>
                                   </div>
                                 )}

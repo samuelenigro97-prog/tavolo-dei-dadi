@@ -182,5 +182,34 @@
       "magical",
       "mystical"
     ]
+  },
+  "sfx_sword": {
+    "file": "sfx-sword.mp3",
+    "freesoundId": "547041",
+    "author": "CogFireStudios",
+    "license": "CC0",
+    "page": "https://freesound.org/s/547041/",
+    "bytes": 11688,
+    "matchTags": [
+      "blade",
+      "hit",
+      "impact",
+      "metal",
+      "swing",
+      "sword"
+    ]
+  },
+  "sfx_magic": {
+    "file": "sfx-magic.mp3",
+    "freesoundId": "442774",
+    "author": "qubodup",
+    "license": "CC0",
+    "page": "https://freesound.org/s/442774/",
+    "bytes": 14376,
+    "matchTags": [
+      "cast",
+      "magic",
+      "spell"
+    ]
   }
 }

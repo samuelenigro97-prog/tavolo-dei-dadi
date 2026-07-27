@@ -89,6 +89,49 @@ function attivaOverrideSilenzioso() {
   } catch { /* ignorato */ }
 }
 
+// --- Effetti sonori "one-shot" da file (colpo d'arma, incantesimo) ---
+// Caricati e decodificati una volta in AudioBuffer per una riproduzione
+// ISTANTANEA (niente ritardo) e di qualità (file reali, non sintesi).
+const SFX_FILES = { sword: 'sfx-sword.mp3', magic: 'sfx-magic.mp3' };
+const sfxBuffers = {};
+let sfxPrecaricati = false;
+
+function baseUrl() {
+  return (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/';
+}
+
+/** Scarica e decodifica gli effetti sonori (una sola volta). Va invocata su un gesto utente. */
+export function precaricaSfx() {
+  if (sfxPrecaricati) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  sfxPrecaricati = true;
+  const base = baseUrl();
+  Object.entries(SFX_FILES).forEach(([nome, file]) => {
+    if (sfxBuffers[nome]) return;
+    fetch(`${base}audio/${file}`)
+      .then((r) => r.arrayBuffer())
+      .then((arr) => ctx.decodeAudioData(arr))
+      .then((buf) => { sfxBuffers[nome] = buf; })
+      .catch(() => { /* riproverà al prossimo giro */ });
+  });
+}
+
+/** Riproduce all'istante un effetto (buffer già decodificato). Ritorna false se non pronto. */
+function playSfx(nome, volume = 0.5) {
+  const ctx = getAudioContext();
+  precaricaSfx();
+  if (!ctx || ctx.state !== 'running' || !sfxBuffers[nome]) return false;
+  const src = ctx.createBufferSource();
+  src.buffer = sfxBuffers[nome];
+  const g = ctx.createGain();
+  g.gain.value = Math.max(0, Math.min(1, Number(volume) || 0.5));
+  src.connect(g);
+  g.connect(ctx.destination);
+  src.start();
+  return true;
+}
+
 /**
  * Inizializza il contesto Web Audio in modo sicuro (richiede interazione utente).
  */
@@ -556,31 +599,17 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '') {
  * @param {number} volume - da 0.0 a 1.0
  */
 export function eseguiEffettoSonoro(tipo, volume = 0.5) {
+  // Tiro = colpo d'arma (spada); magia = incantesimo. File reali, riproduzione
+  // istantanea via AudioBuffer (niente più il vecchio suono di dadi sintetico).
+  if (tipo === 'tiro' || tipo === 'arma') { playSfx('sword', volume); return; }
+  if (tipo === 'magia') { playSfx('magic', volume); return; }
+
   const ctx = getAudioContext();
   if (!ctx || ctx.state !== 'running') return;
 
   const v = Math.max(0, Math.min(1, Number(volume) || 0.5));
 
-  if (tipo === 'tiro') {
-    const count = 3 + Math.floor(Math.random() * 3);
-    for (let i = 0; i < count; i++) {
-      const delay = i * 0.06 + Math.random() * 0.02;
-      const osc = ctx.createBufferSource();
-      osc.buffer = createNoiseBuffer(ctx, 'brown', 0.08);
-      const filter = ctx.createBiquadFilter();
-      filter.type = 'bandpass';
-      filter.frequency.value = 800 + Math.random() * 600;
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0, ctx.currentTime + delay);
-      gain.gain.linearRampToValueAtTime(0.4 * v, ctx.currentTime + delay + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.07);
-      osc.connect(filter);
-      filter.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(ctx.currentTime + delay);
-    }
-  }
-  else if (tipo === 'critico') {
+  if (tipo === 'critico') {
     const note = [523.25, 659.25, 783.99, 1046.50];
     note.forEach((freq, idx) => {
       const delay = idx * 0.08;
