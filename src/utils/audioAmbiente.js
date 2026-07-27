@@ -35,8 +35,8 @@ const MASTER_BOOST = 1.8;
 // modalità silenziosa iOS); la sintesi procedurale resta solo come fallback.
 // Un file dedicato e DISTINTO per ogni ambientazione (id = id del preset).
 const AMBIENTI_CON_FILE = new Set([
-  'taverna', 'mercato', 'citta', 'castello', 'dungeon', 'foresta', 'notte',
-  'mare', 'tundra', 'tempesta', 'accampamento', 'averno', 'deserto', 'tempio',
+  'taverna', 'mercato', 'citta', 'dungeon', 'foresta', 'notte',
+  'mare', 'tundra', 'tempesta', 'accampamento', 'deserto', 'tempio',
 ]);
 
 function ambienteFileUrl(id) {

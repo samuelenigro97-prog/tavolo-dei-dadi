@@ -1,73 +1,58 @@
 {
   "taverna": {
     "file": "taverna.mp3",
-    "freesoundId": "635375",
-    "author": "daddy_z",
+    "freesoundId": "695295",
+    "author": "brunoboselli",
     "license": "CC0",
-    "page": "https://freesound.org/s/635375/",
-    "bytes": 139182,
-    "query": "beer mugs clink",
+    "page": "https://freesound.org/s/695295/",
+    "bytes": 522672,
     "matchTags": [
+      "ambience",
+      "beer",
       "clink",
-      "clinking",
       "glass",
-      "mugs"
+      "glasses",
+      "pub"
     ]
   },
   "mercato": {
     "file": "mercato.mp3",
-    "freesoundId": "780503",
-    "author": "adamcreeper",
+    "freesoundId": "611310",
+    "author": "IENBA",
     "license": "CC0",
-    "page": "https://freesound.org/s/780503/",
-    "bytes": 70092,
-    "query": "blacksmith forge hammer",
+    "page": "https://freesound.org/s/611310/",
+    "bytes": 144710,
     "matchTags": [
-      "anvil",
-      "blacksmith",
-      "forge",
-      "hammer",
-      "iron",
+      "medieval",
       "metal"
     ]
   },
   "citta": {
     "file": "citta.mp3",
-    "freesoundId": "703590",
-    "author": "mudflea2",
+    "freesoundId": "751331",
+    "author": "RutgerMuller",
     "license": "CC0",
-    "page": "https://freesound.org/s/703590/",
-    "bytes": 63360,
-    "query": "church bells distant",
+    "page": "https://freesound.org/s/751331/",
+    "bytes": 810264,
     "matchTags": [
-      "bells",
-      "church",
-      "distant"
-    ]
-  },
-  "castello": {
-    "file": "castello.mp3",
-    "freesoundId": "657538",
-    "author": "LilMati",
-    "license": "CC0",
-    "page": "https://freesound.org/s/657538/",
-    "bytes": 182376,
-    "query": "castle hall ambience",
-    "matchTags": [
-      "castle",
-      "hall"
+      "ambience",
+      "birds",
+      "countryside",
+      "town",
+      "village"
     ]
   },
   "dungeon": {
     "file": "dungeon.mp3",
-    "freesoundId": "176395",
-    "author": "fawkes027",
+    "freesoundId": "816416",
+    "author": "Darklitstudio",
     "license": "CC0",
-    "page": "https://freesound.org/s/176395/",
-    "bytes": 114528,
-    "query": "dungeon ambience",
+    "page": "https://freesound.org/s/816416/",
+    "bytes": 551784,
     "matchTags": [
+      "cave",
       "dark",
+      "drone",
       "dungeon"
     ]
   },
@@ -135,33 +120,33 @@
   },
   "tempesta": {
     "file": "tempesta.mp3",
-    "freesoundId": "698811",
-    "author": "Audeption",
+    "freesoundId": "151447",
+    "author": "billgrip",
     "license": "CC0",
-    "page": "https://freesound.org/s/698811/",
-    "bytes": 174816,
-    "query": "thunderstorm rain",
+    "page": "https://freesound.org/s/151447/",
+    "bytes": 584064,
     "matchTags": [
+      "ambience",
       "lightning",
       "rain",
+      "storm",
       "thunder",
       "thunderstorm"
     ]
   },
   "accampamento": {
     "file": "accampamento.mp3",
-    "freesoundId": "454745",
-    "author": "roumahum",
+    "freesoundId": "186316",
+    "author": "samararaine",
     "license": "CC0",
-    "page": "https://freesound.org/s/454745/",
-    "bytes": 173568,
-    "query": "campfire crackling night",
+    "page": "https://freesound.org/s/186316/",
+    "bytes": 1058232,
     "matchTags": [
-      "campfire",
+      "ambience",
+      "bonfire",
       "crackle",
-      "crackling",
-      "fire",
-      "night"
+      "crickets",
+      "fire"
     ]
   },
   "deserto": {
@@ -192,19 +177,6 @@
       "magic",
       "magical",
       "mystical"
-    ]
-  },
-  "averno": {
-    "file": "averno.mp3",
-    "freesoundId": "521392",
-    "author": "GoldenTricycle",
-    "license": "CC0",
-    "page": "https://freesound.org/s/521392/",
-    "bytes": 125784,
-    "query": "lava bubbling",
-    "matchTags": [
-      "bubbling",
-      "lava"
     ]
   }
 }

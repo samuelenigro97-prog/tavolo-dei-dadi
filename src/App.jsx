@@ -74,12 +74,6 @@ const PRESET_COLORI = [
     scuro:  { bg: '#12100c', panel: '#1c1912', panelLight: '#252118', border: '#3d3628', ink: '#e4ddce', inkDim: '#9a8f78', gold: '#c89848', goldDark: '#e4b464', title: '#e4b464' },
   },
   {
-    id: 'castello', nome: '🏰 Castello', audio: 'castello',
-    sfondo: 'radial-gradient(52% 58% at 0% 20%, rgba(110,130,160,0.16), transparent 62%), radial-gradient(52% 58% at 100% 80%, rgba(90,110,140,0.15), transparent 62%)',
-    chiaro: { bg: '#eef0f3', panel: '#f8f9fb', panelLight: '#e4e8ee', border: '#b4bccb', ink: '#232a34', inkDim: '#5e6878', gold: '#5a7a9a', goldDark: '#3c5878', title: '#3c5878' },
-    scuro:  { bg: '#0e1116', panel: '#161b23', panelLight: '#1e2530', border: '#303a48', ink: '#d6deea', inkDim: '#7788a0', gold: '#6e9ac4', goldDark: '#8fb8e0', title: '#8fb8e0' },
-  },
-  {
     id: 'dungeon', nome: '⛓️ Dungeon', audio: 'dungeon',
     sfondo: 'radial-gradient(50% 60% at 0% 30%, rgba(70,90,120,0.16), transparent 62%), radial-gradient(50% 60% at 100% 70%, rgba(45,60,90,0.16), transparent 62%)',
     chiaro: { bg: '#eef0f2', panel: '#f6f7f9', panelLight: '#e4e7ec', border: '#b0b8c4', ink: '#1c222c', inkDim: '#546070', gold: '#b87d1a', goldDark: '#8a5a0c', title: '#8a5a0c' },
@@ -120,12 +114,6 @@ const PRESET_COLORI = [
     sfondo: 'radial-gradient(70% 55% at 50% 115%, rgba(220,110,30,0.20), transparent 60%), radial-gradient(45% 50% at 0% 0%, rgba(230,130,40,0.12), transparent 60%)',
     chiaro: { bg: '#f9efe5', panel: '#fff8f2', panelLight: '#f4e4d4', border: '#dcb890', ink: '#3a2410', inkDim: '#8c6038', gold: '#c86818', goldDark: '#96460c', title: '#96460c' },
     scuro:  { bg: '#170e06', panel: '#23160b', panelLight: '#2e1e10', border: '#4c3418', ink: '#f0dcc4', inkDim: '#b0804c', gold: '#e07818', goldDark: '#ff9c3c', title: '#ff9c3c' },
-  },
-  {
-    id: 'averno', nome: '🌋 Averno Infuocato', audio: 'averno',
-    sfondo: 'radial-gradient(75% 55% at 50% 118%, rgba(220,60,30,0.22), transparent 60%), radial-gradient(45% 50% at 0% 0%, rgba(240,90,40,0.13), transparent 60%)',
-    chiaro: { bg: '#fbeeed', panel: '#fff7f7', panelLight: '#f7e2e2', border: '#e0a8a8', ink: '#381010', inkDim: '#904040', gold: '#d03020', goldDark: '#9a1a10', title: '#9a1a10' },
-    scuro:  { bg: '#170808', panel: '#240f0f', panelLight: '#301414', border: '#502020', ink: '#f8d2d2', inkDim: '#ba6060', gold: '#f04030', goldDark: '#ff7060', title: '#ff7060' },
   },
   {
     id: 'deserto', nome: '🏜️ Deserto', audio: 'deserto',
@@ -1599,7 +1587,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.2.2';
+const APP_VERSION = '2.2.3';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
