@@ -1,43 +1,50 @@
 {
   "taverna": {
     "file": "taverna.mp3",
-    "freesoundId": "651364",
-    "author": "dazzamoo",
+    "freesoundId": "658872",
+    "author": "oldbean3",
     "license": "CC0",
-    "page": "https://freesound.org/s/651364/",
-    "bytes": 579096,
-    "query": "tavern ambience",
+    "page": "https://freesound.org/s/658872/",
+    "bytes": 197856,
+    "query": "fireplace crackling ambience",
     "matchTags": [
-      "crowd",
-      "pub",
-      "tavern"
+      "burning",
+      "crackle",
+      "crackling",
+      "fire",
+      "fireplace",
+      "flames"
     ]
   },
   "mercato": {
     "file": "mercato.mp3",
-    "freesoundId": "406128",
-    "author": "spidervis",
+    "freesoundId": "780503",
+    "author": "adamcreeper",
     "license": "CC0",
-    "page": "https://freesound.org/s/406128/",
-    "bytes": 418584,
-    "query": "bazaar crowd",
+    "page": "https://freesound.org/s/780503/",
+    "bytes": 70092,
+    "query": "blacksmith forge hammer",
     "matchTags": [
-      "bazaar",
-      "crowd",
-      "people"
+      "anvil",
+      "blacksmith",
+      "forge",
+      "hammer",
+      "iron",
+      "metal"
     ]
   },
   "citta": {
     "file": "citta.mp3",
-    "freesoundId": "578072",
-    "author": "ramonmineiro",
+    "freesoundId": "703590",
+    "author": "mudflea2",
     "license": "CC0",
-    "page": "https://freesound.org/s/578072/",
-    "bytes": 355104,
-    "query": "medieval village ambience",
+    "page": "https://freesound.org/s/703590/",
+    "bytes": 63360,
+    "query": "church bells distant",
     "matchTags": [
-      "medieval",
-      "village"
+      "bells",
+      "church",
+      "distant"
     ]
   },
   "castello": {
@@ -191,14 +198,15 @@
   },
   "averno": {
     "file": "averno.mp3",
-    "freesoundId": "724667",
-    "author": "MadGravityStudio",
+    "freesoundId": "521392",
+    "author": "GoldenTricycle",
     "license": "CC0",
-    "page": "https://freesound.org/s/724667/",
-    "bytes": 479280,
-    "query": "dark ominous drone horror",
+    "page": "https://freesound.org/s/521392/",
+    "bytes": 125784,
+    "query": "lava bubbling",
     "matchTags": [
-      "sinister"
+      "bubbling",
+      "lava"
     ]
   }
 }
