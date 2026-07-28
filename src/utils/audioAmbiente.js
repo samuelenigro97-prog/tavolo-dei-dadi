@@ -92,7 +92,11 @@ function attivaOverrideSilenzioso() {
 // --- Effetti sonori "one-shot" da file (colpo d'arma, incantesimo) ---
 // Caricati e decodificati una volta in AudioBuffer per una riproduzione
 // ISTANTANEA (niente ritardo) e di qualità (file reali, non sintesi).
-const SFX_FILES = { sword: 'sfx-sword.mp3', magic: 'sfx-magic.mp3' };
+const SFX_FILES = {
+  sword: 'sfx-sword.mp3', magic: 'sfx-magic.mp3',
+  // Overlay per la città medievale (si sovrappongono alla base: campane, fabbro, carretti)
+  campana: 'sfx-campana.mp3', fabbro: 'sfx-fabbro.mp3', carretto: 'sfx-carretto.mp3',
+};
 const sfxBuffers = {};
 let sfxPrecaricati = false;
 
@@ -293,6 +297,19 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '') {
     htmlAudioElement.play().catch(err => {
       console.warn('Impossibile riprodurre il loop ambientale:', err);
     });
+    // Città medievale: sopra la base di folla si sentono ogni tanto campane,
+    // il fabbro che batte sull'incudine e i carretti che passano.
+    if (id === 'citta') {
+      precaricaSfx();
+      intervalTimer = setInterval(() => {
+        const ctx = getAudioContext();
+        if (!ctx || ctx.state !== 'running' || (typeof document !== 'undefined' && document.hidden)) return;
+        const r = Math.random();
+        if (r < 0.34) playSfx('campana', currentVolume * 0.5);
+        else if (r < 0.7) playSfx('fabbro', currentVolume * 0.55);
+        else playSfx('carretto', currentVolume * 0.5);
+      }, 7000);
+    }
     return;
   }
 

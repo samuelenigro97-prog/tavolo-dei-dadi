@@ -1600,7 +1600,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.4.2';
+const APP_VERSION = '2.5.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -5277,12 +5277,6 @@ export default function App() {
               </div>
             );
           })()}
-          {/* Intestazione della mini scheda vitali (sempre visibile) */}
-          <div style={{ margin: '4px 0 8px', padding: '6px 10px', background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: C.inkDim, display: 'flex', alignItems: 'center', gap: 6 }}>
-              🛡️ {t('vital.statistiche_titolo')}
-            </span>
-          </div>
           <div className="vitali">
             {(
               <>

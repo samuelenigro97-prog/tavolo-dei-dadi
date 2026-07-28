@@ -33,17 +33,15 @@
   },
   "citta": {
     "file": "citta.mp3",
-    "freesoundId": "751331",
-    "author": "RutgerMuller",
+    "freesoundId": "329773",
+    "author": "paulmessier",
     "license": "CC0",
-    "page": "https://freesound.org/s/751331/",
-    "bytes": 810264,
+    "page": "https://freesound.org/s/329773/",
+    "bytes": 244200,
     "matchTags": [
       "ambience",
-      "birds",
-      "countryside",
-      "town",
-      "village"
+      "city",
+      "street"
     ]
   },
   "dungeon": {
@@ -210,6 +208,46 @@
       "cast",
       "magic",
       "spell"
+    ]
+  },
+  "sfx_campana": {
+    "file": "sfx-campana.mp3",
+    "freesoundId": "378799",
+    "author": "kgeshev",
+    "license": "CC0",
+    "page": "https://freesound.org/s/378799/",
+    "bytes": 25896,
+    "matchTags": [
+      "bell",
+      "church"
+    ]
+  },
+  "sfx_fabbro": {
+    "file": "sfx-fabbro.mp3",
+    "freesoundId": "475416",
+    "author": "o_ciz",
+    "license": "CC0",
+    "page": "https://freesound.org/s/475416/",
+    "bytes": 33672,
+    "matchTags": [
+      "anvil",
+      "blacksmith",
+      "hammer",
+      "metal"
+    ]
+  },
+  "sfx_carretto": {
+    "file": "sfx-carretto.mp3",
+    "freesoundId": "423708",
+    "author": "Aurelon",
+    "license": "CC0",
+    "page": "https://freesound.org/s/423708/",
+    "bytes": 22824,
+    "matchTags": [
+      "cart",
+      "wheel",
+      "wheels",
+      "wooden"
     ]
   }
 }
