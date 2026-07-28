@@ -140,6 +140,18 @@ const SFONDO_CARATTERISTICA = {
   carisma:      { symbol: '✨', label: 'Carisma' },
 };
 
+// Simbolo di sfondo opaco per i riquadri vitali (come nelle caratteristiche):
+// un'emoji grande e sfumata nell'angolo, che evoca il riquadro senza disturbare.
+function SfondoVit({ children }) {
+  return (
+    <span aria-hidden style={{
+      position: 'absolute', right: -4, bottom: -12, fontSize: 54, opacity: 0.06,
+      pointerEvents: 'none', lineHeight: 1, userSelect: 'none',
+      transform: 'rotate(-8deg)', filter: 'grayscale(20%)',
+    }}>{children}</span>
+  );
+}
+
 
 // Colore identità per ogni classe (variante chiara e scura per restare leggibile).
 // `match` = sottostringhe riconosciute nel campo classe (italiano + inglese).
@@ -729,6 +741,8 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center',
     minHeight: 56,
+    position: 'relative',
+    overflow: 'hidden',
   },
   vitalLabel: {
     fontSize: 11,
@@ -1600,7 +1614,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.5.0';
+const APP_VERSION = '2.6.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -5282,7 +5296,8 @@ export default function App() {
               <>
             {/* RIGA 1 — Classe Armatura | Riposo | TS Morte */}
             {/* Classe Armatura */}
-            <div style={{ ...styles.vitalBox, order: -5 }}>
+            <div style={{ ...styles.vitalBox, order: 2, gridColumn: 'span 2' }}>
+              <SfondoVit>🛡️</SfondoVit>
               <div style={styles.vitalLabel}>{t("vital.ca")}</div>
               <div style={styles.vitalValue}>
                 {scheda.armatura.tipo === 'manuale' && !scheda.armatura.scudo && !scheda.armatura.bonus ? (
@@ -5340,7 +5355,8 @@ export default function App() {
             </div>
 
             {/* Riposo */}
-            <div style={styles.vitalBox}>
+            <div style={{ ...styles.vitalBox, order: 3, gridColumn: 'span 2' }}>
+              <SfondoVit>🌙</SfondoVit>
               <div style={styles.vitalLabel}>{t("vital.riposo")}</div>
                   <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
                     <button style={{ ...styles.buttonMini, fontSize: 11 }} onClick={() => riposoBreve()} title={t('vital.riposo_breve_tip')}>☕ {t("vital.breve")}</button>
@@ -5349,7 +5365,8 @@ export default function App() {
                 </div>
 
                 {/* TS Morte */}
-                <div style={styles.vitalBox}>
+                <div style={{ ...styles.vitalBox, order: 8 }}>
+                  <SfondoVit>💀</SfondoVit>
                   <div style={styles.vitalLabel}>{t("vital.ts_morte")}</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 3, fontSize: 11 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -5376,7 +5393,8 @@ export default function App() {
 
                 {/* RIGA 2 — Iniziativa | Velocità | Percezione Passiva | Resistenze | Visione */}
                 {/* Iniziativa */}
-                <div style={{ ...styles.vitalBox, order: -4 }}>
+                <div style={{ ...styles.vitalBox, order: 5 }}>
+                  <SfondoVit>⚡</SfondoVit>
                   <div style={styles.vitalLabel}>{t("vital.iniziativa")}</div>
                   <div style={styles.vitalValue}>
                     <Rollable onRoll={() => lanciaD20(t('vital.iniziativa'), modificatore(scheda.caratteristiche.destrezza), { dopoTiro: (tot) => sincronizzaIniziativaPg(tot) })}>
@@ -5387,9 +5405,10 @@ export default function App() {
 
                 {/* Velocità + Calcolatore Salto & Respiro */}
                 <div
-                  style={{ ...styles.vitalBox, order: -3 }}
+                  style={{ ...styles.vitalBox, order: 6 }}
                   title={`🏃 Salto in Lungo (con rincorsa): ${(scheda.caratteristiche?.forza || 10)} piedi (${((scheda.caratteristiche?.forza || 10) * 0.3).toFixed(1)} m) • ⬆️ Salto in Alto: ${3 + modificatore(scheda.caratteristiche?.forza || 10)} piedi (${((3 + modificatore(scheda.caratteristiche?.forza || 10)) * 0.3).toFixed(1)} m) • 🫁 Trattenere il Respiro: ${Math.max(1, 1 + modificatore(scheda.caratteristiche?.costituzione || 10))} minuti`}
                 >
+                  <SfondoVit>🏃</SfondoVit>
                   <div style={styles.vitalLabel}>{t("vital.movimento")}</div>
                   <div style={styles.vitalValue}>
                     <Editable value={scheda.velocita} tipo="numero" onChange={(v) => aggiorna({ velocita: v })} width={48} />
@@ -5401,13 +5420,15 @@ export default function App() {
                 </div>
 
                 {/* Percezione Passiva */}
-                <div style={{ ...styles.vitalBox, order: -2 }} title={t('vital.passive_tooltip')}>
+                <div style={{ ...styles.vitalBox, order: 7 }} title={t('vital.passive_tooltip')}>
+                  <SfondoVit>👁️</SfondoVit>
                   <div style={styles.vitalLabel}>{t("vital.percezione_passiva")}</div>
                   <div style={styles.vitalValue}>{percezionePassiva}</div>
                 </div>
 
                 {/* Resistenze — chip rimovibili + tendina */}
-                <div style={styles.vitalBox}>
+                <div style={{ ...styles.vitalBox, order: 9 }}>
+                  <SfondoVit>🧪</SfondoVit>
                   <div style={styles.vitalLabel}>{t("vital.resistenze")}</div>
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
                     <CampoConTendina
@@ -5420,7 +5441,8 @@ export default function App() {
                 </div>
 
                 {/* Vista / Sensi — chip rimovibili + tendina */}
-                <div style={styles.vitalBox}>
+                <div style={{ ...styles.vitalBox, order: 10 }}>
+                  <SfondoVit>🦉</SfondoVit>
                   <div style={styles.vitalLabel}>{t("vital.visione")}</div>
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
                     <CampoConTendina
@@ -5434,7 +5456,8 @@ export default function App() {
 
                 {/* RIGA 3 — Bonus Comp. | Ispirazione */}
                 {/* Bonus Competenza */}
-                <div style={styles.vitalBox}>
+                <div style={{ ...styles.vitalBox, order: 4 }}>
+                  <SfondoVit>✨</SfondoVit>
                   <div style={styles.vitalLabel}>{t("vital.competenza")}</div>
                   <div style={styles.vitalValue}>
                     <Editable value={conSegno(scheda.bonusCompetenza)} onChange={(v) => aggiorna({ bonusCompetenza: parseInt(v, 10) || 0 })} width={48} title={t('tip.click_modifica')} />
@@ -5450,12 +5473,13 @@ export default function App() {
 
                 {/* Ispirazione */}
                 <div style={{
-                  ...styles.vitalBox,
+                  ...styles.vitalBox, order: 13,
                   border: `1px solid ${scheda.ispirazione ? '#d4af37' : C.border}`,
                   background: scheda.ispirazione ? 'rgba(212,175,55,0.16)' : C.panelLight,
                   boxShadow: scheda.ispirazione ? '0 0 9px rgba(212,175,55,0.55)' : 'none',
                   transition: 'background 0.25s, border-color 0.25s, box-shadow 0.25s',
                 }}>
+                  <SfondoVit>⭐</SfondoVit>
                   <div style={{ ...styles.vitalLabel, color: scheda.ispirazione ? '#c8991a' : C.inkDim }}>{t("vital.ispirazione")}</div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <button
@@ -5480,7 +5504,8 @@ export default function App() {
 
             {/* ELEMENTI SEMPRE A VISTA: Punti Ferita (La Vita), Sfinimento (Affaticamento), Concentrazione e Condizioni */}
             {/* Punti Ferita — occupa sempre 2 colonne (o tutta la larghezza in griglia compatta) */}
-            <div style={{ ...styles.vitalBox, gridColumn: 'span 4', order: -6, padding: '12px 14px' }}>
+            <div style={{ ...styles.vitalBox, gridColumn: 'span 4', order: 1, padding: '12px 14px' }}>
+              <SfondoVit>🩸</SfondoVit>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
                 <div style={{ ...styles.vitalLabel, margin: 0, fontSize: 13 }}>❤️ {t("vital.pf")}</div>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(0,0,0,0.2)', padding: '2px 8px', borderRadius: 12, border: `1px solid ${C.border}` }}>
@@ -5528,14 +5553,7 @@ export default function App() {
                 <span style={{ fontSize: 16, color: C.inkDim, fontWeight: 600 }}>/ <span title={t('vital.max_pf_tooltip')} style={{ display: 'inline-block', textAlign: 'center' }}>{scheda.pfMax}</span></span>
               </div>
 
-              <div style={{ display: 'flex', gap: 6, marginBottom: 6, justifyContent: 'center' }}>
-                <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '3px 10px', fontWeight: 'bold' }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 1) }); }} title={t('vital.danno')}>-1</button>
-                <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '3px 10px', fontWeight: 'bold' }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 5) }); }} title={t('vital.danno')}>-5</button>
-                <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '3px 10px', fontWeight: 'bold' }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 1) }); }} title={t('vital.cura')}>+1</button>
-                <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '3px 10px', fontWeight: 'bold' }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 5) }); }} title={t('vital.cura')}>+5</button>
-              </div>
-
-              <div style={{ ...styles.detail, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: 10, paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
+              <div style={{ ...styles.detail, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: 6, paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
                   {t('vital.dadi_vita')}{' '}
                   <Rollable onRoll={tiraDadoVita} title={t('vital.dadi_vita_tooltip')}>
@@ -5570,7 +5588,8 @@ export default function App() {
             </div>
 
             {/* Sfinimento / Affaticamento */}
-            <div style={{ ...styles.vitalBox, order: 1 }}>
+            <div style={{ ...styles.vitalBox, order: 11 }}>
+              <SfondoVit>💤</SfondoVit>
               <div style={styles.vitalLabel}>{t("vital.sfinimento")}</div>
               <div style={styles.vitalValue}>
                 <button style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 13 }} onClick={() => aggiorna({ sfinimento: Math.max(0, scheda.sfinimento - 1) })} title={t('tip.diminuisci')}>−</button>
@@ -5587,7 +5606,8 @@ export default function App() {
             </div>
 
             {/* Condizioni */}
-            <div style={{ ...styles.vitalBox, order: 2 }}>
+            <div style={{ ...styles.vitalBox, order: 12, gridColumn: 'span 3' }}>
+              <SfondoVit>⚠️</SfondoVit>
               <div style={styles.vitalLabel}>{t("vital.condizioni")}</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center', alignItems: 'center', marginTop: 2 }}>
                 {scheda.condizioni.map((c) => (
