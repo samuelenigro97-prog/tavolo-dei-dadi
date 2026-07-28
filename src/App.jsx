@@ -947,7 +947,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 /* grid-auto-rows: auto → ogni riga è alta quanto il suo contenuto (niente più
    spazi vuoti: prima "1fr" forzava tutte le righe all'altezza della più alta).
    align-items: stretch tiene comunque uniformi i riquadri della STESSA riga. */
-.vitali { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-auto-rows: auto; gap: 8px; align-items: stretch; grid-auto-flow: row dense; }
+.vitali { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: auto; gap: 8px; align-items: stretch; }
 /* consente ai riquadri di stringersi sotto la larghezza del contenuto (niente overflow) */
 .vitali > * { min-width: 0; }
 .vitali > * > * { min-width: 0; }
@@ -1600,7 +1600,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.4.1';
+const APP_VERSION = '2.4.2';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -5117,11 +5117,11 @@ export default function App() {
         {/* Testata: anagrafica + riquadri vitali uniformi */}
         <section style={styles.panel}>
           <h2 style={styles.panelTitle}>{t("profilo.titolo")}</h2>
-          <div className="profilo-griglia" style={{ display: 'grid', gridTemplateColumns: '250px 1fr', gridTemplateAreas: '"car main" "car ritratto"', gridTemplateRows: 'auto 1fr', gap: 14 }}>
-            <div style={{ gridArea: 'ritratto', position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', minWidth: 0 }}>
+          <div className="profilo-griglia" style={{ display: 'grid', gridTemplateColumns: '230px 1fr 210px', gridTemplateAreas: '"car main ritratto"', gap: 14 }}>
+            <div style={{ gridArea: 'ritratto', position: 'relative', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
               <div
                 style={{
-                  width: '100%', flex: 1, minHeight: 220, maxHeight: 360, borderRadius: 12, overflow: 'hidden',
+                  width: '100%', flex: 1, minHeight: 340, borderRadius: 12, overflow: 'hidden',
                   // emblema auto (foto assente o SVG): sfondo col colore classe, si fonde coi bordi
                   background: (!scheda.ritratto || scheda.ritratto.startsWith('data:image/svg')) ? (coloreClasse(scheda.classe)?.chiaro || C.panel) : C.panel,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -5288,7 +5288,7 @@ export default function App() {
               <>
             {/* RIGA 1 — Classe Armatura | Riposo | TS Morte */}
             {/* Classe Armatura */}
-            <div style={styles.vitalBox}>
+            <div style={{ ...styles.vitalBox, order: -5 }}>
               <div style={styles.vitalLabel}>{t("vital.ca")}</div>
               <div style={styles.vitalValue}>
                 {scheda.armatura.tipo === 'manuale' && !scheda.armatura.scudo && !scheda.armatura.bonus ? (
@@ -5382,7 +5382,7 @@ export default function App() {
 
                 {/* RIGA 2 — Iniziativa | Velocità | Percezione Passiva | Resistenze | Visione */}
                 {/* Iniziativa */}
-                <div style={styles.vitalBox}>
+                <div style={{ ...styles.vitalBox, order: -4 }}>
                   <div style={styles.vitalLabel}>{t("vital.iniziativa")}</div>
                   <div style={styles.vitalValue}>
                     <Rollable onRoll={() => lanciaD20(t('vital.iniziativa'), modificatore(scheda.caratteristiche.destrezza), { dopoTiro: (tot) => sincronizzaIniziativaPg(tot) })}>
@@ -5393,7 +5393,7 @@ export default function App() {
 
                 {/* Velocità + Calcolatore Salto & Respiro */}
                 <div
-                  style={styles.vitalBox}
+                  style={{ ...styles.vitalBox, order: -3 }}
                   title={`🏃 Salto in Lungo (con rincorsa): ${(scheda.caratteristiche?.forza || 10)} piedi (${((scheda.caratteristiche?.forza || 10) * 0.3).toFixed(1)} m) • ⬆️ Salto in Alto: ${3 + modificatore(scheda.caratteristiche?.forza || 10)} piedi (${((3 + modificatore(scheda.caratteristiche?.forza || 10)) * 0.3).toFixed(1)} m) • 🫁 Trattenere il Respiro: ${Math.max(1, 1 + modificatore(scheda.caratteristiche?.costituzione || 10))} minuti`}
                 >
                   <div style={styles.vitalLabel}>{t("vital.movimento")}</div>
@@ -5407,7 +5407,7 @@ export default function App() {
                 </div>
 
                 {/* Percezione Passiva */}
-                <div style={styles.vitalBox} title={t('vital.passive_tooltip')}>
+                <div style={{ ...styles.vitalBox, order: -2 }} title={t('vital.passive_tooltip')}>
                   <div style={styles.vitalLabel}>{t("vital.percezione_passiva")}</div>
                   <div style={styles.vitalValue}>{percezionePassiva}</div>
                 </div>
@@ -5486,7 +5486,7 @@ export default function App() {
 
             {/* ELEMENTI SEMPRE A VISTA: Punti Ferita (La Vita), Sfinimento (Affaticamento), Concentrazione e Condizioni */}
             {/* Punti Ferita — occupa sempre 2 colonne (o tutta la larghezza in griglia compatta) */}
-            <div style={{ ...styles.vitalBox, gridColumn: 'span 3', padding: '12px 14px' }}>
+            <div style={{ ...styles.vitalBox, gridColumn: 'span 4', order: -6, padding: '12px 14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
                 <div style={{ ...styles.vitalLabel, margin: 0, fontSize: 13 }}>❤️ {t("vital.pf")}</div>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(0,0,0,0.2)', padding: '2px 8px', borderRadius: 12, border: `1px solid ${C.border}` }}>
@@ -5576,7 +5576,7 @@ export default function App() {
             </div>
 
             {/* Sfinimento / Affaticamento */}
-            <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
+            <div style={{ ...styles.vitalBox, order: 1 }}>
               <div style={styles.vitalLabel}>{t("vital.sfinimento")}</div>
               <div style={styles.vitalValue}>
                 <button style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 13 }} onClick={() => aggiorna({ sfinimento: Math.max(0, scheda.sfinimento - 1) })} title={t('tip.diminuisci')}>−</button>
@@ -5593,7 +5593,7 @@ export default function App() {
             </div>
 
             {/* Condizioni */}
-            <div style={{ ...styles.vitalBox, gridColumn: '1 / -1' }}>
+            <div style={{ ...styles.vitalBox, order: 2 }}>
               <div style={styles.vitalLabel}>{t("vital.condizioni")}</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center', alignItems: 'center', marginTop: 2 }}>
                 {scheda.condizioni.map((c) => (
