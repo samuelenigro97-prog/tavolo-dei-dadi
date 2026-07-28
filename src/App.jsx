@@ -925,16 +925,29 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .sezione > summary::-webkit-details-marker { display: none; }
 .sezione .freccia { display: inline-block; transition: transform 0.15s; font-size: 11px; color: var(--c-ink-dim); }
 .sezione:not([open]) .freccia { transform: rotate(-90deg); }
+/* Corpo scheda: le sezioni ora sono a PIENA LARGHEZZA, impilate in verticale.
+   L'ordine è controllato con 'order' (Combattimento/Magia prima, poi il resto). */
 .griglia-scheda {
-  display: grid;
-  grid-template-columns: 300px 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 10px;
-  align-items: start;
 }
-/* consente alle colonne della griglia di stringersi (niente overflow orizzontale) */
 .griglia-scheda > * { min-width: 0; }
+/* Profilo: caratteristiche (colonna verticale) a sinistra, dati al centro,
+   ritratto in basso a destra. Su schermi stretti si impila tutto. */
+.profilo-caratteristiche > .blocco-car { margin-bottom: 0 !important; }
+@media (max-width: 820px) {
+  .profilo-griglia {
+    grid-template-columns: 1fr !important;
+    grid-template-areas: "main" "car" "ritratto" !important;
+    grid-template-rows: auto auto auto !important;
+  }
+}
 /* riquadri vitali: 5 colonne fisse → riga 1: CA | PF(x2) | Riposo | TsMorte ; riga 2: BonusComp | Iniziativa | Velocità | PercPass */
-.vitali { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 8px; align-items: stretch; grid-auto-flow: row dense; }
+/* grid-auto-rows: auto → ogni riga è alta quanto il suo contenuto (niente più
+   spazi vuoti: prima "1fr" forzava tutte le righe all'altezza della più alta).
+   align-items: stretch tiene comunque uniformi i riquadri della STESSA riga. */
+.vitali { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-auto-rows: auto; gap: 8px; align-items: start; grid-auto-flow: row dense; }
 /* consente ai riquadri di stringersi sotto la larghezza del contenuto (niente overflow) */
 .vitali > * { min-width: 0; }
 .vitali > * > * { min-width: 0; }
@@ -1587,7 +1600,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.3.0';
+const APP_VERSION = '2.4.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -5104,11 +5117,11 @@ export default function App() {
         {/* Testata: anagrafica + riquadri vitali uniformi */}
         <section style={styles.panel}>
           <h2 style={styles.panelTitle}>{t("profilo.titolo")}</h2>
-          <div style={{ display: 'flex', gap: 14, alignItems: 'stretch' }}>
-            <div style={{ flex: '0 0 160px', position: 'relative', display: 'flex', flexDirection: 'column' }}>
+          <div className="profilo-griglia" style={{ display: 'grid', gridTemplateColumns: '250px 1fr', gridTemplateAreas: '"car main" "car ritratto"', gridTemplateRows: 'auto 1fr', gap: 14 }}>
+            <div style={{ gridArea: 'ritratto', position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', minWidth: 0 }}>
               <div
                 style={{
-                  width: '100%', flex: 1, minHeight: 240, borderRadius: 12, overflow: 'hidden',
+                  width: '100%', flex: 1, minHeight: 220, maxHeight: 360, borderRadius: 12, overflow: 'hidden',
                   // emblema auto (foto assente o SVG): sfondo col colore classe, si fonde coi bordi
                   background: (!scheda.ritratto || scheda.ritratto.startsWith('data:image/svg')) ? (coloreClasse(scheda.classe)?.chiaro || C.panel) : C.panel,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -5155,7 +5168,7 @@ export default function App() {
               )}
               <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
             </div>
-            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ gridArea: 'main', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px 10px', alignItems: 'end' }}>
                 <CampoModulo label={versione === "2024" ? t("profilo.specie") : t("profilo.razza")}>
                   <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => { const sp = datiSpecieDi(v); aggiorna({ specie: v, ...(sp ? { velocita: sp.velocita, sensi: sp.sensi, taglia: sp.taglia, trattiSpecie: sp.tratti } : {}), ...ritrattoAuto(scheda.classe, v, scheda.nome) }); }} title={t('tip.scegli_specie')} />
@@ -5610,12 +5623,7 @@ export default function App() {
 
           </div>
         </div>
-      </div>
-    </section>
-
-        {/* Corpo scheda: caratteristiche a sinistra, resto a destra */}
-        <div className="griglia-scheda">
-          <div>
+          <div className="profilo-caratteristiche" style={{ gridArea: 'car', display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
 
             {CARATTERISTICHE.map(({ key }) => {
               const mod = modificatore(scheda.caratteristiche[key]);
@@ -5712,8 +5720,15 @@ export default function App() {
                 </div>
               );
             })}
+          </div>{/* fine colonna caratteristiche (dentro il Profilo) */}
+        </div>{/* fine contenitore Profilo */}
+      </section>
 
-            {/* Risorse di classe — compatte, sotto le caratteristiche (Carisma) */}
+        {/* Corpo scheda: tutte le sezioni a piena larghezza */}
+        <div className="griglia-scheda">
+          <div style={{ order: 2, display: 'flex', flexDirection: 'column' }}>
+
+            {/* Risorse di classe */}
             <Sezione titolo={t("sez.risorse")} {...propsSez('risorse')} {...apertoProps('risorse')}>
               {scheda.risorse.length === 0 && (
                 <p style={{ ...styles.detail, marginTop: 0, fontSize: 11 }}>
@@ -5877,7 +5892,7 @@ export default function App() {
             )}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ order: 1, display: 'flex', flexDirection: 'column' }}>
             {/* Armi e attacchi — sezione collassabile */}
             <Sezione titolo={t("sez.combattimento")} {...propsSez('attacchi')} {...apertoProps('attacchi')}>
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
