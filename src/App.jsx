@@ -1614,7 +1614,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.7.0';
+const APP_VERSION = '2.8.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2523,6 +2523,7 @@ export default function App() {
     return true;
   });
   const [promemoriaBackup, setPromemoriaBackup] = useState(false); // banner "fai un backup"
+  const [mostraRipristino, setMostraRipristino] = useState(false); // modale "ripristina versione precedente"
   const [rinominando, setRinominando] = useState(false); // rinomina inline del PG attivo
   const [mostraCrea, setMostraCrea] = useState(false); // schermata di creazione guidata
   const [bozzaCrea, setBozzaCrea] = useState({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' });
@@ -2582,6 +2583,16 @@ export default function App() {
     } catch { /* niente */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Snapshot automatico periodico: se è passato abbastanza tempo dall'ultimo, ne
+  // registra uno (debounced), così c'è sempre una versione recente da ripristinare.
+  useEffect(() => {
+    const ultimo = leggiSnapshots()[0]?.ts || 0;
+    if (Date.now() - ultimo < 5 * 60 * 1000) return;
+    const tmr = setTimeout(() => salvaSnapshot(roster), 2500);
+    return () => clearTimeout(tmr);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roster]);
 
   // Cloud Sync
   const [mostraCloud, setMostraCloud] = useState(false);
@@ -2896,6 +2907,7 @@ export default function App() {
       titolo: t('menu.elimina_titolo'),
       testo: `Vuoi eliminare davvero "${scheda.nome || t('menu.senza_nome')}"? L'operazione non si può annullare.`,
       onConferma: () => setRoster((r) => {
+        salvaSnapshot(r); // rete di sicurezza: salva lo stato prima di cancellare
         const personaggi = { ...r.personaggi };
         delete personaggi[r.attivo];
         const ids = Object.keys(personaggi);
@@ -2909,6 +2921,7 @@ export default function App() {
   /** Azzera la scheda del personaggio attivo, mantenendolo nel roster. */
   function resetScheda() {
     if (!window.confirm(t('reset.conferma', { nome: scheda.nome }))) return;
+    salvaSnapshot(roster); // rete di sicurezza: salva lo stato prima di azzerare
     setScheda(schedaVuota());
     setTiro(null);
     setDanni(null);
@@ -3387,6 +3400,40 @@ export default function App() {
     a.click();
     URL.revokeObjectURL(url);
     segnaBackupFatto();
+  }
+
+  // --- Snapshot automatici: rete di sicurezza contro cancellazioni/reset accidentali.
+  //     Sono LEGGERI (senza immagini) per non riempire lo spazio del browser. ---
+  function leggiSnapshots() {
+    try { return JSON.parse(localStorage.getItem('scheda-interattiva:snapshots')) || []; } catch { return []; }
+  }
+  function salvaSnapshot(r) {
+    try {
+      const ids = Object.keys(r?.personaggi || {});
+      if (!ids.length) return;
+      const leggero = { attivo: r.attivo, personaggi: {} };
+      for (const [id, s] of Object.entries(r.personaggi)) {
+        const { ritratto, ...resto } = s || {}; // via l'immagine (pesante)
+        leggero.personaggi[id] = resto;
+      }
+      const serial = JSON.stringify(leggero.personaggi);
+      const snaps = leggiSnapshots();
+      if (snaps[0] && JSON.stringify(snaps[0].roster.personaggi) === serial) return; // no doppioni
+      snaps.unshift({ ts: Date.now(), n: ids.length, roster: leggero });
+      let taglio = snaps.slice(0, 12);
+      // se lo spazio non basta, riduci progressivamente il numero di snapshot
+      for (;;) {
+        try { localStorage.setItem('scheda-interattiva:snapshots', JSON.stringify(taglio)); break; }
+        catch { if (taglio.length <= 1) break; taglio = taglio.slice(0, taglio.length - 1); }
+      }
+    } catch { /* niente */ }
+  }
+  /** Ripristina un roster da uno snapshot (salvando prima lo stato attuale, per poter tornare indietro). */
+  function ripristinaSnapshot(snap) {
+    salvaSnapshot(roster);
+    setRoster(snap.roster);
+    setMostraRipristino(false);
+    setMostraMenu(false);
   }
 
   /** Carica una scheda da file JSON come nuovo personaggio. */
@@ -3981,6 +4028,9 @@ export default function App() {
               <span style={{ ...styles.detail, flex: 1, minWidth: 160 }}>🛟 Backup di sicurezza (tutti i personaggi in un file):</span>
               <button style={{ ...styles.button, borderColor: C.gold, color: C.goldDark }} onClick={esportaBackupCompleto} title="Scarica un file con TUTTI i tuoi personaggi">💾 Backup completo</button>
               <button style={styles.button} onClick={() => jsonRef.current?.click()} title="Ripristina da un file di backup o importa una scheda">📂 Ripristina / Importa</button>
+              {leggiSnapshots().length > 0 && (
+                <button style={styles.button} onClick={() => setMostraRipristino(true)} title="Annulla una modifica o cancellazione recente">🕓 Versioni precedenti</button>
+              )}
             </div>
             {erroreImport && <div style={{ color: C.red, marginTop: 10 }}>{erroreImport}</div>}
           </div>
@@ -4843,6 +4893,50 @@ export default function App() {
           >Più tardi</button>
         </div>
       )}
+
+      {mostraRipristino && (() => {
+        const snaps = leggiSnapshots();
+        return (
+          <div
+            style={{ position: 'fixed', inset: 0, zIndex: 1005, padding: 16, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            onClick={(e) => { if (e.target === e.currentTarget) setMostraRipristino(false); }}
+          >
+            <div style={{ ...styles.panel, maxWidth: 460, width: '100%', maxHeight: '80vh', overflowY: 'auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <strong style={{ color: C.goldDark, fontSize: 16 }}>🕓 Versioni precedenti</strong>
+                <button style={styles.buttonMini} onClick={() => setMostraRipristino(false)}>✕</button>
+              </div>
+              <p style={{ ...styles.detail, marginTop: 0 }}>
+                Ripristini automatici salvati su questo dispositivo (senza immagini). Utile per annullare
+                una cancellazione o una modifica sbagliata. Ripristinando, lo stato attuale viene comunque salvato.
+              </p>
+              {snaps.length === 0 && <p style={styles.detail}>Nessuna versione salvata.</p>}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {snaps.map((s, i) => {
+                  const nomi = Object.values(s.roster?.personaggi || {}).map((p) => p.nome || '—').slice(0, 4).join(', ');
+                  const quando = new Date(s.ts).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+                  return (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 10px' }}>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontWeight: 600, fontSize: 13 }}>{quando} · {s.n} personagg{s.n === 1 ? 'io' : 'i'}</div>
+                        <div style={{ ...styles.detail, fontSize: 11, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{nomi}</div>
+                      </div>
+                      <button
+                        style={{ ...styles.buttonMini, borderColor: C.gold, color: C.goldDark, flexShrink: 0 }}
+                        onClick={() => setConferma({
+                          titolo: 'Ripristinare questa versione?',
+                          testo: `Sostituirai i personaggi attuali con la versione del ${quando}. Lo stato di adesso verrà salvato tra le versioni, così puoi tornare indietro.`,
+                          onConferma: () => ripristinaSnapshot(s),
+                        })}
+                      >Ripristina</button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {mostraPannelloAudio && (
         <div style={{
