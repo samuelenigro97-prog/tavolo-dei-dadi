@@ -1614,7 +1614,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.6.0';
+const APP_VERSION = '2.6.1';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2247,7 +2247,7 @@ function AreaTesto({ value, onChange, righe = 2, placeholder }) {
  * i campi per modificare/eliminare la voce. In fondo un pulsante per aggiungere.
  * Il valore resta un unico testo con a-capo (nessun cambio al modello dati).
  */
-function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni, onRoll }) {
+function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni, onRoll, unicaRiga }) {
   const righe = String(value || '').split('\n').map((r) => r.trim()).filter(Boolean);
   const [edit, setEdit] = useState(null); // { index, valore }  (index -1 = nuova)
   const listId = useId();
@@ -2262,17 +2262,17 @@ function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni, onRoll
     setEdit(null);
   };
   const elimina = () => { salva(righe.filter((_, i) => i !== edit.index)); setEdit(null); };
-  const chip = { background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '5px 10px', fontSize: 13, cursor: 'pointer', color: C.ink };
+  const chip = { background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '5px 10px', fontSize: 13, cursor: 'pointer', color: C.ink, whiteSpace: unicaRiga ? 'nowrap' : 'normal' };
   const spEdit = edit ? (lookup ? lookup(edit.valore) : null) : null;
   return (
     <>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+      <div style={{ display: 'flex', flexWrap: unicaRiga ? 'nowrap' : 'wrap', gap: 6, overflowX: unicaRiga ? 'auto' : 'visible', paddingBottom: unicaRiga ? 4 : 0 }}>
         {righe.length === 0 && <span style={{ ...styles.detail, fontStyle: 'italic' }}>{placeholder || 'Nessuna voce.'}</span>}
         {righe.map((r, i) => {
           const sp = lookup ? lookup(r) : null;
           const isMagiaSelvaggia = /magia selvaggia/i.test(r) && onRoll;
           return (
-            <div key={i} style={{ display: 'flex', alignItems: 'center' }}>
+            <div key={i} style={{ display: 'flex', alignItems: 'center', flexShrink: unicaRiga ? 0 : 1 }}>
               <button style={{ ...chip, borderRight: isMagiaSelvaggia ? 'none' : chip.border, borderTopRightRadius: isMagiaSelvaggia ? 0 : 8, borderBottomRightRadius: isMagiaSelvaggia ? 0 : 8 }} title={t('tip.apri_dettagli')} onClick={() => setEdit({ index: i, valore: r })}>
                 {r}
               </button>
@@ -2291,7 +2291,7 @@ function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni, onRoll
             </div>
           );
         })}
-        <button style={{ ...chip, borderStyle: 'dashed', color: C.goldDark }} onClick={() => setEdit({ index: -1, valore: "" })}>➕ {t("common.aggiungi")}</button>
+        <button style={{ ...chip, borderStyle: 'dashed', color: C.goldDark, flexShrink: 0 }} onClick={() => setEdit({ index: -1, valore: "" })}>➕ {t("common.aggiungi")}</button>
       </div>
       {edit && (
         <div
@@ -5876,6 +5876,7 @@ export default function App() {
                 placeholder={t("priv.ph")}
                 onChange={(v) => aggiorna({ privilegi: v })}
                 onRoll={lanciaDanniDiretti}
+                unicaRiga
               />
             </Sezione>
 
