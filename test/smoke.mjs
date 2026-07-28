@@ -15,24 +15,34 @@ async function getChromium() {
   throw new Error('Playwright non disponibile: `npm i -D playwright` e `npx playwright install chromium`.');
 }
 
-// Avvia `vite preview` (bin locale, niente wrapper npx) e ricava l'URL dallo stdout.
-function avviaPreview() {
-  return new Promise((resolve, reject) => {
-    const bin = join(RADICE, 'node_modules', 'vite', 'bin', 'vite.js');
-    const proc = spawn(process.execPath, [bin, 'preview', '--port', '4173', '--strictPort'], {
-      cwd: RADICE, env: process.env, stdio: ['ignore', 'pipe', 'pipe'],
-    });
-    let stderr = '';
-    const timer = setTimeout(() => { proc.kill('SIGKILL'); reject(new Error('preview non partito entro 30s')); }, 30000);
-    const onData = (buf) => {
-      const m = buf.toString().match(/https?:\/\/localhost:\d+\/\S*/);
-      if (m) { clearTimeout(timer); resolve({ proc, url: m[0].replace(/\/+$/, '') + '/' }); }
-    };
-    proc.stdout.on('data', onData);
-    proc.stderr.on('data', (b) => { stderr += b.toString(); onData(b); });
-    proc.on('error', (e) => { clearTimeout(timer); reject(e); });
-    proc.on('exit', (code) => { clearTimeout(timer); reject(new Error(`preview uscito (code ${code}). stderr: ${stderr.trim() || '(vuoto)'}`)); });
+const PORT = 4173;
+const BASE = process.env.BASE_PATH || '/';
+const URL_APP = `http://localhost:${PORT}${BASE.endsWith('/') ? BASE : BASE + '/'}`;
+
+// Avvia `vite preview` (bin locale, niente wrapper npx). Invece di leggere l'URL
+// dallo stdout (fragile: formato/tempi cambiano tra locale e CI), costruiamo
+// l'URL da BASE_PATH e interroghiamo il server con fetch finché non risponde.
+async function avviaPreview() {
+  const bin = join(RADICE, 'node_modules', 'vite', 'bin', 'vite.js');
+  const proc = spawn(process.execPath, [bin, 'preview', '--port', String(PORT), '--strictPort'], {
+    cwd: RADICE, env: process.env, stdio: ['ignore', 'pipe', 'pipe'],
   });
+  let stderr = '';
+  let uscito = null;
+  proc.stderr.on('data', (b) => { stderr += b.toString(); });
+  proc.on('exit', (code) => { uscito = code; });
+
+  const scadenza = Date.now() + 60000;
+  while (Date.now() < scadenza) {
+    if (uscito !== null) throw new Error(`preview uscito (code ${uscito}). stderr: ${stderr.trim() || '(vuoto)'}`);
+    try {
+      const r = await fetch(URL_APP, { redirect: 'manual' });
+      if (r.status < 500) return { proc, url: URL_APP };
+    } catch { /* server non ancora pronto */ }
+    await new Promise((r) => setTimeout(r, 500));
+  }
+  proc.kill('SIGKILL');
+  throw new Error(`preview non raggiungibile su ${URL_APP} entro 60s. stderr: ${stderr.trim() || '(vuoto)'}`);
 }
 
 const roster = {
