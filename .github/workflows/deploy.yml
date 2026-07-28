@@ -3,6 +3,8 @@ name: Deploy su GitHub Pages
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -15,7 +17,32 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Cancello di sicurezza: regole 5e + smoke test anti-crash.
+  # Se qualcosa qui fallisce, build e deploy NON partono.
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # 1) Suite di regole (dadi, modificatori, slot, incantesimi): deve passare.
+      - run: npm test
+      # 2) Smoke test: costruisce l'app e la carica in un browser reale.
+      #    Se la pagina va in crash (schermata bianca), il job fallisce.
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+        env:
+          BASE_PATH: /tavolo-dei-dadi/
+      - run: node test/smoke.mjs
+        env:
+          BASE_PATH: /tavolo-dei-dadi/
+
   build:
+    needs: test
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -33,6 +60,7 @@ jobs:
 
   deploy:
     needs: build
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
