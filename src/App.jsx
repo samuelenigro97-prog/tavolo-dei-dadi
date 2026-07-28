@@ -947,7 +947,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 /* grid-auto-rows: auto → ogni riga è alta quanto il suo contenuto (niente più
    spazi vuoti: prima "1fr" forzava tutte le righe all'altezza della più alta).
    align-items: stretch tiene comunque uniformi i riquadri della STESSA riga. */
-.vitali { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-auto-rows: auto; gap: 8px; align-items: start; grid-auto-flow: row dense; }
+.vitali { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-auto-rows: auto; gap: 8px; align-items: stretch; grid-auto-flow: row dense; }
 /* consente ai riquadri di stringersi sotto la larghezza del contenuto (niente overflow) */
 .vitali > * { min-width: 0; }
 .vitali > * > * { min-width: 0; }
@@ -1600,7 +1600,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.4.0';
+const APP_VERSION = '2.4.1';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -5486,7 +5486,7 @@ export default function App() {
 
             {/* ELEMENTI SEMPRE A VISTA: Punti Ferita (La Vita), Sfinimento (Affaticamento), Concentrazione e Condizioni */}
             {/* Punti Ferita — occupa sempre 2 colonne (o tutta la larghezza in griglia compatta) */}
-            <div style={{ ...styles.vitalBox, gridColumn: 'span 2', padding: '12px 14px' }}>
+            <div style={{ ...styles.vitalBox, gridColumn: 'span 3', padding: '12px 14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
                 <div style={{ ...styles.vitalLabel, margin: 0, fontSize: 13 }}>❤️ {t("vital.pf")}</div>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(0,0,0,0.2)', padding: '2px 8px', borderRadius: 12, border: `1px solid ${C.border}` }}>
@@ -5576,7 +5576,7 @@ export default function App() {
             </div>
 
             {/* Sfinimento / Affaticamento */}
-            <div style={styles.vitalBox}>
+            <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
               <div style={styles.vitalLabel}>{t("vital.sfinimento")}</div>
               <div style={styles.vitalValue}>
                 <button style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 13 }} onClick={() => aggiorna({ sfinimento: Math.max(0, scheda.sfinimento - 1) })} title={t('tip.diminuisci')}>−</button>
