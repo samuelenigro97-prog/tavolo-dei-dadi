@@ -1614,7 +1614,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.6.1';
+const APP_VERSION = '2.7.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2522,6 +2522,7 @@ export default function App() {
     }
     return true;
   });
+  const [promemoriaBackup, setPromemoriaBackup] = useState(false); // banner "fai un backup"
   const [rinominando, setRinominando] = useState(false); // rinomina inline del PG attivo
   const [mostraCrea, setMostraCrea] = useState(false); // schermata di creazione guidata
   const [bozzaCrea, setBozzaCrea] = useState({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' });
@@ -2566,6 +2567,20 @@ export default function App() {
     const warm = () => { precaricaSfx(); window.removeEventListener('pointerdown', warm); };
     window.addEventListener('pointerdown', warm, { once: true });
     return () => window.removeEventListener('pointerdown', warm);
+  }, []);
+
+  // Promemoria backup: se ci sono personaggi reali e non si fa un backup da oltre
+  // 7 giorni (e non è in "snooze"), mostra un avviso per non rischiare di perdere i dati.
+  useEffect(() => {
+    try {
+      const ultimo = Number(localStorage.getItem('scheda-interattiva:ultimo-backup') || 0);
+      const snooze = Number(localStorage.getItem('scheda-interattiva:snooze-backup') || 0);
+      const pgReali = Object.values(roster.personaggi || {}).filter((s) => s && ((s.nome || '').trim() || (s.classe || '').trim())).length;
+      const seiGiorni = 7 * 24 * 3600 * 1000;
+      const vecchio = !ultimo || (Date.now() - ultimo) > seiGiorni;
+      if (pgReali >= 1 && vecchio && Date.now() > snooze) setPromemoriaBackup(true);
+    } catch { /* niente */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Cloud Sync
@@ -3351,6 +3366,27 @@ export default function App() {
     a.download = `${nomeFile}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    segnaBackupFatto();
+  }
+
+  /** Segna che è stato fatto un backup (esportazione o sync cloud): azzera il promemoria. */
+  function segnaBackupFatto() {
+    try { localStorage.setItem('scheda-interattiva:ultimo-backup', String(Date.now())); } catch { /* niente */ }
+    setPromemoriaBackup(false);
+  }
+
+  /** Backup COMPLETO: esporta TUTTI i personaggi in un unico file, per non perdere nulla. */
+  function esportaBackupCompleto() {
+    const nPg = Object.keys(roster.personaggi || {}).length;
+    const dati = { tipo: 'tavolo-dei-dadi-backup', app: 'Tavolo dei Dadi', versione: APP_VERSION, data: new Date().toISOString(), personaggi: nPg, roster };
+    const blob = new Blob([JSON.stringify(dati, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tavolo-dei-dadi-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    segnaBackupFatto();
   }
 
   /** Carica una scheda da file JSON come nuovo personaggio. */
@@ -3361,6 +3397,26 @@ export default function App() {
     setErroreImport('');
     try {
       const dati = JSON.parse(await file.text());
+      // Backup completo (tutti i personaggi): li aggiunge tutti senza sovrascrivere quelli esistenti.
+      const personaggiBackup = dati?.roster?.personaggi || (dati?.tipo === 'tavolo-dei-dadi-backup' ? dati?.personaggi : null);
+      if (personaggiBackup && typeof personaggiBackup === 'object' && !Array.isArray(personaggiBackup)) {
+        const lista = Object.values(personaggiBackup).filter((s) => s && typeof s === 'object');
+        if (lista.length) {
+          setRoster((r) => {
+            const personaggi = { ...r.personaggi };
+            let ultimo = r.attivo;
+            lista.forEach((s, i) => {
+              const id = `pg-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 6)}`;
+              personaggi[id] = normalizeImported(s);
+              ultimo = id;
+            });
+            return { attivo: ultimo, personaggi };
+          });
+          setMostraMenu(false);
+          return;
+        }
+      }
+      // Altrimenti: singola scheda
       nuovoPersonaggio(normalizeImported(dati));
       setMostraMenu(false);
     } catch {
@@ -3446,6 +3502,7 @@ export default function App() {
       setUltimoSync(orario);
       localStorage.setItem('scheda-interattiva:ultimo-sync', orario);
       localStorage.setItem('scheda-interattiva:sync-ts', String(quando));
+      segnaBackupFatto(); // il sync sul cloud conta come backup: azzera il promemoria
       setCloudStatus({ text: `✅ Sincronizzato · ${orario}`, type: 'success' });
       return nuovoId;
     } catch (err) {
@@ -3919,6 +3976,11 @@ export default function App() {
               >
                 {t('menu.pg_casuale')}
               </button>
+            </div>
+            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}`, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+              <span style={{ ...styles.detail, flex: 1, minWidth: 160 }}>🛟 Backup di sicurezza (tutti i personaggi in un file):</span>
+              <button style={{ ...styles.button, borderColor: C.gold, color: C.goldDark }} onClick={esportaBackupCompleto} title="Scarica un file con TUTTI i tuoi personaggi">💾 Backup completo</button>
+              <button style={styles.button} onClick={() => jsonRef.current?.click()} title="Ripristina da un file di backup o importa una scheda">📂 Ripristina / Importa</button>
             </div>
             {erroreImport && <div style={{ color: C.red, marginTop: 10 }}>{erroreImport}</div>}
           </div>
@@ -4760,6 +4822,27 @@ export default function App() {
         </div>
 
       </header>
+
+      {promemoriaBackup && (
+        <div style={{
+          maxWidth: 1080, margin: '0 auto 8px', padding: '10px 14px', borderRadius: 10,
+          background: 'rgba(200,140,20,0.14)', border: `1px solid ${C.gold}`,
+          display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', fontSize: 14,
+        }}>
+          <span style={{ flex: 1, minWidth: 200, color: C.ink }}>
+            🛟 <strong>Fai un backup dei tuoi personaggi.</strong> I dati sono salvati solo su questo dispositivo:
+            un backup ti protegge se cambi telefono o svuoti la cache.
+          </span>
+          <button style={{ ...styles.buttonPrimary, fontSize: 13, padding: '7px 14px' }} onClick={esportaBackupCompleto}>
+            💾 Scarica backup
+          </button>
+          <button
+            style={{ ...styles.buttonMini }}
+            onClick={() => { try { localStorage.setItem('scheda-interattiva:snooze-backup', String(Date.now() + 3 * 24 * 3600 * 1000)); } catch { /* niente */ } setPromemoriaBackup(false); }}
+            title="Ricordamelo tra qualche giorno"
+          >Più tardi</button>
+        </div>
+      )}
 
       {mostraPannelloAudio && (
         <div style={{

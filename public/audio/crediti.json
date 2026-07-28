@@ -249,5 +249,44 @@
       "wheels",
       "wooden"
     ]
+  },
+  "sfx_goccia": {
+    "file": "sfx-goccia.mp3",
+    "freesoundId": "422872",
+    "author": "IPaddeh",
+    "license": "CC0",
+    "page": "https://freesound.org/s/422872/",
+    "bytes": 48384,
+    "matchTags": [
+      "cave",
+      "drip",
+      "dripping",
+      "drop",
+      "water"
+    ]
+  },
+  "sfx_eco": {
+    "file": "sfx-eco.mp3",
+    "freesoundId": "159402",
+    "author": "noirenex",
+    "license": "CC0",
+    "page": "https://freesound.org/s/159402/",
+    "bytes": 22008,
+    "matchTags": [
+      "distant",
+      "rumble"
+    ]
+  },
+  "sfx_verso": {
+    "file": "sfx-verso.mp3",
+    "freesoundId": "77635",
+    "author": "lendrick",
+    "license": "CC0",
+    "page": "https://freesound.org/s/77635/",
+    "bytes": 20712,
+    "matchTags": [
+      "growl",
+      "monster"
+    ]
   }
 }

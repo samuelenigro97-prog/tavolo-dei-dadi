@@ -96,6 +96,8 @@ const SFX_FILES = {
   sword: 'sfx-sword.mp3', magic: 'sfx-magic.mp3',
   // Overlay per la città medievale (si sovrappongono alla base: campane, fabbro, carretti)
   campana: 'sfx-campana.mp3', fabbro: 'sfx-fabbro.mp3', carretto: 'sfx-carretto.mp3',
+  // Overlay per il dungeon/caverna: gocce d'acqua, versi in lontananza, eco/rombo
+  goccia: 'sfx-goccia.mp3', verso: 'sfx-verso.mp3', eco: 'sfx-eco.mp3',
 };
 const sfxBuffers = {};
 let sfxPrecaricati = false;
@@ -309,6 +311,19 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '') {
         else if (r < 0.7) playSfx('fabbro', currentVolume * 0.55);
         else playSfx('carretto', currentVolume * 0.5);
       }, 7000);
+    }
+    // Dungeon/caverna: sopra il drone di base, gocce d'acqua frequenti e, più di
+    // rado, versi di creature in lontananza e cupi rombi d'eco.
+    if (id === 'dungeon') {
+      precaricaSfx();
+      intervalTimer = setInterval(() => {
+        const ctx = getAudioContext();
+        if (!ctx || ctx.state !== 'running' || (typeof document !== 'undefined' && document.hidden)) return;
+        const r = Math.random();
+        if (r < 0.55) playSfx('goccia', currentVolume * 0.6);        // gocce: spesso
+        else if (r < 0.8) playSfx('eco', currentVolume * 0.45);       // rombo/eco: a volte
+        else playSfx('verso', currentVolume * 0.4);                   // verso lontano: raro
+      }, 5000);
     }
     return;
   }
