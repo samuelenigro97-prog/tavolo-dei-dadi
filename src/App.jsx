@@ -1012,6 +1012,15 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   /* nomi lunghi (es. "Prestidigitazione") vanno a capo invece di allargare
      la tabella e spingere i tasti azione fuori schermo */
   .spell-table td:first-child button { white-space: normal !important; overflow-wrap: anywhere; }
+  /* tabella attacchi: celle più compatte e colonna azioni ancorata a destra,
+     così la × per eliminare resta cliccabile senza scorrere lo schermo */
+  .attacchi-table { font-size: 12px; }
+  .attacchi-table th, .attacchi-table td { padding: 5px 4px !important; }
+  .attacchi-table .col-azioni {
+    position: sticky; right: 0;
+    background: var(--c-panel);
+    box-shadow: -6px 0 6px -5px rgba(0,0,0,0.35);
+  }
 }
 @media (max-width: 820px) {
   .griglia-scheda { grid-template-columns: 1fr; }
@@ -1614,7 +1623,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.9.0';
+const APP_VERSION = '2.10.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2151,8 +2160,8 @@ function CampoConTendina({ value, opzioni, onChange, width, title, lookup, setIn
         </span>
         );
       })}
-      <label style={{ ...chip, borderStyle: 'dashed', color: C.goldDark, cursor: 'pointer', position: 'relative' }} title={t('common.aggiungi_lista')}>
-        ➕ {t('common.aggiungi')}
+      <label style={{ ...chip, borderStyle: 'dashed', color: C.goldDark, cursor: 'pointer', position: 'relative', fontWeight: 700 }} title={t('common.aggiungi_lista')}>
+        ➕
         <select
           value=""
           onChange={(e) => aggiungi(e.target.value)}
@@ -2291,7 +2300,7 @@ function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni, onRoll
             </div>
           );
         })}
-        <button style={{ ...chip, borderStyle: 'dashed', color: C.goldDark, flexShrink: 0 }} onClick={() => setEdit({ index: -1, valore: "" })}>➕ {t("common.aggiungi")}</button>
+        <button style={{ ...chip, borderStyle: 'dashed', color: C.goldDark, flexShrink: 0, fontWeight: 700 }} title={t('common.aggiungi_lista')} onClick={() => setEdit({ index: -1, valore: "" })}>➕</button>
       </div>
       {edit && (
         <div
@@ -5191,12 +5200,12 @@ export default function App() {
 
             <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginLeft: 'auto', flexWrap: 'wrap' }}>
               {['normale', 'vantaggio', 'svantaggio'].map((m) => (
-                <button key={m} style={styles.modeButton(modalita === m)} onClick={() => setModalita(m)}>
+                <button key={m} style={{ ...styles.modeButton(modalita === m), minWidth: 88, textAlign: 'center' }} onClick={() => setModalita(m)}>
                   {m === 'normale' ? t('roll.normale') : m === 'vantaggio' ? t('roll.vantaggio') : t('roll.svantaggio')}
                 </button>
               ))}
               <button
-                style={styles.modeButton(storicoAperto)}
+                style={{ ...styles.modeButton(storicoAperto), minWidth: 88, textAlign: 'center' }}
                 title={t('roll.cronologia_tooltip')}
                 onClick={() => setStoricoAperto(!storicoAperto)}
               >
@@ -6192,14 +6201,14 @@ export default function App() {
                             {cat === 'Bonus' ? t('combat.azioni_bonus') : t('combat.reazioni')}
                           </h3>
                         )}
-                        <table style={styles.table}>
+                        <table className="attacchi-table" style={styles.table}>
                           <thead>
                             <tr>
                               <th style={styles.th}>{t('combat.col_nome')}</th>
                               <th style={styles.th}>{t('combat.col_bonus')}</th>
                               <th style={styles.th}>{t('combat.col_danno')}</th>
                               <th style={styles.th}>{t('combat.col_note')}</th>
-                              <th style={styles.th} />
+                              <th className="col-azioni" style={styles.th} />
                             </tr>
                           </thead>
                           <tbody>
@@ -6286,7 +6295,7 @@ export default function App() {
                                   <td style={styles.td}>
                                     <Editable value={a.note} width={130} onChange={(v) => aggiornaAttacco({ note: v })} />
                                   </td>
-                                  <td style={{ ...styles.td, textAlign: 'right' }}>
+                                  <td className="col-azioni" style={{ ...styles.td, textAlign: 'right' }}>
                                     <button
                                       style={styles.buttonDanger}
                                       title={a.isSpell ? "Nascondi questo incantesimo dalla sezione Armi e attacchi" : "Elimina attacco"}
@@ -6316,7 +6325,7 @@ export default function App() {
                           <input
                             id={`wpn-add-input-${cat}`}
                             list="wpn-presets"
-                            placeholder={t('combat.aggiungi_ph', { defaultValue: "Nome arma..." })}
+                            placeholder={t('combat.aggiungi_ph')}
                             style={{ ...styles.inlineInput, flex: 1, minWidth: 140, padding: '6px 8px' }}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter' && e.target.value.trim()) {
@@ -6372,63 +6381,66 @@ export default function App() {
                     </select>
                   </label>
 
-                  {/* Concentrazione rimpicciolita e affiancata alla caratteristica */}
-                  {(() => {
-                    const conc = incantesimiConcentrazioneClasse(scheda.classe);
-                    const bonusCon = modificatore(scheda.caratteristiche.costituzione) + (scheda.tiriSalvezza?.costituzione ? scheda.bonusCompetenza : 0);
-                    return (
-                      <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', padding: '3px 8px', borderRadius: 6, background: scheda.concentrazione ? 'rgba(201,162,39,0.15)' : 'rgba(0,0,0,0.15)', border: `1px solid ${scheda.concentrazione ? C.goldDark : C.border}` }}>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: scheda.concentrazione ? C.goldDark : C.inkDim }}>🧠 {t('conc.label')}</span>
+                </div>
+                {(() => {
+                  const conc = incantesimiConcentrazioneClasse(scheda.classe);
+                  const bonusCon = modificatore(scheda.caratteristiche.costituzione) + (scheda.tiriSalvezza?.costituzione ? scheda.bonusCompetenza : 0);
+                  const attivo = Boolean(scheda.concentrazione);
+                  return (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, width: '100%', marginTop: 8 }}>
+                      {/* Concentrazione: riquadro quadrato, in linea con gli altri tre */}
+                      <div style={{ ...styles.vitalBox, padding: '8px 6px', gap: 5, justifyContent: 'flex-start', background: attivo ? 'rgba(201,162,39,0.15)' : C.panelLight, borderColor: attivo ? C.goldDark : C.border }}>
+                        <div style={{ ...styles.vitalLabel, color: attivo ? C.goldDark : C.inkDim }}>🧠 {t('conc.label')}</div>
                         <select
                           value={scheda.concentrazione || ''}
                           onChange={(e) => aggiorna({ concentrazione: e.target.value })}
-                          style={{ ...styles.inlineInput, fontSize: 12, minWidth: 120, maxWidth: 170, padding: '2px 6px', height: 26 }}
+                          style={{ ...styles.inlineInput, fontSize: 12, width: '100%', maxWidth: '100%', padding: '3px 6px', height: 28, textAlign: 'center' }}
                           title={t('conc.scegli')}
                         >
                           <option value="">{t('conc.nessuna')}</option>
-                          {scheda.concentrazione && !conc.includes(scheda.concentrazione) && <option value={scheda.concentrazione}>{scheda.concentrazione}</option>}
+                          {attivo && !conc.includes(scheda.concentrazione) && <option value={scheda.concentrazione}>{scheda.concentrazione}</option>}
                           {conc.map((n) => <option key={n} value={n}>{n}</option>)}
                         </select>
                         <button
                           className="tirabile"
-                          style={{ ...styles.button, fontSize: 11, padding: '2px 8px', height: 26 }}
+                          style={{ ...styles.button, fontSize: 12, fontWeight: 700, padding: '3px 8px', width: '100%', lineHeight: 1.2 }}
                           title={t('conc.ts_tooltip')}
                           onClick={() => lanciaD20(t('conc.ts'), bonusCon)}
                         >
-                          🎲 {t('conc.ts')} ({conSegno(bonusCon)})
+                          🎲 TS {conSegno(bonusCon)}
                         </button>
-                        {scheda.concentrazione && (
-                          <button style={{ ...styles.buttonMini, fontSize: 10, padding: '0 5px', height: 22, color: C.red }} title={t('conc.termina')} onClick={() => aggiorna({ concentrazione: '' })}>✕</button>
+                        {attivo && (
+                          <button style={{ ...styles.buttonMini, position: 'absolute', top: 4, right: 4, fontSize: 10, padding: '0 5px', height: 20, color: C.red, background: C.panel }} title={t('conc.termina')} onClick={() => aggiorna({ concentrazione: '' })}>✕</button>
                         )}
                       </div>
-                    );
-                  })()}
-                </div>
-                {modIncantatore !== null && (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, width: '100%', marginTop: 8 }}>
-                    <div style={{ ...styles.vitalBox, padding: '10px 6px' }}>
-                      <div style={styles.vitalLabel}>{t("vital.mod_incantesimi")}</div>
-                      <div style={styles.vitalValue}>{conSegno(modIncantatore)}</div>
+                      {modIncantatore !== null && (
+                        <>
+                          <div style={{ ...styles.vitalBox, padding: '10px 6px' }}>
+                            <div style={styles.vitalLabel}>{t("vital.mod_incantesimi")}</div>
+                            <div style={styles.vitalValue}>{conSegno(modIncantatore)}</div>
+                          </div>
+                          <div style={{ ...styles.vitalBox, padding: '10px 6px' }}>
+                            <div style={styles.vitalLabel}>{t("vital.cd_incantesimi")}</div>
+                            <div style={styles.vitalValue}>{8 + scheda.bonusCompetenza + modIncantatore}</div>
+                          </div>
+                          <div style={{ ...styles.vitalBox, padding: '10px 6px' }}>
+                            <div style={styles.vitalLabel}>{t("vital.attacco_incantesimi")}</div>
+                            <div style={styles.vitalValue}>
+                              <span
+                                className="tirabile"
+                                style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                                title={t('spell.tira_attacco')}
+                                onClick={() => lanciaD20(t('spell.attacco_inc'), scheda.bonusCompetenza + modIncantatore, { magia: true })}
+                              >
+                                🎲 {conSegno(scheda.bonusCompetenza + modIncantatore)}
+                              </span>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
-                    <div style={{ ...styles.vitalBox, padding: '10px 6px' }}>
-                      <div style={styles.vitalLabel}>{t("vital.cd_incantesimi")}</div>
-                      <div style={styles.vitalValue}>{8 + scheda.bonusCompetenza + modIncantatore}</div>
-                    </div>
-                    <div style={{ ...styles.vitalBox, padding: '10px 6px' }}>
-                      <div style={styles.vitalLabel}>{t("vital.attacco_incantesimi")}</div>
-                      <div style={styles.vitalValue}>
-                        <span
-                          className="tirabile"
-                          style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
-                          title={t('spell.tira_attacco')}
-                          onClick={() => lanciaD20(t('spell.attacco_inc'), scheda.bonusCompetenza + modIncantatore, { magia: true })}
-                        >
-                          🎲 {conSegno(scheda.bonusCompetenza + modIncantatore)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
 
               {/* Gli slot sono ora mostrati all'interno di ciascun livello nella lista. */}

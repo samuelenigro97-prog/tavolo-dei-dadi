@@ -215,7 +215,7 @@ export const DIZIONARIO = {
     'roll.cronologia': 'Cronologia',
     'roll.cronologia_tooltip': 'Cronologia dei tiri della sessione',
     'roll.nessun_tiro': 'Ancora nessun tiro in questa sessione.',
-    'roll.dado': 'Dado:',
+    'roll.dado': 'Dado',
     'roll.espr_placeholder': 'es. 3d6+2',
     'roll.tira': 'Tira',
     'roll.tiro_libero': 'Tiro libero d20',
@@ -255,6 +255,7 @@ export const DIZIONARIO = {
     'combat.col_danno': 'Danno e tipo',
     'combat.col_note': 'Note',
     'combat.hint': 'Doppio click sul nome o sul bonus: tiro per colpire · sul danno: solo danni.',
+    'combat.aggiungi_ph': 'Nome arma…',
     // Comune
     'common.aggiungi': 'Aggiungi',
     // Incantesimi
@@ -726,7 +727,7 @@ export const DIZIONARIO = {
     'roll.cronologia': 'History',
     'roll.cronologia_tooltip': 'This session’s roll history',
     'roll.nessun_tiro': 'No rolls in this session yet.',
-    'roll.dado': 'Die:',
+    'roll.dado': 'Die',
     'roll.espr_placeholder': 'e.g. 3d6+2',
     'roll.tira': 'Roll',
     'roll.tiro_libero': 'Free d20 roll',
@@ -766,6 +767,7 @@ export const DIZIONARIO = {
     'combat.col_danno': 'Damage & type',
     'combat.col_note': 'Notes',
     'combat.hint': 'Double-click the name or bonus: attack roll · the damage: damage only.',
+    'combat.aggiungi_ph': 'Weapon name…',
     // Common
     'common.aggiungi': 'Add',
     // Spells
