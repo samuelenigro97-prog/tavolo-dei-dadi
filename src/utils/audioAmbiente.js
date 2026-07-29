@@ -23,6 +23,7 @@ let audioCtx = null;
 let activeNodes = [];
 let htmlAudioElement = null;
 let currentVolume = 0.5;
+let ambienteAttivo = '';   // id dell'ambientazione in riproduzione (per il volume della base)
 let intervalTimer = null;
 let keepAliveEl = null; // <audio> near-silenzioso per l'override della modalità silenziosa iOS
 
@@ -39,10 +40,23 @@ const AMBIENTI_CON_FILE = new Set([
   'mare', 'tundra', 'tempesta', 'accampamento', 'deserto', 'tempio',
 ]);
 
+// Alcune ambientazioni condividono la stessa base registrata ma la usano in modo
+// diverso. La città riusa il brusio di folla del mercato: più basso (è un
+// villaggio, non una piazza di mercato) e con sopra campane, fabbro e carretti.
+const BASE_CONDIVISA = { citta: 'mercato' };
+
+// Volume della base rispetto al volume dell'ambiente (1 = invariato).
+const VOLUME_BASE = { citta: 0.55 };
+
 function ambienteFileUrl(id) {
   if (!AMBIENTI_CON_FILE.has(id)) return null;
   const base = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/';
-  return `${base}audio/${id}.mp3`;
+  return `${base}audio/${BASE_CONDIVISA[id] || id}.mp3`;
+}
+
+/** Fattore di volume della base per questa ambientazione. */
+function fattoreVolumeBase(id) {
+  return VOLUME_BASE[id] || 1;
 }
 
 /**
@@ -221,7 +235,7 @@ export function setVolumeAmbiente(val) {
     }
   });
   if (htmlAudioElement) {
-    htmlAudioElement.volume = currentVolume;
+    htmlAudioElement.volume = currentVolume * fattoreVolumeBase(ambienteAttivo);
   }
 }
 
@@ -269,6 +283,7 @@ function createNoiseBuffer(ctx, type = 'pink', duration = 4) {
 export function avviaAmbiente(id, volume = 0.5, urlCustom = '') {
   fermaAmbiente();
   currentVolume = Math.max(0, Math.min(1, Number(volume) || 0));
+  ambienteAttivo = id || '';
 
   if (!id || id === 'spento') {
     // Silenzio: rilascia anche l'override iOS così il telefono torna normale.
@@ -293,7 +308,7 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '') {
   if (fileUrl) {
     htmlAudioElement = new Audio(fileUrl);
     htmlAudioElement.loop = true;
-    htmlAudioElement.volume = currentVolume;
+    htmlAudioElement.volume = currentVolume * fattoreVolumeBase(id);
     htmlAudioElement.setAttribute('playsinline', '');
     htmlAudioElement.setAttribute('webkit-playsinline', '');
     htmlAudioElement.play().catch(err => {
@@ -303,14 +318,16 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '') {
     // il fabbro che batte sull'incudine e i carretti che passano.
     if (id === 'citta') {
       precaricaSfx();
+      // Cadenza fitta e volumi bassi: i suoni del villaggio si mescolano al
+      // brusio invece di sentirsi come effetti isolati e staccati.
       intervalTimer = setInterval(() => {
         const ctx = getAudioContext();
         if (!ctx || ctx.state !== 'running' || (typeof document !== 'undefined' && document.hidden)) return;
         const r = Math.random();
-        if (r < 0.34) playSfx('campana', currentVolume * 0.5);
-        else if (r < 0.7) playSfx('fabbro', currentVolume * 0.55);
-        else playSfx('carretto', currentVolume * 0.5);
-      }, 7000);
+        if (r < 0.42) playSfx('carretto', currentVolume * 0.34);      // carretti: spesso
+        else if (r < 0.8) playSfx('fabbro', currentVolume * 0.32);     // fabbro: spesso
+        else if (r < 0.94) playSfx('campana', currentVolume * 0.22);   // campane: rare e lontane
+      }, 3500);
     }
     // Dungeon/caverna: sopra il drone di base, gocce d'acqua frequenti e, più di
     // rado, versi di creature in lontananza e cupi rombi d'eco.

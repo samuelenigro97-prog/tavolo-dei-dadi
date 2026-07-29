@@ -32,17 +32,12 @@
     ]
   },
   "citta": {
-    "file": "citta.mp3",
-    "freesoundId": "329773",
-    "author": "paulmessier",
+    "file": "mercato.mp3",
+    "nota": "La citta riusa il brusio di folla del mercato a volume ridotto, con sopra carretti, fabbro e campane.",
+    "freesoundId": "819223",
+    "author": "sounds_from_palestine",
     "license": "CC0",
-    "page": "https://freesound.org/s/329773/",
-    "bytes": 244200,
-    "matchTags": [
-      "ambience",
-      "city",
-      "street"
-    ]
+    "page": "https://freesound.org/s/819223/"
   },
   "dungeon": {
     "file": "dungeon.mp3",

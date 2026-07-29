@@ -272,6 +272,14 @@ export const DIZIONARIO = {
     'guida.backup_t': 'I dati restano sul tuo dispositivo',
     'guida.backup_d': 'Fai un backup dal Menu, o attiva il backup automatico dal pulsante Cloud.',
     'guida.ok': 'Ho capito, cominciamo',
+    // Campi dell'anagrafica bloccati dopo la creazione
+    'profilo.nessuna': 'Nessuna',
+    'profilo.nessuno': 'Nessuno',
+    'profilo.classe_bloccata': 'La classe principale non pu\u00f2 essere cambiata dopo la creazione.',
+    'profilo.background_bloccato': 'Il background non pu\u00f2 essere cambiato dopo la creazione.',
+    'profilo.sottoclasse_bloccata': 'La sottoclasse non pu\u00f2 essere cambiata dopo essere stata scelta.',
+    'profilo.sottoclasse_dal_liv': 'Dal {n}\u00b0 livello',
+    'profilo.sottoclasse_attesa': 'La sottoclasse si sceglie al {n}\u00b0 livello: verr\u00e0 proposta al Level Up.',
     // Comune
     'common.aggiungi': 'Aggiungi',
     // Incantesimi
@@ -800,6 +808,14 @@ export const DIZIONARIO = {
     'guida.backup_t': 'Your data stays on your device',
     'guida.backup_d': 'Make a backup from the Menu, or turn on automatic backup from the Cloud button.',
     'guida.ok': 'Got it, let us start',
+    // Identity fields locked after creation
+    'profilo.nessuna': 'None',
+    'profilo.nessuno': 'None',
+    'profilo.classe_bloccata': 'The main class cannot be changed after creation.',
+    'profilo.background_bloccato': 'The background cannot be changed after creation.',
+    'profilo.sottoclasse_bloccata': 'The subclass cannot be changed once chosen.',
+    'profilo.sottoclasse_dal_liv': 'From level {n}',
+    'profilo.sottoclasse_attesa': 'The subclass is chosen at level {n}: it will be offered on Level Up.',
     // Common
     'common.aggiungi': 'Add',
     // Spells

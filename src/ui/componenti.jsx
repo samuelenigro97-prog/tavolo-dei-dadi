@@ -454,3 +454,19 @@ export function Sezione({ titolo, children, aperto = true, onToggleAperto, manig
 // App
 // ---------------------------------------------------------------------------
 
+
+/**
+ * Campo dell'anagrafica non più modificabile dopo la creazione (classe,
+ * sottoclasse, background). Niente tendina e niente lucchetto: solo il
+ * valore in grigio scuro, con la spiegazione nel tooltip.
+ */
+export function CampoBloccato({ valore, title }) {
+  return (
+    <div
+      style={{ fontSize: 13, color: C.inkDim, padding: '2px 0', cursor: 'default', userSelect: 'none' }}
+      title={title}
+    >
+      {valore}
+    </div>
+  );
+}

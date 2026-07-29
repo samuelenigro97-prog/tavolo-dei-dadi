@@ -5,7 +5,7 @@ import { t, setLinguaAttuale, DIZIONARIO, traduciDato } from './i18n';
 import { avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro, sbloccaAudio, precaricaSfx } from './utils/audioAmbiente';
 import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI } from './ui/tema.js';
 import { styles, GLOBAL_CSS } from './ui/stili.js';
-import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, Sezione } from './ui/componenti.jsx';
+import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, Sezione, CampoBloccato } from './ui/componenti.jsx';
 import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
@@ -740,7 +740,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.12.0';
+const APP_VERSION = '2.13.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -3967,14 +3967,16 @@ export default function App() {
               />
             </div>
 
-            <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginLeft: 'auto', flexWrap: 'wrap' }}>
+            {/* Quattro pulsanti a colonne uguali: restano sempre sulla stessa
+                riga (Cronologia subito dopo Svantaggio) e allineati fra loro. */}
+            <div className="dadi-modi" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 6, alignItems: 'center', marginLeft: 'auto' }}>
               {['normale', 'vantaggio', 'svantaggio'].map((m) => (
-                <button key={m} style={{ ...styles.modeButton(modalita === m), minWidth: 88, textAlign: 'center' }} onClick={() => setModalita(m)}>
+                <button key={m} style={{ ...styles.modeButton(modalita === m), width: '100%', minWidth: 0, textAlign: 'center', whiteSpace: 'nowrap' }} onClick={() => setModalita(m)}>
                   {m === 'normale' ? t('roll.normale') : m === 'vantaggio' ? t('roll.vantaggio') : t('roll.svantaggio')}
                 </button>
               ))}
               <button
-                style={{ ...styles.modeButton(storicoAperto), minWidth: 88, textAlign: 'center' }}
+                style={{ ...styles.modeButton(storicoAperto), width: '100%', minWidth: 0, textAlign: 'center', whiteSpace: 'nowrap' }}
                 title={t('roll.cronologia_tooltip')}
                 onClick={() => setStoricoAperto(!storicoAperto)}
               >
@@ -4189,15 +4191,16 @@ export default function App() {
                   <CampoTendina value={scheda.allineamento} opzioni={ALLINEAMENTI_5E} onChange={(v) => aggiorna({ allineamento: v })} title={t('tip.scegli_allineamento')} />
                 </CampoModulo>
                 <CampoModulo label={t("profilo.background")}>
-                  <CampoTendina value={scheda.background} opzioni={BACKGROUND_5E} onChange={(v) => aggiorna({ background: v, ...abilitaConBackground(v) })} title={t('tip.scegli_background')} />
+                  <CampoBloccato
+                    valore={traduciDato(scheda.background) || t('profilo.nessuno')}
+                    title={t('profilo.background_bloccato')}
+                  />
                 </CampoModulo>
                 <CampoModulo label={t("profilo.classe")}>
-                  <div
-                    style={{ fontSize: 13, color: C.inkDim, fontStyle: 'italic', padding: '2px 0', cursor: 'not-allowed', userSelect: 'none' }}
-                    title="La classe principale non può essere cambiata dopo la creazione."
-                  >
-                    🔒 {traduciDato(scheda.classe) || 'Nessuna'}
-                  </div>
+                  <CampoBloccato
+                    valore={traduciDato(scheda.classe) || t('profilo.nessuna')}
+                    title={t('profilo.classe_bloccata')}
+                  />
                 </CampoModulo>
                 <CampoModulo label={t("profilo.sottoclasse")}>
                   {(() => {
@@ -4205,22 +4208,18 @@ export default function App() {
                     const sbloccata = !scheda.classe || !livSub || (scheda.livello || 1) >= livSub;
                     if (!sbloccata) {
                       return (
-                        <div
-                          style={{ fontSize: 13, color: C.inkDim, fontStyle: 'italic', padding: '2px 0', cursor: 'not-allowed', userSelect: 'none' }}
-                          title={`La sottoclasse si sceglie al ${livSub}° livello: verrà proposta al Level Up.`}
-                        >
-                          🔒 Dal {livSub}° livello
-                        </div>
+                        <CampoBloccato
+                          valore={t('profilo.sottoclasse_dal_liv', { n: livSub })}
+                          title={t('profilo.sottoclasse_attesa', { n: livSub })}
+                        />
                       );
                     }
                     if (scheda.sottoclasse) {
                       return (
-                        <div
-                          style={{ fontSize: 13, color: C.inkDim, fontStyle: 'italic', padding: '2px 0', cursor: 'not-allowed', userSelect: 'none' }}
-                          title="La sottoclasse non può essere cambiata dopo essere stata scelta."
-                        >
-                          🔒 {traduciDato(scheda.sottoclasse)}
-                        </div>
+                        <CampoBloccato
+                          valore={traduciDato(scheda.sottoclasse)}
+                          title={t('profilo.sottoclasse_bloccata')}
+                        />
                       );
                     }
                     return (

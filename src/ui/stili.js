@@ -466,6 +466,10 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   /* dadi: pulsanti compatti e leggibili su telefono in riga singola */
   .dadi-riga { justify-content: space-between; flex-wrap: wrap !important; gap: 4px !important; }
   .dadi-riga .dado-btn { flex: 0 0 auto; min-width: 28px !important; width: 28px !important; height: 28px !important; padding: 0 !important; text-align: center; }
+  /* modalità di tiro: riga intera a 4 colonne uguali, testo rimpicciolito
+     quanto basta perché "Svantaggio" e "Cronologia" stiano su una sola riga */
+  .dadi-riga .dadi-modi { flex: 1 1 100%; margin-left: 0 !important; gap: 4px !important; }
+  .dadi-riga .dadi-modi button { font-size: 11px !important; padding: 5px 2px !important; }
   /* tabelle incantesimi più compatte sul telefono: celle strette così i
      tasti azione (✎ 🗑) restano visibili senza scorrere in orizzontale */
   .spell-table { font-size: 12px; }
