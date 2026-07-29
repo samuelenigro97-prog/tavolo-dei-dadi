@@ -487,9 +487,16 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
    gruppi di pulsanti nelle colonne laterali di uguale larghezza (niente sovrapposizioni) */
 .app-header { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
 .app-header-title { grid-column: 2; justify-self: center; text-align: center; white-space: nowrap; margin: 0; }
-.app-header-group { flex-wrap: wrap; min-width: 0; }
-.app-header-group:first-of-type { justify-self: start; }
-.app-header-group:last-of-type { justify-self: end; }
+/* I due gruppi di pulsanti sono GRIGLIE a colonne uguali invece che file che
+   vanno a capo dove capita: 6 pulsanti a sinistra -> 3x2, 4 a destra -> 2x2.
+   Così entrambi i lati occupano due righe pulite e la testata resta simmetrica. */
+.app-header-group { display: grid !important; gap: 6px; min-width: 0; align-content: center; }
+.app-header-group:first-of-type { grid-template-columns: repeat(3, minmax(0, 1fr)); justify-self: start; width: 100%; max-width: 380px; }
+.app-header-group:last-of-type { grid-template-columns: repeat(2, minmax(0, 1fr)); justify-self: end; width: 100%; max-width: 260px; }
+.app-header-group > button {
+  width: 100%; display: inline-flex; align-items: center; justify-content: center;
+  gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 /* schermata di caricamento dal cloud: nuvola che pulsa e barra che scorre */
 .cloud-spinner { animation: cloud-bob 1.4s ease-in-out infinite; }
 @keyframes cloud-bob { 0%,100% { transform: translateY(0); opacity: 0.85; } 50% { transform: translateY(-8px); opacity: 1; } }
@@ -499,18 +506,21 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 @media (max-width: 780px) {
   /* schermo medio: titolo centrato in prima riga, poi i due gruppi di bottoni
      allineati sulle due righe successive ciascuno a piena larghezza */
-  .app-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; }
-  .app-header-title { order: -1; flex: 1 1 100%; text-align: center; margin-bottom: 4px !important; }
-  .app-header-group { flex: 1 1 auto !important; flex-wrap: wrap; justify-content: center; }
-  .app-header-group > button { flex: 0 1 auto; }
+  .app-header { display: flex; flex-direction: column; align-items: stretch; }
+  .app-header-title { order: -1; text-align: center; margin-bottom: 4px !important; }
+  .app-header-group:first-of-type,
+  .app-header-group:last-of-type { max-width: none !important; width: 100% !important; justify-self: stretch !important; }
+  .app-header-group:first-of-type { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .app-header-group:last-of-type { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 @media (max-width: 560px) {
   /* su schermi stretti: titolo su una riga sopra, poi ciascun gruppo di pulsanti
      su una propria riga a piena larghezza, centrata e ordinata */
-  .app-header { display: flex; flex-wrap: wrap; justify-content: center; }
-  .app-header-title { grid-column: auto; justify-self: auto; order: -1; flex: 1 1 100%; margin-bottom: 6px !important; }
-  .app-header-group { flex: 1 1 100% !important; justify-content: center !important; flex-wrap: wrap; }
-  .app-header-group > button { flex: 1 1 auto; justify-content: center; }
+  .app-header { display: flex; flex-direction: column; align-items: stretch; }
+  .app-header-title { grid-column: auto; justify-self: auto; order: -1; margin-bottom: 6px !important; }
+  /* su telefono: 2 colonne per lato, pulsanti larghi e comodi da toccare */
+  .app-header-group:first-of-type,
+  .app-header-group:last-of-type { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   /* dadi: pulsanti compatti e leggibili su telefono in riga singola */
   .dadi-riga { justify-content: space-between; flex-wrap: wrap !important; gap: 4px !important; }
   .dadi-riga .dado-btn { flex: 0 0 auto; min-width: 28px !important; width: 28px !important; height: 28px !important; padding: 0 !important; text-align: center; }
