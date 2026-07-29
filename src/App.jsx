@@ -743,7 +743,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.20.0';
+const APP_VERSION = '2.21.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2116,13 +2116,18 @@ export default function App() {
     const url = URL.createObjectURL(file);
     const img = new Image();
     img.onload = () => {
-      const MAX = 512;
+      // 512px erano pochi: il ritratto viene mostrato alto quasi quanto la
+      // sezione Profilo e su schermi a densità doppia si vedeva sgranato.
+      const MAX = 1280;
       const scala = Math.min(1, MAX / Math.max(img.width, img.height));
       const canvas = document.createElement('canvas');
       canvas.width = Math.max(1, Math.round(img.width * scala));
       canvas.height = Math.max(1, Math.round(img.height * scala));
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-      aggiorna({ ritratto: canvas.toDataURL('image/jpeg', 0.85) });
+      const ctx2d = canvas.getContext('2d');
+      ctx2d.imageSmoothingEnabled = true;
+      ctx2d.imageSmoothingQuality = 'high';
+      ctx2d.drawImage(img, 0, 0, canvas.width, canvas.height);
+      aggiorna({ ritratto: canvas.toDataURL('image/jpeg', 0.92) });
       URL.revokeObjectURL(url);
     };
     img.onerror = () => {
@@ -2812,23 +2817,26 @@ export default function App() {
               )}
             </div>
 
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <button style={styles.button} onClick={() => jsonRef.current?.click()}>{t('menu.da_file')}</button>
+            {/* Colonne uguali: i pulsanti hanno tutti la stessa larghezza. */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
+              <button style={{ ...styles.button, width: '100%' }} onClick={() => jsonRef.current?.click()}>{t('menu.da_file')}</button>
               <button
-                style={styles.button}
+                style={{ ...styles.button, width: '100%' }}
                 onClick={() => generaPgCasuale()}
                 title={t('menu.pg_casuale_tooltip')}
               >
                 {t('menu.pg_casuale')}
               </button>
             </div>
-            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}`, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-              <span style={{ ...styles.detail, flex: 1, minWidth: 160 }}>🛟 Backup di sicurezza (tutti i personaggi in un file):</span>
-              <button style={{ ...styles.button, borderColor: C.gold, color: C.goldDark }} onClick={esportaBackupCompleto} title="Scarica un file con TUTTI i tuoi personaggi">💾 Backup completo</button>
-              <button style={styles.button} onClick={() => jsonRef.current?.click()} title="Ripristina da un file di backup o importa una scheda">📂 Ripristina / Importa</button>
-              {leggiSnapshots().length > 0 && (
-                <button style={styles.button} onClick={() => setMostraRipristino(true)} title="Annulla una modifica o cancellazione recente">🕓 Versioni precedenti</button>
-              )}
+            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
+              <div style={{ ...styles.detail, marginBottom: 8 }}>🛟 Backup di sicurezza (tutti i personaggi in un file):</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
+                <button style={{ ...styles.button, width: '100%', borderColor: C.gold, color: C.goldDark }} onClick={esportaBackupCompleto} title="Scarica un file con TUTTI i tuoi personaggi">💾 Backup completo</button>
+                <button style={{ ...styles.button, width: '100%' }} onClick={() => jsonRef.current?.click()} title="Ripristina da un file di backup o importa una scheda">📂 Ripristina / Importa</button>
+                {leggiSnapshots().length > 0 && (
+                  <button style={{ ...styles.button, width: '100%', gridColumn: '1 / -1' }} onClick={() => setMostraRipristino(true)} title="Annulla una modifica o cancellazione recente">🕓 Versioni precedenti</button>
+                )}
+              </div>
             </div>
             {erroreImport && <div style={{ color: C.red, marginTop: 10 }}>{erroreImport}</div>}
           </div>
@@ -3983,15 +3991,20 @@ export default function App() {
                     {tiro.esito && <span style={styles.badge(C.goldDark)}>{tiro.esito}</span>}
                     {tiro.attacco && tiro.naturale !== 1 && (
                       parseEspressioneDado(tiro.attacco.danno || '') ? (
-                        tiro.naturale === 20 ? (
-                          <div style={{ ...styles.detail, marginTop: 6, color: C.goldDark, fontWeight: 'bold' }}>
-                            ⚔ Critico! Tiro i danni raddoppiati…
-                          </div>
-                        ) : (
-                          <button style={{ ...styles.buttonPrimary, marginTop: 6 }} onClick={lanciaDanniAttacco}>
-                            🗡 Tira danni ({tiro.attacco.danno})
-                          </button>
-                        )
+                        // Anche sul critico serve il pulsante: prima compariva solo
+                        // la scritta "tiro i danni raddoppiati…" e i danni non
+                        // venivano mai tirati.
+                        <button
+                          style={{
+                            ...styles.buttonPrimary, marginTop: 6,
+                            ...(tiro.naturale === 20 ? { background: C.goldDark } : {}),
+                          }}
+                          onClick={lanciaDanniAttacco}
+                        >
+                          {tiro.naturale === 20
+                            ? `⚔ ${t('atk.tira_danni_critico')} (${tiro.attacco.danno} ×2)`
+                            : `🗡 ${t('atk.tira_danni')} (${tiro.attacco.danno})`}
+                        </button>
                       ) : (
                         <div style={styles.detail}>{t('atk.danno_invalido')}</div>
                       )
@@ -4578,7 +4591,7 @@ export default function App() {
 
                 {/* Ispirazione */}
                 <div style={{
-                  ...styles.vitalBox, order: 13,
+                  ...styles.vitalBox, order: 13, gridColumn: 'span 2',
                   border: `1px solid ${scheda.ispirazione ? '#d4af37' : C.border}`,
                   background: scheda.ispirazione ? 'rgba(212,175,55,0.16)' : C.panelLight,
                   boxShadow: scheda.ispirazione ? '0 0 9px rgba(212,175,55,0.55)' : 'none',
@@ -4711,7 +4724,7 @@ export default function App() {
             </div>
 
             {/* Condizioni */}
-            <div style={{ ...styles.vitalBox, order: 12, gridColumn: 'span 3' }}>
+            <div style={{ ...styles.vitalBox, order: 12, gridColumn: 'span 2' }}>
               <SfondoVit>⚠️</SfondoVit>
               <div style={styles.vitalLabel}>{t("vital.condizioni")}</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center', alignItems: 'center', marginTop: 2 }}>
@@ -5130,7 +5143,7 @@ export default function App() {
                                         value={a.nome}
                                         width={130}
                                         onChange={(v) => aggiornaAttacco({ nome: v })}
-                                        onRoll={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a })}
+                                        onRoll={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a, magia: !!a.isSpell })}
                                       />
                                     </div>
                                   </td>
@@ -5144,13 +5157,13 @@ export default function App() {
                                         <button
                                           style={{ ...styles.buttonMini, padding: '1px 6px' }}
                                           title={`Tira per colpire con ${a.nome}`}
-                                          onClick={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a })}
+                                          onClick={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a, magia: !!a.isSpell })}
                                         >🎲</button>
                                         <Editable
                                           value={conSegno(a.bonus)}
                                           width={44}
                                           onChange={(v) => aggiornaAttacco({ bonus: Number(String(v).replace('+', '')) || 0 })}
-                                          onRoll={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a })}
+                                          onRoll={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a, magia: !!a.isSpell })}
                                         />
                                       </div>
                                     )}
@@ -5241,26 +5254,24 @@ export default function App() {
               titolo={t("sez.incantesimi")} 
               {...propsSez('incantesimi')} 
               {...apertoProps('incantesimi')}
+              azioni={(
+                // Nella riga del titolo: recupera l'altezza di una riga intera.
+                <label style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, textTransform: 'none', letterSpacing: 0 }}>
+                  {t('spell.caratteristica')}{' '}
+                  <select
+                    style={{ ...styles.inlineInput, padding: '3px 6px', fontSize: 12 }}
+                    value={scheda.incantatore.caratteristica}
+                    onChange={(e) => aggiorna({ incantatore: { caratteristica: e.target.value } })}
+                  >
+                    <option value="">{t('spell.non_incantatore')}</option>
+                    {CARATTERISTICHE.map((c) => (
+                      <option key={c.key} value={c.key}>{t('attr.' + c.key)}</option>
+                    ))}
+                  </select>
+                </label>
+              )}
             >
               <div style={{ marginBottom: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10, flexWrap: 'wrap' }}>
-                  <label style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    {t('spell.caratteristica')}{' '}
-                    <select
-                      style={{ ...styles.inlineInput, padding: '4px 8px' }}
-                      value={scheda.incantatore.caratteristica}
-                      onChange={(e) => aggiorna({ incantatore: { caratteristica: e.target.value } })}
-                    >
-                      <option value="">{t('spell.non_incantatore')}</option>
-                      {CARATTERISTICHE.map((c) => (
-                        <option key={c.key} value={c.key}>
-                          {t('attr.' + c.key)}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                </div>
                 {(() => {
                   const conc = incantesimiConcentrazioneClasse(scheda.classe);
                   const bonusCon = modificatore(scheda.caratteristiche.costituzione) + (scheda.tiriSalvezza?.costituzione ? scheda.bonusCompetenza : 0);

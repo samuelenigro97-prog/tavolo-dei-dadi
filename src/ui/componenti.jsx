@@ -422,7 +422,7 @@ export function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni,
  * cliccando il titolo si richiude per risparmiare spazio verticale.
  * Con `manigliaProps` mostra un segnalino ⠿ per trascinare e riordinare.
  */
-export function Sezione({ titolo, children, aperto = true, onToggleAperto, manigliaProps, trascinando, style, innerRef }) {
+export function Sezione({ titolo, children, aperto = true, onToggleAperto, manigliaProps, trascinando, style, innerRef, azioni }) {
   return (
     <details
       ref={innerRef}
@@ -444,6 +444,15 @@ export function Sezione({ titolo, children, aperto = true, onToggleAperto, manig
           </span>
         )}
         <span className="freccia">▾</span> {titolo}
+        {/* Comandi nella riga del titolo: il click non deve aprire/chiudere. */}
+        {azioni && (
+          <span
+            style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+          >
+            {azioni}
+          </span>
+        )}
       </summary>
       <div style={{ marginTop: 10 }}>{children}</div>
     </details>

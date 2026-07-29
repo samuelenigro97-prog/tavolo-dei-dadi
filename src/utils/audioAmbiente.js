@@ -138,6 +138,13 @@ export function precaricaSfx() {
 }
 
 /** Riproduce all'istante un effetto (buffer già decodificato). Ritorna false se non pronto. */
+// I file CC0 hanno volumi registrati molto diversi fra loro: qui si pareggiano,
+// così la spada non risulta più bassa dell'incantesimo.
+const GUADAGNO_SFX = {
+  sword: 2.2,   // registrazione molto bassa: va alzata parecchio
+  magic: 0.9,   // registrazione già forte: va abbassata un po'
+};
+
 function playSfx(nome, volume = 0.5) {
   const ctx = getAudioContext();
   precaricaSfx();
@@ -145,7 +152,8 @@ function playSfx(nome, volume = 0.5) {
   const src = ctx.createBufferSource();
   src.buffer = sfxBuffers[nome];
   const g = ctx.createGain();
-  g.gain.value = Math.max(0, Math.min(1, Number(volume) || 0.5));
+  const base = Math.max(0, Math.min(1, Number(volume) || 0.5));
+  g.gain.value = Math.max(0, Math.min(1, base * (GUADAGNO_SFX[nome] || 1)));
   src.connect(g);
   g.connect(ctx.destination);
   src.start();
@@ -684,13 +692,13 @@ export function eseguiEffettoSonoro(tipo, volume = 0.5) {
     filter.type = 'lowpass';
     filter.frequency.setValueAtTime(250, ctx.currentTime);
     const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.6 * v, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    gain.gain.setValueAtTime(1.0 * v, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.7);
     osc.connect(filter);
     filter.connect(gain);
     gain.connect(ctx.destination);
     osc.start();
-    osc.stop(ctx.currentTime + 0.5);
+    osc.stop(ctx.currentTime + 0.7);
   }
   else if (tipo === 'cura' || tipo === 'magia') {
     const note = [1318.51, 1567.98, 2093.00];

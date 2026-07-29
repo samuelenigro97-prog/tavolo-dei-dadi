@@ -283,6 +283,8 @@ export const DIZIONARIO = {
     'condividi.ricevuto': 'Personaggio ricevuto',
     'condividi.ricevuto_desc': 'Vuoi aggiungerlo alla tua raccolta? I tuoi personaggi restano dove sono.',
     'condividi.aggiungi': 'Aggiungi',
+    'atk.tira_danni': 'Tira danni',
+    'atk.tira_danni_critico': 'Tira danni RADDOPPIATI',
     'common.chiudi': 'Chiudi',
     'common.annulla': 'Annulla',
     // Campi dell'anagrafica bloccati dopo la creazione
@@ -836,6 +838,8 @@ export const DIZIONARIO = {
     'condividi.ricevuto': 'Character received',
     'condividi.ricevuto_desc': 'Add it to your collection? Your own characters stay where they are.',
     'condividi.aggiungi': 'Add',
+    'atk.tira_danni': 'Roll damage',
+    'atk.tira_danni_critico': 'Roll DOUBLED damage',
     'common.chiudi': 'Close',
     'common.annulla': 'Cancel',
     // Identity fields locked after creation
