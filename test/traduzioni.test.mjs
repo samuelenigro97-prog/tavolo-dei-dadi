@@ -4,8 +4,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { setLinguaAttuale } from '../src/i18n.js';
-import { spiegaTratto, spiegaTalento, spiegaMetamagia, spiegaPrivilegio } from '../src/data/spiegazioni.js';
-import { EN_TRATTI, EN_TALENTI, EN_METAMAGIA, EN_PRIVILEGI } from '../src/data/spiegazioni.en.js';
+import { INCANTESIMI_NOMI } from '../src/data/spiegazioni.js';
+import { spiegaTratto, spiegaTalento, spiegaMetamagia, spiegaPrivilegio, spiegaIncantesimo } from '../src/data/spiegazioni.js';
+import { EN_TRATTI, EN_TALENTI, EN_METAMAGIA, EN_PRIVILEGI, EN_INCANTESIMI } from '../src/data/spiegazioni.en.js';
 
 function conLingua(lang, fn) {
   setLinguaAttuale(lang);
@@ -56,12 +57,25 @@ test('traduzioni: ogni chiave inglese esiste anche in italiano (niente orfane)',
   for (const k of Object.keys(EN_PRIVILEGI)) {
     assert.ok(conLingua('it', () => spiegaPrivilegio(k)), `privilegio inglese orfano: "${k}"`);
   }
+  for (const k of Object.keys(EN_INCANTESIMI)) {
+    assert.ok(conLingua('it', () => spiegaIncantesimo(k)), `incantesimo inglese orfano: "${k}"`);
+  }
+});
+
+test('traduzioni: tutti gli incantesimi noti hanno la versione inglese', () => {
+  const senza = INCANTESIMI_NOMI.filter((n) => !EN_INCANTESIMI[n]);
+  assert.deepEqual(senza, [], `incantesimi ancora senza traduzione: ${senza.join(', ')}`);
+});
+
+test('traduzioni: gli incantesimi rispettano la lingua', () => {
+  assert.match(conLingua('en', () => spiegaIncantesimo('Palla di Fuoco')), /fire damage/i);
+  assert.match(conLingua('it', () => spiegaIncantesimo('Palla di Fuoco')), /danni da fuoco/i);
 });
 
 test('traduzioni: nessun testo inglese è rimasto in italiano per sbaglio', () => {
   const spie = /\b(puoi|tuo|tua|della|degli|contro|quando|incantesimo|caratteristica)\b/i;
   const sospetti = [];
-  for (const [k, v] of Object.entries({ ...EN_TRATTI, ...EN_TALENTI, ...EN_METAMAGIA, ...EN_PRIVILEGI })) {
+  for (const [k, v] of Object.entries({ ...EN_TRATTI, ...EN_TALENTI, ...EN_METAMAGIA, ...EN_PRIVILEGI, ...EN_INCANTESIMI })) {
     if (spie.test(v)) sospetti.push(k);
   }
   assert.deepEqual(sospetti, [], `testi ancora in italiano: ${sospetti.join(', ')}`);
