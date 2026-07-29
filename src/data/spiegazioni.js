@@ -621,11 +621,11 @@ const _lcMap = (obj) => { const m = {}; for (const k in obj) m[k.toLowerCase()] 
 // Quando la lingua è "en" si cerca prima qui; se la voce non è ancora tradotta
 // si ricade sul testo italiano, così non compaiono mai buchi.
 import { linguaAttuale } from '../i18n.js';
-import { EN_METAMAGIA, EN_TALENTI, EN_TRATTI, EN_PRIVILEGI, EN_INCANTESIMI } from './spiegazioni.en.js';
+import { EN_METAMAGIA, EN_TALENTI, EN_TRATTI, EN_PRIVILEGI, EN_INCANTESIMI, EN_PRIVILEGI_CLASSE } from './spiegazioni.en.js';
 const EN_METAMAGIA_LC = _lcMap(EN_METAMAGIA);
 const EN_TALENTI_LC = _lcMap(EN_TALENTI);
 const EN_TRATTI_LC = _lcMap(EN_TRATTI);
-const EN_PRIVILEGI_LC = _lcMap(EN_PRIVILEGI);
+const EN_PRIVILEGI_LC = _lcMap({ ...EN_PRIVILEGI_CLASSE, ...EN_PRIVILEGI });
 const EN_INCANTESIMI_LC = _lcMap(EN_INCANTESIMI);
 /** Cerca la voce inglese solo se l'interfaccia è in inglese (altrimenti null). */
 function _en(mappaLc, chiave) {
