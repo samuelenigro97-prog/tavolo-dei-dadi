@@ -9,6 +9,7 @@ import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTes
 import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
+import { codificaScheda, decodificaScheda, preparaPerCondivisione, costruisciLink, payloadDaUrl, LIMITE_PAYLOAD } from './utils/condivisione.js';
 
 // ---------------------------------------------------------------------------
 // Palette e stili
@@ -742,7 +743,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.19.0';
+const APP_VERSION = '2.20.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1209,6 +1210,8 @@ export default function App() {
   });
   const [promemoriaBackup, setPromemoriaBackup] = useState(false); // banner "fai un backup"
   const [mostraGuida, setMostraGuida] = useState(false); // guida rapida al primo avvio
+  const [condivisione, setCondivisione] = useState(null); // { link, copiato, ritrattoRimosso, lungo }
+  const [pgDaLink, setPgDaLink] = useState(null);      // personaggio ricevuto tramite link
   const [mostraRipristino, setMostraRipristino] = useState(false); // modale "ripristina versione precedente"
   const [rinominando, setRinominando] = useState(false); // rinomina inline del PG attivo
   const [mostraCrea, setMostraCrea] = useState(false); // schermata di creazione guidata
@@ -1280,6 +1283,31 @@ export default function App() {
   function chiudiGuida() {
     try { localStorage.setItem('scheda-interattiva:guida-vista', '1'); } catch { /* niente */ }
     setMostraGuida(false);
+  }
+
+  // Personaggio ricevuto tramite link: lo decodifichiamo e chiediamo conferma
+  // prima di aggiungerlo (non si sovrascrive mai nulla senza chiedere).
+  useEffect(() => {
+    const payload = payloadDaUrl(window.location.href);
+    if (!payload) return;
+    let annullato = false;
+    decodificaScheda(payload).then((dati) => {
+      if (annullato) return;
+      // ripulisce subito il link, così un ricaricamento non riapre la richiesta
+      try { history.replaceState(null, '', window.location.pathname + window.location.search); } catch { /* niente */ }
+      if (dati) { setMostraGuida(false); setMostraMenu(false); setPgDaLink(dati); }
+      else setErroreImport('Il link del personaggio non e\u0300 leggibile: potrebbe essere incompleto.');
+    });
+    return () => { annullato = true; };
+  }, []);
+
+  /** Aggiunge alla raccolta il personaggio arrivato dal link. */
+  function accettaPgDaLink() {
+    if (!pgDaLink) return;
+    salvaSnapshot(roster);
+    const id = nuovoId();
+    setRoster((r) => ({ ...r, attivo: id, personaggi: { ...r.personaggi, [id]: normalizeImported(pgDaLink) } }));
+    setPgDaLink(null);
   }
 
   // Snapshot automatico periodico: se è passato abbastanza tempo dall'ultimo, ne
@@ -2120,6 +2148,24 @@ export default function App() {
     a.click();
     URL.revokeObjectURL(url);
     segnaBackupFatto();
+  }
+
+  /**
+   * Crea il link di condivisione del personaggio attivo e lo copia negli
+   * appunti. La scheda viaggia compressa nel frammento dell'URL, quindi non
+   * passa mai dal server. Le foto caricate sono troppo pesanti per un link:
+   * vengono escluse e chi apre il link vede l'avatar rigenerato.
+   */
+  async function condividiLink() {
+    const { scheda: daInviare, ritrattoRimosso } = preparaPerCondivisione(scheda);
+    const payload = await codificaScheda(daInviare);
+    const link = costruisciLink(window.location.href, payload);
+    let copiato = false;
+    try {
+      await navigator.clipboard.writeText(link);
+      copiato = true;
+    } catch { /* niente appunti: mostriamo comunque il link da copiare a mano */ }
+    setCondivisione({ link, copiato, ritrattoRimosso, lungo: payload.length > LIMITE_PAYLOAD });
   }
 
   /** Segna che è stato fatto un backup (esportazione o sync cloud): azzera il promemoria. */
@@ -3605,6 +3651,13 @@ export default function App() {
           <input ref={jsonRef} type="file" accept="application/json,.json" style={{ display: 'none' }} onChange={importaJson} />
           <button
             style={styles.modeButton(false)}
+            title={t('condividi.tooltip')}
+            onClick={condividiLink}
+          >
+            🔗 {t('condividi.titolo')}
+          </button>
+          <button
+            style={styles.modeButton(false)}
             title={t('tip.esporta')}
             onClick={esportaJson}
           >
@@ -3710,6 +3763,61 @@ export default function App() {
             <button style={{ ...styles.buttonPrimary, width: '100%', marginTop: 16 }} onClick={chiudiGuida}>
               {t('guida.ok')}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Link di condivisione appena creato */}
+      {condivisione && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 1010, padding: 16, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setCondivisione(null); }}
+        >
+          <div style={{ background: C.panel, border: `1px solid ${C.gold}`, borderRadius: 12, padding: '18px 20px', maxWidth: 520, width: '100%', maxHeight: '86vh', overflowY: 'auto' }}>
+            <h2 style={{ ...styles.title, fontSize: 20, margin: '0 0 4px', textAlign: 'center' }}>🔗 {t('condividi.titolo')}</h2>
+            <p style={{ ...styles.detail, textAlign: 'center', margin: '0 0 12px' }}>
+              {condivisione.copiato ? t('condividi.copiato') : t('condividi.copia_a_mano')}
+            </p>
+            <textarea
+              readOnly
+              value={condivisione.link}
+              onFocus={(e) => e.target.select()}
+              style={{ ...styles.textarea, height: 90, fontSize: 12, fontFamily: 'monospace' }}
+            />
+            {condivisione.ritrattoRimosso && (
+              <p style={{ ...styles.detail, fontSize: 12, marginTop: 8, color: C.goldDark }}>
+                🖼️ {t('condividi.senza_foto')}
+              </p>
+            )}
+            {condivisione.lungo && (
+              <p style={{ ...styles.detail, fontSize: 12, marginTop: 6, color: C.red }}>
+                ⚠️ {t('condividi.lungo')}
+              </p>
+            )}
+            <p style={{ ...styles.detail, fontSize: 12, marginTop: 8 }}>🔒 {t('condividi.privacy')}</p>
+            <button style={{ ...styles.buttonPrimary, width: '100%', marginTop: 14 }} onClick={() => setCondivisione(null)}>
+              {t('common.chiudi')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Personaggio ricevuto da un link: si chiede conferma prima di aggiungerlo */}
+      {pgDaLink && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1011, padding: 16, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: C.panel, border: `1px solid ${C.gold}`, borderRadius: 12, padding: '18px 20px', maxWidth: 460, width: '100%' }}>
+            <h2 style={{ ...styles.title, fontSize: 20, margin: '0 0 10px', textAlign: 'center' }}>📥 {t('condividi.ricevuto')}</h2>
+            <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', marginBottom: 12 }}>
+              <div style={{ fontWeight: 700, color: C.ink, fontSize: 16 }}>{pgDaLink.nome || t('menu.senza_nome')}</div>
+              <div style={styles.detail}>
+                {[traduciDato(pgDaLink.classe), pgDaLink.livello ? `${t('spell.livello_scelto_label')} ${pgDaLink.livello}` : '', traduciDato(pgDaLink.specie)].filter(Boolean).join(' · ')}
+              </div>
+            </div>
+            <p style={{ ...styles.detail, fontSize: 13, marginBottom: 14 }}>{t('condividi.ricevuto_desc')}</p>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button style={{ ...styles.buttonPrimary, flex: 1 }} onClick={accettaPgDaLink}>{t('condividi.aggiungi')}</button>
+              <button style={{ ...styles.button, flex: 1 }} onClick={() => setPgDaLink(null)}>{t('common.annulla')}</button>
+            </div>
           </div>
         </div>
       )}
