@@ -412,15 +412,59 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   gap: 10px;
 }
 .griglia-scheda > * { min-width: 0; }
-/* Profilo: caratteristiche (colonna verticale) a sinistra, dati al centro,
-   ritratto in basso a destra. Su schermi stretti si impila tutto. */
+/* Profilo: caratteristiche (colonna sinistra) e riquadri vitali (colonna
+   centrale) vivono nella STESSA griglia con righe condivise (subgrid), così
+   ogni caratteristica si allinea riga per riga al gruppo di vitali corrispondente
+   (Forza↔anagrafica, Des+Cos↔Punti Ferita, Int↔difesa, Sag↔salvezza, Car↔stato).
+   Il ritratto occupa la colonna destra per tutta l'altezza. */
+.profilo-griglia {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr) 210px;
+  grid-template-rows: repeat(5, auto);
+  column-gap: 14px;
+  row-gap: 10px;
+  align-items: start;
+}
+/* Le due colonne si estendono su tutte e 5 le righe e ne ereditano le linee
+   con subgrid: è questo che tiene allineate le righe fra sinistra e centro. */
+.profilo-caratteristiche {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: subgrid;
+  min-width: 0;
+}
+.profilo-main {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: subgrid;
+  min-width: 0;
+}
+.profilo-ritratto {
+  grid-column: 3;
+  grid-row: 1 / -1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
 .profilo-caratteristiche > .blocco-car { margin-bottom: 0 !important; }
+/* Destrezza + Costituzione impilate in un'unica riga condivisa (i Punti Ferita) */
+.car-coppia { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+/* i gruppi di vitali riempiono la larghezza della loro riga */
+.pm-anagrafica, .pm-pf, .pm-gruppo { min-width: 0; }
+.pm-pf > * { width: 100%; }
 @media (max-width: 820px) {
-  .profilo-griglia {
-    grid-template-columns: 1fr !important;
-    grid-template-areas: "main" "car" "ritratto" !important;
-    grid-template-rows: auto auto auto !important;
-  }
+  /* Sotto 820px la sezione si impila: prima i dati centrali, poi le
+     caratteristiche, infine il ritratto. Niente subgrid: torna tutto a colonna. */
+  .profilo-griglia { display: flex; flex-direction: column; gap: 12px; }
+  .profilo-main { order: 1; display: flex; flex-direction: column; gap: 10px; }
+  .profilo-caratteristiche { order: 2; display: flex; flex-direction: column; gap: 8px; }
+  .profilo-ritratto { order: 3; }
+  .car-coppia { gap: 8px; }
 }
 /* riquadri vitali: 5 colonne fisse → riga 1: CA | PF(x2) | Riposo | TsMorte ; riga 2: BonusComp | Iniziativa | Velocità | PercPass */
 /* grid-auto-rows: auto → ogni riga è alta quanto il suo contenuto (niente più

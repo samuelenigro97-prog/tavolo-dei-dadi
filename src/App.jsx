@@ -743,7 +743,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.23.0';
+const APP_VERSION = '2.24.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4251,8 +4251,9 @@ export default function App() {
         {/* Testata: anagrafica + riquadri vitali uniformi */}
         <section style={styles.panel}>
           <h2 style={styles.panelTitle}>{t("profilo.titolo")}</h2>
-          <div className="profilo-griglia" style={{ display: 'grid', gridTemplateColumns: '230px 1fr 210px', gridTemplateAreas: '"car main ritratto"', gap: 14 }}>
-            <div style={{ gridArea: 'ritratto', position: 'relative', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <div className="profilo-griglia">
+            {/* RITRATTO — colonna destra, occupa tutta l'altezza */}
+            <div className="profilo-ritratto">
               <div
                 style={{
                   width: '100%', flex: 1, minHeight: 340, borderRadius: 12, overflow: 'hidden',
@@ -4302,7 +4303,10 @@ export default function App() {
               )}
               <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
             </div>
-            <div style={{ gridArea: 'main', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {/* COLONNA CENTRALE: anagrafica + riquadri vitali; righe condivise (subgrid) con le caratteristiche */}
+            <div className="profilo-main">
+              {/* Riga 1 — Anagrafica (allineata a Forza) */}
+              <div className="pm-anagrafica">
               <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px 10px', alignItems: 'end' }}>
                 <CampoModulo label={versione === "2024" ? t("profilo.specie") : t("profilo.razza")}>
                   <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => { const sp = datiSpecieDi(v); aggiorna({ specie: v, ...(sp ? { velocita: sp.velocita, sensi: sp.sensi, taglia: sp.taglia, trattiSpecie: sp.tratti } : {}), ...ritrattoAuto(scheda.classe, v, scheda.nome) }); }} title={t('tip.scegli_specie')} />
@@ -4408,221 +4412,10 @@ export default function App() {
               </div>
             );
           })()}
-          <div className="vitali">
-            {(
-              <>
-            {/* RIGA 1 — Classe Armatura | Riposo | TS Morte */}
-            {/* Classe Armatura */}
-            <div style={{ ...styles.vitalBox, order: 2, gridColumn: 'span 2' }}>
-              <SfondoVit>🛡️</SfondoVit>
-              <div style={styles.vitalLabel}>{t("vital.ca")}</div>
-              <div style={styles.vitalValue}>
-                {scheda.armatura.tipo === 'manuale' && !scheda.armatura.scudo && !scheda.armatura.bonus ? (
-                  <Editable value={scheda.ca} tipo="numero" onChange={(v) => aggiorna({ ca: v })} width={48} />
-                ) : (
-                  <span title={t('tip.ca_calcolata')}>{caTotale(scheda)}</span>
-                )}
               </div>
-              <select
-                style={{ ...styles.inlineInput, fontSize: 10, padding: '1px 3px', maxWidth: '100%', marginTop: 2 }}
-                value={scheda.armatura.tipo}
-                onChange={(e) => {
-                  const tipo = e.target.value;
-                  // Blocco: non puoi indossare armature per cui non sei competente.
-                  if (!competenteInArmatura(scheda, tipo)) return;
-                  // Passando a una categoria con armatura, parti da un valore base
-                  // sensato così la CA cambia subito (poi si può correggere a mano).
-                  const base = BASE_ARMATURA_DEFAULT[tipo] ?? scheda.armatura.base;
-                  aggiorna({ armatura: { ...scheda.armatura, tipo, base } });
-                }}
-              >
-                {TIPI_ARMATURA.map((ta) => {
-                  const bloccato = !competenteInArmatura(scheda, ta.key);
-                  // Niente lucchetto: l'opzione resta semplicemente non selezionabile.
-                  return <option key={ta.key} value={ta.key} disabled={bloccato}>{t('armor.' + ta.key)}</option>;
-                })}
-              </select>
-              <div style={{ fontSize: 10, color: C.inkDim, display: 'flex', gap: 5, alignItems: 'center', justifyContent: 'center', marginTop: 'auto', paddingTop: 6, flexWrap: 'wrap' }}>
-                {(scheda.armatura.tipo === 'leggera' || scheda.armatura.tipo === 'media' || scheda.armatura.tipo === 'pesante') && (
-                  <span title={`CA base dell'armatura. Esempi: ${ESEMPI_ARMATURA[scheda.armatura.tipo]}`}>base <Editable value={scheda.armatura.base} tipo="numero" width={24} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, base: Math.max(0, v) } })} /></span>
-                )}
-                {(() => {
-                  const scudiOk = !!scheda.addestramento?.armature?.scudi;
-                  return (
-                    <span
-                      className="tirabile"
-                      style={{ cursor: scudiOk || scheda.armatura.scudo ? 'pointer' : 'not-allowed', opacity: scudiOk || scheda.armatura.scudo ? 1 : 0.5 }}
-                      title={scudiOk ? 'Scudo: +2 alla CA' : 'Non sei competente con gli scudi (attivala in “Addestramento…”)'}
-                      onClick={() => {
-                        // Blocco: non puoi imbracciare uno scudo senza competenza (ma puoi sempre toglierlo).
-                        if (!scudiOk && !scheda.armatura.scudo) return;
-                        aggiorna({ armatura: { ...scheda.armatura, scudo: !scheda.armatura.scudo } });
-                      }}
-                    >
-                      <span style={styles.pip(scheda.armatura.scudo, C.goldDark)} /> <span style={{ opacity: scheda.armatura.scudo ? 1 : 0.4 }}>🛡️</span>
-                    </span>
-                  );
-                })()}
-                <span>+ <Editable value={scheda.armatura.bonus} tipo="numero" width={22} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, bonus: v } })} /></span>
-              </div>
-              {(!competenteInArmatura(scheda, scheda.armatura.tipo) || (scheda.armatura.scudo && !scheda.addestramento?.armature?.scudi)) && (
-                <div style={{ fontSize: 9, color: C.red, marginTop: 3, lineHeight: 1.2 }} title={t('tip.senza_comp_armatura')}>
-                  ⚠️ Non competente{!competenteInArmatura(scheda, scheda.armatura.tipo) ? ` (${scheda.armatura.tipo})` : ''}{scheda.armatura.scudo && !scheda.addestramento?.armature?.scudi ? ' (scudo)' : ''}
-                </div>
-              )}
-            </div>
-
-            {/* Riposo */}
-            <div style={{ ...styles.vitalBox, order: 3, gridColumn: 'span 2' }}>
-              <SfondoVit>🌙</SfondoVit>
-              <div style={styles.vitalLabel}>{t("vital.riposo")}</div>
-                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
-                    <button style={{ ...styles.buttonMini, fontSize: 11 }} onClick={() => riposoBreve()} title={t('vital.riposo_breve_tip')}>☕ {t("vital.breve")}</button>
-                    <button style={{ ...styles.buttonMini, fontSize: 11, borderColor: C.goldDark, color: C.goldDark }} onClick={() => riposoLungo()} title={t('vital.riposo_lungo_tip')}>🌙 {t("vital.lungo")}</button>
-                  </div>
-                </div>
-
-                {/* TS Morte */}
-                <div style={{ ...styles.vitalBox, order: 8 }}>
-                  <SfondoVit>💀</SfondoVit>
-                  <div style={styles.vitalLabel}>{t("vital.ts_morte")}</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3, fontSize: 11 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <span style={{ color: C.green, fontWeight: 600 }}>✔</span>
-                      {[1, 2, 3].map((n) => (
-                        <input key={`s-${n}`} type="checkbox" checked={(scheda.tsMorte?.successi || 0) >= n} onChange={() => {
-                          const att = scheda.tsMorte?.successi || 0;
-                          aggiorna({ tsMorte: { ...scheda.tsMorte, successi: att === n ? n - 1 : n } });
-                        }} />
-                      ))}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <span style={{ color: C.red, fontWeight: 600 }}>✘</span>
-                      {[1, 2, 3].map((n) => (
-                        <input key={`f-${n}`} type="checkbox" checked={(scheda.tsMorte?.fallimenti || 0) >= n} onChange={() => {
-                          const att = scheda.tsMorte?.fallimenti || 0;
-                          aggiorna({ tsMorte: { ...scheda.tsMorte, fallimenti: att === n ? n - 1 : n } });
-                        }} />
-                      ))}
-                    </div>
-                  </div>
-                  <button style={{ ...styles.buttonMini, fontSize: 10, marginTop: 2 }} onClick={() => aggiorna({ tsMorte: { successi: 0, fallimenti: 0 } })}>{t("vital.reset_ts")}</button>
-                </div>
-
-                {/* RIGA 2 — Iniziativa | Velocità | Percezione Passiva | Resistenze | Visione */}
-                {/* Iniziativa */}
-                <div style={{ ...styles.vitalBox, order: 5 }}>
-                  <SfondoVit>⚡</SfondoVit>
-                  <div style={styles.vitalLabel}>{t("vital.iniziativa")}</div>
-                  <div style={styles.vitalValue}>
-                    <Rollable onRoll={() => lanciaD20(t('vital.iniziativa'), modificatore(scheda.caratteristiche.destrezza), { dopoTiro: (tot) => sincronizzaIniziativaPg(tot) })}>
-                      {conSegno(modificatore(scheda.caratteristiche.destrezza))}
-                    </Rollable>
-                  </div>
-                </div>
-
-                {/* Velocità + Calcolatore Salto & Respiro */}
-                <div
-                  style={{ ...styles.vitalBox, order: 6 }}
-                  title={`🏃 Salto in Lungo (con rincorsa): ${(scheda.caratteristiche?.forza || 10)} piedi (${((scheda.caratteristiche?.forza || 10) * 0.3).toFixed(1)} m) • ⬆️ Salto in Alto: ${3 + modificatore(scheda.caratteristiche?.forza || 10)} piedi (${((3 + modificatore(scheda.caratteristiche?.forza || 10)) * 0.3).toFixed(1)} m) • 🫁 Trattenere il Respiro: ${Math.max(1, 1 + modificatore(scheda.caratteristiche?.costituzione || 10))} minuti`}
-                >
-                  <SfondoVit>🏃</SfondoVit>
-                  <div style={styles.vitalLabel}>{t("vital.movimento")}</div>
-                  <div style={styles.vitalValue}>
-                    <Editable value={scheda.velocita} tipo="numero" onChange={(v) => aggiorna({ velocita: v })} width={48} />
-                    <span style={{ fontSize: 17, color: C.inkDim, marginLeft: 2, fontWeight: 600 }}> m</span>
-                  </div>
-                  <div style={{ fontSize: 10, color: C.goldDark, marginTop: 2, textAlign: 'center', fontWeight: 600 }}>
-                    🏃 Salto: {((scheda.caratteristiche?.forza || 10) * 0.3).toFixed(1)}m
-                  </div>
-                </div>
-
-                {/* Percezione Passiva */}
-                <div style={{ ...styles.vitalBox, order: 7 }} title={t('vital.passive_tooltip')}>
-                  <SfondoVit>👁️</SfondoVit>
-                  <div style={styles.vitalLabel}>{t("vital.percezione_passiva")}</div>
-                  <div style={styles.vitalValue}>{percezionePassiva}</div>
-                </div>
-
-                {/* Resistenze — chip rimovibili + tendina */}
-                <div style={{ ...styles.vitalBox, order: 9 }}>
-                  <SfondoVit>🧪</SfondoVit>
-                  <div style={styles.vitalLabel}>{t("vital.resistenze")}</div>
-                  <div style={{ display: 'flex', justifyContent: 'center' }}>
-                    <CampoConTendina
-                      value={scheda.resistenze}
-                      opzioni={DANNI_5E}
-                      onChange={(v) => aggiorna({ resistenze: v })}
-                      title={t('tip.resistenze')}
-                    />
-                  </div>
-                </div>
-
-                {/* Vista / Sensi — chip rimovibili + tendina */}
-                <div style={{ ...styles.vitalBox, order: 10 }}>
-                  <SfondoVit>🦉</SfondoVit>
-                  <div style={styles.vitalLabel}>{t("vital.visione")}</div>
-                  <div style={{ display: 'flex', justifyContent: 'center' }}>
-                    <CampoConTendina
-                      value={scheda.sensi}
-                      opzioni={SENSI_5E}
-                      onChange={(v) => aggiorna({ sensi: v })}
-                      title={t('tip.sensi')}
-                    />
-                  </div>
-                </div>
-
-                {/* RIGA 3 — Bonus Comp. | Ispirazione */}
-                {/* Bonus Competenza */}
-                <div style={{ ...styles.vitalBox, order: 4 }}>
-                  <SfondoVit>✨</SfondoVit>
-                  <div style={styles.vitalLabel}>{t("vital.competenza")}</div>
-                  <div style={styles.vitalValue}>
-                    <Editable value={conSegno(scheda.bonusCompetenza)} onChange={(v) => aggiorna({ bonusCompetenza: parseInt(v, 10) || 0 })} width={48} title={t('tip.click_modifica')} />
-                  </div>
-                  {scheda.bonusCompetenza !== bonusCompetenzaDaLivello(scheda.livello) && (
-                    <span className="tirabile" style={{ fontSize: 9, color: C.goldDark, cursor: 'pointer', marginTop: 1 }}
-                      title={`Bonus corretto per liv. ${scheda.livello}: ${conSegno(bonusCompetenzaDaLivello(scheda.livello))}`}
-                      onClick={() => aggiorna({ bonusCompetenza: bonusCompetenzaDaLivello(scheda.livello) })}>
-                      auto {conSegno(bonusCompetenzaDaLivello(scheda.livello))}
-                    </span>
-                  )}
-                </div>
-
-                {/* Ispirazione */}
-                <div style={{
-                  ...styles.vitalBox, order: 13, gridColumn: 'span 2',
-                  border: `1px solid ${scheda.ispirazione ? '#d4af37' : C.border}`,
-                  background: scheda.ispirazione ? 'rgba(212,175,55,0.16)' : C.panelLight,
-                  boxShadow: scheda.ispirazione ? '0 0 9px rgba(212,175,55,0.55)' : 'none',
-                  transition: 'background 0.25s, border-color 0.25s, box-shadow 0.25s',
-                }}>
-                  <SfondoVit>⭐</SfondoVit>
-                  <div style={{ ...styles.vitalLabel, color: scheda.ispirazione ? '#c8991a' : C.inkDim }}>{t("vital.ispirazione")}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <button
-                      className="tirabile"
-                      style={{
-                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                        padding: '0 8px', fontSize: 28, border: 'none', lineHeight: 1,
-                        background: 'transparent',
-                        color: scheda.ispirazione ? '#d4af37' : C.inkDim,
-                        textShadow: scheda.ispirazione ? '0 0 7px rgba(212,175,55,0.7)' : 'none',
-                        cursor: 'pointer', transition: 'all 0.2s',
-                      }}
-                      onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
-                      title={t('tip.ispirazione')}
-                    >
-                      {scheda.ispirazione ? '★' : '☆'}
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* ELEMENTI SEMPRE A VISTA: Punti Ferita (La Vita), Sfinimento (Affaticamento), Concentrazione e Condizioni */}
-            {/* Punti Ferita — occupa sempre 2 colonne (o tutta la larghezza in griglia compatta) */}
-            <div style={{ ...styles.vitalBox, gridColumn: 'span 4', order: 1, padding: '12px 14px' }}>
+              {/* Riga 2 — Punti Ferita (allineata a Destrezza + Costituzione) */}
+              <div className="pm-pf">
+            <div style={{ ...styles.vitalBox, gridColumn: 'span 4', padding: '12px 14px' }}>
               <SfondoVit>🩸</SfondoVit>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
                 <div style={{ ...styles.vitalLabel, margin: 0, fontSize: 13 }}>❤️ {t("vital.pf")}</div>
@@ -4704,9 +4497,170 @@ export default function App() {
                 </span>
               </div>
             </div>
-
-            {/* Sfinimento / Affaticamento */}
-            <div style={{ ...styles.vitalBox, order: 11 }}>
+              </div>
+              {/* Riga 3 — Difesa e mobilità (allineata a Intelligenza) */}
+              <div className="vitali pm-gruppo">
+            <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
+              <SfondoVit>🛡️</SfondoVit>
+              <div style={styles.vitalLabel}>{t("vital.ca")}</div>
+              <div style={styles.vitalValue}>
+                {scheda.armatura.tipo === 'manuale' && !scheda.armatura.scudo && !scheda.armatura.bonus ? (
+                  <Editable value={scheda.ca} tipo="numero" onChange={(v) => aggiorna({ ca: v })} width={48} />
+                ) : (
+                  <span title={t('tip.ca_calcolata')}>{caTotale(scheda)}</span>
+                )}
+              </div>
+              <select
+                style={{ ...styles.inlineInput, fontSize: 10, padding: '1px 3px', maxWidth: '100%', marginTop: 2 }}
+                value={scheda.armatura.tipo}
+                onChange={(e) => {
+                  const tipo = e.target.value;
+                  // Blocco: non puoi indossare armature per cui non sei competente.
+                  if (!competenteInArmatura(scheda, tipo)) return;
+                  // Passando a una categoria con armatura, parti da un valore base
+                  // sensato così la CA cambia subito (poi si può correggere a mano).
+                  const base = BASE_ARMATURA_DEFAULT[tipo] ?? scheda.armatura.base;
+                  aggiorna({ armatura: { ...scheda.armatura, tipo, base } });
+                }}
+              >
+                {TIPI_ARMATURA.map((ta) => {
+                  const bloccato = !competenteInArmatura(scheda, ta.key);
+                  // Niente lucchetto: l'opzione resta semplicemente non selezionabile.
+                  return <option key={ta.key} value={ta.key} disabled={bloccato}>{t('armor.' + ta.key)}</option>;
+                })}
+              </select>
+              <div style={{ fontSize: 10, color: C.inkDim, display: 'flex', gap: 5, alignItems: 'center', justifyContent: 'center', marginTop: 'auto', paddingTop: 6, flexWrap: 'wrap' }}>
+                {(scheda.armatura.tipo === 'leggera' || scheda.armatura.tipo === 'media' || scheda.armatura.tipo === 'pesante') && (
+                  <span title={`CA base dell'armatura. Esempi: ${ESEMPI_ARMATURA[scheda.armatura.tipo]}`}>base <Editable value={scheda.armatura.base} tipo="numero" width={24} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, base: Math.max(0, v) } })} /></span>
+                )}
+                {(() => {
+                  const scudiOk = !!scheda.addestramento?.armature?.scudi;
+                  return (
+                    <span
+                      className="tirabile"
+                      style={{ cursor: scudiOk || scheda.armatura.scudo ? 'pointer' : 'not-allowed', opacity: scudiOk || scheda.armatura.scudo ? 1 : 0.5 }}
+                      title={scudiOk ? 'Scudo: +2 alla CA' : 'Non sei competente con gli scudi (attivala in “Addestramento…”)'}
+                      onClick={() => {
+                        // Blocco: non puoi imbracciare uno scudo senza competenza (ma puoi sempre toglierlo).
+                        if (!scudiOk && !scheda.armatura.scudo) return;
+                        aggiorna({ armatura: { ...scheda.armatura, scudo: !scheda.armatura.scudo } });
+                      }}
+                    >
+                      <span style={styles.pip(scheda.armatura.scudo, C.goldDark)} /> <span style={{ opacity: scheda.armatura.scudo ? 1 : 0.4 }}>🛡️</span>
+                    </span>
+                  );
+                })()}
+                <span>+ <Editable value={scheda.armatura.bonus} tipo="numero" width={22} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, bonus: v } })} /></span>
+              </div>
+              {(!competenteInArmatura(scheda, scheda.armatura.tipo) || (scheda.armatura.scudo && !scheda.addestramento?.armature?.scudi)) && (
+                <div style={{ fontSize: 9, color: C.red, marginTop: 3, lineHeight: 1.2 }} title={t('tip.senza_comp_armatura')}>
+                  ⚠️ Non competente{!competenteInArmatura(scheda, scheda.armatura.tipo) ? ` (${scheda.armatura.tipo})` : ''}{scheda.armatura.scudo && !scheda.addestramento?.armature?.scudi ? ' (scudo)' : ''}
+                </div>
+              )}
+            </div>
+            <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
+              <SfondoVit>🌙</SfondoVit>
+              <div style={styles.vitalLabel}>{t("vital.riposo")}</div>
+                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
+                    <button style={{ ...styles.buttonMini, fontSize: 11 }} onClick={() => riposoBreve()} title={t('vital.riposo_breve_tip')}>☕ {t("vital.breve")}</button>
+                    <button style={{ ...styles.buttonMini, fontSize: 11, borderColor: C.goldDark, color: C.goldDark }} onClick={() => riposoLungo()} title={t('vital.riposo_lungo_tip')}>🌙 {t("vital.lungo")}</button>
+                  </div>
+                </div>
+                <div style={{ ...styles.vitalBox }}>
+                  <SfondoVit>✨</SfondoVit>
+                  <div style={styles.vitalLabel}>{t("vital.competenza")}</div>
+                  <div style={styles.vitalValue}>
+                    <Editable value={conSegno(scheda.bonusCompetenza)} onChange={(v) => aggiorna({ bonusCompetenza: parseInt(v, 10) || 0 })} width={48} title={t('tip.click_modifica')} />
+                  </div>
+                  {scheda.bonusCompetenza !== bonusCompetenzaDaLivello(scheda.livello) && (
+                    <span className="tirabile" style={{ fontSize: 9, color: C.goldDark, cursor: 'pointer', marginTop: 1 }}
+                      title={`Bonus corretto per liv. ${scheda.livello}: ${conSegno(bonusCompetenzaDaLivello(scheda.livello))}`}
+                      onClick={() => aggiorna({ bonusCompetenza: bonusCompetenzaDaLivello(scheda.livello) })}>
+                      auto {conSegno(bonusCompetenzaDaLivello(scheda.livello))}
+                    </span>
+                  )}
+                </div>
+                <div style={{ ...styles.vitalBox }}>
+                  <SfondoVit>⚡</SfondoVit>
+                  <div style={styles.vitalLabel}>{t("vital.iniziativa")}</div>
+                  <div style={styles.vitalValue}>
+                    <Rollable onRoll={() => lanciaD20(t('vital.iniziativa'), modificatore(scheda.caratteristiche.destrezza), { dopoTiro: (tot) => sincronizzaIniziativaPg(tot) })}>
+                      {conSegno(modificatore(scheda.caratteristiche.destrezza))}
+                    </Rollable>
+                  </div>
+                </div>
+                <div
+                  style={{ ...styles.vitalBox }}
+                  title={`🏃 Salto in Lungo (con rincorsa): ${(scheda.caratteristiche?.forza || 10)} piedi (${((scheda.caratteristiche?.forza || 10) * 0.3).toFixed(1)} m) • ⬆️ Salto in Alto: ${3 + modificatore(scheda.caratteristiche?.forza || 10)} piedi (${((3 + modificatore(scheda.caratteristiche?.forza || 10)) * 0.3).toFixed(1)} m) • 🫁 Trattenere il Respiro: ${Math.max(1, 1 + modificatore(scheda.caratteristiche?.costituzione || 10))} minuti`}
+                >
+                  <SfondoVit>🏃</SfondoVit>
+                  <div style={styles.vitalLabel}>{t("vital.movimento")}</div>
+                  <div style={styles.vitalValue}>
+                    <Editable value={scheda.velocita} tipo="numero" onChange={(v) => aggiorna({ velocita: v })} width={48} />
+                    <span style={{ fontSize: 17, color: C.inkDim, marginLeft: 2, fontWeight: 600 }}> m</span>
+                  </div>
+                  <div style={{ fontSize: 10, color: C.goldDark, marginTop: 2, textAlign: 'center', fontWeight: 600 }}>
+                    🏃 Salto: {((scheda.caratteristiche?.forza || 10) * 0.3).toFixed(1)}m
+                  </div>
+                </div>
+                <div style={{ ...styles.vitalBox }} title={t('vital.passive_tooltip')}>
+                  <SfondoVit>👁️</SfondoVit>
+                  <div style={styles.vitalLabel}>{t("vital.percezione_passiva")}</div>
+                  <div style={styles.vitalValue}>{percezionePassiva}</div>
+                </div>
+              </div>
+              {/* Riga 4 — Salvezza e sensi (allineata a Saggezza) */}
+              <div className="vitali pm-gruppo">
+                <div style={{ ...styles.vitalBox }}>
+                  <SfondoVit>💀</SfondoVit>
+                  <div style={styles.vitalLabel}>{t("vital.ts_morte")}</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3, fontSize: 11 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ color: C.green, fontWeight: 600 }}>✔</span>
+                      {[1, 2, 3].map((n) => (
+                        <input key={`s-${n}`} type="checkbox" checked={(scheda.tsMorte?.successi || 0) >= n} onChange={() => {
+                          const att = scheda.tsMorte?.successi || 0;
+                          aggiorna({ tsMorte: { ...scheda.tsMorte, successi: att === n ? n - 1 : n } });
+                        }} />
+                      ))}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ color: C.red, fontWeight: 600 }}>✘</span>
+                      {[1, 2, 3].map((n) => (
+                        <input key={`f-${n}`} type="checkbox" checked={(scheda.tsMorte?.fallimenti || 0) >= n} onChange={() => {
+                          const att = scheda.tsMorte?.fallimenti || 0;
+                          aggiorna({ tsMorte: { ...scheda.tsMorte, fallimenti: att === n ? n - 1 : n } });
+                        }} />
+                      ))}
+                    </div>
+                  </div>
+                  <button style={{ ...styles.buttonMini, fontSize: 10, marginTop: 2 }} onClick={() => aggiorna({ tsMorte: { successi: 0, fallimenti: 0 } })}>{t("vital.reset_ts")}</button>
+                </div>
+                <div style={{ ...styles.vitalBox }}>
+                  <SfondoVit>🧪</SfondoVit>
+                  <div style={styles.vitalLabel}>{t("vital.resistenze")}</div>
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <CampoConTendina
+                      value={scheda.resistenze}
+                      opzioni={DANNI_5E}
+                      onChange={(v) => aggiorna({ resistenze: v })}
+                      title={t('tip.resistenze')}
+                    />
+                  </div>
+                </div>
+                <div style={{ ...styles.vitalBox }}>
+                  <SfondoVit>🦉</SfondoVit>
+                  <div style={styles.vitalLabel}>{t("vital.visione")}</div>
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <CampoConTendina
+                      value={scheda.sensi}
+                      opzioni={SENSI_5E}
+                      onChange={(v) => aggiorna({ sensi: v })}
+                      title={t('tip.sensi')}
+                    />
+                  </div>
+                </div>
+            <div style={{ ...styles.vitalBox }}>
               <SfondoVit>💤</SfondoVit>
               <div style={styles.vitalLabel}>{t("vital.sfinimento")}</div>
               <div style={styles.vitalValue}>
@@ -4722,9 +4676,10 @@ export default function App() {
                 </div>
               )}
             </div>
-
-            {/* Condizioni */}
-            <div style={{ ...styles.vitalBox, order: 12, gridColumn: 'span 2' }}>
+              </div>
+              {/* Riga 5 — Stato: condizioni e ispirazione (allineata a Carisma) */}
+              <div className="vitali pm-gruppo">
+            <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
               <SfondoVit>⚠️</SfondoVit>
               <div style={styles.vitalLabel}>{t("vital.condizioni")}</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center', alignItems: 'center', marginTop: 2 }}>
@@ -4752,12 +4707,38 @@ export default function App() {
                 </select>
               </div>
             </div>
-
-          </div>
-        </div>
-          <div className="profilo-caratteristiche" style={{ gridArea: 'car', display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
-
-            {CARATTERISTICHE.map(({ key }) => {
+                <div style={{
+                  ...styles.vitalBox, gridColumn: 'span 2',
+                  border: `1px solid ${scheda.ispirazione ? '#d4af37' : C.border}`,
+                  background: scheda.ispirazione ? 'rgba(212,175,55,0.16)' : C.panelLight,
+                  boxShadow: scheda.ispirazione ? '0 0 9px rgba(212,175,55,0.55)' : 'none',
+                  transition: 'background 0.25s, border-color 0.25s, box-shadow 0.25s',
+                }}>
+                  <SfondoVit>⭐</SfondoVit>
+                  <div style={{ ...styles.vitalLabel, color: scheda.ispirazione ? '#c8991a' : C.inkDim }}>{t("vital.ispirazione")}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <button
+                      className="tirabile"
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                        padding: '0 8px', fontSize: 28, border: 'none', lineHeight: 1,
+                        background: 'transparent',
+                        color: scheda.ispirazione ? '#d4af37' : C.inkDim,
+                        textShadow: scheda.ispirazione ? '0 0 7px rgba(212,175,55,0.7)' : 'none',
+                        cursor: 'pointer', transition: 'all 0.2s',
+                      }}
+                      onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
+                      title={t('tip.ispirazione')}
+                    >
+                      {scheda.ispirazione ? '★' : '☆'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <div className="profilo-caratteristiche">
+            {(() => {
+              const blocco = (key) => {
               const mod = modificatore(scheda.caratteristiche[key]);
               const bonusTS = bonusTiroSalvezza(scheda, key);
               const abilitaDellaCar = ABILITA.filter((a) => a.car === key);
@@ -4851,7 +4832,21 @@ export default function App() {
                   })}
                 </div>
               );
-            })}
+              };
+              return (
+                <>
+                  {blocco('forza')}
+                  {/* Destrezza + Costituzione impilate: insieme si allineano ai Punti Ferita */}
+                  <div className="car-coppia">
+                    {blocco('destrezza')}
+                    {blocco('costituzione')}
+                  </div>
+                  {blocco('intelligenza')}
+                  {blocco('saggezza')}
+                  {blocco('carisma')}
+                </>
+              );
+            })()}
           </div>{/* fine colonna caratteristiche (dentro il Profilo) */}
         </div>{/* fine contenitore Profilo */}
       </section>

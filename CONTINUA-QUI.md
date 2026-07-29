@@ -1,6 +1,6 @@
 # Continua qui — lavoro rimasto su Tavolo dei Dadi
 
-Stato al **v2.23.0** (tutto committato e pubblicato su GitHub Pages).
+Stato al **v2.24.0** (tutto committato e pubblicato su GitHub Pages).
 App: https://samuelenigro97-prog.github.io/tavolo-dei-dadi/
 
 ## Come si lavora su questo progetto
@@ -15,7 +15,19 @@ App: https://samuelenigro97-prog.github.io/tavolo-dei-dadi/
 
 ---
 
-## 1. Griglia unica del Profilo (la richiesta principale rimasta)
+## 1. Griglia unica del Profilo ✅ FATTO (v2.24.0)
+
+**Risolto in v2.24.0.** Caratteristiche (sinistra) e riquadri vitali (centro) ora
+vivono nella **stessa griglia con righe condivise** grazie a `grid-template-rows: subgrid`
+(vedi `.profilo-caratteristiche` / `.profilo-main` in `src/ui/stili.js`). I riquadri
+vitali sono stati raggruppati in cinque "righe" (anagrafica, Punti Ferita, difesa,
+salvezza, stato) dentro `.profilo-main`; a sinistra Destrezza+Costituzione sono
+impilate in `.car-coppia` così la coppia si allinea ai Punti Ferita. Rimosso l'uso di
+`order` nei box (l'ordine è ora dato dal DOM). Verifica: su desktop 1400×1000 i top/bottom
+di ogni caratteristica coincidono al pixel col gruppo vitali corrispondente; sotto 820px
+la sezione torna a colonna singola (dati → caratteristiche → ritratto).
+
+<details><summary>Contesto originale della richiesta</summary>
 
 **Obiettivo:** allineare riga per riga i blocchi caratteristica (colonna sinistra)
 con i riquadri vitali (colonna centrale).
@@ -58,6 +70,8 @@ leggere le altezze dell'altra. Serve metterle **nella stessa griglia con righe c
 
 **Attenzione:** su mobile (`max-width: 820px`) la griglia diventa una colonna sola
 (`"main" "car" "ritratto"`): la nuova struttura deve continuare a funzionare lì.
+
+</details>
 
 ---
 
