@@ -236,9 +236,13 @@ export const styles = {
     background: C.panel,
     border: `1px solid ${C.border}`,
     borderRadius: 10,
-    padding: '8px 10px',
-    marginBottom: 8,
+    padding: '6px 10px',
+    // niente marginBottom: la colonna usa già `gap`, altrimenti lo spazio
+    // fra i blocchi risultava doppio e la colonna sforava in basso.
     boxShadow: '0 1px 4px rgba(60,50,30,0.08)',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
   },
   abilityHead: {
     display: 'flex',
