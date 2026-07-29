@@ -392,23 +392,37 @@ export function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni,
             {spEdit && (
               <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 12px', fontSize: 14, lineHeight: 1.4, marginBottom: 8 }}>{spEdit}</div>
             )}
-            <input
-              autoFocus
-              style={{ ...styles.inlineInput, width: '100%', padding: '8px 10px', fontSize: 15 }}
-              value={edit.valore}
-              placeholder={opzioni ? 'Scrivi o scegli dalla lista…' : 'Nome della voce'}
-              list={opzioni ? listId : undefined}
-              onChange={(e) => setEdit({ ...edit, valore: e.target.value })}
-              onKeyDown={(e) => { if (e.key === 'Enter') conferma(); }}
-            />
-            {opzioni && (
-              <datalist id={listId}>
-                {opzioni.map((o) => <option key={o} value={o} />)}
-              </datalist>
+            {edit.index === -1 ? (
+              // Voce NUOVA: qui il nome va scritto (o scelto dall'elenco).
+              <>
+                <input
+                  autoFocus
+                  style={{ ...styles.inlineInput, width: '100%', padding: '8px 10px', fontSize: 15 }}
+                  value={edit.valore}
+                  placeholder={opzioni ? 'Scrivi o scegli dalla lista…' : 'Nome della voce'}
+                  list={opzioni ? listId : undefined}
+                  onChange={(e) => setEdit({ ...edit, valore: e.target.value })}
+                  onKeyDown={(e) => { if (e.key === 'Enter') conferma(); }}
+                />
+                {opzioni && (
+                  <datalist id={listId}>
+                    {opzioni.map((o) => <option key={o} value={o} />)}
+                  </datalist>
+                )}
+              </>
+            ) : (
+              // Voce ESISTENTE: il nome non si modifica. Rinominandolo si perdeva
+              // la spiegazione, che viene cercata proprio in base al nome.
+              <div style={{ ...styles.inlineInput, width: '100%', padding: '8px 10px', fontSize: 15, borderColor: C.border, color: C.ink, boxSizing: 'border-box' }}>
+                {edit.valore}
+              </div>
             )}
-            <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-              {edit.index !== -1 && <button style={{ ...styles.buttonDanger, flex: 1 }} onClick={elimina}>🗑 {t('modal.elimina')}</button>}
-              <button style={{ ...styles.buttonPrimary, flex: 1 }} onClick={conferma}>{t('modal.salva')}</button>
+            {/* Pulsanti a colonne uguali. */}
+            <div style={{ display: 'grid', gridTemplateColumns: edit.index === -1 ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: 8, marginTop: 14 }}>
+              {edit.index !== -1 && <button style={{ ...styles.buttonDanger, width: '100%', padding: '8px 10px' }} onClick={elimina}>🗑 {t('modal.elimina')}</button>}
+              {edit.index === -1
+                ? <button style={{ ...styles.buttonPrimary, width: '100%' }} onClick={conferma}>{t('modal.salva')}</button>
+                : <button style={{ ...styles.button, width: '100%' }} onClick={() => setEdit(null)}>{t('common.chiudi')}</button>}
             </div>
           </div>
         </div>
