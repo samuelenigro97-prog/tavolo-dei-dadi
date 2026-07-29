@@ -1623,7 +1623,7 @@ const ESEMPIO_GNOMO = {
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.10.0';
+const APP_VERSION = '2.11.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -6577,7 +6577,22 @@ export default function App() {
                                   {chip('🎯', t('spell.chip_gittata'), gittata)}
                                   {chip('🔮', 'Scuola', scuola)}
                                   {area && chip('📐', 'Area', area)}
-                                  {(danno || tipoDanno) && chip('💥', 'Danno', [danno, tipoDanno].filter(Boolean).join(' '))}
+                                  {/* Danno: scritto una volta sola. Se è un'espressione di dado
+                                      valida il chip stesso è cliccabile e tira i danni. */}
+                                  {(danno || tipoDanno) && (
+                                    parseEspressioneDado(danno) ? (
+                                      <button
+                                        className="tirabile"
+                                        style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: C.red, background: C.bg, border: `1px solid ${C.red}`, borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontFamily: 'inherit' }}
+                                        title={t('spell.tira_danni_diretti')}
+                                        onClick={() => lanciaDanniDiretti(`${s.nome}${tipoDanno ? ` · ${tipoDanno}` : ''}`, danno, true)}
+                                      >
+                                        <span aria-hidden>💥</span>
+                                        <span>{[danno, tipoDanno].filter(Boolean).join(' ')}</span>
+                                        <span aria-hidden style={{ opacity: 0.65 }}>🎲</span>
+                                      </button>
+                                    ) : chip('💥', 'Danno', [danno, tipoDanno].filter(Boolean).join(' '))
+                                  )}
                                   {note && chip('📝', t('spell.chip_note'), note)}
                                 </div>
                                 {parseEspressioneDado(danno) && (
@@ -6587,11 +6602,6 @@ export default function App() {
                                       title={t('spell.tira_attacco')}
                                       onClick={() => lanciaD20(`${t('spell.attacco_inc')}: ${s.nome}`, scheda.bonusCompetenza + (modIncantatore || 0), { attacco: { nome: s.nome, danno, tipoDanno }, magia: true })}
                                     >🎯 {t('spell.colpire')} {conSegno(scheda.bonusCompetenza + (modIncantatore || 0))}</button>
-                                    <button
-                                      style={{ ...styles.buttonMini, fontSize: 12, padding: '4px 10px', fontWeight: 600, borderColor: C.red, color: C.red }}
-                                      title={t('spell.tira_danni_diretti')}
-                                      onClick={() => lanciaDanniDiretti(`${s.nome}${tipoDanno ? ` · ${tipoDanno}` : ''}`, danno, true)}
-                                    >💥 {t('spell.danni')} ({danno})</button>
                                   </div>
                                 )}
                               </div>
