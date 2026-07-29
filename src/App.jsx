@@ -332,7 +332,7 @@ function datiSpecieDi(specie) {
 
 // Ordine di default delle sezioni collassabili (riordinabili via drag).
 // Sezioni riordinabili via drag. 'import' NON è qui: resta sempre fissa in fondo.
-const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'risorse', 'privilegi', 'talenti', 'privilegiSottoclasse', 'trattiSpecie', 'addestramento', 'equipaggiamento', 'aspetto'];
+const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'risorse', 'privilegi', 'talenti', 'privilegiSottoclasse', 'metamagia', 'trattiSpecie', 'addestramento', 'equipaggiamento', 'aspetto'];
 
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 
@@ -4255,8 +4255,9 @@ export default function App() {
             {/* RITRATTO — colonna destra, occupa tutta l'altezza */}
             <div className="profilo-ritratto">
               <div
+                className="ritratto-box"
                 style={{
-                  width: '100%', flex: 1, minHeight: 340, borderRadius: 12, overflow: 'hidden',
+                  width: '100%', flex: 1, minHeight: 0, borderRadius: 12, overflow: 'hidden',
                   // emblema auto (foto assente o SVG): sfondo col colore classe, si fonde coi bordi
                   background: (!scheda.ritratto || scheda.ritratto.startsWith('data:image/svg')) ? (coloreClasse(scheda.classe)?.chiaro || C.panel) : C.panel,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -4853,7 +4854,9 @@ export default function App() {
 
         {/* Corpo scheda: tutte le sezioni a piena larghezza */}
         <div className="griglia-scheda">
-          <div style={{ order: 2, display: 'flex', flexDirection: 'column' }}>
+          {/* display:contents → le sezioni diventano figlie dirette di
+              .griglia-scheda, così l'ordine (e il trascinamento) è unico per tutte. */}
+          <div style={{ display: 'contents' }}>
 
             {/* Risorse di classe */}
             <Sezione titolo={t("sez.risorse")} {...propsSez('risorse')} {...apertoProps('risorse')}>
@@ -5004,7 +5007,7 @@ export default function App() {
             </Sezione>
 
             {/(stregone|sorcerer)/i.test(scheda.classe || '') && (
-              <Sezione titolo={t("sez.metamagia")} {...apertoProps('metamagia', false)}>
+              <Sezione titolo={t("sez.metamagia")} {...propsSez('metamagia')} {...apertoProps('metamagia', false)}>
                 <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8 }}>
                   {t("meta.desc")}
                 </div>
@@ -5020,7 +5023,7 @@ export default function App() {
             )}
           </div>
 
-          <div style={{ order: 1, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'contents' }}>
             {/* Armi e attacchi — sezione collassabile */}
             <Sezione titolo={t("sez.combattimento")} {...propsSez('attacchi')} {...apertoProps('attacchi')}>
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
@@ -5462,31 +5465,32 @@ export default function App() {
                                   {chip('🎯', t('spell.chip_gittata'), gittata)}
                                   {chip('🔮', 'Scuola', scuola)}
                                   {area && chip('📐', 'Area', area)}
-                                  {/* Danno: scritto una volta sola. Se è un'espressione di dado
-                                      valida il chip stesso è cliccabile e tira i danni. */}
-                                  {(danno || tipoDanno) && (
-                                    parseEspressioneDado(danno) ? (
-                                      <button
-                                        className="tirabile"
-                                        style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: C.red, background: C.bg, border: `1px solid ${C.red}`, borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontFamily: 'inherit' }}
-                                        title={t('spell.tira_danni_diretti')}
-                                        onClick={() => lanciaDanniDiretti(`${s.nome}${tipoDanno ? ` · ${tipoDanno}` : ''}`, danno, true)}
-                                      >
-                                        <span aria-hidden>💥</span>
-                                        <span>{[danno, tipoDanno].filter(Boolean).join(' ')}</span>
-                                        <span aria-hidden style={{ opacity: 0.65 }}>🎲</span>
-                                      </button>
-                                    ) : chip('💥', 'Danno', [danno, tipoDanno].filter(Boolean).join(' '))
+                                  {/* Danno solo testuale (non tirabile): resta un chip informativo.
+                                      Quando è un'espressione di dado valida, il tiro dei danni va
+                                      nella riga azioni qui sotto, DOPO il tiro per colpire. */}
+                                  {(danno || tipoDanno) && !parseEspressioneDado(danno) && (
+                                    chip('💥', 'Danno', [danno, tipoDanno].filter(Boolean).join(' '))
                                   )}
                                   {note && chip('📝', t('spell.chip_note'), note)}
                                 </div>
                                 {parseEspressioneDado(danno) && (
-                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6, alignItems: 'center' }}>
+                                    {/* Ordine fisso: prima il tiro per colpire, poi i danni. */}
                                     <button
                                       style={{ ...styles.buttonMini, fontSize: 12, padding: '4px 10px', fontWeight: 600, borderColor: C.goldDark, color: C.goldDark }}
                                       title={t('spell.tira_attacco')}
                                       onClick={() => lanciaD20(`${t('spell.attacco_inc')}: ${s.nome}`, scheda.bonusCompetenza + (modIncantatore || 0), { attacco: { nome: s.nome, danno, tipoDanno }, magia: true })}
                                     >🎯 {t('spell.colpire')} {conSegno(scheda.bonusCompetenza + (modIncantatore || 0))}</button>
+                                    <button
+                                      className="tirabile"
+                                      style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: C.red, background: C.bg, border: `1px solid ${C.red}`, borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontFamily: 'inherit' }}
+                                      title={t('spell.tira_danni_diretti')}
+                                      onClick={() => lanciaDanniDiretti(`${s.nome}${tipoDanno ? ` · ${tipoDanno}` : ''}`, danno, true)}
+                                    >
+                                      <span aria-hidden>💥</span>
+                                      <span>{[danno, tipoDanno].filter(Boolean).join(' ')}</span>
+                                      <span aria-hidden style={{ opacity: 0.65 }}>🎲</span>
+                                    </button>
                                   </div>
                                 )}
                               </div>
@@ -5533,10 +5537,10 @@ export default function App() {
 
 
           </div>
-        </div>
 
-        {/* Sezioni descrittive a piena larghezza: riempiono lo spazio sotto le due colonne */}
-        <div style={{ display: 'flex', flexDirection: 'column', marginTop: 10, gap: 10 }}>
+          {/* Sezioni descrittive: anch'esse figlie dirette di .griglia-scheda
+              (display:contents) così rientrano nell'unico ordine riordinabile. */}
+          <div style={{ display: 'contents' }}>
             
             <Sezione titolo={t("sez.talenti")} {...propsSez('talenti')} {...apertoProps('talenti')}>
               <ListaQuadratini
@@ -5770,6 +5774,7 @@ export default function App() {
                 onChange={(v) => aggiorna({ note: v })}
               />
             </Sezione>
+          </div>
         </div>
 
         <footer style={{ textAlign: 'center', margin: '18px 0 0', fontSize: 11, color: C.inkDim }}>

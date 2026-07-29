@@ -445,12 +445,19 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 }
 .profilo-ritratto {
   grid-column: 3;
-  grid-row: 1 / -1;
+  /* Righe 1-2 soltanto: l'immagine parte dal bordo di Forza e finisce alla
+     linea di Costituzione (simmetrica ai primi due blocchi caratteristica). */
+  grid-row: 1 / 3;
+  align-self: stretch;
   position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
 }
+/* Il box immagine riempie l'altezza disponibile (righe 1-2) senza forzarne la
+   crescita; su mobile, dove non c'è la griglia, gli diamo un'altezza minima. */
+.ritratto-box { min-height: 0; }
 .profilo-caratteristiche > .blocco-car { margin-bottom: 0 !important; }
 /* Destrezza + Costituzione impilate in un'unica riga condivisa (i Punti Ferita) */
 .car-coppia { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
@@ -464,6 +471,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .profilo-main { order: 1; display: flex; flex-direction: column; gap: 10px; }
   .profilo-caratteristiche { order: 2; display: flex; flex-direction: column; gap: 8px; }
   .profilo-ritratto { order: 3; }
+  .ritratto-box { min-height: 300px; }
   .car-coppia { gap: 8px; }
 }
 /* riquadri vitali: 5 colonne fisse → riga 1: CA | PF(x2) | Riposo | TsMorte ; riga 2: BonusComp | Iniziativa | Velocità | PercPass */
