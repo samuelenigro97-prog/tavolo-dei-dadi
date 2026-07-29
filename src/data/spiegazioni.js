@@ -616,12 +616,28 @@ const SPIEG_PRIVILEGI = {
 };
 // Indice minuscolo per ricerche senza distinzione di maiuscole.
 const _lcMap = (obj) => { const m = {}; for (const k in obj) m[k.toLowerCase()] = obj[k]; return m; };
+
+// --- Traduzioni inglesi (chiavi in italiano) -------------------------------
+// Quando la lingua è "en" si cerca prima qui; se la voce non è ancora tradotta
+// si ricade sul testo italiano, così non compaiono mai buchi.
+import { linguaAttuale } from '../i18n.js';
+import { EN_METAMAGIA, EN_TALENTI, EN_TRATTI, EN_PRIVILEGI } from './spiegazioni.en.js';
+const EN_METAMAGIA_LC = _lcMap(EN_METAMAGIA);
+const EN_TALENTI_LC = _lcMap(EN_TALENTI);
+const EN_TRATTI_LC = _lcMap(EN_TRATTI);
+const EN_PRIVILEGI_LC = _lcMap(EN_PRIVILEGI);
+/** Cerca la voce inglese solo se l'interfaccia è in inglese (altrimenti null). */
+function _en(mappaLc, chiave) {
+  if (linguaAttuale !== 'en') return null;
+  return mappaLc[chiave] || null;
+}
 const SPIEG_PRIVILEGI_LC = _lcMap(SPIEG_PRIVILEGI);
 /** Spiegazione di un privilegio dal nome mostrato (o null), senza distinzione maiuscole. */
 export function spiegaPrivilegio(nome) {
   const n = String(nome || '').trim();
   const base = n.replace(/\s*\(.*$/, '').replace(/\s+d\d+.*$/i, '').trim();
-  return SPIEG_PRIVILEGI_LC[base.toLowerCase()] || SPIEG_PRIVILEGI_LC[n.toLowerCase()] || null;
+  return _en(EN_PRIVILEGI_LC, base.toLowerCase()) || _en(EN_PRIVILEGI_LC, n.toLowerCase())
+    || SPIEG_PRIVILEGI_LC[base.toLowerCase()] || SPIEG_PRIVILEGI_LC[n.toLowerCase()] || null;
 }
 
 // Riassunti funzionali (nostri) di cosa fa ogni incantesimo. Per la nuvoletta ⓘ
@@ -886,10 +902,10 @@ const SPIEG_TRATTI_LC = _lcMap(SPIEG_TRATTI);
 /** Spiegazione di un tratto di razza/senso (o null), senza maiuscole, con prefisso. */
 export function spiegaTratto(nome) {
   const n = String(nome || '').trim().toLowerCase();
-  if (SPIEG_TRATTI_LC[n]) return SPIEG_TRATTI_LC[n];
+  if (SPIEG_TRATTI_LC[n]) return _en(EN_TRATTI_LC, n) || SPIEG_TRATTI_LC[n];
   const base = n.replace(/\s*\(.*$/, '').trim();
-  if (SPIEG_TRATTI_LC[base]) return SPIEG_TRATTI_LC[base];
-  for (const k of Object.keys(SPIEG_TRATTI_LC)) if (base.startsWith(k)) return SPIEG_TRATTI_LC[k];
+  if (SPIEG_TRATTI_LC[base]) return _en(EN_TRATTI_LC, base) || SPIEG_TRATTI_LC[base];
+  for (const k of Object.keys(SPIEG_TRATTI_LC)) if (base.startsWith(k)) return _en(EN_TRATTI_LC, k) || SPIEG_TRATTI_LC[k];
   return null;
 }
 
@@ -922,7 +938,9 @@ const TALENTI_NOMI = Object.keys(SPIEG_TALENTI).sort((a, b) => a.localeCompare(b
 /** Spiegazione di un talento dal nome (o null), senza maiuscole, ignora parentesi. */
 export function spiegaTalento(nome) {
   const n = String(nome || '').trim().toLowerCase();
-  return SPIEG_TALENTI_LC[n] || SPIEG_TALENTI_LC[n.replace(/\s*\(.*$/, '').trim()] || null;
+  const base = n.replace(/\s*\(.*$/, '').trim();
+  return _en(EN_TALENTI_LC, n) || _en(EN_TALENTI_LC, base)
+    || SPIEG_TALENTI_LC[n] || SPIEG_TALENTI_LC[base] || null;
 }
 
 // Opzioni di Metamagia dello Stregone (5e), con riassunti nostri per la nuvoletta.
@@ -946,5 +964,7 @@ const SPIEG_METAMAGIA_LC = _lcMap(SPIEG_METAMAGIA);
 /** Spiegazione di un'opzione di Metamagia dal nome (o null), senza maiuscole. */
 export function spiegaMetamagia(nome) {
   const n = String(nome || '').trim().toLowerCase();
-  return SPIEG_METAMAGIA_LC[n] || SPIEG_METAMAGIA_LC[n.replace(/\s*\(.*$/, '').trim()] || null;
+  const base = n.replace(/\s*\(.*$/, '').trim();
+  return _en(EN_METAMAGIA_LC, n) || _en(EN_METAMAGIA_LC, base)
+    || SPIEG_METAMAGIA_LC[n] || SPIEG_METAMAGIA_LC[base] || null;
 }
