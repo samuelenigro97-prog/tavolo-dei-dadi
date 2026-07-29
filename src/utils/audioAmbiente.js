@@ -40,13 +40,13 @@ const AMBIENTI_CON_FILE = new Set([
   'mare', 'tundra', 'tempesta', 'accampamento', 'deserto', 'tempio',
 ]);
 
-// Alcune ambientazioni condividono la stessa base registrata ma la usano in modo
-// diverso. La città riusa il brusio di folla del mercato: più basso (è un
-// villaggio, non una piazza di mercato) e con sopra campane, fabbro e carretti.
-const BASE_CONDIVISA = { citta: 'mercato' };
+// Ogni ambientazione ha la sua registrazione. (Il meccanismo per far condividere
+// una base a più ambientazioni resta disponibile, se dovesse servire.)
+const BASE_CONDIVISA = {};
 
 // Volume della base rispetto al volume dell'ambiente (1 = invariato).
-const VOLUME_BASE = { citta: 0.55 };
+// Città: il brusio di voci sta un po' sotto, così carretti e fabbro emergono.
+const VOLUME_BASE = { citta: 0.85 };
 
 function ambienteFileUrl(id) {
   if (!AMBIENTI_CON_FILE.has(id)) return null;

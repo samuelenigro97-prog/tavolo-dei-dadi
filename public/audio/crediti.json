@@ -32,12 +32,19 @@
     ]
   },
   "citta": {
-    "file": "mercato.mp3",
-    "nota": "La citta riusa il brusio di folla del mercato a volume ridotto, con sopra carretti, fabbro e campane.",
-    "freesoundId": "819223",
-    "author": "sounds_from_palestine",
+    "file": "citta.mp3",
+    "freesoundId": "651364",
+    "author": "dazzamoo",
     "license": "CC0",
-    "page": "https://freesound.org/s/819223/"
+    "page": "https://freesound.org/s/651364/",
+    "bytes": 579096,
+    "matchTags": [
+      "ambience",
+      "chatter",
+      "crowd",
+      "field-recording"
+    ],
+    "nota": "Brusio di voci come base del villaggio; sopra ci vanno carretti, fabbro e campane."
   },
   "dungeon": {
     "file": "dungeon.mp3",
@@ -55,17 +62,21 @@
   },
   "foresta": {
     "file": "foresta.mp3",
-    "freesoundId": "860231",
-    "author": "BayTsai",
+    "freesoundId": "853112",
+    "author": "hoshisato",
     "license": "CC0",
-    "page": "https://freesound.org/s/860231/",
-    "bytes": 337344,
-    "query": "forest ambience birds",
+    "page": "https://freesound.org/s/853112/",
+    "bytes": 824173,
     "matchTags": [
-      "birds",
-      "forest",
-      "nature"
-    ]
+      "ambience",
+      "birdsong",
+      "blackcap",
+      "nightingale",
+      "robin",
+      "chaffinch",
+      "forest"
+    ],
+    "nota": "Sostituito il precedente 860231: conteneva una voce umana."
   },
   "notte": {
     "file": "notte.mp3",
