@@ -458,6 +458,11 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 /* Il box immagine riempie l'altezza disponibile (righe 1-2) senza forzarne la
    crescita; su mobile, dove non c'è la griglia, gli diamo un'altezza minima. */
 .ritratto-box { min-height: 0; }
+/* Addestramento riempie lo spazio vuoto sotto il ritratto (colonna destra,
+   righe 3-5 = Intelligenza→Carisma). align-self:start → resta in alto e non
+   forza l'altezza delle righe (così le caratteristiche restano allineate). */
+.profilo-addestramento { grid-column: 3; grid-row: 3 / -1; align-self: start; min-width: 0; }
+.profilo-addestramento > .sezione { margin-bottom: 0 !important; }
 .profilo-caratteristiche > .blocco-car { margin-bottom: 0 !important; }
 /* Destrezza + Costituzione impilate in un'unica riga condivisa (i Punti Ferita) */
 .car-coppia { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
@@ -471,6 +476,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .profilo-main { order: 1; display: flex; flex-direction: column; gap: 10px; }
   .profilo-caratteristiche { order: 2; display: flex; flex-direction: column; gap: 8px; }
   .profilo-ritratto { order: 3; }
+  .profilo-addestramento { order: 4; }
   .ritratto-box { min-height: 300px; }
   .car-coppia { gap: 8px; }
 }

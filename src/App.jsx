@@ -332,7 +332,8 @@ function datiSpecieDi(specie) {
 
 // Ordine di default delle sezioni collassabili (riordinabili via drag).
 // Sezioni riordinabili via drag. 'import' NON è qui: resta sempre fissa in fondo.
-const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'risorse', 'privilegi', 'talenti', 'privilegiSottoclasse', 'metamagia', 'trattiSpecie', 'addestramento', 'equipaggiamento', 'aspetto'];
+// 'addestramento' non è più qui: vive nel Profilo (colonna destra, sotto il ritratto).
+const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'risorse', 'privilegi', 'talenti', 'privilegiSottoclasse', 'metamagia', 'trattiSpecie', 'equipaggiamento', 'aspetto'];
 
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 
@@ -743,7 +744,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.25.0';
+const APP_VERSION = '2.26.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4203,14 +4204,17 @@ export default function App() {
                 aria-hidden
                 style={{
                   position: 'absolute', left: 0, right: 0, top: 0, bottom: 0,
+                  // a filo destro, appena prima della freccina del menù
                   display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
-                  paddingRight: 34,
+                  paddingRight: 30,
                   pointerEvents: 'none', userSelect: 'none', zIndex: 1,
                 }}
               >
                 <span style={{
                   fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: 'italic', fontWeight: 'bold',
                   fontSize: 28, letterSpacing: 4, lineHeight: 1,
+                  // letterSpacing aggiunge 4px "di coda": li tolgo così i numeri sono a filo
+                  marginRight: -4,
                   color: C.goldDark, opacity: 0.35, whiteSpace: 'nowrap',
                 }}>
                   {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
@@ -4849,6 +4853,68 @@ export default function App() {
               );
             })()}
           </div>{/* fine colonna caratteristiche (dentro il Profilo) */}
+          {/* Addestramento: riempie lo spazio vuoto della colonna destra (righe Intelligenza→Carisma) */}
+          <div className="profilo-addestramento">
+            <Sezione titolo={t("sez.addestramento")} {...apertoProps('addestramento', false)}>
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ ...styles.detail, marginBottom: 4 }}>{t("train.armature")}</div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  {[
+                    ['leggera', 'leggera'],
+                    ['media', 'media'],
+                    ['pesante', 'pesante'],
+                    ['scudi', 'scudi'],
+                  ].map(([key, label]) => (
+                    <span
+                      key={key}
+                      className="tirabile"
+                      style={{ ...styles.detail, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                      onClick={() =>
+                        aggiorna({
+                          addestramento: {
+                            ...scheda.addestramento,
+                            armature: {
+                              ...scheda.addestramento.armature,
+                              [key]: !scheda.addestramento.armature[key],
+                            },
+                          },
+                        })
+                      }
+                    >
+                      <span style={styles.pip(scheda.addestramento.armature[key], C.goldDark)} /> {label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ ...styles.detail, marginBottom: 4 }}>{t("train.armi")}</div>
+                <ListaQuadratini
+                  value={scheda.addestramento.armi}
+                  opzioni={COMP_ARMI_5E}
+                  placeholder={t("train.armi_ph")}
+                  onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, armi: v } })}
+                />
+              </div>
+              <div>
+                <div style={{ ...styles.detail, marginBottom: 4 }}>{t("train.strumenti")}</div>
+                <ListaQuadratini
+                  value={scheda.addestramento.strumenti}
+                  opzioni={STRUMENTI_5E}
+                  placeholder={t("train.strumenti_ph")}
+                  onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, strumenti: v } })}
+                />
+              </div>
+              <div style={{ marginTop: 10 }}>
+                <div style={{ ...styles.detail, marginBottom: 4 }}>{t("equip.lingue")}</div>
+                <CampoConTendina
+                  value={scheda.lingue}
+                  opzioni={LINGUE_5E}
+                  onChange={(v) => aggiorna({ lingue: v })}
+                  title={t("equip.lingue_tooltip")}
+                />
+              </div>
+            </Sezione>
+          </div>
         </div>{/* fine contenitore Profilo */}
       </section>
 
@@ -4908,67 +4974,6 @@ export default function App() {
                 + {t("res.aggiungi")}
               </button>
             </Sezione>
-
-            <Sezione titolo={t("sez.addestramento")} {...propsSez('addestramento')} {...apertoProps('addestramento', false)}>
-              <div style={{ marginBottom: 10 }}>
-                <div style={{ ...styles.detail, marginBottom: 4 }}>{t("train.armature")}</div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                  {[
-                    ['leggera', 'leggera'],
-                    ['media', 'media'],
-                    ['pesante', 'pesante'],
-                    ['scudi', 'scudi'],
-                  ].map(([key, label]) => (
-                    <span
-                      key={key}
-                      className="tirabile"
-                      style={{ ...styles.detail, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}
-                      onClick={() =>
-                        aggiorna({
-                          addestramento: {
-                            ...scheda.addestramento,
-                            armature: {
-                              ...scheda.addestramento.armature,
-                              [key]: !scheda.addestramento.armature[key],
-                            },
-                          },
-                        })
-                      }
-                    >
-                      <span style={styles.pip(scheda.addestramento.armature[key], C.goldDark)} /> {label}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div style={{ marginBottom: 10 }}>
-                <div style={{ ...styles.detail, marginBottom: 4 }}>{t("train.armi")}</div>
-                <ListaQuadratini
-                  value={scheda.addestramento.armi}
-                  opzioni={COMP_ARMI_5E}
-                  placeholder={t("train.armi_ph")}
-                  onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, armi: v } })}
-                />
-              </div>
-              <div>
-                <div style={{ ...styles.detail, marginBottom: 4 }}>{t("train.strumenti")}</div>
-                <ListaQuadratini
-                  value={scheda.addestramento.strumenti}
-                  opzioni={STRUMENTI_5E}
-                  placeholder={t("train.strumenti_ph")}
-                  onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, strumenti: v } })}
-                />
-              </div>
-              <div style={{ marginTop: 10 }}>
-                <div style={{ ...styles.detail, marginBottom: 4 }}>{t("equip.lingue")}</div>
-                <CampoConTendina
-                  value={scheda.lingue}
-                  opzioni={LINGUE_5E}
-                  onChange={(v) => aggiorna({ lingue: v })}
-                  title={t("equip.lingue_tooltip")}
-                />
-              </div>
-            </Sezione>
-
             <Sezione titolo={t("sez.tratti_specie")} {...propsSez('trattiSpecie')} {...apertoProps('trattiSpecie')}>
               <ListaQuadratini
                 value={scheda.trattiSpecie}
