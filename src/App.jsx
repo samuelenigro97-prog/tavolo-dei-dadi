@@ -473,12 +473,14 @@ function renderSpiegazioni(testo, lookup, setInfo) {
   );
 }
 
+// `abbr` è la sigla ufficiale 5e: entra nei riquadri stretti senza troncarsi
+// (il nome per esteso resta nel tooltip).
 const DENARI = [
-  { key: 'mr', label: 'Monete di Rame' },
-  { key: 'ma', label: "Monete d'Argento" },
-  { key: 'me', label: 'Monete di Elettro' },
-  { key: 'mo', label: "Monete d'Oro" },
-  { key: 'mp', label: 'Monete di Platino' },
+  { key: 'mr', label: 'Monete di Rame', abbr: 'MR' },
+  { key: 'ma', label: "Monete d'Argento", abbr: 'MA' },
+  { key: 'me', label: 'Monete di Elettro', abbr: 'ME' },
+  { key: 'mo', label: "Monete d'Oro", abbr: 'MO' },
+  { key: 'mp', label: 'Monete di Platino', abbr: 'MP' },
 ];
 
 
@@ -740,7 +742,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.13.0';
+const APP_VERSION = '2.14.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4315,7 +4317,8 @@ export default function App() {
               >
                 {TIPI_ARMATURA.map((ta) => {
                   const bloccato = !competenteInArmatura(scheda, ta.key);
-                  return <option key={ta.key} value={ta.key} disabled={bloccato}>{bloccato ? '🔒 ' : ''}{t('armor.' + ta.key)}</option>;
+                  // Niente lucchetto: l'opzione resta semplicemente non selezionabile.
+                  return <option key={ta.key} value={ta.key} disabled={bloccato}>{t('armor.' + ta.key)}</option>;
                 })}
               </select>
               <div style={{ fontSize: 10, color: C.inkDim, display: 'flex', gap: 5, alignItems: 'center', justifyContent: 'center', marginTop: 'auto', paddingTop: 6, flexWrap: 'wrap' }}>
@@ -4335,7 +4338,7 @@ export default function App() {
                         aggiorna({ armatura: { ...scheda.armatura, scudo: !scheda.armatura.scudo } });
                       }}
                     >
-                      <span style={styles.pip(scheda.armatura.scudo, C.goldDark)} /> <span style={{ opacity: scheda.armatura.scudo ? 1 : 0.4 }}>{scudiOk ? '🛡️' : '🔒'}</span>
+                      <span style={styles.pip(scheda.armatura.scudo, C.goldDark)} /> <span style={{ opacity: scheda.armatura.scudo ? 1 : 0.4 }}>🛡️</span>
                     </span>
                   );
                 })()}
@@ -5559,8 +5562,10 @@ export default function App() {
                 const setSlot = (i, v) => { const n = [...slots]; n[i] = v; aggiorna({ sintonia: n }); };
                 const usati = slots.filter((x) => x.trim()).length;
                 return (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20, alignItems: 'flex-start', marginTop: 24, paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
-                    <div style={{ background: C.panelLight, padding: '12px 14px', borderRadius: 8, border: `1px solid ${C.border}` }}>
+                  // I due pannelli si allungano alla stessa altezza (alignItems
+                  // stretch): niente spazio morto sotto quello più corto.
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20, alignItems: 'stretch', marginTop: 24, paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
+                    <div style={{ background: C.panelLight, padding: '12px 14px', borderRadius: 8, border: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column' }}>
                       <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700, fontSize: 13 }}>{t("equip.sintonia")} <span style={{ color: usati >= 3 ? C.gold : C.inkDim }}>({usati}/3)</span></div>
                       {[0, 1, 2].map((i) => (
                         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
@@ -5575,7 +5580,7 @@ export default function App() {
                       ))}
                     </div>
                     
-                    <div style={{ background: C.panelLight, padding: '12px 14px', borderRadius: 8, border: `1px solid ${C.border}` }}>
+                    <div style={{ background: C.panelLight, padding: '12px 14px', borderRadius: 8, border: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column' }}>
                       <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700, fontSize: 13 }}>Monete</div>
                       {(() => {
                         const d = scheda.denari || {};
@@ -5608,10 +5613,12 @@ export default function App() {
                           </div>
                         );
                       })()}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-                        {DENARI.map(({ key, label }) => (
-                          <div key={key} style={{ ...styles.vitalBox, minHeight: 'auto', padding: '8px 4px', background: C.bg }}>
-                            <div style={{ ...styles.vitalLabel, fontSize: 11, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={label}>{label}</div>
+                      {/* Le 5 monete su una riga sola: griglia a 5 colonne uguali,
+                          così non resta la sesta cella vuota della griglia 3×2. */}
+                      <div className="griglia-monete" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 8, marginTop: 'auto' }}>
+                        {DENARI.map(({ key, label, abbr }) => (
+                          <div key={key} style={{ ...styles.vitalBox, minHeight: 'auto', padding: '8px 4px', background: C.bg }} title={label}>
+                            <div style={{ ...styles.vitalLabel, fontSize: 11, height: 'auto', whiteSpace: 'nowrap' }}>{abbr}</div>
                             <div style={{ ...styles.vitalValue, fontSize: 18 }}>
                               <Editable
                                 value={scheda.denari[key]}

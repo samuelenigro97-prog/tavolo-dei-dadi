@@ -477,6 +477,8 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   /* nomi lunghi (es. "Prestidigitazione") vanno a capo invece di allargare
      la tabella e spingere i tasti azione fuori schermo */
   .spell-table td:first-child button { white-space: normal !important; overflow-wrap: anywhere; }
+  /* monete: su telefono 5 colonne sarebbero illeggibili, si passa a 3 */
+  .griglia-monete { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
   /* tabella attacchi: celle più compatte e colonna azioni ancorata a destra,
      così la × per eliminare resta cliccabile senza scorrere lo schermo */
   .attacchi-table { font-size: 12px; }
