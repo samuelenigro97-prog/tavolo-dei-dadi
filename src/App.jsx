@@ -332,8 +332,8 @@ function datiSpecieDi(specie) {
 
 // Ordine di default delle sezioni collassabili (riordinabili via drag).
 // Sezioni riordinabili via drag. 'import' NON è qui: resta sempre fissa in fondo.
-// 'addestramento' non è più qui: vive nel Profilo (colonna destra, sotto il ritratto).
-const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'risorse', 'privilegi', 'talenti', 'privilegiSottoclasse', 'metamagia', 'trattiSpecie', 'equipaggiamento', 'aspetto'];
+// 'addestramento' e 'risorse' non sono più qui: vivono nel Profilo (colonna destra, sotto il ritratto).
+const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'privilegi', 'talenti', 'privilegiSottoclasse', 'metamagia', 'trattiSpecie', 'equipaggiamento', 'aspetto'];
 
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 
@@ -744,7 +744,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.26.0';
+const APP_VERSION = '2.27.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4854,7 +4854,7 @@ export default function App() {
             })()}
           </div>{/* fine colonna caratteristiche (dentro il Profilo) */}
           {/* Addestramento: riempie lo spazio vuoto della colonna destra (righe Intelligenza→Carisma) */}
-          <div className="profilo-addestramento">
+          <div className="profilo-extra">
             <Sezione titolo={t("sez.addestramento")} {...apertoProps('addestramento', false)}>
               <div style={{ marginBottom: 10 }}>
                 <div style={{ ...styles.detail, marginBottom: 4 }}>{t("train.armature")}</div>
@@ -4914,18 +4914,8 @@ export default function App() {
                 />
               </div>
             </Sezione>
-          </div>
-        </div>{/* fine contenitore Profilo */}
-      </section>
-
-        {/* Corpo scheda: tutte le sezioni a piena larghezza */}
-        <div className="griglia-scheda">
-          {/* display:contents → le sezioni diventano figlie dirette di
-              .griglia-scheda, così l'ordine (e il trascinamento) è unico per tutte. */}
-          <div style={{ display: 'contents' }}>
-
-            {/* Risorse di classe */}
-            <Sezione titolo={t("sez.risorse")} {...propsSez('risorse')} {...apertoProps('risorse')}>
+            {/* Risorse di classe: sotto l'Addestramento, riempie il resto dello spazio */}
+            <Sezione titolo={t("sez.risorse")} {...apertoProps('risorse')}>
               {scheda.risorse.length === 0 && (
                 <p style={{ ...styles.detail, marginTop: 0, fontSize: 11 }}>
                   Nessuna risorsa. Aggiungi Ki, punti stregoneria, ira, ispirazione bardica, usi dei privilegi…
@@ -4974,6 +4964,16 @@ export default function App() {
                 + {t("res.aggiungi")}
               </button>
             </Sezione>
+          </div>
+        </div>{/* fine contenitore Profilo */}
+      </section>
+
+        {/* Corpo scheda: tutte le sezioni a piena larghezza */}
+        <div className="griglia-scheda">
+          {/* display:contents → le sezioni diventano figlie dirette di
+              .griglia-scheda, così l'ordine (e il trascinamento) è unico per tutte. */}
+          <div style={{ display: 'contents' }}>
+
             <Sezione titolo={t("sez.tratti_specie")} {...propsSez('trattiSpecie')} {...apertoProps('trattiSpecie')}>
               <ListaQuadratini
                 value={scheda.trattiSpecie}
