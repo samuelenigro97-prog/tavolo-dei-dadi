@@ -740,7 +740,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.11.0';
+const APP_VERSION = '2.12.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1116,6 +1116,12 @@ export default function App() {
   }, [nuovaVersione, aggiornando]);
 
   const [roster, setRoster] = useState(loadState);
+  // Annulla (undo): pila in memoria degli stati precedenti del roster.
+  const storicoUndo = useRef([]);
+  const rosterPrec = useRef(null);
+  const ultimoPassoUndo = useRef(0);
+  const saltaUndo = useRef(false);   // true mentre stiamo ripristinando: non registrare
+  const [passiUndo, setPassiUndo] = useState(0);
   const [modalita, setModalita] = useState('normale'); // normale | vantaggio | svantaggio
   const [rolling, setRolling] = useState(false);
   const [faccia, setFaccia] = useState(20);
@@ -1200,6 +1206,7 @@ export default function App() {
     return true;
   });
   const [promemoriaBackup, setPromemoriaBackup] = useState(false); // banner "fai un backup"
+  const [mostraGuida, setMostraGuida] = useState(false); // guida rapida al primo avvio
   const [mostraRipristino, setMostraRipristino] = useState(false); // modale "ripristina versione precedente"
   const [rinominando, setRinominando] = useState(false); // rinomina inline del PG attivo
   const [mostraCrea, setMostraCrea] = useState(false); // schermata di creazione guidata
@@ -1260,6 +1267,18 @@ export default function App() {
     } catch { /* niente */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Guida rapida: si apre una sola volta, al primo avvio dell'app.
+  useEffect(() => {
+    try {
+      if (!localStorage.getItem('scheda-interattiva:guida-vista')) setMostraGuida(true);
+    } catch { /* niente */ }
+  }, []);
+
+  function chiudiGuida() {
+    try { localStorage.setItem('scheda-interattiva:guida-vista', '1'); } catch { /* niente */ }
+    setMostraGuida(false);
+  }
 
   // Snapshot automatico periodico: se è passato abbastanza tempo dall'ultimo, ne
   // registra uno (debounced), così c'è sempre una versione recente da ripristinare.
@@ -1428,6 +1447,48 @@ export default function App() {
   useEffect(() => {
     saveState(roster);
   }, [roster]);
+
+  /**
+   * Registra lo stato precedente per l'Annulla. Le modifiche ravvicinate
+   * (es. mentre si digita in un campo) vengono unite in un unico passo:
+   * così un Annulla non cancella una lettera alla volta.
+   */
+  useEffect(() => {
+    if (rosterPrec.current === null) { rosterPrec.current = roster; return; } // primo avvio
+    if (rosterPrec.current === roster) return;
+    if (saltaUndo.current) { saltaUndo.current = false; rosterPrec.current = roster; return; }
+    const ora = Date.now();
+    if (ora - ultimoPassoUndo.current > 700) {
+      storicoUndo.current.push(rosterPrec.current);
+      if (storicoUndo.current.length > 30) storicoUndo.current.shift();
+      setPassiUndo(storicoUndo.current.length);
+    }
+    ultimoPassoUndo.current = ora;
+    rosterPrec.current = roster;
+  }, [roster]);
+
+  /** Annulla l'ultima modifica (Ctrl/Cmd+Z o pulsante ↩︎). */
+  function annullaModifica() {
+    const prec = storicoUndo.current.pop();
+    if (!prec) return;
+    saltaUndo.current = true;
+    setRoster(prec);
+    setPassiUndo(storicoUndo.current.length);
+  }
+
+  // Scorciatoia da tastiera: Ctrl+Z / Cmd+Z (non mentre si scrive in un campo)
+  useEffect(() => {
+    function onKey(e) {
+      if (!(e.key === 'z' || e.key === 'Z') || !(e.ctrlKey || e.metaKey) || e.shiftKey) return;
+      const el = e.target;
+      const tag = el?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el?.isContentEditable) return;
+      e.preventDefault();
+      annullaModifica();
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   useEffect(() => () => clearInterval(intervalRef.current), []);
 
@@ -3531,6 +3592,14 @@ export default function App() {
           >
             ☁️ Cloud{sincronizzando ? ' …' : (githubToken && gistId && autoSync ? ' ✓' : '')}
           </button>
+          <button
+            style={{ ...styles.modeButton(false), opacity: passiUndo ? 1 : 0.4, cursor: passiUndo ? 'pointer' : 'default' }}
+            title={passiUndo ? t('undo.tooltip', { n: passiUndo }) : t('undo.vuoto')}
+            disabled={!passiUndo}
+            onClick={annullaModifica}
+          >
+            ↩︎ {t('undo.annulla')}
+          </button>
           <input ref={jsonRef} type="file" accept="application/json,.json" style={{ display: 'none' }} onChange={importaJson} />
           <button
             style={styles.modeButton(false)}
@@ -3590,7 +3659,7 @@ export default function App() {
 
       </header>
 
-      {promemoriaBackup && (
+      {promemoriaBackup && !mostraGuida && (
         <div style={{
           maxWidth: 1080, margin: '0 auto 8px', padding: '10px 14px', borderRadius: 10,
           background: 'rgba(200,140,20,0.14)', border: `1px solid ${C.gold}`,
@@ -3608,6 +3677,38 @@ export default function App() {
             onClick={() => { try { localStorage.setItem('scheda-interattiva:snooze-backup', String(Date.now() + 3 * 24 * 3600 * 1000)); } catch { /* niente */ } setPromemoriaBackup(false); }}
             title="Ricordamelo tra qualche giorno"
           >Più tardi</button>
+        </div>
+      )}
+
+      {/* Guida rapida al primo avvio: spiega i tre gesti fondamentali. */}
+      {mostraGuida && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 1010, padding: 16, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={(e) => { if (e.target === e.currentTarget) chiudiGuida(); }}
+        >
+          <div style={{ background: C.panel, border: `1px solid ${C.gold}`, borderRadius: 12, padding: '18px 20px', maxWidth: 460, width: '100%', maxHeight: '86vh', overflowY: 'auto', boxShadow: '0 10px 40px rgba(0,0,0,0.45)' }}>
+            <h2 style={{ ...styles.title, fontSize: 22, margin: '0 0 4px', textAlign: 'center' }}>{t('guida.titolo')}</h2>
+            <p style={{ ...styles.detail, textAlign: 'center', margin: '0 0 14px' }}>{t('guida.sottotitolo')}</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {[
+                ['👆', t('guida.click_t'), t('guida.click_d')],
+                ['👆👆', t('guida.doppio_t'), t('guida.doppio_d')],
+                ['🎲', t('guida.dadi_t'), t('guida.dadi_d')],
+                ['🛟', t('guida.backup_t'), t('guida.backup_d')],
+              ].map(([icona, titolo, desc]) => (
+                <div key={titolo} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px' }}>
+                  <span style={{ fontSize: 20, lineHeight: 1.2, flexShrink: 0 }} aria-hidden>{icona}</span>
+                  <span style={{ minWidth: 0 }}>
+                    <strong style={{ color: C.ink, fontSize: 14 }}>{titolo}</strong>
+                    <span style={{ ...styles.detail, display: 'block', fontSize: 13 }}>{desc}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+            <button style={{ ...styles.buttonPrimary, width: '100%', marginTop: 16 }} onClick={chiudiGuida}>
+              {t('guida.ok')}
+            </button>
+          </div>
         </div>
       )}
 

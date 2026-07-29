@@ -256,6 +256,22 @@ export const DIZIONARIO = {
     'combat.col_note': 'Note',
     'combat.hint': 'Doppio click sul nome o sul bonus: tiro per colpire · sul danno: solo danni.',
     'combat.aggiungi_ph': 'Nome arma…',
+    // Annulla (undo)
+    'undo.annulla': 'Annulla',
+    'undo.tooltip': 'Annulla l\u2019ultima modifica ({n} disponibili) \u00b7 Ctrl+Z',
+    'undo.vuoto': 'Nessuna modifica da annullare',
+    // Guida rapida (primo avvio)
+    'guida.titolo': 'Benvenuto al Tavolo dei Dadi',
+    'guida.sottotitolo': 'Tre gesti e sei operativo.',
+    'guida.click_t': 'Un click per modificare',
+    'guida.click_d': 'Tocca un valore (punteggi, PF, note) e scrivilo: si salva da solo.',
+    'guida.doppio_t': 'Doppio click per tirare',
+    'guida.doppio_d': 'Doppio click su una caratteristica, abilit\u00e0 o attacco per lanciare i dadi.',
+    'guida.dadi_t': 'Barra dei dadi sempre a portata',
+    'guida.dadi_d': 'In alto scegli d4\u2026d100, scrivi formule tipo 3d6+2 e imposti vantaggio o svantaggio.',
+    'guida.backup_t': 'I dati restano sul tuo dispositivo',
+    'guida.backup_d': 'Fai un backup dal Menu, o attiva il backup automatico dal pulsante Cloud.',
+    'guida.ok': 'Ho capito, cominciamo',
     // Comune
     'common.aggiungi': 'Aggiungi',
     // Incantesimi
@@ -768,6 +784,22 @@ export const DIZIONARIO = {
     'combat.col_note': 'Notes',
     'combat.hint': 'Double-click the name or bonus: attack roll · the damage: damage only.',
     'combat.aggiungi_ph': 'Weapon name…',
+    // Undo
+    'undo.annulla': 'Undo',
+    'undo.tooltip': 'Undo the last change ({n} available) \u00b7 Ctrl+Z',
+    'undo.vuoto': 'Nothing to undo',
+    // Quick guide (first run)
+    'guida.titolo': 'Welcome to Tavolo dei Dadi',
+    'guida.sottotitolo': 'Three gestures and you are ready.',
+    'guida.click_t': 'One click to edit',
+    'guida.click_d': 'Tap any value (scores, HP, notes) and type: it saves by itself.',
+    'guida.doppio_t': 'Double click to roll',
+    'guida.doppio_d': 'Double click an ability, skill or attack to roll the dice.',
+    'guida.dadi_t': 'Dice bar always at hand',
+    'guida.dadi_d': 'At the top pick d4\u2026d100, type formulas like 3d6+2 and set advantage or disadvantage.',
+    'guida.backup_t': 'Your data stays on your device',
+    'guida.backup_d': 'Make a backup from the Menu, or turn on automatic backup from the Cloud button.',
+    'guida.ok': 'Got it, let us start',
     // Common
     'common.aggiungi': 'Add',
     // Spells
