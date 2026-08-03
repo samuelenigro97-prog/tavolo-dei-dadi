@@ -302,6 +302,26 @@ function datiSpecieDi(specie) {
   return k ? { ...SPECIE_DATI[k], nome: k } : null;
 }
 
+/** Spezza i tratti di specie (stringa con virgole) in voci separate, tenendo
+ *  insieme le virgole dentro le parentesi. Restituisce un testo con a-capo,
+ *  così ogni tratto diventa una chip separata in ListaQuadratini. */
+function trattiSpecieTesto(tratti) {
+  return String(tratti || '')
+    .split(/,(?![^(]*\))/)
+    .map((x) => x.trim())
+    .filter(Boolean)
+    .join('\n');
+}
+
+/** Estrae una quantità "×N" / "xN" dal nome di un oggetto della dotazione:
+ *  "Pugnale ×2" → { nome: "Pugnale", qta: 2 }. Senza suffisso → qta 1. */
+function separaQtaOggetto(nomeRaw) {
+  const s = String(nomeRaw).trim();
+  const m = s.match(/^(.+?)\s*[×xX]\s*(\d{1,3})$/);
+  if (m) return { nome: m[1].trim(), qta: Math.max(1, parseInt(m[2], 10)) };
+  return { nome: s, qta: 1 };
+}
+
 // Slot incantesimo degli incantatori completi (livello PG → slot per livello 1-9).
 
 // Slot dei semi-incantatori (paladino, ranger): tabella classica, incantesimi fino al 5° livello.
@@ -333,7 +353,7 @@ function datiSpecieDi(specie) {
 // Ordine di default delle sezioni collassabili (riordinabili via drag).
 // Sezioni riordinabili via drag. 'import' NON è qui: resta sempre fissa in fondo.
 // 'addestramento' e 'risorse' non sono più qui: vivono nel Profilo (colonna destra, sotto il ritratto).
-const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'privilegi', 'talenti', 'privilegiSottoclasse', 'metamagia', 'trattiSpecie', 'equipaggiamento', 'aspetto'];
+const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'privilegi', 'privilegiSottoclasse', 'talenti', 'metamagia', 'trattiSpecie', 'equipaggiamento', 'aspetto'];
 
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 
@@ -744,7 +764,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.27.0';
+const APP_VERSION = '2.28.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -795,9 +815,10 @@ function loadState() {
           // vecchio equipaggiamento testuale, converti le voci in oggetti (con
           // peso stimato) e svuota il testo, così gli oggetti non spariscono.
           if ((!Array.isArray(s.inventario) || s.inventario.length === 0) && typeof s.equipaggiamento === 'string' && s.equipaggiamento.trim()) {
-            s.inventario = s.equipaggiamento.split(/[;,\n]/).map((x) => x.trim()).filter(Boolean).map((nome, i) => ({
-              id: `inv-mig-${i}`, nome, qta: 1, peso: pesoStimato(nome), equip: false, categoria: '',
-            }));
+            s.inventario = s.equipaggiamento.split(/[;,\n]/).map((x) => x.trim()).filter(Boolean).map((raw, i) => {
+              const { nome, qta } = separaQtaOggetto(raw);
+              return { id: `inv-mig-${i}`, nome, qta, peso: pesoStimato(nome), equip: false, categoria: '' };
+            });
             s.equipaggiamento = '';
           }
           // "Fissa" il massimo di trucchetti/incantesimi per le schede che ne
@@ -1007,9 +1028,10 @@ function normalizeImported(dati) {
       // a capo) diventa una lista di oggetti, con peso stimato dal nome.
       const testo = str(dati.equipaggiamento);
       if (!testo) return [];
-      return testo.split(/[;,\n]/).map((s) => s.trim()).filter(Boolean).map((nome, i) => ({
-        id: `inv-mig-${i}`, nome, qta: 1, peso: pesoStimato(nome), equip: false, categoria: '',
-      }));
+      return testo.split(/[;,\n]/).map((s) => s.trim()).filter(Boolean).map((raw, i) => {
+        const { nome, qta } = separaQtaOggetto(raw);
+        return { id: `inv-mig-${i}`, nome, qta, peso: pesoStimato(nome), equip: false, categoria: '' };
+      });
     })(),
     sintonia: Array.isArray(dati.sintonia) ? dati.sintonia.slice(0, 3).map(str) : str(dati.sintonia),
     lingue: str(dati.lingue),
@@ -1583,7 +1605,7 @@ export default function App() {
     if (slot) s.slotIncantesimo = slot;
     // dati dalla specie: velocità, sensi, taglia, tratti
     const sp = datiSpecieDi(specie);
-    if (sp) { s.velocita = sp.velocita; s.sensi = sp.sensi; s.taglia = sp.taglia; s.trattiSpecie = sp.tratti; }
+    if (sp) { s.velocita = sp.velocita; s.sensi = sp.sensi; s.taglia = sp.taglia; s.trattiSpecie = trattiSpecieTesto(sp.tratti); }
     // caratteristiche secondo il metodo scelto:
     //  'auto'    → 4d6 assegnate per priorità di classe
     //  'assegna' → i 6 valori tirati (pool), assegnati a mano dall'utente
@@ -4314,7 +4336,7 @@ export default function App() {
               <div className="pm-anagrafica">
               <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px 10px', alignItems: 'end' }}>
                 <CampoModulo label={versione === "2024" ? t("profilo.specie") : t("profilo.razza")}>
-                  <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => { const sp = datiSpecieDi(v); aggiorna({ specie: v, ...(sp ? { velocita: sp.velocita, sensi: sp.sensi, taglia: sp.taglia, trattiSpecie: sp.tratti } : {}), ...ritrattoAuto(scheda.classe, v, scheda.nome) }); }} title={t('tip.scegli_specie')} />
+                  <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => { const sp = datiSpecieDi(v); aggiorna({ specie: v, ...(sp ? { velocita: sp.velocita, sensi: sp.sensi, taglia: sp.taglia, trattiSpecie: trattiSpecieTesto(sp.tratti) } : {}), ...ritrattoAuto(scheda.classe, v, scheda.nome) }); }} title={t('tip.scegli_specie')} />
                 </CampoModulo>
                 <CampoModulo label={t("profilo.taglia")}>
                   <CampoTendina value={scheda.taglia} opzioni={TAGLIE_5E} onChange={(v) => aggiorna({ taglia: v })} title={t('tip.scegli_taglia')} />

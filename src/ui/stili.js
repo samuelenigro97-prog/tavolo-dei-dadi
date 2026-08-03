@@ -463,6 +463,9 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
    non forzano l'altezza delle righe (così le caratteristiche restano allineate). */
 .profilo-extra { grid-column: 3; grid-row: 3 / -1; align-self: start; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
 .profilo-extra > .sezione { margin-bottom: 0 !important; }
+/* colonna stretta (~210px): titolo sezione più piccolo e meno spaziato, così
+   "ADDESTRAMENTO" non sborda; se serve va a capo invece di tagliarsi. */
+.profilo-extra .sezione > summary { font-size: 12.5px !important; letter-spacing: 1px !important; overflow-wrap: anywhere; }
 .profilo-caratteristiche > .blocco-car { margin-bottom: 0 !important; }
 /* Destrezza + Costituzione impilate in un'unica riga condivisa (i Punti Ferita) */
 .car-coppia { display: flex; flex-direction: column; gap: 8px; min-width: 0; }

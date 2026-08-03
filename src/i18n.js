@@ -351,7 +351,7 @@ export const DIZIONARIO = {
     'tratti.ph': 'Es. Scurovisione, Astuzia gnomesca, Trance, Fortuna halfling…',
     'priv.ph': 'Nessun privilegio. Aggiungine uno.',
     'priv.panoramica_btn': 'Panoramica privilegi per livello',
-    'talenti.ph': 'Es. Guerramaga, Guaritore, Robusto…',
+    'talenti.ph': 'Es. Robusto, Attento, Guaritore…',
     'equip.ph': 'Zaino, corda, razioni… (scrivi o scegli dalla lista)',
     'equip.lingue': 'Lingue',
     'equip.lingue_tooltip': 'Lingue conosciute: aggiungi dalla tendina o scrivi',
