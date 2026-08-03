@@ -317,9 +317,27 @@ function trattiSpecieTesto(tratti) {
  *  "Pugnale ×2" → { nome: "Pugnale", qta: 2 }. Senza suffisso → qta 1. */
 function separaQtaOggetto(nomeRaw) {
   const s = String(nomeRaw).trim();
-  const m = s.match(/^(.+?)\s*[×xX]\s*(\d{1,3})$/);
+  // suffisso "×N" / "xN": "Pugnale ×2" → Pugnale, 2
+  let m = s.match(/^(.+?)\s*[×xX]\s*(\d{1,4})$/);
   if (m) return { nome: m[1].trim(), qta: Math.max(1, parseInt(m[2], 10)) };
+  // prefisso numerico: "20 frecce" → frecce, 20 (ma non "1d6…")
+  m = s.match(/^(\d{1,4})\s*[×xX]?\s+(.+)$/);
+  if (m && !/^\d*d\d/i.test(s)) return { nome: m[2].trim(), qta: Math.max(1, parseInt(m[1], 10)) };
   return { nome: s, qta: 1 };
+}
+
+/** Arma da tiro che consuma munizioni (arco, balestra, fionda: proprietà "Munizioni"). */
+function armaUsaMunizioni(nomeArma) {
+  const a = ARMI_5E.find((w) => w.nome === nomeArma);
+  return !!(a && a.ranged && /munizion/i.test(a.note || ''));
+}
+/** Regex del tipo di munizione adatto all'arma (frecce per archi, quadrelli per balestre, ecc.). */
+function regexMunizione(nomeArma) {
+  const n = String(nomeArma || '').toLowerCase();
+  if (n.includes('arco')) return /frecc/i;
+  if (n.includes('balestra')) return /(quadrell|verretton|dardo|bolt)/i;
+  if (n.includes('fionda')) return /(proiettil|pallott|sling)/i;
+  return /(frecc|quadrell|proiettil|munizion)/i;
 }
 
 // Slot incantesimo degli incantatori completi (livello PG → slot per livello 1-9).
@@ -764,7 +782,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.28.0';
+const APP_VERSION = '2.29.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -820,6 +838,17 @@ function loadState() {
               return { id: `inv-mig-${i}`, nome, qta, peso: pesoStimato(nome), equip: false, categoria: '' };
             });
             s.equipaggiamento = '';
+          }
+          // Riporta la quantità dal nome alla colonna qta anche per l'inventario
+          // già strutturato ("20 frecce" → Frecce ×20, "Pugnale ×2" → Pugnale ×2),
+          // così i nomi combaciano con le armi note e le munizioni si scalano.
+          if (Array.isArray(s.inventario)) {
+            s.inventario = s.inventario.map((o) => {
+              const parsed = separaQtaOggetto(String(o.nome || ''));
+              return (parsed.qta > 1 && parsed.nome && parsed.nome !== o.nome)
+                ? { ...o, nome: parsed.nome, qta: parsed.qta }
+                : o;
+            });
           }
           // "Fissa" il massimo di trucchetti/incantesimi per le schede che ne
           // conoscono più di quanti la classe suggerirebbe (import da PDF): senza
@@ -1014,12 +1043,16 @@ function normalizeImported(dati) {
       // (bug: gli oggetti sparivano perché [] aveva la precedenza sul testo).
       if (Array.isArray(dati.inventario) && dati.inventario.length > 0) {
         return dati.inventario.map((o, i) => {
+          // Se il nome contiene ancora "×N" (dati vecchi), lo riporto nella quantità
+          // così il nome combacia con le armi note (es. "Pugnale ×2" → "Pugnale" ×2).
+          const parsed = separaQtaOggetto(str(o.nome));
+          const nomeVal = parsed.nome;
+          const qtaVal = parsed.qta > 1 ? parsed.qta : Math.max(1, num(o.qta, 1));
           let pesoVal = Math.max(0, Number(o.peso) || 0);
-          const nomeVal = str(o.nome);
           if (pesoVal === 0 && nomeVal) pesoVal = pesoStimato(nomeVal);
           return {
             id: o.id || `inv-${i}-${Math.random().toString(36).slice(2, 6)}`,
-            nome: nomeVal, qta: Math.max(1, num(o.qta, 1)), peso: pesoVal,
+            nome: nomeVal, qta: qtaVal, peso: pesoVal,
             equip: !!o.equip, categoria: str(o.categoria),
           };
         });
@@ -1973,6 +2006,22 @@ export default function App() {
   function lanciaDanniAttacco() {
     if (!tiro?.attacco) return;
     tiraDanniPerAttacco(tiro.attacco, tiro.naturale === 20);
+  }
+
+  /** Scala di 1 la munizione adatta (se l'arma la usa e ne hai in inventario). */
+  function consumaMunizione(nomeArma) {
+    if (!armaUsaMunizioni(nomeArma)) return;
+    const inv = scheda.inventario || [];
+    const re = regexMunizione(nomeArma);
+    const idx = inv.findIndex((o) => re.test(o.nome) && (Number(o.qta) || 0) > 0);
+    if (idx === -1) return;
+    aggiorna({ inventario: inv.map((o, i) => (i === idx ? { ...o, qta: Math.max(0, (Number(o.qta) || 0) - 1) } : o)) });
+  }
+
+  /** Tira per colpire con un'arma e, se è a munizioni, ne scala una dall'inventario. */
+  function tiraColpoArma(a) {
+    lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a, magia: !!a.isSpell });
+    if (!a.isSpell) consumaMunizione(a.nome);
   }
 
   /** Tiro salvezza contro morte: regole 5e complete. */
@@ -5168,7 +5217,7 @@ export default function App() {
                                         value={a.nome}
                                         width={130}
                                         onChange={(v) => aggiornaAttacco({ nome: v })}
-                                        onRoll={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a, magia: !!a.isSpell })}
+                                        onRoll={() => tiraColpoArma(a)}
                                       />
                                     </div>
                                   </td>
@@ -5182,13 +5231,13 @@ export default function App() {
                                         <button
                                           style={{ ...styles.buttonMini, padding: '1px 6px' }}
                                           title={`Tira per colpire con ${a.nome}`}
-                                          onClick={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a, magia: !!a.isSpell })}
+                                          onClick={() => tiraColpoArma(a)}
                                         >🎲</button>
                                         <Editable
                                           value={conSegno(a.bonus)}
                                           width={44}
                                           onChange={(v) => aggiornaAttacco({ bonus: Number(String(v).replace('+', '')) || 0 })}
-                                          onRoll={() => lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a, magia: !!a.isSpell })}
+                                          onRoll={() => tiraColpoArma(a)}
                                         />
                                       </div>
                                     )}
