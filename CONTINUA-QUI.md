@@ -1,7 +1,28 @@
 # Continua qui — lavoro rimasto su Tavolo dei Dadi
 
-Stato al **v2.24.0** (tutto committato e pubblicato su GitHub Pages).
+Stato al **v2.27.0** (tutto committato e pubblicato su GitHub Pages).
 App: https://samuelenigro97-prog.github.io/tavolo-dei-dadi/
+
+> ⚠️ Si lavora anche con **Antigravity** in parallelo su questo repo: prima di ogni
+> push fare `git fetch` e, se il remote si è mosso, `git pull --rebase`. Evitare che
+> due strumenti tocchino `src/App.jsx` contemporaneamente.
+
+## Novità dopo la 2.24.0
+
+- **2.25.0** — Riordino sezioni finalmente unico: le sezioni erano in tre container
+  separati (il `order` CSS non poteva spostarle tra i gruppi). Ora i wrapper usano
+  `display:contents`, quindi tutte le sezioni sono nello stesso contesto flex di
+  `.griglia-scheda` e il trascinamento vale per tutte insieme. Talenti torna sopra
+  Addestramento come da `ORDINE_SEZIONI_DEFAULT`. Incantesimi: nella riga azioni il
+  tiro **Colpire** viene sempre prima dei **danni**.
+- **2.26.0** — Ritratto ridimensionato per finire alla linea di Costituzione
+  (`.profilo-ritratto` a `grid-row: 1 / 3`). Sezione **Addestramento** spostata dal
+  corpo scheda alla colonna destra del Profilo, sotto il ritratto. Badge versione
+  (5.5/5.0) portato a filo destro del selettore, prima della freccina.
+- **2.27.0** — Sezione **Risorse di classe** spostata sotto l'Addestramento nella
+  colonna destra del Profilo (wrapper `.profilo-extra`, vedi `src/ui/stili.js`).
+  Ordine colonna destra: ritratto → Addestramento → Risorse di classe. Entrambe
+  non sono più sezioni riordinabili del corpo (tolte da `ORDINE_SEZIONI_DEFAULT`).
 
 ## Come si lavora su questo progetto
 
