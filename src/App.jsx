@@ -373,7 +373,7 @@ function regexMunizione(nomeArma) {
 // 'addestramento' e 'risorse' non sono più qui: vivono nel Profilo (colonna destra, sotto il ritratto).
 // privilegi/privilegiSottoclasse/talenti sono nel blocco fisso "Privilegi & Talenti"
 // sotto la Magia (non riordinabili singolarmente).
-const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'metamagia', 'trattiSpecie', 'equipaggiamento', 'aspetto'];
+const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'metamagia', 'equipaggiamento', 'aspetto'];
 
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 
@@ -812,7 +812,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.34.0';
+const APP_VERSION = '2.35.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -879,6 +879,15 @@ function loadState() {
                 ? { ...o, nome: parsed.nome, qta: parsed.qta }
                 : o;
             });
+          }
+          // Tratti di specie salvati come stringa con virgole (formato vecchio):
+          // se combaciano con la dotazione automatica della specie, li ri-spezzo in
+          // voci separate (una chip per tratto) senza toccare gli inserimenti manuali.
+          if (s.specie && typeof s.trattiSpecie === 'string' && !s.trattiSpecie.includes('\n')) {
+            const sp = datiSpecieDi(s.specie);
+            if (sp && s.trattiSpecie.trim() === String(sp.tratti || '').trim()) {
+              s.trattiSpecie = trattiSpecieTesto(sp.tratti);
+            }
           }
           // "Fissa" il massimo di trucchetti/incantesimi per le schede che ne
           // conoscono più di quanti la classe suggerirebbe (import da PDF): senza
@@ -5145,15 +5154,7 @@ export default function App() {
           {/* display:contents → le sezioni diventano figlie dirette di
               .griglia-scheda, così l'ordine (e il trascinamento) è unico per tutte. */}
           <div style={{ display: 'contents' }}>
-
-            <Sezione titolo={t("sez.tratti_specie")} {...propsSez('trattiSpecie')} {...apertoProps('trattiSpecie')}>
-              <ListaQuadratini
-                value={scheda.trattiSpecie}
-                lookup={spiegaTratto}
-                placeholder={t("tratti.ph")}
-                onChange={(v) => aggiorna({ trattiSpecie: v })}
-              />
-            </Sezione>
+            {/* Tratti della specie spostati nel blocco "Privilegi & Talenti" (accanto ai Talenti). */}
 
             {/* Privilegi di classe/sottoclasse spostati nel blocco "Privilegi & Talenti"
                 sotto la Magia (vedi più sotto). */}
@@ -5400,10 +5401,10 @@ export default function App() {
             </Sezione>
 
             {/* Incantesimi — sezione collassabile */}
-            <Sezione 
-              titolo={t("sez.incantesimi")} 
-              {...propsSez('incantesimi')} 
-              {...apertoProps('incantesimi')}
+            <Sezione
+              titolo={t("sez.incantesimi")}
+              {...propsSez('incantesimi')}
+              {...apertoProps('incantesimi', !!(scheda.incantatore?.caratteristica || (scheda.incantesimiLista || []).length > 0))}
               azioni={(
                 // Nella riga del titolo: recupera l'altezza di una riga intera.
                 <label style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, textTransform: 'none', letterSpacing: 0 }}>
@@ -5715,14 +5716,24 @@ export default function App() {
                   )}
                 </Sezione>
               </div>
-              <Sezione titolo={t("sez.talenti")} {...apertoProps('talenti')}>
-                <ListaQuadratini
-                  value={scheda.talenti}
-                  lookup={spiegaTalento}
-                  placeholder={t("talenti.ph")}
-                  onChange={(v) => aggiorna({ talenti: v })}
-                />
-              </Sezione>
+              <div className="privilegi-duo">
+                <Sezione titolo={t("sez.talenti")} {...apertoProps('talenti')}>
+                  <ListaQuadratini
+                    value={scheda.talenti}
+                    lookup={spiegaTalento}
+                    placeholder={t("talenti.ph")}
+                    onChange={(v) => aggiorna({ talenti: v })}
+                  />
+                </Sezione>
+                <Sezione titolo={t("sez.tratti_specie")} {...apertoProps('trattiSpecie')}>
+                  <ListaQuadratini
+                    value={scheda.trattiSpecie}
+                    lookup={spiegaTratto}
+                    placeholder={t("tratti.ph")}
+                    onChange={(v) => aggiorna({ trattiSpecie: v })}
+                  />
+                </Sezione>
+              </div>
             </div>
 
 
