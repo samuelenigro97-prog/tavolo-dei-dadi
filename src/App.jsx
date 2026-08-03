@@ -812,7 +812,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.35.0';
+const APP_VERSION = '2.36.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4364,18 +4364,18 @@ export default function App() {
                 aria-hidden
                 style={{
                   position: 'absolute', left: 0, right: 0, top: 0, bottom: 0,
-                  // a filo destro, appena prima della freccina del menù
+                  // centrato verticalmente e a filo destro, DENTRO il riquadro
                   display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
-                  paddingRight: 30,
+                  paddingRight: 28,
                   pointerEvents: 'none', userSelect: 'none', zIndex: 1,
                 }}
               >
                 <span style={{
                   fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: 'italic', fontWeight: 'bold',
-                  fontSize: 28, letterSpacing: 4, lineHeight: 1,
-                  // letterSpacing aggiunge 4px "di coda": li tolgo così i numeri sono a filo
-                  marginRight: -4,
-                  color: C.goldDark, opacity: 0.35, whiteSpace: 'nowrap',
+                  // più piccolo del titolo del riquadro: sta comodo dentro, senza toccare i bordi
+                  fontSize: 18, letterSpacing: 1.5, lineHeight: 1,
+                  marginRight: -1.5,
+                  color: C.goldDark, opacity: 0.4, whiteSpace: 'nowrap',
                 }}>
                   {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
                 </span>
