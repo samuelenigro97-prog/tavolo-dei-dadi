@@ -810,7 +810,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.30.0';
+const APP_VERSION = '2.31.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1419,6 +1419,7 @@ export default function App() {
   // Level Up
   const [mostraLevelUp, setMostraLevelUp] = useState(false);
   const [mostraPrivilegi, setMostraPrivilegi] = useState(false); // panoramica privilegi per livello
+  const [mostraPrivilegiSub, setMostraPrivilegiSub] = useState(false); // panoramica privilegi di sottoclasse
   const [info, setInfo] = useState(null); // nuvoletta esplicativa: { titolo, testo }
   const [checkConc, setCheckConc] = useState(null); // TS concentrazione automatico: { danno, cd, spell, esito }
   const [dettaglioInc, setDettaglioInc] = useState(null); // id incantesimo aperto nel sottomenu
@@ -3112,6 +3113,53 @@ export default function App() {
                 {t('priv.aiuto')}
               </p>
               <button style={{ ...styles.button, width: '100%', marginTop: 6 }} onClick={() => setMostraPrivilegi(false)}>{t('modal.chiudi')}</button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {mostraPrivilegiSub && (() => {
+        const liv = Math.max(1, Math.min(20, scheda.livello || 1));
+        const tab = SUBCLASS_PRIVILEGI[scheda.sottoclasse] || {};
+        const righe = [];
+        for (let L = 1; L <= 20; L++) if (tab[L]) righe.push({ L, feat: tab[L], futuro: L > liv });
+        return (
+          <div
+            style={{ position: 'fixed', inset: 0, zIndex: 1003, padding: 16, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            onClick={(e) => { if (e.target === e.currentTarget) setMostraPrivilegiSub(false); }}
+          >
+            <div style={{ ...styles.panel, maxWidth: 520, width: '100%', maxHeight: '88vh', overflowY: 'auto' }}>
+              <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 4 }}>📖 {t('priv.panoramica_sub')}</h1>
+              <div style={{ textAlign: 'center', ...styles.detail, marginBottom: 12 }}>
+                {scheda.sottoclasse || '—'} · {scheda.classe || '—'} · Liv. {liv} · {versione === '2024' ? 'D&D 5.5' : 'D&D 5.0'}
+              </div>
+              {righe.length === 0 && <p style={styles.detail}>{t('priv.nessuno')}</p>}
+              {righe.map(({ L, feat, futuro }) => (
+                <div key={L} style={{ display: 'flex', gap: 10, padding: '6px 0', borderBottom: `1px solid ${C.border}`, opacity: futuro ? 0.5 : 1 }}>
+                  <div style={{ flexShrink: 0, width: 44, fontWeight: 'bold', color: futuro ? C.inkDim : C.goldDark }}>
+                    {t('priv.livello')} {L}
+                  </div>
+                  <div style={{ flex: 1, fontSize: 13 }}>
+                    {feat.split('\n').map((r, i) => {
+                      const sp = spiegaPrivilegio(r);
+                      return (
+                        <div key={i}>
+                          • {sp ? (
+                            <span
+                              style={{ cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
+                              title={t('priv.tocca_spiegazione')}
+                              onClick={() => setInfo({ titolo: r, testo: sp })}
+                            >{r}</span>
+                          ) : r}
+                        </div>
+                      );
+                    })}
+                    {futuro && <span style={{ ...styles.detail, fontStyle: 'italic' }}>— {t('priv.futuro')}</span>}
+                  </div>
+                </div>
+              ))}
+              <p style={{ ...styles.detail, marginTop: 10, fontSize: 11 }}>{t('priv.aiuto_sub')}</p>
+              <button style={{ ...styles.button, width: '100%', marginTop: 6 }} onClick={() => setMostraPrivilegiSub(false)}>{t('modal.chiudi')}</button>
             </div>
           </div>
         );
@@ -5120,6 +5168,15 @@ export default function App() {
             </Sezione>
 
             <Sezione titolo={t("sez.privilegi_sottoclasse")} {...propsSez('privilegiSottoclasse')} {...apertoProps('privilegiSottoclasse')}>
+              {scheda.sottoclasse && SUBCLASS_PRIVILEGI[scheda.sottoclasse] && (
+                <button
+                  style={{ ...styles.button, marginBottom: 8, fontSize: 12 }}
+                  onClick={() => setMostraPrivilegiSub(true)}
+                  title={t('tip.panoramica_priv_sub')}
+                >
+                  📖 {t("priv.panoramica_sub_btn")}
+                </button>
+              )}
               <ListaQuadratini
                 value={scheda.privilegiSottoclasse}
                 lookup={spiegaPrivilegio}
