@@ -812,7 +812,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.33.0';
+const APP_VERSION = '2.34.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4048,14 +4048,14 @@ export default function App() {
               <span style={{ minWidth: 35, textAlign: 'right', fontSize: 12, fontWeight: 'bold' }}>{Math.round(volumeAudio * 100)}%</span>
               <button
                 onClick={() => setEffettiSonoriAttivi((v) => !v)}
-                title={effettiSonoriAttivi ? 'Effetti sonori dei dadi attivi' : 'Effetti sonori dei dadi disattivati'}
+                title={'Attiva/disattiva i suoni dei tiri di dado. La barra qui accanto regola invece il volume del sottofondo ambientale (sono due cose diverse).'}
                 style={{
                   ...styles.btnMini, marginLeft: 4,
                   border: `1px solid ${effettiSonoriAttivi ? C.gold : C.border}`,
                   background: effettiSonoriAttivi ? C.gold : C.panel,
                   color: effettiSonoriAttivi ? '#fff' : C.inkDim, fontWeight: 'bold'
                 }}
-              >🎲 FX {effettiSonoriAttivi ? 'ON' : 'OFF'}</button>
+              >🎲 Suoni dadi {effettiSonoriAttivi ? 'ON' : 'OFF'}</button>
               <button
                 style={{ ...styles.btnMini, marginLeft: 4 }}
                 onClick={() => setMostraPannelloAudio(false)}

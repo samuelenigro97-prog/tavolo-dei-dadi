@@ -45,8 +45,9 @@ const AMBIENTI_CON_FILE = new Set([
 const BASE_CONDIVISA = {};
 
 // Volume della base rispetto al volume dell'ambiente (1 = invariato).
-// Città: il brusio di voci sta un po' sotto, così carretti e fabbro emergono.
-const VOLUME_BASE = { citta: 0.85 };
+// Città: il brusio di voci sta parecchio sotto, così a emergere sono i suoni
+// medievali (campane, fabbro, carretti) invece del chiacchiericcio.
+const VOLUME_BASE = { citta: 0.5 };
 
 function ambienteFileUrl(id) {
   if (!AMBIENTI_CON_FILE.has(id)) return null;
@@ -332,10 +333,11 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '') {
         const ctx = getAudioContext();
         if (!ctx || ctx.state !== 'running' || (typeof document !== 'undefined' && document.hidden)) return;
         const r = Math.random();
-        if (r < 0.42) playSfx('carretto', currentVolume * 0.34);      // carretti: spesso
-        else if (r < 0.8) playSfx('fabbro', currentVolume * 0.32);     // fabbro: spesso
-        else if (r < 0.94) playSfx('campana', currentVolume * 0.22);   // campane: rare e lontane
-      }, 3500);
+        // Suoni medievali più frequenti e più presenti, per coprire il brusìo di voci.
+        if (r < 0.45) playSfx('carretto', currentVolume * 0.55);      // carretti: molto spesso
+        else if (r < 0.85) playSfx('fabbro', currentVolume * 0.55);    // fabbro: molto spesso
+        else playSfx('campana', currentVolume * 0.4);                  // campane: ogni tanto, ben udibili
+      }, 2600);
     }
     // Dungeon/caverna: sopra il drone di base, gocce d'acqua frequenti e, più di
     // rado, versi di creature in lontananza e cupi rombi d'eco.
