@@ -810,7 +810,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.31.0';
+const APP_VERSION = '2.32.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4571,12 +4571,8 @@ export default function App() {
               <div className="pm-pf">
             <div style={{ ...styles.vitalBox, gridColumn: 'span 4', padding: '12px 14px' }}>
               <SfondoVit>🩸</SfondoVit>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
                 <div style={{ ...styles.vitalLabel, margin: 0, fontSize: 13 }}>❤️ {t("vital.pf")}</div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(0,0,0,0.2)', padding: '2px 8px', borderRadius: 12, border: `1px solid ${C.border}` }}>
-                  <span style={{ fontSize: 12, color: C.inkDim }}>🛡️ {t("vital.temporanei")}</span>
-                  <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={32} style={{ fontSize: 13, fontWeight: 'bold', color: '#42a5f5' }} />
-                </div>
               </div>
 
               {/* BARRA DELLA VITA STILE VIDEOGIOCO */}
@@ -4616,6 +4612,14 @@ export default function App() {
                   }} width={48} />
                 </span>
                 <span style={{ fontSize: 16, color: C.inkDim, fontWeight: 600 }}>/ <span title={t('vital.max_pf_tooltip')} style={{ display: 'inline-block', textAlign: 'center' }}>{scheda.pfMax}</span></span>
+                {/* PF temporanei: badge scudo accanto ai PF, non più in alto a caso */}
+                <span
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 3, marginLeft: 10, fontSize: 12, color: '#42a5f5', background: 'rgba(66,165,245,0.12)', border: '1px solid rgba(66,165,245,0.45)', borderRadius: 12, padding: '1px 8px' }}
+                  title={t('vital.temporanei')}
+                >
+                  🛡️ <span style={{ fontSize: 10, color: C.inkDim, letterSpacing: 0.4, textTransform: 'uppercase' }}>{t("vital.temporanei")}</span>
+                  <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={24} style={{ fontSize: 13, fontWeight: 'bold', color: '#42a5f5' }} />
+                </span>
               </div>
 
               <div style={{ ...styles.detail, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: 6, paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
@@ -5740,7 +5744,11 @@ export default function App() {
                 const attacchi = Array.isArray(scheda.attacchi) ? scheda.attacchi : [];
                 const pesoArmi = attacchi.reduce((s, a) => s + pesoStimato(a.nome), 0);
                 const pesoArm = pesoArmatura(scheda.armatura);
-                const pesoTot = pesoInv + pesoArmi + pesoArm;
+                // Peso delle monete: conta nel totale ed è mostrato come riga fra gli oggetti.
+                const dMon = scheda.denari || {};
+                const numMonete = (dMon.mr || 0) + (dMon.ma || 0) + (dMon.me || 0) + (dMon.mo || 0) + (dMon.mp || 0);
+                const pesoMonete = numMonete * 0.01;
+                const pesoTot = pesoInv + pesoArmi + pesoArm + pesoMonete;
                 const forza = scheda.caratteristiche.forza || 10;
                 const cap = capacitaCarico(forza);
                 const soglia1 = forza * 2.5; // ingombrato
@@ -5807,7 +5815,7 @@ export default function App() {
                       </button>
                     </div>
                     {/* Lista oggetti */}
-                    {inv.length > 0 && (
+                    {(inv.length > 0 || numMonete > 0) && (
                       <div style={{ overflowX: 'auto' }}>
                         <table style={styles.table}>
                           <thead><tr>
@@ -5833,6 +5841,15 @@ export default function App() {
                                 </tr>
                               );
                             })}
+                            {numMonete > 0 && (!filtroInventario || 'monete'.includes(filtroInventario.trim().toLowerCase())) && (
+                              <tr style={{ opacity: 0.9 }} title="Peso delle monete (contato nel totale ingombro). Cambia le monete nella sezione Monete qui sotto.">
+                                <td style={{ ...styles.td, textAlign: 'center' }}>🪙</td>
+                                <td style={styles.td}>Monete</td>
+                                <td style={styles.td}>×{numMonete}</td>
+                                <td style={{ ...styles.td, color: C.inkDim, whiteSpace: 'nowrap' }}>{pesoMonete.toFixed(2)} kg</td>
+                                <td style={styles.td} />
+                              </tr>
+                            )}
                           </tbody>
                         </table>
                       </div>
@@ -5887,7 +5904,7 @@ export default function App() {
                         const pesoMonete = numMonete * 0.01; // 50 monete = 0.5 kg (0.01 kg a moneta)
                         return (
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 8, ...styles.detail }}>
-                            <span>💎 <strong>Patrimonio:</strong> ~{totMo.toFixed(2)} MO • ⚖️ <strong>Peso monete:</strong> {pesoMonete.toFixed(2)} kg ({numMonete})</span>
+                            <span>💎 <strong>Valore totale:</strong> ~{totMo.toFixed(2)} MO <span style={{ opacity: 0.7 }}>• {numMonete} monete ({pesoMonete.toFixed(2)} kg, contate nell'ingombro)</span></span>
                             <button
                               style={{ ...styles.buttonMini, fontSize: 11, color: C.goldDark, borderColor: C.goldDark }}
                               title="Converte tutte le Monete di Rame (100 MR = 1 MO) e d'Argento (10 MA = 1 MO) in equivalenti Monete d'Oro, tenendo i resti"
