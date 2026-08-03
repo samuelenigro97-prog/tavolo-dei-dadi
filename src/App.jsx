@@ -371,7 +371,9 @@ function regexMunizione(nomeArma) {
 // Ordine di default delle sezioni collassabili (riordinabili via drag).
 // Sezioni riordinabili via drag. 'import' NON è qui: resta sempre fissa in fondo.
 // 'addestramento' e 'risorse' non sono più qui: vivono nel Profilo (colonna destra, sotto il ritratto).
-const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'privilegi', 'privilegiSottoclasse', 'talenti', 'metamagia', 'trattiSpecie', 'equipaggiamento', 'aspetto'];
+// privilegi/privilegiSottoclasse/talenti sono nel blocco fisso "Privilegi & Talenti"
+// sotto la Magia (non riordinabili singolarmente).
+const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'metamagia', 'trattiSpecie', 'equipaggiamento', 'aspetto'];
 
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 
@@ -810,7 +812,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.32.0';
+const APP_VERSION = '2.33.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -5153,42 +5155,8 @@ export default function App() {
               />
             </Sezione>
 
-            <Sezione titolo={t("sez.privilegi")} {...propsSez('privilegi')} {...apertoProps('privilegi')}>
-              <button
-                style={{ ...styles.button, marginBottom: 8, fontSize: 12 }}
-                onClick={() => setMostraPrivilegi(true)}
-                title={t('tip.panoramica_priv')}
-              >
-                📖 {t("priv.panoramica_btn")}
-              </button>
-              <ListaQuadratini
-                value={scheda.privilegi}
-                lookup={spiegaPrivilegio}
-                placeholder={t("priv.ph")}
-                onChange={(v) => aggiorna({ privilegi: v })}
-                onRoll={lanciaDanniDiretti}
-                unicaRiga
-              />
-            </Sezione>
-
-            <Sezione titolo={t("sez.privilegi_sottoclasse")} {...propsSez('privilegiSottoclasse')} {...apertoProps('privilegiSottoclasse')}>
-              {scheda.sottoclasse && SUBCLASS_PRIVILEGI[scheda.sottoclasse] && (
-                <button
-                  style={{ ...styles.button, marginBottom: 8, fontSize: 12 }}
-                  onClick={() => setMostraPrivilegiSub(true)}
-                  title={t('tip.panoramica_priv_sub')}
-                >
-                  📖 {t("priv.panoramica_sub_btn")}
-                </button>
-              )}
-              <ListaQuadratini
-                value={scheda.privilegiSottoclasse}
-                lookup={spiegaPrivilegio}
-                placeholder={`Privilegi della sottoclasse${scheda.sottoclasse ? ` (${scheda.sottoclasse})` : ''}: aggiungili qui.`}
-                onChange={(v) => aggiorna({ privilegiSottoclasse: v })}
-                onRoll={lanciaDanniDiretti}
-              />
-            </Sezione>
+            {/* Privilegi di classe/sottoclasse spostati nel blocco "Privilegi & Talenti"
+                sotto la Magia (vedi più sotto). */}
 
             {/(stregone|sorcerer)/i.test(scheda.classe || '') && (
               <Sezione titolo={t("sez.metamagia")} {...propsSez('metamagia')} {...apertoProps('metamagia', false)}>
@@ -5719,21 +5687,50 @@ export default function App() {
               </div>
             </Sezione>
 
+            {/* Privilegi (classe + sottoclasse affiancati) e Talenti, subito sotto la
+                Magia. I box mostrano SOLO la Panoramica: apre la lista dei privilegi
+                per livello e, cliccando un privilegio, la sua spiegazione. */}
+            <div className="privilegi-talenti" style={{ order: ordineSezioni.indexOf('incantesimi'), display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div className="privilegi-duo">
+                <Sezione titolo={t("sez.privilegi")} {...apertoProps('privilegi')}>
+                  <button
+                    style={{ ...styles.button, width: '100%', fontSize: 12 }}
+                    onClick={() => setMostraPrivilegi(true)}
+                    title={t('tip.panoramica_priv')}
+                  >
+                    📖 {t("priv.panoramica_btn")}
+                  </button>
+                </Sezione>
+                <Sezione titolo={t("sez.privilegi_sottoclasse")} {...apertoProps('privilegiSottoclasse')}>
+                  {scheda.sottoclasse && SUBCLASS_PRIVILEGI[scheda.sottoclasse] ? (
+                    <button
+                      style={{ ...styles.button, width: '100%', fontSize: 12 }}
+                      onClick={() => setMostraPrivilegiSub(true)}
+                      title={t('tip.panoramica_priv_sub')}
+                    >
+                      📖 {t("priv.panoramica_sub_btn")}
+                    </button>
+                  ) : (
+                    <p style={{ ...styles.detail, fontSize: 12, margin: 0 }}>{t('priv.sub_nessuna')}</p>
+                  )}
+                </Sezione>
+              </div>
+              <Sezione titolo={t("sez.talenti")} {...apertoProps('talenti')}>
+                <ListaQuadratini
+                  value={scheda.talenti}
+                  lookup={spiegaTalento}
+                  placeholder={t("talenti.ph")}
+                  onChange={(v) => aggiorna({ talenti: v })}
+                />
+              </Sezione>
+            </div>
+
 
           </div>
 
           {/* Sezioni descrittive: anch'esse figlie dirette di .griglia-scheda
               (display:contents) così rientrano nell'unico ordine riordinabile. */}
           <div style={{ display: 'contents' }}>
-            
-            <Sezione titolo={t("sez.talenti")} {...propsSez('talenti')} {...apertoProps('talenti')}>
-              <ListaQuadratini
-                value={scheda.talenti}
-                lookup={spiegaTalento}
-                placeholder={t("talenti.ph")}
-                onChange={(v) => aggiorna({ talenti: v })}
-              />
-            </Sezione>
 
             {/* Equipaggiamento, aspetto — collassabili */}
             <Sezione titolo={t("sez.equipaggiamento")} {...propsSez('equipaggiamento')} {...apertoProps('equipaggiamento')}>

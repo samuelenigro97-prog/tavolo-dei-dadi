@@ -412,6 +412,12 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   gap: 10px;
 }
 .griglia-scheda > * { min-width: 0; }
+/* Blocco "Privilegi & Talenti" sotto la Magia: i due box privilegi affiancati,
+   Talenti sotto. Su schermi stretti tornano in colonna singola. */
+.privilegi-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
+.privilegi-duo > * { min-width: 0; }
+.privilegi-talenti > .sezione, .privilegi-duo > .sezione { margin-bottom: 0 !important; }
+@media (max-width: 720px) { .privilegi-duo { grid-template-columns: 1fr; } }
 /* Profilo: caratteristiche (colonna sinistra) e riquadri vitali (colonna
    centrale) vivono nella STESSA griglia con righe condivise (subgrid), così
    ogni caratteristica si allinea riga per riga al gruppo di vitali corrispondente
