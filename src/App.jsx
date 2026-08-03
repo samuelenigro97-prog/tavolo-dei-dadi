@@ -731,6 +731,34 @@ const ORO_INIZIALE = {
   barbaro: 75, bardo: 90, chierico: 110, druido: 50, guerriero: 155, ladro: 100,
   mago: 55, monaco: 50, paladino: 150, ranger: 150, stregone: 50, warlock: 100,
 };
+
+/** Risorse di classe generate automaticamente da classe e livello (valori 5e
+ *  indicativi). Restituisce voci { id, nome, attuali, max, reset }. */
+function risorseAutoClasse(classe, livello, caratteristiche) {
+  const L = Math.max(1, Number(livello) || 1);
+  const modCar = (v) => Math.floor(((Number(v) || 10) - 10) / 2);
+  const mk = (nome, max, reset) => ({ id: `auto-${nome.toLowerCase().replace(/\s+/g, '-')}`, nome, attuali: Math.max(0, max), max: Math.max(0, max), reset });
+  switch (chiaveClasse(classe)) {
+    case 'barbaro':
+      return [mk('Ira', L >= 17 ? 6 : L >= 12 ? 5 : L >= 6 ? 4 : L >= 3 ? 3 : 2, 'lungo')];
+    case 'bardo':
+      return [mk('Ispirazione Bardica', Math.max(1, modCar(caratteristiche?.carisma)), L >= 5 ? 'breve' : 'lungo')];
+    case 'monaco':
+      return L >= 2 ? [mk('Punti Focus', L, 'breve')] : [];
+    case 'stregone':
+      return L >= 2 ? [mk('Punti Stregoneria', L, 'lungo')] : [];
+    case 'guerriero':
+      return [mk('Recuperare Energie', L >= 10 ? 4 : L >= 4 ? 3 : 2, 'breve'), ...(L >= 2 ? [mk('Azione Impetuosa', L >= 17 ? 2 : 1, 'breve')] : [])];
+    case 'druido':
+      return L >= 2 ? [mk('Forma Selvatica', 2, 'breve')] : [];
+    case 'chierico':
+      return L >= 2 ? [mk('Incanalare Divinità', L >= 6 ? 3 : 2, 'breve')] : [];
+    case 'paladino':
+      return [mk('Imposizione delle Mani', L * 5, 'lungo'), ...(L >= 3 ? [mk('Incanalare Divinità', L >= 11 ? 3 : 2, 'lungo')] : [])];
+    default:
+      return [];
+  }
+}
 // Lingua tematica concessa dalla specie (oltre al Comune). Nella 5.5 le lingue
 // derivano dall'origine, ma diamo un default sensato modificabile a mano.
 const LINGUA_SPECIE = {
@@ -782,7 +810,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.29.0';
+const APP_VERSION = '2.30.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1694,6 +1722,8 @@ export default function App() {
         .filter(Boolean);
       if (armi.length) s.attacchi = armi;
     }
+    // risorse di classe automatiche (Ira, Punti Stregoneria, Ki, Ispirazione Bardica…)
+    s.risorse = risorseAutoClasse(classe, s.livello, s.caratteristiche);
     // punti ferita di 1° livello = dado vita massimo + modificatore di Costituzione
     s.pfMax = Math.max(1, dadoVitaClasse(classe) + modificatore(s.caratteristiche.costituzione));
     s.pfAttuali = s.pfMax;
@@ -5024,16 +5054,33 @@ export default function App() {
                   </div>
                 );
               })}
-              <button
-                style={{ ...styles.buttonMini, marginTop: 2 }}
-                onClick={() =>
-                  aggiorna({
-                    risorse: [...scheda.risorse, { id: Date.now(), nome: t("res.nuova"), attuali: 0, max: 0, reset: 'lungo' }],
-                  })
-                }
-              >
-                + {t("res.aggiungi")}
-              </button>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 2 }}>
+                <button
+                  style={{ ...styles.buttonMini }}
+                  onClick={() =>
+                    aggiorna({
+                      risorse: [...scheda.risorse, { id: Date.now(), nome: t("res.nuova"), attuali: 0, max: 0, reset: 'lungo' }],
+                    })
+                  }
+                >
+                  + {t("res.aggiungi")}
+                </button>
+                {(() => {
+                  const auto = risorseAutoClasse(scheda.classe, scheda.livello, scheda.caratteristiche);
+                  const esistenti = new Set((scheda.risorse || []).map((r) => (r.nome || '').toLowerCase()));
+                  const mancanti = auto.filter((a) => !esistenti.has(a.nome.toLowerCase()));
+                  if (mancanti.length === 0) return null;
+                  return (
+                    <button
+                      style={{ ...styles.buttonMini, borderColor: C.goldDark, color: C.goldDark }}
+                      title={`Aggiunge le risorse tipiche della classe: ${mancanti.map((m) => m.nome).join(', ')}`}
+                      onClick={() => aggiorna({ risorse: [...(scheda.risorse || []), ...mancanti] })}
+                    >
+                      ✨ {t("res.auto")}
+                    </button>
+                  );
+                })()}
+              </div>
             </Sezione>
           </div>
         </div>{/* fine contenitore Profilo */}

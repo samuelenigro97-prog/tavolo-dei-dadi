@@ -461,8 +461,11 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 /* Addestramento + Risorse riempiono lo spazio vuoto sotto il ritratto (colonna
    destra, righe 3-5 = Intelligenza→Carisma). align-self:start → restano in alto e
    non forzano l'altezza delle righe (così le caratteristiche restano allineate). */
-.profilo-extra { grid-column: 3; grid-row: 3 / -1; align-self: start; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.profilo-extra { grid-column: 3; grid-row: 3 / -1; align-self: stretch; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
 .profilo-extra > .sezione { margin-bottom: 0 !important; }
+/* l'ultima sezione aperta (Risorse) cresce per riempire lo spazio rimanente
+   sotto; da chiusa resta alta quanto il suo titolo. */
+.profilo-extra > .sezione[open]:last-child { flex: 1 1 auto; }
 /* colonna stretta (~210px): titolo sezione più piccolo e meno spaziato, così
    "ADDESTRAMENTO" non sborda; se serve va a capo invece di tagliarsi. */
 .profilo-extra .sezione > summary { font-size: 12.5px !important; letter-spacing: 1px !important; overflow-wrap: anywhere; }

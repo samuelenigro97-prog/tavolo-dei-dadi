@@ -341,6 +341,7 @@ export const DIZIONARIO = {
     'res.lungo': 'r. lungo',
     'res.nuova': 'Nuova risorsa',
     'res.aggiungi': 'Aggiungi risorsa',
+    'res.auto': 'Auto (classe)',
     // Addestramento
     'train.armature': 'Armature:',
     'train.armi': 'Armi:',
@@ -896,6 +897,7 @@ export const DIZIONARIO = {
     'res.lungo': 'long rest',
     'res.nuova': 'New resource',
     'res.aggiungi': 'Add resource',
+    'res.auto': 'Auto (class)',
     // Training
     'train.armature': 'Armor:',
     'train.armi': 'Weapons:',
