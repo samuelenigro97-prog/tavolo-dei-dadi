@@ -1272,6 +1272,8 @@ export default function App() {
     try { localStorage.setItem('scheda-interattiva:transcribe-url', transcribeUrl); } catch { /* niente */ }
   }, [transcribeUrl]);
   const [pdfStato, setPdfStato] = useState(''); // '' | 'loading'
+  const [iaImgStato, setIaImgStato] = useState(''); // '' | 'ritratto' | 'sfondo' — generazione immagine IA in corso
+  const [iaImgErrore, setIaImgErrore] = useState('');
   const [filtroIncantesimo, setFiltroIncantesimo] = useState('');
   const [filtroInventario, setFiltroInventario] = useState('');
   const [addLivIncantesimo, setAddLivIncantesimo] = useState(0); // livello scelto nella barra "aggiungi"
@@ -2302,6 +2304,79 @@ export default function App() {
       setErroreImport('Immagine non riconosciuta: usa un file JPG o PNG.');
     };
     img.src = url;
+  }
+
+  /** Ridimensiona un data URL immagine a JPEG (max lato lungo, qualità), per
+   *  non riempire il localStorage con le immagini generate dall'IA. */
+  function ridimensionaDataUrl(dataUrl, max = 768, qualita = 0.85) {
+    return new Promise((risolvi, rifiuta) => {
+      const img = new Image();
+      img.onload = () => {
+        const scala = Math.min(1, max / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(img.width * scala));
+        canvas.height = Math.max(1, Math.round(img.height * scala));
+        const ctx2d = canvas.getContext('2d');
+        ctx2d.imageSmoothingEnabled = true;
+        ctx2d.imageSmoothingQuality = 'high';
+        ctx2d.drawImage(img, 0, 0, canvas.width, canvas.height);
+        risolvi(canvas.toDataURL('image/jpeg', qualita));
+      };
+      img.onerror = () => rifiuta(new Error('immagine non valida'));
+      img.src = dataUrl;
+    });
+  }
+
+  /** Chiede al Worker di generare un'illustrazione fantasy dal prompt indicato
+   *  e restituisce un data URL (PNG). Usa lo stesso endpoint dei PDF. */
+  async function generaImmagineIA(prompt, size = '1024x1024') {
+    const endpoint = (transcribeUrl || '').trim() || '/api/transcribe';
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imagePrompt: prompt, size }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `errore ${res.status}`);
+    }
+    const dati = await res.json();
+    if (!dati.image) throw new Error('risposta senza immagine');
+    return dati.image;
+  }
+
+  /** Costruisce il prompt del ritratto eroe da classe + specie (+ nome). */
+  function promptRitratto(classe, specie, nome) {
+    const cls = traduciDato(classe) || classe || 'avventuriero';
+    const spc = traduciDato(specie) || specie || '';
+    const chi = [spc, cls].filter(Boolean).join(' ');
+    return `Ritratto fantasy di un ${chi} di Dungeons & Dragons${nome ? ` di nome ${nome}` : ''}. ` +
+      `Illustrazione digitale in stile concept art fantasy, primo piano su volto e busto, ` +
+      `armatura ed equipaggiamento coerenti con la classe, sfondo semplice e atmosferico, ` +
+      `luce cinematografica, alta qualità. Nessun testo, nessuna scritta.`;
+  }
+
+  /** Genera con l'IA il ritratto dell'eroe dalla classe e dalla specie. */
+  async function generaRitrattoIA() {
+    if (iaImgStato) return;
+    setIaImgErrore('');
+    if (!scheda.classe && !scheda.specie) {
+      setIaImgErrore('Scegli prima classe e/o specie: il ritratto si genera da quelli.');
+      return;
+    }
+    setIaImgStato('ritratto');
+    try {
+      const raw = await generaImmagineIA(promptRitratto(scheda.classe, scheda.specie, scheda.nome), '1024x1536');
+      const piccola = await ridimensionaDataUrl(raw, 768, 0.85);
+      aggiorna({ ritratto: piccola });
+    } catch (e) {
+      const dove = (transcribeUrl || '').trim()
+        ? 'Controlla che il Worker sia attivo e abbia la chiave OpenAI.'
+        : 'Configura prima l’endpoint IA nel Menù (serve un Cloudflare Worker con la tua chiave OpenAI).';
+      setIaImgErrore(`Generazione ritratto fallita: ${e.message}. ${dove}`);
+    } finally {
+      setIaImgStato('');
+    }
   }
 
   // --- import / export ---
@@ -4518,6 +4593,24 @@ export default function App() {
                 >
                   ×
                 </button>
+              )}
+              {/* Genera il ritratto con l'IA (classe + specie). Richiede il Worker
+                  configurato con la chiave OpenAI. */}
+              <button
+                style={{
+                  position: 'absolute', bottom: 6, left: 6, fontSize: 11, padding: '3px 8px',
+                  borderRadius: 8, cursor: iaImgStato ? 'wait' : 'pointer', fontWeight: 700,
+                  border: `1px solid ${C.goldDark}`, color: '#fff',
+                  background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(2px)',
+                }}
+                title="Genera il ritratto con l'IA a partire da classe e specie (serve il Worker con chiave OpenAI)"
+                disabled={!!iaImgStato}
+                onClick={(e) => { e.stopPropagation(); generaRitrattoIA(); }}
+              >
+                {iaImgStato === 'ritratto' ? '⏳ Genero…' : '✨ Ritratto IA'}
+              </button>
+              {iaImgErrore && (
+                <div style={{ fontSize: 10, color: C.red, marginTop: 4, lineHeight: 1.25 }}>{iaImgErrore}</div>
               )}
               <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
             </div>

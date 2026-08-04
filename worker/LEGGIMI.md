@@ -1,15 +1,24 @@
-# Import da PDF con l'IA — Cloudflare Worker
+# Worker IA — Import PDF + Illustrazioni — Cloudflare Worker
 
-Questo piccolo servizio riceve un PDF di scheda D&D 5e e restituisce il JSON del
-personaggio, così l'app può importarlo (pulsante **🤖 Importa da PDF (IA)**).
+Questo piccolo servizio fa due cose, sullo stesso URL:
+
+1. **Import da PDF**: riceve un PDF di scheda D&D 5e e restituisce il JSON del
+   personaggio (pulsante **🤖 Importa da PDF (IA)**). Usa **Anthropic**.
+2. **Illustrazioni fantasy**: genera il **ritratto dell'eroe** (da classe +
+   specie, pulsante **✨ Ritratto IA**) e gli **sfondi ambientazione**. Usa
+   **OpenAI** (modello `gpt-image-1`).
+
 Serve perché un sito statico (GitHub Pages) non può tenere al sicuro una chiave
 API: la chiave vive qui, nel Worker.
 
-È gratuito per un uso personale (piano free di Cloudflare Workers).
+È gratuito per un uso personale (piano free di Cloudflare Workers); paghi solo
+il consumo delle API (le immagini costano pochi centesimi l'una su OpenAI).
 
 ## Cosa ti serve
 - Un account [Cloudflare](https://dash.cloudflare.com/sign-up) (gratis).
-- Una **chiave API Anthropic** (da <https://console.anthropic.com/>).
+- Per i PDF: una **chiave API Anthropic** (<https://console.anthropic.com/>).
+- Per le immagini: una **chiave API OpenAI** (<https://platform.openai.com/>).
+- Puoi configurare **solo** la chiave del servizio che ti serve.
 - Node.js installato (per il comando `npx wrangler`).
 
 ## Opzione A — dal sito Cloudflare (senza terminale, consigliata)
@@ -19,7 +28,8 @@ API: la chiave vive qui, nel Worker.
 2. **Edit code**: cancella il codice di esempio, incolla tutto il contenuto di
    `worker/transcribe-worker.js` (questo file del progetto) → **Deploy**.
 3. **Settings → Variables and Secrets → Add**:
-   - tipo **Secret**, nome `ANTHROPIC_API_KEY`, valore = la tua chiave API. Salva.
+   - per i PDF: tipo **Secret**, nome `ANTHROPIC_API_KEY`, valore = la tua chiave.
+   - per le immagini: tipo **Secret**, nome `OPENAI_API_KEY`, valore = la tua chiave.
    - (opzionale) tipo **Text**, nome `ALLOW_ORIGIN`, valore
      `https://TUOUTENTE.github.io` per limitarlo al tuo sito.
 4. In alto trovi l'URL del Worker (es.
@@ -31,8 +41,9 @@ API: la chiave vive qui, nel Worker.
 
 ```bash
 cd worker
-npx wrangler login                       # 1) accedi (apre il browser)
-npx wrangler secret put ANTHROPIC_API_KEY # 2) incolla la chiave API (nascosta)
+npx wrangler login                        # 1) accedi (apre il browser)
+npx wrangler secret put ANTHROPIC_API_KEY # 2a) chiave per i PDF (se ti serve)
+npx wrangler secret put OPENAI_API_KEY    # 2b) chiave per le immagini (se ti serve)
 npx wrangler deploy                       # 3) pubblica
 ```
 
