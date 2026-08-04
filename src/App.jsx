@@ -1585,7 +1585,26 @@ export default function App() {
     const vignetta = `radial-gradient(116% 116% at 50% 42%, transparent 52%, ${mescola(t.bg, '#000000', scuroEff ? 0.42 : 0.13)} 100%)`;
     // sfondo atmosferico dell'ambientazione (gradienti tematici nei margini pagina)
     const sfondoAmbiente = presetDati.sfondo || '';
-    document.body.style.background = [sfondoAmbiente, glowClasse, ambra, vignetta, t.bg]
+    // Immagine di sfondo a tema (foto libere/di pubblico dominio in
+    // public/ambientazioni/<id>.jpg): riempie i margini della pagina e cambia
+    // con l'ambientazione. La "Classica" (default) resta senza immagine.
+    const hexRgba = (hex, a) => {
+      const m = /^#?([0-9a-fA-F]{6})$/.exec(hex || '');
+      if (!m) return `rgba(0,0,0,${a})`;
+      const n = parseInt(m[1], 16);
+      return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+    };
+    const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/';
+    const idAmb = presetDati.id;
+    const conImmagine = idAmb && idAmb !== 'default';
+    // velo scuro sopra la foto: la attenua così testo e pannelli restano leggibili
+    const velo = conImmagine
+      ? `linear-gradient(${hexRgba(t.bg, scuroEff ? 0.62 : 0.72)}, ${hexRgba(t.bg, scuroEff ? 0.62 : 0.72)})`
+      : '';
+    const imgLayer = conImmagine
+      ? `url("${baseUrl}ambientazioni/${idAmb}.jpg") center center / cover no-repeat`
+      : '';
+    document.body.style.background = [sfondoAmbiente, glowClasse, ambra, vignetta, velo, imgLayer, t.bg]
       .filter(Boolean)
       .join(', ');
     document.body.style.backgroundAttachment = 'fixed';
