@@ -12,13 +12,24 @@ Serve perché un sito statico (GitHub Pages) non può tenere al sicuro una chiav
 API: la chiave vive qui, nel Worker.
 
 È gratuito per un uso personale (piano free di Cloudflare Workers); paghi solo
-il consumo delle API (le immagini costano pochi centesimi l'una su OpenAI).
+il consumo delle API.
+
+## Chi paga cosa (importante)
+- **Import da PDF → Anthropic**: usa la chiave `ANTHROPIC_API_KEY` del Worker,
+  quindi il consumo è a carico di **te** che possiedi il Worker.
+- **Immagini (ritratto + sfondi) → OpenAI**: **BYOK** ("bring your own key").
+  Ogni utente inserisce la **propria** chiave OpenAI nell'app (pannello
+  🎭 Ambientazione): resta sul suo dispositivo, viene inviata al Worker a ogni
+  richiesta e usata solo per quella chiamata. Così **ogni utente paga il proprio
+  consumo di immagini**, non tu. Il Worker **non** salva né registra la chiave.
 
 ## Cosa ti serve
 - Un account [Cloudflare](https://dash.cloudflare.com/sign-up) (gratis).
-- Per i PDF: una **chiave API Anthropic** (<https://console.anthropic.com/>).
-- Per le immagini: una **chiave API OpenAI** (<https://platform.openai.com/>).
-- Puoi configurare **solo** la chiave del servizio che ti serve.
+- Per i PDF: una **chiave API Anthropic** (<https://console.anthropic.com/>) da
+  mettere come secret sul Worker.
+- Per le immagini: **niente sul Worker** — ogni utente mette la sua chiave OpenAI
+  nell'app. (Puoi opzionalmente impostare `OPENAI_API_KEY` sul Worker come
+  ripiego, ma allora quelle immagini le paghi tu: sconsigliato se non sei solo tu.)
 - Node.js installato (per il comando `npx wrangler`).
 
 ## Opzione A — dal sito Cloudflare (senza terminale, consigliata)
@@ -29,7 +40,8 @@ il consumo delle API (le immagini costano pochi centesimi l'una su OpenAI).
    `worker/transcribe-worker.js` (questo file del progetto) → **Deploy**.
 3. **Settings → Variables and Secrets → Add**:
    - per i PDF: tipo **Secret**, nome `ANTHROPIC_API_KEY`, valore = la tua chiave.
-   - per le immagini: tipo **Secret**, nome `OPENAI_API_KEY`, valore = la tua chiave.
+   - per le immagini: **niente** (ogni utente mette la sua chiave nell'app).
+     Solo se vuoi pagarle tu, aggiungi il Secret `OPENAI_API_KEY`.
    - (opzionale) tipo **Text**, nome `ALLOW_ORIGIN`, valore
      `https://TUOUTENTE.github.io` per limitarlo al tuo sito.
 4. In alto trovi l'URL del Worker (es.
@@ -42,9 +54,9 @@ il consumo delle API (le immagini costano pochi centesimi l'una su OpenAI).
 ```bash
 cd worker
 npx wrangler login                        # 1) accedi (apre il browser)
-npx wrangler secret put ANTHROPIC_API_KEY # 2a) chiave per i PDF (se ti serve)
-npx wrangler secret put OPENAI_API_KEY    # 2b) chiave per le immagini (se ti serve)
+npx wrangler secret put ANTHROPIC_API_KEY # 2) chiave PDF (le immagini NON servono qui)
 npx wrangler deploy                       # 3) pubblica
+# (facoltativo, solo se vuoi pagare tu le immagini: wrangler secret put OPENAI_API_KEY)
 ```
 
 Wrangler stampa l'URL pubblico: copialo e incollalo nell'app come al punto 5.

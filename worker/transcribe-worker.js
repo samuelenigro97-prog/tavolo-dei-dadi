@@ -106,14 +106,22 @@ export default {
 
     // ---- Ramo 2: generazione immagine (OpenAI) -------------------------------
     if (corpo && typeof corpo.imagePrompt === 'string' && corpo.imagePrompt.trim()) {
-      if (!env.OPENAI_API_KEY) {
-        return new Response(JSON.stringify({ error: 'OPENAI_API_KEY non configurata sul Worker' }), { status: 500, headers });
+      // BYOK ("bring your own key"): ogni utente usa la PROPRIA chiave OpenAI,
+      // inviata dall'app a ogni richiesta, così non consuma il credito del
+      // proprietario del Worker. La chiave del Worker (env) è solo un ripiego
+      // facoltativo (di norma non impostata). La chiave transita verso OpenAI
+      // e non viene mai salvata né registrata dal Worker.
+      const chiaveOpenAI = (typeof corpo.openaiKey === 'string' && corpo.openaiKey.trim())
+        ? corpo.openaiKey.trim()
+        : env.OPENAI_API_KEY;
+      if (!chiaveOpenAI) {
+        return new Response(JSON.stringify({ error: 'Manca la chiave OpenAI: inseriscila nell’app (ogni utente usa la propria).' }), { status: 400, headers });
       }
       const size = DIMENSIONI_VALIDE.has(corpo.size) ? corpo.size : '1024x1024';
       try {
         const risposta = await fetch('https://api.openai.com/v1/images/generations', {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${env.OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
+          headers: { 'Authorization': `Bearer ${chiaveOpenAI}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ model: MODELLO_IMMAGINI, prompt: corpo.imagePrompt.slice(0, 3800), size, n: 1 }),
         });
         if (!risposta.ok) {

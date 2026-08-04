@@ -1271,6 +1271,13 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem('scheda-interattiva:transcribe-url', transcribeUrl); } catch { /* niente */ }
   }, [transcribeUrl]);
+  // Chiave OpenAI PERSONALE per generare immagini (ritratto eroe + sfondi).
+  // BYOK: resta solo su questo dispositivo e viene inviata al Worker a ogni
+  // richiesta, così ogni utente consuma il PROPRIO credito OpenAI.
+  const [openaiKey, setOpenaiKey] = useState(() => localStorage.getItem('scheda-interattiva:openai-key') || '');
+  useEffect(() => {
+    try { localStorage.setItem('scheda-interattiva:openai-key', openaiKey); } catch { /* niente */ }
+  }, [openaiKey]);
   const [pdfStato, setPdfStato] = useState(''); // '' | 'loading'
   const [iaImgStato, setIaImgStato] = useState(''); // '' | 'ritratto' | 'sfondo' — generazione immagine IA in corso
   const [iaImgErrore, setIaImgErrore] = useState('');
@@ -2342,10 +2349,12 @@ export default function App() {
    *  e restituisce un data URL (PNG). Usa lo stesso endpoint dei PDF. */
   async function generaImmagineIA(prompt, size = '1024x1024') {
     const endpoint = (transcribeUrl || '').trim() || '/api/transcribe';
+    const chiave = (openaiKey || '').trim();
+    if (!chiave) throw new Error('inserisci la tua chiave OpenAI (pannello 🎭 Ambientazione)');
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ imagePrompt: prompt, size }),
+      body: JSON.stringify({ imagePrompt: prompt, size, openaiKey: chiave }),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -2382,8 +2391,8 @@ export default function App() {
       aggiorna({ ritratto: piccola });
     } catch (e) {
       const dove = (transcribeUrl || '').trim()
-        ? 'Controlla che il Worker sia attivo e abbia la chiave OpenAI.'
-        : 'Configura prima l’endpoint IA nel Menù (serve un Cloudflare Worker con la tua chiave OpenAI).';
+        ? 'Controlla la tua chiave OpenAI e che il Worker sia attivo.'
+        : 'Configura l’endpoint IA (Worker) e inserisci la tua chiave OpenAI nel pannello 🎭 Ambientazione.';
       setIaImgErrore(`Generazione ritratto fallita: ${e.message}. ${dove}`);
     } finally {
       setIaImgStato('');
@@ -2421,8 +2430,8 @@ export default function App() {
       setSfondiIA((m) => ({ ...m, [id]: piccola }));
     } catch (e) {
       const dove = (transcribeUrl || '').trim()
-        ? 'Controlla che il Worker sia attivo e abbia la chiave OpenAI.'
-        : 'Configura prima l’endpoint IA nel Menù (Worker con chiave OpenAI).';
+        ? 'Controlla la tua chiave OpenAI e che il Worker sia attivo.'
+        : 'Configura l’endpoint IA (Worker) e inserisci la tua chiave OpenAI qui sopra.';
       setIaImgErrore(`Generazione sfondo fallita: ${e.message}. ${dove}`);
     } finally {
       setIaImgStato('');
@@ -4275,6 +4284,21 @@ export default function App() {
                 </button>
               );
             })}
+          </div>
+
+          {/* Chiave OpenAI PERSONALE (BYOK): serve per generare ritratto eroe e
+              sfondi. Resta su questo dispositivo; ogni utente usa la propria. */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 12, color: C.inkDim, whiteSpace: 'nowrap' }} title="La chiave resta solo su questo dispositivo (localStorage) e serve a generare immagini col tuo credito OpenAI.">🔑 Chiave OpenAI (immagini):</span>
+            <input
+              type="password"
+              autoComplete="off"
+              placeholder="sk-…  (la tua chiave, resta sul tuo dispositivo)"
+              value={openaiKey}
+              onChange={(e) => setOpenaiKey(e.target.value)}
+              style={{ flex: 1, minWidth: 220, padding: '6px 10px', borderRadius: 4, border: `1px solid ${openaiKey ? C.goldDark : C.border}`, background: C.panel, color: C.ink, fontSize: 12 }}
+            />
+            <span style={{ fontSize: 10, color: openaiKey ? C.green : C.inkDim }}>{openaiKey ? '✓ impostata' : 'non impostata'}</span>
           </div>
 
           {/* Sfondo IA: genera con l'IA l'illustrazione dell'ambientazione attiva
