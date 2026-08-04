@@ -5019,7 +5019,7 @@ export default function App() {
           </div>{/* fine colonna caratteristiche (dentro il Profilo) */}
           {/* Addestramento: riempie lo spazio vuoto della colonna destra (righe Intelligenza→Carisma) */}
           <div className="profilo-extra">
-            <Sezione titolo={t("sez.addestramento")} {...apertoProps('addestramento', false)}>
+            <Sezione titolo={t("sez.addestramento")} {...apertoProps('addestramento')}>
               <div style={{ marginBottom: 10 }}>
                 <div style={{ ...styles.detail, marginBottom: 4 }}>{t("train.armature")}</div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
