@@ -414,7 +414,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .griglia-scheda > * { min-width: 0; }
 /* Blocco "Privilegi & Talenti" sotto la Magia: i due box privilegi affiancati,
    Talenti sotto. Su schermi stretti tornano in colonna singola. */
-.privilegi-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
+.privilegi-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: stretch; }
 .privilegi-duo > * { min-width: 0; }
 .privilegi-talenti > .sezione, .privilegi-duo > .sezione { margin-bottom: 0 !important; }
 @media (max-width: 720px) { .privilegi-duo { grid-template-columns: 1fr; } }

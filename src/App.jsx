@@ -719,12 +719,12 @@ const KIT_CLASSE = {
   bardo:    { armi: ['Stocco'], equip: ['Armatura di cuoio', 'Pugnale', 'Strumento musicale', 'Dotazione da intrattenitore'], denari: 19, armatura: ARM_CUOIO, scudo: false, strumenti: 'Strumenti musicali (3 a scelta)' },
   chierico: { armi: ['Mazza'], equip: ['Armatura a scaglie', 'Scudo', 'Balestra leggera + 20 dardi', 'Simbolo sacro', 'Dotazione da sacerdote'], denari: 7, armatura: ARM_SCAGLIE, scudo: true, strumenti: '' },
   druido:   { armi: ['Scimitarra'], equip: ['Armatura di cuoio', 'Scudo (legno)', 'Focus druidico', 'Borsa da erborista', 'Dotazione da esploratore'], denari: 9, armatura: ARM_CUOIO, scudo: true, strumenti: 'Borsa da erborista' },
-  guerriero:{ armi: ['Spada lunga', 'Arco lungo'], equip: ['Cotta di maglia', 'Scudo', '20 frecce', 'Dotazione da avventuriero'], denari: 4, armatura: ARM_MAGLIA, scudo: true, strumenti: '' },
-  ladro:    { armi: ['Stocco', 'Arco corto'], equip: ['Armatura di cuoio', 'Pugnale ×2', 'Arnesi da scasso', 'Dotazione da scassinatore', '20 frecce'], denari: 8, armatura: ARM_CUOIO, scudo: false, strumenti: 'Arnesi da scasso' },
+  guerriero:{ armi: ['Spada lunga', 'Arco lungo'], equip: ['Cotta di maglia', 'Scudo', 'Frecce ×20', 'Dotazione da avventuriero'], denari: 4, armatura: ARM_MAGLIA, scudo: true, strumenti: '' },
+  ladro:    { armi: ['Stocco', 'Arco corto'], equip: ['Armatura di cuoio', 'Pugnale ×2', 'Arnesi da scasso', 'Dotazione da scassinatore', 'Frecce ×20'], denari: 8, armatura: ARM_CUOIO, scudo: false, strumenti: 'Arnesi da scasso' },
   mago:     { armi: ['Pugnale'], equip: ['Focus arcano', 'Libro degli incantesimi', 'Dotazione da studioso'], denari: 5, armatura: ARM_NESSUNA, scudo: false, strumenti: '' },
   monaco:   { armi: ['Spada corta'], equip: ['Dardo ×10', 'Dotazione da esploratore', 'Attrezzi da artigiano o strumento musicale'], denari: 11, armatura: ARM_NESSUNA, scudo: false, strumenti: 'Un tipo di attrezzi da artigiano o uno strumento musicale' },
   paladino: { armi: ['Spada lunga'], equip: ['Cotta di maglia', 'Scudo', 'Giavellotto ×6', 'Simbolo sacro', 'Dotazione da sacerdote'], denari: 9, armatura: ARM_MAGLIA, scudo: true, strumenti: '' },
-  ranger:   { armi: ['Spada corta', 'Arco lungo'], equip: ['Armatura di cuoio', '20 frecce', 'Dotazione da esploratore'], denari: 7, armatura: ARM_CUOIO, scudo: false, strumenti: '' },
+  ranger:   { armi: ['Spada corta', 'Arco lungo'], equip: ['Armatura di cuoio', 'Frecce ×20', 'Dotazione da esploratore'], denari: 7, armatura: ARM_CUOIO, scudo: false, strumenti: '' },
   stregone: { armi: ['Pugnale'], equip: ['Focus arcano', 'Pugnale', 'Dotazione da avventuriero'], denari: 28, armatura: ARM_NESSUNA, scudo: false, strumenti: '' },
   warlock:  { armi: ['Pugnale'], equip: ['Armatura di cuoio', 'Focus arcano', 'Pugnale', 'Libro degli occulti', 'Dotazione da studioso'], denari: 15, armatura: ARM_CUOIO, scudo: false, strumenti: '' },
 };
@@ -4372,10 +4372,10 @@ export default function App() {
               >
                 <span style={{
                   fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: 'italic', fontWeight: 'bold',
-                  // più piccolo del titolo del riquadro: sta comodo dentro, senza toccare i bordi
-                  fontSize: 18, letterSpacing: 1.5, lineHeight: 1,
+                  // grande: riempie l'altezza del riquadro, dal bordo inferiore al superiore
+                  fontSize: 46, letterSpacing: 1, lineHeight: 1,
                   marginRight: -1.5,
-                  color: C.goldDark, opacity: 0.4, whiteSpace: 'nowrap',
+                  color: C.goldDark, opacity: 0.3, whiteSpace: 'nowrap',
                 }}>
                   {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
                 </span>
@@ -5749,8 +5749,11 @@ export default function App() {
                 const inv = scheda.inventario || [];
                 const pesoInv = inv.reduce((s, o) => s + (o.qta || 1) * (o.peso || 0), 0);
                 // Peso di armi e armatura equipaggiate (tutto ciò che ho addosso).
+                // Le armi che sono GIÀ nell'inventario non vengono ricontate qui
+                // (altrimenti equipaggiare un oggetto già posseduto ne raddoppia il peso).
                 const attacchi = Array.isArray(scheda.attacchi) ? scheda.attacchi : [];
-                const pesoArmi = attacchi.reduce((s, a) => s + pesoStimato(a.nome), 0);
+                const nomiInv = new Set(inv.map((o) => (o.nome || '').trim().toLowerCase()));
+                const pesoArmi = attacchi.reduce((s, a) => (nomiInv.has((a.nome || '').trim().toLowerCase()) ? s : s + pesoStimato(a.nome)), 0);
                 const pesoArm = pesoArmatura(scheda.armatura);
                 // Peso delle monete: conta nel totale ed è mostrato come riga fra gli oggetti.
                 const dMon = scheda.denari || {};
