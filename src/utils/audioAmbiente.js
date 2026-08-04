@@ -44,6 +44,11 @@ const AMBIENTI_CON_FILE = new Set([
 // una base a più ambientazioni resta disponibile, se dovesse servire.)
 const BASE_CONDIVISA = {};
 
+// Estensione del file per ambientazione (default: mp3). La città usa un loop
+// OGG (mercato con pioggia, dominio pubblico): in questo modo non serve un
+// encoder MP3 e il browser lo riproduce comunque.
+const ESTENSIONE_FILE = { citta: 'ogg' };
+
 // Volume della base rispetto al volume dell'ambiente (1 = invariato).
 // Città: il brusio di voci sta parecchio sotto, così a emergere sono i suoni
 // medievali (campane, fabbro, carretti) invece del chiacchiericcio.
@@ -52,7 +57,9 @@ const VOLUME_BASE = { citta: 0.5 };
 function ambienteFileUrl(id) {
   if (!AMBIENTI_CON_FILE.has(id)) return null;
   const base = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/';
-  return `${base}audio/${BASE_CONDIVISA[id] || id}.mp3`;
+  const nomeFile = BASE_CONDIVISA[id] || id;
+  const ext = ESTENSIONE_FILE[id] || 'mp3';
+  return `${base}audio/${nomeFile}.${ext}`;
 }
 
 /** Fattore di volume della base per questa ambientazione. */
