@@ -714,6 +714,40 @@ const ARM_CUOIO = { tipo: 'leggera', base: 11, nome: 'Armatura di cuoio' };
 const ARM_SCAGLIE = { tipo: 'media', base: 14, nome: 'Armatura a scaglie' };
 const ARM_MAGLIA = { tipo: 'pesante', base: 16, nome: 'Cotta di maglia' };
 const ARM_NESSUNA = { tipo: 'nessuna', base: 0, nome: '' };
+
+// Catalogo armature 5e (nome → tipo + CA base): serve a riconoscere un'armatura
+// nell'inventario ed equipaggiarla in automatico (come per le armi). Le chiavi
+// più specifiche vanno prima, così "cuoio borchiato" vince su "cuoio".
+const ARMATURE_5E = [
+  // Pesante
+  { match: ['piastre', 'plate'], tipo: 'pesante', base: 18 },
+  { match: ['chiodata', 'splint'], tipo: 'pesante', base: 17 },
+  { match: ['cotta di maglia', 'maglia', 'chain mail'], tipo: 'pesante', base: 16 },
+  { match: ['anelli', 'ring mail'], tipo: 'pesante', base: 14 },
+  // Media
+  { match: ['mezza piastra', 'mezza corazza', 'half plate'], tipo: 'media', base: 15 },
+  { match: ['corazza', 'breastplate'], tipo: 'media', base: 14 },
+  { match: ['a scaglie', 'scaglie', 'scale mail'], tipo: 'media', base: 14 },
+  { match: ['camaglia', 'chain shirt'], tipo: 'media', base: 13 },
+  { match: ['pelle', 'hide'], tipo: 'media', base: 12 },
+  // Leggera
+  { match: ['cuoio borchiato', 'borchiat', 'studded'], tipo: 'leggera', base: 12 },
+  { match: ['armatura di cuoio', 'cuoio', 'leather'], tipo: 'leggera', base: 11 },
+  { match: ['imbottita', 'padded'], tipo: 'leggera', base: 11 },
+];
+/** Riconosce un'armatura dal nome di un oggetto: { tipo, base } o null. */
+function trovaArmatura(nome) {
+  const n = String(nome || '').toLowerCase();
+  if (!n) return null;
+  for (const a of ARMATURE_5E) {
+    if (a.match.some((k) => n.includes(k))) return { tipo: a.tipo, base: a.base };
+  }
+  return null;
+}
+/** Vero se l'oggetto è uno scudo (non un'armatura corporea). */
+function eScudo(nome) {
+  return /scudo|shield/i.test(String(nome || ''));
+}
 const KIT_CLASSE = {
   barbaro:  { armi: ['Ascia bipenne'], equip: ['Ascia (Handaxe) ×4', 'Dotazione da esploratore'], denari: 15, armatura: ARM_NESSUNA, scudo: false, strumenti: '' },
   bardo:    { armi: ['Stocco'], equip: ['Armatura di cuoio', 'Pugnale', 'Strumento musicale', 'Dotazione da intrattenitore'], denari: 19, armatura: ARM_CUOIO, scudo: false, strumenti: 'Strumenti musicali (3 a scelta)' },
@@ -5583,37 +5617,24 @@ export default function App() {
                               </span>
                             );
                             return (
-                              <div key={s.id} style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', background: C.panelLight, opacity: (classePreparata && s.livello >= 1 && s.preparato === false) ? 0.5 : 1 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-                                    <button
-                                      style={{ background: 'transparent', border: 'none', color: C.ink, fontWeight: 700, cursor: 'pointer', textAlign: 'left', padding: 0, fontSize: 15, lineHeight: 1.2, textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
-                                      title={t('tip.cosa_fa_inc')}
-                                      onClick={() => setInfo({ titolo: `${s.nome || 'Incantesimo'}${s.livello === 0 ? ' · Trucchetto' : ` · ${s.livello}° livello`}`, testo: eff || 'Nessuna descrizione disponibile per questo incantesimo. Aprilo con ✎ per aggiungere delle note.' })}
-                                    >
-                                      {s.nome || t('menu.senza_nome')}
-                                    </button>
-                                    {s.bonus && (
-                                      <span
-                                        title={t('spell.bonus_badge_tooltip')}
-                                        style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: C.goldDark, border: `1px solid ${C.goldDark}`, borderRadius: 6, padding: '0 4px', cursor: 'pointer', whiteSpace: 'nowrap' }}
-                                        onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, bonus: false } : x)) })}
-                                      >✦ {t('spell.bonus_badge')}</span>
-                                    )}
-                                  </div>
-                                  <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                                    {classePreparata && s.livello >= 1 && (
-                                      <button
-                                        style={{ ...styles.buttonMini, color: s.preparato !== false ? C.goldDark : C.inkDim, borderColor: s.preparato !== false ? C.goldDark : C.border }}
-                                        title={s.preparato !== false ? t('spell.preparato_si') : t('spell.preparato_no')}
-                                        onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, preparato: x.preparato === false } : x)) })}
-                                      >{s.preparato !== false ? '⭐' : '☆'}</button>
-                                    )}
-                                    <button style={styles.buttonMini} title={t('tip.modifica')} onClick={() => setDettaglioInc(s.id)}>✎</button>
-                                    <button style={{ ...styles.buttonMini, color: C.red }} title={t('tip.elimina_inc')} onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })}>🗑</button>
-                                  </div>
-                                </div>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+                              <div key={s.id} style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '5px 10px', background: C.panelLight, opacity: (classePreparata && s.livello >= 1 && s.preparato === false) ? 0.5 : 1 }}>
+                                {/* Nome + info (chip) + pulsanti su UNA sola riga a scorrimento:
+                                    così ogni incantesimo occupa una riga (max due se va a capo). */}
+                                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, rowGap: 4 }}>
+                                  <button
+                                    style={{ background: 'transparent', border: 'none', color: C.ink, fontWeight: 700, cursor: 'pointer', textAlign: 'left', padding: 0, fontSize: 14, lineHeight: 1.2, textDecoration: 'underline dotted', textUnderlineOffset: 3, whiteSpace: 'nowrap' }}
+                                    title={t('tip.cosa_fa_inc')}
+                                    onClick={() => setInfo({ titolo: `${s.nome || 'Incantesimo'}${s.livello === 0 ? ' · Trucchetto' : ` · ${s.livello}° livello`}`, testo: eff || 'Nessuna descrizione disponibile per questo incantesimo. Aprilo con ✎ per aggiungere delle note.' })}
+                                  >
+                                    {s.nome || t('menu.senza_nome')}
+                                  </button>
+                                  {s.bonus && (
+                                    <span
+                                      title={t('spell.bonus_badge_tooltip')}
+                                      style={{ fontSize: 10, fontWeight: 700, color: C.goldDark, border: `1px solid ${C.goldDark}`, borderRadius: 6, padding: '0 4px', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                                      onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, bonus: false } : x)) })}
+                                    >✦ {t('spell.bonus_badge')}</span>
+                                  )}
                                   {chip('⏱', t('spell.chip_tempo'), tempoLabel)}
                                   {chip('🎯', t('spell.chip_gittata'), gittata)}
                                   {chip('🔮', 'Scuola', scuola)}
@@ -5625,6 +5646,18 @@ export default function App() {
                                     chip('💥', 'Danno', [danno, tipoDanno].filter(Boolean).join(' '))
                                   )}
                                   {note && chip('📝', t('spell.chip_note'), note)}
+                                  {/* Pulsanti azione: spinti a destra, restano sulla stessa riga. */}
+                                  <div style={{ display: 'flex', gap: 4, flexShrink: 0, marginLeft: 'auto' }}>
+                                    {classePreparata && s.livello >= 1 && (
+                                      <button
+                                        style={{ ...styles.buttonMini, color: s.preparato !== false ? C.goldDark : C.inkDim, borderColor: s.preparato !== false ? C.goldDark : C.border }}
+                                        title={s.preparato !== false ? t('spell.preparato_si') : t('spell.preparato_no')}
+                                        onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, preparato: x.preparato === false } : x)) })}
+                                      >{s.preparato !== false ? '⭐' : '☆'}</button>
+                                    )}
+                                    <button style={styles.buttonMini} title={t('tip.modifica')} onClick={() => setDettaglioInc(s.id)}>✎</button>
+                                    <button style={{ ...styles.buttonMini, color: C.red }} title={t('tip.elimina_inc')} onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })}>🗑</button>
+                                  </div>
                                 </div>
                                 {parseEspressioneDado(danno) && (
                                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6, alignItems: 'center' }}>
@@ -5769,6 +5802,34 @@ export default function App() {
                 const perc = Math.min(100, (pesoTot / cap) * 100);
                 const modInv = (id, patch) => aggiorna({ inventario: inv.map((x) => (x.id === id ? { ...x, ...patch } : x)) });
                 const toggleEquip = (o, checked) => {
+                  // 1) Scudo: aggiorna il flag scudo del riquadro CA.
+                  if (eScudo(o.nome)) {
+                    aggiorna({
+                      inventario: inv.map((x) => (x.id === o.id ? { ...x, equip: checked } : x)),
+                      armatura: { ...scheda.armatura, scudo: checked },
+                    });
+                    return;
+                  }
+                  // 2) Armatura: equipaggiandola la CA si calcola dal tipo/base; togliendola
+                  //    si torna "senza armatura" (come per le armi nella sezione Combattimento).
+                  const armInfo = trovaArmatura(o.nome);
+                  if (armInfo) {
+                    const nuovaArmatura = checked
+                      ? { ...scheda.armatura, tipo: armInfo.tipo, base: armInfo.base, nome: o.nome }
+                      : { ...scheda.armatura, tipo: 'nessuna', base: 0, nome: '' };
+                    aggiorna({
+                      // Se sto equipaggiando questa armatura, tolgo il flag "equip" da eventuali
+                      // altre armature (se ne indossa una sola alla volta).
+                      inventario: inv.map((x) => {
+                        if (x.id === o.id) return { ...x, equip: checked };
+                        if (checked && trovaArmatura(x.nome) && !eScudo(x.nome)) return { ...x, equip: false };
+                        return x;
+                      }),
+                      armatura: nuovaArmatura,
+                    });
+                    return;
+                  }
+                  // 3) Arma: come prima, la aggiunge/rimuove dalla sezione Combattimento.
                   const isWeapon = ARMI_5E.find((w) => w.nome === o.nome) || (scheda.attacchi?.find((a) => a.nome === o.nome) ? { nome: o.nome, danno: '1d6', tipoDanno: 'Contundente', categoria: 'Mischia' } : null);
                   let newAttacchi = Array.isArray(scheda.attacchi) ? [...scheda.attacchi] : [];
                   if (checked && isWeapon) {
