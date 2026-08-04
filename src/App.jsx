@@ -1357,6 +1357,14 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem('scheda-interattiva:preset-colori', presetColori); } catch { /* niente */ }
   }, [presetColori]);
+  // Sfondi ambientazione generati con l'IA: mappa { idAmbientazione: dataURL }.
+  // Se presente, sostituisce il dipinto di default per quell'ambientazione.
+  const [sfondiIA, setSfondiIA] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('scheda-interattiva:sfondi-ia') || '{}') || {}; } catch { return {}; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem('scheda-interattiva:sfondi-ia', JSON.stringify(sfondiIA)); } catch { /* quota piena: pazienza */ }
+  }, [sfondiIA]);
 
   // Audio e Sottofondo Ambientale
   const [ambienteAudio, setAmbienteAudio] = useState(() => localStorage.getItem('scheda-interattiva:ambiente-audio') || 'spento');
@@ -1603,9 +1611,12 @@ export default function App() {
     const velo = conImmagine
       ? `linear-gradient(${hexRgba(t.bg, scuroEff ? 0.62 : 0.72)}, ${hexRgba(t.bg, scuroEff ? 0.62 : 0.72)})`
       : '';
-    const imgLayer = conImmagine
-      ? `url("${baseUrl}ambientazioni/${idAmb}.jpg") center center / cover no-repeat`
+    // sorgente immagine: override generato dall'IA (data URL) se presente,
+    // altrimenti il dipinto di default in public/ambientazioni.
+    const sorgente = conImmagine
+      ? (sfondiIA[idAmb] ? `"${sfondiIA[idAmb]}"` : `"${baseUrl}ambientazioni/${idAmb}.jpg"`)
       : '';
+    const imgLayer = conImmagine ? `url(${sorgente}) center center / cover no-repeat` : '';
     document.body.style.background = [sfondoAmbiente, glowClasse, ambra, vignetta, velo, imgLayer, t.bg]
       .filter(Boolean)
       .join(', ');
@@ -1615,7 +1626,7 @@ export default function App() {
     } catch {
       // storage non disponibile: pazienza
     }
-  }, [tema, sistemaScuro, oraTick, classeAttiva, presetColori]);
+  }, [tema, sistemaScuro, oraTick, classeAttiva, presetColori, sfondiIA]);
   const intervalRef = useRef(null);
   const jsonRef = useRef(null);
   const pdfRef = useRef(null);
@@ -2374,6 +2385,45 @@ export default function App() {
         ? 'Controlla che il Worker sia attivo e abbia la chiave OpenAI.'
         : 'Configura prima l’endpoint IA nel Menù (serve un Cloudflare Worker con la tua chiave OpenAI).';
       setIaImgErrore(`Generazione ritratto fallita: ${e.message}. ${dove}`);
+    } finally {
+      setIaImgStato('');
+    }
+  }
+
+  // Descrizione della scena per ogni ambientazione (prompt dello sfondo IA).
+  const SCENA_AMBIENTAZIONE = {
+    taverna: 'una taverna fantasy affollata e accogliente, interni in legno a lume di candela',
+    mercato: 'un vivace mercato medievale fantasy fra bancarelle e vicoli',
+    citta: 'una città medievale fantasy con castello, mura e cattedrale gotica',
+    dungeon: 'un cupo dungeon sotterraneo di pietra illuminato da torce',
+    foresta: 'una foresta fantasy fitta e nebbiosa con luce fra gli alberi',
+    notte: 'un cielo notturno stellato su un paesaggio fantasy silenzioso',
+    mare: 'una costa marina fantasy con onde e scogliere al tramonto',
+    tundra: 'una tundra gelata fantasy con ghiacci e aurora boreale',
+    tempesta: 'un paesaggio fantasy sotto una tempesta di pioggia e fulmini',
+    accampamento: 'un accampamento fantasy notturno attorno a un falò',
+    deserto: 'un deserto fantasy di dune al tramonto con una carovana',
+    tempio: 'un antico tempio arcano fantasy in rovina, colonne di pietra',
+  };
+
+  /** Genera con l'IA lo sfondo dell'ambientazione indicata (override del dipinto). */
+  async function generaSfondoIA(id) {
+    if (iaImgStato || !id || id === 'default') return;
+    setIaImgErrore('');
+    setIaImgStato('sfondo');
+    try {
+      const scena = SCENA_AMBIENTAZIONE[id] || id;
+      const prompt = `Sfondo fantasy: ${scena}. Illustrazione digitale in stile concept art fantasy, ` +
+        `ampia veduta d'ambiente senza personaggi in primo piano, atmosfera epica, ` +
+        `luce cinematografica, alta qualità. Nessun testo, nessuna scritta.`;
+      const raw = await generaImmagineIA(prompt, '1536x1024');
+      const piccola = await ridimensionaDataUrl(raw, 1280, 0.8);
+      setSfondiIA((m) => ({ ...m, [id]: piccola }));
+    } catch (e) {
+      const dove = (transcribeUrl || '').trim()
+        ? 'Controlla che il Worker sia attivo e abbia la chiave OpenAI.'
+        : 'Configura prima l’endpoint IA nel Menù (Worker con chiave OpenAI).';
+      setIaImgErrore(`Generazione sfondo fallita: ${e.message}. ${dove}`);
     } finally {
       setIaImgStato('');
     }
@@ -4226,6 +4276,29 @@ export default function App() {
               );
             })}
           </div>
+
+          {/* Sfondo IA: genera con l'IA l'illustrazione dell'ambientazione attiva
+              (sostituisce il dipinto). Richiede il Worker con chiave OpenAI. */}
+          {presetColori !== 'default' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <button
+                onClick={() => generaSfondoIA(presetColori)}
+                disabled={!!iaImgStato}
+                title="Genera con l'IA lo sfondo di questa ambientazione (serve il Worker con chiave OpenAI)"
+                style={{ ...styles.btnMini, border: `1px solid ${C.goldDark}`, background: C.panel, color: C.ink, cursor: iaImgStato ? 'wait' : 'pointer' }}
+              >
+                {iaImgStato === 'sfondo' ? '⏳ Genero sfondo…' : '🎨 Genera sfondo IA'}
+              </button>
+              {sfondiIA[presetColori] && (
+                <button
+                  onClick={() => setSfondiIA((m) => { const n = { ...m }; delete n[presetColori]; return n; })}
+                  title="Torna al dipinto di default per questa ambientazione"
+                  style={{ ...styles.btnMini, border: `1px solid ${C.border}`, background: C.panel, color: C.inkDim }}
+                >↺ Ripristina dipinto</button>
+              )}
+              {iaImgErrore && <span style={{ fontSize: 11, color: C.red }}>{iaImgErrore}</span>}
+            </div>
+          )}
 
           {/* Audio personalizzato (facoltativo): sovrascrive il sottofondo con un MP3/stream */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
