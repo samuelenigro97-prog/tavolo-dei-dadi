@@ -1364,20 +1364,13 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem('scheda-interattiva:preset-colori', presetColori); } catch { /* niente */ }
   }, [presetColori]);
-  // Sfondi ambientazione generati con l'IA: mappa { idAmbientazione: dataURL }.
-  // Se presente, sostituisce il dipinto di default per quell'ambientazione.
-  const [sfondiIA, setSfondiIA] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('scheda-interattiva:sfondi-ia') || '{}') || {}; } catch { return {}; }
-  });
-  useEffect(() => {
-    try { localStorage.setItem('scheda-interattiva:sfondi-ia', JSON.stringify(sfondiIA)); } catch { /* quota piena: pazienza */ }
-  }, [sfondiIA]);
 
   // Audio e Sottofondo Ambientale
   const [ambienteAudio, setAmbienteAudio] = useState(() => localStorage.getItem('scheda-interattiva:ambiente-audio') || 'spento');
   const [volumeAudio, setVolumeAudio] = useState(() => Number(localStorage.getItem('scheda-interattiva:volume-audio') || 0.5));
   const [urlCustomAudio, setUrlCustomAudio] = useState(() => localStorage.getItem('scheda-interattiva:url-audio-custom') || '');
   const [mostraPannelloAudio, setMostraPannelloAudio] = useState(false);
+  const [mostraImpostazioniIA, setMostraImpostazioniIA] = useState(false);
   const [effettiSonoriAttivi, setEffettiSonoriAttivi] = useState(() => localStorage.getItem('scheda-interattiva:effetti-sonori') !== 'false');
 
   useEffect(() => {
@@ -1618,12 +1611,9 @@ export default function App() {
     const velo = conImmagine
       ? `linear-gradient(${hexRgba(t.bg, scuroEff ? 0.62 : 0.72)}, ${hexRgba(t.bg, scuroEff ? 0.62 : 0.72)})`
       : '';
-    // sorgente immagine: override generato dall'IA (data URL) se presente,
-    // altrimenti il dipinto di default in public/ambientazioni.
-    const sorgente = conImmagine
-      ? (sfondiIA[idAmb] ? `"${sfondiIA[idAmb]}"` : `"${baseUrl}ambientazioni/${idAmb}.jpg"`)
+    const imgLayer = conImmagine
+      ? `url("${baseUrl}ambientazioni/${idAmb}.jpg") center center / cover no-repeat`
       : '';
-    const imgLayer = conImmagine ? `url(${sorgente}) center center / cover no-repeat` : '';
     document.body.style.background = [sfondoAmbiente, glowClasse, ambra, vignetta, velo, imgLayer, t.bg]
       .filter(Boolean)
       .join(', ');
@@ -1633,7 +1623,7 @@ export default function App() {
     } catch {
       // storage non disponibile: pazienza
     }
-  }, [tema, sistemaScuro, oraTick, classeAttiva, presetColori, sfondiIA]);
+  }, [tema, sistemaScuro, oraTick, classeAttiva, presetColori]);
   const intervalRef = useRef(null);
   const jsonRef = useRef(null);
   const pdfRef = useRef(null);
@@ -2350,7 +2340,7 @@ export default function App() {
   async function generaImmagineIA(prompt, size = '1024x1024') {
     const endpoint = (transcribeUrl || '').trim() || '/api/transcribe';
     const chiave = (openaiKey || '').trim();
-    if (!chiave) throw new Error('inserisci la tua chiave OpenAI (pannello 🎭 Ambientazione)');
+    if (!chiave) throw new Error('inserisci la tua chiave OpenAI (pulsante ✨ IA in alto)');
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2392,47 +2382,8 @@ export default function App() {
     } catch (e) {
       const dove = (transcribeUrl || '').trim()
         ? 'Controlla la tua chiave OpenAI e che il Worker sia attivo.'
-        : 'Configura l’endpoint IA (Worker) e inserisci la tua chiave OpenAI nel pannello 🎭 Ambientazione.';
+        : 'Apri ✨ IA in alto e imposta endpoint (Worker) e chiave OpenAI.';
       setIaImgErrore(`Generazione ritratto fallita: ${e.message}. ${dove}`);
-    } finally {
-      setIaImgStato('');
-    }
-  }
-
-  // Descrizione della scena per ogni ambientazione (prompt dello sfondo IA).
-  const SCENA_AMBIENTAZIONE = {
-    taverna: 'una taverna fantasy affollata e accogliente, interni in legno a lume di candela',
-    mercato: 'un vivace mercato medievale fantasy fra bancarelle e vicoli',
-    citta: 'una città medievale fantasy con castello, mura e cattedrale gotica',
-    dungeon: 'un cupo dungeon sotterraneo di pietra illuminato da torce',
-    foresta: 'una foresta fantasy fitta e nebbiosa con luce fra gli alberi',
-    notte: 'un cielo notturno stellato su un paesaggio fantasy silenzioso',
-    mare: 'una costa marina fantasy con onde e scogliere al tramonto',
-    tundra: 'una tundra gelata fantasy con ghiacci e aurora boreale',
-    tempesta: 'un paesaggio fantasy sotto una tempesta di pioggia e fulmini',
-    accampamento: 'un accampamento fantasy notturno attorno a un falò',
-    deserto: 'un deserto fantasy di dune al tramonto con una carovana',
-    tempio: 'un antico tempio arcano fantasy in rovina, colonne di pietra',
-  };
-
-  /** Genera con l'IA lo sfondo dell'ambientazione indicata (override del dipinto). */
-  async function generaSfondoIA(id) {
-    if (iaImgStato || !id || id === 'default') return;
-    setIaImgErrore('');
-    setIaImgStato('sfondo');
-    try {
-      const scena = SCENA_AMBIENTAZIONE[id] || id;
-      const prompt = `Sfondo fantasy: ${scena}. Illustrazione digitale in stile concept art fantasy, ` +
-        `ampia veduta d'ambiente senza personaggi in primo piano, atmosfera epica, ` +
-        `luce cinematografica, alta qualità. Nessun testo, nessuna scritta.`;
-      const raw = await generaImmagineIA(prompt, '1536x1024');
-      const piccola = await ridimensionaDataUrl(raw, 1280, 0.8);
-      setSfondiIA((m) => ({ ...m, [id]: piccola }));
-    } catch (e) {
-      const dove = (transcribeUrl || '').trim()
-        ? 'Controlla la tua chiave OpenAI e che il Worker sia attivo.'
-        : 'Configura l’endpoint IA (Worker) e inserisci la tua chiave OpenAI qui sopra.';
-      setIaImgErrore(`Generazione sfondo fallita: ${e.message}. ${dove}`);
     } finally {
       setIaImgStato('');
     }
@@ -4066,9 +4017,64 @@ export default function App() {
           >
             🎭 {PRESET_COLORI.find(p => p.id === presetColori)?.nome.split(' ')[0] || '🟤'}
           </button>
+          <button
+            style={{ ...styles.modeButton(!!(openaiKey || (transcribeUrl || '').trim())) }}
+            title="Impostazioni IA: endpoint (Worker) e chiave OpenAI per generare il ritratto del PG"
+            onClick={() => setMostraImpostazioniIA(true)}
+          >
+            ✨ IA
+          </button>
         </div>
 
       </header>
+
+      {/* Impostazioni IA (nascoste dietro il pulsante ✨ IA in alto): endpoint del
+          Worker e chiave OpenAI personale per generare il ritratto del PG. */}
+      {mostraImpostazioniIA && (
+        <div
+          onClick={() => setMostraImpostazioniIA(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 1000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '8vh 16px' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ width: '100%', maxWidth: 520, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 12, padding: 18, boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <h3 style={{ margin: 0, color: C.title }}>✨ Impostazioni IA</h3>
+              <button style={styles.buttonMini} onClick={() => setMostraImpostazioniIA(false)}>✕</button>
+            </div>
+            <p style={{ ...styles.detail, fontSize: 12, marginTop: 0 }}>
+              Servono per generare il <strong>ritratto del personaggio</strong> (pulsante ✨ sul ritratto).
+              Restano solo su questo dispositivo.
+            </p>
+
+            <label style={{ ...styles.detail, display: 'block', marginBottom: 3, fontWeight: 700 }}>Endpoint IA (Cloudflare Worker)</label>
+            <input
+              type="text"
+              autoComplete="off"
+              placeholder="https://tavolo-dei-dadi-transcribe.TUONOME.workers.dev"
+              value={transcribeUrl}
+              onChange={(e) => setTranscribeUrl(e.target.value)}
+              style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: `1px solid ${transcribeUrl ? C.goldDark : C.border}`, background: C.panelLight, color: C.ink, fontSize: 12, marginBottom: 12 }}
+            />
+
+            <label style={{ ...styles.detail, display: 'block', marginBottom: 3, fontWeight: 700 }}>🔑 La tua chiave OpenAI (per le immagini)</label>
+            <input
+              type="password"
+              autoComplete="off"
+              placeholder="sk-…  (resta sul tuo dispositivo, usa il tuo credito)"
+              value={openaiKey}
+              onChange={(e) => setOpenaiKey(e.target.value)}
+              style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: `1px solid ${openaiKey ? C.goldDark : C.border}`, background: C.panelLight, color: C.ink, fontSize: 12 }}
+            />
+            <p style={{ ...styles.detail, fontSize: 11, marginBottom: 0, marginTop: 8, opacity: 0.85 }}>
+              La chiave viene inviata al Worker solo per generare l’immagine e non è salvata sul server.
+              Ogni utente usa la propria: consuma il tuo credito OpenAI (pochi centesimi a immagine).
+              Gli sfondi delle ambientazioni restano i dipinti scelti, non serve l’IA.
+            </p>
+          </div>
+        </div>
+      )}
 
       {promemoriaBackup && !mostraGuida && (
         <div style={{
@@ -4285,44 +4291,6 @@ export default function App() {
               );
             })}
           </div>
-
-          {/* Chiave OpenAI PERSONALE (BYOK): serve per generare ritratto eroe e
-              sfondi. Resta su questo dispositivo; ogni utente usa la propria. */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 12, color: C.inkDim, whiteSpace: 'nowrap' }} title="La chiave resta solo su questo dispositivo (localStorage) e serve a generare immagini col tuo credito OpenAI.">🔑 Chiave OpenAI (immagini):</span>
-            <input
-              type="password"
-              autoComplete="off"
-              placeholder="sk-…  (la tua chiave, resta sul tuo dispositivo)"
-              value={openaiKey}
-              onChange={(e) => setOpenaiKey(e.target.value)}
-              style={{ flex: 1, minWidth: 220, padding: '6px 10px', borderRadius: 4, border: `1px solid ${openaiKey ? C.goldDark : C.border}`, background: C.panel, color: C.ink, fontSize: 12 }}
-            />
-            <span style={{ fontSize: 10, color: openaiKey ? C.green : C.inkDim }}>{openaiKey ? '✓ impostata' : 'non impostata'}</span>
-          </div>
-
-          {/* Sfondo IA: genera con l'IA l'illustrazione dell'ambientazione attiva
-              (sostituisce il dipinto). Richiede il Worker con chiave OpenAI. */}
-          {presetColori !== 'default' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <button
-                onClick={() => generaSfondoIA(presetColori)}
-                disabled={!!iaImgStato}
-                title="Genera con l'IA lo sfondo di questa ambientazione (serve il Worker con chiave OpenAI)"
-                style={{ ...styles.btnMini, border: `1px solid ${C.goldDark}`, background: C.panel, color: C.ink, cursor: iaImgStato ? 'wait' : 'pointer' }}
-              >
-                {iaImgStato === 'sfondo' ? '⏳ Genero sfondo…' : '🎨 Genera sfondo IA'}
-              </button>
-              {sfondiIA[presetColori] && (
-                <button
-                  onClick={() => setSfondiIA((m) => { const n = { ...m }; delete n[presetColori]; return n; })}
-                  title="Torna al dipinto di default per questa ambientazione"
-                  style={{ ...styles.btnMini, border: `1px solid ${C.border}`, background: C.panel, color: C.inkDim }}
-                >↺ Ripristina dipinto</button>
-              )}
-              {iaImgErrore && <span style={{ fontSize: 11, color: C.red }}>{iaImgErrore}</span>}
-            </div>
-          )}
 
           {/* Audio personalizzato (facoltativo): sovrascrive il sottofondo con un MP3/stream */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>

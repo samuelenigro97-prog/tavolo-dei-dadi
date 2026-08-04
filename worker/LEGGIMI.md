@@ -17,11 +17,12 @@ il consumo delle API.
 ## Chi paga cosa (importante)
 - **Import da PDF → Anthropic**: usa la chiave `ANTHROPIC_API_KEY` del Worker,
   quindi il consumo è a carico di **te** che possiedi il Worker.
-- **Immagini (ritratto + sfondi) → OpenAI**: **BYOK** ("bring your own key").
-  Ogni utente inserisce la **propria** chiave OpenAI nell'app (pannello
-  🎭 Ambientazione): resta sul suo dispositivo, viene inviata al Worker a ogni
-  richiesta e usata solo per quella chiamata. Così **ogni utente paga il proprio
-  consumo di immagini**, non tu. Il Worker **non** salva né registra la chiave.
+- **Ritratto del PG → OpenAI**: **BYOK** ("bring your own key"). Ogni utente
+  inserisce la **propria** chiave OpenAI nell'app (pulsante **✨ IA** in alto):
+  resta sul suo dispositivo, viene inviata al Worker a ogni richiesta e usata
+  solo per quella chiamata. Così **ogni utente paga il proprio consumo**, non tu.
+  Il Worker **non** salva né registra la chiave. (Gli sfondi delle ambientazioni
+  sono dipinti di pubblico dominio già inclusi: non usano l'IA.)
 
 ## Cosa ti serve
 - Un account [Cloudflare](https://dash.cloudflare.com/sign-up) (gratis).
