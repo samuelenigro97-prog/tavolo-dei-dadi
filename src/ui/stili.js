@@ -480,7 +480,11 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .car-coppia { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 /* i gruppi di vitali riempiono la larghezza della loro riga */
 .pm-anagrafica, .pm-pf, .pm-gruppo { min-width: 0; }
-.pm-pf > * { width: 100%; }
+/* Punti Ferita: la riga 2 è alta quanto Destrezza+Costituzione impilate a
+   sinistra; il riquadro PF cresce per riempire tutta quell'altezza (niente più
+   spazio vuoto sotto) e resta allineato col resto della griglia. */
+.pm-pf { display: flex; flex-direction: column; }
+.pm-pf > * { width: 100%; flex: 1 1 auto; }
 @media (max-width: 820px) {
   /* Sotto 820px la sezione si impila: prima i dati centrali, poi le
      caratteristiche, infine il ritratto. Niente subgrid: torna tutto a colonna. */
