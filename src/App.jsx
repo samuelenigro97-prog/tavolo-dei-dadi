@@ -869,7 +869,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.38.0';
+const APP_VERSION = '2.39.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1315,6 +1315,21 @@ export default function App() {
   }, [combat]);
   const [ctDmg, setCtDmg] = useState({}); // valore danno/cura per combattente (id → stringa)
   const [storicoAperto, setStoricoAperto] = useState(false);
+  // Mappa della campagna: immagine caricata dal DM, apribile/chiudibile come il
+  // Combat tracker. Salvata a parte (non nella scheda), così non finisce
+  // nell'export/cloud del singolo personaggio ed è condivisa fra i PG.
+  const [mappaAperta, setMappaAperta] = useState(false);
+  const [mappaZoom, setMappaZoom] = useState(false); // false = adatta allo schermo, true = dimensione reale
+  const [mappaCampagna, setMappaCampagna] = useState(() => {
+    try { return localStorage.getItem('scheda-interattiva:mappa-campagna') || ''; } catch { return ''; }
+  });
+  useEffect(() => {
+    try {
+      if (mappaCampagna) localStorage.setItem('scheda-interattiva:mappa-campagna', mappaCampagna);
+      else localStorage.removeItem('scheda-interattiva:mappa-campagna');
+    } catch { /* quota piena: la mappa resta solo in memoria per questa sessione */ }
+  }, [mappaCampagna]);
+  const mappaRef = useRef(null);
   // tema: 'auto' = scuro se è notte OPPURE se il sistema è in scuro; oppure forzato
   const [tema, setTema] = useState(() => localStorage.getItem('scheda-interattiva:tema') || 'auto');
   const [lingua, setLingua] = useState(() => localStorage.getItem('scheda-interattiva:lingua') || 'it');
@@ -2355,6 +2370,36 @@ export default function App() {
       ctx2d.imageSmoothingQuality = 'high';
       ctx2d.drawImage(img, 0, 0, canvas.width, canvas.height);
       aggiorna({ ritratto: canvas.toDataURL('image/jpeg', 0.92) });
+      URL.revokeObjectURL(url);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      setErroreImport('Immagine non riconosciuta: usa un file JPG o PNG.');
+    };
+    img.src = url;
+  }
+
+  /** Carica (e ridimensiona) l'immagine della mappa della campagna. */
+  function caricaMappa(evento) {
+    const file = evento.target.files?.[0];
+    evento.target.value = '';
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      // Mappe grandi: ridimensiono a max 2200px per stare nella quota localStorage
+      // mantenendo comunque una buona leggibilità in zoom.
+      const MAX = 2200;
+      const scala = Math.min(1, MAX / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(img.width * scala));
+      canvas.height = Math.max(1, Math.round(img.height * scala));
+      const ctx2d = canvas.getContext('2d');
+      ctx2d.imageSmoothingEnabled = true;
+      ctx2d.imageSmoothingQuality = 'high';
+      ctx2d.drawImage(img, 0, 0, canvas.width, canvas.height);
+      setMappaCampagna(canvas.toDataURL('image/jpeg', 0.85));
+      setMappaAperta(true);
       URL.revokeObjectURL(url);
     };
     img.onerror = () => {
@@ -3986,13 +4031,6 @@ export default function App() {
             {tema === 'auto' ? t('btn.tema.auto') : tema === 'chiaro' ? t('btn.tema.chiaro') : t('btn.tema.scuro')}
           </button>
           <button
-            style={{ ...styles.modeButton(mutoAudio), fontSize: 14, padding: '3px 8px' }}
-            title={mutoAudio ? 'Audio in muto · click per riattivare' : 'Muta rapidamente tutto l’audio'}
-            onClick={() => setMutoAudio((m) => !m)}
-          >
-            {mutoAudio ? '🔇' : '🔊'}
-          </button>
-          <button
             style={{ ...styles.modeButton(presetColori !== 'default'), fontSize: 14, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}
             title="Ambientazione: cambia insieme colori, sfondo e audio · click per aprire"
             onClick={() => { sbloccaAudio(); setMostraPannelloAudio(!mostraPannelloAudio); }}
@@ -4200,6 +4238,16 @@ export default function App() {
                 }}
               >🎲 Suoni dadi {effettiSonoriAttivi ? 'ON' : 'OFF'}</button>
               <button
+                onClick={() => setMutoAudio((m) => !m)}
+                title={mutoAudio ? 'Audio in muto · click per riattivare tutto' : 'Muta rapidamente tutto l’audio (sottofondo + effetti)'}
+                style={{
+                  ...styles.btnMini, marginLeft: 4,
+                  border: `1px solid ${mutoAudio ? C.gold : C.border}`,
+                  background: mutoAudio ? C.gold : C.panel,
+                  color: mutoAudio ? '#fff' : C.inkDim, fontWeight: 'bold'
+                }}
+              >{mutoAudio ? '🔇 Muto' : '🔊 Audio'}</button>
+              <button
                 style={{ ...styles.btnMini, marginLeft: 4 }}
                 onClick={() => setMostraPannelloAudio(false)}
               >✕</button>
@@ -4207,7 +4255,7 @@ export default function App() {
           </div>
 
           {/* Ambientazioni: un click applica palette + sfondo + audio abbinato */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 6 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 6 }}>
             {PRESET_COLORI.map((p) => {
               const attivo = presetColori === p.id;
               const conSuono = p.audio && p.audio !== 'spento';
@@ -6214,6 +6262,38 @@ export default function App() {
         </footer>
         <div style={{ height: combat.attivo && combat.aperto ? 220 : 0 }} />
       </main>
+
+      {/* ===== Mappa della campagna: tasto flottante a sinistra + visore ===== */}
+      <input ref={mappaRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaMappa} />
+      <button
+        onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())}
+        style={{ position: 'fixed', left: 16, bottom: 16, zIndex: 1500, ...styles.buttonPrimary, borderRadius: 999, padding: '10px 16px', boxShadow: '0 4px 16px rgba(0,0,0,0.35)' }}
+        title={mappaCampagna ? (mappaAperta ? 'Chiudi la mappa della campagna' : 'Apri la mappa della campagna') : 'Carica la mappa della campagna'}
+      >
+        🗺️ Mappa
+      </button>
+      {mappaAperta && mappaCampagna && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 2600, background: 'rgba(0,0,0,0.85)', display: 'flex', flexDirection: 'column' }}
+          onClick={() => setMappaAperta(false)}
+        >
+          <div
+            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: C.panel, borderBottom: `1px solid ${C.border}` }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <strong style={{ color: 'var(--c-title)', fontSize: 15 }}>🗺️ Mappa della campagna</strong>
+            <span style={{ flex: 1 }} />
+            <button style={{ ...styles.buttonMini, ...(mappaZoom ? { borderColor: C.gold, color: C.gold } : {}) }} onClick={() => setMappaZoom((z) => !z)} title="Alterna tra adatta allo schermo e dimensione reale">{mappaZoom ? '🔍 Adatta' : '🔍 Ingrandisci'}</button>
+            <button style={styles.buttonMini} onClick={() => mappaRef.current?.click()} title="Sostituisci l'immagine della mappa">🔁 Cambia</button>
+            <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }} onClick={() => { if (window.confirm('Rimuovere la mappa della campagna?')) { setMappaCampagna(''); setMappaAperta(false); } }} title="Rimuovi la mappa">🗑 Rimuovi</button>
+            <button style={styles.buttonMini} onClick={() => setMappaAperta(false)} title="Chiudi">✕</button>
+          </div>
+          {/* Area scorrevole: la mappa può superare lo schermo, con scroll in entrambe le direzioni. */}
+          <div style={{ flex: 1, overflow: 'auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }} onClick={(e) => e.stopPropagation()}>
+            <img src={mappaCampagna} alt="Mappa della campagna" style={mappaZoom ? { maxWidth: 'none', height: 'auto', display: 'block' } : { maxWidth: '100%', height: 'auto', display: 'block' }} />
+          </div>
+        </div>
+      )}
 
       {/* ===== Combat tracker: barra fissa in basso (stile Fantasy Grounds) ===== */}
       {!(combat.attivo && combat.aperto) ? (
