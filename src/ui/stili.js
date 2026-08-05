@@ -481,6 +481,12 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .car-coppia { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 /* i gruppi di vitali riempiono la larghezza della loro riga */
 .pm-anagrafica, .pm-pf, .pm-gruppo { min-width: 0; }
+/* Anagrafica alta quanto il riquadro Forza (riga 1): la prima riga di campi
+   (Specie/Taglia/Allineamento) resta in alto e la seconda (Background/Classe/
+   Sottoclasse) va in fondo, così Specie è allineata all'inizio di Forza e
+   Background alla sua base. */
+.pm-anagrafica { display: flex; flex-direction: column; }
+.pm-anagrafica > .campi-anagrafica { flex: 1 1 auto; align-content: space-between; }
 /* Punti Ferita: la riga 2 è alta quanto Destrezza+Costituzione impilate a
    sinistra; il riquadro PF cresce per riempire tutta quell'altezza (niente più
    spazio vuoto sotto) e resta allineato col resto della griglia. */
