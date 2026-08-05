@@ -714,17 +714,51 @@ const ARM_CUOIO = { tipo: 'leggera', base: 11, nome: 'Armatura di cuoio' };
 const ARM_SCAGLIE = { tipo: 'media', base: 14, nome: 'Armatura a scaglie' };
 const ARM_MAGLIA = { tipo: 'pesante', base: 16, nome: 'Cotta di maglia' };
 const ARM_NESSUNA = { tipo: 'nessuna', base: 0, nome: '' };
+
+// Catalogo armature 5e (nome → tipo + CA base): serve a riconoscere un'armatura
+// nell'inventario ed equipaggiarla in automatico (come per le armi). Le chiavi
+// più specifiche vanno prima, così "cuoio borchiato" vince su "cuoio".
+const ARMATURE_5E = [
+  // Pesante
+  { match: ['piastre', 'plate'], tipo: 'pesante', base: 18 },
+  { match: ['chiodata', 'splint'], tipo: 'pesante', base: 17 },
+  { match: ['cotta di maglia', 'maglia', 'chain mail'], tipo: 'pesante', base: 16 },
+  { match: ['anelli', 'ring mail'], tipo: 'pesante', base: 14 },
+  // Media
+  { match: ['mezza piastra', 'mezza corazza', 'half plate'], tipo: 'media', base: 15 },
+  { match: ['corazza', 'breastplate'], tipo: 'media', base: 14 },
+  { match: ['a scaglie', 'scaglie', 'scale mail'], tipo: 'media', base: 14 },
+  { match: ['camaglia', 'chain shirt'], tipo: 'media', base: 13 },
+  { match: ['pelle', 'hide'], tipo: 'media', base: 12 },
+  // Leggera
+  { match: ['cuoio borchiato', 'borchiat', 'studded'], tipo: 'leggera', base: 12 },
+  { match: ['armatura di cuoio', 'cuoio', 'leather'], tipo: 'leggera', base: 11 },
+  { match: ['imbottita', 'padded'], tipo: 'leggera', base: 11 },
+];
+/** Riconosce un'armatura dal nome di un oggetto: { tipo, base } o null. */
+function trovaArmatura(nome) {
+  const n = String(nome || '').toLowerCase();
+  if (!n) return null;
+  for (const a of ARMATURE_5E) {
+    if (a.match.some((k) => n.includes(k))) return { tipo: a.tipo, base: a.base };
+  }
+  return null;
+}
+/** Vero se l'oggetto è uno scudo (non un'armatura corporea). */
+function eScudo(nome) {
+  return /scudo|shield/i.test(String(nome || ''));
+}
 const KIT_CLASSE = {
   barbaro:  { armi: ['Ascia bipenne'], equip: ['Ascia (Handaxe) ×4', 'Dotazione da esploratore'], denari: 15, armatura: ARM_NESSUNA, scudo: false, strumenti: '' },
   bardo:    { armi: ['Stocco'], equip: ['Armatura di cuoio', 'Pugnale', 'Strumento musicale', 'Dotazione da intrattenitore'], denari: 19, armatura: ARM_CUOIO, scudo: false, strumenti: 'Strumenti musicali (3 a scelta)' },
   chierico: { armi: ['Mazza'], equip: ['Armatura a scaglie', 'Scudo', 'Balestra leggera + 20 dardi', 'Simbolo sacro', 'Dotazione da sacerdote'], denari: 7, armatura: ARM_SCAGLIE, scudo: true, strumenti: '' },
   druido:   { armi: ['Scimitarra'], equip: ['Armatura di cuoio', 'Scudo (legno)', 'Focus druidico', 'Borsa da erborista', 'Dotazione da esploratore'], denari: 9, armatura: ARM_CUOIO, scudo: true, strumenti: 'Borsa da erborista' },
-  guerriero:{ armi: ['Spada lunga', 'Arco lungo'], equip: ['Cotta di maglia', 'Scudo', '20 frecce', 'Dotazione da avventuriero'], denari: 4, armatura: ARM_MAGLIA, scudo: true, strumenti: '' },
-  ladro:    { armi: ['Stocco', 'Arco corto'], equip: ['Armatura di cuoio', 'Pugnale ×2', 'Arnesi da scasso', 'Dotazione da scassinatore', '20 frecce'], denari: 8, armatura: ARM_CUOIO, scudo: false, strumenti: 'Arnesi da scasso' },
+  guerriero:{ armi: ['Spada lunga', 'Arco lungo'], equip: ['Cotta di maglia', 'Scudo', 'Frecce ×20', 'Dotazione da avventuriero'], denari: 4, armatura: ARM_MAGLIA, scudo: true, strumenti: '' },
+  ladro:    { armi: ['Stocco', 'Arco corto'], equip: ['Armatura di cuoio', 'Pugnale ×2', 'Arnesi da scasso', 'Dotazione da scassinatore', 'Frecce ×20'], denari: 8, armatura: ARM_CUOIO, scudo: false, strumenti: 'Arnesi da scasso' },
   mago:     { armi: ['Pugnale'], equip: ['Focus arcano', 'Libro degli incantesimi', 'Dotazione da studioso'], denari: 5, armatura: ARM_NESSUNA, scudo: false, strumenti: '' },
   monaco:   { armi: ['Spada corta'], equip: ['Dardo ×10', 'Dotazione da esploratore', 'Attrezzi da artigiano o strumento musicale'], denari: 11, armatura: ARM_NESSUNA, scudo: false, strumenti: 'Un tipo di attrezzi da artigiano o uno strumento musicale' },
   paladino: { armi: ['Spada lunga'], equip: ['Cotta di maglia', 'Scudo', 'Giavellotto ×6', 'Simbolo sacro', 'Dotazione da sacerdote'], denari: 9, armatura: ARM_MAGLIA, scudo: true, strumenti: '' },
-  ranger:   { armi: ['Spada corta', 'Arco lungo'], equip: ['Armatura di cuoio', '20 frecce', 'Dotazione da esploratore'], denari: 7, armatura: ARM_CUOIO, scudo: false, strumenti: '' },
+  ranger:   { armi: ['Spada corta', 'Arco lungo'], equip: ['Armatura di cuoio', 'Frecce ×20', 'Dotazione da esploratore'], denari: 7, armatura: ARM_CUOIO, scudo: false, strumenti: '' },
   stregone: { armi: ['Pugnale'], equip: ['Focus arcano', 'Pugnale', 'Dotazione da avventuriero'], denari: 28, armatura: ARM_NESSUNA, scudo: false, strumenti: '' },
   warlock:  { armi: ['Pugnale'], equip: ['Armatura di cuoio', 'Focus arcano', 'Pugnale', 'Libro degli occulti', 'Dotazione da studioso'], denari: 15, armatura: ARM_CUOIO, scudo: false, strumenti: '' },
 };
@@ -1237,7 +1271,16 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem('scheda-interattiva:transcribe-url', transcribeUrl); } catch { /* niente */ }
   }, [transcribeUrl]);
+  // Chiave OpenAI PERSONALE per generare immagini (ritratto eroe + sfondi).
+  // BYOK: resta solo su questo dispositivo e viene inviata al Worker a ogni
+  // richiesta, così ogni utente consuma il PROPRIO credito OpenAI.
+  const [openaiKey, setOpenaiKey] = useState(() => localStorage.getItem('scheda-interattiva:openai-key') || '');
+  useEffect(() => {
+    try { localStorage.setItem('scheda-interattiva:openai-key', openaiKey); } catch { /* niente */ }
+  }, [openaiKey]);
   const [pdfStato, setPdfStato] = useState(''); // '' | 'loading'
+  const [iaImgStato, setIaImgStato] = useState(''); // '' | 'ritratto' | 'sfondo' — generazione immagine IA in corso
+  const [iaImgErrore, setIaImgErrore] = useState('');
   const [filtroIncantesimo, setFiltroIncantesimo] = useState('');
   const [filtroInventario, setFiltroInventario] = useState('');
   const [addLivIncantesimo, setAddLivIncantesimo] = useState(0); // livello scelto nella barra "aggiungi"
@@ -1327,6 +1370,7 @@ export default function App() {
   const [volumeAudio, setVolumeAudio] = useState(() => Number(localStorage.getItem('scheda-interattiva:volume-audio') || 0.5));
   const [urlCustomAudio, setUrlCustomAudio] = useState(() => localStorage.getItem('scheda-interattiva:url-audio-custom') || '');
   const [mostraPannelloAudio, setMostraPannelloAudio] = useState(false);
+  const [mostraImpostazioniIA, setMostraImpostazioniIA] = useState(false);
   const [effettiSonoriAttivi, setEffettiSonoriAttivi] = useState(() => localStorage.getItem('scheda-interattiva:effetti-sonori') !== 'false');
 
   useEffect(() => {
@@ -1551,7 +1595,26 @@ export default function App() {
     const vignetta = `radial-gradient(116% 116% at 50% 42%, transparent 52%, ${mescola(t.bg, '#000000', scuroEff ? 0.42 : 0.13)} 100%)`;
     // sfondo atmosferico dell'ambientazione (gradienti tematici nei margini pagina)
     const sfondoAmbiente = presetDati.sfondo || '';
-    document.body.style.background = [sfondoAmbiente, glowClasse, ambra, vignetta, t.bg]
+    // Immagine di sfondo a tema (foto libere/di pubblico dominio in
+    // public/ambientazioni/<id>.jpg): riempie i margini della pagina e cambia
+    // con l'ambientazione. La "Classica" (default) resta senza immagine.
+    const hexRgba = (hex, a) => {
+      const m = /^#?([0-9a-fA-F]{6})$/.exec(hex || '');
+      if (!m) return `rgba(0,0,0,${a})`;
+      const n = parseInt(m[1], 16);
+      return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+    };
+    const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/';
+    const idAmb = presetDati.id;
+    const conImmagine = idAmb && idAmb !== 'default';
+    // velo scuro sopra la foto: la attenua così testo e pannelli restano leggibili
+    const velo = conImmagine
+      ? `linear-gradient(${hexRgba(t.bg, scuroEff ? 0.62 : 0.72)}, ${hexRgba(t.bg, scuroEff ? 0.62 : 0.72)})`
+      : '';
+    const imgLayer = conImmagine
+      ? `url("${baseUrl}ambientazioni/${idAmb}.jpg") center center / cover no-repeat`
+      : '';
+    document.body.style.background = [sfondoAmbiente, glowClasse, ambra, vignetta, velo, imgLayer, t.bg]
       .filter(Boolean)
       .join(', ');
     document.body.style.backgroundAttachment = 'fixed';
@@ -2249,6 +2312,81 @@ export default function App() {
       setErroreImport('Immagine non riconosciuta: usa un file JPG o PNG.');
     };
     img.src = url;
+  }
+
+  /** Ridimensiona un data URL immagine a JPEG (max lato lungo, qualità), per
+   *  non riempire il localStorage con le immagini generate dall'IA. */
+  function ridimensionaDataUrl(dataUrl, max = 768, qualita = 0.85) {
+    return new Promise((risolvi, rifiuta) => {
+      const img = new Image();
+      img.onload = () => {
+        const scala = Math.min(1, max / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(img.width * scala));
+        canvas.height = Math.max(1, Math.round(img.height * scala));
+        const ctx2d = canvas.getContext('2d');
+        ctx2d.imageSmoothingEnabled = true;
+        ctx2d.imageSmoothingQuality = 'high';
+        ctx2d.drawImage(img, 0, 0, canvas.width, canvas.height);
+        risolvi(canvas.toDataURL('image/jpeg', qualita));
+      };
+      img.onerror = () => rifiuta(new Error('immagine non valida'));
+      img.src = dataUrl;
+    });
+  }
+
+  /** Chiede al Worker di generare un'illustrazione fantasy dal prompt indicato
+   *  e restituisce un data URL (PNG). Usa lo stesso endpoint dei PDF. */
+  async function generaImmagineIA(prompt, size = '1024x1024') {
+    const endpoint = (transcribeUrl || '').trim() || '/api/transcribe';
+    const chiave = (openaiKey || '').trim();
+    if (!chiave) throw new Error('inserisci la tua chiave OpenAI (pulsante ✨ IA in alto)');
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imagePrompt: prompt, size, openaiKey: chiave }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `errore ${res.status}`);
+    }
+    const dati = await res.json();
+    if (!dati.image) throw new Error('risposta senza immagine');
+    return dati.image;
+  }
+
+  /** Costruisce il prompt del ritratto eroe da classe + specie (+ nome). */
+  function promptRitratto(classe, specie, nome) {
+    const cls = traduciDato(classe) || classe || 'avventuriero';
+    const spc = traduciDato(specie) || specie || '';
+    const chi = [spc, cls].filter(Boolean).join(' ');
+    return `Ritratto fantasy di un ${chi} di Dungeons & Dragons${nome ? ` di nome ${nome}` : ''}. ` +
+      `Illustrazione digitale in stile concept art fantasy, primo piano su volto e busto, ` +
+      `armatura ed equipaggiamento coerenti con la classe, sfondo semplice e atmosferico, ` +
+      `luce cinematografica, alta qualità. Nessun testo, nessuna scritta.`;
+  }
+
+  /** Genera con l'IA il ritratto dell'eroe dalla classe e dalla specie. */
+  async function generaRitrattoIA() {
+    if (iaImgStato) return;
+    setIaImgErrore('');
+    if (!scheda.classe && !scheda.specie) {
+      setIaImgErrore('Scegli prima classe e/o specie: il ritratto si genera da quelli.');
+      return;
+    }
+    setIaImgStato('ritratto');
+    try {
+      const raw = await generaImmagineIA(promptRitratto(scheda.classe, scheda.specie, scheda.nome), '1024x1536');
+      const piccola = await ridimensionaDataUrl(raw, 768, 0.85);
+      aggiorna({ ritratto: piccola });
+    } catch (e) {
+      const dove = (transcribeUrl || '').trim()
+        ? 'Controlla la tua chiave OpenAI e che il Worker sia attivo.'
+        : 'Apri ✨ IA in alto e imposta endpoint (Worker) e chiave OpenAI.';
+      setIaImgErrore(`Generazione ritratto fallita: ${e.message}. ${dove}`);
+    } finally {
+      setIaImgStato('');
+    }
   }
 
   // --- import / export ---
@@ -3879,9 +4017,64 @@ export default function App() {
           >
             🎭 {PRESET_COLORI.find(p => p.id === presetColori)?.nome.split(' ')[0] || '🟤'}
           </button>
+          <button
+            style={{ ...styles.modeButton(!!(openaiKey || (transcribeUrl || '').trim())) }}
+            title="Impostazioni IA: endpoint (Worker) e chiave OpenAI per generare il ritratto del PG"
+            onClick={() => setMostraImpostazioniIA(true)}
+          >
+            ✨ IA
+          </button>
         </div>
 
       </header>
+
+      {/* Impostazioni IA (nascoste dietro il pulsante ✨ IA in alto): endpoint del
+          Worker e chiave OpenAI personale per generare il ritratto del PG. */}
+      {mostraImpostazioniIA && (
+        <div
+          onClick={() => setMostraImpostazioniIA(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 1000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '8vh 16px' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ width: '100%', maxWidth: 520, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 12, padding: 18, boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <h3 style={{ margin: 0, color: C.title }}>✨ Impostazioni IA</h3>
+              <button style={styles.buttonMini} onClick={() => setMostraImpostazioniIA(false)}>✕</button>
+            </div>
+            <p style={{ ...styles.detail, fontSize: 12, marginTop: 0 }}>
+              Servono per generare il <strong>ritratto del personaggio</strong> (pulsante ✨ sul ritratto).
+              Restano solo su questo dispositivo.
+            </p>
+
+            <label style={{ ...styles.detail, display: 'block', marginBottom: 3, fontWeight: 700 }}>Endpoint IA (Cloudflare Worker)</label>
+            <input
+              type="text"
+              autoComplete="off"
+              placeholder="https://tavolo-dei-dadi-transcribe.TUONOME.workers.dev"
+              value={transcribeUrl}
+              onChange={(e) => setTranscribeUrl(e.target.value)}
+              style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: `1px solid ${transcribeUrl ? C.goldDark : C.border}`, background: C.panelLight, color: C.ink, fontSize: 12, marginBottom: 12 }}
+            />
+
+            <label style={{ ...styles.detail, display: 'block', marginBottom: 3, fontWeight: 700 }}>🔑 La tua chiave OpenAI (per le immagini)</label>
+            <input
+              type="password"
+              autoComplete="off"
+              placeholder="sk-…  (resta sul tuo dispositivo, usa il tuo credito)"
+              value={openaiKey}
+              onChange={(e) => setOpenaiKey(e.target.value)}
+              style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: `1px solid ${openaiKey ? C.goldDark : C.border}`, background: C.panelLight, color: C.ink, fontSize: 12 }}
+            />
+            <p style={{ ...styles.detail, fontSize: 11, marginBottom: 0, marginTop: 8, opacity: 0.85 }}>
+              La chiave viene inviata al Worker solo per generare l’immagine e non è salvata sul server.
+              Ogni utente usa la propria: consuma il tuo credito OpenAI (pochi centesimi a immagine).
+              Gli sfondi delle ambientazioni restano i dipinti scelti, non serve l’IA.
+            </p>
+          </div>
+        </div>
+      )}
 
       {promemoriaBackup && !mostraGuida && (
         <div style={{
@@ -4372,10 +4565,10 @@ export default function App() {
               >
                 <span style={{
                   fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: 'italic', fontWeight: 'bold',
-                  // più piccolo del titolo del riquadro: sta comodo dentro, senza toccare i bordi
-                  fontSize: 18, letterSpacing: 1.5, lineHeight: 1,
+                  // grande: riempie l'altezza del riquadro, dal bordo inferiore al superiore
+                  fontSize: 46, letterSpacing: 1, lineHeight: 1,
                   marginRight: -1.5,
-                  color: C.goldDark, opacity: 0.4, whiteSpace: 'nowrap',
+                  color: C.goldDark, opacity: 0.3, whiteSpace: 'nowrap',
                 }}>
                   {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
                 </span>
@@ -4465,6 +4658,34 @@ export default function App() {
                 >
                   ×
                 </button>
+              )}
+              {/* Genera il ritratto con l'IA (classe + specie). Compare SOLO se hai
+                  impostato la tua chiave OpenAI (✨ IA in alto): è a pagamento, quindi
+                  chi non la usa non lo vede nemmeno. */}
+              {openaiKey.trim() && (
+                <button
+                  style={{
+                    position: 'absolute', bottom: 6, left: 6, fontSize: 11, padding: '3px 8px',
+                    borderRadius: 8, cursor: iaImgStato ? 'wait' : 'pointer', fontWeight: 700,
+                    border: `1px solid ${C.goldDark}`, color: '#fff',
+                    background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(2px)',
+                  }}
+                  title="Genera il ritratto con l'IA a partire da classe e specie (usa la tua chiave OpenAI)"
+                  disabled={!!iaImgStato}
+                  onClick={(e) => { e.stopPropagation(); generaRitrattoIA(); }}
+                >
+                  {iaImgStato === 'ritratto' ? '⏳ Genero…' : '✨ Ritratto IA'}
+                </button>
+              )}
+              {iaImgErrore && (
+                <div style={{ fontSize: 10, color: C.red, marginTop: 4, lineHeight: 1.25 }}>{iaImgErrore}</div>
+              )}
+              {/* Suggerimento gratuito: quando non c'è una foto personale e non usi
+                  l'IA, ricorda che puoi caricare una tua immagine (creabile gratis). */}
+              {(!scheda.ritratto || scheda.ritratto.startsWith('data:image/svg')) && !openaiKey.trim() && (
+                <div style={{ fontSize: 10, color: C.inkDim, marginTop: 4, lineHeight: 1.3 }}>
+                  💡 Clicca il riquadro per caricare una tua immagine. Puoi crearla <strong>gratis</strong> su Bing Image Creator e caricarla qui.
+                </div>
               )}
               <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
             </div>
@@ -5019,7 +5240,7 @@ export default function App() {
           </div>{/* fine colonna caratteristiche (dentro il Profilo) */}
           {/* Addestramento: riempie lo spazio vuoto della colonna destra (righe Intelligenza→Carisma) */}
           <div className="profilo-extra">
-            <Sezione titolo={t("sez.addestramento")} {...apertoProps('addestramento', false)}>
+            <Sezione titolo={t("sez.addestramento")} {...apertoProps('addestramento')}>
               <div style={{ marginBottom: 10 }}>
                 <div style={{ ...styles.detail, marginBottom: 4 }}>{t("train.armature")}</div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -5577,30 +5798,46 @@ export default function App() {
                             const tipoDanno = s.tipoDanno || dbInc.tipoDanno || det.tipoDanno || '';
                             const note = s.note || det.note || '';
                             const chip = (icona, etichetta, testo) => (
-                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: C.inkDim, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 6, padding: '2px 8px' }}>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: C.inkDim, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 6, padding: '2px 8px', flexShrink: 0, whiteSpace: 'nowrap' }}>
                                 <span aria-hidden style={{ opacity: 0.75 }}>{icona}</span>
                                 <span style={{ opacity: 0.7 }}>{etichetta}:</span> <span style={{ color: C.ink }}>{testo}</span>
                               </span>
                             );
                             return (
-                              <div key={s.id} style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', background: C.panelLight, opacity: (classePreparata && s.livello >= 1 && s.preparato === false) ? 0.5 : 1 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-                                    <button
-                                      style={{ background: 'transparent', border: 'none', color: C.ink, fontWeight: 700, cursor: 'pointer', textAlign: 'left', padding: 0, fontSize: 15, lineHeight: 1.2, textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
-                                      title={t('tip.cosa_fa_inc')}
-                                      onClick={() => setInfo({ titolo: `${s.nome || 'Incantesimo'}${s.livello === 0 ? ' · Trucchetto' : ` · ${s.livello}° livello`}`, testo: eff || 'Nessuna descrizione disponibile per questo incantesimo. Aprilo con ✎ per aggiungere delle note.' })}
-                                    >
-                                      {s.nome || t('menu.senza_nome')}
-                                    </button>
-                                    {s.bonus && (
-                                      <span
-                                        title={t('spell.bonus_badge_tooltip')}
-                                        style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: C.goldDark, border: `1px solid ${C.goldDark}`, borderRadius: 6, padding: '0 4px', cursor: 'pointer', whiteSpace: 'nowrap' }}
-                                        onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, bonus: false } : x)) })}
-                                      >✦ {t('spell.bonus_badge')}</span>
+                              <div key={s.id} style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '5px 10px', background: C.panelLight, opacity: (classePreparata && s.livello >= 1 && s.preparato === false) ? 0.5 : 1 }}>
+                                {/* Nome + info (chip) + pulsanti su UNA sola riga: i dettagli
+                                    stanno in una fascia a scorrimento orizzontale, così NON
+                                    vanno mai a capo su due/tre righe. */}
+                                <div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: 6 }}>
+                                  <button
+                                    style={{ background: 'transparent', border: 'none', color: C.ink, fontWeight: 700, cursor: 'pointer', textAlign: 'left', padding: 0, fontSize: 14, lineHeight: 1.2, textDecoration: 'underline dotted', textUnderlineOffset: 3, whiteSpace: 'nowrap', flexShrink: 0 }}
+                                    title={t('tip.cosa_fa_inc')}
+                                    onClick={() => setInfo({ titolo: `${s.nome || 'Incantesimo'}${s.livello === 0 ? ' · Trucchetto' : ` · ${s.livello}° livello`}`, testo: eff || 'Nessuna descrizione disponibile per questo incantesimo. Aprilo con ✎ per aggiungere delle note.' })}
+                                  >
+                                    {s.nome || t('menu.senza_nome')}
+                                  </button>
+                                  {s.bonus && (
+                                    <span
+                                      title={t('spell.bonus_badge_tooltip')}
+                                      style={{ fontSize: 10, fontWeight: 700, color: C.goldDark, border: `1px solid ${C.goldDark}`, borderRadius: 6, padding: '0 4px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}
+                                      onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, bonus: false } : x)) })}
+                                    >✦ {t('spell.bonus_badge')}</span>
+                                  )}
+                                  {/* Fascia dettagli: una sola riga, scorre in orizzontale se serve. */}
+                                  <div className="spell-chips" style={{ display: 'flex', flexWrap: 'nowrap', gap: 6, alignItems: 'center', overflowX: 'auto', flex: '1 1 auto', minWidth: 0 }}>
+                                    {chip('⏱', t('spell.chip_tempo'), tempoLabel)}
+                                    {chip('🎯', t('spell.chip_gittata'), gittata)}
+                                    {chip('🔮', 'Scuola', scuola)}
+                                    {area && chip('📐', 'Area', area)}
+                                    {/* Danno solo testuale (non tirabile): resta un chip informativo.
+                                        Quando è un'espressione di dado valida, il tiro dei danni va
+                                        nella riga azioni qui sotto, DOPO il tiro per colpire. */}
+                                    {(danno || tipoDanno) && !parseEspressioneDado(danno) && (
+                                      chip('💥', 'Danno', [danno, tipoDanno].filter(Boolean).join(' '))
                                     )}
+                                    {note && chip('📝', t('spell.chip_note'), note)}
                                   </div>
+                                  {/* Pulsanti azione: restano sulla stessa riga, a destra. */}
                                   <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
                                     {classePreparata && s.livello >= 1 && (
                                       <button
@@ -5612,19 +5849,6 @@ export default function App() {
                                     <button style={styles.buttonMini} title={t('tip.modifica')} onClick={() => setDettaglioInc(s.id)}>✎</button>
                                     <button style={{ ...styles.buttonMini, color: C.red }} title={t('tip.elimina_inc')} onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })}>🗑</button>
                                   </div>
-                                </div>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
-                                  {chip('⏱', t('spell.chip_tempo'), tempoLabel)}
-                                  {chip('🎯', t('spell.chip_gittata'), gittata)}
-                                  {chip('🔮', 'Scuola', scuola)}
-                                  {area && chip('📐', 'Area', area)}
-                                  {/* Danno solo testuale (non tirabile): resta un chip informativo.
-                                      Quando è un'espressione di dado valida, il tiro dei danni va
-                                      nella riga azioni qui sotto, DOPO il tiro per colpire. */}
-                                  {(danno || tipoDanno) && !parseEspressioneDado(danno) && (
-                                    chip('💥', 'Danno', [danno, tipoDanno].filter(Boolean).join(' '))
-                                  )}
-                                  {note && chip('📝', t('spell.chip_note'), note)}
                                 </div>
                                 {parseEspressioneDado(danno) && (
                                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6, alignItems: 'center' }}>
@@ -5749,8 +5973,11 @@ export default function App() {
                 const inv = scheda.inventario || [];
                 const pesoInv = inv.reduce((s, o) => s + (o.qta || 1) * (o.peso || 0), 0);
                 // Peso di armi e armatura equipaggiate (tutto ciò che ho addosso).
+                // Le armi che sono GIÀ nell'inventario non vengono ricontate qui
+                // (altrimenti equipaggiare un oggetto già posseduto ne raddoppia il peso).
                 const attacchi = Array.isArray(scheda.attacchi) ? scheda.attacchi : [];
-                const pesoArmi = attacchi.reduce((s, a) => s + pesoStimato(a.nome), 0);
+                const nomiInv = new Set(inv.map((o) => (o.nome || '').trim().toLowerCase()));
+                const pesoArmi = attacchi.reduce((s, a) => (nomiInv.has((a.nome || '').trim().toLowerCase()) ? s : s + pesoStimato(a.nome)), 0);
                 const pesoArm = pesoArmatura(scheda.armatura);
                 // Peso delle monete: conta nel totale ed è mostrato come riga fra gli oggetti.
                 const dMon = scheda.denari || {};
@@ -5766,6 +5993,34 @@ export default function App() {
                 const perc = Math.min(100, (pesoTot / cap) * 100);
                 const modInv = (id, patch) => aggiorna({ inventario: inv.map((x) => (x.id === id ? { ...x, ...patch } : x)) });
                 const toggleEquip = (o, checked) => {
+                  // 1) Scudo: aggiorna il flag scudo del riquadro CA.
+                  if (eScudo(o.nome)) {
+                    aggiorna({
+                      inventario: inv.map((x) => (x.id === o.id ? { ...x, equip: checked } : x)),
+                      armatura: { ...scheda.armatura, scudo: checked },
+                    });
+                    return;
+                  }
+                  // 2) Armatura: equipaggiandola la CA si calcola dal tipo/base; togliendola
+                  //    si torna "senza armatura" (come per le armi nella sezione Combattimento).
+                  const armInfo = trovaArmatura(o.nome);
+                  if (armInfo) {
+                    const nuovaArmatura = checked
+                      ? { ...scheda.armatura, tipo: armInfo.tipo, base: armInfo.base, nome: o.nome }
+                      : { ...scheda.armatura, tipo: 'nessuna', base: 0, nome: '' };
+                    aggiorna({
+                      // Se sto equipaggiando questa armatura, tolgo il flag "equip" da eventuali
+                      // altre armature (se ne indossa una sola alla volta).
+                      inventario: inv.map((x) => {
+                        if (x.id === o.id) return { ...x, equip: checked };
+                        if (checked && trovaArmatura(x.nome) && !eScudo(x.nome)) return { ...x, equip: false };
+                        return x;
+                      }),
+                      armatura: nuovaArmatura,
+                    });
+                    return;
+                  }
+                  // 3) Arma: come prima, la aggiunge/rimuove dalla sezione Combattimento.
                   const isWeapon = ARMI_5E.find((w) => w.nome === o.nome) || (scheda.attacchi?.find((a) => a.nome === o.nome) ? { nome: o.nome, danno: '1d6', tipoDanno: 'Contundente', categoria: 'Mischia' } : null);
                   let newAttacchi = Array.isArray(scheda.attacchi) ? [...scheda.attacchi] : [];
                   if (checked && isWeapon) {

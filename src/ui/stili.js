@@ -414,7 +414,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .griglia-scheda > * { min-width: 0; }
 /* Blocco "Privilegi & Talenti" sotto la Magia: i due box privilegi affiancati,
    Talenti sotto. Su schermi stretti tornano in colonna singola. */
-.privilegi-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
+.privilegi-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: stretch; }
 .privilegi-duo > * { min-width: 0; }
 .privilegi-talenti > .sezione, .privilegi-duo > .sezione { margin-bottom: 0 !important; }
 @media (max-width: 720px) { .privilegi-duo { grid-template-columns: 1fr; } }
@@ -480,7 +480,11 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .car-coppia { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 /* i gruppi di vitali riempiono la larghezza della loro riga */
 .pm-anagrafica, .pm-pf, .pm-gruppo { min-width: 0; }
-.pm-pf > * { width: 100%; }
+/* Punti Ferita: la riga 2 è alta quanto Destrezza+Costituzione impilate a
+   sinistra; il riquadro PF cresce per riempire tutta quell'altezza (niente più
+   spazio vuoto sotto) e resta allineato col resto della griglia. */
+.pm-pf { display: flex; flex-direction: column; }
+.pm-pf > * { width: 100%; flex: 1 1 auto; }
 @media (max-width: 820px) {
   /* Sotto 820px la sezione si impila: prima i dati centrali, poi le
      caratteristiche, infine il ritratto. Niente subgrid: torna tutto a colonna. */
@@ -500,6 +504,10 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 /* consente ai riquadri di stringersi sotto la larghezza del contenuto (niente overflow) */
 .vitali > * { min-width: 0; }
 .vitali > * > * { min-width: 0; }
+/* Fascia dettagli incantesimo: scorre in orizzontale su una riga; scrollbar sottile. */
+.spell-chips { scrollbar-width: thin; }
+.spell-chips::-webkit-scrollbar { height: 5px; }
+.spell-chips::-webkit-scrollbar-thumb { background: var(--c-border); border-radius: 3px; }
 /* i campi anagrafica (con le tendine): font piccolo, padding compatto, allineati in basso */
 .campi-anagrafica > * { min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; }
 .campi-anagrafica select { max-width: 100%; font-size: 11px !important; padding: 1px 15px 1px 3px !important; height: 20px; line-height: 1.2; background-position: right 3px center !important; background-size: 8px !important; }
