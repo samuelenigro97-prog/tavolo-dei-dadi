@@ -5631,7 +5631,7 @@ export default function App() {
                               : /^(az|1 az|azione)/i.test(tp) ? t('spell.tempo_azione')
                               : tp;
                             const gittata = s.gittata || dbInc.gittata || det.gittata || 'Personale';
-                            const scuola = s.scuola || dbInc.scuola || det.scuola || 'Universale';
+                            const scuola = s.scuola || dbInc.scuola || det.scuola || '';
                             const area = s.area || dbInc.area || det.area || '';
                             const danno = s.danno || dbInc.danno || det.danno || '';
                             const tipoDanno = s.tipoDanno || dbInc.tipoDanno || det.tipoDanno || '';
@@ -5666,7 +5666,7 @@ export default function App() {
                                   <div className="spell-chips" style={{ display: 'flex', flexWrap: 'nowrap', gap: 6, alignItems: 'center', overflowX: 'auto', flex: '1 1 auto', minWidth: 0 }}>
                                     {chip('⏱', t('spell.chip_tempo'), tempoLabel)}
                                     {chip('🎯', t('spell.chip_gittata'), gittata)}
-                                    {chip('🔮', 'Scuola', scuola)}
+                                    {scuola && chip('🔮', 'Scuola', scuola)}
                                     {area && chip('📐', 'Area', area)}
                                     {/* Danno solo testuale (non tirabile): resta un chip informativo.
                                         Quando è un'espressione di dado valida, il tiro dei danni va
