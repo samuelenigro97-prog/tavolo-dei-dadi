@@ -5294,7 +5294,17 @@ export default function App() {
                     };
                   });
                   const listaAttacchiCompleta = [...(scheda.attacchi || []), ...attacchiSpettro];
-                  return ['Azione', 'Bonus', 'Reazione'].map((cat) => {
+                  // Per lanciare incantesimi in combattimento serve un focus (o
+                  // borsa da componenti / simbolo sacro) EQUIPAGGIATO nell'inventario.
+                  const haFocus = (scheda.inventario || []).some((o) => o.equip && /focus|simbolo sacro|borsa (da )?componenti|bacchetta|cristallo|totem|bastone runico|feticcio/i.test(o.nome || ''));
+                  const serveFocus = Boolean(scheda.incantatore?.caratteristica) && attacchiSpettro.length > 0;
+                  const bloccaSpell = serveFocus && !haFocus;
+                  const avvisoFocus = bloccaSpell ? (
+                    <div style={{ fontSize: 12, color: C.red, background: 'rgba(200,40,40,0.10)', border: `1px solid ${C.red}`, borderRadius: 8, padding: '6px 10px', marginBottom: 10 }}>
+                      🪄 Nessun <strong>focus</strong> equipaggiato: per lanciare incantesimi equipaggia un focus arcano/druidico, un simbolo sacro o una borsa da componenti dall'<strong>Inventario</strong> (spunta “equip.”).
+                    </div>
+                  ) : null;
+                  return [avvisoFocus, ...['Azione', 'Bonus', 'Reazione'].map((cat) => {
                     const arr = listaAttacchiCompleta.filter((a) => (a.categoria || 'Azione') === cat);
                     if (arr.length === 0 && cat !== 'Azione') return null;
                     return (
@@ -5330,6 +5340,8 @@ export default function App() {
                                 }
                               };
                               const dannoValido = a.danno.trim() === '' || parseEspressioneDado(a.danno);
+                              // Incantesimo senza focus equipaggiato: tiri disabilitati.
+                              const castBloccato = a.isSpell && bloccaSpell;
                               return (
                                 <tr key={a.id}>
                                   <td style={styles.td}>
@@ -5354,7 +5366,7 @@ export default function App() {
                                         value={a.nome}
                                         width={130}
                                         onChange={(v) => aggiornaAttacco({ nome: v })}
-                                        onRoll={() => tiraColpoArma(a)}
+                                        onRoll={castBloccato ? undefined : () => tiraColpoArma(a)}
                                       />
                                     </div>
                                   </td>
@@ -5366,15 +5378,16 @@ export default function App() {
                                     ) : (
                                       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                         <button
-                                          style={{ ...styles.buttonMini, padding: '1px 6px' }}
-                                          title={`Tira per colpire con ${a.nome}`}
-                                          onClick={() => tiraColpoArma(a)}
+                                          style={{ ...styles.buttonMini, padding: '1px 6px', opacity: castBloccato ? 0.4 : 1, cursor: castBloccato ? 'not-allowed' : 'pointer' }}
+                                          title={castBloccato ? 'Equipaggia un focus per lanciare questo incantesimo' : `Tira per colpire con ${a.nome}`}
+                                          disabled={castBloccato}
+                                          onClick={() => { if (!castBloccato) tiraColpoArma(a); }}
                                         >🎲</button>
                                         <Editable
                                           value={conSegno(a.bonus)}
                                           width={44}
                                           onChange={(v) => aggiornaAttacco({ bonus: Number(String(v).replace('+', '')) || 0 })}
-                                          onRoll={() => tiraColpoArma(a)}
+                                          onRoll={castBloccato ? undefined : () => tiraColpoArma(a)}
                                         />
                                       </div>
                                     )}
@@ -5382,9 +5395,10 @@ export default function App() {
                                   <td style={{ ...styles.td, color: dannoValido ? undefined : C.red }}>
                                     {parseEspressioneDado(a.danno) && (
                                       <button
-                                        style={{ ...styles.buttonMini, padding: '1px 6px', marginRight: 4 }}
-                                        title={`Tira i danni (${a.danno})`}
-                                        onClick={() => lanciaDanniDiretti(`Danni: ${a.nome}`, a.danno)}
+                                        style={{ ...styles.buttonMini, padding: '1px 6px', marginRight: 4, opacity: castBloccato ? 0.4 : 1, cursor: castBloccato ? 'not-allowed' : 'pointer' }}
+                                        title={castBloccato ? 'Equipaggia un focus per lanciare questo incantesimo' : `Tira i danni (${a.danno})`}
+                                        disabled={castBloccato}
+                                        onClick={() => { if (!castBloccato) lanciaDanniDiretti(`Danni: ${a.nome}`, a.danno); }}
                                       >🎲</button>
                                     )}
                                     <Editable
@@ -5450,7 +5464,7 @@ export default function App() {
                         </div>
                       </div>
                     );
-                  });
+                  })];
                 })()}
               </div>
               <div style={{ marginTop: 4, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
