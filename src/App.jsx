@@ -869,7 +869,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.39.0';
+const APP_VERSION = '2.40.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4770,7 +4770,7 @@ export default function App() {
               </div>
               {/* Riga 2 — Punti Ferita (allineata a Destrezza + Costituzione) */}
               <div className="pm-pf">
-            <div style={{ ...styles.vitalBox, gridColumn: 'span 4', padding: '12px 14px' }}>
+            <div style={{ ...styles.vitalBox, gridColumn: 'span 4', padding: '32px 14px 12px' }}>
               <SfondoVit>🩸</SfondoVit>
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
                 <div style={{ ...styles.vitalLabel, margin: 0, fontSize: 13 }}>❤️ {t("vital.pf")}</div>
@@ -5621,7 +5621,7 @@ export default function App() {
                   return (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, width: '100%', marginTop: 8 }}>
                       {/* Concentrazione: riquadro quadrato, in linea con gli altri tre */}
-                      <div style={{ ...styles.vitalBox, padding: '8px 6px', gap: 5, justifyContent: 'flex-start', background: attivo ? 'rgba(201,162,39,0.15)' : C.panelLight, borderColor: attivo ? C.goldDark : C.border }}>
+                      <div style={{ ...styles.vitalBox, padding: '30px 6px 8px', gap: 5, justifyContent: 'flex-start', background: attivo ? 'rgba(201,162,39,0.15)' : C.panelLight, borderColor: attivo ? C.goldDark : C.border }}>
                         <div style={{ ...styles.vitalLabel, color: attivo ? C.goldDark : C.inkDim }}>🧠 {t('conc.label')}</div>
                         <select
                           value={scheda.concentrazione || ''}
@@ -5647,15 +5647,15 @@ export default function App() {
                       </div>
                       {modIncantatore !== null && (
                         <>
-                          <div style={{ ...styles.vitalBox, padding: '10px 6px' }}>
+                          <div style={{ ...styles.vitalBox, padding: '30px 6px 10px' }}>
                             <div style={styles.vitalLabel}>{t("vital.mod_incantesimi")}</div>
                             <div style={styles.vitalValue}>{conSegno(modIncantatore)}</div>
                           </div>
-                          <div style={{ ...styles.vitalBox, padding: '10px 6px' }}>
+                          <div style={{ ...styles.vitalBox, padding: '30px 6px 10px' }}>
                             <div style={styles.vitalLabel}>{t("vital.cd_incantesimi")}</div>
                             <div style={styles.vitalValue}>{8 + scheda.bonusCompetenza + modIncantatore}</div>
                           </div>
-                          <div style={{ ...styles.vitalBox, padding: '10px 6px' }}>
+                          <div style={{ ...styles.vitalBox, padding: '30px 6px 10px' }}>
                             <div style={styles.vitalLabel}>{t("vital.attacco_incantesimi")}</div>
                             <div style={styles.vitalValue}>
                               <span
@@ -6213,7 +6213,7 @@ export default function App() {
                           così non resta la sesta cella vuota della griglia 3×2. */}
                       <div className="griglia-monete" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 8, marginTop: 'auto' }}>
                         {DENARI.map(({ key, label, abbr }) => (
-                          <div key={key} style={{ ...styles.vitalBox, minHeight: 'auto', padding: '8px 4px', background: C.bg }} title={label}>
+                          <div key={key} style={{ ...styles.vitalBox, minHeight: 'auto', padding: '26px 4px 6px', background: C.bg }} title={label}>
                             <div style={{ ...styles.vitalLabel, fontSize: 11, height: 'auto', whiteSpace: 'nowrap' }}>{abbr}</div>
                             <div style={{ ...styles.vitalValue, fontSize: 18 }}>
                               <Editable
@@ -6288,9 +6288,19 @@ export default function App() {
             <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }} onClick={() => { if (window.confirm('Rimuovere la mappa della campagna?')) { setMappaCampagna(''); setMappaAperta(false); } }} title="Rimuovi la mappa">🗑 Rimuovi</button>
             <button style={styles.buttonMini} onClick={() => setMappaAperta(false)} title="Chiudi">✕</button>
           </div>
-          {/* Area scorrevole: la mappa può superare lo schermo, con scroll in entrambe le direzioni. */}
-          <div style={{ flex: 1, overflow: 'auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }} onClick={(e) => e.stopPropagation()}>
-            <img src={mappaCampagna} alt="Mappa della campagna" style={mappaZoom ? { maxWidth: 'none', height: 'auto', display: 'block' } : { maxWidth: '100%', height: 'auto', display: 'block' }} />
+          {/* Vista adattata allo schermo (nessuno scroll); con “Ingrandisci” passa
+              alla dimensione reale e diventa scorrevole in entrambe le direzioni. */}
+          <div
+            style={{ flex: 1, minHeight: 0, overflow: mappaZoom ? 'auto' : 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 8 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={mappaCampagna}
+              alt="Mappa della campagna"
+              style={mappaZoom
+                ? { maxWidth: 'none', maxHeight: 'none', display: 'block' }
+                : { maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', objectFit: 'contain', display: 'block' }}
+            />
           </div>
         </div>
       )}
