@@ -347,6 +347,7 @@ export const EN_PRIVILEGI_CLASSE = {
   'Mente sfuggente': 'You gain proficiency in additional saving throws (e.g. Wisdom).',
   'Inafferrabile': 'No attack has advantage against you unless you are incapacitated.',
   'Colpo di fortuna': 'You turn a miss into a hit, or a failed check into a 20, once per rest.',
+  'Competenze aggiuntive': 'You gain proficiency in additional skills or tools of your choice.',
   'Percezione cieca': 'You sense hidden or invisible creatures nearby.',
   'Recupero arcano': 'During a short rest you regain some expended spell slots.',
   'Rituali · Studioso': 'You can cast rituals and have extra proficiency in a field of knowledge.',
