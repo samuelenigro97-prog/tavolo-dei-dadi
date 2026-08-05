@@ -5676,6 +5676,22 @@ export default function App() {
                                     )}
                                     {note && chip('📝', t('spell.chip_note'), note)}
                                   </div>
+                                  {/* Tiri (solo per incantesimi con danno): sulla STESSA riga, mai a capo. */}
+                                  {parseEspressioneDado(danno) && (
+                                    <div style={{ display: 'flex', gap: 4, flexShrink: 0, alignItems: 'center' }}>
+                                      <button
+                                        style={{ ...styles.buttonMini, fontSize: 12, padding: '3px 8px', fontWeight: 600, borderColor: C.goldDark, color: C.goldDark, whiteSpace: 'nowrap' }}
+                                        title={`${t('spell.tira_attacco')} — ${t('spell.colpire')}`}
+                                        onClick={() => lanciaD20(`${t('spell.attacco_inc')}: ${s.nome}`, scheda.bonusCompetenza + (modIncantatore || 0), { attacco: { nome: s.nome, danno, tipoDanno }, magia: true })}
+                                      >🎯 {conSegno(scheda.bonusCompetenza + (modIncantatore || 0))}</button>
+                                      <button
+                                        className="tirabile"
+                                        style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, fontWeight: 600, color: C.red, background: C.bg, border: `1px solid ${C.red}`, borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}
+                                        title={t('spell.tira_danni_diretti')}
+                                        onClick={() => lanciaDanniDiretti(`${s.nome}${tipoDanno ? ` · ${tipoDanno}` : ''}`, danno, true)}
+                                      ><span aria-hidden>💥</span><span>{[danno, tipoDanno].filter(Boolean).join(' ')}</span><span aria-hidden style={{ opacity: 0.65 }}>🎲</span></button>
+                                    </div>
+                                  )}
                                   {/* Pulsanti azione: restano sulla stessa riga, a destra. */}
                                   <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
                                     {classePreparata && s.livello >= 1 && (
@@ -5689,26 +5705,6 @@ export default function App() {
                                     <button style={{ ...styles.buttonMini, color: C.red }} title={t('tip.elimina_inc')} onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })}>🗑</button>
                                   </div>
                                 </div>
-                                {parseEspressioneDado(danno) && (
-                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6, alignItems: 'center' }}>
-                                    {/* Ordine fisso: prima il tiro per colpire, poi i danni. */}
-                                    <button
-                                      style={{ ...styles.buttonMini, fontSize: 12, padding: '4px 10px', fontWeight: 600, borderColor: C.goldDark, color: C.goldDark }}
-                                      title={t('spell.tira_attacco')}
-                                      onClick={() => lanciaD20(`${t('spell.attacco_inc')}: ${s.nome}`, scheda.bonusCompetenza + (modIncantatore || 0), { attacco: { nome: s.nome, danno, tipoDanno }, magia: true })}
-                                    >🎯 {t('spell.colpire')} {conSegno(scheda.bonusCompetenza + (modIncantatore || 0))}</button>
-                                    <button
-                                      className="tirabile"
-                                      style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: C.red, background: C.bg, border: `1px solid ${C.red}`, borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontFamily: 'inherit' }}
-                                      title={t('spell.tira_danni_diretti')}
-                                      onClick={() => lanciaDanniDiretti(`${s.nome}${tipoDanno ? ` · ${tipoDanno}` : ''}`, danno, true)}
-                                    >
-                                      <span aria-hidden>💥</span>
-                                      <span>{[danno, tipoDanno].filter(Boolean).join(' ')}</span>
-                                      <span aria-hidden style={{ opacity: 0.65 }}>🎲</span>
-                                    </button>
-                                  </div>
-                                )}
                               </div>
                             );
                           })}
