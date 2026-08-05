@@ -4659,23 +4659,33 @@ export default function App() {
                   ×
                 </button>
               )}
-              {/* Genera il ritratto con l'IA (classe + specie). Richiede il Worker
-                  configurato con la chiave OpenAI. */}
-              <button
-                style={{
-                  position: 'absolute', bottom: 6, left: 6, fontSize: 11, padding: '3px 8px',
-                  borderRadius: 8, cursor: iaImgStato ? 'wait' : 'pointer', fontWeight: 700,
-                  border: `1px solid ${C.goldDark}`, color: '#fff',
-                  background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(2px)',
-                }}
-                title="Genera il ritratto con l'IA a partire da classe e specie (serve il Worker con chiave OpenAI)"
-                disabled={!!iaImgStato}
-                onClick={(e) => { e.stopPropagation(); generaRitrattoIA(); }}
-              >
-                {iaImgStato === 'ritratto' ? '⏳ Genero…' : '✨ Ritratto IA'}
-              </button>
+              {/* Genera il ritratto con l'IA (classe + specie). Compare SOLO se hai
+                  impostato la tua chiave OpenAI (✨ IA in alto): è a pagamento, quindi
+                  chi non la usa non lo vede nemmeno. */}
+              {openaiKey.trim() && (
+                <button
+                  style={{
+                    position: 'absolute', bottom: 6, left: 6, fontSize: 11, padding: '3px 8px',
+                    borderRadius: 8, cursor: iaImgStato ? 'wait' : 'pointer', fontWeight: 700,
+                    border: `1px solid ${C.goldDark}`, color: '#fff',
+                    background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(2px)',
+                  }}
+                  title="Genera il ritratto con l'IA a partire da classe e specie (usa la tua chiave OpenAI)"
+                  disabled={!!iaImgStato}
+                  onClick={(e) => { e.stopPropagation(); generaRitrattoIA(); }}
+                >
+                  {iaImgStato === 'ritratto' ? '⏳ Genero…' : '✨ Ritratto IA'}
+                </button>
+              )}
               {iaImgErrore && (
                 <div style={{ fontSize: 10, color: C.red, marginTop: 4, lineHeight: 1.25 }}>{iaImgErrore}</div>
+              )}
+              {/* Suggerimento gratuito: quando non c'è una foto personale e non usi
+                  l'IA, ricorda che puoi caricare una tua immagine (creabile gratis). */}
+              {(!scheda.ritratto || scheda.ritratto.startsWith('data:image/svg')) && !openaiKey.trim() && (
+                <div style={{ fontSize: 10, color: C.inkDim, marginTop: 4, lineHeight: 1.3 }}>
+                  💡 Clicca il riquadro per caricare una tua immagine. Puoi crearla <strong>gratis</strong> su Bing Image Creator e caricarla qui.
+                </div>
               )}
               <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
             </div>
