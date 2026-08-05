@@ -869,7 +869,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.41.0';
+const APP_VERSION = '2.42.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1388,9 +1388,17 @@ export default function App() {
       /* niente */
     }
 
-    // mantieni l'ordine salvato, scarta id sconosciuti, aggiungi le sezioni nuove
+    // mantieni l'ordine salvato, scarta id sconosciuti e INSERISCI le sezioni
+    // nuove alla loro posizione di default (non in fondo): così, aggiungendo
+    // Talenti/Tratti come sezioni separate, non finiscono in coda per chi aveva
+    // già un ordine salvato.
     const ordinato = salvato.filter((id) => ORDINE_SEZIONI_DEFAULT.includes(id));
-    for (const id of ORDINE_SEZIONI_DEFAULT) if (!ordinato.includes(id)) ordinato.push(id);
+    for (const id of ORDINE_SEZIONI_DEFAULT) {
+      if (!ordinato.includes(id)) {
+        const pos = Math.min(ORDINE_SEZIONI_DEFAULT.indexOf(id), ordinato.length);
+        ordinato.splice(pos, 0, id);
+      }
+    }
     return ordinato;
   });
   const [sezTrascinata, setSezTrascinata] = useState(null);
@@ -1445,12 +1453,11 @@ export default function App() {
     } catch { /* niente */ }
   }, [ambienteAudio, volumeAudio, urlCustomAudio, effettiSonoriAttivi]);
 
-  // Audio notturno per ambientazione: di notte alcuni ambienti cambiano loop per
-  // un sottofondo più cupo (es. la foresta di notte = grilli, l'ex audio "notte").
-  const AUDIO_NOTTE = { foresta: 'notte' };
+  // Audio notturno per ambientazione: di notte ogni ambiente mantiene il proprio
+  // sottofondo (bosco resta bosco, città resta città) ma più cupo (volume ridotto)
+  // e, se all'aperto, con un velo di grilli/insetti sopra → "suona di notte".
   useEffect(() => {
-    const audioEff = (notteAttiva && AUDIO_NOTTE[ambienteAudio]) ? AUDIO_NOTTE[ambienteAudio] : ambienteAudio;
-    avviaAmbiente(audioEff, volumeAudio * (notteAttiva ? 0.6 : 1), urlCustomAudio);
+    avviaAmbiente(ambienteAudio, volumeAudio * (notteAttiva ? 0.6 : 1), urlCustomAudio, notteAttiva);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ambienteAudio, notteAttiva]);
 
@@ -4263,46 +4270,50 @@ export default function App() {
             boxShadow: '-6px 0 24px rgba(0,0,0,0.4)'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-            <div style={{ fontWeight: 'bold', color: C.goldDark, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+            <div style={{ fontWeight: 'bold', color: C.goldDark, display: 'flex', flexDirection: 'column', gap: 2 }}>
               <span>🎭 Ambientazione</span>
               <span style={{ fontSize: 11, fontWeight: 'normal', color: C.inkDim }}>(colori, sfondo e audio insieme · tutto offline)</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 12, color: C.inkDim }}>🔊</span>
-              <input
-                type="range" min="0" max="1" step="0.05"
-                value={volumeAudio}
-                onChange={(e) => setVolumeAudio(e.target.value)}
-                style={{ width: 100, accentColor: C.gold }}
-                title="Volume del sottofondo"
-              />
-              <span style={{ minWidth: 35, textAlign: 'right', fontSize: 12, fontWeight: 'bold' }}>{Math.round(volumeAudio * 100)}%</span>
-              <button
-                onClick={() => setEffettiSonoriAttivi((v) => !v)}
-                title={'Attiva/disattiva i suoni dei tiri di dado. La barra qui accanto regola invece il volume del sottofondo ambientale (sono due cose diverse).'}
-                style={{
-                  ...styles.btnMini, marginLeft: 4,
-                  border: `1px solid ${effettiSonoriAttivi ? C.gold : C.border}`,
-                  background: effettiSonoriAttivi ? C.gold : C.panel,
-                  color: effettiSonoriAttivi ? '#fff' : C.inkDim, fontWeight: 'bold'
-                }}
-              >🎲 Suoni dadi {effettiSonoriAttivi ? 'ON' : 'OFF'}</button>
-              <button
-                onClick={() => setMutoAudio((m) => !m)}
-                title={mutoAudio ? 'Audio in muto · click per riattivare tutto' : 'Muta rapidamente tutto l’audio (sottofondo + effetti)'}
-                style={{
-                  ...styles.btnMini, marginLeft: 4,
-                  border: `1px solid ${mutoAudio ? C.gold : C.border}`,
-                  background: mutoAudio ? C.gold : C.panel,
-                  color: mutoAudio ? '#fff' : C.inkDim, fontWeight: 'bold'
-                }}
-              >{mutoAudio ? '🔇 Muto' : '🔊 Audio'}</button>
-              <button
-                style={{ ...styles.btnMini, marginLeft: 4 }}
-                onClick={() => setMostraPannelloAudio(false)}
-              >✕</button>
-            </div>
+            <button
+              style={{ ...styles.btnMini }}
+              onClick={() => setMostraPannelloAudio(false)}
+            >✕</button>
+          </div>
+          {/* Volume del sottofondo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 14, color: C.inkDim }}>🔊</span>
+            <input
+              type="range" min="0" max="1" step="0.05"
+              value={volumeAudio}
+              onChange={(e) => setVolumeAudio(e.target.value)}
+              style={{ flex: 1, accentColor: C.gold }}
+              title="Volume del sottofondo"
+            />
+            <span style={{ minWidth: 38, textAlign: 'right', fontSize: 12, fontWeight: 'bold' }}>{Math.round(volumeAudio * 100)}%</span>
+          </div>
+          {/* Due interruttori simmetrici: suoni dei dadi e muto generale */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={() => setEffettiSonoriAttivi((v) => !v)}
+              title={'Attiva/disattiva i suoni dei tiri di dado. La barra qui sopra regola invece il volume del sottofondo ambientale (sono due cose diverse).'}
+              style={{
+                ...styles.btnMini, flex: 1, padding: '8px 6px', whiteSpace: 'nowrap',
+                border: `1px solid ${effettiSonoriAttivi ? C.gold : C.border}`,
+                background: effettiSonoriAttivi ? C.gold : C.panel,
+                color: effettiSonoriAttivi ? '#fff' : C.inkDim, fontWeight: 'bold'
+              }}
+            >🎲 Suoni dadi {effettiSonoriAttivi ? 'ON' : 'OFF'}</button>
+            <button
+              onClick={() => setMutoAudio((m) => !m)}
+              title={mutoAudio ? 'Audio in muto · click per riattivare tutto' : 'Muta rapidamente tutto l’audio (sottofondo + effetti)'}
+              style={{
+                ...styles.btnMini, flex: 1, padding: '8px 6px', whiteSpace: 'nowrap',
+                border: `1px solid ${mutoAudio ? C.gold : C.border}`,
+                background: mutoAudio ? C.gold : C.panel,
+                color: mutoAudio ? '#fff' : C.inkDim, fontWeight: 'bold'
+              }}
+            >{mutoAudio ? '🔇 Muto' : '🔊 Audio ON'}</button>
           </div>
 
           {/* Ambientazioni: un click applica palette + sfondo + audio abbinato */}
