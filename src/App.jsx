@@ -5788,18 +5788,19 @@ export default function App() {
                             const tipoDanno = s.tipoDanno || dbInc.tipoDanno || det.tipoDanno || '';
                             const note = s.note || det.note || '';
                             const chip = (icona, etichetta, testo) => (
-                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: C.inkDim, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 6, padding: '2px 8px' }}>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: C.inkDim, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 6, padding: '2px 8px', flexShrink: 0, whiteSpace: 'nowrap' }}>
                                 <span aria-hidden style={{ opacity: 0.75 }}>{icona}</span>
                                 <span style={{ opacity: 0.7 }}>{etichetta}:</span> <span style={{ color: C.ink }}>{testo}</span>
                               </span>
                             );
                             return (
                               <div key={s.id} style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '5px 10px', background: C.panelLight, opacity: (classePreparata && s.livello >= 1 && s.preparato === false) ? 0.5 : 1 }}>
-                                {/* Nome + info (chip) + pulsanti su UNA sola riga a scorrimento:
-                                    così ogni incantesimo occupa una riga (max due se va a capo). */}
-                                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, rowGap: 4 }}>
+                                {/* Nome + info (chip) + pulsanti su UNA sola riga: i dettagli
+                                    stanno in una fascia a scorrimento orizzontale, così NON
+                                    vanno mai a capo su due/tre righe. */}
+                                <div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: 6 }}>
                                   <button
-                                    style={{ background: 'transparent', border: 'none', color: C.ink, fontWeight: 700, cursor: 'pointer', textAlign: 'left', padding: 0, fontSize: 14, lineHeight: 1.2, textDecoration: 'underline dotted', textUnderlineOffset: 3, whiteSpace: 'nowrap' }}
+                                    style={{ background: 'transparent', border: 'none', color: C.ink, fontWeight: 700, cursor: 'pointer', textAlign: 'left', padding: 0, fontSize: 14, lineHeight: 1.2, textDecoration: 'underline dotted', textUnderlineOffset: 3, whiteSpace: 'nowrap', flexShrink: 0 }}
                                     title={t('tip.cosa_fa_inc')}
                                     onClick={() => setInfo({ titolo: `${s.nome || 'Incantesimo'}${s.livello === 0 ? ' · Trucchetto' : ` · ${s.livello}° livello`}`, testo: eff || 'Nessuna descrizione disponibile per questo incantesimo. Aprilo con ✎ per aggiungere delle note.' })}
                                   >
@@ -5808,23 +5809,26 @@ export default function App() {
                                   {s.bonus && (
                                     <span
                                       title={t('spell.bonus_badge_tooltip')}
-                                      style={{ fontSize: 10, fontWeight: 700, color: C.goldDark, border: `1px solid ${C.goldDark}`, borderRadius: 6, padding: '0 4px', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                                      style={{ fontSize: 10, fontWeight: 700, color: C.goldDark, border: `1px solid ${C.goldDark}`, borderRadius: 6, padding: '0 4px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}
                                       onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, bonus: false } : x)) })}
                                     >✦ {t('spell.bonus_badge')}</span>
                                   )}
-                                  {chip('⏱', t('spell.chip_tempo'), tempoLabel)}
-                                  {chip('🎯', t('spell.chip_gittata'), gittata)}
-                                  {chip('🔮', 'Scuola', scuola)}
-                                  {area && chip('📐', 'Area', area)}
-                                  {/* Danno solo testuale (non tirabile): resta un chip informativo.
-                                      Quando è un'espressione di dado valida, il tiro dei danni va
-                                      nella riga azioni qui sotto, DOPO il tiro per colpire. */}
-                                  {(danno || tipoDanno) && !parseEspressioneDado(danno) && (
-                                    chip('💥', 'Danno', [danno, tipoDanno].filter(Boolean).join(' '))
-                                  )}
-                                  {note && chip('📝', t('spell.chip_note'), note)}
-                                  {/* Pulsanti azione: spinti a destra, restano sulla stessa riga. */}
-                                  <div style={{ display: 'flex', gap: 4, flexShrink: 0, marginLeft: 'auto' }}>
+                                  {/* Fascia dettagli: una sola riga, scorre in orizzontale se serve. */}
+                                  <div className="spell-chips" style={{ display: 'flex', flexWrap: 'nowrap', gap: 6, alignItems: 'center', overflowX: 'auto', flex: '1 1 auto', minWidth: 0 }}>
+                                    {chip('⏱', t('spell.chip_tempo'), tempoLabel)}
+                                    {chip('🎯', t('spell.chip_gittata'), gittata)}
+                                    {chip('🔮', 'Scuola', scuola)}
+                                    {area && chip('📐', 'Area', area)}
+                                    {/* Danno solo testuale (non tirabile): resta un chip informativo.
+                                        Quando è un'espressione di dado valida, il tiro dei danni va
+                                        nella riga azioni qui sotto, DOPO il tiro per colpire. */}
+                                    {(danno || tipoDanno) && !parseEspressioneDado(danno) && (
+                                      chip('💥', 'Danno', [danno, tipoDanno].filter(Boolean).join(' '))
+                                    )}
+                                    {note && chip('📝', t('spell.chip_note'), note)}
+                                  </div>
+                                  {/* Pulsanti azione: restano sulla stessa riga, a destra. */}
+                                  <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
                                     {classePreparata && s.livello >= 1 && (
                                       <button
                                         style={{ ...styles.buttonMini, color: s.preparato !== false ? C.goldDark : C.inkDim, borderColor: s.preparato !== false ? C.goldDark : C.border }}

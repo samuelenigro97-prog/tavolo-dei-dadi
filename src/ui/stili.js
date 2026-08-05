@@ -504,6 +504,10 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 /* consente ai riquadri di stringersi sotto la larghezza del contenuto (niente overflow) */
 .vitali > * { min-width: 0; }
 .vitali > * > * { min-width: 0; }
+/* Fascia dettagli incantesimo: scorre in orizzontale su una riga; scrollbar sottile. */
+.spell-chips { scrollbar-width: thin; }
+.spell-chips::-webkit-scrollbar { height: 5px; }
+.spell-chips::-webkit-scrollbar-thumb { background: var(--c-border); border-radius: 3px; }
 /* i campi anagrafica (con le tendine): font piccolo, padding compatto, allineati in basso */
 .campi-anagrafica > * { min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; }
 .campi-anagrafica select { max-width: 100%; font-size: 11px !important; padding: 1px 15px 1px 3px !important; height: 20px; line-height: 1.2; background-position: right 3px center !important; background-size: 8px !important; }
