@@ -5224,6 +5224,35 @@ export default function App() {
                 <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8 }}>
                   {t("meta.desc")}
                 </div>
+                {/* Contatore Punti Stregoneria: è LO STESSO della sezione Risorse
+                    di classe (stesso oggetto in scheda.risorse), quindi resta
+                    sincronizzato ovunque lo modifichi. */}
+                {(() => {
+                  const risorse = scheda.risorse || [];
+                  const idx = risorse.findIndex((r) => /stregoneria/i.test(r.nome || ''));
+                  const r = idx >= 0 ? risorse[idx] : null;
+                  const modR = (patch) => aggiorna({ risorse: risorse.map((x, i) => (i === idx ? { ...x, ...patch } : x)) });
+                  if (!r) {
+                    const L = Math.max(1, scheda.livello || 1);
+                    return (
+                      <button
+                        style={{ ...styles.buttonMini, borderColor: C.goldDark, color: C.goldDark, marginBottom: 10 }}
+                        title="Aggiunge i Punti Stregoneria (compaiono anche in Risorse di classe)"
+                        onClick={() => aggiorna({ risorse: [...risorse, { id: 'auto-punti-stregoneria', nome: 'Punti Stregoneria', attuali: L, max: L, reset: 'lungo' }] })}
+                      >✨ Aggiungi Punti Stregoneria</button>
+                    );
+                  }
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, flexWrap: 'wrap', fontSize: 13 }}>
+                      <span style={{ ...styles.detail, fontWeight: 700, color: C.goldDark }}>✨ Punti Stregoneria</span>
+                      <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title="Recupera 1" onClick={() => modR({ attuali: Math.max(0, r.attuali - 1) })}>−</button>
+                      <strong style={{ minWidth: 18, textAlign: 'center', color: r.attuali === 0 ? C.inkDim : C.ink }}>{r.attuali}</strong>
+                      <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title="Spendi 1" onClick={() => modR({ attuali: Math.min(r.max, r.attuali + 1) })}>+</button>
+                      <span style={styles.detail}>/ <Editable value={r.max} tipo="numero" width={30} onChange={(v) => modR({ max: Math.max(0, v), attuali: Math.min(Math.max(0, v), r.attuali) })} /></span>
+                      <span style={{ ...styles.detail, fontSize: 11, opacity: 0.75 }}>· sincronizzati con Risorse di classe</span>
+                    </div>
+                  );
+                })()}
                 <CampoConTendina
                   value={scheda.metamagie}
                   opzioni={METAMAGIA_5E}
