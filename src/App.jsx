@@ -869,7 +869,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.40.0';
+const APP_VERSION = '2.41.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1320,6 +1320,35 @@ export default function App() {
   // nell'export/cloud del singolo personaggio ed è condivisa fra i PG.
   const [mappaAperta, setMappaAperta] = useState(false);
   const [mappaZoom, setMappaZoom] = useState(false); // false = adatta allo schermo, true = dimensione reale
+  // Segnalino spostabile sulla mappa: posizione in percentuale (0-100) rispetto
+  // all'immagine, così resta corretta con qualsiasi zoom. Memorizzata a parte.
+  const [mappaMarker, setMappaMarker] = useState(() => {
+    try { const s = JSON.parse(localStorage.getItem('scheda-interattiva:mappa-marker')); if (s && typeof s.x === 'number') return s; } catch { /* niente */ }
+    return { x: 50, y: 50 };
+  });
+  useEffect(() => {
+    try { localStorage.setItem('scheda-interattiva:mappa-marker', JSON.stringify(mappaMarker)); } catch { /* niente */ }
+  }, [mappaMarker]);
+  const mappaWrapRef = useRef(null);
+  const trascinaMarker = (e) => {
+    const wrap = mappaWrapRef.current;
+    if (!wrap) return;
+    const r = wrap.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    const x = Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width) * 100));
+    const y = Math.max(0, Math.min(100, ((e.clientY - r.top) / r.height) * 100));
+    setMappaMarker({ x, y });
+  };
+  const fineTrascinaMarker = () => {
+    window.removeEventListener('pointermove', trascinaMarker);
+    window.removeEventListener('pointerup', fineTrascinaMarker);
+  };
+  const iniziaTrascinaMarker = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    window.addEventListener('pointermove', trascinaMarker);
+    window.addEventListener('pointerup', fineTrascinaMarker, { once: true });
+  };
   const [mappaCampagna, setMappaCampagna] = useState(() => {
     try { return localStorage.getItem('scheda-interattiva:mappa-campagna') || ''; } catch { return ''; }
   });
@@ -1587,6 +1616,28 @@ export default function App() {
     manigliaProps: { onPointerDown: (e) => iniziaTrascinamento(e, id) },
     trascinando: sezTrascinata === id,
   });
+
+  /** Controllo sottoclasse per una singola classe (usato sia per la classe
+   *  principale sia per quelle del multiclasse): bloccato finché non è ancora il
+   *  livello di scelta, poi tendina; una volta scelta, mostra la sottoclasse. */
+  function campoSottoclasse(cls, liv, valore, onSeleziona) {
+    const livSub = livelloSceltaSottoclasse(cls, versione);
+    const sbloccata = !cls || !livSub || (liv || 1) >= livSub;
+    if (!sbloccata) {
+      return <CampoBloccato valore={t('profilo.sottoclasse_dal_liv', { n: livSub })} title={t('profilo.sottoclasse_attesa', { n: livSub })} />;
+    }
+    if (valore) {
+      return <CampoBloccato valore={traduciDato(valore)} title={t('profilo.sottoclasse_bloccata')} />;
+    }
+    return (
+      <CampoTendina
+        value={valore}
+        opzioni={sottoclassiPerClasse(cls)}
+        onChange={onSeleziona}
+        title={t('tip.scegli_sottoclasse')}
+      />
+    );
+  }
 
   /** Props per ricordare, PER SINGOLO PG, se una Sezione è aperta o minimizzata. */
   const apertoProps = (id, def = true) => ({
@@ -4680,46 +4731,30 @@ export default function App() {
                 </CampoModulo>
                 <CampoModulo label={t("profilo.classe")}>
                   <CampoBloccato
-                    valore={traduciDato(scheda.classe) || t('profilo.nessuna')}
+                    valore={[traduciDato(scheda.classe), ...(scheda.multiclasse || []).filter((m) => m.classe).map((m) => traduciDato(m.classe))].filter(Boolean).join(' + ') || t('profilo.nessuna')}
                     title={t('profilo.classe_bloccata')}
                   />
                 </CampoModulo>
                 <CampoModulo label={t("profilo.sottoclasse")}>
-                  {(() => {
-                    const livSub = livelloSceltaSottoclasse(scheda.classe, versione);
-                    const sbloccata = !scheda.classe || !livSub || (scheda.livello || 1) >= livSub;
-                    if (!sbloccata) {
-                      return (
-                        <CampoBloccato
-                          valore={t('profilo.sottoclasse_dal_liv', { n: livSub })}
-                          title={t('profilo.sottoclasse_attesa', { n: livSub })}
-                        />
-                      );
-                    }
-                    if (scheda.sottoclasse) {
-                      return (
-                        <CampoBloccato
-                          valore={traduciDato(scheda.sottoclasse)}
-                          title={t('profilo.sottoclasse_bloccata')}
-                        />
-                      );
-                    }
-                    return (
-                      <CampoTendina
-                        value={scheda.sottoclasse}
-                        opzioni={sottoclassiPerClasse(scheda.classe)}
-                        onChange={(v) => {
-                          const patch = { sottoclasse: v };
-                          // Riempi in automatico i privilegi di sottoclasse fino al
-                          // livello attuale (se abbiamo i dati per questa sottoclasse).
-                          const auto = privilegiSottoclasseFinoA(v, scheda.livello || 1);
-                          if (auto) patch.privilegiSottoclasse = auto;
-                          aggiorna(patch);
-                        }}
-                        title={t('tip.scegli_sottoclasse')}
-                      />
-                    );
-                  })()}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {/* Sottoclasse della classe principale */}
+                    {campoSottoclasse(scheda.classe, scheda.livello, scheda.sottoclasse, (v) => {
+                      const patch = { sottoclasse: v };
+                      // Riempi in automatico i privilegi di sottoclasse fino al
+                      // livello attuale (se abbiamo i dati per questa sottoclasse).
+                      const auto = privilegiSottoclasseFinoA(v, scheda.livello || 1);
+                      if (auto) patch.privilegiSottoclasse = auto;
+                      aggiorna(patch);
+                    })}
+                    {/* Una sottoclasse per ogni classe del multiclasse */}
+                    {(scheda.multiclasse || []).map((m, i) => (m.classe ? (
+                      <div key={i}>
+                        {campoSottoclasse(m.classe, m.livello, m.sottoclasse, (v) =>
+                          aggiorna({ multiclasse: (scheda.multiclasse || []).map((x, j) => (j === i ? { ...x, sottoclasse: v } : x)) })
+                        )}
+                      </div>
+                    ) : null))}
+                  </div>
                 </CampoModulo>
               </div>
           {/* Multiclasse (opzionale, non invasivo): quando vuoto è solo un
@@ -6294,13 +6329,27 @@ export default function App() {
             style={{ flex: 1, minHeight: 0, overflow: mappaZoom ? 'auto' : 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 8 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <img
-              src={mappaCampagna}
-              alt="Mappa della campagna"
-              style={mappaZoom
-                ? { maxWidth: 'none', maxHeight: 'none', display: 'block' }
-                : { maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', objectFit: 'contain', display: 'block' }}
-            />
+            <div ref={mappaWrapRef} style={{ position: 'relative', display: 'inline-block', lineHeight: 0 }}>
+              <img
+                src={mappaCampagna}
+                alt="Mappa della campagna"
+                draggable={false}
+                style={mappaZoom
+                  ? { maxWidth: 'none', maxHeight: 'none', display: 'block' }
+                  : { maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', objectFit: 'contain', display: 'block' }}
+              />
+              {/* Segnalino trascinabile: la punta indica il punto salvato. */}
+              <div
+                onPointerDown={iniziaTrascinaMarker}
+                title="Trascina il segnalino · la posizione viene salvata"
+                style={{
+                  position: 'absolute', left: `${mappaMarker.x}%`, top: `${mappaMarker.y}%`,
+                  transform: 'translate(-50%, -100%)', cursor: 'grab', touchAction: 'none',
+                  fontSize: 30, lineHeight: 1, userSelect: 'none',
+                  filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.6))', zIndex: 2,
+                }}
+              >📍</div>
+            </div>
           </div>
         </div>
       )}
