@@ -1,27 +1,17 @@
 /**
- * Cloudflare Worker: due funzioni per Tavolo dei Dadi.
+ * Cloudflare Worker: trascrizione di una scheda PDF di D&D 5e in JSON.
  *
- *  1) Trascrizione PDF → JSON scheda:  POST { pdfBase64 }   (usa Anthropic)
- *  2) Generazione illustrazioni fantasy: POST { imagePrompt, size } (usa OpenAI)
- *     Risponde con { image: "data:image/png;base64,..." }.
- *     Serve per il ritratto dell'eroe (classe+razza) e gli sfondi ambientazione.
+ * Riceve  POST { pdfBase64 }  e risponde con il JSON del personaggio, nello
+ * stesso schema usato da Tavolo dei Dadi (normalizeImported lo accetta).
  *
  * Segreti/variabili (impostati con `wrangler secret put` o dal dashboard):
- *   - ANTHROPIC_API_KEY  (per i PDF)     la tua chiave API Anthropic
- *   - OPENAI_API_KEY     (per le immagini) la tua chiave API OpenAI
+ *   - ANTHROPIC_API_KEY  (obbligatorio) la tua chiave API Anthropic
  *   - ALLOW_ORIGIN       (opzionale)    origine consentita per il CORS,
  *                                       es. "https://TUOUTENTE.github.io".
  *                                       Default "*" (qualsiasi origine).
  *
- * Basta configurare solo la chiave del servizio che vuoi usare: se generi
- * solo immagini ti serve OPENAI_API_KEY; per i PDF ANTHROPIC_API_KEY.
- *
  * Deploy: vedi worker/LEGGIMI.md
  */
-
-// Modello e dimensioni per la generazione immagini (OpenAI gpt-image-1).
-const MODELLO_IMMAGINI = 'gpt-image-1';
-const DIMENSIONI_VALIDE = new Set(['1024x1024', '1024x1536', '1536x1024', 'auto']);
 
 // Deve restare allineato allo schema di normalizeImported in src/App.jsx.
 const PROMPT = `Sei un assistente che trascrive schede di personaggi di D&D 5a edizione.
@@ -94,56 +84,18 @@ export default {
 
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors(origin) });
     if (request.method !== 'POST') {
-      return new Response(JSON.stringify({ error: 'Usa POST con { pdfBase64 } oppure { imagePrompt }' }), { status: 405, headers });
+      return new Response(JSON.stringify({ error: 'Usa POST con { pdfBase64 }' }), { status: 405, headers });
     }
-
-    let corpo;
-    try {
-      corpo = await request.json();
-    } catch {
-      return new Response(JSON.stringify({ error: 'Corpo JSON non valido' }), { status: 400, headers });
-    }
-
-    // ---- Ramo 2: generazione immagine (OpenAI) -------------------------------
-    if (corpo && typeof corpo.imagePrompt === 'string' && corpo.imagePrompt.trim()) {
-      // BYOK ("bring your own key"): ogni utente usa la PROPRIA chiave OpenAI,
-      // inviata dall'app a ogni richiesta, così non consuma il credito del
-      // proprietario del Worker. La chiave del Worker (env) è solo un ripiego
-      // facoltativo (di norma non impostata). La chiave transita verso OpenAI
-      // e non viene mai salvata né registrata dal Worker.
-      const chiaveOpenAI = (typeof corpo.openaiKey === 'string' && corpo.openaiKey.trim())
-        ? corpo.openaiKey.trim()
-        : env.OPENAI_API_KEY;
-      if (!chiaveOpenAI) {
-        return new Response(JSON.stringify({ error: 'Manca la chiave OpenAI: inseriscila nell’app (ogni utente usa la propria).' }), { status: 400, headers });
-      }
-      const size = DIMENSIONI_VALIDE.has(corpo.size) ? corpo.size : '1024x1024';
-      try {
-        const risposta = await fetch('https://api.openai.com/v1/images/generations', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${chiaveOpenAI}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ model: MODELLO_IMMAGINI, prompt: corpo.imagePrompt.slice(0, 3800), size, n: 1 }),
-        });
-        if (!risposta.ok) {
-          const dettaglio = await risposta.text();
-          return new Response(JSON.stringify({ error: `OpenAI ${risposta.status}: ${dettaglio.slice(0, 300)}` }), { status: 502, headers });
-        }
-        const dati = await risposta.json();
-        const b64 = dati?.data?.[0]?.b64_json;
-        if (!b64) {
-          return new Response(JSON.stringify({ error: 'Risposta OpenAI senza immagine' }), { status: 502, headers });
-        }
-        return new Response(JSON.stringify({ image: `data:image/png;base64,${b64}` }), { headers });
-      } catch (err) {
-        return new Response(JSON.stringify({ error: `Generazione immagine fallita: ${err.message}` }), { status: 500, headers });
-      }
-    }
-
-    // ---- Ramo 1: trascrizione PDF (Anthropic) --------------------------------
     if (!env.ANTHROPIC_API_KEY) {
       return new Response(JSON.stringify({ error: 'ANTHROPIC_API_KEY non configurata sul Worker' }), { status: 500, headers });
     }
-    const pdfBase64 = corpo?.pdfBase64;
+
+    let pdfBase64;
+    try {
+      ({ pdfBase64 } = await request.json());
+    } catch {
+      return new Response(JSON.stringify({ error: 'Corpo JSON non valido' }), { status: 400, headers });
+    }
     if (!pdfBase64 || typeof pdfBase64 !== 'string') {
       return new Response(JSON.stringify({ error: 'Campo pdfBase64 mancante' }), { status: 400, headers });
     }
