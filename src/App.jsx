@@ -869,7 +869,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.45.0';
+const APP_VERSION = '2.46.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4265,11 +4265,12 @@ export default function App() {
         <div
           onClick={(e) => e.stopPropagation()}
           style={{
-            position: 'fixed', top: 12, left: 12, bottom: 12,
-            width: 'min(380px, calc(100vw - 24px))',
+            position: 'fixed', top: 12, left: 12,
+            width: 'min(300px, calc(100vw - 24px))',
+            maxHeight: 'calc(100vh - 24px)',
             background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 10,
-            padding: '12px 16px', overflowY: 'auto',
-            display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13,
+            padding: '10px 12px', overflowY: 'auto',
+            display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13,
             boxShadow: '6px 0 24px rgba(0,0,0,0.4)'
           }}
         >
