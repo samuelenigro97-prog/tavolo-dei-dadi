@@ -25,7 +25,13 @@ let htmlAudioElement = null;
 let currentVolume = 0.5;
 let ambienteAttivo = '';   // id dell'ambientazione in riproduzione (per il volume della base)
 let intervalTimer = null;
+let grilliTimer = null;    // overlay notturno (grilli/insetti) per gli ambienti all'aperto
 let watchdogTimer = null;  // sorveglia il loop <audio> e lo fa ripartire se si blocca
+
+// Ambientazioni all'aperto che, di notte, ricevono un velo di grilli/insetti
+// sopra il loro sottofondo (così restano riconoscibili ma "suonano di notte").
+// Gli ambienti al chiuso (taverna, dungeon, tempio) e la pioggia ne sono esclusi.
+const AMBIENTI_NOTTURNI = new Set(['foresta', 'citta', 'mercato', 'accampamento', 'deserto', 'mare']);
 let watchdogInstallato = false; // per non registrare più volte i listener globali
 let keepAliveEl = null; // <audio> near-silenzioso per l'override della modalità silenziosa iOS
 
@@ -229,6 +235,10 @@ export function fermaAmbiente() {
     clearInterval(watchdogTimer);
     watchdogTimer = null;
   }
+  if (grilliTimer) {
+    clearInterval(grilliTimer);
+    grilliTimer = null;
+  }
   activeNodes.forEach(node => {
     try {
       if (node.stop) node.stop();
@@ -326,12 +336,44 @@ function avviaWatchdogAudio() {
 }
 
 /**
- * Avvia il tema sonoro prescelto.
+ * Velo di grilli/insetti notturni sopra il sottofondo di un ambiente all'aperto:
+ * l'ambiente resta riconoscibile (bosco, città, ecc.) ma "suona di notte".
  */
-export function avviaAmbiente(id, volume = 0.5, urlCustom = '') {
+function avviaGrilliNotturni() {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  if (grilliTimer) { clearInterval(grilliTimer); grilliTimer = null; }
+  grilliTimer = setInterval(() => {
+    if (!ctx || ctx.state !== 'running' || (typeof document !== 'undefined' && document.hidden)) return;
+    if (Math.random() < 0.7) {
+      const chirps = 2 + Math.floor(Math.random() * 4);
+      const base = ctx.currentTime;
+      for (let i = 0; i < chirps; i++) {
+        const cr = ctx.createOscillator();
+        cr.type = 'square';
+        cr.frequency.value = 4200 + Math.random() * 400;
+        const g = ctx.createGain();
+        const at = base + i * 0.09;
+        const picco = 0.03 * currentVolume + 0.004; // sottile, legato al volume
+        g.gain.setValueAtTime(0.0001, at);
+        g.gain.exponentialRampToValueAtTime(picco, at + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, at + 0.05);
+        cr.connect(g); g.connect(ctx.destination);
+        cr.start(at); cr.stop(at + 0.06);
+      }
+    }
+  }, 2500);
+}
+
+/**
+ * Avvia il tema sonoro prescelto.
+ * @param {boolean} notte - se true e l'ambiente è all'aperto, aggiunge i grilli notturni.
+ */
+export function avviaAmbiente(id, volume = 0.5, urlCustom = '', notte = false) {
   fermaAmbiente();
   currentVolume = Math.max(0, Math.min(1, Number(volume) || 0));
   ambienteAttivo = id || '';
+  const conGrilli = notte && AMBIENTI_NOTTURNI.has(id);
 
   if (!id || id === 'spento') {
     // Silenzio: rilascia anche l'override iOS così il telefono torna normale.
@@ -368,6 +410,7 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '') {
       console.warn('Impossibile riprodurre il loop ambientale:', err);
     });
     avviaWatchdogAudio();
+    if (conGrilli) avviaGrilliNotturni();
     // Città medievale: sopra la base di folla si sentono ogni tanto campane,
     // il fabbro che batte sull'incudine e i carretti che passano.
     if (id === 'citta') {
