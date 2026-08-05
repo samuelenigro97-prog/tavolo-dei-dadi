@@ -373,7 +373,8 @@ function regexMunizione(nomeArma) {
 // 'addestramento' e 'risorse' non sono più qui: vivono nel Profilo (colonna destra, sotto il ritratto).
 // privilegi/privilegiSottoclasse/talenti sono nel blocco fisso "Privilegi & Talenti"
 // sotto la Magia (non riordinabili singolarmente).
-const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'metamagia', 'equipaggiamento', 'aspetto'];
+// 'metamagia' NON è qui: non è trascinabile, resta sempre agganciata sotto la Magia.
+const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'equipaggiamento', 'aspetto'];
 
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 
@@ -1309,6 +1310,7 @@ export default function App() {
     () => typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches
   );
   const [oraTick, setOraTick] = useState(0); // forza il ricalcolo quando cambia la fascia oraria
+  const [notteAttiva, setNotteAttiva] = useState(false); // tema scuro/notte: sfondi e audio più cupi
 
   // ordine (personalizzabile via drag) delle sezioni collassabili
   const [ordineSezioni, setOrdineSezioni] = useState(() => {
@@ -1377,8 +1379,9 @@ export default function App() {
   }, [ambienteAudio]);
 
   useEffect(() => {
-    setVolumeAmbiente(volumeAudio);
-  }, [volumeAudio]);
+    // Di notte il sottofondo è più cupo: volume ridotto (~60%).
+    setVolumeAmbiente(volumeAudio * (notteAttiva ? 0.6 : 1));
+  }, [volumeAudio, notteAttiva]);
 
   // Pre-carica gli effetti sonori (colpo d'arma/incantesimo) al PRIMO tocco:
   // così il primo tiro suona subito, senza ritardo (l'audio va sbloccato da un gesto).
@@ -1412,6 +1415,17 @@ export default function App() {
   function chiudiGuida() {
     try { localStorage.setItem('scheda-interattiva:guida-vista', '1'); } catch { /* niente */ }
     setMostraGuida(false);
+    // Primo avvio senza personaggio reale: apri subito la CREAZIONE del PG.
+    try {
+      const r = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      const s = r?.personaggi?.[r?.attivo];
+      const haPg = s && (s.nome || s.classe);
+      if (!haPg) {
+        setBozzaCrea({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' });
+        setMostraMenu(false);
+        setMostraCrea(true);
+      }
+    } catch { /* niente */ }
   }
 
   // Personaggio ricevuto tramite link: lo decodifichiamo e chiediamo conferma
@@ -1554,6 +1568,7 @@ export default function App() {
     const scuroEff =
       tema === 'scuro' || (tema === 'auto' && (sistemaScuro || eNotte()));
     const modo = scuroEff ? 'scuro' : 'chiaro';
+    setNotteAttiva(scuroEff); // notte = tema scuro: pilota sfondi notturni e audio più cupo
     // Parti dal tema base, poi applica l'override del preset colori
     const presetDati = PRESET_COLORI.find((p) => p.id === presetColori) || PRESET_COLORI[0];
     const t = { ...BASE_TEMA[modo], ...presetDati[modo] };
@@ -1597,12 +1612,18 @@ export default function App() {
     const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/';
     const idAmb = presetDati.id;
     const conImmagine = idAmb && idAmb !== 'default';
-    // velo scuro sopra la foto: la attenua così testo e pannelli restano leggibili
+    // velo SCURO sopra la foto (non chiaro): così l'immagine resta ben visibile e
+    // "spicca" anche di giorno, mentre i pannelli opachi restano bianchi/leggibili.
+    // Di notte il velo è più intenso per un'atmosfera più cupa.
+    const veloAlpha = scuroEff ? 0.5 : 0.32;
     const velo = conImmagine
-      ? `linear-gradient(${hexRgba(t.bg, scuroEff ? 0.62 : 0.72)}, ${hexRgba(t.bg, scuroEff ? 0.62 : 0.72)})`
+      ? `linear-gradient(rgba(14,11,8,${veloAlpha}), rgba(14,11,8,${veloAlpha}))`
       : '';
+    // Di notte (tema scuro) usa la variante notturna dell'ambientazione, se esiste.
+    const AMB_NOTTE = new Set(['taverna', 'citta', 'foresta', 'notte', 'mare', 'tundra', 'tempesta', 'accampamento', 'deserto', 'tempio']);
+    const fileImg = (scuroEff && AMB_NOTTE.has(idAmb)) ? `${idAmb}-notte.jpg` : `${idAmb}.jpg`;
     const imgLayer = conImmagine
-      ? `url("${baseUrl}ambientazioni/${idAmb}.jpg") center center / cover no-repeat`
+      ? `url("${baseUrl}ambientazioni/${fileImg}") center center / cover no-repeat`
       : '';
     document.body.style.background = [sfondoAmbiente, glowClasse, ambra, vignetta, velo, imgLayer, t.bg]
       .filter(Boolean)
@@ -1852,13 +1873,13 @@ export default function App() {
    * Usato da TUTTI i tiri così il dado "rotola" sempre, anche per danni,
    * dado libero, espressioni e dado vita.
    */
-  function conAnimazione(alFine, facciaFinale, tipoDado = 20, magia = false) {
+  function conAnimazione(alFine, facciaFinale, tipoDado = 20, magia = false, suono = null) {
     clearInterval(intervalRef.current);
     setTiro(null);
     setDanni(null);
     setRolling(true);
     setTipoDadoInUso(tipoDado);
-    if (effettiSonoriAttivi) eseguiEffettoSonoro(magia ? 'magia' : 'tiro', volumeAudio);
+    if (effettiSonoriAttivi) eseguiEffettoSonoro(suono || (magia ? 'magia' : 'tiro'), volumeAudio);
     intervalRef.current = setInterval(() => setFaccia(tiraDado(tipoDado)), 70);
     setTimeout(() => {
       clearInterval(intervalRef.current);
@@ -2081,7 +2102,7 @@ export default function App() {
     conAnimazione(() => {
       setDanni({ etichetta, ...esito, critico: false });
       registra({ etichetta, tipo: esito.tabella ? 'tiro' : 'danni', totale: esito.totale, dettaglio: esito.dettaglio });
-    }, esito.totale, maxFacce || 20, magia);
+    }, esito.totale, maxFacce || 20, magia, esito.tabella ? null : 'danni');
   }
 
   /** Tira i danni di un attacco (con eventuale critico), indipendente dallo stato. */
@@ -2094,7 +2115,7 @@ export default function App() {
     conAnimazione(() => {
       setDanni({ etichetta: `Danni: ${nome}`, ...esito, critico });
       registra({ etichetta: `${t('log.danni')}: ${nome}`, tipo: 'danni', totale: esito.totale, dettaglio: esito.dettaglio, critico });
-    }, esito.totale, maxFacce || 20);
+    }, esito.totale, maxFacce || 20, false, 'danni');
   }
 
   /** Danni dell'attacco corrente (dal tiro per colpire in corso). */
@@ -4478,7 +4499,7 @@ export default function App() {
                   // emblema auto (foto assente o SVG): sfondo col colore classe, si fonde coi bordi
                   background: (!scheda.ritratto || scheda.ritratto.startsWith('data:image/svg')) ? (coloreClasse(scheda.classe)?.chiaro || C.panel) : C.panel,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: 'inset 0 0 8px rgba(0,0,0,0.2)', border: `2px solid ${coloreClasse(scheda.classe)?.chiaro || C.border}`,
+                  boxShadow: 'inset 0 0 8px rgba(0,0,0,0.2)', border: `2px solid ${coloreClasse(scheda.classe) ? C.gold : C.border}`,
                   cursor: 'pointer', position: 'relative',
                 }}
                 title={scheda.ritratto ? 'Click: cambia immagine' : 'Click: carica l’immagine del personaggio'}
@@ -5219,21 +5240,8 @@ export default function App() {
             {/* Privilegi di classe/sottoclasse spostati nel blocco "Privilegi & Talenti"
                 sotto la Magia (vedi più sotto). */}
 
-            {/(stregone|sorcerer)/i.test(scheda.classe || '') && (
-              <Sezione titolo={t("sez.metamagia")} {...propsSez('metamagia')} {...apertoProps('metamagia', false)}>
-                <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8 }}>
-                  {t("meta.desc")}
-                </div>
-                <CampoConTendina
-                  value={scheda.metamagie}
-                  opzioni={METAMAGIA_5E}
-                  onChange={(v) => aggiorna({ metamagie: v })}
-                  lookup={spiegaMetamagia}
-                  setInfo={setInfo}
-                  title={t('tip.metamagia_attive')}
-                />
-              </Sezione>
-            )}
+            {/* La Metamagia è renderizzata subito SOTTO la Magia (vedi più giù),
+                così resta sempre agganciata alla sezione incantesimi. */}
           </div>
 
           <div style={{ display: 'contents' }}>
@@ -5294,7 +5302,17 @@ export default function App() {
                     };
                   });
                   const listaAttacchiCompleta = [...(scheda.attacchi || []), ...attacchiSpettro];
-                  return ['Azione', 'Bonus', 'Reazione'].map((cat) => {
+                  // Per lanciare incantesimi in combattimento serve un focus (o
+                  // borsa da componenti / simbolo sacro) EQUIPAGGIATO nell'inventario.
+                  const haFocus = (scheda.inventario || []).some((o) => o.equip && /focus|simbolo sacro|borsa (da )?componenti|bacchetta|cristallo|totem|bastone runico|feticcio/i.test(o.nome || ''));
+                  const serveFocus = Boolean(scheda.incantatore?.caratteristica) && attacchiSpettro.length > 0;
+                  const bloccaSpell = serveFocus && !haFocus;
+                  const avvisoFocus = bloccaSpell ? (
+                    <div style={{ fontSize: 12, color: C.red, background: 'rgba(200,40,40,0.10)', border: `1px solid ${C.red}`, borderRadius: 8, padding: '6px 10px', marginBottom: 10 }}>
+                      🪄 Nessun <strong>focus</strong> equipaggiato: per lanciare incantesimi equipaggia un focus arcano/druidico, un simbolo sacro o una borsa da componenti dall'<strong>Inventario</strong> (spunta “equip.”).
+                    </div>
+                  ) : null;
+                  return [avvisoFocus, ...['Azione', 'Bonus', 'Reazione'].map((cat) => {
                     const arr = listaAttacchiCompleta.filter((a) => (a.categoria || 'Azione') === cat);
                     if (arr.length === 0 && cat !== 'Azione') return null;
                     return (
@@ -5330,6 +5348,8 @@ export default function App() {
                                 }
                               };
                               const dannoValido = a.danno.trim() === '' || parseEspressioneDado(a.danno);
+                              // Incantesimo senza focus equipaggiato: tiri disabilitati.
+                              const castBloccato = a.isSpell && bloccaSpell;
                               return (
                                 <tr key={a.id}>
                                   <td style={styles.td}>
@@ -5354,7 +5374,7 @@ export default function App() {
                                         value={a.nome}
                                         width={130}
                                         onChange={(v) => aggiornaAttacco({ nome: v })}
-                                        onRoll={() => tiraColpoArma(a)}
+                                        onRoll={castBloccato ? undefined : () => tiraColpoArma(a)}
                                       />
                                     </div>
                                   </td>
@@ -5366,15 +5386,16 @@ export default function App() {
                                     ) : (
                                       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                         <button
-                                          style={{ ...styles.buttonMini, padding: '1px 6px' }}
-                                          title={`Tira per colpire con ${a.nome}`}
-                                          onClick={() => tiraColpoArma(a)}
+                                          style={{ ...styles.buttonMini, padding: '1px 6px', opacity: castBloccato ? 0.4 : 1, cursor: castBloccato ? 'not-allowed' : 'pointer' }}
+                                          title={castBloccato ? 'Equipaggia un focus per lanciare questo incantesimo' : `Tira per colpire con ${a.nome}`}
+                                          disabled={castBloccato}
+                                          onClick={() => { if (!castBloccato) tiraColpoArma(a); }}
                                         >🎲</button>
                                         <Editable
                                           value={conSegno(a.bonus)}
                                           width={44}
                                           onChange={(v) => aggiornaAttacco({ bonus: Number(String(v).replace('+', '')) || 0 })}
-                                          onRoll={() => tiraColpoArma(a)}
+                                          onRoll={castBloccato ? undefined : () => tiraColpoArma(a)}
                                         />
                                       </div>
                                     )}
@@ -5382,9 +5403,10 @@ export default function App() {
                                   <td style={{ ...styles.td, color: dannoValido ? undefined : C.red }}>
                                     {parseEspressioneDado(a.danno) && (
                                       <button
-                                        style={{ ...styles.buttonMini, padding: '1px 6px', marginRight: 4 }}
-                                        title={`Tira i danni (${a.danno})`}
-                                        onClick={() => lanciaDanniDiretti(`Danni: ${a.nome}`, a.danno)}
+                                        style={{ ...styles.buttonMini, padding: '1px 6px', marginRight: 4, opacity: castBloccato ? 0.4 : 1, cursor: castBloccato ? 'not-allowed' : 'pointer' }}
+                                        title={castBloccato ? 'Equipaggia un focus per lanciare questo incantesimo' : `Tira i danni (${a.danno})`}
+                                        disabled={castBloccato}
+                                        onClick={() => { if (!castBloccato) lanciaDanniDiretti(`Danni: ${a.nome}`, a.danno); }}
                                       >🎲</button>
                                     )}
                                     <Editable
@@ -5450,7 +5472,7 @@ export default function App() {
                         </div>
                       </div>
                     );
-                  });
+                  })];
                 })()}
               </div>
               <div style={{ marginTop: 4, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -5631,7 +5653,7 @@ export default function App() {
                               : /^(az|1 az|azione)/i.test(tp) ? t('spell.tempo_azione')
                               : tp;
                             const gittata = s.gittata || dbInc.gittata || det.gittata || 'Personale';
-                            const scuola = s.scuola || dbInc.scuola || det.scuola || 'Universale';
+                            const scuola = s.scuola || dbInc.scuola || det.scuola || '';
                             const area = s.area || dbInc.area || det.area || '';
                             const danno = s.danno || dbInc.danno || det.danno || '';
                             const tipoDanno = s.tipoDanno || dbInc.tipoDanno || det.tipoDanno || '';
@@ -5666,7 +5688,7 @@ export default function App() {
                                   <div className="spell-chips" style={{ display: 'flex', flexWrap: 'nowrap', gap: 6, alignItems: 'center', overflowX: 'auto', flex: '1 1 auto', minWidth: 0 }}>
                                     {chip('⏱', t('spell.chip_tempo'), tempoLabel)}
                                     {chip('🎯', t('spell.chip_gittata'), gittata)}
-                                    {chip('🔮', 'Scuola', scuola)}
+                                    {scuola && chip('🔮', 'Scuola', scuola)}
                                     {area && chip('📐', 'Area', area)}
                                     {/* Danno solo testuale (non tirabile): resta un chip informativo.
                                         Quando è un'espressione di dado valida, il tiro dei danni va
@@ -5676,6 +5698,22 @@ export default function App() {
                                     )}
                                     {note && chip('📝', t('spell.chip_note'), note)}
                                   </div>
+                                  {/* Tiri (solo per incantesimi con danno): sulla STESSA riga, mai a capo. */}
+                                  {parseEspressioneDado(danno) && (
+                                    <div style={{ display: 'flex', gap: 4, flexShrink: 0, alignItems: 'center' }}>
+                                      <button
+                                        style={{ ...styles.buttonMini, fontSize: 12, padding: '3px 8px', fontWeight: 600, borderColor: C.goldDark, color: C.goldDark, whiteSpace: 'nowrap' }}
+                                        title={`${t('spell.tira_attacco')} — ${t('spell.colpire')}`}
+                                        onClick={() => lanciaD20(`${t('spell.attacco_inc')}: ${s.nome}`, scheda.bonusCompetenza + (modIncantatore || 0), { attacco: { nome: s.nome, danno, tipoDanno }, magia: true })}
+                                      >🎯 {conSegno(scheda.bonusCompetenza + (modIncantatore || 0))}</button>
+                                      <button
+                                        className="tirabile"
+                                        style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, fontWeight: 600, color: C.red, background: C.bg, border: `1px solid ${C.red}`, borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}
+                                        title={t('spell.tira_danni_diretti')}
+                                        onClick={() => lanciaDanniDiretti(`${s.nome}${tipoDanno ? ` · ${tipoDanno}` : ''}`, danno, true)}
+                                      ><span aria-hidden>💥</span><span>{[danno, tipoDanno].filter(Boolean).join(' ')}</span><span aria-hidden style={{ opacity: 0.65 }}>🎲</span></button>
+                                    </div>
+                                  )}
                                   {/* Pulsanti azione: restano sulla stessa riga, a destra. */}
                                   <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
                                     {classePreparata && s.livello >= 1 && (
@@ -5689,26 +5727,6 @@ export default function App() {
                                     <button style={{ ...styles.buttonMini, color: C.red }} title={t('tip.elimina_inc')} onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })}>🗑</button>
                                   </div>
                                 </div>
-                                {parseEspressioneDado(danno) && (
-                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6, alignItems: 'center' }}>
-                                    {/* Ordine fisso: prima il tiro per colpire, poi i danni. */}
-                                    <button
-                                      style={{ ...styles.buttonMini, fontSize: 12, padding: '4px 10px', fontWeight: 600, borderColor: C.goldDark, color: C.goldDark }}
-                                      title={t('spell.tira_attacco')}
-                                      onClick={() => lanciaD20(`${t('spell.attacco_inc')}: ${s.nome}`, scheda.bonusCompetenza + (modIncantatore || 0), { attacco: { nome: s.nome, danno, tipoDanno }, magia: true })}
-                                    >🎯 {t('spell.colpire')} {conSegno(scheda.bonusCompetenza + (modIncantatore || 0))}</button>
-                                    <button
-                                      className="tirabile"
-                                      style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: C.red, background: C.bg, border: `1px solid ${C.red}`, borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontFamily: 'inherit' }}
-                                      title={t('spell.tira_danni_diretti')}
-                                      onClick={() => lanciaDanniDiretti(`${s.nome}${tipoDanno ? ` · ${tipoDanno}` : ''}`, danno, true)}
-                                    >
-                                      <span aria-hidden>💥</span>
-                                      <span>{[danno, tipoDanno].filter(Boolean).join(' ')}</span>
-                                      <span aria-hidden style={{ opacity: 0.65 }}>🎲</span>
-                                    </button>
-                                  </div>
-                                )}
                               </div>
                             );
                           })}
@@ -5750,6 +5768,51 @@ export default function App() {
                 })()}
               </div>
             </Sezione>
+
+            {/* Metamagia (solo Stregone): SEMPRE subito sotto la Magia. Ordine
+                agganciato a 'incantesimi' e in DOM dopo la sezione Magia; non è
+                trascinabile, così resta sempre attaccata alla Magia. */}
+            {/(stregone|sorcerer)/i.test(scheda.classe || '') && (
+              <Sezione titolo={t("sez.metamagia")} style={{ order: ordineSezioni.indexOf('incantesimi') }} {...apertoProps('metamagia', false)}>
+                <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8 }}>
+                  {t("meta.desc")}
+                </div>
+                {(() => {
+                  const risorse = scheda.risorse || [];
+                  const idx = risorse.findIndex((r) => /stregoneria/i.test(r.nome || ''));
+                  const r = idx >= 0 ? risorse[idx] : null;
+                  const modR = (patch) => aggiorna({ risorse: risorse.map((x, i) => (i === idx ? { ...x, ...patch } : x)) });
+                  if (!r) {
+                    const L = Math.max(1, scheda.livello || 1);
+                    return (
+                      <button
+                        style={{ ...styles.buttonMini, borderColor: C.goldDark, color: C.goldDark, marginBottom: 10 }}
+                        title="Aggiunge i Punti Stregoneria (compaiono anche in Risorse di classe)"
+                        onClick={() => aggiorna({ risorse: [...risorse, { id: 'auto-punti-stregoneria', nome: 'Punti Stregoneria', attuali: L, max: L, reset: 'lungo' }] })}
+                      >✨ Aggiungi Punti Stregoneria</button>
+                    );
+                  }
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, flexWrap: 'wrap', fontSize: 13 }}>
+                      <span style={{ ...styles.detail, fontWeight: 700, color: C.goldDark }}>✨ Punti Stregoneria</span>
+                      <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title="Recupera 1" onClick={() => modR({ attuali: Math.max(0, r.attuali - 1) })}>−</button>
+                      <strong style={{ minWidth: 18, textAlign: 'center', color: r.attuali === 0 ? C.inkDim : C.ink }}>{r.attuali}</strong>
+                      <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title="Spendi 1" onClick={() => modR({ attuali: Math.min(r.max, r.attuali + 1) })}>+</button>
+                      <span style={styles.detail}>/ <Editable value={r.max} tipo="numero" width={30} onChange={(v) => modR({ max: Math.max(0, v), attuali: Math.min(Math.max(0, v), r.attuali) })} /></span>
+                      <span style={{ ...styles.detail, fontSize: 11, opacity: 0.75 }}>· sincronizzati con Risorse di classe</span>
+                    </div>
+                  );
+                })()}
+                <CampoConTendina
+                  value={scheda.metamagie}
+                  opzioni={METAMAGIA_5E}
+                  onChange={(v) => aggiorna({ metamagie: v })}
+                  lookup={spiegaMetamagia}
+                  setInfo={setInfo}
+                  title={t('tip.metamagia_attive')}
+                />
+              </Sezione>
+            )}
 
             {/* Privilegi (classe + sottoclasse affiancati) e Talenti, subito sotto la
                 Magia. I box mostrano SOLO la Panoramica: apre la lista dei privilegi
@@ -5943,12 +6006,14 @@ export default function App() {
                                 </tr>
                               );
                             })}
-                            {numMonete > 0 && (!filtroInventario || 'monete'.includes(filtroInventario.trim().toLowerCase())) && (
-                              <tr style={{ opacity: 0.9 }} title="Peso delle monete (contato nel totale ingombro). Cambia le monete nella sezione Monete qui sotto.">
+                            {(!filtroInventario || 'monete'.includes(filtroInventario.trim().toLowerCase())) && (
+                              <tr style={{ opacity: 0.9 }} title="Monete d'oro: modificando qui aggiorni la sezione Monete (e viceversa). Il peso di tutte le monete è contato nell'ingombro.">
                                 <td style={{ ...styles.td, textAlign: 'center' }}>🪙</td>
-                                <td style={styles.td}>Monete</td>
-                                <td style={styles.td}>×{numMonete}</td>
-                                <td style={{ ...styles.td, color: C.inkDim, whiteSpace: 'nowrap' }}>{pesoMonete.toFixed(2)} kg</td>
+                                <td style={styles.td}>Monete d'oro (MO)</td>
+                                <td style={styles.td}>
+                                  <Editable value={dMon.mo || 0} tipo="numero" width={44} onChange={(v) => aggiorna({ denari: { ...scheda.denari, mo: Math.max(0, v) } })} title="Monete d'oro: sincronizzate con la sezione Monete" />
+                                </td>
+                                <td style={{ ...styles.td, color: C.inkDim, whiteSpace: 'nowrap' }}>{pesoMonete.toFixed(2)} kg{numMonete > (dMon.mo || 0) ? ` · ${numMonete} monete tot.` : ''}</td>
                                 <td style={styles.td} />
                               </tr>
                             )}

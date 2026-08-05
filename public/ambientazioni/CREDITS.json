@@ -2,20 +2,20 @@
  {
   "theme": "taverna",
   "file": "taverna.jpg",
-  "kb": 1697,
-  "title": "Adriaen van Ostade - Peasants in a Tavern - 1665 - RCIN 404619.jpg",
+  "kb": 939,
+  "title": "David Teniers (II) - Tavern interior.jpg",
   "license": "Public domain",
-  "author": "Adriaen van Ostade",
-  "descurl": "https://commons.wikimedia.org/wiki/File:Adriaen_van_Ostade_-_Peasants_in_a_Tavern_-_1665_-_RCIN_404619.jpg"
+  "author": "",
+  "descurl": "https://commons.wikimedia.org/wiki/File:David_Teniers_(II)_-_Tavern_interior.jpg"
  },
  {
   "theme": "mercato",
   "file": "mercato.jpg",
-  "kb": 1035,
-  "title": "Charles Hoguet - Markttreiben in einer mittelalterlichen Stadt (1862).jpg",
+  "kb": 1493,
+  "title": "Bazaar entrance (1874), by Alberto Pasini.jpg",
   "license": "Public domain",
-  "author": "Charles Hoguet",
-  "descurl": "https://commons.wikimedia.org/wiki/File:Charles_Hoguet_-_Markttreiben_in_einer_mittelalterlichen_Stadt_(1862).jpg"
+  "author": "Alberto Pasini",
+  "descurl": "https://commons.wikimedia.org/wiki/File:Bazaar_entrance_(1874),_by_Alberto_Pasini.jpg"
  },
  {
   "theme": "citta",
@@ -29,11 +29,11 @@
  {
   "theme": "dungeon",
   "file": "dungeon.jpg",
-  "kb": 938,
-  "title": "Giovanni Battista Piranesi - Le Carceri d'Invenzione - Second Edition - 1761 - 12 - The Sawhorse.jpg",
+  "kb": 130,
+  "title": "Simon Denis - Interior of the Neptunus Grotto in Tivoli - NM 7445 - Nationalmuseum.jpg",
   "license": "Public domain",
-  "author": "Giovanni Battista Piranesi",
-  "descurl": "https://commons.wikimedia.org/wiki/File:Giovanni_Battista_Piranesi_-_Le_Carceri_d%27Invenzione_-_Second_Edition_-_1761_-_12_-_The_Sawhorse.jpg"
+  "author": "Simon Denis",
+  "descurl": "https://commons.wikimedia.org/wiki/File:Simon_Denis_-_Interior_of_the_Neptunus_Grotto_in_Tivoli_-_NM_7445_-_Nationalmuseum.jpg"
  },
  {
   "theme": "foresta",
@@ -83,11 +83,11 @@
  {
   "theme": "accampamento",
   "file": "accampamento.jpg",
-  "kb": 873,
-  "title": "Nachtkwartier te Molodetschno, 3-4 december 1812; episode uit de terugtocht van keizer Napoleon uit Rusland Rijksmuseum SK-A-1043.jpeg",
+  "kb": 144,
+  "title": "Salvator Rosa (1615-1673) (style of) - Landscape with Soldiers under Trees - 108867 - National Trust.jpg",
   "license": "Public domain",
-  "author": "Johannes Hari (I)",
-  "descurl": "https://commons.wikimedia.org/wiki/File:Nachtkwartier_te_Molodetschno,_3-4_december_1812;_episode_uit_de_terugtocht_van_keizer_Napoleon_uit_Rusland_Rijksmuseum_SK-A-1043.jpeg"
+  "author": "anonymous",
+  "descurl": "https://commons.wikimedia.org/wiki/File:Salvator_Rosa_(1615-1673)_(style_of)_-_Landscape_with_Soldiers_under_Trees_-_108867_-_National_Trust.jpg"
  },
  {
   "theme": "deserto",
@@ -101,10 +101,10 @@
  {
   "theme": "tempio",
   "file": "tempio.jpg",
-  "kb": 493,
-  "title": "Cole Thomas The Course of Empire Desolation 1836.jpg",
+  "kb": 416,
+  "title": "The Abbey in the Oakwood by Caspar David Friedrich.jpg",
   "license": "Public domain",
-  "author": "Thomas Cole",
-  "descurl": "https://commons.wikimedia.org/wiki/File:Cole_Thomas_The_Course_of_Empire_Desolation_1836.jpg"
+  "author": "Caspar David Friedrich",
+  "descurl": "https://commons.wikimedia.org/wiki/File:The_Abbey_in_the_Oakwood_by_Caspar_David_Friedrich.jpg"
  }
 ]
