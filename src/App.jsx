@@ -5939,12 +5939,14 @@ export default function App() {
                                 </tr>
                               );
                             })}
-                            {numMonete > 0 && (!filtroInventario || 'monete'.includes(filtroInventario.trim().toLowerCase())) && (
-                              <tr style={{ opacity: 0.9 }} title="Peso delle monete (contato nel totale ingombro). Cambia le monete nella sezione Monete qui sotto.">
+                            {(!filtroInventario || 'monete'.includes(filtroInventario.trim().toLowerCase())) && (
+                              <tr style={{ opacity: 0.9 }} title="Monete d'oro: modificando qui aggiorni la sezione Monete (e viceversa). Il peso di tutte le monete è contato nell'ingombro.">
                                 <td style={{ ...styles.td, textAlign: 'center' }}>🪙</td>
-                                <td style={styles.td}>Monete</td>
-                                <td style={styles.td}>×{numMonete}</td>
-                                <td style={{ ...styles.td, color: C.inkDim, whiteSpace: 'nowrap' }}>{pesoMonete.toFixed(2)} kg</td>
+                                <td style={styles.td}>Monete d'oro (MO)</td>
+                                <td style={styles.td}>
+                                  <Editable value={dMon.mo || 0} tipo="numero" width={44} onChange={(v) => aggiorna({ denari: { ...scheda.denari, mo: Math.max(0, v) } })} title="Monete d'oro: sincronizzate con la sezione Monete" />
+                                </td>
+                                <td style={{ ...styles.td, color: C.inkDim, whiteSpace: 'nowrap' }}>{pesoMonete.toFixed(2)} kg{numMonete > (dMon.mo || 0) ? ` · ${numMonete} monete tot.` : ''}</td>
                                 <td style={styles.td} />
                               </tr>
                             )}
