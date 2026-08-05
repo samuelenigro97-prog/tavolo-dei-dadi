@@ -869,7 +869,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.43.0';
+const APP_VERSION = '2.44.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4010,7 +4010,14 @@ export default function App() {
       })()}
 
       <header className="app-header" style={styles.header}>
-        <div className="app-header-group" style={{ display: 'flex', gap: 6 }}>
+        <h1 className="app-header-title" style={{ ...styles.title, margin: 0 }}>
+          <span style={{ position: 'relative' }}>
+            Tavolo dei Dadi
+            <span style={{ position: 'absolute', left: '100%', bottom: 3, marginLeft: 6, fontSize: 11, color: C.inkDim, fontWeight: 'normal', letterSpacing: 0.5 }}>v{APP_VERSION}</span>
+          </span>
+        </h1>
+        <div className="app-header-side">
+        <div className="app-header-group">
           <button
             style={styles.modeButton(false)}
             title={t('tip.menu_iniziale')}
@@ -4057,14 +4064,7 @@ export default function App() {
           </button>
         </div>
 
-        <h1 className="app-header-title" style={{ ...styles.title, margin: 0 }}>
-          <span style={{ position: 'relative' }}>
-            Tavolo dei Dadi
-            <span style={{ position: 'absolute', left: '100%', bottom: 3, marginLeft: 6, fontSize: 11, color: C.inkDim, fontWeight: 'normal', letterSpacing: 0.5 }}>v{APP_VERSION}</span>
-          </span>
-        </h1>
-
-        <div className="app-header-group" style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+        <div className="app-header-group">
           <button
             style={styles.modeButton(false)}
             title={lingua === 'it' ? 'Interfaccia in italiano — click per passare all’inglese' : 'Interface in English — click to switch to Italian'}
@@ -4095,6 +4095,7 @@ export default function App() {
           >
             🎭 {PRESET_COLORI.find(p => p.id === presetColori)?.nome.split(' ')[0] || '🟤'}
           </button>
+        </div>
         </div>
 
       </header>
@@ -4262,12 +4263,12 @@ export default function App() {
         <div
           onClick={(e) => e.stopPropagation()}
           style={{
-            position: 'fixed', top: 12, right: 12, bottom: 12,
+            position: 'fixed', top: 12, left: 12, bottom: 12,
             width: 'min(380px, calc(100vw - 24px))',
             background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 10,
             padding: '12px 16px', overflowY: 'auto',
             display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13,
-            boxShadow: '-6px 0 24px rgba(0,0,0,0.4)'
+            boxShadow: '6px 0 24px rgba(0,0,0,0.4)'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>

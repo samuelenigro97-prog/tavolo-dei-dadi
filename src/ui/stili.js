@@ -527,19 +527,32 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   width: 100%;
   margin: 0 0 8px 0 !important;
 }
-/* testata: griglia 1fr auto 1fr → titolo sempre centrato e simmetrico, i due
-   gruppi di pulsanti nelle colonne laterali di uguale larghezza (niente sovrapposizioni) */
-.app-header { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
-.app-header-title { grid-column: 2; justify-self: center; text-align: center; white-space: nowrap; margin: 0; }
-/* I due gruppi di pulsanti sono GRIGLIE a colonne uguali invece che file che
-   vanno a capo dove capita: 6 pulsanti a sinistra -> 3x2, 4 a destra -> 2x2.
-   Così entrambi i lati occupano due righe pulite e la testata resta simmetrica. */
-.app-header-group { display: grid !important; gap: 6px; min-width: 0; align-content: center; }
-.app-header-group:first-of-type { grid-template-columns: repeat(3, minmax(0, 1fr)); justify-self: start; width: 100%; max-width: 380px; }
-.app-header-group:last-of-type { grid-template-columns: repeat(2, minmax(0, 1fr)); justify-self: end; width: 100%; max-width: 260px; }
+/* testata: titolo centrato in alto, i due gruppi di pulsanti sotto (ciascuno una
+   griglia ordinata). Su desktop MOLTO largo i pulsanti passano in colonna a
+   sinistra (vedi @media min-width:1440px), lasciando spazio verticale in cima. */
+.app-header { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.app-header-title { text-align: center; white-space: nowrap; margin: 0; }
+.app-header-side { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: flex-start; width: 100%; }
+.app-header-group { display: grid; gap: 6px; min-width: 0; align-content: start; }
+.app-header-group:first-of-type { grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; max-width: 380px; }
+.app-header-group:last-of-type { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; max-width: 300px; }
 .app-header-group > button {
   width: 100%; display: inline-flex; align-items: center; justify-content: center;
   gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* DESKTOP LARGO (≥1440px): margine libero ai lati → i tasti (e la finestra Tema)
+   vanno in COLONNA a sinistra; il titolo resta centrato in alto. */
+@media (min-width: 1440px) {
+  .app-header-side {
+    position: fixed; left: 10px; top: 54px; width: 154px; z-index: 900;
+    flex-direction: column; flex-wrap: nowrap; align-items: stretch;
+    justify-content: flex-start; gap: 6px;
+  }
+  .app-header-side .app-header-group,
+  .app-header-side .app-header-group:first-of-type,
+  .app-header-side .app-header-group:last-of-type {
+    grid-template-columns: 1fr; max-width: none; width: 100%;
+  }
 }
 /* schermata di caricamento dal cloud: nuvola che pulsa e barra che scorre */
 .cloud-spinner { animation: cloud-bob 1.4s ease-in-out infinite; }
