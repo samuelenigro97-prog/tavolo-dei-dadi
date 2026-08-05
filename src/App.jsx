@@ -869,7 +869,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.42.0';
+const APP_VERSION = '2.43.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -5004,7 +5004,7 @@ export default function App() {
                     <Editable value={scheda.velocita} tipo="numero" onChange={(v) => aggiorna({ velocita: v })} width={48} />
                     <span style={{ fontSize: 17, color: C.inkDim, marginLeft: 2, fontWeight: 600 }}> m</span>
                   </div>
-                  <div style={{ fontSize: 10, color: C.goldDark, marginTop: 2, textAlign: 'center', fontWeight: 600 }}>
+                  <div style={{ position: 'absolute', bottom: 8, left: 0, right: 0, fontSize: 10, color: C.goldDark, textAlign: 'center', fontWeight: 600 }}>
                     🏃 Salto: {((scheda.caratteristiche?.forza || 10) * 0.3).toFixed(1)}m
                   </div>
                 </div>
