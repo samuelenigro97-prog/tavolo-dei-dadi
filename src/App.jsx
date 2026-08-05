@@ -374,7 +374,7 @@ function regexMunizione(nomeArma) {
 // privilegi/privilegiSottoclasse/talenti sono nel blocco fisso "Privilegi & Talenti"
 // sotto la Magia (non riordinabili singolarmente).
 // 'metamagia' NON è qui: non è trascinabile, resta sempre agganciata sotto la Magia.
-const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'talenti', 'trattiSpecie', 'equipaggiamento', 'aspetto'];
+const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'equipaggiamento', 'aspetto'];
 
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 
@@ -869,7 +869,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.44.0';
+const APP_VERSION = '2.45.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1319,7 +1319,9 @@ export default function App() {
   // Combat tracker. Salvata a parte (non nella scheda), così non finisce
   // nell'export/cloud del singolo personaggio ed è condivisa fra i PG.
   const [mappaAperta, setMappaAperta] = useState(false);
-  const [mappaZoom, setMappaZoom] = useState(false); // false = adatta allo schermo, true = dimensione reale
+  // Zoom mappa: 0 = adattata all'intero schermo; >0 = larghezza in multipli della
+  // finestra (1 = piena larghezza, fino a 6× per lo zoom massimo), scorrevole.
+  const [mappaScala, setMappaScala] = useState(0);
   // Segnalino spostabile sulla mappa: posizione in percentuale (0-100) rispetto
   // all'immagine, così resta corretta con qualsiasi zoom. Memorizzata a parte.
   const [mappaMarker, setMappaMarker] = useState(() => {
@@ -5998,26 +6000,27 @@ export default function App() {
                   )}
                 </Sezione>
               </div>
+              {/* Talenti e Tratti della specie: sotto, come coppia di riquadri
+                  della stessa dimensione dei Privilegi (classe/sottoclasse). */}
+              <div className="privilegi-duo">
+                <Sezione titolo={t("sez.talenti")} {...apertoProps('talenti')}>
+                  <ListaQuadratini
+                    value={scheda.talenti}
+                    lookup={spiegaTalento}
+                    placeholder={t("talenti.ph")}
+                    onChange={(v) => aggiorna({ talenti: v })}
+                  />
+                </Sezione>
+                <Sezione titolo={t("sez.tratti_specie")} {...apertoProps('trattiSpecie')}>
+                  <ListaQuadratini
+                    value={scheda.trattiSpecie}
+                    lookup={spiegaTratto}
+                    placeholder={t("tratti.ph")}
+                    onChange={(v) => aggiorna({ trattiSpecie: v })}
+                  />
+                </Sezione>
+              </div>
             </div>
-
-            {/* Talenti e Tratti della specie: sezioni indipendenti e trascinabili
-                (non più un blocco unico legato ai privilegi). */}
-            <Sezione titolo={t("sez.talenti")} {...propsSez('talenti')} {...apertoProps('talenti')}>
-              <ListaQuadratini
-                value={scheda.talenti}
-                lookup={spiegaTalento}
-                placeholder={t("talenti.ph")}
-                onChange={(v) => aggiorna({ talenti: v })}
-              />
-            </Sezione>
-            <Sezione titolo={t("sez.tratti_specie")} {...propsSez('trattiSpecie')} {...apertoProps('trattiSpecie')}>
-              <ListaQuadratini
-                value={scheda.trattiSpecie}
-                lookup={spiegaTratto}
-                placeholder={t("tratti.ph")}
-                onChange={(v) => aggiorna({ trattiSpecie: v })}
-              />
-            </Sezione>
 
 
           </div>
@@ -6052,7 +6055,9 @@ export default function App() {
                 const soglia1 = forza * 2.5; // ingombrato
                 const soglia2 = forza * 5;   // gravemente ingombrato
                 const stato = pesoTot > cap ? 'sovraccarico' : pesoTot > soglia2 ? 'grave' : pesoTot > soglia1 ? 'ingombrato' : 'ok';
-                const colore = stato === 'ok' ? C.green : stato === 'ingombrato' ? C.gold : C.red;
+                // Barra dell'ingombro con colori espliciti: verde (a posto) →
+                // arancione (ingombrato) → rosso (grave/sovraccarico), a prescindere dal tema.
+                const colore = stato === 'ok' ? '#3e9b4f' : stato === 'ingombrato' ? '#e08a1e' : '#c0392b';
                 const perc = Math.min(100, (pesoTot / cap) * 100);
                 const modInv = (id, patch) => aggiorna({ inventario: inv.map((x) => (x.id === id ? { ...x, ...patch } : x)) });
                 const toggleEquip = (o, checked) => {
@@ -6330,7 +6335,10 @@ export default function App() {
           >
             <strong style={{ color: 'var(--c-title)', fontSize: 15 }}>🗺️ Mappa della campagna</strong>
             <span style={{ flex: 1 }} />
-            <button style={{ ...styles.buttonMini, ...(mappaZoom ? { borderColor: C.gold, color: C.gold } : {}) }} onClick={() => setMappaZoom((z) => !z)} title="Alterna tra adatta allo schermo e dimensione reale">{mappaZoom ? '🔍 Adatta' : '🔍 Ingrandisci'}</button>
+            <button style={{ ...styles.buttonMini, ...(mappaScala === 0 ? { borderColor: C.gold, color: C.gold } : {}) }} onClick={() => setMappaScala(0)} title="Adatta la mappa all'intero schermo">🖥 Adatta</button>
+            <button style={styles.buttonMini} onClick={() => setMappaScala((s) => Math.max(0.5, (s === 0 ? 1 : s) - 0.5))} title="Riduci">➖</button>
+            <span style={{ fontSize: 12, minWidth: 42, textAlign: 'center', fontWeight: 'bold' }}>{mappaScala === 0 ? 'fit' : `${Math.round(mappaScala * 100)}%`}</span>
+            <button style={styles.buttonMini} onClick={() => setMappaScala((s) => Math.min(6, (s === 0 ? 1 : s) + 0.5))} title="Ingrandisci (zoom massimo 6×)">➕</button>
             <button style={styles.buttonMini} onClick={() => mappaRef.current?.click()} title="Sostituisci l'immagine della mappa">🔁 Cambia</button>
             <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }} onClick={() => { if (window.confirm('Rimuovere la mappa della campagna?')) { setMappaCampagna(''); setMappaAperta(false); } }} title="Rimuovi la mappa">🗑 Rimuovi</button>
             <button style={styles.buttonMini} onClick={() => setMappaAperta(false)} title="Chiudi">✕</button>
@@ -6338,7 +6346,7 @@ export default function App() {
           {/* Vista adattata allo schermo (nessuno scroll); con “Ingrandisci” passa
               alla dimensione reale e diventa scorrevole in entrambe le direzioni. */}
           <div
-            style={{ flex: 1, minHeight: 0, overflow: mappaZoom ? 'auto' : 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 8 }}
+            style={{ flex: 1, minHeight: 0, overflow: mappaScala === 0 ? 'hidden' : 'auto', display: 'flex', alignItems: mappaScala === 0 ? 'center' : 'flex-start', justifyContent: 'center', padding: 8 }}
             onClick={(e) => e.stopPropagation()}
           >
             <div ref={mappaWrapRef} style={{ position: 'relative', display: 'inline-block', lineHeight: 0 }}>
@@ -6346,9 +6354,9 @@ export default function App() {
                 src={mappaCampagna}
                 alt="Mappa della campagna"
                 draggable={false}
-                style={mappaZoom
-                  ? { maxWidth: 'none', maxHeight: 'none', display: 'block' }
-                  : { maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', objectFit: 'contain', display: 'block' }}
+                style={mappaScala === 0
+                  ? { maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', objectFit: 'contain', display: 'block' }
+                  : { width: `${mappaScala * 100}vw`, maxWidth: 'none', maxHeight: 'none', height: 'auto', display: 'block' }}
               />
               {/* Segnalino trascinabile: la punta indica il punto salvato. */}
               <div
