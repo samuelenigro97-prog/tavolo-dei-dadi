@@ -25,6 +25,8 @@ let htmlAudioElement = null;
 let currentVolume = 0.5;
 let ambienteAttivo = '';   // id dell'ambientazione in riproduzione (per il volume della base)
 let intervalTimer = null;
+let watchdogTimer = null;  // sorveglia il loop <audio> e lo fa ripartire se si blocca
+let watchdogInstallato = false; // per non registrare più volte i listener globali
 let keepAliveEl = null; // <audio> near-silenzioso per l'override della modalità silenziosa iOS
 
 // Amplificazione del sottofondo procedurale (di natura molto soffuso).
@@ -223,6 +225,10 @@ export function fermaAmbiente() {
     clearInterval(intervalTimer);
     intervalTimer = null;
   }
+  if (watchdogTimer) {
+    clearInterval(watchdogTimer);
+    watchdogTimer = null;
+  }
   activeNodes.forEach(node => {
     try {
       if (node.stop) node.stop();
@@ -294,6 +300,32 @@ function createNoiseBuffer(ctx, type = 'pink', duration = 4) {
 }
 
 /**
+ * Sorveglia il loop <audio>: alcuni browser (e iOS in background) mettono in
+ * pausa l'elemento o sospendono l'AudioContext dopo un po', e il sottofondo non
+ * riparte da solo. Il watchdog controlla ogni pochi secondi e lo rimette in moto,
+ * così non serve più cambiare ambientazione a mano per farlo tornare.
+ */
+function avviaWatchdogAudio() {
+  if (watchdogTimer) { clearInterval(watchdogTimer); watchdogTimer = null; }
+  const ripristina = () => {
+    if (audioCtx && audioCtx.state === 'suspended') { try { audioCtx.resume(); } catch { /* ignorato */ } }
+    if (htmlAudioElement && htmlAudioElement.paused && ambienteAttivo && ambienteAttivo !== 'spento') {
+      const p = htmlAudioElement.play();
+      if (p && p.catch) p.catch(() => { /* riproverà al prossimo giro */ });
+    }
+  };
+  watchdogTimer = setInterval(() => {
+    if (typeof document !== 'undefined' && document.hidden) return;
+    ripristina();
+  }, 4000);
+  // Al ritorno in primo piano, riparti subito senza aspettare il tick.
+  if (!watchdogInstallato && typeof document !== 'undefined') {
+    watchdogInstallato = true;
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) ripristina(); });
+  }
+}
+
+/**
  * Avvia il tema sonoro prescelto.
  */
 export function avviaAmbiente(id, volume = 0.5, urlCustom = '') {
@@ -327,9 +359,15 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '') {
     htmlAudioElement.volume = currentVolume * fattoreVolumeBase(id);
     htmlAudioElement.setAttribute('playsinline', '');
     htmlAudioElement.setAttribute('webkit-playsinline', '');
+    // Se il loop dovesse comunque terminare (glitch del browser), ricominciamo.
+    htmlAudioElement.addEventListener('ended', () => {
+      if (!htmlAudioElement) return;
+      try { htmlAudioElement.currentTime = 0; htmlAudioElement.play().catch(() => {}); } catch { /* ignorato */ }
+    });
     htmlAudioElement.play().catch(err => {
       console.warn('Impossibile riprodurre il loop ambientale:', err);
     });
+    avviaWatchdogAudio();
     // Città medievale: sopra la base di folla si sentono ogni tanto campane,
     // il fabbro che batte sull'incudine e i carretti che passano.
     if (id === 'citta') {
@@ -665,9 +703,13 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '') {
  * @param {number} volume - da 0.0 a 1.0
  */
 export function eseguiEffettoSonoro(tipo, volume = 0.5) {
-  // Tiro = colpo d'arma (spada); magia = incantesimo. File reali, riproduzione
-  // istantanea via AudioBuffer (niente più il vecchio suono di dadi sintetico).
-  if (tipo === 'tiro' || tipo === 'arma') { playSfx('sword', volume); return; }
+  // Mappa dei suoni per evento di gioco:
+  //  · 'tiro'/'dado'  → rotolare di dadi (tiro per colpire, prove, tiri salvezza)
+  //  · 'arma'/'mischia' → colpo di spada (danni da mischia) — file reale
+  //  · 'arco'         → colpo d'arco/balestra (danni a distanza) — sintetizzato
+  //  · 'magia'        → incantesimo (lancio e danni magici) — file reale
+  //  · 'danni'        → rotolare di dadi generico (danni diretti non d'arma)
+  if (tipo === 'arma' || tipo === 'mischia') { playSfx('sword', volume); return; }
   if (tipo === 'magia') { playSfx('magic', volume); return; }
 
   const ctx = getAudioContext();
@@ -675,7 +717,42 @@ export function eseguiEffettoSonoro(tipo, volume = 0.5) {
 
   const v = Math.max(0, Math.min(1, Number(volume) || 0.5));
 
-  if (tipo === 'danni') {
+  if (tipo === 'arco') {
+    // Colpo d'arco/balestra: sibilo della corda ("whoosh") + tonfo secco della
+    // punta che si conficca. Sintetizzato: nessun file, sempre disponibile.
+    const now = ctx.currentTime;
+    // Whoosh: rumore filtrato passa-banda che sale rapidamente di tono.
+    const len = Math.floor(ctx.sampleRate * 0.22);
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let j = 0; j < len; j++) d[j] = (Math.random() * 2 - 1) * (1 - j / len);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.Q.value = 1.4;
+    bp.frequency.setValueAtTime(900, now);
+    bp.frequency.exponentialRampToValueAtTime(3200, now + 0.16);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(0.5 * v, now + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.02 * v, now + 0.2);
+    src.connect(bp); bp.connect(g); g.connect(ctx.destination);
+    src.start(now); src.stop(now + 0.22);
+    // Thunk: impatto grave della freccia sul bersaglio.
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(220, now + 0.17);
+    osc.frequency.exponentialRampToValueAtTime(80, now + 0.3);
+    const g2 = ctx.createGain();
+    g2.gain.setValueAtTime(0.5 * v, now + 0.17);
+    g2.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+    osc.connect(g2); g2.connect(ctx.destination);
+    osc.start(now + 0.17); osc.stop(now + 0.32);
+    return;
+  }
+
+  if (tipo === 'danni' || tipo === 'tiro' || tipo === 'dado') {
     // Suono dei DANNI: distinto dal tiro per colpire. Rimbalzo di dadi (brevi
     // impulsi di rumore filtrato) seguito da un tonfo grave.
     const now = ctx.currentTime;

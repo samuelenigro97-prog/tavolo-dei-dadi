@@ -75,12 +75,6 @@ export const PRESET_COLORI = [
     scuro:  { bg: '#0b140b', panel: '#121e12', panelLight: '#182818', border: '#284428', ink: '#d2ecc9', inkDim: '#70a065', gold: '#5caa3b', goldDark: '#7dcf5a', title: '#7dcf5a' },
   },
   {
-    id: 'notte', nome: '🌙 Notte', audio: 'notte',
-    sfondo: 'radial-gradient(60% 55% at 15% 10%, rgba(70,80,150,0.20), transparent 60%), radial-gradient(55% 55% at 90% 95%, rgba(50,55,110,0.18), transparent 60%)',
-    chiaro: { bg: '#eceef6', panel: '#f6f7fc', panelLight: '#e2e5f2', border: '#adb4d0', ink: '#191d30', inkDim: '#525a80', gold: '#4a5aa0', goldDark: '#323a78', title: '#323a78' },
-    scuro:  { bg: '#080a14', panel: '#10131f', panelLight: '#171b2b', border: '#282e46', ink: '#d0d6ee', inkDim: '#6b74a0', gold: '#6472c8', goldDark: '#8f9ce8', title: '#8f9ce8' },
-  },
-  {
     id: 'mare', nome: '🌊 Mare / Costa', audio: 'mare',
     sfondo: 'radial-gradient(55% 60% at 0% 15%, rgba(30,150,170,0.15), transparent 62%), radial-gradient(55% 60% at 100% 85%, rgba(40,170,190,0.13), transparent 62%)',
     chiaro: { bg: '#e8f5f4', panel: '#f4fcfb', panelLight: '#dcf0ee', border: '#96ccc8', ink: '#0e2c2a', inkDim: '#3e807a', gold: '#0e9088', goldDark: '#066660', title: '#066660' },

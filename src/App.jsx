@@ -374,7 +374,7 @@ function regexMunizione(nomeArma) {
 // privilegi/privilegiSottoclasse/talenti sono nel blocco fisso "Privilegi & Talenti"
 // sotto la Magia (non riordinabili singolarmente).
 // 'metamagia' NON è qui: non è trascinabile, resta sempre agganciata sotto la Magia.
-const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'equipaggiamento', 'aspetto'];
+const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'talenti', 'trattiSpecie', 'equipaggiamento', 'aspetto'];
 
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 
@@ -796,6 +796,28 @@ function risorseAutoClasse(classe, livello, caratteristiche) {
       return [];
   }
 }
+// Spiegazioni delle risorse di classe (parole proprie, meccaniche 5e/5.5):
+// mostrate al passaggio del cursore sul nome, come per le altre sezioni.
+const SPIEG_RISORSE = {
+  'Ispirazione Bardica': 'Azione bonus: doni a un alleato entro 18 m un dado Ispirazione (d6, poi d8/d10/d12 col livello) da sommare a un tiro per colpire, una prova o un TS. Usi pari al mod. Carisma; si recuperano con un riposo lungo (breve dal 5° livello).',
+  'Punti Focus': 'La riserva di Ki del Monaco (punti = livello). Li spendi per le tue tecniche: Raffica di Colpi (1 attacco bonus extra), Scatto Vertiginoso, Difesa Paziente. Si recuperano tutti con un riposo breve o lungo.',
+  'Punti Stregoneria': 'La riserva di energia magica dello Stregone (punti = livello). Puoi convertirli in slot incantesimo (o viceversa) e alimentano la Metamagia. Si recuperano con un riposo lungo.',
+  'Recuperare Energie': 'Azione bonus: recuperi 1d10 + il tuo livello da Guerriero in PF. Si ricarica con un riposo breve o lungo.',
+  'Azione Impetuosa': 'Una volta per riposo (due volte dal 17° livello) compi un’azione aggiuntiva nel tuo turno, oltre a quella normale. Si ricarica con un riposo breve o lungo.',
+  'Forma Selvatica': 'Con un’azione ti trasformi in una bestia che conosci (entro i limiti di grado sfida e capacità). Usi limitati, recuperati con un riposo breve o lungo.',
+  'Incanalare Divinità': 'Incanali il potere del tuo dominio (Chierico) o giuramento (Paladino) per un effetto speciale della sottoclasse. Usi limitati: si recuperano con un riposo breve (Chierico) o lungo (Paladino).',
+  'Imposizione delle Mani': 'Una riserva di potere curativo pari a 5 × il tuo livello da Paladino. Con un’azione distribuisci quei PF per curare (o spendi 5 punti per neutralizzare un veleno). Si ricarica con un riposo lungo.',
+};
+
+/** Spiegazione di una risorsa di classe: prima la mappa dedicata, poi i privilegi. */
+function spiegaRisorsa(nome) {
+  const n = String(nome || '').trim();
+  if (SPIEG_RISORSE[n]) return SPIEG_RISORSE[n];
+  const sp = spiegaPrivilegio(n);
+  if (sp) return typeof sp === 'string' ? sp : (sp.testo || sp.descrizione || '');
+  return '';
+}
+
 // Lingua tematica concessa dalla specie (oltre al Comune). Nella 5.5 le lingue
 // derivano dall'origine, ma diamo un default sensato modificabile a mano.
 const LINGUA_SPECIE = {
@@ -847,7 +869,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.37.0';
+const APP_VERSION = '2.38.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1364,6 +1386,11 @@ export default function App() {
   const [urlCustomAudio, setUrlCustomAudio] = useState(() => localStorage.getItem('scheda-interattiva:url-audio-custom') || '');
   const [mostraPannelloAudio, setMostraPannelloAudio] = useState(false);
   const [effettiSonoriAttivi, setEffettiSonoriAttivi] = useState(() => localStorage.getItem('scheda-interattiva:effetti-sonori') !== 'false');
+  // Muto rapido: azzera tutto l'audio (sottofondo + effetti) con un click, senza
+  // toccare il volume impostato — così basta ri-cliccare per tornare com'era.
+  const [mutoAudio, setMutoAudio] = useState(false);
+  // Effetti sonori attivi solo se non sono in muto.
+  const suoniEffOn = effettiSonoriAttivi && !mutoAudio;
 
   useEffect(() => {
     try {
@@ -1374,14 +1401,19 @@ export default function App() {
     } catch { /* niente */ }
   }, [ambienteAudio, volumeAudio, urlCustomAudio, effettiSonoriAttivi]);
 
+  // Audio notturno per ambientazione: di notte alcuni ambienti cambiano loop per
+  // un sottofondo più cupo (es. la foresta di notte = grilli, l'ex audio "notte").
+  const AUDIO_NOTTE = { foresta: 'notte' };
   useEffect(() => {
-    avviaAmbiente(ambienteAudio, volumeAudio, urlCustomAudio);
-  }, [ambienteAudio]);
+    const audioEff = (notteAttiva && AUDIO_NOTTE[ambienteAudio]) ? AUDIO_NOTTE[ambienteAudio] : ambienteAudio;
+    avviaAmbiente(audioEff, volumeAudio * (notteAttiva ? 0.6 : 1), urlCustomAudio);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ambienteAudio, notteAttiva]);
 
   useEffect(() => {
-    // Di notte il sottofondo è più cupo: volume ridotto (~60%).
-    setVolumeAmbiente(volumeAudio * (notteAttiva ? 0.6 : 1));
-  }, [volumeAudio, notteAttiva]);
+    // Di notte il sottofondo è più cupo: volume ridotto (~60%). In muto: 0.
+    setVolumeAmbiente(mutoAudio ? 0 : volumeAudio * (notteAttiva ? 0.6 : 1));
+  }, [volumeAudio, notteAttiva, mutoAudio]);
 
   // Pre-carica gli effetti sonori (colpo d'arma/incantesimo) al PRIMO tocco:
   // così il primo tiro suona subito, senza ritardo (l'audio va sbloccato da un gesto).
@@ -1879,7 +1911,7 @@ export default function App() {
     setDanni(null);
     setRolling(true);
     setTipoDadoInUso(tipoDado);
-    if (effettiSonoriAttivi) eseguiEffettoSonoro(suono || (magia ? 'magia' : 'tiro'), volumeAudio);
+    if (suoniEffOn) eseguiEffettoSonoro(suono || (magia ? 'magia' : 'tiro'), volumeAudio);
     intervalRef.current = setInterval(() => setFaccia(tiraDado(tipoDado)), 70);
     setTimeout(() => {
       clearInterval(intervalRef.current);
@@ -2028,7 +2060,7 @@ export default function App() {
     setTiro(null);
     setRolling(true);
     setTipoDadoInUso(20);
-    if (effettiSonoriAttivi) eseguiEffettoSonoro(magia ? 'magia' : 'tiro', volumeAudio);
+    if (suoniEffOn) eseguiEffettoSonoro(magia ? 'magia' : 'tiro', volumeAudio);
     intervalRef.current = setInterval(() => setFaccia(tiraDado(20)), 70);
 
     // Sfinimento: nella 5.5 (2024) −2 a ogni tiro di d20 per livello; nella
@@ -2040,7 +2072,7 @@ export default function App() {
       clearInterval(intervalRef.current);
       setFaccia(naturale);
       setRolling(false);
-      if (effettiSonoriAttivi) {
+      if (suoniEffOn) {
         if (naturale === 20) eseguiEffettoSonoro('critico', volumeAudio);
         else if (naturale === 1) eseguiEffettoSonoro('fallimento', volumeAudio);
       }
@@ -2102,7 +2134,7 @@ export default function App() {
     conAnimazione(() => {
       setDanni({ etichetta, ...esito, critico: false });
       registra({ etichetta, tipo: esito.tabella ? 'tiro' : 'danni', totale: esito.totale, dettaglio: esito.dettaglio });
-    }, esito.totale, maxFacce || 20, magia, esito.tabella ? null : 'danni');
+    }, esito.totale, maxFacce || 20, magia, esito.tabella ? null : (magia ? 'magia' : 'danni'));
   }
 
   /** Tira i danni di un attacco (con eventuale critico), indipendente dallo stato. */
@@ -2112,10 +2144,17 @@ export default function App() {
     const maxFacce = Math.max(...parsata.termini.map((p) => p.facce).filter(Boolean));
     const nome = attacco.nome;
     const esito = tiraDanni(parsata, critico);
+    // Suono coerente col tipo d'attacco: incantesimo → magia; arco/balestra/fionda
+    // → colpo a distanza; tutto il resto (mischia) → colpo di spada.
+    const suonoDanno = attacco?.isSpell
+      ? 'magia'
+      : /arco|balestra|fionda/i.test(nome || '')
+        ? 'arco'
+        : 'arma';
     conAnimazione(() => {
       setDanni({ etichetta: `Danni: ${nome}`, ...esito, critico });
       registra({ etichetta: `${t('log.danni')}: ${nome}`, tipo: 'danni', totale: esito.totale, dettaglio: esito.dettaglio, critico });
-    }, esito.totale, maxFacce || 20, false, 'danni');
+    }, esito.totale, maxFacce || 20, false, suonoDanno);
   }
 
   /** Danni dell'attacco corrente (dal tiro per colpire in corso). */
@@ -2147,7 +2186,7 @@ export default function App() {
     setTiro(null);
     setRolling(true);
     setTipoDadoInUso(20);
-    if (effettiSonoriAttivi) eseguiEffettoSonoro('tiro', volumeAudio);
+    if (suoniEffOn) eseguiEffettoSonoro('tiro', volumeAudio);
     intervalRef.current = setInterval(() => setFaccia(tiraDado(20)), 70);
 
     const { naturale, dadi } = tiraD20(modalita);
@@ -2155,7 +2194,7 @@ export default function App() {
       clearInterval(intervalRef.current);
       setFaccia(naturale);
       setRolling(false);
-      if (effettiSonoriAttivi) {
+      if (suoniEffOn) {
         if (naturale === 20) eseguiEffettoSonoro('critico', volumeAudio);
         else if (naturale === 1) eseguiEffettoSonoro('fallimento', volumeAudio);
       }
@@ -3947,6 +3986,13 @@ export default function App() {
             {tema === 'auto' ? t('btn.tema.auto') : tema === 'chiaro' ? t('btn.tema.chiaro') : t('btn.tema.scuro')}
           </button>
           <button
+            style={{ ...styles.modeButton(mutoAudio), fontSize: 14, padding: '3px 8px' }}
+            title={mutoAudio ? 'Audio in muto · click per riattivare' : 'Muta rapidamente tutto l’audio'}
+            onClick={() => setMutoAudio((m) => !m)}
+          >
+            {mutoAudio ? '🔇' : '🔊'}
+          </button>
+          <button
             style={{ ...styles.modeButton(presetColori !== 'default'), fontSize: 14, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}
             title="Ambientazione: cambia insieme colori, sfondo e audio · click per aprire"
             onClick={() => { sbloccaAudio(); setMostraPannelloAudio(!mostraPannelloAudio); }}
@@ -4110,10 +4156,24 @@ export default function App() {
       })()}
 
       {mostraPannelloAudio && (
-        <div style={{
-          background: C.panelLight, borderBottom: `1px solid ${C.border}`, padding: '10px 16px',
-          display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13, boxShadow: '0 4px 12px rgba(0,0,0,0.25)'
-        }}>
+        <div
+          onClick={() => setMostraPannelloAudio(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1400,
+            background: 'rgba(0,0,0,0.35)'
+          }}
+        >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: 'fixed', top: 12, right: 12, bottom: 12,
+            width: 'min(380px, calc(100vw - 24px))',
+            background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 10,
+            padding: '12px 16px', overflowY: 'auto',
+            display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13,
+            boxShadow: '-6px 0 24px rgba(0,0,0,0.4)'
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
             <div style={{ fontWeight: 'bold', color: C.goldDark, display: 'flex', alignItems: 'center', gap: 6 }}>
               <span>🎭 Ambientazione</span>
@@ -4147,7 +4207,7 @@ export default function App() {
           </div>
 
           {/* Ambientazioni: un click applica palette + sfondo + audio abbinato */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: 6 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 6 }}>
             {PRESET_COLORI.map((p) => {
               const attivo = presetColori === p.id;
               const conSuono = p.audio && p.audio !== 'spento';
@@ -4199,6 +4259,7 @@ export default function App() {
           <div style={{ fontSize: 10, color: C.inkDim, opacity: 0.8, textAlign: 'center' }}>
             🔊 Suoni ambientali reali da Freesound.com · licenza CC0 (dominio pubblico)
           </div>
+        </div>
         </div>
       )}
 
@@ -5172,7 +5233,7 @@ export default function App() {
                 return (
                   <div key={r.id} style={{ marginBottom: 8, fontSize: 12 }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
-                      <Editable value={r.nome} onChange={(v) => modifica({ nome: v })} width={110} title={t('tip.nome_risorsa')} />
+                      <Editable value={r.nome} onChange={(v) => modifica({ nome: v })} width={110} title={spiegaRisorsa(r.nome) || t('tip.nome_risorsa')} />
                       <button
                         style={{ ...styles.buttonMini, padding: '0 6px', color: C.red }}
                         title={t('tip.rimuovi_risorsa')}
@@ -5842,25 +5903,26 @@ export default function App() {
                   )}
                 </Sezione>
               </div>
-              <div className="privilegi-duo">
-                <Sezione titolo={t("sez.talenti")} {...apertoProps('talenti')}>
-                  <ListaQuadratini
-                    value={scheda.talenti}
-                    lookup={spiegaTalento}
-                    placeholder={t("talenti.ph")}
-                    onChange={(v) => aggiorna({ talenti: v })}
-                  />
-                </Sezione>
-                <Sezione titolo={t("sez.tratti_specie")} {...apertoProps('trattiSpecie')}>
-                  <ListaQuadratini
-                    value={scheda.trattiSpecie}
-                    lookup={spiegaTratto}
-                    placeholder={t("tratti.ph")}
-                    onChange={(v) => aggiorna({ trattiSpecie: v })}
-                  />
-                </Sezione>
-              </div>
             </div>
+
+            {/* Talenti e Tratti della specie: sezioni indipendenti e trascinabili
+                (non più un blocco unico legato ai privilegi). */}
+            <Sezione titolo={t("sez.talenti")} {...propsSez('talenti')} {...apertoProps('talenti')}>
+              <ListaQuadratini
+                value={scheda.talenti}
+                lookup={spiegaTalento}
+                placeholder={t("talenti.ph")}
+                onChange={(v) => aggiorna({ talenti: v })}
+              />
+            </Sezione>
+            <Sezione titolo={t("sez.tratti_specie")} {...propsSez('trattiSpecie')} {...apertoProps('trattiSpecie')}>
+              <ListaQuadratini
+                value={scheda.trattiSpecie}
+                lookup={spiegaTratto}
+                placeholder={t("tratti.ph")}
+                onChange={(v) => aggiorna({ trattiSpecie: v })}
+              />
+            </Sezione>
 
 
           </div>
@@ -5887,7 +5949,11 @@ export default function App() {
                 const pesoMonete = numMonete * 0.01;
                 const pesoTot = pesoInv + pesoArmi + pesoArm + pesoMonete;
                 const forza = scheda.caratteristiche.forza || 10;
-                const cap = capacitaCarico(forza);
+                // Borsa Conservante equipaggiata: contenitore magico che regge fino a
+                // ~250 kg a peso fisso, quindi mentre la usi aumenta la capacità di carico.
+                const borsaEquip = inv.some((o) => o.equip && /borsa\s+conservante|bag of holding/i.test(o.nome || ''));
+                const capBonusBorsa = borsaEquip ? 250 : 0;
+                const cap = capacitaCarico(forza) + capBonusBorsa;
                 const soglia1 = forza * 2.5; // ingombrato
                 const soglia2 = forza * 5;   // gravemente ingombrato
                 const stato = pesoTot > cap ? 'sovraccarico' : pesoTot > soglia2 ? 'grave' : pesoTot > soglia1 ? 'ingombrato' : 'ok';
