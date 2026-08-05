@@ -1374,9 +1374,14 @@ export default function App() {
     } catch { /* niente */ }
   }, [ambienteAudio, volumeAudio, urlCustomAudio, effettiSonoriAttivi]);
 
+  // Audio notturno per ambientazione: di notte alcuni ambienti cambiano loop per
+  // un sottofondo più cupo (es. la foresta di notte = grilli, l'ex audio "notte").
+  const AUDIO_NOTTE = { foresta: 'notte' };
   useEffect(() => {
-    avviaAmbiente(ambienteAudio, volumeAudio, urlCustomAudio);
-  }, [ambienteAudio]);
+    const audioEff = (notteAttiva && AUDIO_NOTTE[ambienteAudio]) ? AUDIO_NOTTE[ambienteAudio] : ambienteAudio;
+    avviaAmbiente(audioEff, volumeAudio * (notteAttiva ? 0.6 : 1), urlCustomAudio);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ambienteAudio, notteAttiva]);
 
   useEffect(() => {
     // Di notte il sottofondo è più cupo: volume ridotto (~60%).
