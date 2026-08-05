@@ -199,7 +199,8 @@ export const styles = {
     padding: '8px 6px',
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'center',
+    // Nome della sezione in alto, valore in basso (entrambi centrati in orizzontale).
+    justifyContent: 'space-between',
     alignItems: 'center',
     minHeight: 56,
     position: 'relative',
@@ -500,7 +501,9 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 /* grid-auto-rows: auto → ogni riga è alta quanto il suo contenuto (niente più
    spazi vuoti: prima "1fr" forzava tutte le righe all'altezza della più alta).
    align-items: stretch tiene comunque uniformi i riquadri della STESSA riga. */
-.vitali { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: auto; gap: 8px; align-items: stretch; }
+/* grid-auto-rows: 1fr → tutte le righe di riquadri hanno la stessa altezza
+   (es. Classe Armatura/Riposo alti quanto Bonus comp./Iniziativa/Velocità sotto). */
+.vitali { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 8px; align-items: stretch; }
 /* consente ai riquadri di stringersi sotto la larghezza del contenuto (niente overflow) */
 .vitali > * { min-width: 0; }
 .vitali > * > * { min-width: 0; }

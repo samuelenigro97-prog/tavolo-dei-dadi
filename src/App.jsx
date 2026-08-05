@@ -796,6 +796,28 @@ function risorseAutoClasse(classe, livello, caratteristiche) {
       return [];
   }
 }
+// Spiegazioni delle risorse di classe (parole proprie, meccaniche 5e/5.5):
+// mostrate al passaggio del cursore sul nome, come per le altre sezioni.
+const SPIEG_RISORSE = {
+  'Ispirazione Bardica': 'Azione bonus: doni a un alleato entro 18 m un dado Ispirazione (d6, poi d8/d10/d12 col livello) da sommare a un tiro per colpire, una prova o un TS. Usi pari al mod. Carisma; si recuperano con un riposo lungo (breve dal 5° livello).',
+  'Punti Focus': 'La riserva di Ki del Monaco (punti = livello). Li spendi per le tue tecniche: Raffica di Colpi (1 attacco bonus extra), Scatto Vertiginoso, Difesa Paziente. Si recuperano tutti con un riposo breve o lungo.',
+  'Punti Stregoneria': 'La riserva di energia magica dello Stregone (punti = livello). Puoi convertirli in slot incantesimo (o viceversa) e alimentano la Metamagia. Si recuperano con un riposo lungo.',
+  'Recuperare Energie': 'Azione bonus: recuperi 1d10 + il tuo livello da Guerriero in PF. Si ricarica con un riposo breve o lungo.',
+  'Azione Impetuosa': 'Una volta per riposo (due volte dal 17° livello) compi un’azione aggiuntiva nel tuo turno, oltre a quella normale. Si ricarica con un riposo breve o lungo.',
+  'Forma Selvatica': 'Con un’azione ti trasformi in una bestia che conosci (entro i limiti di grado sfida e capacità). Usi limitati, recuperati con un riposo breve o lungo.',
+  'Incanalare Divinità': 'Incanali il potere del tuo dominio (Chierico) o giuramento (Paladino) per un effetto speciale della sottoclasse. Usi limitati: si recuperano con un riposo breve (Chierico) o lungo (Paladino).',
+  'Imposizione delle Mani': 'Una riserva di potere curativo pari a 5 × il tuo livello da Paladino. Con un’azione distribuisci quei PF per curare (o spendi 5 punti per neutralizzare un veleno). Si ricarica con un riposo lungo.',
+};
+
+/** Spiegazione di una risorsa di classe: prima la mappa dedicata, poi i privilegi. */
+function spiegaRisorsa(nome) {
+  const n = String(nome || '').trim();
+  if (SPIEG_RISORSE[n]) return SPIEG_RISORSE[n];
+  const sp = spiegaPrivilegio(n);
+  if (sp) return typeof sp === 'string' ? sp : (sp.testo || sp.descrizione || '');
+  return '';
+}
+
 // Lingua tematica concessa dalla specie (oltre al Comune). Nella 5.5 le lingue
 // derivano dall'origine, ma diamo un default sensato modificabile a mano.
 const LINGUA_SPECIE = {
@@ -5211,7 +5233,7 @@ export default function App() {
                 return (
                   <div key={r.id} style={{ marginBottom: 8, fontSize: 12 }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
-                      <Editable value={r.nome} onChange={(v) => modifica({ nome: v })} width={110} title={t('tip.nome_risorsa')} />
+                      <Editable value={r.nome} onChange={(v) => modifica({ nome: v })} width={110} title={spiegaRisorsa(r.nome) || t('tip.nome_risorsa')} />
                       <button
                         style={{ ...styles.buttonMini, padding: '0 6px', color: C.red }}
                         title={t('tip.rimuovi_risorsa')}
@@ -5927,7 +5949,11 @@ export default function App() {
                 const pesoMonete = numMonete * 0.01;
                 const pesoTot = pesoInv + pesoArmi + pesoArm + pesoMonete;
                 const forza = scheda.caratteristiche.forza || 10;
-                const cap = capacitaCarico(forza);
+                // Borsa Conservante equipaggiata: contenitore magico che regge fino a
+                // ~250 kg a peso fisso, quindi mentre la usi aumenta la capacità di carico.
+                const borsaEquip = inv.some((o) => o.equip && /borsa\s+conservante|bag of holding/i.test(o.nome || ''));
+                const capBonusBorsa = borsaEquip ? 250 : 0;
+                const cap = capacitaCarico(forza) + capBonusBorsa;
                 const soglia1 = forza * 2.5; // ingombrato
                 const soglia2 = forza * 5;   // gravemente ingombrato
                 const stato = pesoTot > cap ? 'sovraccarico' : pesoTot > soglia2 ? 'grave' : pesoTot > soglia1 ? 'ingombrato' : 'ok';

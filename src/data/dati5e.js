@@ -165,6 +165,9 @@ export const PESI_OGGETTI = {
   'Dotazione da diplomatico': 18, 'Dotazione da intrattenitore': 19, 'Dotazione da sacerdote': 12.5,
   'Dotazione da dungeoneer': 30.5, 'Dotazione da scassinatore': 23, 'Abiti da viaggiatore': 2,
   'Abiti comuni': 1.5, 'Abiti pregiati': 3, 'Focus druidico': 1.5, 'Libro (filosofia)': 2.5,
+  // Oggetto magico: peso fisso a prescindere dal contenuto (vedi funzione borsa
+  // conservante nell'inventario, che aumenta la capacità di carico se equipaggiata).
+  'Borsa Conservante': 7.5,
 };
 export const NOMI_OGGETTI = Object.keys(PESI_OGGETTI).sort((a, b) => a.localeCompare(b, 'it'));
 export const PESO_ARMATURA_TIPO = { leggera: 5, media: 9, pesante: 25 };
