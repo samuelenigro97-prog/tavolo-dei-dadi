@@ -374,7 +374,7 @@ function regexMunizione(nomeArma) {
 // privilegi/privilegiSottoclasse/talenti sono nel blocco fisso "Privilegi & Talenti"
 // sotto la Magia (non riordinabili singolarmente).
 // 'metamagia' NON è qui: non è trascinabile, resta sempre agganciata sotto la Magia.
-const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'equipaggiamento', 'aspetto'];
+const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'talenti', 'trattiSpecie', 'equipaggiamento', 'aspetto'];
 
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 
@@ -847,7 +847,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.37.0';
+const APP_VERSION = '2.38.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4115,10 +4115,24 @@ export default function App() {
       })()}
 
       {mostraPannelloAudio && (
-        <div style={{
-          background: C.panelLight, borderBottom: `1px solid ${C.border}`, padding: '10px 16px',
-          display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13, boxShadow: '0 4px 12px rgba(0,0,0,0.25)'
-        }}>
+        <div
+          onClick={() => setMostraPannelloAudio(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1400,
+            background: 'rgba(0,0,0,0.35)'
+          }}
+        >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: 'fixed', top: 12, right: 12, bottom: 12,
+            width: 'min(380px, calc(100vw - 24px))',
+            background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 10,
+            padding: '12px 16px', overflowY: 'auto',
+            display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13,
+            boxShadow: '-6px 0 24px rgba(0,0,0,0.4)'
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
             <div style={{ fontWeight: 'bold', color: C.goldDark, display: 'flex', alignItems: 'center', gap: 6 }}>
               <span>🎭 Ambientazione</span>
@@ -4152,7 +4166,7 @@ export default function App() {
           </div>
 
           {/* Ambientazioni: un click applica palette + sfondo + audio abbinato */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: 6 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 6 }}>
             {PRESET_COLORI.map((p) => {
               const attivo = presetColori === p.id;
               const conSuono = p.audio && p.audio !== 'spento';
@@ -4204,6 +4218,7 @@ export default function App() {
           <div style={{ fontSize: 10, color: C.inkDim, opacity: 0.8, textAlign: 'center' }}>
             🔊 Suoni ambientali reali da Freesound.com · licenza CC0 (dominio pubblico)
           </div>
+        </div>
         </div>
       )}
 
@@ -5847,25 +5862,26 @@ export default function App() {
                   )}
                 </Sezione>
               </div>
-              <div className="privilegi-duo">
-                <Sezione titolo={t("sez.talenti")} {...apertoProps('talenti')}>
-                  <ListaQuadratini
-                    value={scheda.talenti}
-                    lookup={spiegaTalento}
-                    placeholder={t("talenti.ph")}
-                    onChange={(v) => aggiorna({ talenti: v })}
-                  />
-                </Sezione>
-                <Sezione titolo={t("sez.tratti_specie")} {...apertoProps('trattiSpecie')}>
-                  <ListaQuadratini
-                    value={scheda.trattiSpecie}
-                    lookup={spiegaTratto}
-                    placeholder={t("tratti.ph")}
-                    onChange={(v) => aggiorna({ trattiSpecie: v })}
-                  />
-                </Sezione>
-              </div>
             </div>
+
+            {/* Talenti e Tratti della specie: sezioni indipendenti e trascinabili
+                (non più un blocco unico legato ai privilegi). */}
+            <Sezione titolo={t("sez.talenti")} {...propsSez('talenti')} {...apertoProps('talenti')}>
+              <ListaQuadratini
+                value={scheda.talenti}
+                lookup={spiegaTalento}
+                placeholder={t("talenti.ph")}
+                onChange={(v) => aggiorna({ talenti: v })}
+              />
+            </Sezione>
+            <Sezione titolo={t("sez.tratti_specie")} {...propsSez('trattiSpecie')} {...apertoProps('trattiSpecie')}>
+              <ListaQuadratini
+                value={scheda.trattiSpecie}
+                lookup={spiegaTratto}
+                placeholder={t("tratti.ph")}
+                onChange={(v) => aggiorna({ trattiSpecie: v })}
+              />
+            </Sezione>
 
 
           </div>
