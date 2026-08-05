@@ -1413,6 +1413,17 @@ export default function App() {
   function chiudiGuida() {
     try { localStorage.setItem('scheda-interattiva:guida-vista', '1'); } catch { /* niente */ }
     setMostraGuida(false);
+    // Primo avvio senza personaggio reale: apri subito la CREAZIONE del PG.
+    try {
+      const r = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      const s = r?.personaggi?.[r?.attivo];
+      const haPg = s && (s.nome || s.classe);
+      if (!haPg) {
+        setBozzaCrea({ nome: '', classe: '', specie: '', background: '', metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' });
+        setMostraMenu(false);
+        setMostraCrea(true);
+      }
+    } catch { /* niente */ }
   }
 
   // Personaggio ricevuto tramite link: lo decodifichiamo e chiediamo conferma
