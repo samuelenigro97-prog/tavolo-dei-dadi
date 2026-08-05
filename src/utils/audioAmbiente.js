@@ -675,6 +675,39 @@ export function eseguiEffettoSonoro(tipo, volume = 0.5) {
 
   const v = Math.max(0, Math.min(1, Number(volume) || 0.5));
 
+  if (tipo === 'danni') {
+    // Suono dei DANNI: distinto dal tiro per colpire. Rimbalzo di dadi (brevi
+    // impulsi di rumore filtrato) seguito da un tonfo grave.
+    const now = ctx.currentTime;
+    for (let i = 0; i < 3; i++) {
+      const t0 = now + i * 0.06;
+      const len = Math.floor(ctx.sampleRate * 0.05);
+      const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let j = 0; j < len; j++) d[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / len, 2);
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = 1100 + Math.random() * 900;
+      bp.Q.value = 1.1;
+      const g = ctx.createGain();
+      g.gain.value = 0.5 * v;
+      src.connect(bp); bp.connect(g); g.connect(ctx.destination);
+      src.start(t0);
+    }
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(170, now + 0.18);
+    osc.frequency.exponentialRampToValueAtTime(60, now + 0.34);
+    const g2 = ctx.createGain();
+    g2.gain.setValueAtTime(0.55 * v, now + 0.18);
+    g2.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
+    osc.connect(g2); g2.connect(ctx.destination);
+    osc.start(now + 0.18); osc.stop(now + 0.36);
+    return;
+  }
+
   if (tipo === 'critico') {
     const note = [523.25, 659.25, 783.99, 1046.50];
     note.forEach((freq, idx) => {

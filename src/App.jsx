@@ -1853,13 +1853,13 @@ export default function App() {
    * Usato da TUTTI i tiri così il dado "rotola" sempre, anche per danni,
    * dado libero, espressioni e dado vita.
    */
-  function conAnimazione(alFine, facciaFinale, tipoDado = 20, magia = false) {
+  function conAnimazione(alFine, facciaFinale, tipoDado = 20, magia = false, suono = null) {
     clearInterval(intervalRef.current);
     setTiro(null);
     setDanni(null);
     setRolling(true);
     setTipoDadoInUso(tipoDado);
-    if (effettiSonoriAttivi) eseguiEffettoSonoro(magia ? 'magia' : 'tiro', volumeAudio);
+    if (effettiSonoriAttivi) eseguiEffettoSonoro(suono || (magia ? 'magia' : 'tiro'), volumeAudio);
     intervalRef.current = setInterval(() => setFaccia(tiraDado(tipoDado)), 70);
     setTimeout(() => {
       clearInterval(intervalRef.current);
@@ -2082,7 +2082,7 @@ export default function App() {
     conAnimazione(() => {
       setDanni({ etichetta, ...esito, critico: false });
       registra({ etichetta, tipo: esito.tabella ? 'tiro' : 'danni', totale: esito.totale, dettaglio: esito.dettaglio });
-    }, esito.totale, maxFacce || 20, magia);
+    }, esito.totale, maxFacce || 20, magia, esito.tabella ? null : 'danni');
   }
 
   /** Tira i danni di un attacco (con eventuale critico), indipendente dallo stato. */
@@ -2095,7 +2095,7 @@ export default function App() {
     conAnimazione(() => {
       setDanni({ etichetta: `Danni: ${nome}`, ...esito, critico });
       registra({ etichetta: `${t('log.danni')}: ${nome}`, tipo: 'danni', totale: esito.totale, dettaglio: esito.dettaglio, critico });
-    }, esito.totale, maxFacce || 20);
+    }, esito.totale, maxFacce || 20, false, 'danni');
   }
 
   /** Danni dell'attacco corrente (dal tiro per colpire in corso). */
