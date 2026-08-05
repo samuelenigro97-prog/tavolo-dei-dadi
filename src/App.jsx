@@ -4478,7 +4478,7 @@ export default function App() {
                   // emblema auto (foto assente o SVG): sfondo col colore classe, si fonde coi bordi
                   background: (!scheda.ritratto || scheda.ritratto.startsWith('data:image/svg')) ? (coloreClasse(scheda.classe)?.chiaro || C.panel) : C.panel,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: 'inset 0 0 8px rgba(0,0,0,0.2)', border: `2px solid ${coloreClasse(scheda.classe)?.chiaro || C.border}`,
+                  boxShadow: 'inset 0 0 8px rgba(0,0,0,0.2)', border: `2px solid ${coloreClasse(scheda.classe) ? C.gold : C.border}`,
                   cursor: 'pointer', position: 'relative',
                 }}
                 title={scheda.ritratto ? 'Click: cambia immagine' : 'Click: carica l’immagine del personaggio'}
