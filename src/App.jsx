@@ -1364,6 +1364,11 @@ export default function App() {
   const [urlCustomAudio, setUrlCustomAudio] = useState(() => localStorage.getItem('scheda-interattiva:url-audio-custom') || '');
   const [mostraPannelloAudio, setMostraPannelloAudio] = useState(false);
   const [effettiSonoriAttivi, setEffettiSonoriAttivi] = useState(() => localStorage.getItem('scheda-interattiva:effetti-sonori') !== 'false');
+  // Muto rapido: azzera tutto l'audio (sottofondo + effetti) con un click, senza
+  // toccare il volume impostato — così basta ri-cliccare per tornare com'era.
+  const [mutoAudio, setMutoAudio] = useState(false);
+  // Effetti sonori attivi solo se non sono in muto.
+  const suoniEffOn = effettiSonoriAttivi && !mutoAudio;
 
   useEffect(() => {
     try {
@@ -1384,9 +1389,9 @@ export default function App() {
   }, [ambienteAudio, notteAttiva]);
 
   useEffect(() => {
-    // Di notte il sottofondo è più cupo: volume ridotto (~60%).
-    setVolumeAmbiente(volumeAudio * (notteAttiva ? 0.6 : 1));
-  }, [volumeAudio, notteAttiva]);
+    // Di notte il sottofondo è più cupo: volume ridotto (~60%). In muto: 0.
+    setVolumeAmbiente(mutoAudio ? 0 : volumeAudio * (notteAttiva ? 0.6 : 1));
+  }, [volumeAudio, notteAttiva, mutoAudio]);
 
   // Pre-carica gli effetti sonori (colpo d'arma/incantesimo) al PRIMO tocco:
   // così il primo tiro suona subito, senza ritardo (l'audio va sbloccato da un gesto).
@@ -1884,7 +1889,7 @@ export default function App() {
     setDanni(null);
     setRolling(true);
     setTipoDadoInUso(tipoDado);
-    if (effettiSonoriAttivi) eseguiEffettoSonoro(suono || (magia ? 'magia' : 'tiro'), volumeAudio);
+    if (suoniEffOn) eseguiEffettoSonoro(suono || (magia ? 'magia' : 'tiro'), volumeAudio);
     intervalRef.current = setInterval(() => setFaccia(tiraDado(tipoDado)), 70);
     setTimeout(() => {
       clearInterval(intervalRef.current);
@@ -2033,7 +2038,7 @@ export default function App() {
     setTiro(null);
     setRolling(true);
     setTipoDadoInUso(20);
-    if (effettiSonoriAttivi) eseguiEffettoSonoro(magia ? 'magia' : 'tiro', volumeAudio);
+    if (suoniEffOn) eseguiEffettoSonoro(magia ? 'magia' : 'tiro', volumeAudio);
     intervalRef.current = setInterval(() => setFaccia(tiraDado(20)), 70);
 
     // Sfinimento: nella 5.5 (2024) −2 a ogni tiro di d20 per livello; nella
@@ -2045,7 +2050,7 @@ export default function App() {
       clearInterval(intervalRef.current);
       setFaccia(naturale);
       setRolling(false);
-      if (effettiSonoriAttivi) {
+      if (suoniEffOn) {
         if (naturale === 20) eseguiEffettoSonoro('critico', volumeAudio);
         else if (naturale === 1) eseguiEffettoSonoro('fallimento', volumeAudio);
       }
@@ -2107,7 +2112,7 @@ export default function App() {
     conAnimazione(() => {
       setDanni({ etichetta, ...esito, critico: false });
       registra({ etichetta, tipo: esito.tabella ? 'tiro' : 'danni', totale: esito.totale, dettaglio: esito.dettaglio });
-    }, esito.totale, maxFacce || 20, magia, esito.tabella ? null : 'danni');
+    }, esito.totale, maxFacce || 20, magia, esito.tabella ? null : (magia ? 'magia' : 'danni'));
   }
 
   /** Tira i danni di un attacco (con eventuale critico), indipendente dallo stato. */
@@ -2117,10 +2122,17 @@ export default function App() {
     const maxFacce = Math.max(...parsata.termini.map((p) => p.facce).filter(Boolean));
     const nome = attacco.nome;
     const esito = tiraDanni(parsata, critico);
+    // Suono coerente col tipo d'attacco: incantesimo → magia; arco/balestra/fionda
+    // → colpo a distanza; tutto il resto (mischia) → colpo di spada.
+    const suonoDanno = attacco?.isSpell
+      ? 'magia'
+      : /arco|balestra|fionda/i.test(nome || '')
+        ? 'arco'
+        : 'arma';
     conAnimazione(() => {
       setDanni({ etichetta: `Danni: ${nome}`, ...esito, critico });
       registra({ etichetta: `${t('log.danni')}: ${nome}`, tipo: 'danni', totale: esito.totale, dettaglio: esito.dettaglio, critico });
-    }, esito.totale, maxFacce || 20, false, 'danni');
+    }, esito.totale, maxFacce || 20, false, suonoDanno);
   }
 
   /** Danni dell'attacco corrente (dal tiro per colpire in corso). */
@@ -2152,7 +2164,7 @@ export default function App() {
     setTiro(null);
     setRolling(true);
     setTipoDadoInUso(20);
-    if (effettiSonoriAttivi) eseguiEffettoSonoro('tiro', volumeAudio);
+    if (suoniEffOn) eseguiEffettoSonoro('tiro', volumeAudio);
     intervalRef.current = setInterval(() => setFaccia(tiraDado(20)), 70);
 
     const { naturale, dadi } = tiraD20(modalita);
@@ -2160,7 +2172,7 @@ export default function App() {
       clearInterval(intervalRef.current);
       setFaccia(naturale);
       setRolling(false);
-      if (effettiSonoriAttivi) {
+      if (suoniEffOn) {
         if (naturale === 20) eseguiEffettoSonoro('critico', volumeAudio);
         else if (naturale === 1) eseguiEffettoSonoro('fallimento', volumeAudio);
       }
@@ -3950,6 +3962,13 @@ export default function App() {
             onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}
           >
             {tema === 'auto' ? t('btn.tema.auto') : tema === 'chiaro' ? t('btn.tema.chiaro') : t('btn.tema.scuro')}
+          </button>
+          <button
+            style={{ ...styles.modeButton(mutoAudio), fontSize: 14, padding: '3px 8px' }}
+            title={mutoAudio ? 'Audio in muto · click per riattivare' : 'Muta rapidamente tutto l’audio'}
+            onClick={() => setMutoAudio((m) => !m)}
+          >
+            {mutoAudio ? '🔇' : '🔊'}
           </button>
           <button
             style={{ ...styles.modeButton(presetColori !== 'default'), fontSize: 14, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}
