@@ -2,20 +2,20 @@
  {
   "theme": "taverna",
   "file": "taverna.jpg",
-  "kb": 1697,
-  "title": "Adriaen van Ostade - Peasants in a Tavern - 1665 - RCIN 404619.jpg",
+  "kb": 939,
+  "title": "David Teniers (II) - Tavern interior.jpg",
   "license": "Public domain",
-  "author": "Adriaen van Ostade",
-  "descurl": "https://commons.wikimedia.org/wiki/File:Adriaen_van_Ostade_-_Peasants_in_a_Tavern_-_1665_-_RCIN_404619.jpg"
+  "author": "",
+  "descurl": "https://commons.wikimedia.org/wiki/File:David_Teniers_(II)_-_Tavern_interior.jpg"
  },
  {
   "theme": "mercato",
   "file": "mercato.jpg",
-  "kb": 1035,
-  "title": "Charles Hoguet - Markttreiben in einer mittelalterlichen Stadt (1862).jpg",
+  "kb": 1493,
+  "title": "Bazaar entrance (1874), by Alberto Pasini.jpg",
   "license": "Public domain",
-  "author": "Charles Hoguet",
-  "descurl": "https://commons.wikimedia.org/wiki/File:Charles_Hoguet_-_Markttreiben_in_einer_mittelalterlichen_Stadt_(1862).jpg"
+  "author": "Alberto Pasini",
+  "descurl": "https://commons.wikimedia.org/wiki/File:Bazaar_entrance_(1874),_by_Alberto_Pasini.jpg"
  },
  {
   "theme": "citta",
@@ -29,11 +29,11 @@
  {
   "theme": "dungeon",
   "file": "dungeon.jpg",
-  "kb": 938,
-  "title": "Giovanni Battista Piranesi - Le Carceri d'Invenzione - Second Edition - 1761 - 12 - The Sawhorse.jpg",
+  "kb": 130,
+  "title": "Simon Denis - Interior of the Neptunus Grotto in Tivoli - NM 7445 - Nationalmuseum.jpg",
   "license": "Public domain",
-  "author": "Giovanni Battista Piranesi",
-  "descurl": "https://commons.wikimedia.org/wiki/File:Giovanni_Battista_Piranesi_-_Le_Carceri_d%27Invenzione_-_Second_Edition_-_1761_-_12_-_The_Sawhorse.jpg"
+  "author": "Simon Denis",
+  "descurl": "https://commons.wikimedia.org/wiki/File:Simon_Denis_-_Interior_of_the_Neptunus_Grotto_in_Tivoli_-_NM_7445_-_Nationalmuseum.jpg"
  },
  {
   "theme": "foresta",
