@@ -1310,6 +1310,7 @@ export default function App() {
     () => typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches
   );
   const [oraTick, setOraTick] = useState(0); // forza il ricalcolo quando cambia la fascia oraria
+  const [notteAttiva, setNotteAttiva] = useState(false); // tema scuro/notte: sfondi e audio più cupi
 
   // ordine (personalizzabile via drag) delle sezioni collassabili
   const [ordineSezioni, setOrdineSezioni] = useState(() => {
@@ -1378,8 +1379,9 @@ export default function App() {
   }, [ambienteAudio]);
 
   useEffect(() => {
-    setVolumeAmbiente(volumeAudio);
-  }, [volumeAudio]);
+    // Di notte il sottofondo è più cupo: volume ridotto (~60%).
+    setVolumeAmbiente(volumeAudio * (notteAttiva ? 0.6 : 1));
+  }, [volumeAudio, notteAttiva]);
 
   // Pre-carica gli effetti sonori (colpo d'arma/incantesimo) al PRIMO tocco:
   // così il primo tiro suona subito, senza ritardo (l'audio va sbloccato da un gesto).
@@ -1566,6 +1568,7 @@ export default function App() {
     const scuroEff =
       tema === 'scuro' || (tema === 'auto' && (sistemaScuro || eNotte()));
     const modo = scuroEff ? 'scuro' : 'chiaro';
+    setNotteAttiva(scuroEff); // notte = tema scuro: pilota sfondi notturni e audio più cupo
     // Parti dal tema base, poi applica l'override del preset colori
     const presetDati = PRESET_COLORI.find((p) => p.id === presetColori) || PRESET_COLORI[0];
     const t = { ...BASE_TEMA[modo], ...presetDati[modo] };
@@ -1609,12 +1612,18 @@ export default function App() {
     const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/';
     const idAmb = presetDati.id;
     const conImmagine = idAmb && idAmb !== 'default';
-    // velo scuro sopra la foto: la attenua così testo e pannelli restano leggibili
+    // velo SCURO sopra la foto (non chiaro): così l'immagine resta ben visibile e
+    // "spicca" anche di giorno, mentre i pannelli opachi restano bianchi/leggibili.
+    // Di notte il velo è più intenso per un'atmosfera più cupa.
+    const veloAlpha = scuroEff ? 0.5 : 0.32;
     const velo = conImmagine
-      ? `linear-gradient(${hexRgba(t.bg, scuroEff ? 0.62 : 0.72)}, ${hexRgba(t.bg, scuroEff ? 0.62 : 0.72)})`
+      ? `linear-gradient(rgba(14,11,8,${veloAlpha}), rgba(14,11,8,${veloAlpha}))`
       : '';
+    // Di notte (tema scuro) usa la variante notturna dell'ambientazione, se esiste.
+    const AMB_NOTTE = new Set(['taverna', 'citta', 'foresta', 'notte', 'mare', 'tundra', 'tempesta', 'accampamento', 'deserto', 'tempio']);
+    const fileImg = (scuroEff && AMB_NOTTE.has(idAmb)) ? `${idAmb}-notte.jpg` : `${idAmb}.jpg`;
     const imgLayer = conImmagine
-      ? `url("${baseUrl}ambientazioni/${idAmb}.jpg") center center / cover no-repeat`
+      ? `url("${baseUrl}ambientazioni/${fileImg}") center center / cover no-repeat`
       : '';
     document.body.style.background = [sfondoAmbiente, glowClasse, ambra, vignetta, velo, imgLayer, t.bg]
       .filter(Boolean)
