@@ -6815,14 +6815,150 @@ export default function App() {
               </div>
             );
           })()}
-              </div>
-              {/* Riga 2 — Punti Ferita (allineata a Destrezza + Costituzione) */}
-              <div className="pm-pf">
-            <div style={{ ...styles.vitalBox, gridColumn: 'span 4', padding: '32px 14px 12px' }}>
-              <SfondoVit>🩸</SfondoVit>
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
-                <div style={{ ...styles.vitalLabel, margin: 0, fontSize: 13 }}>❤️ {t("vital.pf")}</div>
-              </div>
+
+            {/* Riposo */}
+            <div style={styles.vitalBox}>
+              <div style={styles.vitalLabel}>{t("vital.riposo")}</div>
+                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
+                    <button style={{ ...styles.buttonMini, fontSize: 11 }} onClick={() => riposoBreve()} title={t('vital.riposo_breve_tip')}>☕ {t("vital.breve")}</button>
+                    <button style={{ ...styles.buttonMini, fontSize: 11, borderColor: C.goldDark, color: C.goldDark }} onClick={() => riposoLungo()} title={t('vital.riposo_lungo_tip')}>🌙 {t("vital.lungo")}</button>
+                  </div>
+                </div>
+
+                {/* TS Morte */}
+                <div style={styles.vitalBox}>
+                  <div style={styles.vitalLabel}>{t("vital.ts_morte")}</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3, fontSize: 11 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ color: C.green, fontWeight: 600 }}>✔</span>
+                      {[1, 2, 3].map((n) => (
+                        <input key={`s-${n}`} type="checkbox" checked={(scheda.tsMorte?.successi || 0) >= n} onChange={() => {
+                          const att = scheda.tsMorte?.successi || 0;
+                          aggiorna({ tsMorte: { ...scheda.tsMorte, successi: att === n ? n - 1 : n } });
+                        }} />
+                      ))}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ color: C.red, fontWeight: 600 }}>✘</span>
+                      {[1, 2, 3].map((n) => (
+                        <input key={`f-${n}`} type="checkbox" checked={(scheda.tsMorte?.fallimenti || 0) >= n} onChange={() => {
+                          const att = scheda.tsMorte?.fallimenti || 0;
+                          aggiorna({ tsMorte: { ...scheda.tsMorte, fallimenti: att === n ? n - 1 : n } });
+                        }} />
+                      ))}
+                    </div>
+                  </div>
+                  <button style={{ ...styles.buttonMini, fontSize: 10, marginTop: 2 }} onClick={() => aggiorna({ tsMorte: { successi: 0, fallimenti: 0 } })}>{t("vital.reset_ts")}</button>
+                </div>
+
+                {/* RIGA 2 — Iniziativa | Velocità | Percezione Passiva | Resistenze | Visione */}
+                {/* Iniziativa */}
+                <div style={styles.vitalBox}>
+                  <div style={styles.vitalLabel}>{t("vital.iniziativa")}</div>
+                  <div style={styles.vitalValue}>
+                    <Rollable onRoll={() => lanciaD20('Iniziativa', modificatore(scheda.caratteristiche.destrezza))}>
+                      {conSegno(modificatore(scheda.caratteristiche.destrezza))}
+                    </Rollable>
+                  </div>
+                </div>
+
+                {/* Velocità + Calcolatore Salto & Respiro */}
+                <div
+                  style={styles.vitalBox}
+                  title={`🏃 Salto in Lungo (con rincorsa): ${(scheda.caratteristiche?.forza || 10)} piedi (${((scheda.caratteristiche?.forza || 10) * 0.3).toFixed(1)} m) • ⬆️ Salto in Alto: ${3 + modificatore(scheda.caratteristiche?.forza || 10)} piedi (${((3 + modificatore(scheda.caratteristiche?.forza || 10)) * 0.3).toFixed(1)} m) • 🫁 Trattenere il Respiro: ${Math.max(1, 1 + modificatore(scheda.caratteristiche?.costituzione || 10))} minuti`}
+                >
+                  <div style={styles.vitalLabel}>{t("vital.movimento")}</div>
+                  <div style={styles.vitalValue}>
+                    <Editable value={scheda.velocita} tipo="numero" onChange={(v) => aggiorna({ velocita: v })} width={48} />
+                    <span style={{ fontSize: 17, color: C.inkDim, marginLeft: 2, fontWeight: 600 }}> m</span>
+                  </div>
+                  <div style={{ fontSize: 10, color: C.goldDark, marginTop: 2, textAlign: 'center', fontWeight: 600 }}>
+                    🏃 Salto: {((scheda.caratteristiche?.forza || 10) * 0.3).toFixed(1)}m
+                  </div>
+                </div>
+
+                {/* Percezione Passiva */}
+                <div style={styles.vitalBox} title={t('vital.passive_tooltip')}>
+                  <div style={styles.vitalLabel}>{t("vital.percezione_passiva")}</div>
+                  <div style={styles.vitalValue}>{percezionePassiva}</div>
+                </div>
+
+                {/* Resistenze — chip rimovibili + tendina */}
+                <div style={styles.vitalBox}>
+                  <div style={styles.vitalLabel}>{t("vital.resistenze")}</div>
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <CampoConTendina
+                      value={scheda.resistenze}
+                      opzioni={DANNI_5E}
+                      onChange={(v) => aggiorna({ resistenze: v })}
+                      title={t('tip.resistenze')}
+                    />
+                  </div>
+                </div>
+
+                {/* Vista / Sensi — chip rimovibili + tendina */}
+                <div style={styles.vitalBox}>
+                  <div style={styles.vitalLabel}>{t("vital.visione")}</div>
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <CampoConTendina
+                      value={scheda.sensi}
+                      opzioni={SENSI_5E}
+                      onChange={(v) => aggiorna({ sensi: v })}
+                      title={t('tip.sensi')}
+                    />
+                  </div>
+                </div>
+
+                {/* RIGA 3 — Bonus Comp. | Ispirazione */}
+                {/* Bonus Competenza */}
+                <div style={styles.vitalBox}>
+                  <div style={styles.vitalLabel}>{t("vital.competenza")}</div>
+                  <div style={styles.vitalValue}>
+                    <Editable value={conSegno(scheda.bonusCompetenza)} onChange={(v) => aggiorna({ bonusCompetenza: parseInt(v, 10) || 0 })} width={48} title={t('tip.click_modifica')} />
+                  </div>
+                  {scheda.bonusCompetenza !== bonusCompetenzaDaLivello(scheda.livello) && (
+                    <span className="tirabile" style={{ fontSize: 9, color: C.goldDark, cursor: 'pointer', marginTop: 1 }}
+                      title={`Bonus corretto per liv. ${scheda.livello}: ${conSegno(bonusCompetenzaDaLivello(scheda.livello))}`}
+                      onClick={() => aggiorna({ bonusCompetenza: bonusCompetenzaDaLivello(scheda.livello) })}>
+                      auto {conSegno(bonusCompetenzaDaLivello(scheda.livello))}
+                    </span>
+                  )}
+                </div>
+
+                {/* Ispirazione */}
+                <div style={{
+                  ...styles.vitalBox,
+                  border: `1px solid ${scheda.ispirazione ? '#d4af37' : C.border}`,
+                  background: scheda.ispirazione ? 'rgba(212,175,55,0.16)' : C.panelLight,
+                  boxShadow: scheda.ispirazione ? '0 0 9px rgba(212,175,55,0.55)' : 'none',
+                  transition: 'background 0.25s, border-color 0.25s, box-shadow 0.25s',
+                }}>
+                  <div style={{ ...styles.vitalLabel, color: scheda.ispirazione ? '#c8991a' : C.inkDim }}>{t("vital.ispirazione")}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <button
+                      className="tirabile"
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                        padding: '0 8px', fontSize: 28, border: 'none', lineHeight: 1,
+                        background: 'transparent',
+                        color: scheda.ispirazione ? '#d4af37' : C.inkDim,
+                        textShadow: scheda.ispirazione ? '0 0 7px rgba(212,175,55,0.7)' : 'none',
+                        cursor: 'pointer', transition: 'all 0.2s',
+                      }}
+                      onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
+                      title={t('tip.ispirazione')}
+                    >
+                      {scheda.ispirazione ? '★' : '☆'}
+                    </button>
+                  </div>
+                </div>
+
+            {/* ELEMENTI SEMPRE A VISTA: Punti Ferita (La Vita), Sfinimento (Affaticamento), Concentrazione e Condizioni */}
+            {/* Punti Ferita — occupa sempre 2 colonne (o tutta la larghezza in griglia compatta) */}
+            <div style={{ ...styles.vitalBox, gridColumn: !scheda.vitaliNascondi ? 'span 2' : 'span 2', padding: '12px 14px' }}>
+
+              {/* Label compatta sopra la barra */}
+              <div style={{ ...styles.vitalLabel, marginBottom: 6, fontSize: 11 }}>❤️ {t("vital.pf")}</div>
 
               {/* BARRA DELLA VITA STILE VIDEOGIOCO */}
               {(() => {
@@ -6834,7 +6970,7 @@ export default function App() {
                 const percTemp = Math.max(0, Math.min(100, (temp / max) * 100));
                 const coloreNormale = (att / Math.max(1, maxPf)) > 0.5 ? 'linear-gradient(90deg, #2e7d32, #4caf50)' : (att / Math.max(1, maxPf)) > 0.25 ? 'linear-gradient(90deg, #f57f17, #ffb300)' : 'linear-gradient(90deg, #c62828, #e53935)';
                 return (
-                  <div style={{ position: 'relative', width: '100%', height: 26, borderRadius: 13, background: 'rgba(0,0,0,0.7)', border: `2px solid ${C.goldDark}`, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.3)', overflow: 'hidden', marginBottom: 10, display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
+                  <div style={{ position: 'relative', height: 30, borderRadius: 15, background: 'rgba(0,0,0,0.7)', border: `2px solid ${C.goldDark}`, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.3)', overflow: 'hidden', marginBottom: 6, display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''} — click per modificare`}>
                     <div style={{ width: `${percNormale}%`, height: '100%', background: coloreNormale, transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: '0 0 10px rgba(76,175,80,0.5)', position: 'relative' }}>
                       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)' }} />
                     </div>
@@ -6843,31 +6979,66 @@ export default function App() {
                         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)' }} />
                       </div>
                     )}
-                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 13, textShadow: '0 1px 3px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.8)', letterSpacing: 0.5, pointerEvents: 'none' }}>
-                      {att} / {maxPf} {temp > 0 ? `(+${temp})` : ''}
+                    {/* Overlay cliccabile per modificare PF attuali */}
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, textShadow: '0 1px 3px rgba(0,0,0,0.9)', letterSpacing: 0.5, gap: 3 }}>
+                      <span style={{ color: '#fff', cursor: 'pointer' }}>
+                        <Editable value={scheda.pfAttuali} tipo="numero" onChange={(v) => {
+                          const danno = scheda.pfAttuali - v;
+                          aggiorna({ pfAttuali: v });
+                          if (danno > 0 && scheda.concentrazione) {
+                            setCheckConc({ danno, cd: Math.max(10, Math.floor(danno / 2)), spell: scheda.concentrazione, esito: null });
+                          }
+                        }} width={38} style={{ color: '#fff', fontWeight: 800, fontSize: 14, textShadow: '0 1px 3px rgba(0,0,0,0.9)', background: 'transparent', border: 'none' }} />
+                      </span>
+                      <span style={{ color: 'rgba(255,255,255,0.8)', fontWeight: 600, fontSize: 13 }}>/ {maxPf}</span>
                     </div>
                   </div>
                 );
               })()}
 
+              {/* PF Temporanei — centrati sotto la barra */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 8 }}>
-                <span style={{ fontSize: 20, fontWeight: 800, color: C.ink }}>
-                  <Editable value={scheda.pfAttuali} tipo="numero" onChange={(v) => {
-                    const danno = scheda.pfAttuali - v;
-                    aggiorna({ pfAttuali: v });
-                    if (danno > 0 && scheda.concentrazione) {
-                      setCheckConc({ danno, cd: Math.max(10, Math.floor(danno / 2)), spell: scheda.concentrazione, esito: null });
-                    }
-                  }} width={48} />
-                </span>
-                <span style={{ fontSize: 16, color: C.inkDim, fontWeight: 600 }}>/ <span title={t('vital.max_pf_tooltip')} style={{ display: 'inline-block', textAlign: 'center' }}>{scheda.pfMax}</span></span>
-                {/* PF temporanei: badge scudo accanto ai PF, non più in alto a caso */}
-                <span
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 3, marginLeft: 10, fontSize: 12, color: '#42a5f5', background: 'rgba(66,165,245,0.12)', border: '1px solid rgba(66,165,245,0.45)', borderRadius: 12, padding: '1px 8px' }}
-                  title={t('vital.temporanei')}
-                >
-                  🛡️ <span style={{ fontSize: 10, color: C.inkDim, letterSpacing: 0.4, textTransform: 'uppercase' }}>{t("vital.temporanei")}</span>
-                  <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={24} style={{ fontSize: 13, fontWeight: 'bold', color: '#42a5f5' }} />
+                <span style={{ fontSize: 11, color: C.inkDim }}>🛡️ {t("vital.temporanei")}</span>
+                <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={32} style={{ fontSize: 13, fontWeight: 'bold', color: '#42a5f5' }} />
+              </div>
+
+              <div style={{ display: 'flex', gap: 6, marginBottom: 6, justifyContent: 'center' }}>
+                <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '3px 10px', fontWeight: 'bold' }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 1) }); }} title={t('vital.danno')}>-1</button>
+                <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '3px 10px', fontWeight: 'bold' }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 5) }); }} title={t('vital.danno')}>-5</button>
+                <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '3px 10px', fontWeight: 'bold' }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 1) }); }} title={t('vital.cura')}>+1</button>
+                <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '3px 10px', fontWeight: 'bold' }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 5) }); }} title={t('vital.cura')}>+5</button>
+              </div>
+
+              <div style={{ ...styles.detail, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: 10, paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
+                  {t('vital.dadi_vita')}{' '}
+                  <Rollable onRoll={tiraDadoVita} title={t('vital.dadi_vita_tooltip')}>
+                    <strong style={{ color: C.goldDark }}>{Math.max(1, scheda.livello || 1)}</strong>
+                  </Rollable>
+                  {' × d'}
+                  <strong style={{ color: C.goldDark }} title={t('vital.dado_tipo_tooltip')}>
+                    {facceDadoVita(scheda.dadiVita)}
+                  </strong>
+                  {' · '}{t('vital.spesi')}{' '}
+                  <select
+                    style={{ ...styles.inlineInput, fontSize: 12, padding: '1px 3px' }}
+                    value={Math.min(Math.max(0, scheda.dadiVitaSpesi || 0), Math.max(1, scheda.livello || 1))}
+                    onChange={(e) => aggiorna({ dadiVitaSpesi: Number(e.target.value) })}
+                    title={t('vital.spesi_tooltip')}
+                  >
+                    {Array.from({ length: Math.max(1, scheda.livello || 1) + 1 }, (_, i) => (
+                      <option key={i} value={i}>{i}</option>
+                    ))}
+                  </select>
+                  <span style={{ color: C.inkDim }}>/ {Math.max(1, scheda.livello || 1)}</span>
+                  <button
+                    style={{ ...styles.buttonMini, padding: '2px 8px', color: C.green, borderColor: C.green }}
+                    title={t('vital.usa_tooltip')}
+                    disabled={scheda.dadiVitaSpesi >= Math.max(1, scheda.livello || 1)}
+                    onClick={tiraDadoVita}
+                  >
+                    🎲 {t('vital.usa')}
+                  </button>
                 </span>
               </div>
 
