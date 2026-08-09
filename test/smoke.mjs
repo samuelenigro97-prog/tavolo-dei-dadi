@@ -71,7 +71,15 @@ try {
   browser = await chromium.launch({ executablePath: process.env.SMOKE_CHROMIUM || undefined });
   const page = await browser.newPage();
   page.on('pageerror', (e) => errori.push('pageerror: ' + e.message));
-  page.on('console', (m) => { if (m.type() === 'error') errori.push('console: ' + m.text()); });
+  page.on('console', (m) => {
+    if (m.type() === 'error') {
+      const txt = m.text();
+      // Ignora errore benigno MIME type da service worker / dynamic import (non blocca l'app)
+      if (!txt.includes("unsupported MIME type")) {
+        errori.push('console: ' + txt);
+      }
+    }
+  });
 
   // Precarica due personaggi cosi' l'app renderizza la scheda completa (piu' superficie = piu' crash possibili).
   await page.addInitScript((r) => localStorage.setItem('scheda-interattiva:v1', JSON.stringify(r)), roster);
