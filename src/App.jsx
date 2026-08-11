@@ -10,6 +10,7 @@ import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza } from 
 import { FLYORA_JSON, ESEMPIO_GNOMO } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { codificaScheda, decodificaScheda, preparaPerCondivisione, costruisciLink, payloadDaUrl, LIMITE_PAYLOAD } from './utils/condivisione.js';
+import { salvaJson } from './utils/persistenza.js';
 
 // ---------------------------------------------------------------------------
 // Palette e stili
@@ -874,7 +875,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.59.0';
+const APP_VERSION = '2.60.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -980,11 +981,30 @@ function loadState() {
 }
 
 function saveState(roster) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(roster));
-  } catch {
-    // storage pieno o non disponibile: ignora
+  return salvaJson(localStorage, STORAGE_KEY, roster);
+}
+
+/** Ridimensiona e comprime un'immagine finché resta entro la quota indicata. */
+function immagineRidotta(img, maxLato, maxBytes, qualitaIniziale = 0.86) {
+  let scala = Math.min(1, maxLato / Math.max(img.width, img.height));
+  let qualita = qualitaIniziale;
+  let dataUrl = '';
+  for (let tentativo = 0; tentativo < 8; tentativo++) {
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(img.width * scala));
+    canvas.height = Math.max(1, Math.round(img.height * scala));
+    const ctx2d = canvas.getContext('2d');
+    ctx2d.imageSmoothingEnabled = true;
+    ctx2d.imageSmoothingQuality = 'high';
+    ctx2d.drawImage(img, 0, 0, canvas.width, canvas.height);
+    dataUrl = canvas.toDataURL('image/jpeg', qualita);
+    // Il base64 occupa circa 4/3 dei byte originali: la lunghezza della stringa
+    // è una stima prudente della quota che consumerà nel localStorage.
+    if (dataUrl.length <= maxBytes || (scala <= 0.35 && qualita <= 0.55)) break;
+    if (qualita > 0.58) qualita -= 0.1;
+    else scala *= 0.82;
   }
+  return dataUrl;
 }
 
 
@@ -1286,6 +1306,7 @@ export default function App() {
   }, [nuovaVersione, aggiornando]);
 
   const [roster, setRoster] = useState(loadState);
+  const [erroreSalvataggio, setErroreSalvataggio] = useState('');
   // Annulla (undo): pila in memoria degli stati precedenti del roster.
   const storicoUndo = useRef([]);
   const rosterPrec = useRef(null);
@@ -1419,6 +1440,7 @@ export default function App() {
   // Audio e Sottofondo Ambientale
   const [ambienteAudio, setAmbienteAudio] = useState(() => localStorage.getItem('scheda-interattiva:ambiente-audio') || 'spento');
   const [volumeAudio, setVolumeAudio] = useState(() => Number(localStorage.getItem('scheda-interattiva:volume-audio') || 0.5));
+  const [volumeEffetti, setVolumeEffetti] = useState(() => Number(localStorage.getItem('scheda-interattiva:volume-effetti') || 0.65));
   const [urlCustomAudio, setUrlCustomAudio] = useState(() => localStorage.getItem('scheda-interattiva:url-audio-custom') || '');
   const [mostraPannelloAudio, setMostraPannelloAudio] = useState(false);
   const ambientazioneBtnRef = useRef(null);
@@ -1426,7 +1448,7 @@ export default function App() {
   const [effettiSonoriAttivi, setEffettiSonoriAttivi] = useState(() => localStorage.getItem('scheda-interattiva:effetti-sonori') !== 'false');
   // Muto rapido: azzera tutto l'audio (sottofondo + effetti) con un click, senza
   // toccare il volume impostato — così basta ri-cliccare per tornare com'era.
-  const [mutoAudio, setMutoAudio] = useState(false);
+  const [mutoAudio, setMutoAudio] = useState(() => localStorage.getItem('scheda-interattiva:muto-audio') === 'true');
   // Effetti sonori attivi solo se non sono in muto.
   const suoniEffOn = effettiSonoriAttivi && !mutoAudio;
 
@@ -1434,10 +1456,12 @@ export default function App() {
     try {
       localStorage.setItem('scheda-interattiva:ambiente-audio', ambienteAudio);
       localStorage.setItem('scheda-interattiva:volume-audio', volumeAudio);
+      localStorage.setItem('scheda-interattiva:volume-effetti', volumeEffetti);
       localStorage.setItem('scheda-interattiva:url-audio-custom', urlCustomAudio);
       localStorage.setItem('scheda-interattiva:effetti-sonori', effettiSonoriAttivi ? 'true' : 'false');
+      localStorage.setItem('scheda-interattiva:muto-audio', mutoAudio ? 'true' : 'false');
     } catch { /* niente */ }
-  }, [ambienteAudio, volumeAudio, urlCustomAudio, effettiSonoriAttivi]);
+  }, [ambienteAudio, volumeAudio, volumeEffetti, urlCustomAudio, effettiSonoriAttivi, mutoAudio]);
 
   // Audio notturno per ambientazione: di notte ogni ambiente mantiene il proprio
   // sottofondo (bosco resta bosco, città resta città) ma più cupo (volume ridotto)
@@ -1743,7 +1767,10 @@ export default function App() {
   const versione = scheda?.versione || regoleVersione || '2024';
 
   useEffect(() => {
-    saveState(roster);
+    const esito = saveState(roster);
+    setErroreSalvataggio(esito.ok
+      ? ''
+      : `Spazio del browser esaurito: le ultime modifiche non sono state salvate (${(esito.bytes / 1048576).toFixed(1)} MB). Esporta subito il personaggio e alleggerisci mappa o ritratto.`);
   }, [roster]);
 
   /**
@@ -2027,7 +2054,7 @@ export default function App() {
     setDanni(null);
     setRolling(true);
     setTipoDadoInUso(tipoDado);
-    if (suoniEffOn) eseguiEffettoSonoro(suono || (magia ? 'magia' : 'tiro'), volumeAudio);
+    if (suoniEffOn) eseguiEffettoSonoro(suono || (magia ? 'magia' : 'tiro'), volumeEffetti);
     intervalRef.current = setInterval(() => setFaccia(tiraDado(tipoDado)), 70);
     setTimeout(() => {
       clearInterval(intervalRef.current);
@@ -2176,7 +2203,7 @@ export default function App() {
     setTiro(null);
     setRolling(true);
     setTipoDadoInUso(20);
-    if (suoniEffOn) eseguiEffettoSonoro(suono || (magia ? 'magia' : 'tiro'), volumeAudio);
+    if (suoniEffOn) eseguiEffettoSonoro(suono || (magia ? 'magia' : 'tiro'), volumeEffetti);
     intervalRef.current = setInterval(() => setFaccia(tiraDado(20)), 70);
 
     // Sfinimento: nella 5.5 (2024) −2 a ogni tiro di d20 per livello; nella
@@ -2189,8 +2216,8 @@ export default function App() {
       setFaccia(naturale);
       setRolling(false);
       if (suoniEffOn) {
-        if (naturale === 20) eseguiEffettoSonoro('critico', volumeAudio);
-        else if (naturale === 1) eseguiEffettoSonoro('fallimento', volumeAudio);
+        if (naturale === 20) eseguiEffettoSonoro('critico', volumeEffetti);
+        else if (naturale === 1) eseguiEffettoSonoro('fallimento', volumeEffetti);
       }
       setTiro({ etichetta, naturale, dadi, bonus: bonusEff, totale: naturale + bonusEff, modalita, sfinimento: penSfinimento, ...restExtra });
       registra({
@@ -2305,7 +2332,7 @@ export default function App() {
     setTiro(null);
     setRolling(true);
     setTipoDadoInUso(20);
-    if (suoniEffOn) eseguiEffettoSonoro('tiro', volumeAudio);
+    if (suoniEffOn) eseguiEffettoSonoro('tiro', volumeEffetti);
     intervalRef.current = setInterval(() => setFaccia(tiraDado(20)), 70);
 
     const { naturale, dadi } = tiraD20(modalita);
@@ -2314,8 +2341,8 @@ export default function App() {
       setFaccia(naturale);
       setRolling(false);
       if (suoniEffOn) {
-        if (naturale === 20) eseguiEffettoSonoro('critico', volumeAudio);
-        else if (naturale === 1) eseguiEffettoSonoro('fallimento', volumeAudio);
+        if (naturale === 20) eseguiEffettoSonoro('critico', volumeEffetti);
+        else if (naturale === 1) eseguiEffettoSonoro('fallimento', volumeEffetti);
       }
       let esito;
       setScheda((s) => {
@@ -2462,18 +2489,9 @@ export default function App() {
     const url = URL.createObjectURL(file);
     const img = new Image();
     img.onload = () => {
-      // 512px erano pochi: il ritratto viene mostrato alto quasi quanto la
-      // sezione Profilo e su schermi a densità doppia si vedeva sgranato.
-      const MAX = 1280;
-      const scala = Math.min(1, MAX / Math.max(img.width, img.height));
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.max(1, Math.round(img.width * scala));
-      canvas.height = Math.max(1, Math.round(img.height * scala));
-      const ctx2d = canvas.getContext('2d');
-      ctx2d.imageSmoothingEnabled = true;
-      ctx2d.imageSmoothingQuality = 'high';
-      ctx2d.drawImage(img, 0, 0, canvas.width, canvas.height);
-      aggiorna({ ritratto: canvas.toDataURL('image/jpeg', 0.92) });
+      // Mantiene dettaglio Retina, ma impedisce a una singola foto di saturare
+      // lo spazio riservato a tutti i personaggi.
+      aggiorna({ ritratto: immagineRidotta(img, 1280, 650000, 0.88) });
       URL.revokeObjectURL(url);
     };
     img.onerror = () => {
@@ -2491,18 +2509,9 @@ export default function App() {
     const url = URL.createObjectURL(file);
     const img = new Image();
     img.onload = () => {
-      // Mappe grandi: ridimensiono a max 2200px per stare nella quota localStorage
-      // mantenendo comunque una buona leggibilità in zoom.
-      const MAX = 2200;
-      const scala = Math.min(1, MAX / Math.max(img.width, img.height));
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.max(1, Math.round(img.width * scala));
-      canvas.height = Math.max(1, Math.round(img.height * scala));
-      const ctx2d = canvas.getContext('2d');
-      ctx2d.imageSmoothingEnabled = true;
-      ctx2d.imageSmoothingQuality = 'high';
-      ctx2d.drawImage(img, 0, 0, canvas.width, canvas.height);
-      setMappaCampagna(canvas.toDataURL('image/jpeg', 0.85));
+      // Compressione adattiva: prova prima 2200px, poi riduce qualità/dimensioni
+      // solo quanto serve per restare sotto circa 1,5 MB.
+      setMappaCampagna(immagineRidotta(img, 2200, 1500000, 0.84));
       setMappaAperta(true);
       URL.revokeObjectURL(url);
     };
@@ -2863,6 +2872,13 @@ export default function App() {
     <div style={styles.app}>
       <style>{GLOBAL_CSS}</style>
 
+      {erroreSalvataggio && (
+        <div style={{ position: 'sticky', top: 0, zIndex: 10000, padding: '10px 14px', background: '#8b1e1e', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap', boxShadow: '0 3px 12px rgba(0,0,0,0.35)', fontSize: 13, fontWeight: 700 }}>
+          <span>⚠️ {erroreSalvataggio}</span>
+          <button style={{ ...styles.buttonMini, background: '#fff', color: '#8b1e1e', borderColor: '#fff' }} onClick={esportaJson}>⬇️ Esporta JSON</button>
+        </div>
+      )}
+
       {nuovaVersione && (
         <div style={{
           background: 'linear-gradient(90deg, #1b4d3e, #2a7a62)',
@@ -2880,7 +2896,7 @@ export default function App() {
           top: 0,
           borderBottom: '2px solid #f0cb44'
         }}>
-          <span>🚀 È disponibile la nuova versione 2.0.1 del Tavolo dei Dadi!</span>
+          <span>🚀 È disponibile una nuova versione del Tavolo dei Dadi (attuale: {APP_VERSION})!</span>
           <button
             style={{
               background: '#f0cb44',
@@ -4342,6 +4358,17 @@ export default function App() {
               title="Volume del sottofondo"
             />
             <span style={{ minWidth: 38, textAlign: 'right', fontSize: 12, fontWeight: 'bold' }}>{Math.round(volumeAudio * 100)}%</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 14, color: C.inkDim }} title="Volume dadi, armi e magia">🎲</span>
+            <input
+              type="range" min="0" max="1" step="0.05"
+              value={volumeEffetti}
+              onChange={(e) => setVolumeEffetti(Number(e.target.value))}
+              style={{ flex: 1, accentColor: C.gold }}
+              title="Volume degli effetti: dadi, armi e magia"
+            />
+            <span style={{ minWidth: 38, textAlign: 'right', fontSize: 12, fontWeight: 'bold' }}>{Math.round(volumeEffetti * 100)}%</span>
           </div>
           {/* Due interruttori simmetrici: suoni dei dadi e muto generale */}
           <div style={{ display: 'flex', gap: 8 }}>

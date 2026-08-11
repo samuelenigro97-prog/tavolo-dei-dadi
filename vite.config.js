@@ -51,9 +51,9 @@ export default defineConfig({
       },
       workbox: {
         // includo gli mp3 (loop ambientali CC0) così restano disponibili offline
-        globPatterns: ['**/*.{js,css,html,png,svg,mp3}'],
+        globPatterns: ['**/*.{js,css,html,png,jpg,svg,mp3,ogg}'],
         // gli mp3 pesano più del default: alzo il limite per la precache
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
         navigateFallbackDenylist: [/^\/api\//],
         // quando si aggiorna, attiva subito il nuovo SW e ripulisci le cache vecchie
         skipWaiting: true,
@@ -68,13 +68,13 @@ export default defineConfig({
             options: { cacheName: 'pages', networkTimeoutSeconds: 0 },
           },
           {
-            urlPattern: /\.(?:js|css|png|svg)$/,
+            urlPattern: /\.(?:js|css|png|jpg|svg)$/,
             handler: 'NetworkFirst',
             options: { cacheName: 'assets', networkTimeoutSeconds: 0 },
           },
           {
             // i loop audio non cambiano mai: CacheFirst (nessun ri-download)
-            urlPattern: /\.mp3$/,
+            urlPattern: /\.(?:mp3|ogg)$/,
             handler: 'CacheFirst',
             options: { cacheName: 'audio', expiration: { maxEntries: 30 } },
           },

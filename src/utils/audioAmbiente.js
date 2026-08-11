@@ -461,19 +461,25 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '', notte = false) {
       precaricaSfx();
       // Giorno = grotta tranquilla: solo gocce d'acqua ed eco.
       // Notte = creepy: aggiunge versi di creature in lontananza, più frequenti.
-      intervalTimer = setInterval(() => {
-        const ctx = getAudioContext();
-        if (!ctx || ctx.state !== 'running' || (typeof document !== 'undefined' && document.hidden)) return;
-        const r = Math.random();
-        if (notte) {
-          if (r < 0.45) playSfx('goccia', currentVolume * 0.6);        // gocce
-          else if (r < 0.72) playSfx('eco', currentVolume * 0.5);      // rombo/eco
-          else playSfx('verso', currentVolume * 0.45);                 // verso: crea tensione
-        } else {
-          if (r < 0.68) playSfx('goccia', currentVolume * 0.55);       // gocce di grotta
-          else playSfx('eco', currentVolume * 0.4);                    // eco lontano, calmo
-        }
-      }, notte ? 4200 : 5600);
+      let ultimoEvento = '';
+      const programmaDungeon = () => {
+        const minimo = notte ? 5500 : 7500;
+        const variazione = notte ? 10500 : 14500;
+        intervalTimer = setTimeout(() => {
+          programmaDungeon();
+          const ctx = getAudioContext();
+          if (!ctx || ctx.state !== 'running' || (typeof document !== 'undefined' && document.hidden)) return;
+          const eventi = notte
+            ? ['goccia', 'goccia', 'goccia', 'eco', 'eco', 'verso']
+            : ['goccia', 'goccia', 'goccia', 'goccia', 'eco'];
+          const candidati = eventi.filter((evento) => evento !== ultimoEvento);
+          const evento = candidati[Math.floor(Math.random() * candidati.length)];
+          ultimoEvento = evento;
+          const guadagno = evento === 'goccia' ? 0.55 : evento === 'eco' ? 0.42 : 0.38;
+          playSfx(evento, currentVolume * guadagno);
+        }, minimo + Math.random() * variazione);
+      };
+      programmaDungeon();
     }
     // Montagna con file reale: vento continuo e fauna molto rara. Questo deve
     // stare prima del return del ramo <audio>, altrimenti non viene mai avviato.

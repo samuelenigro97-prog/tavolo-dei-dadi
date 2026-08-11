@@ -1,6 +1,6 @@
 # Continua qui — lavoro rimasto su Tavolo dei Dadi
 
-Stato al **v2.27.0** (tutto committato e pubblicato su GitHub Pages).
+Stato al **v2.60.0** (aggiornato dopo il consolidamento di persistenza, PWA e audio).
 App: https://samuelenigro97-prog.github.io/tavolo-dei-dadi/
 
 > ⚠️ Si lavora anche con **Antigravity** in parallelo su questo repo: prima di ogni
@@ -96,31 +96,25 @@ leggere le altezze dell'altra. Serve metterle **nella stessa griglia con righe c
 
 ---
 
-## 2. Panoramica privilegi → estendere alla specie
+## 2. Panoramiche e tratti ✅ FATTO
 
-Il pulsante **📖 Panoramica privilegi per livello** (dentro *Privilegi di Classe*,
-`src/App.jsx` ~riga 2961) mostra già i livelli 1→20 con quelli futuri in grigio e
-cliccabili per leggere cosa fanno. **Copre solo classe e sottoclasse**: manca la specie.
+Classe e sottoclasse hanno panoramiche per livello. I tratti della specie sono
+presenti nella loro sezione e sono cliccabili per leggerne la spiegazione; non
+serve una progressione 1→20 perché le specie base non avanzano per livello.
 
 ---
 
-## 3. Voci ancora aperte della roadmap (issue #1)
-
-La issue è **disallineata**: risultano ancora da fare cose già completate
-(traduzione contenuti lunghi, Undo, onboarding, test). Andrebbe aggiornata.
+## 3. Voci realmente aperte della roadmap
 
 **Regole 5e non automatizzate**
-- Punti Stregoneria / Metamagia: manca il tracker con conversione slot ↔ punti
-- Risorse di classe (Ki, Furia, Ispirazione): la sezione esiste ma è **manuale**
-- Tiri Salvezza contro Morte automatici a 0 PF
-- Capacità di carico per taglia (moltiplicatori, spinta/trascina, salto)
+- Punti Stregoneria: il tracker esiste; manca la conversione slot ↔ punti
+- Tiri Salvezza contro Morte: il tiro guidato compare a 0 PF; manca l'eventuale
+  sincronizzazione automatica avanzata col combat tracker
 - Forma Selvatica / famigli / evocazioni con statblock
 - Condizioni con effetti meccanici applicati ai tiri
 
 **Funzionalità**
-- Combat tracker con statblock di mostri/PNG
-- Ricerca incantesimi con filtri (livello/scuola/classe/rituale) — oggi non c'è nessun filtro
-- Preparazione incantesimi giornaliera
+- Statblock pronti di mostri/PNG da inserire nel Combat tracker (il tracker è fatto)
 - QR code per la condivisione (il link sta in ~1150 caratteri, entrerebbe: serve un
   generatore scritto a mano, ~300 righe, perché la CSP blocca le librerie esterne)
 - Stampa / esporta PDF, diario di sessione
@@ -129,7 +123,6 @@ La issue è **disallineata**: risultano ancora da fare cose già completate
 - `App.jsx` è sceso da 7058 a ~5800 righe, ma la funzione `App()` resta ~4700 righe:
   lo stato è tutto intrecciato, spezzarla richiede context o prop-drilling
 - Nessun ESLint/Prettier configurato
-- Accessibilità (aria-label sui tiri, focus, contrasto)
 
 **Traduzione**
 - Fatta: 186 incantesimi, tutti i privilegi di classe, 31 tratti, 20 talenti, 13 metamagie
@@ -137,13 +130,12 @@ La issue è **disallineata**: risultano ancora da fare cose già completate
 
 ---
 
-## 4. Limite noto sull'audio
+## 4. Audio
 
-L'ambiente di sviluppo **non può ascoltare l'audio** (niente ffmpeg/decoder): si può
-verificare che il file giusto venga caricato e che gli effetti partano, ma non come
-suonano. Due file sono già stati sostituiti dopo una segnalazione dell'utente
-(una voce umana dentro `foresta.mp3`, e `citta.mp3` che era una registrazione di
-città moderna). Se emergono altri suoni fuori posto, vanno sostituiti a orecchio.
+Gli eventi di Città, Dungeon e Montagna usano intervalli casuali e non ripetono
+subito lo stesso effetto. I grilli notturni non hanno più una cadenza fissa. Il
+muto ferma base, effetti e timer ed è ricordato dopo il riavvio; sottofondo ed
+effetti hanno volumi separati. La resa finale va comunque controllata a orecchio.
 
 Volumi degli effetti pareggiati a mano in `GUADAGNO_SFX` (`src/utils/audioAmbiente.js`).
 
