@@ -45,3 +45,64 @@ export function riagganciaImmagini(rosterSnapshot, rosterCorrente) {
   }
   return ripristinato;
 }
+
+const DB_IMMAGINI = 'tavolo-dei-dadi-immagini';
+const STORE_IMMAGINI = 'personaggi';
+
+function apriDbImmagini() {
+  return new Promise((resolve, reject) => {
+    if (typeof indexedDB === 'undefined') return reject(new Error('IndexedDB non disponibile'));
+    const richiesta = indexedDB.open(DB_IMMAGINI, 1);
+    richiesta.onupgradeneeded = () => richiesta.result.createObjectStore(STORE_IMMAGINI);
+    richiesta.onsuccess = () => resolve(richiesta.result);
+    richiesta.onerror = () => reject(richiesta.error);
+  });
+}
+
+/** Salva le immagini fuori dal localStorage, indicizzate per personaggio. */
+export async function salvaImmaginiRoster(roster) {
+  const db = await apriDbImmagini();
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_IMMAGINI, 'readwrite');
+    const store = tx.objectStore(STORE_IMMAGINI);
+    for (const [id, scheda] of Object.entries(roster?.personaggi || {})) {
+      if (scheda?.ritratto) store.put(scheda.ritratto, `${id}:ritratto`);
+      if (scheda?.mappaCampagna) store.put(scheda.mappaCampagna, `${id}:mappaCampagna`);
+    }
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+  db.close();
+}
+
+/** Recupera le immagini persistenti e le riaggancia al roster in memoria. */
+export async function caricaImmaginiRoster(roster) {
+  const db = await apriDbImmagini();
+  const risultato = { ...roster, personaggi: { ...(roster?.personaggi || {}) } };
+  await Promise.all(Object.entries(risultato.personaggi).map(async ([id, scheda]) => {
+    const leggi = (chiave) => new Promise((resolve) => {
+      const req = db.transaction(STORE_IMMAGINI, 'readonly').objectStore(STORE_IMMAGINI).get(chiave);
+      req.onsuccess = () => resolve(req.result || '');
+      req.onerror = () => resolve('');
+    });
+    const [ritratto, mappaCampagna] = await Promise.all([leggi(`${id}:ritratto`), leggi(`${id}:mappaCampagna`)]);
+    risultato.personaggi[id] = {
+      ...scheda,
+      ...(scheda.ritratto || !ritratto ? {} : { ritratto }),
+      ...(scheda.mappaCampagna || !mappaCampagna ? {} : { mappaCampagna }),
+    };
+  }));
+  db.close();
+  return risultato;
+}
+
+export async function rimuoviImmaginePersonaggio(id, campo) {
+  const db = await apriDbImmagini();
+  await new Promise((resolve) => {
+    const tx = db.transaction(STORE_IMMAGINI, 'readwrite');
+    tx.objectStore(STORE_IMMAGINI).delete(`${id}:${campo}`);
+    tx.oncomplete = resolve;
+    tx.onerror = resolve;
+  });
+  db.close();
+}

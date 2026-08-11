@@ -10,7 +10,7 @@ import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza } from 
 import { FLYORA_JSON, ESEMPIO_GNOMO } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { codificaScheda, decodificaScheda, preparaPerCondivisione, costruisciLink, payloadDaUrl, LIMITE_PAYLOAD } from './utils/condivisione.js';
-import { salvaJson, rosterSenzaImmagini, riagganciaImmagini } from './utils/persistenza.js';
+import { salvaJson, rosterSenzaImmagini, riagganciaImmagini, salvaImmaginiRoster, caricaImmaginiRoster, rimuoviImmaginePersonaggio } from './utils/persistenza.js';
 
 // ---------------------------------------------------------------------------
 // Palette e stili
@@ -875,7 +875,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.67.0';
+const APP_VERSION = '2.67.1';
 const ORDINE_AMBIENTAZIONI = ['default', 'taverna', 'mercato', 'citta', 'accampamento', 'foresta', 'palude', 'montagna', 'tundra', 'deserto', 'mare', 'tempesta', 'dungeon', 'tempio'];
 
 function iconaAmbientazione(id) {
@@ -987,7 +987,7 @@ function loadState() {
 }
 
 function saveState(roster) {
-  return salvaJson(localStorage, STORAGE_KEY, roster);
+  return salvaJson(localStorage, STORAGE_KEY, rosterSenzaImmagini(roster));
 }
 
 /** Ridimensiona e comprime un'immagine finché resta entro la quota indicata. */
@@ -1313,6 +1313,21 @@ export default function App() {
 
   const [roster, setRoster] = useState(loadState);
   const [erroreSalvataggio, setErroreSalvataggio] = useState('');
+  useEffect(() => {
+    let attivo = true;
+    caricaImmaginiRoster(roster).then((conImmagini) => {
+      if (!attivo) return;
+      const aggiunte = Object.keys(conImmagini.personaggi || {}).some((id) => {
+        const prima = roster.personaggi?.[id] || {};
+        const dopo = conImmagini.personaggi?.[id] || {};
+        return (!prima.ritratto && dopo.ritratto) || (!prima.mappaCampagna && dopo.mappaCampagna);
+      });
+      if (aggiunte) setRoster(conImmagini);
+    }).catch(() => { /* fallback localStorage per browser senza IndexedDB */ });
+    return () => { attivo = false; };
+    // Il recupero dal database immagini va eseguito una sola volta all'avvio.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // Annulla (undo): pila in memoria degli stati precedenti del roster.
   const storicoUndo = useRef([]);
   const rosterPrec = useRef(null);
@@ -1774,9 +1789,12 @@ export default function App() {
 
   useEffect(() => {
     const esito = saveState(roster);
+    salvaImmaginiRoster(roster).catch(() => {
+      setErroreSalvataggio('Il browser non ha consentito il salvataggio permanente delle immagini. Esporta un backup prima di chiudere.');
+    });
     setErroreSalvataggio(esito.ok
       ? ''
-      : `Spazio del browser esaurito: le ultime modifiche non sono state salvate (${(esito.bytes / 1048576).toFixed(1)} MB). Esporta subito il personaggio e alleggerisci mappa o ritratto.`);
+      : `Spazio del browser esaurito: le ultime modifiche non sono state salvate (${(esito.bytes / 1048576).toFixed(1)} MB). Esporta subito il personaggio.`);
   }, [roster]);
 
   /**
@@ -1842,7 +1860,10 @@ export default function App() {
   // Immagine e segnalino sono salvati NELLA scheda, così la mappa resta col
   // personaggio a cui la carichi (e segue export/cloud).
   const mappaCampagna = scheda.mappaCampagna || '';
-  const setMappaCampagna = (v) => aggiorna({ mappaCampagna: v || '' });
+  const setMappaCampagna = (v) => {
+    aggiorna({ mappaCampagna: v || '' });
+    if (!v) rimuoviImmaginePersonaggio(roster.attivo, 'mappaCampagna').catch(() => {});
+  };
   // Durante il trascinamento uso uno stato locale (fluidità) e scrivo nella
   // scheda solo al rilascio; cambiando PG risincronizzo dal personaggio attivo.
   const [mappaMarker, setMappaMarker] = useState(
