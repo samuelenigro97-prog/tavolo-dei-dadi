@@ -487,7 +487,7 @@ const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(I
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, pesoStimato, pesoArmatura } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, pesoStimato, pesoArmatura } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -875,7 +875,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.66.1';
+const APP_VERSION = '2.67.0';
 const ORDINE_AMBIENTAZIONI = ['default', 'taverna', 'mercato', 'citta', 'accampamento', 'foresta', 'palude', 'montagna', 'tundra', 'deserto', 'mare', 'tempesta', 'dungeon', 'tempio'];
 
 function iconaAmbientazione(id) {
@@ -1431,7 +1431,7 @@ export default function App() {
   const [mostraRipristino, setMostraRipristino] = useState(false); // modale "ripristina versione precedente"
   const [rinominando, setRinominando] = useState(false); // rinomina inline del PG attivo
   const [mostraCrea, setMostraCrea] = useState(false); // schermata di creazione guidata
-  const [bozzaCrea, setBozzaCrea] = useState({ nome: '', classe: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' });
+  const [bozzaCrea, setBozzaCrea] = useState({ nome: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' });
   // versione delle regole: '2024' (5.5, default) o '2014' (5.0)
   const [regoleVersione, setRegoleVersione] = useState(() => localStorage.getItem('scheda-interattiva:versione') || '2024');
   useEffect(() => {
@@ -1527,7 +1527,7 @@ export default function App() {
       const s = r?.personaggi?.[r?.attivo];
       const haPg = s && (s.nome || s.classe);
       if (!haPg) {
-        setBozzaCrea({ nome: '', classe: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' });
+        setBozzaCrea({ nome: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' });
         setMostraMenu(false);
         setMostraCrea(true);
       }
@@ -1906,13 +1906,14 @@ export default function App() {
   }
 
   /** Genera un personaggio coerente da classe/specie/background (creazione guidata). */
-  function creaPersonaggio({ nome, classe, specie, background, metodo, pool, assegna, competenzeClasse, competenzeSpecie, dotazione, livello }) {
+  function creaPersonaggio({ nome, classe, sottoclasse, specie, background, metodo, pool, assegna, competenzeClasse, competenzeSpecie, dotazione, livello }) {
     const s = schedaVuota();
     // Livello iniziale scelto in creazione (1-20): impostato SUBITO così dado vita,
     // slot incantesimo e bonus di competenza vengono calcolati per quel livello.
     s.livello = Math.max(1, Math.min(20, Number(livello) || 1));
     s.nome = nome?.trim() || 'Nuovo personaggio';
     s.classe = classe;
+    s.sottoclasse = sottoclasse || '';
     s.specie = specie;
     s.background = background;
     // dati dalla classe: incantatore, dado vita, tiri salvezza, addestramento, slot
@@ -1948,8 +1949,9 @@ export default function App() {
     (Array.isArray(competenzeSpecie) ? competenzeSpecie : []).forEach((k) => { if (k in s.abilita) s.abilita[k] = 2; });
     // versione delle regole scelta per questo personaggio
     s.versione = regoleVersione;
-    // privilegi di classe di 1° livello (coerenti con la versione)
-    s.privilegi = privilegiClasseL1(classe, regoleVersione);
+    // Privilegi ottenuti fino al livello iniziale, secondo l'edizione scelta.
+    s.privilegi = privilegiClasseFinoA(classe, s.livello, regoleVersione);
+    s.privilegiSottoclasse = sottoclasse ? privilegiSottoclasseFinoA(sottoclasse, s.livello) : '';
     // background: bonus alle caratteristiche (solo regole 2024)
     if (regoleVersione === '2024') {
       const [piu2, piu1] = bonusCaratteristicheBackground(background, classe);
@@ -3171,7 +3173,7 @@ export default function App() {
 
             <button
               style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 14 }}
-              onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' }); setMostraCrea(true); }}
+              onClick={() => { setBozzaCrea({ nome: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' }); setMostraCrea(true); }}
             >
               {t('menu.nuovo_personaggio')}
             </button>
@@ -3858,7 +3860,7 @@ export default function App() {
               <div style={{ display: 'flex', gap: 6, justifyContent: 'center', alignItems: 'center', marginBottom: 14 }}>
                 <span style={styles.detail}>{t('crea.versione')}</span>
                 {['2024', '2014'].map((v) => (
-                  <button key={v} style={{ ...styles.modeButton(regoleVersione === v), fontSize: 12, padding: '3px 10px' }} onClick={() => setRegoleVersione(v)}>
+                  <button key={v} style={{ ...styles.modeButton(regoleVersione === v), fontSize: 12, padding: '3px 10px' }} onClick={() => { setRegoleVersione(v); setB({ sottoclasse: '' }); }}>
                     {v === '2024' ? 'D&D 5.5' : 'D&D 5.0'}
                   </button>
                 ))}
@@ -3893,16 +3895,29 @@ export default function App() {
               })()}
 
               <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{t('crea.classe')}</label>
-              <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.classe} onChange={(e) => setB({ classe: e.target.value, competenzeClasse: [] })}>
+              <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.classe} onChange={(e) => setB({ classe: e.target.value, sottoclasse: '', competenzeClasse: [] })}>
                 <option value="">{t('crea.scegli')}</option>
                 {NOMI_CLASSI.map((n) => <option key={n} value={n}>{n}</option>)}
               </select>
 
               {/* Livello iniziale: crea subito un PG di livello alto senza fare Level Up a mano */}
               <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{lingua === 'it' ? '🎚️ Livello iniziale' : '🎚️ Starting level'}</label>
-              <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.livello} onChange={(e) => setB({ livello: Math.max(1, Math.min(20, parseInt(e.target.value, 10) || 1)) })}>
+              <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.livello} onChange={(e) => {
+                const livello = Math.max(1, Math.min(20, parseInt(e.target.value, 10) || 1));
+                setB({ livello, sottoclasse: livello < livelloSceltaSottoclasse(bozzaCrea.classe, regoleVersione) ? '' : bozzaCrea.sottoclasse });
+              }}>
                 {Array.from({ length: 20 }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{lingua === 'it' ? `Livello ${n}` : `Level ${n}`}</option>)}
               </select>
+
+              {bozzaCrea.classe && Number(bozzaCrea.livello) >= livelloSceltaSottoclasse(bozzaCrea.classe, regoleVersione) && (
+                <>
+                  <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>⚔️ {lingua === 'it' ? 'Sottoclasse' : 'Subclass'}</label>
+                  <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.sottoclasse} onChange={(e) => setB({ sottoclasse: e.target.value })}>
+                    <option value="">{t('crea.scegli')}</option>
+                    {sottoclassiPerClasse(bozzaCrea.classe).map((n) => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </>
+              )}
 
               <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{t('crea.background')}</label>
               <select style={{ ...stileSelect, marginBottom: 6 }} value={bozzaCrea.background} onChange={(e) => setB({ background: e.target.value })}>
@@ -4741,7 +4756,7 @@ export default function App() {
               ⬆️
             </button>
             <button style={styles.buttonMini} onClick={() => setRinominando(!rinominando)} title={t('tip.rinomina')}>✎</button>
-            <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', classe: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' }); setMostraCrea(true); }} title={t('tip.nuovo_pg')}>＋</button>
+            <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' }); setMostraCrea(true); }} title={t('tip.nuovo_pg')}>＋</button>
             <button style={styles.buttonMini} onClick={duplicaPersonaggio} title={t('tip.duplica')}>⧉</button>
             <button style={styles.buttonMini} onClick={resetScheda} title={t('tip.azzera')}>↺</button>
             <button style={{ ...styles.buttonMini, borderColor: C.red, color: C.red }} onClick={eliminaPersonaggio} title={t('tip.elimina_pg')}>🗑</button>

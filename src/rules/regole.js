@@ -1,7 +1,8 @@
 // Regole 5e che dipendono dai dati: classi, slot, incantesimi, pesi.
 import { CLASSI, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER,
   TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014,
-  PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, PESI_OGGETTI, PESO_ARMATURA_TIPO } from '../data/dati5e.js';
+  PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV,
+  PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, PESI_OGGETTI, PESO_ARMATURA_TIPO } from '../data/dati5e.js';
 import { modificatore } from './dadi.js';
 import { spiegaIncantesimo } from '../data/spiegazioni.js';
 import { datiIncantesimo } from '../data/incantesimi.js';
@@ -50,6 +51,19 @@ export function privilegiClasseLivello(classe, livello, versione = '2024') {
     extra = (extra ? extra + '\n' : '') + `Attacco furtivo ${Math.ceil(livello / 2)}d6`;
   }
   return extra;
+}
+
+/** Tutti i privilegi di classe ottenuti fino al livello indicato, senza duplicati. */
+export function privilegiClasseFinoA(classe, livello, versione = '2024') {
+  const k = chiaveClasse(classe);
+  if (!k) return '';
+  const iniziali = versione === '2014' ? PRIVILEGI_CLASSE_L1_2014 : PRIVILEGI_CLASSE_L1;
+  const righe = String(iniziali[k] || '').split('\n').filter(Boolean);
+  const massimo = Math.max(1, Math.min(20, Math.floor(livello) || 1));
+  for (let lv = 2; lv <= massimo; lv += 1) {
+    righe.push(...String(privilegiClasseLivello(classe, lv, versione) || '').split('\n').filter(Boolean));
+  }
+  return [...new Set(righe)].join('\n');
 }
 
 export function asiAlLivello(classe, livello) {

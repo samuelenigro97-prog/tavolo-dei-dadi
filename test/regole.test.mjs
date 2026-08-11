@@ -10,7 +10,8 @@ import {
 
 import {
   coloreClasse, chiaveClasse, slotDaClasseLivello, livelloIncantatoreCombinato,
-  slotMulticlasse, asiAlLivello, privilegiClasseLivello, trucchettiMax, incantesimiMaxAuto,
+  slotMulticlasse, asiAlLivello, privilegiClasseLivello, privilegiClasseFinoA,
+  sottoclasseLivPer, trucchettiMax, incantesimiMaxAuto,
 } from '../src/rules/regole.js';
 
 // --- Helper: sostituisce Math.random con una coda di valori deterministici ---
@@ -205,6 +206,23 @@ test('privilegiClasseLivello: attacco furtivo del ladro ai livelli dispari', () 
   // livello pari: nessun incremento di attacco furtivo
   const l4 = privilegiClasseLivello('Ladro', 4);
   assert.doesNotMatch(l4, /Attacco furtivo/);
+});
+
+test('creazione guidata: accumula privilegi fino al livello e rispetta la versione', () => {
+  const barbaro2024 = privilegiClasseFinoA('Barbaro', 3, '2024');
+  assert.match(barbaro2024, /Ira/);
+  assert.match(barbaro2024, /Attacco irruento/);
+  assert.match(barbaro2024, /Percezione del pericolo/);
+  assert.match(barbaro2024, /Maestria/);
+  const barbaro2014 = privilegiClasseFinoA('Barbaro', 3, '2014');
+  assert.doesNotMatch(barbaro2014, /Maestria/);
+});
+
+test('creazione guidata: livelli sottoclasse distinti 2014/2024', () => {
+  assert.equal(sottoclasseLivPer('2014').chierico[0], 1);
+  assert.equal(sottoclasseLivPer('2024').chierico[0], 3);
+  assert.equal(sottoclasseLivPer('2014').mago[0], 2);
+  assert.equal(sottoclasseLivPer('2024').mago[0], 3);
 });
 
 test('trucchettiMax: numero per incantatori, null per non incantatori', () => {
