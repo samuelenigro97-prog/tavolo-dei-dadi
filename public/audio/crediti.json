@@ -187,6 +187,24 @@
       "mystical"
     ]
   },
+  "montagna": {
+    "file": "montagna-giorno.m4a",
+    "freesoundId": "459977",
+    "author": "florianreichelt",
+    "license": "CC0",
+    "page": "https://freesound.org/s/459977/",
+    "bytes": 470093,
+    "nota": "Vento morbido per il tema Montagna diurno."
+  },
+  "montagna_notte": {
+    "file": "montagna-notte.m4a",
+    "freesoundId": "500326",
+    "author": "LulSayer",
+    "license": "CC0",
+    "page": "https://freesound.org/s/500326/",
+    "bytes": 391125,
+    "nota": "Drone cupo per il tema Montagna notturno."
+  },
   "sfx_sword": {
     "file": "sfx-sword.mp3",
     "freesoundId": "547041",

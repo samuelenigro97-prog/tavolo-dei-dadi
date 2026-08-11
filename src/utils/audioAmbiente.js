@@ -13,6 +13,7 @@ export const AMBIENTI_AUDIO = [
   { id: 'foresta', nome: '🌲 Foresta', icona: '🌲', desc: 'Vento tra gli alberi e fruscii di foglie' },
   { id: 'notte', nome: '🌙 Notte', icona: '🌙', desc: 'Brezza notturna e grilli' },
   { id: 'mare', nome: '🌊 Mare / Costa', icona: '🌊', desc: 'Risacca e onde lente sulla spiaggia' },
+  { id: 'montagna', nome: '⛰️ Montagna', icona: '⛰️', desc: 'Vento d’alta quota, sereno di giorno e cupo di notte' },
   { id: 'pioggia', nome: '🌧️ Pioggia / Tempesta', icona: '🌧️', desc: 'Pioggia battente e tuoni lontani' },
   { id: 'fuoco', nome: '🔥 Accampamento', icona: '🔥', desc: 'Crepitio del fuoco da campo' },
   { id: 'arcano', nome: '🔮 Tempio / Magia', icona: '🔮', desc: 'Risonanza arcana e vibrazioni mistiche' },
@@ -46,6 +47,7 @@ const MASTER_BOOST = 1.8;
 const AMBIENTI_CON_FILE = new Set([
   'taverna', 'mercato', 'citta', 'dungeon', 'foresta', 'notte',
   'mare', 'tundra', 'tempesta', 'accampamento', 'deserto', 'tempio',
+  'montagna',
 ]);
 
 // Ogni ambientazione ha la sua registrazione. (Il meccanismo per far condividere
@@ -55,17 +57,23 @@ const BASE_CONDIVISA = {};
 // Estensione del file per ambientazione (default: mp3). La città usa un loop
 // OGG (mercato con pioggia, dominio pubblico): in questo modo non serve un
 // encoder MP3 e il browser lo riproduce comunque.
-const ESTENSIONE_FILE = { citta: 'ogg' };
+const ESTENSIONE_FILE = { citta: 'ogg', montagna: 'm4a' };
+
+// Alcune ambientazioni hanno registrazioni dedicate per la modalità notturna.
+const AMBIENTI_FILE_NOTTE = new Set(['montagna']);
 
 // Volume della base rispetto al volume dell'ambiente (1 = invariato).
 // Città: il brusio di voci sta parecchio sotto, così a emergere sono i suoni
 // medievali (campane, fabbro, carretti) invece del chiacchiericcio.
 const VOLUME_BASE = { citta: 0.5 };
 
-function ambienteFileUrl(id) {
+function ambienteFileUrl(id, notte = false) {
   if (!AMBIENTI_CON_FILE.has(id)) return null;
   const base = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/';
-  const nomeFile = BASE_CONDIVISA[id] || id;
+  const nomeBase = BASE_CONDIVISA[id] || id;
+  const nomeFile = AMBIENTI_FILE_NOTTE.has(id)
+    ? `${nomeBase}-${notte ? 'notte' : 'giorno'}`
+    : nomeBase;
   const ext = ESTENSIONE_FILE[id] || 'mp3';
   return `${base}audio/${nomeFile}.${ext}`;
 }
@@ -394,7 +402,7 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '', notte = false) {
   }
 
   // Loop registrato reale (MP3 CC0): riproduzione via <audio> HTML.
-  const fileUrl = ambienteFileUrl(id);
+  const fileUrl = ambienteFileUrl(id, notte);
   if (fileUrl) {
     htmlAudioElement = new Audio(fileUrl);
     htmlAudioElement.loop = true;
@@ -887,4 +895,3 @@ export function eseguiEffettoSonoro(tipo, volume = 0.5) {
     });
   }
 }
-

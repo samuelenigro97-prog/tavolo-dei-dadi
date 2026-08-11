@@ -869,7 +869,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.49.0';
+const APP_VERSION = '2.50.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1690,7 +1690,7 @@ export default function App() {
       ? `linear-gradient(rgba(14,11,8,${veloAlpha}), rgba(14,11,8,${veloAlpha}))`
       : '';
     // Di notte (tema scuro) usa la variante notturna dell'ambientazione, se esiste.
-    const AMB_NOTTE = new Set(['taverna', 'citta', 'foresta', 'notte', 'mare', 'tundra', 'tempesta', 'accampamento', 'deserto', 'tempio']);
+    const AMB_NOTTE = new Set(['taverna', 'citta', 'foresta', 'notte', 'mare', 'tundra', 'montagna', 'tempesta', 'accampamento', 'deserto', 'tempio']);
     const fileImg = (scuroEff && AMB_NOTTE.has(idAmb)) ? `${idAmb}-notte.jpg` : `${idAmb}.jpg`;
     const imgLayer = conImmagine
       ? `url("${baseUrl}ambientazioni/${fileImg}") center center / cover no-repeat`
@@ -6194,7 +6194,20 @@ export default function App() {
                             })}
                             {(!filtroInventario || 'monete'.includes(filtroInventario.trim().toLowerCase())) && (
                               <tr style={{ opacity: 0.9 }} title="Monete d'oro: modificando qui aggiorni la sezione Monete (e viceversa). Il peso di tutte le monete è contato nell'ingombro.">
-                                <td style={{ ...styles.td, textAlign: 'center' }}>🪙</td>
+                                <td style={{ ...styles.td, textAlign: 'center' }}>
+                                  <span
+                                    aria-label="Moneta d'oro"
+                                    role="img"
+                                    style={{
+                                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                      width: 20, height: 20, borderRadius: '50%', boxSizing: 'border-box',
+                                      background: 'radial-gradient(circle at 35% 30%, #ffdf73, #d9a93a 55%, #9a6a08)',
+                                      border: '1px solid #b8860b', color: '#fff0a6', fontSize: 11,
+                                      lineHeight: 1, textShadow: '0 1px 1px rgba(88,52,0,0.55)',
+                                      boxShadow: 'inset 0 0 0 1px rgba(255,235,145,0.35)',
+                                    }}
+                                  >✦</span>
+                                </td>
                                 <td style={styles.td}>Monete d'oro (MO)</td>
                                 <td style={styles.td}>
                                   <Editable value={dMon.mo || 0} tipo="numero" width={44} onChange={(v) => aggiorna({ denari: { ...scheda.denari, mo: Math.max(0, v) } })} title="Monete d'oro: sincronizzate con la sezione Monete" />

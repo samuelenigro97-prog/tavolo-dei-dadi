@@ -87,6 +87,12 @@ export const PRESET_COLORI = [
     scuro:  { bg: '#08101a', panel: '#0f1b2b', panelLight: '#16253b', border: '#1f3a58', ink: '#cae4f8', inkDim: '#5a90ba', gold: '#2aa2f0', goldDark: '#60c0ff', title: '#60c0ff' },
   },
   {
+    id: 'montagna', nome: '⛰️ Montagna', audio: 'montagna',
+    sfondo: 'radial-gradient(58% 58% at 0% 18%, rgba(112,132,150,0.18), transparent 62%), radial-gradient(58% 58% at 100% 82%, rgba(72,92,108,0.16), transparent 62%)',
+    chiaro: { bg: '#edf1f3', panel: '#f9fbfc', panelLight: '#e4eaee', border: '#aebdc7', ink: '#202b32', inkDim: '#647782', gold: '#657f8f', goldDark: '#405c6d', title: '#405c6d' },
+    scuro:  { bg: '#0c1217', panel: '#141d24', panelLight: '#1b2730', border: '#30414d', ink: '#d8e2e8', inkDim: '#7f96a4', gold: '#7899ad', goldDark: '#a2bed0', title: '#a2bed0' },
+  },
+  {
     id: 'tempesta', nome: '🌧️ Pioggia / Tempesta', audio: 'tempesta',
     sfondo: 'radial-gradient(55% 60% at 0% 15%, rgba(90,110,140,0.17), transparent 62%), radial-gradient(55% 60% at 100% 85%, rgba(70,90,120,0.15), transparent 62%)',
     chiaro: { bg: '#edeff2', panel: '#f6f8fa', panelLight: '#e2e6ec', border: '#aeb8c6', ink: '#1e242e', inkDim: '#586474', gold: '#5878a0', goldDark: '#3a5678', title: '#3a5678' },
