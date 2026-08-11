@@ -875,7 +875,8 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.61.0';
+const APP_VERSION = '2.62.0';
+const ORDINE_AMBIENTAZIONI = ['default', 'taverna', 'mercato', 'citta', 'accampamento', 'foresta', 'palude', 'montagna', 'tundra', 'deserto', 'mare', 'tempesta', 'dungeon', 'tempio'];
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -2318,10 +2319,9 @@ export default function App() {
 
   /** Tira per colpire con un'arma e, se è a munizioni, ne scala una dall'inventario. */
   function tiraColpoArma(a) {
-    const armaNota = ARMI_5E.find((arma) => arma.nome === a.nome);
-    const aDistanza = Boolean(armaNota?.ranged) || /arco|balestra|fionda|cerbottana/i.test(a.nome || '');
-    const suono = a.isSpell ? 'magia' : aDistanza ? 'arco' : 'arma';
-    lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a, magia: !!a.isSpell, suono });
+    // Il tiro per colpire è sempre un d20: spada, freccia e magia suonano solo
+    // quando si tirano i rispettivi danni.
+    lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a, magia: !!a.isSpell, suono: 'tiro' });
     if (!a.isSpell) consumaMunizione(a.nome);
   }
 
@@ -4396,7 +4396,7 @@ export default function App() {
 
           {/* Ambientazioni: un click applica palette + sfondo + audio abbinato */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 5 }}>
-            {PRESET_COLORI.map((p) => {
+          {[...PRESET_COLORI].sort((a, b) => ORDINE_AMBIENTAZIONI.indexOf(a.id) - ORDINE_AMBIENTAZIONI.indexOf(b.id)).map((p) => {
               const attivo = presetColori === p.id;
               const conSuono = p.audio && p.audio !== 'spento';
               return (
@@ -5647,7 +5647,7 @@ export default function App() {
                                         style={{ ...styles.buttonMini, padding: '1px 6px', marginRight: 4, opacity: castBloccato ? 0.4 : 1, cursor: castBloccato ? 'not-allowed' : 'pointer' }}
                                         title={castBloccato ? 'Equipaggia un focus per lanciare questo incantesimo' : `Tira i danni (${a.danno})`}
                                         disabled={castBloccato}
-                                        onClick={() => { if (!castBloccato) lanciaDanniDiretti(`Danni: ${a.nome}`, a.danno); }}
+                                        onClick={() => { if (!castBloccato) tiraDanniPerAttacco(a, false); }}
                                       >🎲</button>
                                     )}
                                     <Editable
@@ -5979,7 +5979,7 @@ export default function App() {
                                       <button
                                         style={{ ...styles.buttonMini, fontSize: 12, padding: '3px 8px', fontWeight: 600, borderColor: C.goldDark, color: C.goldDark, whiteSpace: 'nowrap' }}
                                         title={`${t('spell.tira_attacco')} — ${t('spell.colpire')}`}
-                                        onClick={() => lanciaD20(`${t('spell.attacco_inc')}: ${s.nome}`, scheda.bonusCompetenza + (modIncantatore || 0), { attacco: { nome: s.nome, danno, tipoDanno }, magia: true })}
+                                        onClick={() => lanciaD20(`${t('spell.attacco_inc')}: ${s.nome}`, scheda.bonusCompetenza + (modIncantatore || 0), { attacco: { nome: s.nome, danno, tipoDanno, isSpell: true }, magia: true, suono: 'tiro' })}
                                       >🎯 {conSegno(scheda.bonusCompetenza + (modIncantatore || 0))}</button>
                                       <button
                                         className="tirabile"

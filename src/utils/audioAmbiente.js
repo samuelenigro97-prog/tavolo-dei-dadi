@@ -28,6 +28,7 @@ let currentVolume = 0.5;
 let ambienteAttivo = '';   // id dell'ambientazione in riproduzione (per il volume della base)
 let intervalTimer = null;
 let grilliTimer = null;    // overlay notturno (grilli/insetti) per gli ambienti all'aperto
+let presagiTimer = null;   // richiami notturni rari e contestuali, separati dagli altri eventi
 let watchdogTimer = null;  // sorveglia il loop <audio> e lo fa ripartire se si blocca
 
 // Ambientazioni all'aperto che, di notte, ricevono un velo di grilli/insetti
@@ -63,12 +64,12 @@ const ESTENSIONE_FILE = { citta: 'ogg' };
 // Alcune ambientazioni hanno registrazioni dedicate per la modalità notturna.
 // La montagna usa lo stesso vento naturale in entrambe le modalità: di notte
 // viene attenuato dall'app e arricchito soltanto da rarissimi lupi lontani.
-const AMBIENTI_FILE_NOTTE = new Set();
+const AMBIENTI_FILE_NOTTE = new Set(['montagna']);
 
 // Volume della base rispetto al volume dell'ambiente (1 = invariato).
 // Città: il brusio di voci sta parecchio sotto, così a emergere sono i suoni
 // medievali (campane, fabbro, carretti) invece del chiacchiericcio.
-const VOLUME_BASE = { citta: 0.5 };
+const VOLUME_BASE = { citta: 0.5, montagna: 1.35 };
 
 function ambienteFileUrl(id, notte = false) {
   if (!AMBIENTI_CON_FILE.has(id)) return null;
@@ -253,6 +254,10 @@ export function fermaAmbiente() {
     clearInterval(grilliTimer);
     grilliTimer = null;
   }
+  if (presagiTimer) {
+    clearTimeout(presagiTimer);
+    presagiTimer = null;
+  }
   activeNodes.forEach(node => {
     try {
       if (node.stop) node.stop();
@@ -281,7 +286,7 @@ export function setVolumeAmbiente(val) {
     }
   });
   if (htmlAudioElement) {
-    htmlAudioElement.volume = currentVolume * fattoreVolumeBase(ambienteAttivo);
+    htmlAudioElement.volume = Math.min(1, currentVolume * fattoreVolumeBase(ambienteAttivo));
   }
 }
 
@@ -384,6 +389,32 @@ function avviaGrilliNotturni() {
   programmaCoro();
 }
 
+/** Aggiunge alla notte presenze lontane e irregolari, sempre coerenti col luogo. */
+function avviaPresagiNotturni(id) {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  let ultimo = '';
+  const tavolo = {
+    foresta: ['verso', 'eco'], palude: ['verso', 'verso', 'eco'],
+    citta: ['campana', 'eco'], mercato: ['campana', 'eco'], taverna: ['eco'],
+    accampamento: ['lupo', 'eco'], deserto: ['eco', 'verso'], tundra: ['lupo', 'eco'],
+    mare: ['eco', 'verso'], tempesta: ['eco'], tempio: ['magic', 'eco'], notte: ['lupo', 'verso'],
+  };
+  const eventi = tavolo[id];
+  if (!eventi?.length) return;
+  const programma = (primo = false) => {
+    presagiTimer = setTimeout(() => {
+      programma();
+      if (!ctx || ctx.state !== 'running' || (typeof document !== 'undefined' && document.hidden)) return;
+      const candidati = eventi.filter((evento) => evento !== ultimo);
+      const evento = candidati[Math.floor(Math.random() * candidati.length)] || eventi[0];
+      ultimo = evento;
+      playSfx(evento, currentVolume * (0.10 + Math.random() * 0.08));
+    }, (primo ? 14000 : 30000) + Math.random() * (primo ? 16000 : 42000));
+  };
+  programma(true);
+}
+
 /**
  * Avvia il tema sonoro prescelto.
  * @param {boolean} notte - se true e l'ambiente è all'aperto, aggiunge i grilli notturni.
@@ -417,7 +448,7 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '', notte = false) {
   if (fileUrl) {
     htmlAudioElement = new Audio(fileUrl);
     htmlAudioElement.loop = true;
-    htmlAudioElement.volume = currentVolume * fattoreVolumeBase(id);
+    htmlAudioElement.volume = Math.min(1, currentVolume * fattoreVolumeBase(id));
     htmlAudioElement.setAttribute('playsinline', '');
     htmlAudioElement.setAttribute('webkit-playsinline', '');
     // Se il loop dovesse comunque terminare (glitch del browser), ricominciamo.
@@ -430,6 +461,7 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '', notte = false) {
     });
     avviaWatchdogAudio();
     if (conGrilli) avviaGrilliNotturni();
+    if (notte) avviaPresagiNotturni(id);
     // Città medievale: sopra la base di folla si sentono ogni tanto campane,
     // il fabbro che batte sull'incudine e i carretti che passano.
     if (id === 'citta') {
@@ -487,14 +519,14 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '', notte = false) {
     if (id === 'montagna') {
       precaricaSfx();
       const programmaRichiamo = (primo = false) => {
-        const minimo = primo ? 30000 : notte ? 90000 : 60000;
-        const intervallo = primo ? 40000 : notte ? 110000 : 80000;
+        const minimo = primo ? 7000 : notte ? 42000 : 38000;
+        const intervallo = primo ? 9000 : notte ? 50000 : 45000;
         intervalTimer = setTimeout(() => {
           programmaRichiamo();
           const ctx = getAudioContext();
           if (!ctx || ctx.state !== 'running' || (typeof document !== 'undefined' && document.hidden)) return;
-          if (Math.random() < (notte ? 0.58 : 0.42)) {
-            playSfx(notte ? 'lupo' : 'aquila', currentVolume * (notte ? 0.18 : 0.16));
+          if (primo || Math.random() < (notte ? 0.72 : 0.58)) {
+            playSfx(notte ? 'lupo' : 'aquila', currentVolume * (notte ? 0.25 : 0.22));
           }
         }, minimo + Math.random() * intervallo);
       };
