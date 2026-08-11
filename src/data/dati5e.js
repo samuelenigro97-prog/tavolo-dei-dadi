@@ -731,16 +731,16 @@ export const ESEMPI_ARMATURA = {
 };
 
 export const CLASSI = [
-  { match: ['barbaro', 'barbarian'], chiaro: '#b0281b', scuro: '#ec6f5e' },   // rosso
-  { match: ['bardo', 'bard'], chiaro: '#c02a9c', scuro: '#ee78d0' },          // magenta
-  { match: ['chierico', 'cleric'], chiaro: '#d6a90f', scuro: '#f0cb44' },     // oro
-  { match: ['druido', 'druid'], chiaro: '#3f9a3a', scuro: '#79ce6f' },        // verde foglia
-  { match: ['guerriero', 'fighter'], chiaro: '#4a6a8a', scuro: '#8aa6c8' },   // blu acciaio
-  { match: ['ladro', 'rogue'], chiaro: '#566070', scuro: '#99a4b4' },         // grigio ardesia
-  { match: ['mago', 'wizard'], chiaro: '#1f74d4', scuro: '#66acf0' },         // azzurro
-  { match: ['monaco', 'monk'], chiaro: '#12a08e', scuro: '#57d6c4' },         // giada
-  { match: ['paladino', 'paladin'], chiaro: '#b07d2f', scuro: '#e0a851' },    // bronzo
-  { match: ['ranger'], chiaro: '#7d8a26', scuro: '#b3c257' },                 // verde oliva
-  { match: ['stregone', 'sorcerer'], chiaro: '#e0521c', scuro: '#f4885a' },   // arancio fuoco
-  { match: ['warlock', 'patto'], chiaro: '#7b30b0', scuro: '#b07be0' },       // viola indaco
+  { match: ['barbaro', 'barbarian'], chiaro: '#b42318', scuro: '#ff6b5e' },   // cremisi
+  { match: ['bardo', 'bard'], chiaro: '#a51f94', scuro: '#f06bd6' },          // fucsia
+  { match: ['chierico', 'cleric'], chiaro: '#a87300', scuro: '#ffd04a' },     // oro solare
+  { match: ['druido', 'druid'], chiaro: '#287a35', scuro: '#69d477' },        // verde bosco
+  { match: ['guerriero', 'fighter'], chiaro: '#365f88', scuro: '#83b5e6' },   // blu acciaio
+  { match: ['ladro', 'rogue'], chiaro: '#574a43', scuro: '#b6a39a' },         // bruno fumo
+  { match: ['mago', 'wizard'], chiaro: '#1558c0', scuro: '#6f9fff' },         // blu arcano
+  { match: ['monaco', 'monk'], chiaro: '#007d72', scuro: '#45d8c8' },         // giada
+  { match: ['paladino', 'paladin'], chiaro: '#bd6500', scuro: '#ffad42' },    // ambra
+  { match: ['ranger'], chiaro: '#627514', scuro: '#b5cf4b' },                 // oliva
+  { match: ['stregone', 'sorcerer'], chiaro: '#df4815', scuro: '#ff8557' },   // arancio fiamma
+  { match: ['warlock', 'patto'], chiaro: '#6e2aa6', scuro: '#c27bf2' },       // viola occulto
 ];

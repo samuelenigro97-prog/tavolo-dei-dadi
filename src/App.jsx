@@ -10,7 +10,7 @@ import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza } from 
 import { FLYORA_JSON, ESEMPIO_GNOMO } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { codificaScheda, decodificaScheda, preparaPerCondivisione, costruisciLink, payloadDaUrl, LIMITE_PAYLOAD } from './utils/condivisione.js';
-import { salvaJson } from './utils/persistenza.js';
+import { salvaJson, rosterSenzaImmagini, riagganciaImmagini } from './utils/persistenza.js';
 
 // ---------------------------------------------------------------------------
 // Palette e stili
@@ -875,7 +875,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.64.0';
+const APP_VERSION = '2.65.0';
 const ORDINE_AMBIENTAZIONI = ['default', 'taverna', 'mercato', 'citta', 'accampamento', 'foresta', 'palude', 'montagna', 'tundra', 'deserto', 'mare', 'tempesta', 'dungeon', 'tempio'];
 
 function nuovoId() {
@@ -2587,11 +2587,7 @@ export default function App() {
     try {
       const ids = Object.keys(r?.personaggi || {});
       if (!ids.length) return;
-      const leggero = { attivo: r.attivo, personaggi: {} };
-      for (const [id, s] of Object.entries(r.personaggi)) {
-        const { ritratto, ...resto } = s || {}; // via l'immagine (pesante)
-        leggero.personaggi[id] = resto;
-      }
+      const leggero = rosterSenzaImmagini(r);
       const serial = JSON.stringify(leggero.personaggi);
       const snaps = leggiSnapshots();
       if (snaps[0] && JSON.stringify(snaps[0].roster.personaggi) === serial) return; // no doppioni
@@ -2607,7 +2603,7 @@ export default function App() {
   /** Ripristina un roster da uno snapshot (salvando prima lo stato attuale, per poter tornare indietro). */
   function ripristinaSnapshot(snap) {
     salvaSnapshot(roster);
-    setRoster(snap.roster);
+    setRoster(riagganciaImmagini(snap.roster, roster));
     setMostraRipristino(false);
     setMostraMenu(false);
   }
@@ -4314,7 +4310,7 @@ export default function App() {
         >
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
             <div style={{ fontWeight: 'bold', color: C.goldDark, display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <span>🧭 Ambientazione</span>
+              <span>{presetColori.nome.split(' ')[0] || '🎨'} Ambientazione</span>
               <span style={{ fontSize: 11, fontWeight: 'normal', color: C.inkDim }}>(colori, sfondo e audio insieme · tutto offline)</span>
             </div>
             <button
@@ -6450,7 +6446,7 @@ export default function App() {
             }
             setMostraPannelloAudio(!mostraPannelloAudio);
           }}
-        >🧭 Ambientazione</button>
+        >{presetColori.nome.split(' ')[0] || '🎨'} Ambientazione</button>
         <button
           className="game-actions-btn"
           onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())}
