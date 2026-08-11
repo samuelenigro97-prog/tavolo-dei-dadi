@@ -878,6 +878,11 @@ const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
 const APP_VERSION = '2.65.0';
 const ORDINE_AMBIENTAZIONI = ['default', 'taverna', 'mercato', 'citta', 'accampamento', 'foresta', 'palude', 'montagna', 'tundra', 'deserto', 'mare', 'tempesta', 'dungeon', 'tempio'];
 
+function iconaAmbientazione(id) {
+  const nome = PRESET_COLORI.find((p) => p.id === id)?.nome || '';
+  return nome.split(' ')[0] || '🎨';
+}
+
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
@@ -4310,7 +4315,7 @@ export default function App() {
         >
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
             <div style={{ fontWeight: 'bold', color: C.goldDark, display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <span>{presetColori.nome.split(' ')[0] || '🎨'} Ambientazione</span>
+              <span>{iconaAmbientazione(presetColori)} Ambientazione</span>
               <span style={{ fontSize: 11, fontWeight: 'normal', color: C.inkDim }}>(colori, sfondo e audio insieme · tutto offline)</span>
             </div>
             <button
@@ -6446,7 +6451,7 @@ export default function App() {
             }
             setMostraPannelloAudio(!mostraPannelloAudio);
           }}
-        >{presetColori.nome.split(' ')[0] || '🎨'} Ambientazione</button>
+        >{iconaAmbientazione(presetColori)} Ambientazione</button>
         <button
           className="game-actions-btn"
           onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())}
