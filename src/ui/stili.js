@@ -565,10 +565,12 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .app-header-group { flex: 0 0 auto; }
 .game-actions-dock {
   position: fixed; left: 10px; bottom: 10px; z-index: 1500;
-  width: 154px; display: flex; flex-direction: column; gap: 6px;
+  width: 154px; min-width: 154px; max-width: 154px;
+  display: flex; flex-direction: column; align-items: stretch; gap: 6px;
 }
 .game-actions-btn {
-  width: 100%; min-height: 30px; padding: 5px 12px; border-radius: 6px;
+  width: 154px; min-width: 154px; max-width: 154px; flex: 0 0 auto;
+  min-height: 30px; padding: 5px 12px; border-radius: 6px;
   border: 1px solid var(--c-gold-dark); background: var(--c-panel-light);
   color: var(--c-ink); font-family: inherit; font-size: 13px; font-weight: normal;
   text-align: center; white-space: nowrap; cursor: pointer;
@@ -602,13 +604,13 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .app-header-group:first-of-type > button { font-size: 18px !important; }
   .app-shell { padding-left: 8px !important; padding-right: 8px !important; padding-bottom: 92px !important; overflow-x: clip; }
   .game-actions-dock {
-    left: 8px; right: 8px; bottom: 8px; width: auto;
+    left: 8px; right: 8px; bottom: 8px; width: auto; min-width: 0; max-width: none;
     display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 4px; padding: 5px; border: 1px solid var(--c-border); border-radius: 10px;
     background: color-mix(in srgb, var(--c-panel) 92%, transparent);
     box-shadow: 0 4px 18px rgba(0,0,0,0.38); backdrop-filter: blur(6px);
   }
-  .game-actions-btn { min-width: 0; min-height: 34px; padding: 4px 3px; text-align: center; font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
+  .game-actions-btn { width: 100%; min-width: 0; max-width: none; flex: 0 1 auto; min-height: 34px; padding: 4px 3px; text-align: center; font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
   /* dadi: pulsanti compatti e leggibili su telefono in riga singola */
   .dadi-riga { justify-content: space-between; flex-wrap: wrap !important; gap: 4px !important; }
   .dadi-riga .dado-btn { flex: 0 0 auto; min-width: 28px !important; width: 28px !important; height: 28px !important; padding: 0 !important; text-align: center; }
