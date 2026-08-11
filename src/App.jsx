@@ -875,7 +875,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.63.1';
+const APP_VERSION = '2.63.2';
 const ORDINE_AMBIENTAZIONI = ['default', 'taverna', 'mercato', 'citta', 'accampamento', 'foresta', 'palude', 'montagna', 'tundra', 'deserto', 'mare', 'tempesta', 'dungeon', 'tempio'];
 
 function nuovoId() {
@@ -5131,7 +5131,7 @@ export default function App() {
                   </div>
                 </div>
             <div style={{ ...styles.vitalBox }}>
-              <SfondoVit>💤</SfondoVit>
+              <SfondoVit>🥱</SfondoVit>
               <div style={styles.vitalLabel}>{t("vital.sfinimento")}</div>
               <div style={styles.vitalValue}>
                 <button style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 13 }} onClick={() => aggiorna({ sfinimento: Math.max(0, scheda.sfinimento - 1) })} title={t('tip.diminuisci')}>−</button>

@@ -571,10 +571,11 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   box-shadow: 0 4px 18px rgba(0,0,0,0.38); backdrop-filter: blur(6px);
 }
 .game-actions-btn {
-  min-height: 30px; padding: 5px 7px; border-radius: 7px;
+  min-height: 30px; padding: 5px 12px; border-radius: 6px;
   border: 1px solid var(--c-gold-dark); background: var(--c-panel-light);
-  color: var(--c-ink); font: 600 12px Georgia, serif; text-align: left;
-  white-space: nowrap; cursor: pointer;
+  color: var(--c-ink); font-family: inherit; font-size: 13px; font-weight: normal;
+  text-align: center; white-space: nowrap; cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.16);
 }
 .game-actions-btn:hover { filter: brightness(1.08); }
 @media (max-width: 780px) {
