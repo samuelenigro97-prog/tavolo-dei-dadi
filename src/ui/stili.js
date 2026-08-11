@@ -564,14 +564,11 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 @keyframes cloud-slide { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
 .app-header-group { flex: 0 0 auto; }
 .game-actions-dock {
-  position: fixed; left: 12px; bottom: 12px; z-index: 1500;
-  width: 142px; display: flex; flex-direction: column; gap: 5px;
-  padding: 6px; border: 1px solid var(--c-border); border-radius: 10px;
-  background: color-mix(in srgb, var(--c-panel) 92%, transparent);
-  box-shadow: 0 4px 18px rgba(0,0,0,0.38); backdrop-filter: blur(6px);
+  position: fixed; left: 10px; bottom: 10px; z-index: 1500;
+  width: 154px; display: flex; flex-direction: column; gap: 6px;
 }
 .game-actions-btn {
-  min-height: 30px; padding: 5px 12px; border-radius: 6px;
+  width: 100%; min-height: 30px; padding: 5px 12px; border-radius: 6px;
   border: 1px solid var(--c-gold-dark); background: var(--c-panel-light);
   color: var(--c-ink); font-family: inherit; font-size: 13px; font-weight: normal;
   text-align: center; white-space: nowrap; cursor: pointer;
@@ -607,7 +604,9 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .game-actions-dock {
     left: 8px; right: 8px; bottom: 8px; width: auto;
     display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 4px; padding: 5px;
+    gap: 4px; padding: 5px; border: 1px solid var(--c-border); border-radius: 10px;
+    background: color-mix(in srgb, var(--c-panel) 92%, transparent);
+    box-shadow: 0 4px 18px rgba(0,0,0,0.38); backdrop-filter: blur(6px);
   }
   .game-actions-btn { min-width: 0; min-height: 34px; padding: 4px 3px; text-align: center; font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
   /* dadi: pulsanti compatti e leggibili su telefono in riga singola */
