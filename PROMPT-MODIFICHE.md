@@ -35,13 +35,13 @@ Nella sezione Equipaggiamento, la cella con l'emoji 🪙 è stata sostituita con
 
 Nuovi file in `public/audio/`:
 
-- `montagna-giorno.m4a`: vento morbido, Freesound 459977, florianreichelt, CC0;
-- `montagna-notte.m4a`: drone cupo, Freesound 500326, LulSayer, CC0.
+- `montagna-giorno.mp3`: vento morbido, Freesound 459977, florianreichelt, CC0;
+- `montagna-notte.mp3`: drone cupo, Freesound 500326, LulSayer, CC0.
 
 In `src/utils/audioAmbiente.js`:
 
 - `montagna` è incluso in `AMBIENTI_CON_FILE`;
-- `ESTENSIONE_FILE` contiene `montagna: 'm4a'`;
+- Montagna usa MP3 come gli altri ambienti, per la massima compatibilità tra browser;
 - `AMBIENTI_FILE_NOTTE` contiene `montagna`;
 - `ambienteFileUrl(id, notte)` seleziona il suffisso `-notte` quando `notte === true`.
 
