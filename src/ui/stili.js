@@ -535,7 +535,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .app-header-side { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: flex-start; width: 100%; }
 .app-header-group { display: grid; gap: 6px; min-width: 0; align-content: start; }
 .app-header-group:first-of-type { grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; max-width: 380px; }
-.app-header-group:last-of-type { grid-template-columns: 1fr; width: 100%; max-width: 100px; }
+.app-header-language { grid-template-columns: 1fr; width: 100%; max-width: 100px; }
 .app-header-group > button {
   width: 100%; display: inline-flex; align-items: center; justify-content: center;
   gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -553,9 +553,10 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   }
   .app-header-side .app-header-group,
   .app-header-side .app-header-group:first-of-type,
-  .app-header-side .app-header-group:last-of-type {
+  .app-header-side .app-header-language {
     grid-template-columns: 1fr; max-width: none; width: 100%;
   }
+  .app-header-side .game-actions-dock { grid-template-columns: 1fr; max-width: none; }
 }
 /* schermata di caricamento dal cloud: nuvola che pulsa e barra che scorre */
 .cloud-spinner { animation: cloud-bob 1.4s ease-in-out infinite; }
@@ -564,12 +565,11 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 @keyframes cloud-slide { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
 .app-header-group { flex: 0 0 auto; }
 .game-actions-dock {
-  position: fixed; left: 10px; bottom: 10px; z-index: 1500;
-  width: 154px; min-width: 154px; max-width: 154px;
-  display: flex; flex-direction: column; align-items: stretch; gap: 6px;
+  width: 100%; max-width: 380px;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;
 }
 .game-actions-btn {
-  width: 154px; min-width: 154px; max-width: 154px; flex: 0 0 auto;
+  width: 100%; min-width: 0;
   min-height: 30px; padding: 5px 12px; border-radius: 6px;
   border: 1px solid var(--c-gold-dark); background: var(--c-panel-light);
   color: var(--c-ink); font-family: inherit; font-size: 13px; font-weight: normal;
@@ -585,9 +585,9 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .app-header { display: flex; flex-direction: column; align-items: stretch; }
   .app-header-title { order: -1; text-align: center; margin-bottom: 4px !important; }
   .app-header-group:first-of-type,
-  .app-header-group:last-of-type { max-width: none !important; width: 100% !important; justify-self: stretch !important; }
+  .app-header-language { max-width: none !important; width: 100% !important; justify-self: stretch !important; }
   .app-header-group:first-of-type { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .app-header-group:last-of-type { grid-template-columns: 1fr; max-width: 100px !important; align-self: center; }
+  .app-header-language { grid-template-columns: 1fr; max-width: 100px !important; align-self: center; }
 }
 @media (max-width: 560px) {
   /* su schermi stretti: titolo su una riga sopra, poi ciascun gruppo di pulsanti
@@ -598,17 +598,14 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
      dai simboli e dal title, ma non rubano tre righe alla scheda. */
   .app-header-side { gap: 5px; }
   .app-header-group:first-of-type { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-  .app-header-group:last-of-type { grid-template-columns: 1fr; max-width: 100px !important; align-self: center; }
+  .app-header-language { grid-template-columns: 1fr; max-width: 100px !important; align-self: center; }
   .app-header-group:first-of-type .header-label { display: none; }
   .app-header-group > button { min-height: 34px; padding: 4px 6px !important; }
   .app-header-group:first-of-type > button { font-size: 18px !important; }
-  .app-shell { padding-left: 8px !important; padding-right: 8px !important; padding-bottom: 92px !important; overflow-x: clip; }
+  .app-shell { padding-left: 8px !important; padding-right: 8px !important; overflow-x: clip; }
   .game-actions-dock {
-    left: 8px; right: 8px; bottom: 8px; width: auto; min-width: 0; max-width: none;
-    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 4px; padding: 5px; border: 1px solid var(--c-border); border-radius: 10px;
-    background: color-mix(in srgb, var(--c-panel) 92%, transparent);
-    box-shadow: 0 4px 18px rgba(0,0,0,0.38); backdrop-filter: blur(6px);
+    width: 100%; max-width: none;
+    grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px;
   }
   .game-actions-btn { width: 100%; min-width: 0; max-width: none; flex: 0 1 auto; min-height: 34px; padding: 4px 3px; text-align: center; font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
   /* dadi: pulsanti compatti e leggibili su telefono in riga singola */

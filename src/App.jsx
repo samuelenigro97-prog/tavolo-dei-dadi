@@ -875,7 +875,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.65.0';
+const APP_VERSION = '2.65.1';
 const ORDINE_AMBIENTAZIONI = ['default', 'taverna', 'mercato', 'citta', 'accampamento', 'foresta', 'palude', 'montagna', 'tundra', 'deserto', 'mare', 'tempesta', 'dungeon', 'tempio'];
 
 function iconaAmbientazione(id) {
@@ -4128,7 +4128,7 @@ export default function App() {
           </button>
         </div>
 
-        <div className="app-header-group">
+        <div className="app-header-group app-header-language">
           <button
             style={styles.modeButton(false)}
             title={lingua === 'it' ? 'Interfaccia in italiano — click per passare all’inglese' : 'Interface in English — click to switch to Italian'}
@@ -4136,6 +4136,38 @@ export default function App() {
           >
             {lingua === 'it' ? '🇮🇹 IT' : '🇬🇧 EN'}
           </button>
+        </div>
+
+        <input ref={mappaRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaMappa} />
+        <div className="game-actions-dock" aria-label="Funzioni di gioco">
+          <button
+            ref={ambientazioneBtnRef}
+            className="game-actions-btn"
+            title="Ambientazione: cambia insieme colori, sfondo e audio"
+            onClick={() => {
+              sbloccaAudio();
+              if (!mostraPannelloAudio) {
+                const r = ambientazioneBtnRef.current?.getBoundingClientRect();
+                if (r) setPosPannelloAudio({
+                  top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)),
+                  left: Math.max(8, Math.min(window.innerWidth - 288, r.left)),
+                });
+              }
+              setMostraPannelloAudio(!mostraPannelloAudio);
+            }}
+          >{iconaAmbientazione(presetColori)} Ambientazione</button>
+          <button
+            className="game-actions-btn"
+            onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())}
+            title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}
+          >🗺️ {t('mappa.tasto')}</button>
+          {!(combat.attivo && combat.aperto) && (
+            <button
+              className="game-actions-btn"
+              onClick={() => (combat.combattenti.length ? setCombat((c) => ({ ...c, attivo: true, aperto: true })) : aggiungiPgAlCombat())}
+              title={t('ct.apri')}
+            >⚔️ {t('ct.titolo')}{combat.combattenti.length ? ` (${combat.combattenti.length})` : ''}</button>
+          )}
         </div>
         </div>
 
@@ -6432,39 +6464,6 @@ export default function App() {
         </footer>
         <div style={{ height: combat.attivo && combat.aperto ? 220 : 0 }} />
       </main>
-
-      {/* ===== Menu Gioco: ambientazione, mappa e combattimento ===== */}
-      <input ref={mappaRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaMappa} />
-      <div className="game-actions-dock" aria-label="Funzioni di gioco">
-        <button
-          ref={ambientazioneBtnRef}
-          className="game-actions-btn"
-          title="Ambientazione: cambia insieme colori, sfondo e audio"
-          onClick={() => {
-            sbloccaAudio();
-            if (!mostraPannelloAudio) {
-              const r = ambientazioneBtnRef.current?.getBoundingClientRect();
-              if (r) setPosPannelloAudio({
-                top: Math.max(8, r.top - Math.min(540, window.innerHeight - 24) - 5),
-                left: Math.max(8, Math.min(window.innerWidth - 288, r.left)),
-              });
-            }
-            setMostraPannelloAudio(!mostraPannelloAudio);
-          }}
-        >{iconaAmbientazione(presetColori)} Ambientazione</button>
-        <button
-          className="game-actions-btn"
-          onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())}
-          title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}
-        >🗺️ {t('mappa.tasto')}</button>
-        {!(combat.attivo && combat.aperto) && (
-          <button
-            className="game-actions-btn"
-            onClick={() => (combat.combattenti.length ? setCombat((c) => ({ ...c, attivo: true, aperto: true })) : aggiungiPgAlCombat())}
-            title={t('ct.apri')}
-          >⚔️ {t('ct.titolo')}{combat.combattenti.length ? ` (${combat.combattenti.length})` : ''}</button>
-        )}
-      </div>
 
       {/* ===== Visore della mappa della campagna ===== */}
       {mappaAperta && mappaCampagna && (
