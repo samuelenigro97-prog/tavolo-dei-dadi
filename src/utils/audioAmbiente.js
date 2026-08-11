@@ -55,6 +55,9 @@ const AMBIENTI_CON_FILE = new Set([
 // Ogni ambientazione ha la sua registrazione. (Il meccanismo per far condividere
 // una base a più ambientazioni resta disponibile, se dovesse servire.)
 const BASE_CONDIVISA = { palude: 'foresta' };
+// Di notte bosco e palude usano la base notturna (senza il canto diurno degli
+// uccelli); i richiami caratteristici vengono aggiunti separatamente e di rado.
+const BASE_CONDIVISA_NOTTE = { foresta: 'notte', palude: 'notte' };
 
 // Estensione del file per ambientazione (default: mp3). La città usa un loop
 // OGG (mercato con pioggia, dominio pubblico): in questo modo non serve un
@@ -62,8 +65,6 @@ const BASE_CONDIVISA = { palude: 'foresta' };
 const ESTENSIONE_FILE = { citta: 'ogg' };
 
 // Alcune ambientazioni hanno registrazioni dedicate per la modalità notturna.
-// La montagna usa lo stesso vento naturale in entrambe le modalità: di notte
-// viene attenuato dall'app e arricchito soltanto da rarissimi lupi lontani.
 const AMBIENTI_FILE_NOTTE = new Set(['montagna']);
 
 // Volume della base rispetto al volume dell'ambiente (1 = invariato).
@@ -74,7 +75,7 @@ const VOLUME_BASE = { citta: 0.5, montagna: 1.35 };
 function ambienteFileUrl(id, notte = false) {
   if (!AMBIENTI_CON_FILE.has(id)) return null;
   const base = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/';
-  const nomeBase = BASE_CONDIVISA[id] || id;
+  const nomeBase = (notte && BASE_CONDIVISA_NOTTE[id]) || BASE_CONDIVISA[id] || id;
   const nomeFile = AMBIENTI_FILE_NOTTE.has(id)
     ? `${nomeBase}-${notte ? 'notte' : 'giorno'}`
     : nomeBase;
@@ -389,15 +390,39 @@ function avviaGrilliNotturni() {
   programmaCoro();
 }
 
+/** Richiamo sintetico di gufo: due "uh" bassi e morbidi, senza cinguettii acuti. */
+function playGufo(volume = 0.2) {
+  const ctx = getAudioContext();
+  if (!ctx || ctx.state !== 'running') return;
+  const ora = ctx.currentTime;
+  [0, 0.62].forEach((ritardo, indice) => {
+    const osc = ctx.createOscillator();
+    const formante = ctx.createBiquadFilter();
+    const gain = ctx.createGain();
+    const inizio = ora + ritardo;
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(indice ? 330 : 300, inizio);
+    osc.frequency.exponentialRampToValueAtTime(indice ? 245 : 220, inizio + 0.48);
+    formante.type = 'lowpass';
+    formante.frequency.value = 620;
+    formante.Q.value = 2.4;
+    gain.gain.setValueAtTime(0.0001, inizio);
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.004, volume * 0.34), inizio + 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.0001, inizio + 0.56);
+    osc.connect(formante); formante.connect(gain); gain.connect(ctx.destination);
+    osc.start(inizio); osc.stop(inizio + 0.58);
+  });
+}
+
 /** Aggiunge alla notte presenze lontane e irregolari, sempre coerenti col luogo. */
 function avviaPresagiNotturni(id) {
   const ctx = getAudioContext();
   if (!ctx) return;
   let ultimo = '';
   const tavolo = {
-    foresta: ['verso', 'eco'], palude: ['verso', 'verso', 'eco'],
+    foresta: ['gufo', 'gufo', 'eco'], palude: ['gufo', 'verso', 'eco'],
     citta: ['campana', 'eco'], mercato: ['campana', 'eco'], taverna: ['eco'],
-    accampamento: ['lupo', 'eco'], deserto: ['eco', 'verso'], tundra: ['lupo', 'eco'],
+    accampamento: ['gufo', 'lupo', 'eco'], deserto: ['eco', 'verso'], tundra: ['lupo', 'eco'],
     mare: ['eco', 'verso'], tempesta: ['eco'], tempio: ['magic', 'eco'], notte: ['lupo', 'verso'],
   };
   const eventi = tavolo[id];
@@ -409,7 +434,9 @@ function avviaPresagiNotturni(id) {
       const candidati = eventi.filter((evento) => evento !== ultimo);
       const evento = candidati[Math.floor(Math.random() * candidati.length)] || eventi[0];
       ultimo = evento;
-      playSfx(evento, currentVolume * (0.10 + Math.random() * 0.08));
+      const volumeEvento = currentVolume * (0.10 + Math.random() * 0.08);
+      if (evento === 'gufo') playGufo(volumeEvento);
+      else playSfx(evento, volumeEvento);
     }, (primo ? 14000 : 30000) + Math.random() * (primo ? 16000 : 42000));
   };
   programma(true);
