@@ -869,7 +869,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.50.0';
+const APP_VERSION = '2.51.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4278,7 +4278,7 @@ export default function App() {
           onClick={() => setMostraPannelloAudio(false)}
           style={{
             position: 'fixed', inset: 0, zIndex: 1400,
-            background: 'rgba(0,0,0,0.35)'
+            background: 'rgba(0,0,0,0.52)', backdropFilter: 'blur(2px)'
           }}
         >
         <div
@@ -4287,10 +4287,10 @@ export default function App() {
             position: 'fixed', top: 12, left: 12,
             width: 'min(300px, calc(100vw - 24px))',
             maxHeight: 'calc(100vh - 24px)',
-            background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 10,
+            background: C.panel, border: `2px solid ${C.goldDark}`, borderRadius: 10,
             padding: '10px 12px', overflowY: 'auto',
             display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13,
-            boxShadow: '6px 0 24px rgba(0,0,0,0.4)'
+            boxShadow: '6px 0 28px rgba(0,0,0,0.48)'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
@@ -4350,11 +4350,11 @@ export default function App() {
                   onClick={() => { sbloccaAudio(); setPresetColori(p.id); setAmbienteAudio(p.audio); }}
                   title={`${p.nome}${conSuono ? ' · con sottofondo' : ' · nessun sottofondo'}`}
                   style={{
-                    padding: '7px 10px', borderRadius: 6, border: `1px solid ${attivo ? C.gold : C.border}`,
-                    background: attivo ? C.gold : C.panel, color: attivo ? '#ffffff' : C.ink,
+                    padding: '7px 10px', borderRadius: 6, border: `1px solid ${attivo ? C.goldDark : C.border}`,
+                    background: attivo ? C.goldDark : C.panelLight, color: attivo ? '#ffffff' : C.ink,
                     cursor: 'pointer', fontWeight: attivo ? 'bold' : 'normal', textAlign: 'left',
                     display: 'flex', flexDirection: 'column', gap: 2,
-                    transition: 'all 0.15s ease', boxShadow: attivo ? `0 2px 6px ${C.gold}` : 'none'
+                    transition: 'all 0.15s ease', boxShadow: attivo ? '0 2px 8px rgba(0,0,0,0.28)' : '0 1px 2px rgba(0,0,0,0.08)'
                   }}
                 >
                   <span>{p.nome}</span>
@@ -6352,10 +6352,10 @@ export default function App() {
       <input ref={mappaRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaMappa} />
       <button
         onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())}
-        style={{ position: 'fixed', left: 16, bottom: 16, zIndex: 1500, ...styles.buttonPrimary, borderRadius: 999, padding: '10px 16px', boxShadow: '0 4px 16px rgba(0,0,0,0.35)' }}
-        title={mappaCampagna ? (mappaAperta ? 'Chiudi la mappa della campagna' : 'Apri la mappa della campagna') : 'Carica la mappa della campagna'}
+        style={{ position: 'fixed', left: 12, bottom: 12, zIndex: 1500, ...styles.buttonPrimary, borderRadius: 999, padding: '6px 10px', minHeight: 30, fontSize: 12, background: C.panel, color: C.goldDark, border: `2px solid ${C.goldDark}`, boxShadow: '0 3px 12px rgba(0,0,0,0.45)' }}
+        title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}
       >
-        🗺️ Mappa
+        🗺️ {t('mappa.tasto')}
       </button>
       {mappaAperta && mappaCampagna && (
         <div
@@ -6366,15 +6366,15 @@ export default function App() {
             style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: C.panel, borderBottom: `1px solid ${C.border}` }}
             onClick={(e) => e.stopPropagation()}
           >
-            <strong style={{ color: 'var(--c-title)', fontSize: 15 }}>🗺️ Mappa della campagna</strong>
+            <strong style={{ color: 'var(--c-title)', fontSize: 15 }}>🗺️ {t('mappa.titolo')}</strong>
             <span style={{ flex: 1 }} />
-            <button style={{ ...styles.buttonMini, ...(mappaScala === 0 ? { borderColor: C.gold, color: C.gold } : {}) }} onClick={() => setMappaScala(0)} title="Adatta la mappa all'intero schermo">🖥 Adatta</button>
-            <button style={styles.buttonMini} onClick={() => setMappaScala((s) => Math.max(0.5, (s === 0 ? 1 : s) - 0.5))} title="Riduci">➖</button>
+            <button style={{ ...styles.buttonMini, ...(mappaScala === 0 ? { borderColor: C.gold, color: C.gold } : {}) }} onClick={() => setMappaScala(0)} title={t('mappa.adatta_tip')}>🖥 {t('mappa.adatta')}</button>
+            <button style={styles.buttonMini} onClick={() => setMappaScala((s) => Math.max(0.5, (s === 0 ? 1 : s) - 0.5))} title={t('mappa.riduci')}>➖</button>
             <span style={{ fontSize: 12, minWidth: 42, textAlign: 'center', fontWeight: 'bold' }}>{mappaScala === 0 ? 'fit' : `${Math.round(mappaScala * 100)}%`}</span>
-            <button style={styles.buttonMini} onClick={() => setMappaScala((s) => Math.min(6, (s === 0 ? 1 : s) + 0.5))} title="Ingrandisci (zoom massimo 6×)">➕</button>
-            <button style={styles.buttonMini} onClick={() => mappaRef.current?.click()} title="Sostituisci l'immagine della mappa">🔁 Cambia</button>
-            <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }} onClick={() => { if (window.confirm('Rimuovere la mappa della campagna?')) { setMappaCampagna(''); setMappaAperta(false); } }} title="Rimuovi la mappa">🗑 Rimuovi</button>
-            <button style={styles.buttonMini} onClick={() => setMappaAperta(false)} title="Chiudi">✕</button>
+            <button style={styles.buttonMini} onClick={() => setMappaScala((s) => Math.min(6, (s === 0 ? 1 : s) + 0.5))} title={t('mappa.ingrandisci')}>➕</button>
+            <button style={styles.buttonMini} onClick={() => mappaRef.current?.click()} title={t('mappa.cambia_tip')}>🔁 {t('mappa.cambia')}</button>
+            <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }} onClick={() => { if (window.confirm(t('mappa.rimuovi_conferma'))) { setMappaCampagna(''); setMappaAperta(false); } }} title={t('mappa.rimuovi_tip')}>🗑 {t('mappa.rimuovi')}</button>
+            <button style={styles.buttonMini} onClick={() => setMappaAperta(false)} title={t('mappa.chiudi')}>✕</button>
           </div>
           {/* Vista adattata allo schermo (nessuno scroll); con “Ingrandisci” passa
               alla dimensione reale e diventa scorrevole in entrambe le direzioni. */}
@@ -6385,7 +6385,7 @@ export default function App() {
             <div ref={mappaWrapRef} style={{ position: 'relative', display: 'inline-block', lineHeight: 0 }}>
               <img
                 src={mappaCampagna}
-                alt="Mappa della campagna"
+                alt={t('mappa.titolo')}
                 draggable={false}
                 style={mappaScala === 0
                   ? { maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', objectFit: 'contain', display: 'block' }
@@ -6411,7 +6411,7 @@ export default function App() {
       {!(combat.attivo && combat.aperto) ? (
         <button
           onClick={() => (combat.combattenti.length ? setCombat((c) => ({ ...c, attivo: true, aperto: true })) : aggiungiPgAlCombat())}
-          style={{ position: 'fixed', right: 16, bottom: 16, zIndex: 1500, ...styles.buttonPrimary, borderRadius: 999, padding: '10px 16px', boxShadow: '0 4px 16px rgba(0,0,0,0.35)' }}
+          style={{ position: 'fixed', right: 12, bottom: 12, zIndex: 1500, ...styles.buttonPrimary, borderRadius: 999, padding: '6px 10px', minHeight: 30, fontSize: 12, background: C.panel, color: C.goldDark, border: `2px solid ${C.goldDark}`, boxShadow: '0 3px 12px rgba(0,0,0,0.45)' }}
           title={t('ct.apri')}
         >
           ⚔️ {t('ct.titolo')}{combat.combattenti.length ? ` (${combat.combattenti.length})` : ''}

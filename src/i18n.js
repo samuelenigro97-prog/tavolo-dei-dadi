@@ -21,6 +21,22 @@ export const DIZIONARIO = {
     'tooltip.tema': 'Tema: Auto diventa scuro di notte o se il sistema è in modalità scura. I colori della scheda seguono la classe del personaggio.',
     'tooltip.lingua': 'Cambia la lingua (Italiano / English)',
 
+    // Mappa della campagna
+    'mappa.tasto': 'Mappa',
+    'mappa.titolo': 'Mappa della campagna',
+    'mappa.apri': 'Apri la mappa della campagna',
+    'mappa.chiudi': 'Chiudi la mappa della campagna',
+    'mappa.carica': 'Carica la mappa della campagna',
+    'mappa.adatta': 'Adatta',
+    'mappa.adatta_tip': 'Adatta la mappa all’intero schermo',
+    'mappa.riduci': 'Riduci',
+    'mappa.ingrandisci': 'Ingrandisci (zoom massimo 6×)',
+    'mappa.cambia': 'Cambia',
+    'mappa.cambia_tip': 'Sostituisci l’immagine della mappa',
+    'mappa.rimuovi': 'Rimuovi',
+    'mappa.rimuovi_tip': 'Rimuovi la mappa',
+    'mappa.rimuovi_conferma': 'Rimuovere la mappa della campagna?',
+
     // Generic Buttons & Modals
     'modal.chiudi': 'Chiudi',
     'modal.annulla': 'Annulla',
@@ -581,6 +597,22 @@ export const DIZIONARIO = {
     'tooltip.aggiorna_normale': 'Update app: clear cache and reload latest version',
     'tooltip.tema': 'Theme: Auto goes dark at night or if system is dark. Sheet colors follow the character class.',
     'tooltip.lingua': 'Change language (Italiano / English)',
+
+    // Campaign map
+    'mappa.tasto': 'Map',
+    'mappa.titolo': 'Campaign Map',
+    'mappa.apri': 'Open the campaign map',
+    'mappa.chiudi': 'Close the campaign map',
+    'mappa.carica': 'Upload a campaign map',
+    'mappa.adatta': 'Fit',
+    'mappa.adatta_tip': 'Fit the map to the screen',
+    'mappa.riduci': 'Zoom out',
+    'mappa.ingrandisci': 'Zoom in (maximum 6×)',
+    'mappa.cambia': 'Change',
+    'mappa.cambia_tip': 'Replace the map image',
+    'mappa.rimuovi': 'Remove',
+    'mappa.rimuovi_tip': 'Remove the map',
+    'mappa.rimuovi_conferma': 'Remove the campaign map?',
 
     // Generic Buttons & Modals
     'modal.chiudi': 'Close',
