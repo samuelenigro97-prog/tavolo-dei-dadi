@@ -75,6 +75,12 @@ export const PRESET_COLORI = [
     scuro:  { bg: '#0b140b', panel: '#121e12', panelLight: '#182818', border: '#284428', ink: '#d2ecc9', inkDim: '#70a065', gold: '#5caa3b', goldDark: '#7dcf5a', title: '#7dcf5a' },
   },
   {
+    id: 'palude', nome: '🐉 Palude', audio: 'palude',
+    sfondo: 'radial-gradient(58% 55% at 0% 12%, rgba(73,120,78,0.18), transparent 62%), radial-gradient(58% 55% at 100% 88%, rgba(72,92,48,0.16), transparent 62%)',
+    chiaro: { bg: '#edf1e6', panel: '#f8faf3', panelLight: '#e5ecd8', border: '#a9b88c', ink: '#24301d', inkDim: '#667451', gold: '#74852e', goldDark: '#52621d', title: '#52621d' },
+    scuro:  { bg: '#0b1009', panel: '#141b11', panelLight: '#1c2617', border: '#34452a', ink: '#dbe7cf', inkDim: '#849873', gold: '#8ea64a', goldDark: '#b2c96b', title: '#b2c96b' },
+  },
+  {
     id: 'mare', nome: '🌊 Mare / Costa', audio: 'mare',
     sfondo: 'radial-gradient(55% 60% at 0% 15%, rgba(30,150,170,0.15), transparent 62%), radial-gradient(55% 60% at 100% 85%, rgba(40,170,190,0.13), transparent 62%)',
     chiaro: { bg: '#e8f5f4', panel: '#f4fcfb', panelLight: '#dcf0ee', border: '#96ccc8', ink: '#0e2c2a', inkDim: '#3e807a', gold: '#0e9088', goldDark: '#066660', title: '#066660' },

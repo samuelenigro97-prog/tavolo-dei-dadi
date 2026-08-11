@@ -106,5 +106,14 @@
   "license": "Public domain",
   "author": "Caspar David Friedrich",
   "descurl": "https://commons.wikimedia.org/wiki/File:The_Abbey_in_the_Oakwood_by_Caspar_David_Friedrich.jpg"
+ },
+ {
+  "theme": "palude",
+  "file": "palude.jpg",
+  "kb": 545,
+  "title": "Palude fantasy fotorealistica di giorno",
+  "license": "Immagine generata per il progetto",
+  "author": "OpenAI Image Generation",
+  "descurl": ""
  }
 ]

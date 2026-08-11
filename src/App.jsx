@@ -875,7 +875,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.60.0';
+const APP_VERSION = '2.61.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1742,7 +1742,7 @@ export default function App() {
       ? `linear-gradient(rgba(14,11,8,${veloAlpha}), rgba(14,11,8,${veloAlpha}))`
       : '';
     // Di notte (tema scuro) usa la variante notturna dell'ambientazione, se esiste.
-    const AMB_NOTTE = new Set(['taverna', 'mercato', 'citta', 'dungeon', 'foresta', 'notte', 'mare', 'tundra', 'montagna', 'tempesta', 'accampamento', 'deserto', 'tempio']);
+    const AMB_NOTTE = new Set(['taverna', 'mercato', 'citta', 'dungeon', 'foresta', 'palude', 'notte', 'mare', 'tundra', 'montagna', 'tempesta', 'accampamento', 'deserto', 'tempio']);
     const fileImg = (scuroEff && AMB_NOTTE.has(idAmb)) ? `${idAmb}-notte.jpg` : `${idAmb}.jpg`;
     const imgLayer = conImmagine
       ? `url("${baseUrl}ambientazioni/${fileImg}") center center / cover no-repeat`
@@ -2869,7 +2869,7 @@ export default function App() {
   const maxIncantesimi = baseIncantesimi == null ? null : (classePreparata ? baseIncantesimi : Math.max(baseIncantesimi, nIncantesimi));
 
   return (
-    <div style={styles.app}>
+    <div className="app-shell" style={styles.app}>
       <style>{GLOBAL_CSS}</style>
 
       {erroreSalvataggio && (
@@ -4091,14 +4091,14 @@ export default function App() {
             title={t('tip.menu_iniziale')}
             onClick={() => setMostraMenu(true)}
           >
-            🏠 Menu
+            🏠 <span className="header-label">Menu</span>
           </button>
           <button
             style={{ ...styles.modeButton(mostraCloud), color: C.goldDark, borderColor: C.goldDark }}
             title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato (auto-salvataggio spento)') : 'Sincronizza i tuoi personaggi sul Cloud GitHub'}
             onClick={() => { setCloudStatus({ text: '', type: '' }); setMostraCloud(true); }}
           >
-            ☁️ Cloud{sincronizzando ? ' …' : (githubToken && gistId && autoSync
+            ☁️ <span className="header-label">Cloud</span>{sincronizzando ? ' …' : (githubToken && gistId && autoSync
               ? <span aria-label="Sincronizzazione automatica attiva" style={{ color: '#2e9d4d', fontWeight: 900 }}>✓</span>
               : '')}
           </button>
@@ -4108,7 +4108,7 @@ export default function App() {
             disabled={!passiUndo}
             onClick={annullaModifica}
           >
-            ↩︎ {t('undo.annulla')}
+            ↩︎ <span className="header-label">{t('undo.annulla')}</span>
           </button>
           <input ref={jsonRef} type="file" accept="application/json,.json" style={{ display: 'none' }} onChange={importaJson} />
           <button
@@ -4116,14 +4116,14 @@ export default function App() {
             title={t('tip.esporta')}
             onClick={esportaJson}
           >
-            💾 Esporta
+            💾 <span className="header-label">Esporta</span>
           </button>
           <button
             style={styles.modeButton(false)}
             title={t('tip.importa')}
             onClick={() => jsonRef.current?.click()}
           >
-            📂 Importa
+            📂 <span className="header-label">Importa</span>
           </button>
         </div>
 
@@ -4151,7 +4151,7 @@ export default function App() {
               setMostraPannelloAudio(!mostraPannelloAudio);
             }}
           >
-            🎭 {PRESET_COLORI.find(p => p.id === presetColori)?.nome.split(' ')[0] || '🟤'}
+            {PRESET_COLORI.find(p => p.id === presetColori)?.nome || '🟤 Classica'}
           </button>
         </div>
         </div>
@@ -4332,7 +4332,7 @@ export default function App() {
         >
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
             <div style={{ fontWeight: 'bold', color: C.goldDark, display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <span>🎭 Ambientazione</span>
+              <span>🧭 Ambientazione</span>
               <span style={{ fontSize: 11, fontWeight: 'normal', color: C.inkDim }}>(colori, sfondo e audio insieme · tutto offline)</span>
             </div>
             <button
@@ -6456,6 +6456,7 @@ export default function App() {
       {/* ===== Mappa della campagna: tasto flottante a sinistra + visore ===== */}
       <input ref={mappaRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaMappa} />
       <button
+        className="mobile-dock-btn mobile-dock-map"
         onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())}
         style={{ position: 'fixed', left: 12, bottom: 12, zIndex: 1500, ...styles.buttonPrimary, borderRadius: 999, padding: '6px 10px', minHeight: 30, fontSize: 12, background: C.panel, color: C.goldDark, border: `2px solid ${C.goldDark}`, boxShadow: '0 3px 12px rgba(0,0,0,0.45)' }}
         title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}
@@ -6515,6 +6516,7 @@ export default function App() {
       {/* ===== Combat tracker: barra fissa in basso (stile Fantasy Grounds) ===== */}
       {!(combat.attivo && combat.aperto) ? (
         <button
+          className="mobile-dock-btn mobile-dock-combat"
           onClick={() => (combat.combattenti.length ? setCombat((c) => ({ ...c, attivo: true, aperto: true })) : aggiungiPgAlCombat())}
           style={{ position: 'fixed', right: 12, bottom: 12, zIndex: 1500, ...styles.buttonPrimary, borderRadius: 999, padding: '6px 10px', minHeight: 30, fontSize: 12, background: C.panel, color: C.goldDark, border: `2px solid ${C.goldDark}`, boxShadow: '0 3px 12px rgba(0,0,0,0.45)' }}
           title={t('ct.apri')}

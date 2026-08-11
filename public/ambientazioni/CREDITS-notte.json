@@ -106,5 +106,14 @@
   "license": "Public domain",
   "author": "Franz Ludwig Catel",
   "descurl": "https://commons.wikimedia.org/wiki/File:Franz_Ludwig_Catel_-_Parti_af_Colosseum_i_m%C3%A5neskin.jpg"
+ },
+ {
+  "theme": "palude (notte)",
+  "file": "palude-notte.jpg",
+  "kb": 364,
+  "title": "Palude fantasy fotorealistica di notte",
+  "license": "Immagine generata per il progetto",
+  "author": "OpenAI Image Generation",
+  "descurl": ""
  }
 ]

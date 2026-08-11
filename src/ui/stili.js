@@ -580,9 +580,18 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
      su una propria riga a piena larghezza, centrata e ordinata */
   .app-header { display: flex; flex-direction: column; align-items: stretch; }
   .app-header-title { grid-column: auto; justify-self: auto; order: -1; margin-bottom: 6px !important; }
-  /* su telefono: 2 colonne per lato, pulsanti larghi e comodi da toccare */
-  .app-header-group:first-of-type,
-  .app-header-group:last-of-type { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* Le azioni secondarie diventano una barra di sole icone: restano riconoscibili
+     dai simboli e dal title, ma non rubano tre righe alla scheda. */
+  .app-header-side { gap: 5px; }
+  .app-header-group:first-of-type { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .app-header-group:last-of-type { grid-template-columns: minmax(70px, .7fr) minmax(0, 1.3fr); }
+  .app-header-group:first-of-type .header-label { display: none; }
+  .app-header-group > button { min-height: 34px; padding: 4px 6px !important; }
+  .app-header-group:first-of-type > button { font-size: 18px !important; }
+  .app-shell { padding-left: 8px !important; padding-right: 8px !important; padding-bottom: 92px !important; overflow-x: clip; }
+  .mobile-dock-btn { bottom: 8px !important; min-height: 34px !important; padding: 5px 9px !important; }
+  .mobile-dock-map { left: 8px !important; }
+  .mobile-dock-combat { right: 8px !important; }
   /* dadi: pulsanti compatti e leggibili su telefono in riga singola */
   .dadi-riga { justify-content: space-between; flex-wrap: wrap !important; gap: 4px !important; }
   .dadi-riga .dado-btn { flex: 0 0 auto; min-width: 28px !important; width: 28px !important; height: 28px !important; padding: 0 !important; text-align: center; }

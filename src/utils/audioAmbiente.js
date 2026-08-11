@@ -11,6 +11,7 @@ export const AMBIENTI_AUDIO = [
   { id: 'vento', nome: '🌬️ Vento', icona: '🌬️', desc: 'Vento e raffiche (castello, tundra, deserto)' },
   { id: 'dungeon', nome: '⛓️ Dungeon', icona: '⛓️', desc: 'Eco sotterraneo e gocce nelle cripte' },
   { id: 'foresta', nome: '🌲 Foresta', icona: '🌲', desc: 'Vento tra gli alberi e fruscii di foglie' },
+  { id: 'palude', nome: '🐉 Palude', icona: '🐉', desc: 'Acqua ferma, insetti e richiami lontani' },
   { id: 'notte', nome: '🌙 Notte', icona: '🌙', desc: 'Brezza notturna e grilli' },
   { id: 'mare', nome: '🌊 Mare / Costa', icona: '🌊', desc: 'Risacca e onde lente sulla spiaggia' },
   { id: 'montagna', nome: '⛰️ Montagna', icona: '⛰️', desc: 'Vento d’alta quota, sereno di giorno e cupo di notte' },
@@ -32,7 +33,7 @@ let watchdogTimer = null;  // sorveglia il loop <audio> e lo fa ripartire se si 
 // Ambientazioni all'aperto che, di notte, ricevono un velo di grilli/insetti
 // sopra il loro sottofondo (così restano riconoscibili ma "suonano di notte").
 // Gli ambienti al chiuso (taverna, dungeon, tempio) e la pioggia ne sono esclusi.
-const AMBIENTI_NOTTURNI = new Set(['foresta', 'citta', 'mercato', 'accampamento', 'deserto', 'mare']);
+const AMBIENTI_NOTTURNI = new Set(['foresta', 'palude', 'citta', 'mercato', 'accampamento', 'deserto', 'mare']);
 let watchdogInstallato = false; // per non registrare più volte i listener globali
 let keepAliveEl = null; // <audio> near-silenzioso per l'override della modalità silenziosa iOS
 
@@ -47,12 +48,12 @@ const MASTER_BOOST = 1.8;
 const AMBIENTI_CON_FILE = new Set([
   'taverna', 'mercato', 'citta', 'dungeon', 'foresta', 'notte',
   'mare', 'tundra', 'tempesta', 'accampamento', 'deserto', 'tempio',
-  'montagna',
+  'montagna', 'palude',
 ]);
 
 // Ogni ambientazione ha la sua registrazione. (Il meccanismo per far condividere
 // una base a più ambientazioni resta disponibile, se dovesse servire.)
-const BASE_CONDIVISA = {};
+const BASE_CONDIVISA = { palude: 'foresta' };
 
 // Estensione del file per ambientazione (default: mp3). La città usa un loop
 // OGG (mercato con pioggia, dominio pubblico): in questo modo non serve un
