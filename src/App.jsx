@@ -874,7 +874,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.56.0';
+const APP_VERSION = '2.57.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1311,6 +1311,10 @@ export default function App() {
   }, [transcribeUrl]);
   const [pdfStato, setPdfStato] = useState(''); // '' | 'loading'
   const [filtroIncantesimo, setFiltroIncantesimo] = useState('');
+  const [filtroLivelloInc, setFiltroLivelloInc] = useState('');
+  const [filtroScuolaInc, setFiltroScuolaInc] = useState('');
+  const [filtroClasseInc, setFiltroClasseInc] = useState('');
+  const [soloRitualiInc, setSoloRitualiInc] = useState(false);
   const [filtroInventario, setFiltroInventario] = useState('');
   const [addLivIncantesimo, setAddLivIncantesimo] = useState(0); // livello scelto nella barra "aggiungi"
   const [addBonusIncantesimo, setAddBonusIncantesimo] = useState(false); // aggiungi come incantesimo bonus ✦
@@ -4078,7 +4082,9 @@ export default function App() {
             title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato (auto-salvataggio spento)') : 'Sincronizza i tuoi personaggi sul Cloud GitHub'}
             onClick={() => { setCloudStatus({ text: '', type: '' }); setMostraCloud(true); }}
           >
-            ☁️ Cloud{sincronizzando ? ' …' : (githubToken && gistId && autoSync ? ' ✓' : '')}
+            ☁️ Cloud{sincronizzando ? ' …' : (githubToken && gistId && autoSync
+              ? <span aria-label="Sincronizzazione automatica attiva" style={{ color: '#2e9d4d', fontWeight: 900 }}>✓</span>
+              : '')}
           </button>
           <button
             style={{ ...styles.modeButton(false), opacity: passiUndo ? 1 : 0.4, cursor: passiUndo ? 'pointer' : 'default' }}
@@ -5772,12 +5778,46 @@ export default function App() {
                   sotto la lista di ogni livello (vedi più in basso). */}
               <div style={{ marginTop: 14, marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <span style={{ ...styles.detail, fontSize: 11, textAlign: 'center', opacity: 0.75 }}>{t('spell.tocca_nome')}</span>
+                <div className="spell-filters" style={{ display: 'grid', gridTemplateColumns: 'minmax(150px, 2fr) repeat(3, minmax(105px, 1fr)) auto', gap: 6, alignItems: 'center' }}>
+                  <input
+                    value={filtroIncantesimo}
+                    onChange={(e) => setFiltroIncantesimo(e.target.value)}
+                    placeholder={t('spell.cerca')}
+                    aria-label={t('spell.cerca')}
+                    style={{ ...styles.inlineInput, minWidth: 0, padding: '6px 9px' }}
+                  />
+                  <select value={filtroLivelloInc} onChange={(e) => setFiltroLivelloInc(e.target.value)} style={{ ...styles.inlineInput, padding: '6px 7px' }} aria-label={t('spell.filtro_livello')}>
+                    <option value="">{t('spell.tutti_livelli')}</option>
+                    <option value="0">{t('spell.trucchetti')}</option>
+                    {Array.from({ length: 9 }, (_, i) => <option key={i + 1} value={String(i + 1)}>{i + 1}°</option>)}
+                  </select>
+                  <select value={filtroScuolaInc} onChange={(e) => setFiltroScuolaInc(e.target.value)} style={{ ...styles.inlineInput, padding: '6px 7px' }} aria-label={t('spell.filtro_scuola')}>
+                    <option value="">{t('spell.tutte_scuole')}</option>
+                    {[...new Set(scheda.incantesimiLista.map((s) => s.scuola || datiIncantesimo(s.nome)?.scuola).filter(Boolean))].sort((a, b) => a.localeCompare(b, lingua)).map((scuola) => <option key={scuola} value={scuola}>{scuola}</option>)}
+                  </select>
+                  <select value={filtroClasseInc} onChange={(e) => setFiltroClasseInc(e.target.value)} style={{ ...styles.inlineInput, padding: '6px 7px' }} aria-label={t('spell.filtro_classe')}>
+                    <option value="">{t('spell.tutte_classi')}</option>
+                    {[...new Set(scheda.incantesimiLista.flatMap((s) => datiIncantesimo(s.nome)?.classi || []))].sort((a, b) => a.localeCompare(b, lingua)).map((classe) => <option key={classe} value={classe}>{classe}</option>)}
+                  </select>
+                  <button type="button" onClick={() => setSoloRitualiInc((v) => !v)} title={t('spell.solo_rituali')}
+                    style={{ ...styles.buttonMini, padding: '6px 8px', fontSize: 12, borderColor: soloRitualiInc ? C.goldDark : C.border, color: soloRitualiInc ? C.goldDark : C.inkDim, fontWeight: soloRitualiInc ? 700 : 400 }}>
+                    ◯ {t('spell.rituali')}
+                  </button>
+                </div>
               </div>
               <div>
                 {(() => {
                 const bannerStyle = { ...styles.panelTitle, fontSize: 15, marginTop: 14, marginBottom: 8, borderBottom: `2px solid ${C.border}`, paddingBottom: 4 };
                 const q = filtroIncantesimo.trim().toLowerCase();
-                const match = (s) => !q || (s.nome || '').toLowerCase().includes(q);
+                const filtriAttivi = Boolean(q || filtroLivelloInc || filtroScuolaInc || filtroClasseInc || soloRitualiInc);
+                const match = (s) => {
+                  const d = datiIncantesimo(s.nome) || {};
+                  return (!q || (s.nome || '').toLowerCase().includes(q))
+                    && (!filtroLivelloInc || Number(s.livello) === Number(filtroLivelloInc))
+                    && (!filtroScuolaInc || (s.scuola || d.scuola || '') === filtroScuolaInc)
+                    && (!filtroClasseInc || (d.classi || []).includes(filtroClasseInc))
+                    && (!soloRitualiInc || d.rituale === true);
+                };
                 const maxSpellLiv = Math.max(0, ...scheda.incantesimiLista.map(s => s.livello || 0));
                 const maxSlotLiv = Math.max(0, ...Object.entries(scheda.slotIncantesimo || {}).filter(([_, v]) => v.totale > 0).map(([k]) => parseInt(k, 10)));
                 const maxLiv = Math.min(9, Math.max(scheda.incantatore?.caratteristica ? 1 : 0, maxSpellLiv, maxSlotLiv + 1));
@@ -5816,7 +5856,7 @@ export default function App() {
                 };
                 const renderLivello = (liv) => {
                   const spells = scheda.incantesimiLista.filter((s) => s.livello === liv && match(s));
-                  if (q && spells.length === 0) return null; // durante la ricerca salta i livelli senza risultati
+                  if (filtriAttivi && spells.length === 0) return null;
                   const countLiv = scheda.incantesimiLista.filter((x) => x.livello === liv).length;
                   return (
                     <div key={liv} style={{ marginBottom: 14 }}>
@@ -5932,12 +5972,12 @@ export default function App() {
                           })}
                         </div>
                       )}
-                      {!q && AddControl(liv)}
+                      {!filtriAttivi && AddControl(liv)}
                     </div>
                   );
                 };
                 const livelliInc = Array.from({ length: maxLiv }, (_, i) => i + 1);
-                if (q && !scheda.incantesimiLista.some(match)) {
+                if (filtriAttivi && !scheda.incantesimiLista.some(match)) {
                   return <p style={{ ...styles.detail, textAlign: 'center', padding: '12px 0', opacity: 0.8 }}>{t('spell.nessun_risultato')}</p>;
                 }
                 return (

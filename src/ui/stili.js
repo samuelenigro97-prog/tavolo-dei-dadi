@@ -564,6 +564,8 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 @keyframes cloud-slide { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
 .app-header-group { flex: 0 0 auto; }
 @media (max-width: 780px) {
+  .spell-filters { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .spell-filters > input:first-child { grid-column: 1 / -1; }
   /* schermo medio: titolo centrato in prima riga, poi i due gruppi di bottoni
      allineati sulle due righe successive ciascuno a piena larghezza */
   .app-header { display: flex; flex-direction: column; align-items: stretch; }
