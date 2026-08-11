@@ -914,7 +914,7 @@ export function spiegaTratto(nome) {
 // Talenti comuni (5e), riassunti nostri. Per la nuvoletta sui Talenti.
 const SPIEG_TALENTI = {
   'Incantatore da Guerra': '*Prerequisito: Capacità di lanciare almeno un incantesimo.*\n\n- Vantaggio ai Tiri Salvezza su Costituzione per mantenere la Concentrazione.\n- Puoi eseguire le componenti somatiche degli incantesimi anche se hai armi o scudi in una o entrambe le mani.\n- Puoi lanciare un incantesimo come Attacco di Opportunità invece di fare un attacco in mischia.',
-  'Guaritore': "*Sei un medico esperto, capace di suturare ferite e rianimare i caduti in modo rapido ed efficace.*\n\n- **Stabilizzare e Rianimare:** Quando usi un kit da guaritore per stabilizzare una creatura morente, quella creatura recupera immediatamente 1 Punto Ferita.\n- **Cura di Battaglia:** Come azione, puoi usare un kit da guaritore per curare una creatura di **1d6 + 4 PF** più un numero di PF pari ai suoi Dadi Vita massimi (oppure spendere un Dado Vita del bersaglio più il modificatore di Costituzione e il tuo bonus di competenza). Una creatura non può recuperare PF in questo modo più di una volta per riposo breve o lungo.\n- **Guarigione Migliorata:** Quando lanci un incantesimo di guarigione o usi un kit, puoi ritirare gli 1 sui dadi di cura.",
+  'Guaritore': "*Sei un medico esperto, capace di curare ferite e rianimare i caduti.*\n\n**Versione 2024 (nuovo Manuale del Giocatore)**\n- **+1** a Intelligenza, Saggezza o Carisma.\n- **Medico di Battaglia:** con un'azione spendi un uso di un kit da guaritore per curare una creatura: il bersaglio spende uno dei suoi Dadi Vita, tu lo tiri e la creatura recupera PF pari al risultato del dado **+ il tuo bonus di competenza**.\n- **Guarigione Migliorata:** ogni volta che tiri un dado per curare (con un incantesimo o con Medico di Battaglia), puoi **ritirare ogni 1** (devi tenere il nuovo risultato).\n\n**Versione 2014 (Manuale classico 5e)**\n- Quando usi un kit da guaritore per **stabilizzare** una creatura morente, quella creatura recupera anche **1 PF**.\n- Come azione, spendi un uso del kit per curare una creatura di **1d6 + 4 PF**, più un numero di PF pari al suo **numero massimo di Dadi Vita**. La creatura non può ricevere di nuovo questa cura finché non completa un riposo breve o lungo.",
   'Robusto': '*Il tuo corpo è eccezionalmente resistente.*\n\n- I tuoi Punti Ferita massimi aumentano di un ammontare pari al doppio del tuo livello quando acquisisci questo talento.\n- Ogni volta che sali di livello in seguito, i tuoi Punti Ferita massimi aumentano di 2 punti aggiuntivi.',
   'Fortunato': '*Hai una fortuna inspiegabile che ti protegge.*\n\n- Hai 3 punti fortuna.\n- Quando fai un tiro per colpire, una prova di abilità o un tiro salvezza, puoi spendere un punto per tirare un d20 aggiuntivo e scegliere quale usare.\n- Puoi spendere un punto anche quando un attacco è fatto contro di te per fargli ritirare il dado.',
   'Vigile': "*Sei sempre all'erta per il pericolo.*\n\n- Ottieni un bonus di +5 all'Iniziativa.\n- Non puoi essere sorpreso mentre sei cosciente.\n- Le creature nascoste non hanno vantaggio ai tiri per colpire contro di te.",
@@ -937,6 +937,17 @@ const SPIEG_TALENTI = {
 const SPIEG_TALENTI_LC = _lcMap(SPIEG_TALENTI);
 // Elenco ordinato dei talenti noti (per il menu a tendina al Level Up).
 const TALENTI_NOMI = Object.keys(SPIEG_TALENTI).sort((a, b) => a.localeCompare(b, 'it'));
+// Lista { nome, desc } per il menu a tendina del Level Up (la scheda importa
+// TALENTI_5E da qui). desc = la frase-tagline in corsivo, o la prima riga.
+export const TALENTI_5E = Object.entries(SPIEG_TALENTI)
+  .map(([nome, testo]) => {
+    const m = String(testo).match(/^\*([^*]+)\*/);
+    let desc = (m ? m[1] : String(testo).split('\n')[0]) || '';
+    desc = desc.replace(/^Prerequisito:[^.]*\.\s*/i, '').trim();
+    if (desc.length > 90) desc = desc.slice(0, 87).trimEnd() + '…';
+    return { nome, desc };
+  })
+  .sort((a, b) => a.nome.localeCompare(b.nome, 'it'));
 /** Spiegazione di un talento dal nome (o null), senza maiuscole, ignora parentesi. */
 export function spiegaTalento(nome) {
   const n = String(nome || '').trim().toLowerCase();
