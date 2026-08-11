@@ -583,6 +583,14 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   box-shadow: 0 1px 4px rgba(0,0,0,0.16);
 }
 .game-actions-btn:hover { filter: brightness(1.08); }
+/* Desktop: le funzioni di gioco restano separate, in basso a sinistra.
+   Su mobile fanno invece parte della griglia superiore simmetrica. */
+@media (min-width: 821px) {
+  .game-actions-dock {
+    position: fixed; left: 10px; bottom: 10px; z-index: 1500;
+    width: 154px; max-width: 154px; grid-template-columns: 1fr;
+  }
+}
 @media (max-width: 780px) {
   .spell-filters { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
   .spell-filters > input:first-child { grid-column: 1 / -1; }
