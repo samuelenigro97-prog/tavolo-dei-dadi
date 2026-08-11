@@ -75,7 +75,7 @@ export const PRESET_COLORI = [
     scuro:  { bg: '#0b140b', panel: '#121e12', panelLight: '#182818', border: '#284428', ink: '#d2ecc9', inkDim: '#70a065', gold: '#5caa3b', goldDark: '#7dcf5a', title: '#7dcf5a' },
   },
   {
-    id: 'palude', nome: '🐉 Palude', audio: 'palude',
+    id: 'palude', nome: '🐸 Palude', audio: 'palude',
     sfondo: 'radial-gradient(58% 55% at 0% 12%, rgba(73,120,78,0.18), transparent 62%), radial-gradient(58% 55% at 100% 88%, rgba(72,92,48,0.16), transparent 62%)',
     chiaro: { bg: '#edf1e6', panel: '#f8faf3', panelLight: '#e5ecd8', border: '#a9b88c', ink: '#24301d', inkDim: '#667451', gold: '#74852e', goldDark: '#52621d', title: '#52621d' },
     scuro:  { bg: '#0b1009', panel: '#141b11', panelLight: '#1c2617', border: '#34452a', ink: '#dbe7cf', inkDim: '#849873', gold: '#8ea64a', goldDark: '#b2c96b', title: '#b2c96b' },

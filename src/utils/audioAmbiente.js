@@ -11,7 +11,7 @@ export const AMBIENTI_AUDIO = [
   { id: 'vento', nome: '🌬️ Vento', icona: '🌬️', desc: 'Vento e raffiche (castello, tundra, deserto)' },
   { id: 'dungeon', nome: '⛓️ Dungeon', icona: '⛓️', desc: 'Eco sotterraneo e gocce nelle cripte' },
   { id: 'foresta', nome: '🌲 Foresta', icona: '🌲', desc: 'Vento tra gli alberi e fruscii di foglie' },
-  { id: 'palude', nome: '🐉 Palude', icona: '🐉', desc: 'Acqua ferma, insetti e richiami lontani' },
+  { id: 'palude', nome: '🐸 Palude', icona: '🐸', desc: 'Acqua ferma, insetti e richiami lontani' },
   { id: 'notte', nome: '🌙 Notte', icona: '🌙', desc: 'Brezza notturna e grilli' },
   { id: 'mare', nome: '🌊 Mare / Costa', icona: '🌊', desc: 'Risacca e onde lente sulla spiaggia' },
   { id: 'montagna', nome: '⛰️ Montagna', icona: '⛰️', desc: 'Vento d’alta quota, sereno di giorno e cupo di notte' },
