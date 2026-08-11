@@ -5545,7 +5545,7 @@ export default function App() {
                                           style={{ ...styles.inlineInput, appearance: 'none', width: 22, height: 22, padding: 0, textAlign: 'center', cursor: 'pointer', flexShrink: 0 }}
                                         >
                                           <option value="">⚔️</option>
-                                          {ARMI_5E.map((w) => <option key={w.nome} value={w.nome}>{w.nome}</option>)}
+                                          {[...ARMI_5E].sort((a, b) => a.nome.localeCompare(b.nome, 'it')).map((w) => <option key={w.nome} value={w.nome}>{w.nome}</option>)}
                                         </select>
                                       )}
                                       <Editable
@@ -5646,7 +5646,7 @@ export default function App() {
                               }
                             }}
                           />
-                          {cat === 'Azione' && <datalist id="wpn-presets">{ARMI_5E.map((w) => <option key={w.nome} value={w.nome} />)}</datalist>}
+                          {cat === 'Azione' && <datalist id="wpn-presets">{[...ARMI_5E].sort((a, b) => a.nome.localeCompare(b.nome, 'it')).map((w) => <option key={w.nome} value={w.nome} />)}</datalist>}
                         </div>
                       </div>
                     );
