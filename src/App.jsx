@@ -875,7 +875,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.62.2';
+const APP_VERSION = '2.63.0';
 const ORDINE_AMBIENTAZIONI = ['default', 'taverna', 'mercato', 'citta', 'accampamento', 'foresta', 'palude', 'montagna', 'tundra', 'deserto', 'mare', 'tempesta', 'dungeon', 'tempio'];
 
 function nuovoId() {
@@ -4135,24 +4135,6 @@ export default function App() {
           >
             {lingua === 'it' ? '🇮🇹 IT' : '🇬🇧 EN'}
           </button>
-          <button
-            ref={ambientazioneBtnRef}
-            style={{ ...styles.modeButton(presetColori !== 'default'), fontSize: 14, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}
-            title="Ambientazione: cambia insieme colori, sfondo e audio · click per aprire"
-            onClick={() => {
-              sbloccaAudio();
-              if (!mostraPannelloAudio) {
-                const r = ambientazioneBtnRef.current?.getBoundingClientRect();
-                if (r) setPosPannelloAudio({
-                  top: Math.min(window.innerHeight - 90, r.bottom + 5),
-                  left: Math.max(8, Math.min(window.innerWidth - 288, r.left)),
-                });
-              }
-              setMostraPannelloAudio(!mostraPannelloAudio);
-            }}
-          >
-            {PRESET_COLORI.find(p => p.id === presetColori)?.nome || '🟤 Classica'}
-          </button>
         </div>
         </div>
 
@@ -6450,16 +6432,40 @@ export default function App() {
         <div style={{ height: combat.attivo && combat.aperto ? 220 : 0 }} />
       </main>
 
-      {/* ===== Mappa della campagna: tasto flottante a sinistra + visore ===== */}
+      {/* ===== Menu Gioco: ambientazione, mappa e combattimento ===== */}
       <input ref={mappaRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaMappa} />
-      <button
-        className="mobile-dock-btn mobile-dock-map"
-        onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())}
-        style={{ position: 'fixed', left: 12, bottom: 12, zIndex: 1500, ...styles.buttonPrimary, borderRadius: 999, padding: '6px 10px', minHeight: 30, fontSize: 12, background: C.panel, color: C.goldDark, border: `2px solid ${C.goldDark}`, boxShadow: '0 3px 12px rgba(0,0,0,0.45)' }}
-        title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}
-      >
-        🗺️ {t('mappa.tasto')}
-      </button>
+      <div className="game-actions-dock" aria-label="Funzioni di gioco">
+        <button
+          ref={ambientazioneBtnRef}
+          className="game-actions-btn"
+          title="Ambientazione: cambia insieme colori, sfondo e audio"
+          onClick={() => {
+            sbloccaAudio();
+            if (!mostraPannelloAudio) {
+              const r = ambientazioneBtnRef.current?.getBoundingClientRect();
+              if (r) setPosPannelloAudio({
+                top: Math.max(8, r.top - Math.min(540, window.innerHeight - 24) - 5),
+                left: Math.max(8, Math.min(window.innerWidth - 288, r.left)),
+              });
+            }
+            setMostraPannelloAudio(!mostraPannelloAudio);
+          }}
+        >🧭 Ambientazione</button>
+        <button
+          className="game-actions-btn"
+          onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())}
+          title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}
+        >🗺️ {t('mappa.tasto')}</button>
+        {!(combat.attivo && combat.aperto) && (
+          <button
+            className="game-actions-btn"
+            onClick={() => (combat.combattenti.length ? setCombat((c) => ({ ...c, attivo: true, aperto: true })) : aggiungiPgAlCombat())}
+            title={t('ct.apri')}
+          >⚔️ {t('ct.titolo')}{combat.combattenti.length ? ` (${combat.combattenti.length})` : ''}</button>
+        )}
+      </div>
+
+      {/* ===== Visore della mappa della campagna ===== */}
       {mappaAperta && mappaCampagna && (
         <div
           style={{ position: 'fixed', inset: 0, zIndex: 2600, background: 'rgba(0,0,0,0.85)', display: 'flex', flexDirection: 'column' }}
@@ -6511,16 +6517,7 @@ export default function App() {
       )}
 
       {/* ===== Combat tracker: barra fissa in basso (stile Fantasy Grounds) ===== */}
-      {!(combat.attivo && combat.aperto) ? (
-        <button
-          className="mobile-dock-btn mobile-dock-combat"
-          onClick={() => (combat.combattenti.length ? setCombat((c) => ({ ...c, attivo: true, aperto: true })) : aggiungiPgAlCombat())}
-          style={{ position: 'fixed', right: 12, bottom: 12, zIndex: 1500, ...styles.buttonPrimary, borderRadius: 999, padding: '6px 10px', minHeight: 30, fontSize: 12, background: C.panel, color: C.goldDark, border: `2px solid ${C.goldDark}`, boxShadow: '0 3px 12px rgba(0,0,0,0.45)' }}
-          title={t('ct.apri')}
-        >
-          ⚔️ {t('ct.titolo')}{combat.combattenti.length ? ` (${combat.combattenti.length})` : ''}
-        </button>
-      ) : (
+      {combat.attivo && combat.aperto ? (
         <div style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 1500, background: C.panel, borderTop: `2px solid var(--c-gold-dark)`, boxShadow: '0 -4px 20px rgba(0,0,0,0.4)' }}>
           <div style={{ maxWidth: 1180, margin: '0 auto', padding: '8px 12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
@@ -6672,7 +6669,7 @@ export default function App() {
             )}
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

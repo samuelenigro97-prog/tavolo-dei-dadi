@@ -535,7 +535,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .app-header-side { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: flex-start; width: 100%; }
 .app-header-group { display: grid; gap: 6px; min-width: 0; align-content: start; }
 .app-header-group:first-of-type { grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; max-width: 380px; }
-.app-header-group:last-of-type { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; max-width: 300px; }
+.app-header-group:last-of-type { grid-template-columns: 1fr; width: 100%; max-width: 100px; }
 .app-header-group > button {
   width: 100%; display: inline-flex; align-items: center; justify-content: center;
   gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -563,6 +563,20 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .cloud-bar { width: 40%; animation: cloud-slide 1.1s ease-in-out infinite; }
 @keyframes cloud-slide { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
 .app-header-group { flex: 0 0 auto; }
+.game-actions-dock {
+  position: fixed; left: 12px; bottom: 12px; z-index: 1500;
+  width: 142px; display: flex; flex-direction: column; gap: 5px;
+  padding: 6px; border: 1px solid var(--c-border); border-radius: 10px;
+  background: color-mix(in srgb, var(--c-panel) 92%, transparent);
+  box-shadow: 0 4px 18px rgba(0,0,0,0.38); backdrop-filter: blur(6px);
+}
+.game-actions-btn {
+  min-height: 30px; padding: 5px 7px; border-radius: 7px;
+  border: 1px solid var(--c-gold-dark); background: var(--c-panel-light);
+  color: var(--c-ink); font: 600 12px Georgia, serif; text-align: left;
+  white-space: nowrap; cursor: pointer;
+}
+.game-actions-btn:hover { filter: brightness(1.08); }
 @media (max-width: 780px) {
   .spell-filters { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
   .spell-filters > input:first-child { grid-column: 1 / -1; }
@@ -573,7 +587,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .app-header-group:first-of-type,
   .app-header-group:last-of-type { max-width: none !important; width: 100% !important; justify-self: stretch !important; }
   .app-header-group:first-of-type { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .app-header-group:last-of-type { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .app-header-group:last-of-type { grid-template-columns: 1fr; max-width: 100px !important; align-self: center; }
 }
 @media (max-width: 560px) {
   /* su schermi stretti: titolo su una riga sopra, poi ciascun gruppo di pulsanti
@@ -584,14 +598,17 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
      dai simboli e dal title, ma non rubano tre righe alla scheda. */
   .app-header-side { gap: 5px; }
   .app-header-group:first-of-type { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-  .app-header-group:last-of-type { grid-template-columns: minmax(70px, .7fr) minmax(0, 1.3fr); }
+  .app-header-group:last-of-type { grid-template-columns: 1fr; max-width: 100px !important; align-self: center; }
   .app-header-group:first-of-type .header-label { display: none; }
   .app-header-group > button { min-height: 34px; padding: 4px 6px !important; }
   .app-header-group:first-of-type > button { font-size: 18px !important; }
   .app-shell { padding-left: 8px !important; padding-right: 8px !important; padding-bottom: 92px !important; overflow-x: clip; }
-  .mobile-dock-btn { bottom: 8px !important; min-height: 34px !important; padding: 5px 9px !important; }
-  .mobile-dock-map { left: 8px !important; }
-  .mobile-dock-combat { right: 8px !important; }
+  .game-actions-dock {
+    left: 8px; right: 8px; bottom: 8px; width: auto;
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px; padding: 5px;
+  }
+  .game-actions-btn { min-width: 0; min-height: 34px; padding: 4px 3px; text-align: center; font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
   /* dadi: pulsanti compatti e leggibili su telefono in riga singola */
   .dadi-riga { justify-content: space-between; flex-wrap: wrap !important; gap: 4px !important; }
   .dadi-riga .dado-btn { flex: 0 0 auto; min-width: 28px !important; width: 28px !important; height: 28px !important; padding: 0 !important; text-align: center; }
