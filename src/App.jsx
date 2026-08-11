@@ -875,7 +875,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.62.0';
+const APP_VERSION = '2.62.1';
 const ORDINE_AMBIENTAZIONI = ['default', 'taverna', 'mercato', 'citta', 'accampamento', 'foresta', 'palude', 'montagna', 'tundra', 'deserto', 'mare', 'tempesta', 'dungeon', 'tempio'];
 
 function nuovoId() {
@@ -4395,7 +4395,7 @@ export default function App() {
           </div>
 
           {/* Ambientazioni: un click applica palette + sfondo + audio abbinato */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 5 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 4 }}>
           {[...PRESET_COLORI].sort((a, b) => ORDINE_AMBIENTAZIONI.indexOf(a.id) - ORDINE_AMBIENTAZIONI.indexOf(b.id)).map((p) => {
               const attivo = presetColori === p.id;
               const conSuono = p.audio && p.audio !== 'spento';
@@ -4403,19 +4403,16 @@ export default function App() {
                 <button
                   key={p.id}
                   onClick={() => { sbloccaAudio(); setPresetColori(p.id); setAmbienteAudio(p.audio); }}
-                  title={`${p.nome}${conSuono ? ' · con sottofondo' : ' · nessun sottofondo'}`}
+                  title={`${p.nome}${conSuono ? ' · audio ambientale incluso' : ' · silenzio'}`}
                   style={{
-                    padding: '5px 7px', borderRadius: 6, border: `1px solid ${attivo ? C.goldDark : C.border}`,
+                    padding: '4px 6px', minHeight: 29, borderRadius: 6, border: `1px solid ${attivo ? C.goldDark : C.border}`,
                     background: attivo ? C.goldDark : C.panelLight, color: attivo ? '#ffffff' : C.ink,
                     cursor: 'pointer', fontWeight: attivo ? 'bold' : 'normal', textAlign: 'left',
-                    display: 'flex', flexDirection: 'column', gap: 1, fontSize: 12,
+                    display: 'flex', alignItems: 'center', fontSize: 12, lineHeight: 1.15,
                     transition: 'all 0.15s ease', boxShadow: attivo ? '0 2px 8px rgba(0,0,0,0.28)' : '0 1px 2px rgba(0,0,0,0.08)'
                   }}
                 >
                   <span>{p.nome}</span>
-                  <span style={{ fontSize: 10, opacity: 0.8 }}>
-                    {conSuono ? '🔊 sottofondo' : '🔇 silenzio'}
-                  </span>
                 </button>
               );
             })}
