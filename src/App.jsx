@@ -874,7 +874,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.57.0';
+const APP_VERSION = '2.58.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4920,8 +4920,8 @@ export default function App() {
                 </span>
               </div>
 
-              <div style={{ ...styles.detail, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: 6, paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
+              <div style={{ ...styles.detail, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.border}`, textAlign: 'center' }}>
+                <span style={{ width: '100%', display: 'inline-flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
                   {t('vital.dadi_vita')}{' '}
                   <Rollable onRoll={tiraDadoVita} title={t('vital.dadi_vita_tooltip')}>
                     <strong style={{ color: C.goldDark }}>{Math.max(1, scheda.livello || 1)}</strong>
