@@ -875,7 +875,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.63.5';
+const APP_VERSION = '2.64.0';
 const ORDINE_AMBIENTAZIONI = ['default', 'taverna', 'mercato', 'citta', 'accampamento', 'foresta', 'palude', 'montagna', 'tundra', 'deserto', 'mare', 'tempesta', 'dungeon', 'tempio'];
 
 function nuovoId() {
@@ -3369,7 +3369,7 @@ export default function App() {
             <div style={{ ...styles.panel, maxWidth: 520, width: '100%', maxHeight: '88vh', overflowY: 'auto' }}>
               <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 4 }}>📖 {t('priv.panoramica')}</h1>
               <div style={{ textAlign: 'center', ...styles.detail, marginBottom: 12 }}>
-                {scheda.classe || '—'}{scheda.sottoclasse ? ` · ${scheda.sottoclasse}` : ''} · Liv. {liv} · {versione === '2024' ? 'D&D 5.5' : 'D&D 5.0'}
+                {traduciDato(scheda.classe) || '—'}{scheda.sottoclasse ? ` · ${traduciDato(scheda.sottoclasse)}` : ''} · Liv. {liv} · {versione === '2024' ? 'D&D 5.5' : 'D&D 5.0'}
               </div>
               {righe.length === 0 && <p style={styles.detail}>{t('priv.nessuno')}</p>}
               {righe.map(({ L, feat, asi, sub, futuro }) => (
@@ -3392,7 +3392,7 @@ export default function App() {
                         </div>
                       );
                     })}
-                    {sub && <div style={{ color: C.green }}>🌟 {t('priv.sottoclasse')}{scheda.sottoclasse ? ` (${scheda.sottoclasse})` : ''}</div>}
+                    {sub && <div style={{ color: C.green }}>🌟 {t('priv.sottoclasse')}{scheda.sottoclasse ? ` (${traduciDato(scheda.sottoclasse)})` : ''}</div>}
                     {asi && <div style={{ color: C.inkDim }}>🎯 {t('priv.aumento_car')}</div>}
                     {futuro && <span style={{ ...styles.detail, fontStyle: 'italic' }}>— {t('priv.futuro')}</span>}
                   </div>
@@ -3420,7 +3420,7 @@ export default function App() {
             <div style={{ ...styles.panel, maxWidth: 520, width: '100%', maxHeight: '88vh', overflowY: 'auto' }}>
               <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 4 }}>📖 {t('priv.panoramica_sub')}</h1>
               <div style={{ textAlign: 'center', ...styles.detail, marginBottom: 12 }}>
-                {scheda.sottoclasse || '—'} · {scheda.classe || '—'} · Liv. {liv} · {versione === '2024' ? 'D&D 5.5' : 'D&D 5.0'}
+                {traduciDato(scheda.sottoclasse) || '—'} · {traduciDato(scheda.classe) || '—'} · Liv. {liv} · {versione === '2024' ? 'D&D 5.5' : 'D&D 5.0'}
               </div>
               {righe.length === 0 && <p style={styles.detail}>{t('priv.nessuno')}</p>}
               {righe.map(({ L, feat, futuro }) => (
@@ -3665,7 +3665,7 @@ export default function App() {
                   onChange={(e) => setLevelUpBozza((b) => ({ ...b, sottoclasse: e.target.value }))}
                 >
                   <option value="">{t('crea.scegli')}</option>
-                  {scelteSub.map((s) => <option key={s} value={s}>{s}</option>)}
+                  {scelteSub.map((s) => <option key={s} value={s}>{traduciDato(s)}</option>)}
                 </select>
               </div>
             )}
@@ -5807,11 +5807,11 @@ export default function App() {
                   </select>
                   <select value={filtroScuolaInc} onChange={(e) => setFiltroScuolaInc(e.target.value)} style={{ ...styles.inlineInput, padding: '6px 7px' }} aria-label={t('spell.filtro_scuola')}>
                     <option value="">{t('spell.tutte_scuole')}</option>
-                    {[...new Set(scheda.incantesimiLista.map((s) => s.scuola || datiIncantesimo(s.nome)?.scuola).filter(Boolean))].sort((a, b) => a.localeCompare(b, lingua)).map((scuola) => <option key={scuola} value={scuola}>{scuola}</option>)}
+                    {[...new Set(scheda.incantesimiLista.map((s) => s.scuola || datiIncantesimo(s.nome)?.scuola).filter(Boolean))].sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((scuola) => <option key={scuola} value={scuola}>{traduciDato(scuola)}</option>)}
                   </select>
                   <select value={filtroClasseInc} onChange={(e) => setFiltroClasseInc(e.target.value)} style={{ ...styles.inlineInput, padding: '6px 7px' }} aria-label={t('spell.filtro_classe')}>
                     <option value="">{t('spell.tutte_classi')}</option>
-                    {[...new Set(scheda.incantesimiLista.flatMap((s) => datiIncantesimo(s.nome)?.classi || []))].sort((a, b) => a.localeCompare(b, lingua)).map((classe) => <option key={classe} value={classe}>{classe}</option>)}
+                    {[...new Set(scheda.incantesimiLista.flatMap((s) => datiIncantesimo(s.nome)?.classi || []))].sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((classe) => <option key={classe} value={classe}>{traduciDato(classe)}</option>)}
                   </select>
                   <button type="button" onClick={() => setSoloRitualiInc((v) => !v)} title={t('spell.solo_rituali')}
                     style={{ ...styles.buttonMini, padding: '6px 8px', fontSize: 12, borderColor: soloRitualiInc ? C.goldDark : C.border, color: soloRitualiInc ? C.goldDark : C.inkDim, fontWeight: soloRitualiInc ? 700 : 400 }}>
@@ -5942,7 +5942,7 @@ export default function App() {
                                   <div className="spell-chips" style={{ display: 'flex', flexWrap: 'nowrap', gap: 6, alignItems: 'center', overflowX: 'auto', flex: '1 1 auto', minWidth: 0 }}>
                                     {chip('⏱', t('spell.chip_tempo'), tempoLabel)}
                                     {chip('🎯', t('spell.chip_gittata'), gittata)}
-                                    {scuola && chip('🔮', 'Scuola', scuola)}
+                                    {scuola && chip('🔮', 'Scuola', traduciDato(scuola))}
                                     {area && chip('📐', 'Area', area)}
                                     {/* Danno solo testuale (non tirabile): resta un chip informativo.
                                         Quando è un'espressione di dado valida, il tiro dei danni va

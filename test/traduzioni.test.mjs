@@ -8,7 +8,7 @@ import { dirname, join } from 'node:path';
 
 const RADICE_TEST = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-import { setLinguaAttuale } from '../src/i18n.js';
+import { setLinguaAttuale, traduciDato } from '../src/i18n.js';
 import { INCANTESIMI_NOMI } from '../src/data/spiegazioni.js';
 import { spiegaTratto, spiegaTalento, spiegaMetamagia, spiegaPrivilegio, spiegaIncantesimo } from '../src/data/spiegazioni.js';
 import { EN_TRATTI, EN_TALENTI, EN_METAMAGIA, EN_PRIVILEGI, EN_INCANTESIMI, EN_PRIVILEGI_CLASSE } from '../src/data/spiegazioni.en.js';
@@ -27,6 +27,15 @@ test('traduzioni: in inglese si ottiene il testo inglese', () => {
   const t = conLingua('en', () => spiegaTratto('Scurovisione'));
   assert.match(t, /see in the dark/i);
   assert.doesNotMatch(t, /vedi al buio/i);
+});
+
+test('traduzioni: sottoclassi e scuole di magia rispettano la lingua', () => {
+  conLingua('en', () => {
+    assert.equal(traduciDato('Stregoneria della Magia Selvaggia'), 'Wild Magic Sorcery');
+    assert.equal(traduciDato('Dominio dell’Inganno'), 'Trickery Domain');
+    assert.equal(traduciDato('Invocazione'), 'Evocation');
+    assert.equal(traduciDato('Necromanzia'), 'Necromancy');
+  });
 });
 
 test('traduzioni: talenti e metamagia rispettano la lingua', () => {
