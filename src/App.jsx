@@ -875,7 +875,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.63.2';
+const APP_VERSION = '2.63.3';
 const ORDINE_AMBIENTAZIONI = ['default', 'taverna', 'mercato', 'citta', 'accampamento', 'foresta', 'palude', 'montagna', 'tundra', 'deserto', 'mare', 'tempesta', 'dungeon', 'tempio'];
 
 function nuovoId() {
@@ -4926,7 +4926,7 @@ export default function App() {
                 </span>
               </div>
 
-              <div style={{ ...styles.detail, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.border}`, textAlign: 'center' }}>
+              <div style={{ ...styles.detail, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 14, paddingTop: 12, paddingBottom: 2, borderTop: `1px solid ${C.border}`, textAlign: 'center', position: 'relative', top: 3 }}>
                 <span style={{ width: '100%', display: 'inline-flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
                   {t('vital.dadi_vita')}{' '}
                   <Rollable onRoll={tiraDadoVita} title={t('vital.dadi_vita_tooltip')}>
