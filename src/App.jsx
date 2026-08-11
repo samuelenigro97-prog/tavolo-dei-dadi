@@ -479,7 +479,7 @@ function avatarSvgFallback(classe, specie, nome) {
 // ---------------------------------------------------------------------------
 
 
-import { spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spiegaMetamagia, METAMAGIA_5E, INCANTESIMI_NOMI as NOMI_SPIEG_INC } from './data/spiegazioni.js';
+import { spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spiegaMetamagia, METAMAGIA_5E, TALENTI_5E, INCANTESIMI_NOMI as NOMI_SPIEG_INC } from './data/spiegazioni.js';
 import { INCANTESIMI_DB, datiIncantesimo } from './data/incantesimi.js';
 
 const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(INCANTESIMI_DB)])).sort((a, b) => a.localeCompare(b, 'it'));
@@ -869,7 +869,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.46.0';
+const APP_VERSION = '2.48.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1316,51 +1316,14 @@ export default function App() {
   const [ctDmg, setCtDmg] = useState({}); // valore danno/cura per combattente (id → stringa)
   const [storicoAperto, setStoricoAperto] = useState(false);
   // Mappa della campagna: immagine caricata dal DM, apribile/chiudibile come il
-  // Combat tracker. Salvata a parte (non nella scheda), così non finisce
-  // nell'export/cloud del singolo personaggio ed è condivisa fra i PG.
+  // Combat tracker. La mappa e il segnalino sono salvati NELLA scheda del PG
+  // (vedi più sotto, dopo la definizione di scheda/aggiorna).
   const [mappaAperta, setMappaAperta] = useState(false);
   // Zoom mappa: 0 = adattata all'intero schermo; >0 = larghezza in multipli della
   // finestra (1 = piena larghezza, fino a 6× per lo zoom massimo), scorrevole.
   const [mappaScala, setMappaScala] = useState(0);
-  // Segnalino spostabile sulla mappa: posizione in percentuale (0-100) rispetto
-  // all'immagine, così resta corretta con qualsiasi zoom. Memorizzata a parte.
-  const [mappaMarker, setMappaMarker] = useState(() => {
-    try { const s = JSON.parse(localStorage.getItem('scheda-interattiva:mappa-marker')); if (s && typeof s.x === 'number') return s; } catch { /* niente */ }
-    return { x: 50, y: 50 };
-  });
-  useEffect(() => {
-    try { localStorage.setItem('scheda-interattiva:mappa-marker', JSON.stringify(mappaMarker)); } catch { /* niente */ }
-  }, [mappaMarker]);
-  const mappaWrapRef = useRef(null);
-  const trascinaMarker = (e) => {
-    const wrap = mappaWrapRef.current;
-    if (!wrap) return;
-    const r = wrap.getBoundingClientRect();
-    if (!r.width || !r.height) return;
-    const x = Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width) * 100));
-    const y = Math.max(0, Math.min(100, ((e.clientY - r.top) / r.height) * 100));
-    setMappaMarker({ x, y });
-  };
-  const fineTrascinaMarker = () => {
-    window.removeEventListener('pointermove', trascinaMarker);
-    window.removeEventListener('pointerup', fineTrascinaMarker);
-  };
-  const iniziaTrascinaMarker = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    window.addEventListener('pointermove', trascinaMarker);
-    window.addEventListener('pointerup', fineTrascinaMarker, { once: true });
-  };
-  const [mappaCampagna, setMappaCampagna] = useState(() => {
-    try { return localStorage.getItem('scheda-interattiva:mappa-campagna') || ''; } catch { return ''; }
-  });
-  useEffect(() => {
-    try {
-      if (mappaCampagna) localStorage.setItem('scheda-interattiva:mappa-campagna', mappaCampagna);
-      else localStorage.removeItem('scheda-interattiva:mappa-campagna');
-    } catch { /* quota piena: la mappa resta solo in memoria per questa sessione */ }
-  }, [mappaCampagna]);
   const mappaRef = useRef(null);
+  const mappaWrapRef = useRef(null);
   // tema: 'auto' = scuro se è notte OPPURE se il sistema è in scuro; oppure forzato
   const [tema, setTema] = useState(() => localStorage.getItem('scheda-interattiva:tema') || 'auto');
   const [lingua, setLingua] = useState(() => localStorage.getItem('scheda-interattiva:lingua') || 'it');
@@ -1813,6 +1776,47 @@ export default function App() {
   function aggiorna(patch) {
     setScheda((s) => ({ ...s, ...patch }));
   }
+
+  // --- Mappa della campagna, legata al PG ---
+  // Immagine e segnalino sono salvati NELLA scheda, così la mappa resta col
+  // personaggio a cui la carichi (e segue export/cloud).
+  const mappaCampagna = scheda.mappaCampagna || '';
+  const setMappaCampagna = (v) => aggiorna({ mappaCampagna: v || '' });
+  // Durante il trascinamento uso uno stato locale (fluidità) e scrivo nella
+  // scheda solo al rilascio; cambiando PG risincronizzo dal personaggio attivo.
+  const [mappaMarker, setMappaMarker] = useState(
+    scheda.mappaMarker && typeof scheda.mappaMarker.x === 'number' ? scheda.mappaMarker : { x: 50, y: 50 }
+  );
+  const mappaMarkerRef = useRef(mappaMarker);
+  useEffect(() => {
+    const m = scheda.mappaMarker;
+    const val = m && typeof m.x === 'number' ? m : { x: 50, y: 50 };
+    mappaMarkerRef.current = val;
+    setMappaMarker(val);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roster.attivo]);
+  const trascinaMarker = (e) => {
+    const wrap = mappaWrapRef.current;
+    if (!wrap) return;
+    const r = wrap.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    const x = Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width) * 100));
+    const y = Math.max(0, Math.min(100, ((e.clientY - r.top) / r.height) * 100));
+    const nuovo = { x, y };
+    mappaMarkerRef.current = nuovo;
+    setMappaMarker(nuovo);
+  };
+  const fineTrascinaMarker = () => {
+    window.removeEventListener('pointermove', trascinaMarker);
+    window.removeEventListener('pointerup', fineTrascinaMarker);
+    aggiorna({ mappaMarker: mappaMarkerRef.current }); // salva la posizione nel PG
+  };
+  const iniziaTrascinaMarker = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    window.addEventListener('pointermove', trascinaMarker);
+    window.addEventListener('pointerup', fineTrascinaMarker, { once: true });
+  };
 
   /**
    * Rigenera l'avatar da classe/specie SOLO se non c'è una foto caricata

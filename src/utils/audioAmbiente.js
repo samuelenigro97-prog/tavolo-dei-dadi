@@ -431,14 +431,21 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '', notte = false) {
     // rado, versi di creature in lontananza e cupi rombi d'eco.
     if (id === 'dungeon') {
       precaricaSfx();
+      // Giorno = grotta tranquilla: solo gocce d'acqua ed eco.
+      // Notte = creepy: aggiunge versi di creature in lontananza, più frequenti.
       intervalTimer = setInterval(() => {
         const ctx = getAudioContext();
         if (!ctx || ctx.state !== 'running' || (typeof document !== 'undefined' && document.hidden)) return;
         const r = Math.random();
-        if (r < 0.55) playSfx('goccia', currentVolume * 0.6);        // gocce: spesso
-        else if (r < 0.8) playSfx('eco', currentVolume * 0.45);       // rombo/eco: a volte
-        else playSfx('verso', currentVolume * 0.4);                   // verso lontano: raro
-      }, 5000);
+        if (notte) {
+          if (r < 0.45) playSfx('goccia', currentVolume * 0.6);        // gocce
+          else if (r < 0.72) playSfx('eco', currentVolume * 0.5);      // rombo/eco
+          else playSfx('verso', currentVolume * 0.45);                 // verso: crea tensione
+        } else {
+          if (r < 0.68) playSfx('goccia', currentVolume * 0.55);       // gocce di grotta
+          else playSfx('eco', currentVolume * 0.4);                    // eco lontano, calmo
+        }
+      }, notte ? 4200 : 5600);
     }
     return;
   }
