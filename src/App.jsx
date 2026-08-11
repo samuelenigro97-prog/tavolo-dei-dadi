@@ -869,7 +869,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.53.0';
+const APP_VERSION = '2.54.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1422,13 +1422,20 @@ export default function App() {
   // sottofondo (bosco resta bosco, città resta città) ma più cupo (volume ridotto)
   // e, se all'aperto, con un velo di grilli/insetti sopra → "suona di notte".
   useEffect(() => {
+    // Muto significa arresto reale: ferma player HTML, nodi Web Audio, timer e
+    // overlay. Riattivandolo, l'ambiente corrente riparte da zero.
+    if (mutoAudio) {
+      fermaAmbiente();
+      return;
+    }
     avviaAmbiente(ambienteAudio, volumeAudio * (notteAttiva ? 0.6 : 1), urlCustomAudio, notteAttiva);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ambienteAudio, notteAttiva]);
+  }, [ambienteAudio, notteAttiva, mutoAudio]);
 
   useEffect(() => {
-    // Di notte il sottofondo è più cupo: volume ridotto (~60%). In muto: 0.
-    setVolumeAmbiente(mutoAudio ? 0 : volumeAudio * (notteAttiva ? 0.6 : 1));
+    // In muto non esiste più alcun player da regolare; fuori dal muto aggiorna
+    // il volume senza riavviare il loop.
+    if (!mutoAudio) setVolumeAmbiente(volumeAudio * (notteAttiva ? 0.6 : 1));
   }, [volumeAudio, notteAttiva, mutoAudio]);
 
   // Pre-carica gli effetti sonori (colpo d'arma/incantesimo) al PRIMO tocco:
