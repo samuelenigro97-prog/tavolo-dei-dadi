@@ -1,5 +1,10 @@
 # Crediti immagini ambientazioni
 
+Dal rilascio 2.55 gli sfondi giorno/notte di Taverna, Città, Foresta, Mare,
+Tundra, Tempesta, Accampamento, Deserto e Tempio sono immagini originali
+generate con OpenAI. Mercato, Montagna e Dungeon non sono stati sostituiti.
+L'elenco seguente resta come archivio delle immagini usate nelle versioni precedenti.
+
 Immagini di sfondo per le ambientazioni, da Wikimedia Commons. Ogni voce riporta licenza e autore; le licenze CC BY / CC BY-SA richiedono attribuzione (qui fornita).
 
 - **accampamento** — Campfire and sparks in Anttoora 3.jpg · CC BY-SA 3.0 · kallerna · https://commons.wikimedia.org/wiki/File:Campfire_and_sparks_in_Anttoora_3.jpg

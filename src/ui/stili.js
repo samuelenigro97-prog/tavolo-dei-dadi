@@ -539,6 +539,9 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .app-header-group > button {
   width: 100%; display: inline-flex; align-items: center; justify-content: center;
   gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  background: var(--c-panel-light) !important; color: var(--c-ink) !important;
+  border-color: var(--c-gold-dark) !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.16);
 }
 /* DESKTOP LARGO (≥1440px): margine libero ai lati → i tasti (e la finestra Tema)
    vanno in COLONNA a sinistra; il titolo resta centrato in alto. */

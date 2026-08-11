@@ -312,5 +312,41 @@
       "growl",
       "monster"
     ]
+  },
+  "sfx_dadi": {
+    "file": "sfx-dadi.mp3",
+    "freesoundId": "506914",
+    "author": "schoman3",
+    "license": "CC0",
+    "page": "https://freesound.org/s/506914/",
+    "bytes": 15792,
+    "nota": "Tiro rapido di un dado su una superficie rigida."
+  },
+  "sfx_freccia": {
+    "file": "sfx-freccia.mp3",
+    "freesoundId": "321552",
+    "author": "brendan89",
+    "license": "CC BY 3.0",
+    "page": "https://freesound.org/s/321552/",
+    "bytes": 13272,
+    "nota": "Tiro realistico con arco di legno."
+  },
+  "sfx_aquila": {
+    "file": "sfx-aquila.mp3",
+    "freesoundId": "832476",
+    "author": "Kinoton",
+    "license": "CC0",
+    "page": "https://freesound.org/s/832476/",
+    "bytes": 159816,
+    "nota": "Richiamo distante di aquila per la montagna diurna."
+  },
+  "sfx_lupo": {
+    "file": "sfx-lupo.mp3",
+    "freesoundId": "472402",
+    "author": "JoseAgudelo",
+    "license": "CC0",
+    "page": "https://freesound.org/s/472402/",
+    "bytes": 39384,
+    "nota": "Ululato distante per la montagna notturna."
   }
 }

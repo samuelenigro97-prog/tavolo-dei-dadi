@@ -131,11 +131,12 @@ function attivaOverrideSilenzioso() {
 // Caricati e decodificati una volta in AudioBuffer per una riproduzione
 // ISTANTANEA (niente ritardo) e di qualità (file reali, non sintesi).
 const SFX_FILES = {
-  sword: 'sfx-sword.mp3', magic: 'sfx-magic.mp3',
+  sword: 'sfx-sword.mp3', arrow: 'sfx-freccia.mp3', dice: 'sfx-dadi.mp3', magic: 'sfx-magic.mp3',
   // Overlay per la città medievale (si sovrappongono alla base: campane, fabbro, carretti)
   campana: 'sfx-campana.mp3', fabbro: 'sfx-fabbro.mp3', carretto: 'sfx-carretto.mp3',
   // Overlay per il dungeon/caverna: gocce d'acqua, versi in lontananza, eco/rombo
   goccia: 'sfx-goccia.mp3', verso: 'sfx-verso.mp3', eco: 'sfx-eco.mp3',
+  aquila: 'sfx-aquila.mp3', lupo: 'sfx-lupo.mp3',
 };
 const sfxBuffers = {};
 let sfxPrecaricati = false;
@@ -166,6 +167,8 @@ export function precaricaSfx() {
 // così la spada non risulta più bassa dell'incantesimo.
 const GUADAGNO_SFX = {
   sword: 2.2,   // registrazione molto bassa: va alzata parecchio
+  arrow: 1.25,
+  dice: 1.15,
   magic: 0.9,   // registrazione già forte: va abbassata un po'
 };
 
@@ -423,17 +426,27 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '', notte = false) {
     // il fabbro che batte sull'incudine e i carretti che passano.
     if (id === 'citta') {
       precaricaSfx();
-      // Cadenza fitta e volumi bassi: i suoni del villaggio si mescolano al
-      // brusio invece di sentirsi come effetti isolati e staccati.
-      intervalTimer = setInterval(() => {
-        const ctx = getAudioContext();
-        if (!ctx || ctx.state !== 'running' || (typeof document !== 'undefined' && document.hidden)) return;
-        const r = Math.random();
-        // Suoni medievali più frequenti e più presenti, per coprire il brusìo di voci.
-        if (r < 0.45) playSfx('carretto', currentVolume * 0.55);      // carretti: molto spesso
-        else if (r < 0.85) playSfx('fabbro', currentVolume * 0.55);    // fabbro: molto spesso
-        else playSfx('campana', currentVolume * 0.4);                  // campane: ogni tanto, ben udibili
-      }, 2600);
+      // Eventi contestuali e irregolari: il fabbro lavora soprattutto di
+      // giorno; di notte restano soltanto rari carri e campane lontane.
+      let ultimoEvento = '';
+      const programmaEvento = (primo = false) => {
+        const minimo = primo ? 8000 : notte ? 28000 : 15000;
+        const intervallo = primo ? 10000 : notte ? 32000 : 22000;
+        intervalTimer = setTimeout(() => {
+          programmaEvento();
+          const ctx = getAudioContext();
+          if (!ctx || ctx.state !== 'running' || (typeof document !== 'undefined' && document.hidden)) return;
+          const eventi = notte
+            ? ['campana', 'campana', 'carretto']
+            : ['fabbro', 'fabbro', 'fabbro', 'fabbro', 'carretto', 'carretto', 'campana'];
+          const diversi = eventi.filter((nome) => nome !== ultimoEvento);
+          const evento = diversi[Math.floor(Math.random() * diversi.length)];
+          ultimoEvento = evento;
+          const distanza = 0.24 + Math.random() * 0.14;
+          playSfx(evento, currentVolume * distanza);
+        }, minimo + Math.random() * intervallo);
+      };
+      programmaEvento(true);
     }
     // Dungeon/caverna: sopra il drone di base, gocce d'acqua frequenti e, più di
     // rado, versi di creature in lontananza e cupi rombi d'eco.
@@ -510,8 +523,24 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '', notte = false) {
         tNoise.start();
         activeNodes.push(tNoise, tFilter, tGain);
       }
-    }, 4000);
-  }
+      }, 4000);
+    }
+    // Montagna: il vento resta la base; richiami naturali molto distanziati
+    // danno vita al luogo senza trasformarsi in una sequenza ripetitiva.
+    if (id === 'montagna') {
+      precaricaSfx();
+      const programmaRichiamo = (primo = false) => {
+        const minimo = primo ? 14000 : notte ? 48000 : 35000;
+        const intervallo = primo ? 18000 : notte ? 50000 : 42000;
+        intervalTimer = setTimeout(() => {
+          programmaRichiamo();
+          const ctx = getAudioContext();
+          if (!ctx || ctx.state !== 'running' || (typeof document !== 'undefined' && document.hidden)) return;
+          playSfx(notte ? 'lupo' : 'aquila', currentVolume * (notte ? 0.22 : 0.2));
+        }, minimo + Math.random() * intervallo);
+      };
+      programmaRichiamo(true);
+    }
   else if (id === 'taverna' || id === 'fuoco') {
     const noise = ctx.createBufferSource();
     noise.buffer = createNoiseBuffer(ctx, 'brown', 6);
@@ -764,11 +793,13 @@ export function eseguiEffettoSonoro(tipo, volume = 0.5) {
   // Mappa dei suoni per evento di gioco:
   //  · 'tiro'/'dado'  → rotolare di dadi (tiro per colpire, prove, tiri salvezza)
   //  · 'arma'/'mischia' → colpo di spada (danni da mischia) — file reale
-  //  · 'arco'         → colpo d'arco/balestra (danni a distanza) — sintetizzato
+  //  · 'arco'         → tiro reale d'arco/balestra
   //  · 'magia'        → incantesimo (lancio e danni magici) — file reale
   //  · 'danni'        → rotolare di dadi generico (danni diretti non d'arma)
   if (tipo === 'arma' || tipo === 'mischia') { playSfx('sword', volume); return; }
   if (tipo === 'magia') { playSfx('magic', volume); return; }
+  if (tipo === 'arco' && playSfx('arrow', volume)) return;
+  if ((tipo === 'danni' || tipo === 'tiro' || tipo === 'dado') && playSfx('dice', volume)) return;
 
   const ctx = getAudioContext();
   if (!ctx || ctx.state !== 'running') return;

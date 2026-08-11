@@ -648,6 +648,11 @@ function schedaVuota() {
       strumenti: '',
     },
     denari: { mr: 0, ma: 0, me: 0, mo: 0, mp: 0 },
+    // Preferenze UI del personaggio: persistono insieme alla scheda.
+    sezioniAperte: {},
+    // La mappa viene convertita in data URL: non dipende più dal file originale.
+    mappaCampagna: '',
+    mappaMarker: { x: 50, y: 50 },
   };
 }
 
@@ -869,7 +874,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.54.0';
+const APP_VERSION = '2.55.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1194,6 +1199,16 @@ function normalizeImported(dati) {
       strumenti: str(dati.addestramento?.strumenti),
     },
     denari,
+    sezioniAperte: dati.sezioniAperte && typeof dati.sezioniAperte === 'object' && !Array.isArray(dati.sezioniAperte)
+      ? Object.fromEntries(Object.entries(dati.sezioniAperte).map(([id, aperta]) => [id, Boolean(aperta)]))
+      : {},
+    mappaCampagna: typeof dati.mappaCampagna === 'string' && dati.mappaCampagna.startsWith('data:image/')
+      ? dati.mappaCampagna
+      : '',
+    mappaMarker: {
+      x: Math.max(0, Math.min(100, num(dati.mappaMarker?.x, 50))),
+      y: Math.max(0, Math.min(100, num(dati.mappaMarker?.y, 50))),
+    },
   };
 }
 
@@ -2149,13 +2164,13 @@ export default function App() {
 
   /** Tiro di d20 generico con animazione. `extra` finisce nello stato del tiro. */
   function lanciaD20(etichetta, bonus, extra = {}) {
-    const { dopoTiro, magia, ...restExtra } = extra;
+    const { dopoTiro, magia, suono, ...restExtra } = extra;
     clearInterval(intervalRef.current);
     setDanni(null);
     setTiro(null);
     setRolling(true);
     setTipoDadoInUso(20);
-    if (suoniEffOn) eseguiEffettoSonoro(magia ? 'magia' : 'tiro', volumeAudio);
+    if (suoniEffOn) eseguiEffettoSonoro(suono || (magia ? 'magia' : 'tiro'), volumeAudio);
     intervalRef.current = setInterval(() => setFaccia(tiraDado(20)), 70);
 
     // Sfinimento: nella 5.5 (2024) −2 a ogni tiro di d20 per livello; nella
@@ -2270,7 +2285,10 @@ export default function App() {
 
   /** Tira per colpire con un'arma e, se è a munizioni, ne scala una dall'inventario. */
   function tiraColpoArma(a) {
-    lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a, magia: !!a.isSpell });
+    const armaNota = ARMI_5E.find((arma) => arma.nome === a.nome);
+    const aDistanza = Boolean(armaNota?.ranged) || /arco|balestra|fionda|cerbottana/i.test(a.nome || '');
+    const suono = a.isSpell ? 'magia' : aDistanza ? 'arco' : 'arma';
+    lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a, magia: !!a.isSpell, suono });
     if (!a.isSpell) consumaMunizione(a.nome);
   }
 
@@ -4071,13 +4089,6 @@ export default function App() {
           <input ref={jsonRef} type="file" accept="application/json,.json" style={{ display: 'none' }} onChange={importaJson} />
           <button
             style={styles.modeButton(false)}
-            title={t('condividi.tooltip')}
-            onClick={condividiLink}
-          >
-            🔗 {t('condividi.titolo')}
-          </button>
-          <button
-            style={styles.modeButton(false)}
             title={t('tip.esporta')}
             onClick={esportaJson}
           >
@@ -4099,22 +4110,6 @@ export default function App() {
             onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
           >
             {lingua === 'it' ? '🇮🇹 IT' : '🇬🇧 EN'}
-          </button>
-          <button
-            className={nuovaVersione && !aggiornando ? 'aggiorna-pronto' : undefined}
-            style={styles.modeButton(false)}
-            title={nuovaVersione ? 'È disponibile una nuova versione: click per aggiornare' : 'Aggiorna l’app: svuota la cache e ricarica l’ultima versione'}
-            onClick={forzaAggiornamento}
-            disabled={aggiornando}
-          >
-            {aggiornando ? '… Aggiorno' : nuovaVersione ? '🔄 Aggiorna!' : '🔄 Aggiorna'}
-          </button>
-          <button
-            style={styles.modeButton(false)}
-            title={t('tooltip.tema')}
-            onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}
-          >
-            {tema === 'auto' ? t('btn.tema.auto') : tema === 'chiaro' ? t('btn.tema.chiaro') : t('btn.tema.scuro')}
           </button>
           <button
             style={{ ...styles.modeButton(presetColori !== 'default'), fontSize: 14, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}
@@ -4310,6 +4305,13 @@ export default function App() {
               onClick={() => setMostraPannelloAudio(false)}
             >✕</button>
           </div>
+          <button
+            style={{ ...styles.btnMini, width: '100%', padding: '7px 10px', borderColor: C.goldDark, color: C.ink, background: C.panelLight }}
+            title="Passa subito dalla versione diurna a quella notturna senza chiudere Ambientazione"
+            onClick={() => setTema(notteAttiva ? 'chiaro' : 'scuro')}
+          >
+            {notteAttiva ? '☀️ Passa al giorno' : '🌙 Passa alla notte'}
+          </button>
           {/* Volume del sottofondo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 14, color: C.inkDim }}>🔊</span>
@@ -5034,7 +5036,7 @@ export default function App() {
                     <Editable value={scheda.velocita} tipo="numero" onChange={(v) => aggiorna({ velocita: v })} width={48} />
                     <span style={{ fontSize: 17, color: C.inkDim, marginLeft: 2, fontWeight: 600 }}> m</span>
                   </div>
-                  <div style={{ position: 'absolute', bottom: 8, left: 0, right: 0, fontSize: 10, color: C.goldDark, textAlign: 'center', fontWeight: 600 }}>
+                  <div style={{ position: 'absolute', bottom: 5, left: 0, right: 0, fontSize: 10, color: C.goldDark, textAlign: 'center', fontWeight: 600 }}>
                     🏃 Salto: {((scheda.caratteristiche?.forza || 10) * 0.3).toFixed(1)}m
                   </div>
                 </div>
@@ -6269,15 +6271,34 @@ export default function App() {
                     </div>
                     
                     <div style={{ background: C.panelLight, padding: '12px 14px', borderRadius: 8, border: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column' }}>
-                      <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700, fontSize: 13 }}>Monete</div>
                       {(() => {
                         const d = scheda.denari || {};
                         const totMo = ((d.mr || 0) / 100) + ((d.ma || 0) / 10) + ((d.me || 0) / 2) + (d.mo || 0) + ((d.mp || 0) * 10);
                         const numMonete = (d.mr || 0) + (d.ma || 0) + (d.me || 0) + (d.mo || 0) + (d.mp || 0);
                         const pesoMonete = numMonete * 0.01; // 50 monete = 0.5 kg (0.01 kg a moneta)
                         return (
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 8, ...styles.detail }}>
-                            <span>💎 <strong>Valore totale:</strong> ~{totMo.toFixed(2)} MO <span style={{ opacity: 0.7 }}>• {numMonete} monete ({pesoMonete.toFixed(2)} kg, contate nell'ingombro)</span></span>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, gap: 8, ...styles.detail }}>
+                            <strong style={{ color: C.ink, fontSize: 13 }}>Monete</strong>
+                            <span title={`${numMonete} monete · peso contato nell'ingombro`} style={{ fontSize: 12, color: C.goldDark, fontWeight: 700, textAlign: 'right' }}>
+                              💎 ≈ {totMo.toFixed(2)} MO · {pesoMonete.toFixed(2)} kg
+                            </span>
+                          </div>
+                        );
+                      })()}
+                      <div className="griglia-monete" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 8, marginTop: 'auto' }}>
+                        {DENARI.map(({ key, label, abbr }) => (
+                          <div key={key} style={{ ...styles.vitalBox, minHeight: 'auto', padding: '26px 4px 6px', background: C.bg }} title={label}>
+                            <div style={{ ...styles.vitalLabel, fontSize: 11, height: 'auto', whiteSpace: 'nowrap' }}>{abbr}</div>
+                            <div style={{ ...styles.vitalValue, fontSize: 18 }}>
+                              <Editable value={scheda.denari[key]} tipo="numero" width={44} onChange={(v) => aggiorna({ denari: { ...scheda.denari, [key]: Math.max(0, v) } })} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {(() => {
+                        const d = scheda.denari || {};
+                        return (
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
                             <button
                               style={{ ...styles.buttonMini, fontSize: 11, color: C.goldDark, borderColor: C.goldDark }}
                               title="Converte tutte le Monete di Rame (100 MR = 1 MO) e d'Argento (10 MA = 1 MO) in equivalenti Monete d'Oro, tenendo i resti"
@@ -6296,28 +6317,11 @@ export default function App() {
                                 }
                               }}
                             >
-                              🔄 Semplifica in Oro (MO)
+                              🔄 Converti MR/MA in MO
                             </button>
                           </div>
                         );
                       })()}
-                      {/* Le 5 monete su una riga sola: griglia a 5 colonne uguali,
-                          così non resta la sesta cella vuota della griglia 3×2. */}
-                      <div className="griglia-monete" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 8, marginTop: 'auto' }}>
-                        {DENARI.map(({ key, label, abbr }) => (
-                          <div key={key} style={{ ...styles.vitalBox, minHeight: 'auto', padding: '26px 4px 6px', background: C.bg }} title={label}>
-                            <div style={{ ...styles.vitalLabel, fontSize: 11, height: 'auto', whiteSpace: 'nowrap' }}>{abbr}</div>
-                            <div style={{ ...styles.vitalValue, fontSize: 18 }}>
-                              <Editable
-                                value={scheda.denari[key]}
-                                tipo="numero"
-                                width={44}
-                                onChange={(v) => aggiorna({ denari: { ...scheda.denari, [key]: Math.max(0, v) } })}
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
                     </div>
                   </div>
                 );
