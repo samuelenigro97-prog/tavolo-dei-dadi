@@ -466,6 +466,11 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 /* Il box immagine riempie l'altezza disponibile (righe 1-2) senza forzarne la
    crescita; su mobile, dove non c'è la griglia, gli diamo un'altezza minima. */
 .ritratto-box { min-height: 0; }
+.ritratto-toggle {
+  width: 100%; margin: 0 0 6px; padding: 5px 8px; border: 1px solid var(--c-border);
+  border-radius: 7px; background: var(--c-panel-light); color: var(--c-title);
+  font: 700 12px Georgia, serif; letter-spacing: 1px; text-align: left; cursor: pointer;
+}
 /* Addestramento + Risorse riempiono lo spazio vuoto sotto il ritratto (colonna
    destra, righe 3-5 = Intelligenza→Carisma). align-self:start → restano in alto e
    non forzano l'altezza delle righe (così le caratteristiche restano allineate). */
@@ -496,11 +501,12 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 @media (max-width: 820px) {
   /* Sotto 820px la sezione si impila: prima i dati centrali, poi le
      caratteristiche, infine il ritratto. Niente subgrid: torna tutto a colonna. */
-  .profilo-griglia { display: flex; flex-direction: column; gap: 12px; }
-  .profilo-main { order: 1; display: flex; flex-direction: column; gap: 10px; }
-  .profilo-caratteristiche { order: 2; display: flex; flex-direction: column; gap: 8px; }
-  .profilo-ritratto { order: 3; }
-  .profilo-extra { order: 4; }
+  .profilo-griglia { display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
+  .profilo-main { order: 1; display: flex; flex-direction: column; gap: 10px; width: 100%; }
+  .profilo-caratteristiche { order: 2; display: flex; flex-direction: column; gap: 8px; width: 100%; }
+  .profilo-ritratto { order: 3; width: 100%; }
+  .profilo-extra { order: 4; width: 100%; }
+  .profilo-caratteristiche > *, .car-coppia, .car-coppia > * { width: 100%; box-sizing: border-box; }
   .ritratto-box { min-height: 300px; }
   .car-coppia { gap: 8px; }
 }
@@ -596,21 +602,22 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .app-header-title { grid-column: auto; justify-self: auto; order: -1; margin-bottom: 6px !important; }
   /* Le azioni secondarie diventano una barra di sole icone: restano riconoscibili
      dai simboli e dal title, ma non rubano tre righe alla scheda. */
-  .app-header-side { gap: 5px; }
-  .app-header-group:first-of-type { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-  .app-header-language { grid-template-columns: 1fr; max-width: 100px !important; align-self: center; }
+  .app-header-side { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+  .app-header-group:first-of-type { grid-column: 1 / -1; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .app-header-language { grid-column: 1; grid-template-columns: 1fr; max-width: none !important; width: 100% !important; align-self: stretch; }
   .app-header-group:first-of-type .header-label { display: none; }
   .app-header-group > button { min-height: 34px; padding: 4px 6px !important; }
   .app-header-group:first-of-type > button { font-size: 18px !important; }
   .app-shell { padding-left: 8px !important; padding-right: 8px !important; overflow-x: clip; }
   .game-actions-dock {
-    width: 100%; max-width: none;
+    grid-column: 2 / -1; width: 100%; max-width: none;
     grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px;
   }
   .game-actions-btn { width: 100%; min-width: 0; max-width: none; flex: 0 1 auto; min-height: 34px; padding: 4px 3px; text-align: center; font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
   /* dadi: pulsanti compatti e leggibili su telefono in riga singola */
   .dadi-riga { justify-content: space-between; flex-wrap: wrap !important; gap: 4px !important; }
   .dadi-riga .dado-btn { flex: 0 0 auto; min-width: 28px !important; width: 28px !important; height: 28px !important; padding: 0 !important; text-align: center; }
+  .dadi-riga .dadi-espressione { flex: 1 1 90px !important; max-width: none !important; margin-left: 0 !important; }
   /* modalità di tiro: riga intera a 4 colonne uguali, testo rimpicciolito
      quanto basta perché "Svantaggio" e "Cronologia" stiano su una sola riga */
   .dadi-riga .dadi-modi { flex: 1 1 100%; margin-left: 0 !important; gap: 4px !important; }
@@ -619,6 +626,11 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
      tasti azione (✎ 🗑) restano visibili senza scorrere in orizzontale */
   .spell-table { font-size: 12px; }
   .spell-table th, .spell-table td { padding: 5px 4px !important; }
+  .spell-row { flex-wrap: wrap !important; min-width: 0; }
+  .spell-row > button:first-child { max-width: calc(100% - 88px); overflow: hidden; text-overflow: ellipsis; }
+  .spell-row .spell-chips { order: 5; flex: 1 1 100% !important; width: 100%; }
+  .spell-rolls { order: 3; margin-left: auto; max-width: 100%; }
+  .spell-actions { order: 4; }
   /* nomi lunghi (es. "Prestidigitazione") vanno a capo invece di allargare
      la tabella e spingere i tasti azione fuori schermo */
   .spell-table td:first-child button { white-space: normal !important; overflow-wrap: anywhere; }

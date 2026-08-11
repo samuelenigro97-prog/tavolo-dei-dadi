@@ -875,7 +875,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.65.1';
+const APP_VERSION = '2.66.0';
 const ORDINE_AMBIENTAZIONI = ['default', 'taverna', 'mercato', 'citta', 'accampamento', 'foresta', 'palude', 'montagna', 'tundra', 'deserto', 'mare', 'tempesta', 'dungeon', 'tempio'];
 
 function iconaAmbientazione(id) {
@@ -4568,6 +4568,7 @@ export default function App() {
                 );
               })}
               <input
+                className="dadi-espressione"
                 style={{
                   ...styles.inlineInput,
                   flex: '0 1 95px', minWidth: 70, maxWidth: 120,
@@ -4753,6 +4754,13 @@ export default function App() {
           <div className="profilo-griglia">
             {/* RITRATTO — colonna destra, occupa tutta l'altezza */}
             <div className="profilo-ritratto">
+              <button
+                type="button"
+                className="ritratto-toggle"
+                onClick={() => aggiorna({ sezioniAperte: { ...(scheda.sezioniAperte || {}), ritratto: !(scheda.sezioniAperte?.ritratto ?? true) } })}
+                aria-expanded={scheda.sezioniAperte?.ritratto ?? true}
+              >{(scheda.sezioniAperte?.ritratto ?? true) ? '▾' : '▸'} 🖼️ {t('profilo.ritratto')}</button>
+              {(scheda.sezioniAperte?.ritratto ?? true) && <>
               <div
                 className="ritratto-box"
                 style={{
@@ -4809,6 +4817,7 @@ export default function App() {
                 </div>
               )}
               <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
+              </>}
             </div>
             {/* COLONNA CENTRALE: anagrafica + riquadri vitali; righe condivise (subgrid) con le caratteristiche */}
             <div className="profilo-main">
@@ -5956,7 +5965,7 @@ export default function App() {
                                 {/* Nome + info (chip) + pulsanti su UNA sola riga: i dettagli
                                     stanno in una fascia a scorrimento orizzontale, così NON
                                     vanno mai a capo su due/tre righe. */}
-                                <div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: 6 }}>
+                                <div className="spell-row" style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: 6 }}>
                                   <button
                                     style={{ background: 'transparent', border: 'none', color: C.ink, fontWeight: 700, cursor: 'pointer', textAlign: 'left', padding: 0, fontSize: 14, lineHeight: 1.2, textDecoration: 'underline dotted', textUnderlineOffset: 3, whiteSpace: 'nowrap', flexShrink: 0 }}
                                     title={t('tip.cosa_fa_inc')}
@@ -5987,7 +5996,7 @@ export default function App() {
                                   </div>
                                   {/* Tiri (solo per incantesimi con danno): sulla STESSA riga, mai a capo. */}
                                   {parseEspressioneDado(danno) && (
-                                    <div style={{ display: 'flex', gap: 4, flexShrink: 0, alignItems: 'center' }}>
+                                    <div className="spell-rolls" style={{ display: 'flex', gap: 4, flexShrink: 0, alignItems: 'center' }}>
                                       <button
                                         style={{ ...styles.buttonMini, fontSize: 12, padding: '3px 8px', fontWeight: 600, borderColor: C.goldDark, color: C.goldDark, whiteSpace: 'nowrap' }}
                                         title={`${t('spell.tira_attacco')} — ${t('spell.colpire')}`}
@@ -6002,7 +6011,7 @@ export default function App() {
                                     </div>
                                   )}
                                   {/* Pulsanti azione: restano sulla stessa riga, a destra. */}
-                                  <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                                  <div className="spell-actions" style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
                                     {classePreparata && s.livello >= 1 && (
                                       <button
                                         style={{ ...styles.buttonMini, color: s.preparato !== false ? C.goldDark : C.inkDim, borderColor: s.preparato !== false ? C.goldDark : C.border }}
