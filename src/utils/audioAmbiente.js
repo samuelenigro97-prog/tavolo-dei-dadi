@@ -356,9 +356,12 @@ function avviaGrilliNotturni() {
   const ctx = getAudioContext();
   if (!ctx) return;
   if (grilliTimer) { clearInterval(grilliTimer); grilliTimer = null; }
-  grilliTimer = setInterval(() => {
+  const programmaCoro = () => {
+    // Intervallo ampio e variabile: evita il riconoscibile "tic" ogni 2,5 s.
+    grilliTimer = setTimeout(() => {
+      programmaCoro();
     if (!ctx || ctx.state !== 'running' || (typeof document !== 'undefined' && document.hidden)) return;
-    if (Math.random() < 0.7) {
+    if (Math.random() < 0.72) {
       const chirps = 2 + Math.floor(Math.random() * 4);
       const base = ctx.currentTime;
       for (let i = 0; i < chirps; i++) {
@@ -375,7 +378,9 @@ function avviaGrilliNotturni() {
         cr.start(at); cr.stop(at + 0.06);
       }
     }
-  }, 2500);
+    }, 6500 + Math.random() * 10500);
+  };
+  programmaCoro();
 }
 
 /**
@@ -469,6 +474,24 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '', notte = false) {
           else playSfx('eco', currentVolume * 0.4);                    // eco lontano, calmo
         }
       }, notte ? 4200 : 5600);
+    }
+    // Montagna con file reale: vento continuo e fauna molto rara. Questo deve
+    // stare prima del return del ramo <audio>, altrimenti non viene mai avviato.
+    if (id === 'montagna') {
+      precaricaSfx();
+      const programmaRichiamo = (primo = false) => {
+        const minimo = primo ? 30000 : notte ? 90000 : 60000;
+        const intervallo = primo ? 40000 : notte ? 110000 : 80000;
+        intervalTimer = setTimeout(() => {
+          programmaRichiamo();
+          const ctx = getAudioContext();
+          if (!ctx || ctx.state !== 'running' || (typeof document !== 'undefined' && document.hidden)) return;
+          if (Math.random() < (notte ? 0.58 : 0.42)) {
+            playSfx(notte ? 'lupo' : 'aquila', currentVolume * (notte ? 0.18 : 0.16));
+          }
+        }, minimo + Math.random() * intervallo);
+      };
+      programmaRichiamo(true);
     }
     return;
   }

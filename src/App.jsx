@@ -874,7 +874,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.58.0';
+const APP_VERSION = '2.59.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -5091,6 +5091,14 @@ export default function App() {
                     </div>
                   </div>
                   <button style={{ ...styles.buttonMini, fontSize: 10, marginTop: 2 }} onClick={() => aggiorna({ tsMorte: { successi: 0, fallimenti: 0 } })}>{t("vital.reset_ts")}</button>
+                  {scheda.pfAttuali <= 0 && (
+                    <button
+                      style={{ ...styles.buttonMini, fontSize: 10, marginTop: 3, color: C.red, borderColor: C.red, fontWeight: 700 }}
+                      onClick={tiroSalvezzaMorte}
+                      disabled={rolling || (scheda.tsMorte?.successi || 0) >= 3 || (scheda.tsMorte?.fallimenti || 0) >= 3}
+                      title="Tira 1d20: 10 o più è un successo, 9 o meno è un fallimento"
+                    >🎲 Tira TS</button>
+                  )}
                 </div>
                 <div style={{ ...styles.vitalBox }}>
                   <SfondoVit>🧪</SfondoVit>
@@ -6133,9 +6141,12 @@ export default function App() {
                 // ~250 kg a peso fisso, quindi mentre la usi aumenta la capacità di carico.
                 const borsaEquip = inv.some((o) => o.equip && /borsa\s+conservante|bag of holding/i.test(o.nome || ''));
                 const capBonusBorsa = borsaEquip ? 250 : 0;
-                const cap = capacitaCarico(forza) + capBonusBorsa;
-                const soglia1 = forza * 2.5; // ingombrato
-                const soglia2 = forza * 5;   // gravemente ingombrato
+                const moltiTaglia = ({ Minuscola: 0.5, Piccola: 1, Media: 1, Grande: 2, Enorme: 4, Mastodontica: 8 })[scheda.taglia] || 1;
+                const capFisica = capacitaCarico(forza) * moltiTaglia;
+                const cap = capFisica + capBonusBorsa;
+                const soglia1 = forza * 2.5 * moltiTaglia; // ingombrato
+                const soglia2 = forza * 5 * moltiTaglia;   // gravemente ingombrato
+                const spingiTrascina = capFisica * 2;
                 const stato = pesoTot > cap ? 'sovraccarico' : pesoTot > soglia2 ? 'grave' : pesoTot > soglia1 ? 'ingombrato' : 'ok';
                 // Barra dell'ingombro con colori espliciti: verde (a posto) →
                 // arancione (ingombrato) → rosso (grave/sovraccarico), a prescindere dal tema.
@@ -6198,6 +6209,9 @@ export default function App() {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, ...styles.detail, flexWrap: 'wrap' }}>
                         <span style={{ fontWeight: 700 }}>⚖️ {t('inv.ingombro')}: <span style={{ color: colore }}>{pesoTot.toFixed(1)} / {cap.toFixed(0)} kg</span></span>
                         {stato !== 'ok' && <span style={{ color: colore, fontWeight: 700 }}>{t('inv.stato_' + stato)}</span>}
+                      </div>
+                      <div style={{ ...styles.detail, marginTop: 2, fontSize: 10 }}>
+                        Taglia {scheda.taglia || 'Media'} ×{moltiTaglia} · Spingi/trascina/solleva fino a {spingiTrascina.toFixed(0)} kg
                       </div>
                       <div style={{ height: 6, borderRadius: 3, background: C.border, overflow: 'hidden', marginTop: 3 }} title={`${t('inv.soglie')}: ${(soglia1).toFixed(0)} / ${(soglia2).toFixed(0)} / ${cap.toFixed(0)} kg`}>
                         <div style={{ width: `${perc}%`, height: '100%', background: colore, transition: 'width 0.25s ease' }} />
