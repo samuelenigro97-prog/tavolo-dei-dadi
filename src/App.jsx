@@ -874,7 +874,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.55.0';
+const APP_VERSION = '2.56.0';
 
 function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1417,6 +1417,8 @@ export default function App() {
   const [volumeAudio, setVolumeAudio] = useState(() => Number(localStorage.getItem('scheda-interattiva:volume-audio') || 0.5));
   const [urlCustomAudio, setUrlCustomAudio] = useState(() => localStorage.getItem('scheda-interattiva:url-audio-custom') || '');
   const [mostraPannelloAudio, setMostraPannelloAudio] = useState(false);
+  const ambientazioneBtnRef = useRef(null);
+  const [posPannelloAudio, setPosPannelloAudio] = useState({ top: 56, left: 10 });
   const [effettiSonoriAttivi, setEffettiSonoriAttivi] = useState(() => localStorage.getItem('scheda-interattiva:effetti-sonori') !== 'false');
   // Muto rapido: azzera tutto l'audio (sottofondo + effetti) con un click, senza
   // toccare il volume impostato — così basta ri-cliccare per tornare com'era.
@@ -4112,9 +4114,20 @@ export default function App() {
             {lingua === 'it' ? '🇮🇹 IT' : '🇬🇧 EN'}
           </button>
           <button
+            ref={ambientazioneBtnRef}
             style={{ ...styles.modeButton(presetColori !== 'default'), fontSize: 14, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}
             title="Ambientazione: cambia insieme colori, sfondo e audio · click per aprire"
-            onClick={() => { sbloccaAudio(); setMostraPannelloAudio(!mostraPannelloAudio); }}
+            onClick={() => {
+              sbloccaAudio();
+              if (!mostraPannelloAudio) {
+                const r = ambientazioneBtnRef.current?.getBoundingClientRect();
+                if (r) setPosPannelloAudio({
+                  top: Math.min(window.innerHeight - 90, r.bottom + 5),
+                  left: Math.max(8, Math.min(window.innerWidth - 288, r.left)),
+                });
+              }
+              setMostraPannelloAudio(!mostraPannelloAudio);
+            }}
           >
             🎭 {PRESET_COLORI.find(p => p.id === presetColori)?.nome.split(' ')[0] || '🟤'}
           </button>
@@ -4280,15 +4293,15 @@ export default function App() {
           onClick={() => setMostraPannelloAudio(false)}
           style={{
             position: 'fixed', inset: 0, zIndex: 1400,
-            background: 'rgba(0,0,0,0.52)', backdropFilter: 'blur(2px)'
+            background: 'transparent'
           }}
         >
         <div
           onClick={(e) => e.stopPropagation()}
           style={{
-            position: 'fixed', top: 12, left: 12,
-            width: 'min(300px, calc(100vw - 24px))',
-            maxHeight: 'calc(100vh - 24px)',
+            position: 'fixed', top: posPannelloAudio.top, left: posPannelloAudio.left,
+            width: 'min(280px, calc(100vw - 16px))',
+            maxHeight: `calc(100vh - ${posPannelloAudio.top + 8}px)`,
             background: C.panel, border: `2px solid ${C.goldDark}`, borderRadius: 10,
             padding: '10px 12px', overflowY: 'auto',
             display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13,
@@ -4349,7 +4362,7 @@ export default function App() {
           </div>
 
           {/* Ambientazioni: un click applica palette + sfondo + audio abbinato */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 6 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 5 }}>
             {PRESET_COLORI.map((p) => {
               const attivo = presetColori === p.id;
               const conSuono = p.audio && p.audio !== 'spento';
@@ -4359,10 +4372,10 @@ export default function App() {
                   onClick={() => { sbloccaAudio(); setPresetColori(p.id); setAmbienteAudio(p.audio); }}
                   title={`${p.nome}${conSuono ? ' · con sottofondo' : ' · nessun sottofondo'}`}
                   style={{
-                    padding: '7px 10px', borderRadius: 6, border: `1px solid ${attivo ? C.goldDark : C.border}`,
+                    padding: '5px 7px', borderRadius: 6, border: `1px solid ${attivo ? C.goldDark : C.border}`,
                     background: attivo ? C.goldDark : C.panelLight, color: attivo ? '#ffffff' : C.ink,
                     cursor: 'pointer', fontWeight: attivo ? 'bold' : 'normal', textAlign: 'left',
-                    display: 'flex', flexDirection: 'column', gap: 2,
+                    display: 'flex', flexDirection: 'column', gap: 1, fontSize: 12,
                     transition: 'all 0.15s ease', boxShadow: attivo ? '0 2px 8px rgba(0,0,0,0.28)' : '0 1px 2px rgba(0,0,0,0.08)'
                   }}
                 >

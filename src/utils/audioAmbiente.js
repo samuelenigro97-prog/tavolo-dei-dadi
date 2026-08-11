@@ -60,7 +60,9 @@ const BASE_CONDIVISA = {};
 const ESTENSIONE_FILE = { citta: 'ogg' };
 
 // Alcune ambientazioni hanno registrazioni dedicate per la modalità notturna.
-const AMBIENTI_FILE_NOTTE = new Set(['montagna']);
+// La montagna usa lo stesso vento naturale in entrambe le modalità: di notte
+// viene attenuato dall'app e arricchito soltanto da rarissimi lupi lontani.
+const AMBIENTI_FILE_NOTTE = new Set();
 
 // Volume della base rispetto al volume dell'ambiente (1 = invariato).
 // Città: il brusio di voci sta parecchio sotto, così a emergere sono i suoni
@@ -530,13 +532,17 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '', notte = false) {
     if (id === 'montagna') {
       precaricaSfx();
       const programmaRichiamo = (primo = false) => {
-        const minimo = primo ? 14000 : notte ? 48000 : 35000;
-        const intervallo = primo ? 18000 : notte ? 50000 : 42000;
+        const minimo = primo ? 30000 : notte ? 90000 : 60000;
+        const intervallo = primo ? 40000 : notte ? 110000 : 80000;
         intervalTimer = setTimeout(() => {
           programmaRichiamo();
           const ctx = getAudioContext();
           if (!ctx || ctx.state !== 'running' || (typeof document !== 'undefined' && document.hidden)) return;
-          playSfx(notte ? 'lupo' : 'aquila', currentVolume * (notte ? 0.22 : 0.2));
+          // Una parte degli intervalli resta volutamente silenziosa: la fauna
+          // non deve sembrare un campione riprodotto a cadenza regolare.
+          if (Math.random() < (notte ? 0.58 : 0.42)) {
+            playSfx(notte ? 'lupo' : 'aquila', currentVolume * (notte ? 0.18 : 0.16));
+          }
         }, minimo + Math.random() * intervallo);
       };
       programmaRichiamo(true);

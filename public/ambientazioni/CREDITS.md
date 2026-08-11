@@ -1,8 +1,8 @@
 # Crediti immagini ambientazioni
 
-Dal rilascio 2.55 gli sfondi giorno/notte di Taverna, Città, Foresta, Mare,
-Tundra, Tempesta, Accampamento, Deserto e Tempio sono immagini originali
-generate con OpenAI. Mercato, Montagna e Dungeon non sono stati sostituiti.
+Dal rilascio 2.56 gli sfondi fotografici aggiornati sono immagini originali
+generate con OpenAI. Restano invariati Montagna e le varianti notturne di
+Mercato e Dungeon.
 L'elenco seguente resta come archivio delle immagini usate nelle versioni precedenti.
 
 Immagini di sfondo per le ambientazioni, da Wikimedia Commons. Ogni voce riporta licenza e autore; le licenze CC BY / CC BY-SA richiedono attribuzione (qui fornita).
