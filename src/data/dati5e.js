@@ -476,10 +476,12 @@ export const PRIVILEGI_CLASSE_LIV = {
   },
   ladro: {
     2: 'Azione scaltra',
+    3: 'Mira stabile',
     5: 'Colpo scaltro\nSchivata prodigiosa',
+    6: 'Competenze aggiuntive',
     7: 'Elusione\nTalento affidabile',
     11: 'Colpo scaltro migliorato',
-    14: 'Competenze aggiuntive',
+    14: 'Colpi insidiosi',
     15: 'Mente sfuggente',
     18: 'Inafferrabile',
     20: 'Colpo di fortuna',
@@ -601,6 +603,7 @@ export const PRIVILEGI_CLASSE_LIV_2014 = {
   ladro: {
     2: 'Azione scaltra',
     5: 'Schivata prodigiosa',
+    6: 'Competenze aggiuntive',
     7: 'Elusione',
     11: 'Talento affidabile',
     14: 'Percezione cieca',

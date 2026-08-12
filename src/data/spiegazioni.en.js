@@ -351,6 +351,8 @@ export const EN_PRIVILEGI_CLASSE = {
   'Mente sfuggente': 'You gain proficiency in additional saving throws (e.g. Wisdom).',
   'Inafferrabile': 'No attack has advantage against you unless you are incapacitated.',
   'Colpo di fortuna': 'You turn a miss into a hit, or a failed check into a 20, once per rest.',
+  'Mira stabile': '*You steady your aim by holding still.*\n\nAs a Bonus Action you gain **Advantage** on your next attack roll this turn. You can use it only if you have not moved this turn, and after using it your Speed is 0 until the end of the turn.',
+  'Colpi insidiosi': '*Your Cunning Strikes get nastier (2024).*\n\nWhen you use Cunning Strike you also gain these options: **Daze** (1d6), **Knock Out** (6d6) and **Obscure** (3d6), alongside the earlier effects.',
   'Competenze aggiuntive': 'You gain proficiency in additional skills or tools of your choice.',
   'Percezione cieca': 'You sense hidden or invisible creatures nearby.',
   'Recupero arcano': 'During a short rest you regain some expended spell slots.',
