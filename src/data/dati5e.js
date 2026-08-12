@@ -676,7 +676,11 @@ export const SOTTOCLASSE_LIV_2014 = {
   ranger: [3, 7, 11, 15], stregone: [1, 6, 14, 18], warlock: [1, 6, 10, 14],
 };
 export const COMPETENZE_SPECIE = {
+  // Chiave = lista di SPECIE_5E; 'tutte' = qualsiasi abilità (Umano, Mezzelfo).
   Elfo: { numero: 1, lista: ['intuizione', 'percezione', 'sopravvivenza'], tratto: 'Sensi Acuti' },
+  Umano: { numero: 1, lista: 'tutte', tratto: 'Abile' },
+  Mezzelfo: { numero: 2, lista: 'tutte', tratto: 'Versatilità' },
+  Mezzorco: { numero: 1, lista: ['intimidire'], tratto: 'Minaccioso' },
 };
 export const NOMI_SPECIE = {
   elfo: ['Aelar', 'Faelyn', 'Thalindra', 'Miriel', 'Erevan', 'Sylvaris', 'Caelynn', 'Lithael', 'Naivara', 'Aramil', 'Enna', 'Vaeril'],

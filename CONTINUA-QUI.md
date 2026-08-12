@@ -9,6 +9,12 @@ App: https://samuelenigro97-prog.github.io/tavolo-dei-dadi/
 
 ## Novità dopo la 2.24.0
 
+- **2.68.0** — Competenze concesse dalla specie: dati completati
+  (`COMPETENZE_SPECIE` → Elfo Sensi Acuti, Umano Abile, Mezzelfo Versatilità,
+  Mezzorco Minaccioso) e applicate **anche** cambiando la specie nella scheda
+  (prima valevano solo in creazione): le abilità concesse diventano ★ nella
+  tabella abilità, come le competenze di classe. `competenzeSpecieDi` ora
+  risolve 'tutte' (qualsiasi abilità) ed evita il match errato Mezzelfo→Elfo.
 - **2.25.0** — Riordino sezioni finalmente unico: le sezioni erano in tre container
   separati (il `order` CSS non poteva spostarle tra i gruppi). Ora i wrapper usano
   `display:contents`, quindi tutte le sezioni sono nello stesso contesto flex di

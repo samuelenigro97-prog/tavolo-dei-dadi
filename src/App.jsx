@@ -274,11 +274,21 @@ function sottoclasseAlLivello(classe, livello, versione = '2024') {
 }
 
 // Competenze concesse dalla SPECIE (2024): quasi nessuna specie dà abilità
-// (spostate sui background); l'Elfo con "Sensi Acuti" ne concede 1 a scelta.
+// (spostate sui background); l'Elfo con "Sensi Acuti" ne concede 1 a scelta,
+// Umano e Mezzelfo ne concedono una/due qualsiasi ("tutte"), il Mezzorco
+// concede Intimidire. 'tutte' = qualsiasi abilità. Chiavi = quelle di ABILITA.
 
+/** Competenze concesse dalla specie: { numero, lista: [chiavi] } (lista completa se 'tutte'), o null. */
 function competenzeSpecieDi(specie) {
-  const k = Object.keys(COMPETENZE_SPECIE).find((x) => (specie || '').toLowerCase().includes(x.toLowerCase()));
-  return k ? { ...COMPETENZE_SPECIE[k], specie: k } : null;
+  if (!specie) return null;
+  const s = String(specie).toLowerCase();
+  const chiavi = Object.keys(COMPETENZE_SPECIE);
+  const esatta = chiavi.find((x) => x.toLowerCase() === s);
+  const chiave = esatta || [...chiavi].sort((a, b) => b.length - a.length).find((x) => s.includes(x.toLowerCase()));
+  if (!chiave) return null;
+  const dati = COMPETENZE_SPECIE[chiave];
+  const lista = dati.lista === 'tutte' ? ABILITA.map((a) => a.key) : dati.lista;
+  return { numero: dati.numero, lista, tratto: dati.tratto };
 }
 
 // Nomi fantasy per razza/specie (liste generiche) + cognomi occasionali.
@@ -875,7 +885,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.67.1';
+const APP_VERSION = '2.68.0';
 const ORDINE_AMBIENTAZIONI = ['default', 'taverna', 'mercato', 'citta', 'accampamento', 'foresta', 'palude', 'montagna', 'tundra', 'deserto', 'mare', 'tempesta', 'dungeon', 'tempio'];
 
 function iconaAmbientazione(id) {
@@ -1919,6 +1929,15 @@ export default function App() {
     return { abilita };
   }
 
+  /** Applica alla specie: imposta come ★ (competenza di classe/razza) le abilità concesse. */
+  function abilitaConSpecie(specie) {
+    const cs = competenzeSpecieDi(specie);
+    if (!cs) return {};
+    const abilita = { ...scheda.abilita };
+    cs.lista.slice(0, cs.numero).forEach((k) => { abilita[k] = Math.max(abilita[k] || 0, 2); });
+    return { abilita };
+  }
+
   // --- gestione roster ---
 
   function nuovoPersonaggio(dati = schedaVuota()) {
@@ -2038,7 +2057,7 @@ export default function App() {
       competenzeClasse = disponibili.slice(0, cc.numero);
     }
     const cs = competenzeSpecieDi(specie);
-    const competenzeSpecie = cs ? [rnd(cs.lista)] : [];
+    const competenzeSpecie = cs ? [...cs.lista].sort(() => Math.random() - 0.5).slice(0, cs.numero) : [];
     creaPersonaggio({ nome: nomeCasuale(specie), classe, specie, background, metodo: 'auto', pool: null, assegna: {}, competenzeClasse, competenzeSpecie });
   }
 
@@ -3997,6 +4016,7 @@ export default function App() {
                 const cs = competenzeSpecieDi(bozzaCrea.specie);
                 if (!cs) return null;
                 const scelte = bozzaCrea.competenzeSpecie || [];
+                const tutte = cs.lista.length === ABILITA.length;
                 const pieno = scelte.length >= cs.numero;
                 const toggle = (k) => {
                   if (scelte.includes(k)) setB({ competenzeSpecie: scelte.filter((x) => x !== k) });
@@ -4006,6 +4026,7 @@ export default function App() {
                   <div style={{ marginBottom: 14 }}>
                     <label style={{ ...styles.detail, display: 'block', marginBottom: 4, fontWeight: 'bold' }}>
                       {t('crea.competenze_specie')} · {cs.tratto} — {t('crea.scegli_n')} {cs.numero} <span style={{ fontWeight: 'normal', color: pieno ? C.green : C.inkDim }}>({scelte.length}/{cs.numero})</span>
+                      {tutte && <span style={{ fontWeight: 'normal', color: C.inkDim }}> · {t('crea.competenze_specie_tutte')}</span>}
                     </label>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                       {cs.lista.map((k) => {
@@ -4861,7 +4882,7 @@ export default function App() {
               <div className="pm-anagrafica">
               <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px 10px', alignItems: 'end' }}>
                 <CampoModulo label={versione === "2024" ? t("profilo.specie") : t("profilo.razza")}>
-                  <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => { const sp = datiSpecieDi(v); aggiorna({ specie: v, ...(sp ? { velocita: sp.velocita, sensi: sp.sensi, taglia: sp.taglia, trattiSpecie: trattiSpecieTesto(sp.tratti) } : {}), ...ritrattoAuto(scheda.classe, v, scheda.nome) }); }} title={t('tip.scegli_specie')} />
+                  <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => { const sp = datiSpecieDi(v); aggiorna({ specie: v, ...(sp ? { velocita: sp.velocita, sensi: sp.sensi, taglia: sp.taglia, trattiSpecie: trattiSpecieTesto(sp.tratti) } : {}), ...abilitaConSpecie(v), ...ritrattoAuto(scheda.classe, v, scheda.nome) }); }} title={t('tip.scegli_specie')} />
                 </CampoModulo>
                 <CampoModulo label={t("profilo.taglia")}>
                   <CampoTendina value={scheda.taglia} opzioni={TAGLIE_5E} onChange={(v) => aggiorna({ taglia: v })} title={t('tip.scegli_taglia')} />
