@@ -1,14 +1,20 @@
 /**
- * Cloudflare Worker: trascrizione di una scheda PDF di D&D 5e in JSON.
+ * Cloudflare Worker di Tavolo dei Dadi. Due funzioni, sullo stesso Worker:
  *
- * Riceve  POST { pdfBase64 }  e risponde con il JSON del personaggio, nello
- * stesso schema usato da Tavolo dei Dadi (normalizeImported lo accetta).
+ *  1) POST /            → trascrizione di una scheda PDF in JSON (Anthropic).
+ *  2) /pg               → ARCHIVIO DELLE SCHEDE (KV), per il DM:
+ *       POST /pg            l'app deposita una copia della scheda (nessuna chiave)
+ *       GET  /pg?key=…      elenco di tutte le schede      (solo con la chiave DM)
+ *       GET  /pg/<id>?key=… una scheda completa            (solo con la chiave DM)
+ *       DELETE /pg/<id>?key=…  cancella una scheda         (solo con la chiave DM)
  *
  * Segreti/variabili (impostati con `wrangler secret put` o dal dashboard):
- *   - ANTHROPIC_API_KEY  (obbligatorio) la tua chiave API Anthropic
- *   - ALLOW_ORIGIN       (opzionale)    origine consentita per il CORS,
- *                                       es. "https://TUOUTENTE.github.io".
- *                                       Default "*" (qualsiasi origine).
+ *   - ANTHROPIC_API_KEY  (per la trascrizione PDF) la tua chiave API Anthropic
+ *   - DM_KEY             (per l'archivio) la password con cui TU leggi le schede.
+ *                        Senza questa chiave l'elenco non è leggibile da nessuno.
+ *   - ALLOW_ORIGIN       (opzionale) origine consentita per il CORS,
+ *                        es. "https://TUOUTENTE.github.io". Default "*".
+ *   - SCHEDE             (binding KV) l'archivio vero e proprio.
  *
  * Deploy: vedi worker/LEGGIMI.md
  */
@@ -72,9 +78,94 @@ Regole:
 function cors(origin) {
   return {
     'Access-Control-Allow-Origin': origin || '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   };
+}
+
+// Dimensione massima di una scheda depositata (le immagini non vengono salvate,
+// quindi 256 KB sono abbondanti e impediscono che qualcuno riempia l'archivio).
+const MAX_SCHEDA_BYTES = 256 * 1024;
+
+/** Toglie i campi pesanti (immagini) prima di archiviare. */
+function alleggerisci(scheda) {
+  if (!scheda || typeof scheda !== 'object') return {};
+  const { ritratto, mappaCampagna, ...resto } = scheda;
+  return resto;
+}
+
+/**
+ * Archivio schede su KV.
+ * Le scritture sono libere (l'app deposita da sola), le LETTURE richiedono la
+ * chiave DM: così le schede degli altri le vedi solo tu.
+ */
+async function gestisciArchivio(request, env, headers, percorso) {
+  if (!env.SCHEDE) {
+    return new Response(JSON.stringify({ error: 'Archivio non configurato: manca il binding KV "SCHEDE"' }), { status: 500, headers });
+  }
+  const url = new URL(request.url);
+  const id = percorso.startsWith('/pg/') ? decodeURIComponent(percorso.slice(4)) : '';
+
+  // --- Deposito di una scheda (nessuna chiave richiesta) ---
+  if (request.method === 'POST') {
+    let corpo;
+    try { corpo = await request.json(); } catch { corpo = null; }
+    if (!corpo || typeof corpo !== 'object') {
+      return new Response(JSON.stringify({ error: 'Corpo JSON non valido' }), { status: 400, headers });
+    }
+    const dispositivo = String(corpo.dispositivo || '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 40);
+    const idPg = String(corpo.id || '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 40);
+    if (!dispositivo || !idPg) {
+      return new Response(JSON.stringify({ error: 'Campi "dispositivo" e "id" obbligatori' }), { status: 400, headers });
+    }
+    const scheda = alleggerisci(corpo.scheda);
+    const testo = JSON.stringify(scheda);
+    if (testo.length > MAX_SCHEDA_BYTES) {
+      return new Response(JSON.stringify({ error: 'Scheda troppo grande' }), { status: 413, headers });
+    }
+    const chiave = `pg:${dispositivo}:${idPg}`;
+    // I metadati alimentano l'elenco senza dover leggere ogni scheda intera.
+    const metadata = {
+      nome: String(scheda.nome || '').slice(0, 60),
+      classe: String(scheda.classe || '').slice(0, 40),
+      livello: Number(scheda.livello) || 1,
+      dispositivo,
+      aggiornato: new Date().toISOString(),
+    };
+    await env.SCHEDE.put(chiave, testo, { metadata });
+    return new Response(JSON.stringify({ ok: true }), { headers });
+  }
+
+  // --- Da qui in poi serve la chiave DM ---
+  const chiaveDm = url.searchParams.get('key') || request.headers.get('x-dm-key') || '';
+  if (!env.DM_KEY || chiaveDm !== env.DM_KEY) {
+    return new Response(JSON.stringify({ error: 'Chiave DM non valida' }), { status: 401, headers });
+  }
+
+  if (request.method === 'GET' && !id) {
+    const elenco = [];
+    let cursor;
+    do {
+      const pagina = await env.SCHEDE.list({ prefix: 'pg:', cursor, limit: 1000 });
+      for (const k of pagina.keys) elenco.push({ id: k.name, ...(k.metadata || {}) });
+      cursor = pagina.list_complete ? null : pagina.cursor;
+    } while (cursor);
+    elenco.sort((a, b) => String(b.aggiornato || '').localeCompare(String(a.aggiornato || '')));
+    return new Response(JSON.stringify({ totale: elenco.length, schede: elenco }), { headers });
+  }
+
+  if (request.method === 'GET' && id) {
+    const testo = await env.SCHEDE.get(id);
+    if (testo == null) return new Response(JSON.stringify({ error: 'Scheda non trovata' }), { status: 404, headers });
+    return new Response(testo, { headers });
+  }
+
+  if (request.method === 'DELETE' && id) {
+    await env.SCHEDE.delete(id);
+    return new Response(JSON.stringify({ ok: true }), { headers });
+  }
+
+  return new Response(JSON.stringify({ error: 'Metodo non supportato su /pg' }), { status: 405, headers });
 }
 
 export default {
@@ -83,6 +174,13 @@ export default {
     const headers = { ...cors(origin), 'Content-Type': 'application/json' };
 
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors(origin) });
+
+    // Rotta dell'archivio schede (tutto il resto resta la trascrizione PDF).
+    const percorso = new URL(request.url).pathname.replace(/\/+$/, '') || '/';
+    if (percorso === '/pg' || percorso.startsWith('/pg/')) {
+      return gestisciArchivio(request, env, headers, percorso);
+    }
+
     if (request.method !== 'POST') {
       return new Response(JSON.stringify({ error: 'Usa POST con { pdfBase64 }' }), { status: 405, headers });
     }
