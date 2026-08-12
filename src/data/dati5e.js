@@ -529,9 +529,11 @@ export const PRIVILEGI_CLASSE_LIV = {
     20: 'Sterminatore di nemici',
   },
   stregone: {
-    2: 'Fonte di magia (Punti stregoneria)\nMetamagia',
+    2: 'Fonte di magia (Punti stregoneria)\nMetamagia (2 opzioni)',
     5: 'Recupero stregonesco',
     7: 'Stregoneria incarnata',
+    10: 'Metamagia (2 opzioni aggiuntive)',
+    17: 'Metamagia (2 opzioni aggiuntive)',
     20: 'Apoteosi arcana',
   },
   warlock: {
@@ -646,6 +648,9 @@ export const PRIVILEGI_CLASSE_LIV_2014 = {
   },
   stregone: {
     2: 'Fonte di magia (Punti stregoneria)',
+    3: 'Metamagia (2 opzioni)',
+    10: 'Metamagia (1 opzione aggiuntiva)',
+    17: 'Metamagia (1 opzione aggiuntiva)',
     20: 'Ristoro stregonesco',
   },
   warlock: {
