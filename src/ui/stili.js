@@ -583,12 +583,29 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   box-shadow: 0 1px 4px rgba(0,0,0,0.16);
 }
 .game-actions-btn:hover { filter: brightness(1.08); }
-/* Desktop: le funzioni di gioco restano separate, in basso a sinistra.
-   Su mobile fanno invece parte della griglia superiore simmetrica. */
-@media (min-width: 821px) {
+/* Desktop largo (≥1440px, quello con la colonna di tasti a sinistra): le funzioni
+   di gioco restano separate, in basso a sinistra — com'è pensato lì.
+   Sotto quella soglia (iPad e telefoni) salgono invece nella barra in alto. */
+@media (min-width: 1440px) {
   .game-actions-dock {
     position: fixed; left: 10px; bottom: 10px; z-index: 1500;
     width: 154px; max-width: 154px; grid-template-columns: 1fr;
+  }
+}
+/* TABLET / iPad (561–1439px): tutti i tasti in alto, uno dopo l'altro da
+   sinistra a destra. "display: contents" scioglie i gruppi, così i bottoni
+   diventano figli diretti della riga e si allineano tutti insieme. */
+@media (min-width: 561px) and (max-width: 1439px) {
+  .app-header-side {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+    gap: 6px; align-items: stretch; justify-content: start;
+  }
+  .app-header-side .app-header-group,
+  .app-header-side .app-header-language,
+  .app-header-side .game-actions-dock { display: contents; }
+  .app-header-side .app-header-group > button,
+  .app-header-side .game-actions-btn {
+    width: 100%; max-width: none; min-height: 32px;
   }
 }
 @media (max-width: 780px) {
@@ -608,20 +625,28 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
      su una propria riga a piena larghezza, centrata e ordinata */
   .app-header { display: flex; flex-direction: column; align-items: stretch; }
   .app-header-title { grid-column: auto; justify-self: auto; order: -1; margin-bottom: 6px !important; }
-  /* Le azioni secondarie diventano una barra di sole icone: restano riconoscibili
-     dai simboli e dal title, ma non rubano tre righe alla scheda. */
-  .app-header-side { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
-  .app-header-group:first-of-type { grid-column: 1 / -1; grid-template-columns: repeat(5, minmax(0, 1fr)); }
-  .app-header-language { grid-column: 1; grid-template-columns: 1fr; max-width: none !important; width: 100% !important; align-self: stretch; }
-  .app-header-group:first-of-type .header-label { display: none; }
-  .app-header-group > button { min-height: 34px; padding: 4px 6px !important; }
-  .app-header-group:first-of-type > button { font-size: 18px !important; }
-  .app-shell { padding-left: 8px !important; padding-right: 8px !important; overflow-x: clip; }
-  .game-actions-dock {
-    grid-column: 2 / -1; width: 100%; max-width: none;
-    grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px;
+  /* Telefono: tutti i tasti (comandi + funzioni di gioco) in un'unica barra in
+     alto che si dispone su due file. "display: contents" scioglie i gruppi così
+     i bottoni scorrono uno dopo l'altro da sinistra a destra. */
+  .app-header-side {
+    display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 5px; align-items: stretch;
   }
-  .game-actions-btn { width: 100%; min-width: 0; max-width: none; flex: 0 1 auto; min-height: 34px; padding: 4px 3px; text-align: center; font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
+  .app-header-side .app-header-group,
+  .app-header-side .app-header-language,
+  .app-header-side .game-actions-dock { display: contents; }
+  .app-header-group:first-of-type .header-label { display: none; }
+  .app-header-side .app-header-group > button {
+    width: 100%; max-width: none;
+    min-height: 34px; padding: 4px 6px !important; font-size: 18px !important;
+  }
+  .app-shell { padding-left: 8px !important; padding-right: 8px !important; overflow-x: clip; }
+  /* Le tre funzioni di gioco occupano due colonne ciascuna: seconda fila piena. */
+  .app-header-side .game-actions-btn {
+    grid-column: span 2; width: 100%; min-width: 0; max-width: none;
+    min-height: 34px; padding: 4px 3px; text-align: center; font-size: 11px;
+    overflow: hidden; text-overflow: ellipsis;
+  }
   /* dadi: pulsanti compatti e leggibili su telefono in riga singola */
   .dadi-riga { justify-content: space-between; flex-wrap: wrap !important; gap: 4px !important; }
   .dadi-riga .dado-btn { flex: 0 0 auto; min-width: 28px !important; width: 28px !important; height: 28px !important; padding: 0 !important; text-align: center; }

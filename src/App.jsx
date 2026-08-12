@@ -490,7 +490,7 @@ function avatarSvgFallback(classe, specie, nome) {
 // ---------------------------------------------------------------------------
 
 
-import { spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spiegaMetamagia, METAMAGIA_5E, TALENTI_5E, INCANTESIMI_NOMI as NOMI_SPIEG_INC } from './data/spiegazioni.js';
+import { spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spiegaMetamagia, setEdizioneAttuale, METAMAGIA_5E, TALENTI_5E, INCANTESIMI_NOMI as NOMI_SPIEG_INC } from './data/spiegazioni.js';
 import { INCANTESIMI_DB, datiIncantesimo } from './data/incantesimi.js';
 
 const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(INCANTESIMI_DB)])).sort((a, b) => a.localeCompare(b, 'it'));
@@ -885,7 +885,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.70.0';
+const APP_VERSION = '2.71.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1921,6 +1921,9 @@ export default function App() {
   const scheda = roster.personaggi[roster.attivo];
   // versione delle regole del personaggio attivo (fallback: impostazione globale)
   const versione = scheda?.versione || regoleVersione || '2024';
+  // Allinea SUBITO le spiegazioni all'edizione del PG: le voci che cambiano fra
+  // 5.0 e 5.5 mostrano solo le regole dell'edizione di questo personaggio.
+  setEdizioneAttuale(versione);
 
   useEffect(() => {
     const esito = saveState(roster);

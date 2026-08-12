@@ -633,13 +633,35 @@ function _en(mappaLc, chiave) {
   if (linguaAttuale !== 'en') return null;
   return mappaLc[chiave] || null;
 }
+
+// --- Edizione delle regole (5.0 = 2014, 5.5 = 2024) ------------------------
+// Alcune voci cambiano fra le due edizioni: in quel caso il testo è un oggetto
+// { base?, '2014': …, '2024': … } e qui viene scelto il pezzo giusto, così un
+// PG della 5.0 legge le regole della 5.0 e uno della 5.5 quelle della 5.5.
+let edizioneAttuale = '2024';
+export function setEdizioneAttuale(v) {
+  edizioneAttuale = String(v) === '2014' ? '2014' : '2024';
+}
+/** Se il testo è diviso per edizione, restituisce la parte dell'edizione attiva. */
+function _ed(testo) {
+  if (!testo || typeof testo !== 'object' || Array.isArray(testo)) return testo;
+  const parte = testo[edizioneAttuale] ?? testo['2024'] ?? testo['2014'] ?? '';
+  return [testo.base, parte].filter(Boolean).join('\n\n');
+}
+/** Prima riga descrittiva di una voce (funziona anche con i testi per edizione). */
+function _testoBase(testo) {
+  if (testo && typeof testo === 'object' && !Array.isArray(testo)) {
+    return testo.base || testo['2024'] || testo['2014'] || '';
+  }
+  return String(testo || '');
+}
 const SPIEG_PRIVILEGI_LC = _lcMap(SPIEG_PRIVILEGI);
 /** Spiegazione di un privilegio dal nome mostrato (o null), senza distinzione maiuscole. */
 export function spiegaPrivilegio(nome) {
   const n = String(nome || '').trim();
   const base = n.replace(/\s*\(.*$/, '').replace(/\s+d\d+.*$/i, '').trim();
-  return _en(EN_PRIVILEGI_LC, base.toLowerCase()) || _en(EN_PRIVILEGI_LC, n.toLowerCase())
-    || SPIEG_PRIVILEGI_LC[base.toLowerCase()] || SPIEG_PRIVILEGI_LC[n.toLowerCase()] || null;
+  return _ed(_en(EN_PRIVILEGI_LC, base.toLowerCase()) || _en(EN_PRIVILEGI_LC, n.toLowerCase())
+    || SPIEG_PRIVILEGI_LC[base.toLowerCase()] || SPIEG_PRIVILEGI_LC[n.toLowerCase()] || null);
 }
 
 // Riassunti funzionali (nostri) di cosa fa ogni incantesimo. Per la nuvoletta ⓘ
@@ -904,17 +926,21 @@ const SPIEG_TRATTI_LC = _lcMap(SPIEG_TRATTI);
 /** Spiegazione di un tratto di razza/senso (o null), senza maiuscole, con prefisso. */
 export function spiegaTratto(nome) {
   const n = String(nome || '').trim().toLowerCase();
-  if (SPIEG_TRATTI_LC[n]) return _en(EN_TRATTI_LC, n) || SPIEG_TRATTI_LC[n];
+  if (SPIEG_TRATTI_LC[n]) return _ed(_en(EN_TRATTI_LC, n) || SPIEG_TRATTI_LC[n]);
   const base = n.replace(/\s*\(.*$/, '').trim();
-  if (SPIEG_TRATTI_LC[base]) return _en(EN_TRATTI_LC, base) || SPIEG_TRATTI_LC[base];
-  for (const k of Object.keys(SPIEG_TRATTI_LC)) if (base.startsWith(k)) return _en(EN_TRATTI_LC, k) || SPIEG_TRATTI_LC[k];
+  if (SPIEG_TRATTI_LC[base]) return _ed(_en(EN_TRATTI_LC, base) || SPIEG_TRATTI_LC[base]);
+  for (const k of Object.keys(SPIEG_TRATTI_LC)) if (base.startsWith(k)) return _ed(_en(EN_TRATTI_LC, k) || SPIEG_TRATTI_LC[k]);
   return null;
 }
 
 // Talenti comuni (5e), riassunti nostri. Per la nuvoletta sui Talenti.
 const SPIEG_TALENTI = {
   'Incantatore da Guerra': '*Prerequisito: Capacità di lanciare almeno un incantesimo.*\n\n- Vantaggio ai Tiri Salvezza su Costituzione per mantenere la Concentrazione.\n- Puoi eseguire le componenti somatiche degli incantesimi anche se hai armi o scudi in una o entrambe le mani.\n- Puoi lanciare un incantesimo come Attacco di Opportunità invece di fare un attacco in mischia.',
-  'Guaritore': "*Sei un medico esperto, capace di curare ferite e rianimare i caduti.*\n\n**Versione 2024 (nuovo Manuale del Giocatore)**\n- **+1** a Intelligenza, Saggezza o Carisma.\n- **Medico di Battaglia:** con un'azione spendi un uso di un kit da guaritore per curare una creatura: il bersaglio spende uno dei suoi Dadi Vita, tu lo tiri e la creatura recupera PF pari al risultato del dado **+ il tuo bonus di competenza**.\n- **Guarigione Migliorata:** ogni volta che tiri un dado per curare (con un incantesimo o con Medico di Battaglia), puoi **ritirare ogni 1** (devi tenere il nuovo risultato).\n\n**Versione 2014 (Manuale classico 5e)**\n- Quando usi un kit da guaritore per **stabilizzare** una creatura morente, quella creatura recupera anche **1 PF**.\n- Come azione, spendi un uso del kit per curare una creatura di **1d6 + 4 PF**, più un numero di PF pari al suo **numero massimo di Dadi Vita**. La creatura non può ricevere di nuovo questa cura finché non completa un riposo breve o lungo.",
+  'Guaritore': {
+    base: '*Sei un medico esperto, capace di curare ferite e rianimare i caduti.*',
+    '2014': "- **Stabilizzare:** quando usi un kit da guaritore per stabilizzare una creatura morente, quella creatura recupera anche **1 Punto Ferita**.\n- **Curare:** come azione, spendi un uso del kit per curare una creatura di **1d6 + 4 PF**, più un numero di PF pari al suo **numero massimo di Dadi Vita**. La creatura non può ricevere di nuovo questa cura finché non completa un riposo breve o lungo.",
+    '2024': "- **Aumento di Caratteristica:** +1 a Intelligenza, Saggezza o Carisma.\n- **Medico di Battaglia:** con l'azione Utilizzare spendi un uso di un kit da guaritore per curare una creatura: il bersaglio spende uno dei suoi Dadi Vita, tu lo tiri e la creatura recupera PF pari al risultato del dado **+ il tuo bonus di competenza**.\n- **Guarigioni Migliorate:** ogni volta che tiri un dado per curare (con un incantesimo o con Medico di Battaglia), puoi **ritirare il dado se esce 1**, tenendo il nuovo risultato.",
+  },
   'Robusto': '*Il tuo corpo è eccezionalmente resistente.*\n\n- I tuoi Punti Ferita massimi aumentano di un ammontare pari al doppio del tuo livello quando acquisisci questo talento.\n- Ogni volta che sali di livello in seguito, i tuoi Punti Ferita massimi aumentano di 2 punti aggiuntivi.',
   'Fortunato': '*Hai una fortuna inspiegabile che ti protegge.*\n\n- Hai 3 punti fortuna.\n- Quando fai un tiro per colpire, una prova di abilità o un tiro salvezza, puoi spendere un punto per tirare un d20 aggiuntivo e scegliere quale usare.\n- Puoi spendere un punto anche quando un attacco è fatto contro di te per fargli ritirare il dado.',
   'Vigile': "*Sei sempre all'erta per il pericolo.*\n\n- Ottieni un bonus di +5 all'Iniziativa.\n- Non puoi essere sorpreso mentre sei cosciente.\n- Le creature nascoste non hanno vantaggio ai tiri per colpire contro di te.",
@@ -940,7 +966,8 @@ const TALENTI_NOMI = Object.keys(SPIEG_TALENTI).sort((a, b) => a.localeCompare(b
 // Lista { nome, desc } per il menu a tendina del Level Up (la scheda importa
 // TALENTI_5E da qui). desc = la frase-tagline in corsivo, o la prima riga.
 export const TALENTI_5E = Object.entries(SPIEG_TALENTI)
-  .map(([nome, testo]) => {
+  .map(([nome, voce]) => {
+    const testo = _testoBase(voce);
     const m = String(testo).match(/^\*([^*]+)\*/);
     let desc = (m ? m[1] : String(testo).split('\n')[0]) || '';
     desc = desc.replace(/^Prerequisito:[^.]*\.\s*/i, '').trim();
@@ -952,8 +979,8 @@ export const TALENTI_5E = Object.entries(SPIEG_TALENTI)
 export function spiegaTalento(nome) {
   const n = String(nome || '').trim().toLowerCase();
   const base = n.replace(/\s*\(.*$/, '').trim();
-  return _en(EN_TALENTI_LC, n) || _en(EN_TALENTI_LC, base)
-    || SPIEG_TALENTI_LC[n] || SPIEG_TALENTI_LC[base] || null;
+  return _ed(_en(EN_TALENTI_LC, n) || _en(EN_TALENTI_LC, base)
+    || SPIEG_TALENTI_LC[n] || SPIEG_TALENTI_LC[base] || null);
 }
 
 // Opzioni di Metamagia dello Stregone (5e), con riassunti nostri per la nuvoletta.
