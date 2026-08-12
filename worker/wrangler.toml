@@ -2,8 +2,9 @@ name = "tavolo-dei-dadi-transcribe"
 main = "transcribe-worker.js"
 compatibility_date = "2024-11-01"
 
-# La chiave API si imposta come SEGRETO, non qui:
-#   wrangler secret put ANTHROPIC_API_KEY
+# Le chiavi si impostano come SEGRETI, non qui:
+#   wrangler secret put ANTHROPIC_API_KEY   → trascrizione PDF
+#   wrangler secret put DM_KEY              → password con cui TU leggi l'archivio schede
 #
 # Limita il CORS al tuo sito: solo le pagine servite da questa origine possono
 # chiamare il Worker (chi ha solo l'URL non lo può usare da un altro sito).
@@ -11,3 +12,10 @@ compatibility_date = "2024-11-01"
 # percorso finale).
 [vars]
 ALLOW_ORIGIN = "https://samuelenigro97-prog.github.io"
+
+# Archivio delle schede (endpoint /pg). Crea il namespace una volta sola con:
+#   wrangler kv namespace create SCHEDE
+# poi incolla qui sotto l'id che ti stampa il comando e togli il commento.
+# [[kv_namespaces]]
+# binding = "SCHEDE"
+# id = "INCOLLA_QUI_L_ID"

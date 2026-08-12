@@ -48,3 +48,55 @@ l'indirizzo del tuo sito (es. `https://TUOUTENTE.github.io`) e rifai
 In `npm run dev` l'app usa il server Express (`server/index.js`) via il proxy
 `/api`: basta un file `.env` con `ANTHROPIC_API_KEY=...`. Il Worker serve solo
 per l'uso **online**.
+
+---
+
+# Archivio DM — vedere le schede create dagli utenti
+
+Lo **stesso Worker** offre anche un archivio delle schede (endpoint `/pg`), utile
+per avere personaggi veri su cui lavorare. Funziona così:
+
+- l'app deposita da sola una copia della scheda ~10 secondi dopo l'ultima
+  modifica (**senza immagini**: né ritratto né mappa);
+- l'elenco è leggibile **solo con la chiave DM**, che vive nel Worker come
+  segreto e non è nel sito. Senza quella chiave nessuno vede niente.
+
+## Attivazione (una volta sola)
+
+```bash
+cd worker
+npx wrangler kv namespace create SCHEDE   # 1) crea l'archivio: stampa un id
+```
+
+2. In `wrangler.toml` togli il commento al blocco `[[kv_namespaces]]` e incolla
+   l'`id` appena stampato.
+
+```bash
+npx wrangler secret put DM_KEY            # 3) scegli la TUA password da DM
+npx wrangler deploy                       # 4) pubblica
+```
+
+5. Dì all'app dov'è l'archivio: crea in cima al progetto un file `.env` con
+
+   ```
+   VITE_ARCHIVIO_PG_URL=https://IL-TUO-WORKER.workers.dev
+   ```
+
+   Per il sito online la stessa variabile va aggiunta al passo di build in
+   `.github/workflows/deploy.yml` (`env:` del comando `npm run build`).
+   **Se la variabile è vuota, l'intera funzione resta spenta.**
+
+## Come si consulta
+Nell'app: **🏠 Menu → 🗂 Archivio DM** → inserisci la chiave DM. Vedi l'elenco
+(nome, classe, livello, quando è stato aggiornato, da quale dispositivo) e con
+**Apri** carichi la scheda tra i tuoi personaggi per studiarla.
+
+## Nota su privacy e dati
+Il sito è pubblico: chi lo usa deposita la propria scheda senza accorgersene.
+Sono dati di gioco (nome del personaggio, classe, note), non dati personali, e
+le immagini non vengono mai inviate — ma è comunque corretto **scriverlo nella
+guida dell'app** se il sito resta aperto a tutti. Per cancellare una scheda:
+
+```bash
+curl -X DELETE "https://IL-TUO-WORKER.workers.dev/pg/<id>?key=LA_TUA_CHIAVE"
+```

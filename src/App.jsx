@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { ICONE_CLASSE, ICONE_SPECIE } from './ritratti';
 import { t, setLinguaAttuale, DIZIONARIO, traduciDato } from './i18n';
@@ -490,7 +490,7 @@ function avatarSvgFallback(classe, specie, nome) {
 // ---------------------------------------------------------------------------
 
 
-import { spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spiegaMetamagia, METAMAGIA_5E, TALENTI_5E, INCANTESIMI_NOMI as NOMI_SPIEG_INC } from './data/spiegazioni.js';
+import { spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spiegaMetamagia, setEdizioneAttuale, METAMAGIA_5E, TALENTI_5E, INCANTESIMI_NOMI as NOMI_SPIEG_INC } from './data/spiegazioni.js';
 import { INCANTESIMI_DB, datiIncantesimo } from './data/incantesimi.js';
 
 const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(INCANTESIMI_DB)])).sort((a, b) => a.localeCompare(b, 'it'));
@@ -885,7 +885,18 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.69.0';
+const APP_VERSION = '2.72.0';
+
+/**
+ * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
+ * Quando è impostato, l'app deposita da sola una copia delle schede (senza
+ * immagini) così il DM può consultarle dalla vista "Archivio DM".
+ * L'URL non è un segreto: la lettura richiede la chiave DM e il Worker accetta
+ * chiamate solo dall'origine del sito. Lasciandolo vuoto la funzione è spenta.
+ */
+const URL_ARCHIVIO_PG = (
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ARCHIVIO_PG_URL) || ''
+).trim();
 const ORDINE_AMBIENTAZIONI = ['default', 'taverna', 'mercato', 'citta', 'accampamento', 'foresta', 'palude', 'montagna', 'tundra', 'deserto', 'mare', 'tempesta', 'dungeon', 'tempio'];
 
 function iconaAmbientazione(id) {
@@ -1248,6 +1259,106 @@ function normalizeImported(dati) {
   };
 }
 
+/**
+ * Archivio DM: elenco delle schede depositate dagli utenti sul Worker.
+ * Serve la chiave DM (verificata dal Worker, non salvata nel sito): senza
+ * quella l'elenco non è leggibile. La chiave resta solo su questo dispositivo.
+ */
+function ArchivioDm({ url, onChiudi, onApri }) {
+  const [chiave, setChiave] = useState(() => {
+    try { return localStorage.getItem('scheda-interattiva:dm-key') || ''; } catch { return ''; }
+  });
+  const [elenco, setElenco] = useState(null);
+  const [stato, setStato] = useState('');   // '' | 'carico' | messaggio d'errore
+  const base = String(url || '').replace(/\/+$/, '');
+
+  const carica = async (k) => {
+    if (!base) { setStato('Archivio non configurato in questa build.'); return; }
+    setStato('carico');
+    try {
+      const r = await fetch(`${base}/pg?key=${encodeURIComponent(k)}`);
+      const d = await r.json();
+      if (!r.ok) { setStato(d.error || `Errore ${r.status}`); return; }
+      setElenco(d.schede || []);
+      setStato('');
+      try { localStorage.setItem('scheda-interattiva:dm-key', k); } catch { /* niente */ }
+    } catch (e) {
+      setStato(`Connessione fallita: ${e.message}`);
+    }
+  };
+
+  const apri = async (id) => {
+    setStato('carico');
+    try {
+      const r = await fetch(`${base}/pg/${encodeURIComponent(id)}?key=${encodeURIComponent(chiave)}`);
+      const d = await r.json();
+      if (!r.ok) { setStato(d.error || `Errore ${r.status}`); return; }
+      setStato('');
+      onApri(d);
+    } catch (e) {
+      setStato(`Connessione fallita: ${e.message}`);
+    }
+  };
+
+  const quando = (iso) => {
+    if (!iso) return '—';
+    try { return new Date(iso).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); }
+    catch { return iso; }
+  };
+
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, zIndex: 1002, padding: 16, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      onClick={(e) => { if (e.target === e.currentTarget) onChiudi(); }}
+    >
+      <div style={{ ...styles.panel, maxWidth: 620, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <strong style={{ color: C.goldDark, fontSize: 17 }}>🗂 Archivio DM</strong>
+          <button style={styles.buttonMini} onClick={onChiudi}>✕</button>
+        </div>
+        <p style={{ ...styles.detail, marginTop: 0 }}>
+          Le schede che gli utenti hanno creato (senza immagini). Visibili solo con la chiave DM.
+        </p>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+          <input
+            type="password"
+            placeholder="Chiave DM"
+            value={chiave}
+            onChange={(e) => setChiave(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') carica(chiave); }}
+            style={{ ...styles.inlineInput, flex: 1, minWidth: 160, padding: '8px 10px', boxSizing: 'border-box' }}
+          />
+          <button style={styles.buttonPrimary} onClick={() => carica(chiave)} disabled={stato === 'carico'}>
+            {stato === 'carico' ? '…' : 'Apri elenco'}
+          </button>
+        </div>
+        {stato && stato !== 'carico' && (
+          <div style={{ padding: 10, borderRadius: 8, background: 'rgba(200,60,60,0.12)', border: `1px solid ${C.red}`, marginBottom: 12, fontSize: 13 }}>{stato}</div>
+        )}
+        {elenco && (
+          <>
+            <div style={{ ...styles.detail, marginBottom: 6 }}>{elenco.length} schede in archivio</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {elenco.map((s) => (
+                <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 10px' }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, fontSize: 14 }}>{s.nome || '(senza nome)'}</div>
+                    <div style={{ ...styles.detail, fontSize: 11 }}>
+                      {[s.classe, s.livello ? `Liv. ${s.livello}` : ''].filter(Boolean).join(' · ')} — {quando(s.aggiornato)} · {s.dispositivo || '?'}
+                    </div>
+                  </div>
+                  <button style={{ ...styles.buttonMini, flexShrink: 0 }} onClick={() => apri(s.id)}>Apri</button>
+                </div>
+              ))}
+              {elenco.length === 0 && <div style={styles.detail}>Ancora nessuna scheda depositata.</div>}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Componenti di editing inline (1 click = modifica, doppio click = tiro)
 // ---------------------------------------------------------------------------
@@ -1362,6 +1473,20 @@ export default function App() {
     try { localStorage.setItem('scheda-interattiva:transcribe-url', transcribeUrl); } catch { /* niente */ }
   }, [transcribeUrl]);
   const [pdfStato, setPdfStato] = useState(''); // '' | 'loading'
+  // --- Archivio schede del DM ---
+  // Identificativo casuale e anonimo del dispositivo: serve solo a tenere
+  // separate le schede di persone diverse nell'elenco del DM.
+  const idDispositivo = useMemo(() => {
+    try {
+      let v = localStorage.getItem('scheda-interattiva:id-dispositivo');
+      if (!v) {
+        v = `d${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+        localStorage.setItem('scheda-interattiva:id-dispositivo', v);
+      }
+      return v;
+    } catch { return 'anonimo'; }
+  }, []);
+  const [mostraArchivioDm, setMostraArchivioDm] = useState(false);
   const [filtroIncantesimo, setFiltroIncantesimo] = useState('');
   const [filtroLivelloInc, setFiltroLivelloInc] = useState('');
   const [filtroScuolaInc, setFiltroScuolaInc] = useState('');
@@ -1796,6 +1921,9 @@ export default function App() {
   const scheda = roster.personaggi[roster.attivo];
   // versione delle regole del personaggio attivo (fallback: impostazione globale)
   const versione = scheda?.versione || regoleVersione || '2024';
+  // Allinea SUBITO le spiegazioni all'edizione del PG: le voci che cambiano fra
+  // 5.0 e 5.5 mostrano solo le regole dell'edizione di questo personaggio.
+  setEdizioneAttuale(versione);
 
   useEffect(() => {
     const esito = saveState(roster);
@@ -1865,6 +1993,24 @@ export default function App() {
   function aggiorna(patch) {
     setScheda((s) => ({ ...s, ...patch }));
   }
+
+  // --- Archivio DM: deposita una copia della scheda attiva ---
+  // Parte ~10 secondi dopo l'ultima modifica (così non si scrive a ogni tasto)
+  // e solo se la scheda ha un nome vero. Le immagini non vengono inviate.
+  useEffect(() => {
+    if (!URL_ARCHIVIO_PG) return;
+    const nome = String(scheda?.nome || '').trim();
+    if (!nome || nome === 'Nuovo personaggio') return;
+    const timer = setTimeout(() => {
+      const { ritratto, mappaCampagna: _m, ...leggera } = scheda;
+      fetch(`${URL_ARCHIVIO_PG.replace(/\/+$/, '')}/pg`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dispositivo: idDispositivo, id: roster.attivo, scheda: leggera }),
+      }).catch(() => { /* offline o archivio spento: si riproverà alla prossima modifica */ });
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, [scheda, roster.attivo, idDispositivo]);
 
   // --- Mappa della campagna, legata al PG ---
   // Immagine e segnalino sono salvati NELLA scheda, così la mappa resta col
@@ -3273,9 +3419,28 @@ export default function App() {
                 )}
               </div>
             </div>
+            {URL_ARCHIVIO_PG && (
+              <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
+                <button
+                  style={{ ...styles.button, width: '100%' }}
+                  onClick={() => { setMostraArchivioDm(true); }}
+                  title="Solo per il DM: elenco delle schede create dagli utenti (serve la chiave)"
+                >
+                  🗂 Archivio DM
+                </button>
+              </div>
+            )}
             {erroreImport && <div style={{ color: C.red, marginTop: 10 }}>{erroreImport}</div>}
           </div>
         </div>
+      )}
+
+      {mostraArchivioDm && (
+        <ArchivioDm
+          url={URL_ARCHIVIO_PG}
+          onChiudi={() => setMostraArchivioDm(false)}
+          onApri={(s) => { nuovoPersonaggio(normalizeImported(s)); setMostraArchivioDm(false); setMostraMenu(false); }}
+        />
       )}
 
       {mostraCloud && (
