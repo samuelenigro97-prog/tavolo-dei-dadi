@@ -885,7 +885,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.68.0';
+const APP_VERSION = '2.69.0';
 const ORDINE_AMBIENTAZIONI = ['default', 'taverna', 'mercato', 'citta', 'accampamento', 'foresta', 'palude', 'montagna', 'tundra', 'deserto', 'mare', 'tempesta', 'dungeon', 'tempio'];
 
 function iconaAmbientazione(id) {
@@ -6202,6 +6202,7 @@ export default function App() {
                   <ListaQuadratini
                     value={scheda.talenti}
                     lookup={spiegaTalento}
+                    opzioni={TALENTI_5E}
                     placeholder={t("talenti.ph")}
                     onChange={(v) => aggiorna({ talenti: v })}
                   />
