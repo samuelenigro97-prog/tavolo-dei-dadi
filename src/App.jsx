@@ -885,7 +885,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.73.0';
+const APP_VERSION = '2.74.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -4972,16 +4972,23 @@ export default function App() {
 
         {/* Testata: anagrafica + riquadri vitali uniformi */}
         <section style={styles.panel}>
-          <h2 style={styles.panelTitle}>{t("profilo.titolo")}</h2>
-          <div className="profilo-griglia">
+          {/* Titolo allineato a sinistra come quello delle altre sezioni
+              (che sono <summary> in flex, quindi non centrati). */}
+          <h2 style={{ ...styles.panelTitle, display: 'flex', alignItems: 'center', gap: 6 }}>{t("profilo.titolo")}</h2>
+          {/* Con il ritratto ridotto, Addestramento/Risorse si prendono lo spazio libero. */}
+          <div className={`profilo-griglia${(scheda.sezioniAperte?.ritratto ?? true) ? '' : ' senza-ritratto'}`}>
             {/* RITRATTO — colonna destra, occupa tutta l'altezza */}
             <div className="profilo-ritratto">
-              <button
-                type="button"
-                className="ritratto-toggle"
-                onClick={() => aggiorna({ sezioniAperte: { ...(scheda.sezioniAperte || {}), ritratto: !(scheda.sezioniAperte?.ritratto ?? true) } })}
-                aria-expanded={scheda.sezioniAperte?.ritratto ?? true}
-              >{(scheda.sezioniAperte?.ritratto ?? true) ? '▾' : '▸'} 🖼️ {t('profilo.ritratto')}</button>
+              {/* Da chiuso resta solo la barretta per riaprire; da aperto il
+                  comando è la freccia nell'angolo in alto a sinistra dell'immagine. */}
+              {!(scheda.sezioniAperte?.ritratto ?? true) && (
+                <button
+                  type="button"
+                  className="ritratto-toggle"
+                  onClick={() => aggiorna({ sezioniAperte: { ...(scheda.sezioniAperte || {}), ritratto: true } })}
+                  aria-expanded={false}
+                >▸ 🖼️ {t('profilo.ritratto')}</button>
+              )}
               {(scheda.sezioniAperte?.ritratto ?? true) && <>
               <div
                 className="ritratto-box"
@@ -4996,6 +5003,15 @@ export default function App() {
                 title={scheda.ritratto ? 'Click: cambia immagine' : 'Click: carica l’immagine del personaggio'}
                 onClick={() => ritrattoRef.current?.click()}
               >
+                {/* Freccia di riduzione nell'angolo in alto a sinistra, come le
+                    altre sezioni ma dentro l'immagine (non ruba spazio). */}
+                <button
+                  type="button"
+                  className="ritratto-collassa"
+                  title="Riduci il ritratto"
+                  aria-expanded
+                  onClick={(e) => { e.stopPropagation(); aggiorna({ sezioniAperte: { ...(scheda.sezioniAperte || {}), ritratto: false } }); }}
+                >▾</button>
                 {scheda.ritratto ? (
                   <img
                     src={scheda.ritratto}
@@ -5030,13 +5046,6 @@ export default function App() {
                 >
                   ×
                 </button>
-              )}
-              {/* Suggerimento: quando non c'è una foto personale, ricorda che puoi
-                  caricare una tua immagine (creabile gratis altrove). */}
-              {(!scheda.ritratto || scheda.ritratto.startsWith('data:image/svg')) && (
-                <div style={{ fontSize: 10, color: C.inkDim, marginTop: 4, lineHeight: 1.3 }}>
-                  💡 Clicca il riquadro per caricare una tua immagine. Puoi crearla <strong>gratis</strong> su Bing Image Creator e caricarla qui.
-                </div>
               )}
               <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
               </>}

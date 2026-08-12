@@ -475,6 +475,10 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
    destra, righe 3-5 = Intelligenza→Carisma). align-self:start → restano in alto e
    non forzano l'altezza delle righe (così le caratteristiche restano allineate). */
 .profilo-extra { grid-column: 3; grid-row: 3 / -1; align-self: stretch; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+/* Ritratto ridotto: Addestramento/Risorse salgono e usano tutta la colonna,
+   altrimenti resterebbe un buco (le righe le detta la colonna caratteristiche). */
+.profilo-griglia.senza-ritratto .profilo-ritratto { grid-row: 1 / 2; align-self: start; }
+.profilo-griglia.senza-ritratto .profilo-extra { grid-row: 2 / -1; }
 .profilo-extra > .sezione { margin-bottom: 0 !important; }
 /* l'ultima sezione aperta (Risorse) cresce per riempire lo spazio rimanente
    sotto; da chiusa resta alta quanto il suo titolo. */
@@ -538,7 +542,30 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
    sinistra (vedi @media min-width:1440px), lasciando spazio verticale in cima. */
 .app-header { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .app-header-title { text-align: center; white-space: nowrap; margin: 0; }
-.app-header-side { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: flex-start; width: 100%; }
+/* Tutti i tasti su UNA riga sotto il titolo: i gruppi si sciolgono con
+   display:contents, così i bottoni sono figli diretti della riga. */
+.app-header-side {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  justify-content: center; align-items: stretch; width: 100%;
+}
+.app-header-side .app-header-group,
+.app-header-side .app-header-language,
+.app-header-side .game-actions-dock { display: contents; }
+.app-header-side .app-header-group > button,
+.app-header-side .game-actions-btn {
+  flex: 1 1 0; min-width: 92px; width: auto; max-width: none; min-height: 32px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* Freccia per ridurre il ritratto: dentro l'immagine, in alto a sinistra. */
+.ritratto-collassa {
+  position: absolute; top: 6px; left: 6px; z-index: 2;
+  width: 24px; height: 24px; padding: 0; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px; cursor: pointer;
+  border: 1px solid var(--c-gold-dark);
+  background: rgba(0,0,0,0.45); color: #fff; font-size: 13px;
+}
+.ritratto-collassa:hover { background: rgba(0,0,0,0.65); }
 .app-header-group { display: grid; gap: 6px; min-width: 0; align-content: start; }
 .app-header-group:first-of-type { grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; max-width: 380px; }
 .app-header-language { grid-template-columns: 1fr; width: 100%; max-width: 100px; }
@@ -548,21 +575,6 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   background: var(--c-panel-light) !important; color: var(--c-ink) !important;
   border-color: var(--c-gold-dark) !important;
   box-shadow: 0 1px 4px rgba(0,0,0,0.16);
-}
-/* DESKTOP LARGO (≥1440px): margine libero ai lati → i tasti (e la finestra Tema)
-   vanno in COLONNA a sinistra; il titolo resta centrato in alto. */
-@media (min-width: 1440px) {
-  .app-header-side {
-    position: fixed; left: 10px; top: 54px; width: 154px; z-index: 900;
-    flex-direction: column; flex-wrap: nowrap; align-items: stretch;
-    justify-content: flex-start; gap: 6px;
-  }
-  .app-header-side .app-header-group,
-  .app-header-side .app-header-group:first-of-type,
-  .app-header-side .app-header-language {
-    grid-template-columns: 1fr; max-width: none; width: 100%;
-  }
-  .app-header-side .game-actions-dock { grid-template-columns: 1fr; max-width: none; }
 }
 /* schermata di caricamento dal cloud: nuvola che pulsa e barra che scorre */
 .cloud-spinner { animation: cloud-bob 1.4s ease-in-out infinite; }
@@ -583,31 +595,6 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   box-shadow: 0 1px 4px rgba(0,0,0,0.16);
 }
 .game-actions-btn:hover { filter: brightness(1.08); }
-/* Desktop largo (≥1440px, quello con la colonna di tasti a sinistra): le funzioni
-   di gioco restano separate, in basso a sinistra — com'è pensato lì.
-   Sotto quella soglia (iPad e telefoni) salgono invece nella barra in alto. */
-@media (min-width: 1440px) {
-  .game-actions-dock {
-    position: fixed; left: 10px; bottom: 10px; z-index: 1500;
-    width: 154px; max-width: 154px; grid-template-columns: 1fr;
-  }
-}
-/* TABLET / iPad (561–1439px): tutti i tasti in alto, uno dopo l'altro da
-   sinistra a destra. "display: contents" scioglie i gruppi, così i bottoni
-   diventano figli diretti della riga e si allineano tutti insieme. */
-@media (min-width: 561px) and (max-width: 1439px) {
-  .app-header-side {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
-    gap: 6px; align-items: stretch; justify-content: start;
-  }
-  .app-header-side .app-header-group,
-  .app-header-side .app-header-language,
-  .app-header-side .game-actions-dock { display: contents; }
-  .app-header-side .app-header-group > button,
-  .app-header-side .game-actions-btn {
-    width: 100%; max-width: none; min-height: 32px;
-  }
-}
 @media (max-width: 780px) {
   .spell-filters { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
   .spell-filters > input:first-child { grid-column: 1 / -1; }
