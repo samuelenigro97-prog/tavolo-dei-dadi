@@ -935,30 +935,74 @@ export function spiegaTratto(nome) {
 
 // Talenti comuni (5e), riassunti nostri. Per la nuvoletta sui Talenti.
 const SPIEG_TALENTI = {
-  'Incantatore da Guerra': '*Prerequisito: Capacità di lanciare almeno un incantesimo.*\n\n- Vantaggio ai Tiri Salvezza su Costituzione per mantenere la Concentrazione.\n- Puoi eseguire le componenti somatiche degli incantesimi anche se hai armi o scudi in una o entrambe le mani.\n- Puoi lanciare un incantesimo come Attacco di Opportunità invece di fare un attacco in mischia.',
+  'Incantatore da Guerra': {
+    base: "*Lanci incantesimi anche nel mezzo della mischia. Prerequisito: saper lanciare almeno un incantesimo.*",
+    '2014': "- **Vantaggio** ai tiri salvezza su Costituzione per mantenere la **concentrazione**.\n- Puoi eseguire le **componenti somatiche** anche con armi o scudo nelle mani.\n- Quando una creatura provoca un attacco di opportunità, puoi lanciare al suo posto un **incantesimo** (tempo di lancio 1 azione, con quella sola creatura come bersaglio).",
+    '2024': "- **Aumento di Caratteristica:** +1 a Intelligenza, Saggezza o Carisma.\n- **Concentrazione:** vantaggio ai tiri salvezza su Costituzione per mantenerla.\n- **Incantesimo di Reazione:** quando una creatura provoca un attacco di opportunità, puoi lanciare al suo posto un incantesimo (1 azione, solo quella creatura come bersaglio).\n- **Componenti Somatiche:** le esegui anche con armi o scudo nelle mani.",
+  },
   'Guaritore': {
     base: '*Sei un medico esperto, capace di curare ferite e rianimare i caduti.*',
     '2014': "- **Stabilizzare:** quando usi un kit da guaritore per stabilizzare una creatura morente, quella creatura recupera anche **1 Punto Ferita**.\n- **Curare:** come azione, spendi un uso del kit per curare una creatura di **1d6 + 4 PF**, più un numero di PF pari al suo **numero massimo di Dadi Vita**. La creatura non può ricevere di nuovo questa cura finché non completa un riposo breve o lungo.",
     '2024': "- **Aumento di Caratteristica:** +1 a Intelligenza, Saggezza o Carisma.\n- **Medico di Battaglia:** con l'azione Utilizzare spendi un uso di un kit da guaritore per curare una creatura: il bersaglio spende uno dei suoi Dadi Vita, tu lo tiri e la creatura recupera PF pari al risultato del dado **+ il tuo bonus di competenza**.\n- **Guarigioni Migliorate:** ogni volta che tiri un dado per curare (con un incantesimo o con Medico di Battaglia), puoi **ritirare il dado se esce 1**, tenendo il nuovo risultato.",
   },
   'Robusto': '*Il tuo corpo è eccezionalmente resistente.*\n\n- I tuoi Punti Ferita massimi aumentano di un ammontare pari al doppio del tuo livello quando acquisisci questo talento.\n- Ogni volta che sali di livello in seguito, i tuoi Punti Ferita massimi aumentano di 2 punti aggiuntivi.',
-  'Fortunato': '*Hai una fortuna inspiegabile che ti protegge.*\n\n- Hai 3 punti fortuna.\n- Quando fai un tiro per colpire, una prova di abilità o un tiro salvezza, puoi spendere un punto per tirare un d20 aggiuntivo e scegliere quale usare.\n- Puoi spendere un punto anche quando un attacco è fatto contro di te per fargli ritirare il dado.',
-  'Vigile': "*Sei sempre all'erta per il pericolo.*\n\n- Ottieni un bonus di +5 all'Iniziativa.\n- Non puoi essere sorpreso mentre sei cosciente.\n- Le creature nascoste non hanno vantaggio ai tiri per colpire contro di te.",
+  'Fortunato': {
+    base: "*Una fortuna inspiegabile ti accompagna nei momenti decisivi.*",
+    '2014': "- Hai **3 punti fortuna**, che recuperi con un riposo lungo.\n- Quando fai un tiro per colpire, una prova di caratteristica o un tiro salvezza, puoi spendere 1 punto per tirare **un d20 aggiuntivo** e scegliere quale dei due usare.\n- Puoi spendere 1 punto anche quando una creatura attacca te, per farle **ritirare** il dado dell’attacco.",
+    '2024': "*Talento di Origine.*\n\n- Hai un numero di **Punti Fortuna** pari al tuo **bonus di competenza**; li recuperi con un riposo lungo.\n- **Vantaggio:** spendi 1 punto per avere vantaggio a una prova con il d20.\n- **Svantaggio:** spendi 1 punto per imporre svantaggio a una prova con il d20 fatta contro di te.",
+  },
+  'Vigile': {
+    base: "*Sei sempre all’erta: il pericolo non ti coglie mai impreparato.*",
+    '2014': "- Ottieni un bonus di **+5 all’Iniziativa**.\n- **Non puoi essere sorpreso** mentre sei cosciente.\n- Le creature nascoste o invisibili non ottengono vantaggio ai tiri per colpire contro di te.",
+    '2024': "*Talento di Origine.*\n\n- **Competenza in Iniziativa:** quando tiri l’Iniziativa puoi aggiungere il tuo **bonus di competenza** al tiro.\n- **Scambio di Iniziativa:** subito dopo aver tirato l’Iniziativa puoi scambiare il tuo risultato con quello di un alleato consenziente (non se uno dei due è incapacitato).",
+  },
   'Attaccante Selvaggio': "*Colpisci con ferocia imprevedibile.*\n\n- Una volta per turno, quando colpisci con un attacco in mischia con un'arma, puoi ritirare i dadi di danno dell'arma e scegliere quale risultato usare.",
-  'Tiratore Scelto': "*Maestro del tiro a distanza.*\n\n- Nessuno svantaggio quando attacchi a lunga gittata con un'arma a distanza.\n- I tuoi attacchi a distanza ignorano la copertura leggera e quella pesante (mezza e tre quarti).\n- Prima di un attacco a distanza puoi accettare −5 al tiro per colpire per ottenere +10 ai danni.",
-  'Grande Maestro d’Armi': "*Devastante con le armi a due mani.*\n\n- Quando ottieni un colpo critico o riduci una creatura a 0 PF con un attacco in mischia, puoi fare un attacco extra in mischia come azione bonus.\n- Prima di un attacco in mischia con un'arma pesante puoi accettare −5 al tiro per colpire per ottenere +10 ai danni.",
-  'Maestro delle Armi': "*Ti alleni con molte armi.*\n\n- +1 a Forza o Destrezza.\n- Ottieni competenza con quattro armi da guerra a tua scelta.",
+  'Tiratore Scelto': {
+    base: "*Maestro del tiro a distanza. Prerequisito: Destrezza 13.*",
+    '2014': "- Nessuno **svantaggio** quando attacchi alla gittata lunga con un’arma a distanza.\n- I tuoi attacchi a distanza **ignorano** la copertura leggera e quella parziale (mezza e tre quarti).\n- Prima di un attacco a distanza puoi accettare **−5 al tiro per colpire** per ottenere **+10 ai danni**.",
+    '2024': "- **Aumento di Caratteristica:** +1 a Destrezza.\n- **Ignorare la Copertura:** i tuoi attacchi a distanza ignorano la copertura di metà e di tre quarti.\n- **Tiro in Mischia:** non subisci svantaggio ai tiri a distanza quando un nemico è a portata di mischia.\n- *(Nella 5.5 il vecchio scambio −5/+10 non esiste più.)*",
+  },
+  'Grande Maestro d’Armi': {
+    base: "*Devastante con le armi a due mani. Prerequisito: Forza 13.*",
+    '2014': "- Quando ottieni un **colpo critico** o riduci una creatura a **0 PF** con un attacco in mischia, puoi fare un attacco extra in mischia come **azione bonus**.\n- Prima di un attacco in mischia con un’arma **pesante** puoi accettare **−5 al tiro per colpire** per ottenere **+10 ai danni**.",
+    '2024': "- **Aumento di Caratteristica:** +1 a Forza.\n- **Maestria nelle Armi Pesanti:** una volta per turno, quando colpisci con un’arma **pesante** durante l’azione di Attacco, aggiungi il tuo **bonus di competenza** ai danni.\n- **Alimentato dalla Violenza:** con un colpo critico o riducendo una creatura a 0 PF con un’arma pesante, puoi fare un attacco extra con quell’arma come **azione bonus**.\n- *(Nella 5.5 il vecchio scambio −5/+10 non esiste più.)*",
+  },
+  'Maestro delle Armi': {
+    base: "*Ti alleni con molte armi.*",
+    '2014': "- **+1** a Forza o Destrezza.\n- Ottieni la **competenza con quattro armi da guerra** a tua scelta.",
+    '2024': "*Questo talento non esiste nella 5.5: le competenze nelle armi sono gestite dalle **proprietà di Maestria** delle armi e dai privilegi di classe.*",
+  },
   'Sentinella': "*Nessuno sfugge alla tua guardia.*\n\n- Quando colpisci una creatura con un attacco di opportunità, la sua velocità diventa 0 per il resto del turno.\n- Le creature provocano attacchi di opportunità da te anche se usano l'azione Disimpegno.\n- Quando una creatura entro 1,5 m attacca un bersaglio diverso da te, puoi usare la reazione per fare un attacco in mischia contro di essa.",
-  'Osservatore': "*Nulla ti sfugge.*\n\n- +1 a Intelligenza o Saggezza.\n- Sai leggere il labiale.\n- Ottieni +5 ai punteggi passivi di Percezione (Saggezza) e Indagare (Intelligenza).",
+  'Osservatore': {
+    base: "*Nulla ti sfugge. Prerequisito (5.5): Intelligenza o Saggezza 13.*",
+    '2014': "- **+1** a Intelligenza o Saggezza.\n- Sai **leggere il labiale**.\n- Ottieni **+5** ai punteggi passivi di Percezione (Saggezza) e Indagare (Intelligenza).",
+    '2024': "- **Aumento di Caratteristica:** +1 a Intelligenza o Saggezza.\n- **Ricerca Rapida:** puoi compiere l’azione **Cercare** come **azione bonus**.",
+  },
   'Mobile': "*Ti muovi con scioltezza sul campo.*\n\n- La tua velocità aumenta di 3 metri.\n- Durante uno Scatto il terreno difficile non ti costa movimento extra.\n- Quando fai un attacco in mischia contro una creatura, per il resto del turno non provochi attacchi di opportunità da quella creatura.",
-  'Iniziato alla Magia': "*Attingi a un po' di magia di un'altra tradizione.*\n\n- Scegli una classe (mago, chierico, druido, bardo, stregone o warlock): impari 2 trucchetti e 1 incantesimo di 1° livello di quella classe.\n- Puoi lanciare quell'incantesimo di 1° livello una volta per riposo lungo (o con i tuoi slot). La caratteristica da incantatore dipende dalla classe scelta.",
+  'Iniziato alla Magia': {
+    base: "*Attingi a un po’ di magia di un’altra tradizione.*",
+    '2014': "- Scegli una classe fra mago, chierico, druido, bardo, stregone o warlock: impari **2 trucchetti** e **1 incantesimo di 1° livello** di quella lista.\n- Puoi lanciare quell’incantesimo di 1° livello **una volta per riposo lungo** (o normalmente, se hai slot di quella classe). La caratteristica da incantatore dipende dalla classe scelta.",
+    '2024': "*Talento di Origine.*\n\n- Scegli una lista fra **chierico, druido o mago**: impari **2 trucchetti** e **1 incantesimo di 1° livello** di quella lista.\n- Lanci quell’incantesimo **una volta per riposo lungo** senza spendere slot, oppure normalmente se hai slot adatti.\n- Ogni volta che sali di livello puoi **sostituire** uno degli incantesimi imparati con questo talento.",
+  },
   'Attore': "*Sei un impareggiabile interprete.*\n\n- +1 a Carisma.\n- Hai vantaggio alle prove di Inganno e Intrattenere quando cerchi di spacciarti per qualcun altro.\n- Puoi imitare voci e suoni di altre creature che hai sentito.",
   'Resiliente': "*Rinforzi una tua difesa.*\n\n- Aumenti di 1 una caratteristica a tua scelta e ottieni la competenza nei tiri salvezza di quella stessa caratteristica.",
-  'Esperto di Abilità': "*Affini le tue competenze.*\n\n- +1 a una caratteristica a tua scelta.\n- Ottieni competenza in un'abilità a tua scelta.\n- Ottieni la maestria (doppio bonus di competenza) in un'abilità in cui sei già competente.",
-  'Combattente con Due Armi': "*Duellante a due lame.*\n\n- +1 alla CA mentre impugni un'arma da mischia in ciascuna mano.\n- Puoi combattere con due armi anche se non hanno la proprietà Leggera.\n- Puoi estrarre o riporre due armi da una mano quando ne estrarresti o riporresti una.",
+  'Esperto di Abilità': {
+    base: "*Affini le tue competenze.*",
+    '2014': "- **+1** a una caratteristica a tua scelta.\n- Ottieni la **competenza** in un’abilità a tua scelta.\n- Ottieni la **maestria** (doppio bonus di competenza) in un’abilità in cui sei già competente.",
+    '2024': "- **Aumento di Caratteristica:** +1 a una caratteristica a tua scelta.\n- Ottieni la **competenza** in un’abilità a tua scelta.\n- Ottieni la **maestria** in un’abilità in cui sei già competente.\n- *(Nella 5.5 esiste anche il talento di origine «Esperto», che concede tre competenze fra abilità e strumenti.)*",
+  },
+  'Combattente con Due Armi': {
+    base: "*Duellante a due lame. Prerequisito (5.5): Forza o Destrezza 13.*",
+    '2014': "- **+1 alla CA** mentre impugni un’arma da mischia in ciascuna mano.\n- Puoi combattere con due armi anche se **non hanno la proprietà Leggera**.\n- Puoi estrarre o riporre **due** armi quando ne estrarresti o riporresti una.",
+    '2024': "- **Aumento di Caratteristica:** +1 a Forza o Destrezza.\n- **Combattere con Due Armi Migliorato:** quando compi l’azione di Attacco con un’arma **Leggera**, l’attacco extra come azione bonus può essere fatto con un’altra arma da mischia **senza la proprietà A Due Mani** (non serve che sia Leggera).\n- **Estrazione Rapida:** puoi estrarre o riporre **due** armi al posto di una.",
+  },
   'Cuoco': "*La tua cucina ristora i compagni.*\n\n- +1 a Costituzione o Saggezza.\n- Competenza con gli utensili da cuoco.\n- Durante un riposo breve puoi cucinare cibo che fa recuperare PF extra a più creature; come azione bonus prepari dolcetti che concedono punti ferita temporanei.",
   'Padrone delle Armature Pesanti': "*Sei addestrato alle protezioni più pesanti.*\n\n- +1 a Forza.\n- Ottieni competenza nelle armature pesanti (richiede la competenza nelle armature medie).",
-  'Maestro di Scudo': "*Usi lo scudo come arma e riparo.*\n\n- Se compi l'azione di Attacco, come azione bonus puoi spingere con lo scudo per far cadere prona una creatura entro 1,5 m.\n- +2 ai tiri salvezza su Destrezza contro effetti che bersagliano solo te (es. palla di fuoco).\n- Quando un effetto ti permette di dimezzare i danni con un TS su Destrezza, con un successo non subisci alcun danno.",
+  'Maestro di Scudo': {
+    base: "*Usi lo scudo come arma e come riparo. Prerequisito (5.5): Forza 13.*",
+    '2014': "- Se compi l’azione di **Attacco**, come **azione bonus** puoi spingere con lo scudo per far cadere **prona** una creatura entro 1,5 m.\n- **+2 ai tiri salvezza su Destrezza** contro effetti che bersagliano **solo te** (es. palla di fuoco).\n- Quando un effetto ti fa dimezzare i danni con un TS su Destrezza, con un **successo non subisci alcun danno**.",
+    '2024': "- **Aumento di Caratteristica:** +1 a Forza.\n- **Colpo di Scudo:** se compi l’azione di Attacco mentre impugni uno scudo, come **azione bonus** puoi spingere una creatura entro 1,5 m (a terra prona oppure via di 1,5 m).\n- **Frapporre lo Scudo:** quando un effetto ti concede un TS su Destrezza per dimezzare i danni, puoi usare la **reazione** per aggiungere il bonus alla CA dello scudo a quel tiro salvezza.",
+  },
 };
 const SPIEG_TALENTI_LC = _lcMap(SPIEG_TALENTI);
 // Elenco ordinato dei talenti noti (per il menu a tendina al Level Up).
