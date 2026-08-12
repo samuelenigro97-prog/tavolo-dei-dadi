@@ -348,6 +348,8 @@ export function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni,
     setEdit(null);
   };
   const elimina = () => { salva(righe.filter((_, i) => i !== edit.index)); setEdit(null); };
+  // Le opzioni possono arrivare come stringhe o come oggetti { nome, desc }.
+  const listaOpzioni = (opzioni || []).map((o) => (typeof o === 'string' ? { nome: o, desc: '' } : o));
   const chip = { background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '5px 10px', fontSize: 13, cursor: 'pointer', color: C.ink, whiteSpace: unicaRiga ? 'nowrap' : 'normal' };
   const spEdit = edit ? (lookup ? lookup(edit.valore) : null) : null;
   return (
@@ -393,20 +395,35 @@ export function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni,
               <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 12px', fontSize: 14, lineHeight: 1.4, marginBottom: 8 }}>{spEdit}</div>
             )}
             {edit.index === -1 ? (
-              // Voce NUOVA: qui il nome va scritto (o scelto dall'elenco).
+              // Voce NUOVA: si sceglie dal menu a tendina (se ci sono opzioni)
+              // oppure si scrive a mano. Le opzioni possono essere semplici
+              // stringhe o oggetti { nome, desc } (la desc appare nella tendina).
               <>
+                {listaOpzioni.length > 0 && (
+                  <select
+                    autoFocus
+                    style={{ ...styles.inlineInput, width: '100%', padding: '8px 10px', fontSize: 15, marginBottom: 8, boxSizing: 'border-box' }}
+                    value={listaOpzioni.some((o) => o.nome === edit.valore) ? edit.valore : ''}
+                    onChange={(e) => setEdit({ ...edit, valore: e.target.value })}
+                  >
+                    <option value="">— Scegli dalla lista —</option>
+                    {listaOpzioni.map((o) => (
+                      <option key={o.nome} value={o.nome}>{o.desc ? `${o.nome} — ${o.desc}` : o.nome}</option>
+                    ))}
+                  </select>
+                )}
                 <input
-                  autoFocus
-                  style={{ ...styles.inlineInput, width: '100%', padding: '8px 10px', fontSize: 15 }}
+                  autoFocus={listaOpzioni.length === 0}
+                  style={{ ...styles.inlineInput, width: '100%', padding: '8px 10px', fontSize: 15, boxSizing: 'border-box' }}
                   value={edit.valore}
-                  placeholder={opzioni ? 'Scrivi o scegli dalla lista…' : 'Nome della voce'}
-                  list={opzioni ? listId : undefined}
+                  placeholder={listaOpzioni.length > 0 ? '…oppure scrivi un nome libero' : 'Nome della voce'}
+                  list={listaOpzioni.length > 0 ? listId : undefined}
                   onChange={(e) => setEdit({ ...edit, valore: e.target.value })}
                   onKeyDown={(e) => { if (e.key === 'Enter') conferma(); }}
                 />
-                {opzioni && (
+                {listaOpzioni.length > 0 && (
                   <datalist id={listId}>
-                    {opzioni.map((o) => <option key={o} value={o} />)}
+                    {listaOpzioni.map((o) => <option key={o.nome} value={o.nome} />)}
                   </datalist>
                 )}
               </>
