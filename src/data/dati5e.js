@@ -705,6 +705,32 @@ export const NOMI_SPECIE = {
   goliath: ['Kavaki', 'Thruun', 'Vaunea', 'Ilikan', 'Ovak', 'Nalla', 'Gae-Al', 'Keothi', 'Uthal', 'Manneo'],
 };
 export const NOMI_GENERICI = ['Aldric', 'Lyra', 'Corin', 'Sera', 'Rowan', 'Mira', 'Talon', 'Enna', 'Kael', 'Nira'];
+// Aumenti di caratteristica dati dalla razza nelle regole 2014 (5.0).
+// Nelle regole 2024 (5.5) questi bonus arrivano invece dal background.
+// 'sceltaExtra' = quante caratteristiche a scelta ricevono +1 (Mezzelfo).
+export const BONUS_CARATT_SPECIE_2014 = {
+  Aasimar: { carisma: 2 },
+  Dragonide: { forza: 2, carisma: 1 },
+  Elfo: { destrezza: 2 },
+  'Elfo Alto': { destrezza: 2, intelligenza: 1 },
+  'Elfo dei Boschi': { destrezza: 2, saggezza: 1 },
+  'Elfo Oscuro (Drow)': { destrezza: 2, carisma: 1 },
+  Gnomo: { intelligenza: 2 },
+  'Gnomo delle Foreste': { intelligenza: 2, destrezza: 1 },
+  'Gnomo delle Rocce': { intelligenza: 2, costituzione: 1 },
+  Goliath: { forza: 2, costituzione: 1 },
+  Halfling: { destrezza: 2 },
+  'Halfling Piedelesto': { destrezza: 2, carisma: 1 },
+  'Halfling Tozzo': { destrezza: 2, costituzione: 1 },
+  Nano: { costituzione: 2 },
+  'Nano delle Colline': { costituzione: 2, saggezza: 1 },
+  'Nano delle Montagne': { costituzione: 2, forza: 2 },
+  Orco: { forza: 2, costituzione: 1 },
+  Mezzorco: { forza: 2, costituzione: 1 },
+  Mezzelfo: { carisma: 2, sceltaExtra: 2 },
+  Tiefling: { intelligenza: 1, carisma: 2 },
+  Umano: { forza: 1, destrezza: 1, costituzione: 1, intelligenza: 1, saggezza: 1, carisma: 1 },
+};
 export const SPECIE_DATI = {
   Aasimar: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Resistenza celestiale, Mani guaritrici, Portatore di luce, Rivelazione celestiale (liv. 3)' },
   Dragonide: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Arma a soffio (1d10/2d6, ricarica riposo breve), Resistenza al danno, Antenati draconici, Volo draconico (liv. 5)' },
