@@ -88,6 +88,39 @@ export const EN_TRATTI = {
   // Tiefling
   'Presenza ultraterrena': 'You know the Thaumaturgy cantrip.',
   // Umano (2024)
+  // Species ability score increases (2014 only)
+  'Forza +2': 'In **2014** the Mountain Dwarf increases its **Strength score by 2**. In 2024 ability score increases no longer come from your species but from your **background**.',
+  '+2 Carisma': 'In **2014** the Half-Elf increases **Charisma by 2** and two other scores of its choice by 1. In 2024 ability score increases come from your **background**.',
+  // Elf (2014 subraces)
+  '1 Trucchetto da Mago': 'You know one cantrip of your choice from the Wizard list: your spellcasting ability for it is **Intelligence**.',
+  'Competenza armi elfiche': 'You are proficient with the **longsword, shortsword, shortbow** and **longbow**.',
+  'Lingua extra': 'You know one **additional language** of your choice, on top of the ones you already speak.',
+  'Piedi veloci': 'Your base walking speed is **10.5 metres** instead of 9.',
+  'Maschera della selva': 'You can try to **Hide** even when you are only lightly obscured by foliage, heavy rain, falling snow, mist or other natural phenomena.',
+  'Sensibilità alla luce solare': 'In sunlight you have **disadvantage** on attack rolls and on Perception checks that rely on sight.',
+  'Magia Drow': 'You know the **Dancing Lights** cantrip. At level 3 you can cast **Faerie Fire** and at level 5 **Darkness**, once each per Long Rest. Your spellcasting ability is **Charisma**.',
+  'Armi drow': 'You are proficient with the **shortsword, rapier** and **hand crossbow**.',
+  // Gnome (2014 subraces)
+  'Illusionista nato': 'You know the **Minor Illusion** cantrip: your spellcasting ability for it is **Intelligence**.',
+  'Parlare con le piccole bestie': 'You can convey simple ideas to **Small or smaller beasts** through sound and gesture, and pick up their answers.',
+  'Conoscenza degli artefatti': 'When you make an Intelligence (History) check about a **magic, alchemical or technological** item, you add **twice** your proficiency bonus.',
+  'Inventore': "You are proficient with **artisan's tools** (tinker's tools). Over a Long Rest you can build a small **clockwork device** (a fire starter, a toy, a music box) worth 10 gp.",
+  // Halfling (2014 subraces)
+  'Resilienza tozza': 'You have **advantage** on saving throws against poison and **resistance** to poison damage.',
+  // Dwarf / Half-orc (2014)
+  'Competenza negli strumenti': "You are proficient with one type of **artisan's tools** of your choice: smith's tools, brewer's supplies or mason's tools.",
+  'Competenza nelle armature leggere e medie': 'You are proficient with **light and medium armour**.',
+  'Minaccioso': 'You gain proficiency in the **Intimidation** skill.',
+  'Attacchi selvaggi': 'When you score a **critical hit** with a melee weapon attack, you roll **one additional damage die** and add it to the extra critical damage.',
+  // Half-elf (2014)
+  'Versatilità': 'You gain proficiency in **two skills** of your choice.',
+  // Tiefling
+  'Resistenza al fuoco': 'You have **resistance to fire damage**.',
+  'Eredità infernale/abisso': 'You choose a legacy (Infernal, Abyssal or Chthonic): it gives you a **cantrip** at level 1 and one spell at level **3** and **5**, each castable once per Long Rest. Your spellcasting ability is **Charisma**.',
+  // Dragonborn / Aasimar / Goliath (2024)
+  'Volo draconico': 'From level 5, as a Bonus Action you sprout **spectral wings** for 10 minutes: you gain a **flying speed equal to your walking speed**. Once per Long Rest.',
+  'Rivelazione celestiale': 'From level 3, as a Bonus Action you reveal your celestial nature for 1 minute: choose a form (Necrotic, Radiant or Fiery) that adds damage to your attacks and grants a benefit (flight, for example). Once per Long Rest.',
+  'Forma Grande': 'From level 5, as a Bonus Action you become **Large** for 10 minutes (if there is room): you gain **advantage on Strength checks** and your speed increases by 3 m. Once per Long Rest.',
   'Pieno di risorse': 'You gain Inspiration after every long rest.',
   'Abile': 'Proficiency in one skill of your choice.',
   'Versatile': 'You gain one origin feat of your choice.',

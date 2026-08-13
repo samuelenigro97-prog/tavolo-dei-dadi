@@ -996,6 +996,39 @@ const SPIEG_TRATTI = {
   'Resistenza implacabile': "Quando scenderesti a 0 punti ferita senza essere ucciso sul colpo, resti invece a 1 punto ferita. Una volta per riposo lungo.",
   // Tiefling
   'Presenza ultraterrena': "Conosci il trucchetto Taumaturgia; la caratteristica da incantatore per lanciarlo è il Carisma.",
+  // Aumenti di caratteristica da specie (solo 5.0)
+  'Forza +2': "Nella **5.0** il Nano delle Montagne aumenta il punteggio di **Forza di 2**. Nella 5.5 gli aumenti di caratteristica non arrivano più dalla specie ma dal **background**.",
+  '+2 Carisma': "Nella **5.0** il Mezzelfo aumenta il **Carisma di 2** e altre due caratteristiche a scelta di 1. Nella 5.5 gli aumenti di caratteristica arrivano dal **background**.",
+  // Elfo (sottorazze 5.0)
+  '1 Trucchetto da Mago': "Conosci un trucchetto a tua scelta dalla lista del mago: la caratteristica da incantatore per lanciarlo è l'**Intelligenza**.",
+  'Competenza armi elfiche': 'Sei competente con **spada lunga, spada corta, arco corto** e **arco lungo**.',
+  'Lingua extra': 'Conosci una **lingua aggiuntiva** a tua scelta, oltre a quelle che parli già.',
+  'Piedi veloci': 'La tua velocità base sul terreno è di **10,5 metri** invece di 9.',
+  'Maschera della selva': 'Puoi tentare di **Nasconderti** anche quando sei coperto soltanto da fogliame fitto, pioggia battente, neve, nebbia o altri fenomeni naturali.',
+  'Sensibilità alla luce solare': 'Alla luce del sole hai **svantaggio** ai tiri per colpire e alle prove di Percezione basate sulla vista.',
+  'Magia Drow': 'Conosci il trucchetto **Luce danzante**. Al 3° livello puoi lanciare **Fuoco fatuo** e al 5° **Oscurità**, una volta ciascuno per riposo lungo. La caratteristica da incantatore è il **Carisma**.',
+  'Armi drow': 'Sei competente con **spada corta, spadone** (rapier) e **balestra a mano**.',
+  // Gnomo (sottorazze 5.0)
+  'Illusionista nato': "Conosci il trucchetto **Illusione minore**: la caratteristica da incantatore per lanciarlo è l'**Intelligenza**.",
+  'Parlare con le piccole bestie': 'Riesci a comunicare idee semplici alle **bestie di taglia Piccola o inferiore** con suoni e gesti, e a coglierne le risposte.',
+  'Conoscenza degli artefatti': "Quando fai una prova di Intelligenza (Storia) su un oggetto **magico, alchemico o tecnologico**, aggiungi **il doppio** del tuo bonus di competenza.",
+  'Inventore': 'Sei competente con gli **arnesi da artigiano** (attrezzi da manovale). Durante un riposo lungo puoi costruire un piccolo **congegno meccanico** (accendino, giocattolo, scatola musicale) del valore di 10 mo.',
+  // Halfling (sottorazze 5.0)
+  'Resilienza tozza': 'Hai **vantaggio** ai tiri salvezza contro il veleno e **resistenza** ai danni da veleno.',
+  // Nano / Mezzorco (5.0)
+  'Competenza negli strumenti': 'Sei competente con un tipo di **arnesi da artigiano** a tua scelta fra attrezzi da fabbro, da birraio e da muratore.',
+  'Competenza nelle armature leggere e medie': 'Sei competente con le **armature leggere e medie**.',
+  'Minaccioso': "Ottieni la competenza nell'abilità **Intimidire**.",
+  'Attacchi selvaggi': 'Quando metti a segno un **colpo critico** con un attacco in mischia con arma, tiri **un dado di danno in più** e lo aggiungi ai danni extra del critico.',
+  // Mezzelfo (5.0)
+  'Versatilità': 'Ottieni la competenza in **due abilità** a tua scelta.',
+  // Tiefling
+  'Resistenza al fuoco': 'Hai **resistenza ai danni da fuoco**.',
+  'Eredità infernale/abisso': "Scegli un retaggio (Infernale, Abissale o degli Inferi): ti dà un **trucchetto** al 1° livello e un incantesimo al **3°** e al **5°**, lanciabili una volta per riposo lungo. La caratteristica da incantatore è il **Carisma**.",
+  // Dragonide / Aasimar / Goliath (5.5)
+  'Volo draconico': "Dal 5° livello, con un'azione bonus fai spuntare **ali spettrali** per 10 minuti: ottieni una **velocità di volo pari alla tua velocità base**. Una volta per riposo lungo.",
+  'Rivelazione celestiale': "Dal 3° livello, con un'azione bonus mostri la tua natura celestiale per 1 minuto: scegli una forma (Necrotica, Radiosa o Infuocata) che aggiunge danni ai tuoi attacchi e ti dà un beneficio (per esempio il volo). Una volta per riposo lungo.",
+  'Forma Grande': "Dal 5° livello, con un'azione bonus diventi di **taglia Grande** per 10 minuti (se lo spazio lo consente): ottieni **vantaggio alle prove di Forza** e la tua velocità aumenta di 3 m. Una volta per riposo lungo.",
   // Umano (2024)
   'Pieno di risorse': "Ottieni Ispirazione Eroica ogni volta che concludi un riposo lungo.",
   'Abile': "Ottieni competenza in un'abilità a tua scelta.",
