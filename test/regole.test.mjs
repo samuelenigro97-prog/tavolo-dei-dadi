@@ -242,3 +242,21 @@ test('incantesimiMaxAuto: 2014 mago = mod + livello', () => {
   assert.equal(incantesimiMaxAuto(scheda, '2014'), 6); // 3 + 3
   assert.equal(incantesimiMaxAuto({ classe: 'Guerriero', livello: 3 }, '2014'), null);
 });
+
+test('bonus di caratteristica dalla razza (2014): ogni voce punta a una specie reale', async () => {
+  const { BONUS_CARATT_SPECIE_2014, SPECIE_DATI } = await import('../src/data/dati5e.js');
+  const caratt = ['forza', 'destrezza', 'costituzione', 'intelligenza', 'saggezza', 'carisma'];
+  for (const [specie, bonus] of Object.entries(BONUS_CARATT_SPECIE_2014)) {
+    assert.ok(SPECIE_DATI[specie], `specie sconosciuta: ${specie}`);
+    for (const [k, v] of Object.entries(bonus)) {
+      if (k === 'sceltaExtra') { assert.ok(v >= 1 && v <= 2); continue; }
+      assert.ok(caratt.includes(k), `caratteristica sconosciuta: ${k} (${specie})`);
+      assert.ok(v === 1 || v === 2, `bonus fuori scala: ${k} +${v} (${specie})`);
+    }
+  }
+  // Le classiche del Manuale del Giocatore 2014.
+  assert.equal(BONUS_CARATT_SPECIE_2014.Nano.costituzione, 2);
+  assert.equal(BONUS_CARATT_SPECIE_2014.Elfo.destrezza, 2);
+  assert.equal(BONUS_CARATT_SPECIE_2014['Nano delle Montagne'].forza, 2);
+  assert.equal(Object.keys(BONUS_CARATT_SPECIE_2014.Umano).length, 6);
+});

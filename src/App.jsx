@@ -158,6 +158,38 @@ function bonusCaratteristicheBackground(bg, classe) {
   return [ordinate[0], ordinate[1]];
 }
 
+/**
+ * Aumenti di caratteristica dalla razza (regole 2014). Ritorna una mappa
+ * { caratteristica: bonus }. Il Mezzelfo ha due +1 a scelta: li assegniamo
+ * alle caratteristiche più utili alla classe, saltando quelle già toccate.
+ */
+function bonusCaratteristicheSpecie2014(specie, classe) {
+  const d = datiSpecieDi(specie);
+  const tab = d && BONUS_CARATT_SPECIE_2014[d.nome];
+  if (!tab) return {};
+  const { sceltaExtra, ...fissi } = tab;
+  const out = { ...fissi };
+  if (sceltaExtra) {
+    const c = coloreClasse(classe);
+    const prio = (c && PRIORITA_CARATT[c.match[0]]) || ['forza', 'destrezza', 'costituzione', 'intelligenza', 'saggezza', 'carisma'];
+    let rimasti = sceltaExtra;
+    for (const k of prio) {
+      if (rimasti <= 0) break;
+      if (out[k]) continue;
+      out[k] = 1;
+      rimasti -= 1;
+    }
+  }
+  return out;
+}
+
+/** Riepilogo leggibile dei bonus di caratteristica, es. "+2 DES, +1 INT". */
+function riepilogoBonusCaratt(mappa) {
+  return Object.entries(mappa)
+    .map(([k, v]) => `+${v} ${k.slice(0, 3).toUpperCase()}`)
+    .join(', ');
+}
+
 // Tiri salvezza in cui ogni classe è competente (2 per classe).
 
 function tiriSalvezzaPerClasse(classe) {
@@ -495,7 +527,7 @@ import { INCANTESIMI_DB, datiIncantesimo } from './data/incantesimi.js';
 
 const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(INCANTESIMI_DB)])).sort((a, b) => a.localeCompare(b, 'it'));
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E } from './data/dati5e.js';
-import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
+import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
 import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, pesoStimato, pesoArmatura } from './rules/regole.js';
 
@@ -885,7 +917,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.83.0';
+const APP_VERSION = '2.84.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2138,11 +2170,16 @@ export default function App() {
     // Privilegi ottenuti fino al livello iniziale, secondo l'edizione scelta.
     s.privilegi = privilegiClasseFinoA(classe, s.livello, regoleVersione);
     s.privilegiSottoclasse = sottoclasse ? privilegiSottoclasseFinoA(sottoclasse, s.livello) : '';
-    // background: bonus alle caratteristiche (solo regole 2024)
+    // Bonus alle caratteristiche: dal background nella 5.5, dalla razza nella 5.0.
     if (regoleVersione === '2024') {
       const [piu2, piu1] = bonusCaratteristicheBackground(background, classe);
       if (piu2) s.caratteristiche[piu2] = (s.caratteristiche[piu2] || 10) + 2;
       if (piu1) s.caratteristiche[piu1] = (s.caratteristiche[piu1] || 10) + 1;
+    } else {
+      const bonusRazza = bonusCaratteristicheSpecie2014(specie, classe);
+      for (const [k, v] of Object.entries(bonusRazza)) {
+        s.caratteristiche[k] = (s.caratteristiche[k] || 10) + v;
+      }
     }
     // lingue iniziali (Comune + lingua a tema specie)
     s.lingue = lingueIniziali(specie);
@@ -4054,6 +4091,7 @@ export default function App() {
         const setB = (patch) => setBozzaCrea((b) => ({ ...b, ...patch }));
         const stileSelect = { ...styles.inlineInput, width: '100%', padding: '6px 8px', fontSize: 15 };
         const bonusBg = regoleVersione === '2024' ? bonusCaratteristicheBackground(bozzaCrea.background, bozzaCrea.classe) : [];
+        const bonusRazza = regoleVersione === '2014' ? bonusCaratteristicheSpecie2014(bozzaCrea.specie, bozzaCrea.classe) : {};
         return (
           <div
             style={{ position: 'fixed', inset: 0, zIndex: 1001, padding: 16, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -4093,7 +4131,9 @@ export default function App() {
                     {d && <div>🏃 {t('vital.movimento')} {d.velocita} m · 📏 {d.taglia}{d.sensi ? ` · 👁 ${d.sensi}` : ''}</div>}
                     {d && <div>✨ {t('crea.tratti')}: {d.tratti}</div>}
                     <div style={{ color: C.inkDim }}>
-                      💪 {t('crea.bonus_car')}: {regoleVersione === '2024' ? t('crea.bonus_bg') : t('crea.bonus_razza')}
+                      💪 {t('crea.bonus_car')}: {regoleVersione === '2024'
+                        ? t('crea.bonus_bg')
+                        : (riepilogoBonusCaratt(bonusRazza) || t('crea.bonus_razza'))}
                     </div>
                   </div>
                 );
