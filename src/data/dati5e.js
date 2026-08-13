@@ -632,7 +632,7 @@ export const PRIVILEGI_CLASSE_LIV_2014 = {
     20: 'Sé perfetto',
   },
   paladino: {
-    2: 'Stile di combattimento\nPunizione divina',
+    2: 'Stile di combattimento\nLancio di incantesimi (Carisma)\nPunizione divina',
     3: 'Salute divina',
     5: 'Attacco extra',
     6: 'Aura di protezione',
