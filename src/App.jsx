@@ -753,7 +753,12 @@ function attaccoDaArma(arma, scheda) {
   else mod = forza;
   const comp = scheda.bonusCompetenza || 0;
   const danno = mod === 0 ? arma.danno : `${arma.danno}${mod > 0 ? '+' : ''}${mod}`;
-  return { nome: arma.nome, danno, tipoDanno: arma.tipo, note: arma.note, bonus: mod + comp };
+  // La maestria delle armi esiste solo nelle regole 2024: la aggiungiamo alle note.
+  const usa2024 = (scheda.versione || '2024') === '2024';
+  const note = usa2024 && arma.maestria
+    ? [arma.note, `Maestria: ${arma.maestria}`].filter(Boolean).join(' · ')
+    : arma.note;
+  return { nome: arma.nome, danno, tipoDanno: arma.tipo, note, bonus: mod + comp };
 }
 
 // Dotazione iniziale indicativa per classe (armi che diventano attacchi +
@@ -917,7 +922,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.84.0';
+const APP_VERSION = '2.85.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
