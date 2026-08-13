@@ -223,6 +223,22 @@ function applicaASIFinoA(caratteristiche, classe, livello) {
   return quanti;
 }
 
+// Punti esperienza minimi per livello (identici nelle due edizioni).
+const PE_PER_LIVELLO = [0, 0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000,
+  85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000];
+
+/**
+ * Oro iniziale per un personaggio creato a livello alto (linee guida del DMG).
+ * Sotto il 5° livello vale la dotazione normale della classe.
+ */
+function oroInizialePerLivello(livello) {
+  const L = Number(livello) || 1;
+  if (L >= 17) return 20000 + 5 * 250;
+  if (L >= 11) return 5000 + 5 * 250;
+  if (L >= 5) return 500 + 5 * 25;
+  return 0;
+}
+
 // Tiri salvezza in cui ogni classe è competente (2 per classe).
 
 function tiriSalvezzaPerClasse(classe) {
@@ -562,7 +578,7 @@ const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(I
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, pesoStimato, pesoArmatura } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, incantesimiInizialiPerLivello, pesoStimato, pesoArmatura } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -976,7 +992,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.87.0';
+const APP_VERSION = '2.88.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2280,6 +2296,21 @@ export default function App() {
       const perLivelloSucc = Math.floor(facce / 2) + 1 + conMod;
       s.pfMax = Math.max(1, facce + conMod + (s.livello - 1) * perLivelloSucc);
       s.pfAttuali = s.pfMax;
+    }
+    // Punti esperienza coerenti col livello scelto (chi gioca a milestone li ignora).
+    s.pe = PE_PER_LIVELLO[s.livello] || 0;
+    // Oro extra per chi parte oltre il 4° livello (linee guida del DMG): un
+    // personaggio di 12° non può avere in tasca le 5 monete del 1°.
+    const oroExtra = oroInizialePerLivello(s.livello);
+    if (oroExtra) {
+      s.denari = { ...s.denari, mo: (s.denari.mo || 0) + oroExtra };
+      s.note = [s.note, `Creato al ${s.livello}° livello: secondo le linee guida del manuale ti spettano anche degli oggetti magici (${s.livello >= 17 ? 'tre non comuni e uno raro' : s.livello >= 11 ? 'due non comuni' : 'uno non comune'}), da concordare con il DM.`].filter(Boolean).join('\n');
+    }
+    // Trucchetti e incantesimi già noti: senza questi un incantatore creato a
+    // livello alto avrebbe gli slot pieni e la lista degli incantesimi vuota.
+    const inc = incantesimiInizialiPerLivello(classe, s.livello, regoleVersione, s.caratteristiche);
+    if (inc && (inc.trucchetti.length || inc.incantesimi.length)) {
+      s.incantesimiLista = [...inc.trucchetti, ...inc.incantesimi];
     }
     // avatar e chiusura schermate
     s.ritratto = generaAvatar(classe, specie, s.nome);
@@ -4407,7 +4438,23 @@ export default function App() {
               )}
 
               <div style={{ display: 'flex', gap: 8 }}>
-                <button style={{ ...styles.buttonPrimary, flex: 1 }} onClick={() => creaPersonaggio(bozzaCrea)}>{t('crea.crea_pg')}</button>
+                {(() => {
+                  // A livello alto la sottoclasse non è facoltativa: un Mago di 7°
+                  // senza Tradizione Arcana non esiste. Blocchiamo la creazione.
+                  const serveSub = !!bozzaCrea.classe
+                    && Number(bozzaCrea.livello) >= livelloSceltaSottoclasse(bozzaCrea.classe, regoleVersione)
+                    && !bozzaCrea.sottoclasse;
+                  return (
+                    <button
+                      style={{ ...styles.buttonPrimary, flex: 1, opacity: serveSub ? 0.5 : 1, cursor: serveSub ? 'not-allowed' : 'pointer' }}
+                      disabled={serveSub}
+                      title={serveSub ? (lingua === 'it' ? 'Scegli prima la sottoclasse: a questo livello è obbligatoria.' : 'Choose a subclass first: it is required at this level.') : ''}
+                      onClick={() => creaPersonaggio(bozzaCrea)}
+                    >
+                      {t('crea.crea_pg')}
+                    </button>
+                  );
+                })()}
                 <button style={styles.button} onClick={() => setMostraCrea(false)}>{t('modal.annulla')}</button>
               </div>
             </div>

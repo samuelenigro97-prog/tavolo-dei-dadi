@@ -273,3 +273,31 @@ test('ASI: livelli corretti per classe e conteggio fino a un livello dato', asyn
   assert.equal(fino(8, ASI_LIV.guerriero), 3); // 4, 6, 8
   assert.equal(fino(10, ASI_LIV.ladro), 3); // 4, 8, 10
 });
+
+test('creazione a livello alto: trucchetti e incantesimi coerenti con classe e slot', async () => {
+  const { incantesimiInizialiPerLivello } = await import('../src/rules/regole.js');
+
+  // Mago di 7° con Intelligenza 15: 4 trucchetti e 9 preparati (mod +2 + livello).
+  const mago = incantesimiInizialiPerLivello('Mago', 7, '2014', { intelligenza: 15 });
+  assert.equal(mago.trucchetti.length, 4);
+  assert.equal(mago.incantesimi.length, 9);
+  // La distribuzione segue gli slot 4/3/3/1: niente liste tutte di 1° livello.
+  const perLivello = {};
+  for (const i of mago.incantesimi) perLivello[i.livello] = (perLivello[i.livello] || 0) + 1;
+  assert.deepEqual(perLivello, { 1: 3, 2: 3, 3: 2, 4: 1 });
+
+  // Le voci arrivano complete, non solo col nome.
+  const dardo = mago.trucchetti[0];
+  assert.equal(dardo.livello, 0);
+  assert.ok(dardo.nome);
+  assert.ok(dardo.scuola, 'il trucchetto deve avere la scuola');
+  assert.equal(dardo.preparato, true);
+
+  // Il Paladino è un mezzo incantatore: nessun trucchetto, incantesimi sì.
+  const pala = incantesimiInizialiPerLivello('Paladino', 9, '2014', { carisma: 14 });
+  assert.equal(pala.trucchetti.length, 0);
+  assert.equal(pala.incantesimi.length, 6); // mod +2 + metà livello (4)
+
+  // Chi non lancia incantesimi non riceve nulla.
+  assert.equal(incantesimiInizialiPerLivello('Guerriero', 10, '2024', { forza: 18 }), null);
+});
