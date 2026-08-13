@@ -753,7 +753,12 @@ function attaccoDaArma(arma, scheda) {
   else mod = forza;
   const comp = scheda.bonusCompetenza || 0;
   const danno = mod === 0 ? arma.danno : `${arma.danno}${mod > 0 ? '+' : ''}${mod}`;
-  return { nome: arma.nome, danno, tipoDanno: arma.tipo, note: arma.note, bonus: mod + comp };
+  // La maestria delle armi esiste solo nelle regole 2024: la aggiungiamo alle note.
+  const usa2024 = (scheda.versione || '2024') === '2024';
+  const note = usa2024 && arma.maestria
+    ? [arma.note, `Maestria: ${arma.maestria}`].filter(Boolean).join(' · ')
+    : arma.note;
+  return { nome: arma.nome, danno, tipoDanno: arma.tipo, note, bonus: mod + comp };
 }
 
 // Dotazione iniziale indicativa per classe (armi che diventano attacchi +
@@ -819,27 +824,43 @@ const ORO_INIZIALE = {
 
 /** Risorse di classe generate automaticamente da classe e livello (valori 5e
  *  indicativi). Restituisce voci { id, nome, attuali, max, reset }. */
-function risorseAutoClasse(classe, livello, caratteristiche) {
+function risorseAutoClasse(classe, livello, caratteristiche, versione = '2024') {
   const L = Math.max(1, Number(livello) || 1);
+  const v24 = String(versione) !== '2014';
   const modCar = (v) => Math.floor(((Number(v) || 10) - 10) / 2);
   const mk = (nome, max, reset) => ({ id: `auto-${nome.toLowerCase().replace(/\s+/g, '-')}`, nome, attuali: Math.max(0, max), max: Math.max(0, max), reset });
   switch (chiaveClasse(classe)) {
     case 'barbaro':
-      return [mk('Ira', L >= 17 ? 6 : L >= 12 ? 5 : L >= 6 ? 4 : L >= 3 ? 3 : 2, 'lungo')];
+      // Stessa progressione nelle due edizioni; nella 5.5 un uso torna anche
+      // con un riposo breve, nella 5.0 solo con quello lungo.
+      return [mk('Ira', L >= 17 ? 6 : L >= 12 ? 5 : L >= 6 ? 4 : L >= 3 ? 3 : 2, v24 ? 'breve' : 'lungo')];
     case 'bardo':
       return [mk('Ispirazione Bardica', Math.max(1, modCar(caratteristiche?.carisma)), L >= 5 ? 'breve' : 'lungo')];
     case 'monaco':
-      return L >= 2 ? [mk('Punti Focus', L, 'breve')] : [];
+      // 5.0: Punti Ki. 5.5: Punti Focus (stesso numero, nome diverso).
+      return L >= 2 ? [mk(v24 ? 'Punti Focus' : 'Punti Ki', L, 'breve')] : [];
     case 'stregone':
       return L >= 2 ? [mk('Punti Stregoneria', L, 'lungo')] : [];
     case 'guerriero':
-      return [mk('Recuperare Energie', L >= 10 ? 4 : L >= 4 ? 3 : 2, 'breve'), ...(L >= 2 ? [mk('Azione Impetuosa', L >= 17 ? 2 : 1, 'breve')] : [])];
+      // Recuperare Energie: 1 uso nella 5.0, 2/3/4 nella 5.5.
+      return [
+        mk('Recuperare Energie', v24 ? (L >= 10 ? 4 : L >= 4 ? 3 : 2) : 1, 'breve'),
+        ...(L >= 2 ? [mk('Azione Impetuosa', L >= 17 ? 2 : 1, 'breve')] : []),
+      ];
     case 'druido':
-      return L >= 2 ? [mk('Forma Selvatica', 2, 'breve')] : [];
+      // Forma Selvatica: 2 usi nella 5.0, 2/3/4 nella 5.5.
+      return L >= 2 ? [mk('Forma Selvatica', v24 ? (L >= 17 ? 4 : L >= 6 ? 3 : 2) : 2, 'breve')] : [];
     case 'chierico':
-      return L >= 2 ? [mk('Incanalare Divinità', L >= 6 ? 3 : 2, 'breve')] : [];
+      // Incanalare Divinità: 1/2/3 nella 5.0 (liv. 2/6/18), 2/3 nella 5.5.
+      return L >= 2
+        ? [mk('Incanalare Divinità', v24 ? (L >= 6 ? 3 : 2) : (L >= 18 ? 3 : L >= 6 ? 2 : 1), 'breve')]
+        : [];
     case 'paladino':
-      return [mk('Imposizione delle Mani', L * 5, 'lungo'), ...(L >= 3 ? [mk('Incanalare Divinità', L >= 11 ? 3 : 2, 'lungo')] : [])];
+      // Incanalare Divinità: 1 uso nella 5.0 (2 dal 18°), 2/3 nella 5.5.
+      return [
+        mk('Imposizione delle Mani', L * 5, 'lungo'),
+        ...(L >= 3 ? [mk('Incanalare Divinità', v24 ? (L >= 11 ? 3 : 2) : (L >= 18 ? 2 : 1), 'lungo')] : []),
+      ];
     default:
       return [];
   }
@@ -848,13 +869,14 @@ function risorseAutoClasse(classe, livello, caratteristiche) {
 // mostrate al passaggio del cursore sul nome, come per le altre sezioni.
 const SPIEG_RISORSE = {
   'Ispirazione Bardica': 'Azione bonus: doni a un alleato entro 18 m un dado Ispirazione (d6, poi d8/d10/d12 col livello) da sommare a un tiro per colpire, una prova o un TS. Usi pari al mod. Carisma; si recuperano con un riposo lungo (breve dal 5° livello).',
+  'Punti Ki': 'La riserva di Ki del Monaco nelle regole 5.0 (punti = livello). Li spendi per Raffica di Colpi (2 attacchi senz’armi bonus), Scatto Vertiginoso e Difesa Paziente. Si recuperano tutti con un riposo breve o lungo.',
   'Punti Focus': 'La riserva di Ki del Monaco (punti = livello). Li spendi per le tue tecniche: Raffica di Colpi (1 attacco bonus extra), Scatto Vertiginoso, Difesa Paziente. Si recuperano tutti con un riposo breve o lungo.',
   'Punti Stregoneria': 'La riserva di energia magica dello Stregone (punti = livello). Puoi convertirli in slot incantesimo (o viceversa) e alimentano la Metamagia. Si recuperano con un riposo lungo.',
   'Recuperare Energie': 'Azione bonus: recuperi 1d10 + il tuo livello da Guerriero in PF. Si ricarica con un riposo breve o lungo.',
   'Azione Impetuosa': 'Una volta per riposo (due volte dal 17° livello) compi un’azione aggiuntiva nel tuo turno, oltre a quella normale. Si ricarica con un riposo breve o lungo.',
-  'Forma Selvatica': 'Con un’azione ti trasformi in una bestia che conosci (entro i limiti di grado sfida e capacità). Usi limitati, recuperati con un riposo breve o lungo.',
+  'Forma Selvatica': 'Ti trasformi in una bestia che conosci, entro i limiti di grado sfida della tua edizione (azione nella 5.0, azione bonus nella 5.5). Usi limitati, recuperati con un riposo breve o lungo.',
   'Incanalare Divinità': 'Incanali il potere del tuo dominio (Chierico) o giuramento (Paladino) per un effetto speciale della sottoclasse. Usi limitati: si recuperano con un riposo breve (Chierico) o lungo (Paladino).',
-  'Imposizione delle Mani': 'Una riserva di potere curativo pari a 5 × il tuo livello da Paladino. Con un’azione distribuisci quei PF per curare (o spendi 5 punti per neutralizzare un veleno). Si ricarica con un riposo lungo.',
+  'Imposizione delle Mani': 'Una riserva di potere curativo pari a 5 × il tuo livello da Paladino: distribuisci quei PF toccando i feriti (azione nella 5.0, azione bonus nella 5.5) e puoi spendere 5 punti per il veleno. Si ricarica con un riposo lungo.',
 };
 
 /** Spiegazione di una risorsa di classe: prima la mappa dedicata, poi i privilegi. */
@@ -917,7 +939,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.84.0';
+const APP_VERSION = '2.86.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2209,7 +2231,7 @@ export default function App() {
       if (armi.length) s.attacchi = armi;
     }
     // risorse di classe automatiche (Ira, Punti Stregoneria, Ki, Ispirazione Bardica…)
-    s.risorse = risorseAutoClasse(classe, s.livello, s.caratteristiche);
+    s.risorse = risorseAutoClasse(classe, s.livello, s.caratteristiche, regoleVersione);
     // punti ferita: 1° livello = dado vita massimo + mod. Costituzione; ogni
     // livello successivo aggiunge la media del dado (arrotondata per eccesso) + mod.
     {
@@ -5743,7 +5765,7 @@ export default function App() {
                   + {t("res.aggiungi")}
                 </button>
                 {(() => {
-                  const auto = risorseAutoClasse(scheda.classe, scheda.livello, scheda.caratteristiche);
+                  const auto = risorseAutoClasse(scheda.classe, scheda.livello, scheda.caratteristiche, versione);
                   const esistenti = new Set((scheda.risorse || []).map((r) => (r.nome || '').toLowerCase()));
                   const mancanti = auto.filter((a) => !esistenti.has(a.nome.toLowerCase()));
                   if (mancanti.length === 0) return null;
