@@ -12,9 +12,13 @@ permissions:
   pages: write
   id-token: write
 
+# Un gruppo per ramo: i controlli di una PR non devono più annullare il deploy
+# di main (succedeva con il gruppo unico "pages", e la versione online restava
+# indietro). Sulle PR l'esecuzione vecchia si annulla, su main si mette in coda
+# così ogni merge arriva davvero online.
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   # Cancello di sicurezza: regole 5e + smoke test anti-crash.
