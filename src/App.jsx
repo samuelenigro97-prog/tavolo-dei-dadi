@@ -190,6 +190,39 @@ function riepilogoBonusCaratt(mappa) {
     .join(', ');
 }
 
+/** Livelli in cui la classe ottiene un Aumento dei Punteggi di Caratteristica. */
+function livelliASI(classe) {
+  const c = coloreClasse(classe);
+  return (c && ASI_LIV[c.match[0]]) || ASI_LIV._default;
+}
+
+/**
+ * Applica gli ASI maturati fino a un certo livello, come farebbe un giocatore
+ * che sale di livello uno alla volta: +2 alla caratteristica più utile alla
+ * classe, e se è già a 20 si passa alla successiva. Serve quando il PG viene
+ * creato direttamente a un livello alto (altrimenti resterebbe con i tiri
+ * grezzi anche al 7°, che a D&D non succede mai).
+ * Ritorna il numero di ASI applicati, così la creazione può dirlo all'utente.
+ */
+function applicaASIFinoA(caratteristiche, classe, livello) {
+  const quanti = livelliASI(classe).filter((l) => l <= Math.max(1, Number(livello) || 1)).length;
+  if (!quanti) return 0;
+  const prio = (coloreClasse(classe) && PRIORITA_CARATT[coloreClasse(classe).match[0]])
+    || ['forza', 'destrezza', 'costituzione', 'intelligenza', 'saggezza', 'carisma'];
+  for (let i = 0; i < quanti; i += 1) {
+    let punti = 2; // ogni ASI vale +2, spalmati se la caratteristica tocca il tetto di 20
+    for (const k of prio) {
+      if (punti <= 0) break;
+      const spazio = 20 - (caratteristiche[k] || 10);
+      if (spazio <= 0) continue;
+      const dai = Math.min(punti, spazio);
+      caratteristiche[k] = (caratteristiche[k] || 10) + dai;
+      punti -= dai;
+    }
+  }
+  return quanti;
+}
+
 // Tiri salvezza in cui ogni classe è competente (2 per classe).
 
 function tiriSalvezzaPerClasse(classe) {
@@ -841,6 +874,9 @@ function risorseAutoClasse(classe, livello, caratteristiche, versione = '2024') 
       return L >= 2 ? [mk(v24 ? 'Punti Focus' : 'Punti Ki', L, 'breve')] : [];
     case 'stregone':
       return L >= 2 ? [mk('Punti Stregoneria', L, 'lungo')] : [];
+    case 'mago':
+      // Recupero Arcano: un uso per riposo lungo, si spende durante un riposo breve.
+      return [mk('Recupero Arcano', 1, 'lungo')];
     case 'guerriero':
       // Recuperare Energie: 1 uso nella 5.0, 2/3/4 nella 5.5.
       return [
@@ -871,6 +907,7 @@ const SPIEG_RISORSE = {
   'Ispirazione Bardica': 'Azione bonus: doni a un alleato entro 18 m un dado Ispirazione (d6, poi d8/d10/d12 col livello) da sommare a un tiro per colpire, una prova o un TS. Usi pari al mod. Carisma; si recuperano con un riposo lungo (breve dal 5° livello).',
   'Punti Ki': 'La riserva di Ki del Monaco nelle regole 5.0 (punti = livello). Li spendi per Raffica di Colpi (2 attacchi senz’armi bonus), Scatto Vertiginoso e Difesa Paziente. Si recuperano tutti con un riposo breve o lungo.',
   'Punti Focus': 'La riserva di Ki del Monaco (punti = livello). Li spendi per le tue tecniche: Raffica di Colpi (1 attacco bonus extra), Scatto Vertiginoso, Difesa Paziente. Si recuperano tutti con un riposo breve o lungo.',
+  'Recupero Arcano': 'Una volta al giorno, durante un riposo breve, recuperi slot incantesimo spesi per un totale di livelli pari alla metà del tuo livello da Mago (arrotondata per eccesso): 4 livelli al 7°, 5 al 9°, e nessuno slot di 6° livello o superiore. Si ricarica con un riposo lungo.',
   'Punti Stregoneria': 'La riserva di energia magica dello Stregone (punti = livello). Puoi convertirli in slot incantesimo (o viceversa) e alimentano la Metamagia. Si recuperano con un riposo lungo.',
   'Recuperare Energie': 'Azione bonus: recuperi 1d10 + il tuo livello da Guerriero in PF. Si ricarica con un riposo breve o lungo.',
   'Azione Impetuosa': 'Una volta per riposo (due volte dal 17° livello) compi un’azione aggiuntiva nel tuo turno, oltre a quella normale. Si ricarica con un riposo breve o lungo.',
@@ -939,7 +976,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.86.0';
+const APP_VERSION = '2.87.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2203,6 +2240,9 @@ export default function App() {
         s.caratteristiche[k] = (s.caratteristiche[k] || 10) + v;
       }
     }
+    // Aumenti di caratteristica dei livelli già superati (4°, 8°, …): senza
+    // questi un PG creato al 7° livello resterebbe coi punteggi del 1°.
+    applicaASIFinoA(s.caratteristiche, classe, s.livello);
     // lingue iniziali (Comune + lingua a tema specie)
     s.lingue = lingueIniziali(specie);
     // bonus competenza coerente col livello (serve per gli attacchi iniziali)
@@ -4175,6 +4215,19 @@ export default function App() {
               }}>
                 {Array.from({ length: 20 }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{lingua === 'it' ? `Livello ${n}` : `Level ${n}`}</option>)}
               </select>
+              {/* Avviso sugli ASI dei livelli già superati: senza questa nota
+                  sembrerebbe che i punteggi tirati non vengano rispettati. */}
+              {(() => {
+                const asi = bozzaCrea.classe ? livelliASI(bozzaCrea.classe).filter((l) => l <= Number(bozzaCrea.livello || 1)) : [];
+                if (!asi.length) return null;
+                return (
+                  <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 10px', marginTop: -6, marginBottom: 12, fontSize: 11, lineHeight: 1.5, color: C.inkDim }}>
+                    💪 {lingua === 'it'
+                      ? `${asi.length} ${asi.length > 1 ? 'aumenti' : 'aumento'} di caratteristica dal livello${asi.length > 1 ? 'i' : ''} ${asi.join(', ')}: +2 alle caratteristiche più utili alla classe (max 20). Puoi ritoccarli a mano nella scheda.`
+                      : `${asi.length} ability score increase${asi.length > 1 ? 's' : ''} from level${asi.length > 1 ? 's' : ''} ${asi.join(', ')}: +2 to the scores that matter most for the class (max 20). You can adjust them by hand on the sheet.`}
+                  </div>
+                );
+              })()}
 
               {bozzaCrea.classe && Number(bozzaCrea.livello) >= livelloSceltaSottoclasse(bozzaCrea.classe, regoleVersione) && (
                 <>

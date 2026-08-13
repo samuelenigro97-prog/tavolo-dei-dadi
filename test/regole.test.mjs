@@ -260,3 +260,16 @@ test('bonus di caratteristica dalla razza (2014): ogni voce punta a una specie r
   assert.equal(BONUS_CARATT_SPECIE_2014['Nano delle Montagne'].forza, 2);
   assert.equal(Object.keys(BONUS_CARATT_SPECIE_2014.Umano).length, 6);
 });
+
+test('ASI: livelli corretti per classe e conteggio fino a un livello dato', async () => {
+  const { ASI_LIV } = await import('../src/data/dati5e.js');
+  const fino = (liv, tab) => (tab || ASI_LIV._default).filter((l) => l <= liv).length;
+  // Un Mago di 7° livello ha superato un solo ASI (il 4°): era il caso di Rowan.
+  assert.equal(fino(7), 1);
+  assert.equal(fino(3), 0);
+  assert.equal(fino(8), 2);
+  assert.equal(fino(20), 5);
+  // Guerriero e Ladro ne hanno di più.
+  assert.equal(fino(8, ASI_LIV.guerriero), 3); // 4, 6, 8
+  assert.equal(fino(10, ASI_LIV.ladro), 3); // 4, 8, 10
+});
