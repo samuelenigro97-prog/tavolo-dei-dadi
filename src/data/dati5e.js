@@ -429,12 +429,14 @@ export const PRIVILEGI_CLASSE_L1_2014 = {
 export const PRIVILEGI_CLASSE_LIV = {
   barbaro: {
     2: 'Attacco irruento\nPercezione del pericolo',
+    3: 'Conoscenza primordiale',
     5: 'Attacco extra\nMovimento veloce (+3 m)',
-    7: 'Istinto ferino\nIra instancabile',
-    9: 'Critico brutale (1 dado extra)',
+    7: 'Istinto ferino\nBalzo istintivo',
+    9: 'Colpo brutale',
     11: 'Ira implacabile',
+    13: 'Colpo brutale migliorato',
     15: 'Ira persistente',
-    17: 'Critico brutale (2 dadi extra)',
+    17: 'Colpo brutale migliorato (2 effetti, 2d10)',
     18: 'Forza indomabile',
     20: 'Campione primordiale (+4 FOR e COS, max 25)',
   },
