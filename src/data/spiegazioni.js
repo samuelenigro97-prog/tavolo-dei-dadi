@@ -76,6 +76,7 @@ const SPIEG_PRIVILEGI = {
   // Mago
   'Recupero arcano': 'Durante un riposo breve recuperi alcuni slot incantesimo spesi.',
   'Rituali · Studioso': 'Puoi lanciare come rituale e hai competenza extra in un campo del sapere.',
+  'Adepto dei rituali': "*Sai lanciare come rituale ogni incantesimo che hai nel libro (solo 5.5).*\n\nPuoi lanciare con il **tempo di rituale** (10 minuti in più, senza spendere lo slot) qualsiasi incantesimo scritto nel tuo libro degli incantesimi che abbia l'etichetta **Rituale**, anche se non l'hai preparato.",
   'Studioso': 'Hai competenza (o maestria) in un campo del sapere: Arcano, Storia, ecc.',
   'Memorizzare incantesimo': 'Durante un riposo breve puoi sostituire un incantesimo preparato.',
   'Padronanza degli incantesimi': 'Lanci a volontà un incantesimo di 1° e uno di 2° livello scelti.',

@@ -405,7 +405,7 @@ export const PRIVILEGI_CLASSE_L1 = {
   druido: 'Lancio di incantesimi (Saggezza)\nOrdine primordiale\nLinguaggio druidico',
   guerriero: 'Stile di combattimento\nRecuperare energie (azione bonus)\nMaestria nelle armi',
   ladro: 'Attacco furtivo (1d6)\nMaestria (doppia competenza in 2 abilità)\nGergo ladresco\nMaestria nelle armi',
-  mago: 'Lancio di incantesimi (Intelligenza)\nRecupero arcano\nRituali · Studioso',
+  mago: 'Lancio di incantesimi (Intelligenza)\nRecupero arcano\nAdepto dei rituali',
   monaco: 'Arti marziali\nDifesa senza armatura (CA = 10 + DES + SAG)',
   paladino: 'Imposizione delle mani (cura 5 × livello)\nLancio di incantesimi (Carisma)\nMaestria nelle armi',
   ranger: 'Lancio di incantesimi (Saggezza)\nNemico favorito\nEsploratore provetto\nMaestria nelle armi',

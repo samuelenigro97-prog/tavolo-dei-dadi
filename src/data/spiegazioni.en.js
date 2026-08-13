@@ -357,6 +357,7 @@ export const EN_PRIVILEGI_CLASSE = {
   'Percezione cieca': 'You sense hidden or invisible creatures nearby.',
   'Recupero arcano': 'During a short rest you regain some expended spell slots.',
   'Rituali · Studioso': 'You can cast rituals and have extra proficiency in a field of knowledge.',
+  'Adepto dei rituali': '*You can cast any ritual in your spellbook (2024 only).*\n\nYou can cast any spell with the **Ritual** tag from your spellbook as a Ritual (10 extra minutes, no spell slot), even if you have not prepared it.',
   'Studioso': 'You have proficiency (or expertise) in a field of knowledge: Arcana, History and so on.',
   'Memorizzare incantesimo': 'During a short rest you can swap out one prepared spell.',
   'Padronanza degli incantesimi': 'You cast one chosen 1st-level and one 2nd-level spell at will.',
