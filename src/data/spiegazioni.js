@@ -2,13 +2,21 @@
 const SPIEG_PRIVILEGI = {
   'Lancio di incantesimi': 'Puoi lanciare incantesimi della tua classe, usando la caratteristica da incantatore per CD e attacchi.',
   'Maestria nelle armi': 'Applichi una proprietà di maestria (es. Sanguinare, Spingere, Rallentare) alle armi in cui sei competente.',
-  'Stile di combattimento': 'Scegli uno stile (Duellare, Tiro, Difesa, ecc.) che ti dà un bonus permanente in combattimento.',
+  'Stile di combattimento': {
+    base: '*Ti specializzi in un modo di combattere.*',
+    '2014': 'Scegli uno **stile di combattimento** dalla lista della tua classe (Arciere, Difesa, Duellare, Combattere con due armi, Protezione, Combattere a due mani). Non puoi sceglierne due volte lo stesso.',
+    '2024': "Gli stili di combattimento sono diventati **talenti** di categoria *Stile di combattimento*: ne scegli uno (Arciere, Difesa, Duellare, Combattere con due armi, Interruzione Incantesimi, Protezione, Combattere a due mani, Lancio d'Arma) e, quando aumenti di livello, alcune classi ti permettono di sostituirlo.",
+  },
   'Attacco extra': "Quando compi l'azione di Attacco, puoi attaccare due volte invece di una.",
   'Due attacchi extra': "Con l'azione di Attacco compi tre attacchi in totale.",
   'Tre attacchi extra': "Con l'azione di Attacco compi quattro attacchi in totale.",
   'Difesa senza armatura': "Se non indossi armatura, la tua CA usa un modificatore di caratteristica al posto dell'armatura.",
   // Barbaro
-  'Ira': 'Azione bonus: +danni in mischia con la Forza (da +2 a +4 col livello), vantaggio alle prove/TS di Forza e resistenza a contundenti/perforanti/taglienti. Dura 1 min; usi limitati per riposo lungo.',
+  'Ira': {
+    base: "*Ti abbandoni alla furia: più danni, più resistenza, meno finezza.*\n\nCon un'**azione bonus** ottieni: **danni extra in mischia con la Forza** (da +2 a +4 secondo il livello), **vantaggio** a prove e TS di Forza e **resistenza** ai danni contundenti, perforanti e taglienti. Mentre sei in Ira non puoi lanciare né concentrarti su incantesimi.",
+    '2014': "- Dura **1 minuto**. Termina prima se resti **privo di sensi** oppure se chiudi il turno **senza aver attaccato una creatura ostile e senza aver subito danni** dal turno precedente; puoi anche interromperla con un'azione bonus.\n- Non funziona in **armatura pesante**.\n- Gli usi si recuperano solo con un **riposo lungo**.",
+    '2024': "- Dura **10 minuti**. Termina prima se resti **incapacitato**, se indossi un'**armatura pesante** o se chiudi il turno senza aver fatto almeno una di queste cose: un tiro per colpire contro un nemico, costringere un nemico a un tiro salvezza, oppure usare un'azione bonus per prolungarla.\n- Recuperi **un uso** con un **riposo breve** (uno solo per riposo) e **tutti** con un riposo lungo.",
+  },
   'Attacco irruento': 'Attacchi in mischia con vantaggio, ma fino al tuo prossimo turno i nemici hanno vantaggio contro di te.',
   'Percezione del pericolo': 'Vantaggio ai TS su Destrezza contro effetti che puoi vedere (trappole, incantesimi).',
   'Movimento veloce': 'La tua velocità aumenta di 3 metri quando non indossi armatura pesante.',
@@ -28,7 +36,11 @@ const SPIEG_PRIVILEGI = {
   'Forza indomabile': 'Se una prova di Forza dà meno del tuo punteggio di Forza, usi il punteggio.',
   'Campione primordiale': 'Forza e Costituzione aumentano fino a un massimo più alto: il culmine del barbaro.',
   // Bardo
-  'Ispirazione bardica': 'Come azione bonus dai a un alleato un dado da aggiungere a una prova, un attacco o un TS.',
+  'Ispirazione bardica': {
+    base: "*Una parola, una nota, e l'alleato dà il meglio di sé.*\n\nCon un'**azione bonus** dai a una creatura che ti vede o ti sente un **Dado di Ispirazione** (d6, che cresce con i livelli). Il numero di usi è pari al tuo modificatore di **Carisma** (minimo 1).",
+    '2014': "- Il bersaglio può aggiungere il dado a **una prova di caratteristica, un tiro per colpire o un tiro salvezza**, ma deve decidere **prima di sapere se ha successo**.\n- Il dado dura **10 minuti**, poi si perde.\n- Gli usi si recuperano con un **riposo lungo** (dal 5° livello anche con uno breve).",
+    '2024': "- Il bersaglio può aggiungere il dado a **una prova di caratteristica, un tiro per colpire o un tiro salvezza**, e può deciderlo **dopo aver visto il risultato del d20**, purché prima di conoscerne l'esito.\n- Il dado resta disponibile fino al **riposo lungo** successivo.\n- Gli usi si recuperano con un **riposo lungo** (dal 5° livello anche con uno breve).",
+  },
   'Factotum': 'Aggiungi metà del bonus di competenza alle prove in cui non sei competente.',
   'Canzone di riposo': 'Durante un riposo breve tu e gli alleati recuperate PF extra grazie alla tua musica.',
   'Competenza': 'Raddoppi il bonus di competenza in alcune abilità scelte (maestria).',
@@ -118,7 +130,11 @@ const SPIEG_PRIVILEGI = {
   'Padronanza degli incantesimi': 'Lanci a volontà un incantesimo di 1° e uno di 2° livello scelti.',
   'Incantesimi distintivi': 'Due incantesimi di 3° livello che lanci gratis una volta per riposo.',
   // Monaco
-  'Arti marziali': "Le armi da monaco usano Destrezza e infliggono danni crescenti; ottieni un colpo senz'armi bonus.",
+  'Arti marziali': {
+    base: "*Il tuo corpo è l'arma.*",
+    '2014': "- Mentre non indossi armature né usi scudi, con **colpi senzʼarmi e armi da monaco** puoi usare la **Destrezza** al posto della Forza per attacco e danni.\n- Il **dado delle arti marziali** parte da **1d4** (1d6 al 5°, 1d8 all'11°, 1d10 al 17°) e sostituisce i danni normali di quelle armi.\n- Quando attacchi con un colpo senzʼarmi o unʼarma da monaco, puoi effettuare un **colpo senzʼarmi come azione bonus**.",
+    '2024': "- Mentre non indossi armature né usi scudi, con **colpi senzʼarmi e armi da monaco** puoi usare la **Destrezza** al posto della Forza.\n- Il **dado delle arti marziali** parte da **1d6** (1d8 al 5°, 1d10 all'11°, 1d12 al 17°).\n- **Colpo Senzʼarmi Bonus**: quando compi l'azione di Attacco puoi fare un colpo senzʼarmi come azione bonus.\n- **Arma Prediletta**: puoi rendere un'arma semplice o marziale a una mano un'arma da monaco, se non ha la proprietà Pesante o Speciale.",
+  },
   'Concentrazione monastica': 'Hai punti Ki/Concentrazione per tecniche come Raffica di colpi, Scatto e Difesa.',
   'Ki': "*Incanali il ki in Punti Focus per alimentare le tue tecniche.*\n\n- Hai un numero di **Punti Focus** pari al tuo livello da monaco (dal 2° livello); li recuperi **tutti** con un riposo breve o lungo.\n- **Raffica di Colpi** (1 punto): come azione bonus fai 2 colpi senzʼarmi (3 dal 10° livello).\n- **Difesa Paziente** (1 punto): come azione bonus ottieni Disimpegno *e* Schivata.\n- **Scatto Vertiginoso** (1 punto): come azione bonus ottieni Scatto *e* Disimpegno, e il salto raddoppia per il turno.",
   'Movimento senza armatura': "*Ti muovi con la rapidità del vento finché resti leggero.*\n\n- Mentre non indossi armature né usi scudi, la tua velocità aumenta di **+3 m** (2° livello).\n- Il bonus sale: **+4,5 m** (6°), **+6 m** (10°), **+7,5 m** (14°), **+9 m** (18°).\n- Dal 9° livello puoi muoverti su **superfici verticali e sui liquidi** durante il tuo movimento, senza cadere.",
@@ -147,7 +163,11 @@ const SPIEG_PRIVILEGI = {
   'Sé perfetto': 'Il culmine del monaco: recuperi Ki e potenzi corpo e mente.',
   'Corpo e mente': 'Il culmine del monaco: Destrezza e Saggezza aumentano notevolmente.',
   // Paladino
-  'Imposizione delle mani': 'Riserva di cura pari a 5 × il tuo livello da paladino, da distribuire toccando i feriti (5 punti curano anche un veleno o una malattia). Si ricarica col riposo lungo.',
+  'Imposizione delle mani': {
+    base: '*Le tue mani sanano.*\n\nHai una riserva di cura pari a **5 × il tuo livello da paladino**, che si ricarica con un **riposo lungo**. Toccando una creatura ne spendi quanti punti vuoi per ridarle altrettanti punti ferita.',
+    '2014': "- La cura richiede unʼ**azione**.\n- Puoi spendere **5 punti** per curare una **malattia** oppure neutralizzare un **veleno** (una malattia o un veleno per ogni 5 punti spesi).\n- Non funziona su non morti e costrutti.",
+    '2024': "- La cura richiede unʼ**azione bonus**.\n- Puoi anche spendere **5 punti** per rimuovere la condizione **Avvelenato**, oppure spenderne 0 e usare l'azione bonus solo per quello.\n- Non funziona su non morti e costrutti.",
+  },
   'Colpo divino': 'Quando colpisci in mischia, spendi uno slot incantesimo per +2d8 danni radiosi (+1d8 per livello di slot oltre il 1°; +1d8 contro non morti/immondi).',
   'Punizione divina': 'Quando colpisci in mischia, spendi uno slot incantesimo per +2d8 danni radiosi (+1d8 per livello di slot oltre il 1°; +1d8 contro non morti/immondi).',
   'Punizione divina migliorata': 'Tutti i tuoi attacchi in mischia infliggono danni radiosi extra.',
