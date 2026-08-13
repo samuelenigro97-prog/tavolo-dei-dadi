@@ -2,7 +2,8 @@
 import { CLASSI, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER,
   TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014,
   PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV,
-  PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, PESI_OGGETTI, PESO_ARMATURA_TIPO } from '../data/dati5e.js';
+  PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, PESI_OGGETTI, PESO_ARMATURA_TIPO,
+  INCANTESIMI_CLASSE, CARATT_INCANTATORE } from '../data/dati5e.js';
 import { modificatore } from './dadi.js';
 import { spiegaIncantesimo } from '../data/spiegazioni.js';
 import { datiIncantesimo } from '../data/incantesimi.js';
@@ -159,4 +160,60 @@ export function pesoArmatura(armatura) {
   if (!p) p = PESO_ARMATURA_TIPO[armatura.tipo] || 0;
   if (armatura.scudo) p += PESI_OGGETTI['Scudo'];
   return p;
+}
+
+/**
+ * Trucchetti e incantesimi iniziali per un incantatore creato a livello alto.
+ * Senza questi un Mago di 12° nascerebbe con gli slot pieni e la lista vuota.
+ * Gli incantesimi vengono distribuiti sui livelli seguendo il numero di slot
+ * disponibili, così la lista somiglia a quella di un personaggio davvero
+ * giocato: tanti di basso livello, pochi di quelli alti.
+ */
+export function incantesimiInizialiPerLivello(classe, livello, versione, caratteristiche) {
+  const chiave = chiaveClasse(classe);
+  const liste = INCANTESIMI_CLASSE[chiave];
+  if (!liste) return null;
+  const finta = { classe, livello, incantatore: { caratteristica: CARATT_INCANTATORE[chiave] || '' }, caratteristiche };
+  const nTruc = trucchettiMax(classe, livello) || 0;
+  const nInc = incantesimiMaxAuto(finta, versione) || 0;
+  const voce = (nome, liv, i) => ({
+    id: `auto-inc-${liv}-${i}`,
+    ...(dettagliIncantesimo(nome) || {}),
+    livello: liv,
+    nome,
+    preparato: true,
+  });
+
+  const trucchetti = (liste[0] || []).slice(0, nTruc).map((n, i) => voce(n, 0, i));
+
+  // Livello massimo di incantesimo lanciabile, entro i dati disponibili.
+  const slot = slotDaClasseLivello(classe, livello) || {};
+  let maxLiv = 0;
+  for (const k of Object.keys(slot)) {
+    if ((slot[k]?.totale || 0) > 0 && liste[k]) maxLiv = Math.max(maxLiv, Number(k));
+  }
+  const incantesimi = [];
+  if (maxLiv > 0 && nInc > 0) {
+    const presi = {};
+    // Prima passata: al massimo tanti incantesimi quanti sono gli slot di quel
+    // livello. È la proporzione che rende la lista credibile, invece che tutta
+    // di 1° livello. Seconda passata (senza quel tetto): completa la quota se
+    // gli incantesimi di livello alto in archivio non bastano.
+    for (const conTetto of [true, false]) {
+      let aggiunto = true;
+      while (incantesimi.length < nInc && aggiunto) {
+        aggiunto = false;
+        for (let liv = 1; liv <= maxLiv && incantesimi.length < nInc; liv += 1) {
+          const lista = liste[liv] || [];
+          const quanti = presi[liv] || 0;
+          if (quanti >= lista.length) continue;
+          if (conTetto && quanti >= (slot[liv]?.totale || 0)) continue;
+          incantesimi.push(voce(lista[quanti], liv, quanti));
+          presi[liv] = quanti + 1;
+          aggiunto = true;
+        }
+      }
+    }
+  }
+  return { trucchetti, incantesimi };
 }
