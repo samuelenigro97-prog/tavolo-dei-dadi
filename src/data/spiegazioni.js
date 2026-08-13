@@ -52,6 +52,7 @@ const SPIEG_PRIVILEGI = {
   // Guerriero
   'Recuperare energie': 'Come azione bonus recuperi alcuni PF, una volta per riposo.',
   'Azione impetuosa': 'Compi unʼazione aggiuntiva nel tuo turno, una volta per riposo.',
+  'Spostamento tattico': "*Ti riposizioni mentre riprendi fiato (solo 5.5).*\n\nOgni volta che attivi **Recuperare Energie** con un'azione bonus, puoi muoverti fino a **metà della tua velocità** senza provocare attacchi di opportunità.",
   'Mente tattica': 'Puoi spendere Recuperare Energie per migliorare una prova fallita.',
   'Indomito': 'Puoi ritirare un tiro salvezza fallito, una volta per riposo lungo.',
   'Maestro tattico': 'Usando la Maestria nelle armi ottieni opzioni tattiche extra.',

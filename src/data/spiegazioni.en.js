@@ -335,6 +335,7 @@ export const EN_PRIVILEGI_CLASSE = {
   'Arcidruido': 'You use Wild Shape almost without limit, plus other supreme benefits.',
   'Recuperare energie': 'As a bonus action you regain some HP, once per rest.',
   'Azione impetuosa': 'You take one additional action on your turn, once per rest.',
+  'Spostamento tattico': '*You reposition while catching your breath (2024 only).*\n\nWhenever you activate **Second Wind** with a Bonus Action, you can move up to **half your Speed** without provoking Opportunity Attacks.',
   'Mente tattica': 'You can spend Second Wind to improve a failed check.',
   'Indomito': 'You can reroll a failed saving throw, once per long rest.',
   'Maestro tattico': 'Using Weapon Mastery gives you extra tactical options.',

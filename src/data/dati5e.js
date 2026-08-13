@@ -467,7 +467,7 @@ export const PRIVILEGI_CLASSE_LIV = {
   },
   guerriero: {
     2: 'Azione impetuosa\nMente tattica',
-    5: 'Attacco extra',
+    5: 'Attacco extra\nSpostamento tattico',
     9: 'Indomito\nMaestro tattico',
     11: 'Due attacchi extra (3 attacchi totali)',
     13: 'Indomito (2 usi)\nAttacchi studiati',
