@@ -69,6 +69,8 @@ const SPIEG_PRIVILEGI = {
   'Mente sfuggente': "Ottieni la competenza nei tiri salvezza su Saggezza (nelle regole 2024, anche su Carisma).",
   'Inafferrabile': "Nessun tiro per colpire ha vantaggio contro di te, a meno che tu non sia incapacitato.",
   'Colpo di fortuna': "Una volta per riposo breve o lungo: puoi trasformare un attacco mancato in un colpo a segno, oppure trattare come 20 il d20 di una prova di caratteristica fallita.",
+  'Mira stabile': "*Prendi la mira restando fermo.*\n\nCome azione bonus ottieni **vantaggio** al prossimo tiro per colpire del turno. Puoi usarla solo se non ti sei mosso in questo turno e, dopo averla usata, la tua velocità diventa 0 fino alla fine del turno.",
+  'Colpi insidiosi': "*Al 14° livello il Colpo Scaltro ottiene opzioni più dure (solo 5.5).*\n\nSpendendo dadi di Attacco Furtivo aggiungi: **Stordire** (2d6 – TS su Costituzione o il bersaglio è **stordito** fino alla fine del tuo turno successivo), **Mettere KO** (6d6 – TS su Costituzione o resta **privo di sensi** per 1 minuto, o finché non subisce danni) e **Offuscare** (3d6 – TS su Destrezza o resta **accecato** fino alla fine del suo turno successivo).",
   'Competenze aggiuntive': "Ottieni competenza in ulteriori abilità o strumenti a tua scelta, ampliando il tuo repertorio di specialista.",
   'Percezione cieca': "Se sei in grado di sentire, sei consapevole della posizione di qualunque creatura nascosta o invisibile entro 3 metri da te.",
   // Mago
@@ -872,8 +874,8 @@ export function spiegaIncantesimo(nome) {
   const searchName = n.toLowerCase();
   const clean = searchName.replace(/\s*\(.*$/, '').trim();
   
-  if (SPIEG_INCANTESIMI_LC[searchName]) return _en(EN_INCANTESIMI_LC, searchName) || SPIEG_INCANTESIMI_LC[searchName];
-  if (SPIEG_INCANTESIMI_LC[clean]) return _en(EN_INCANTESIMI_LC, clean) || SPIEG_INCANTESIMI_LC[clean];
+  if (SPIEG_INCANTESIMI_LC[searchName]) return _ed(_en(EN_INCANTESIMI_LC, searchName) || SPIEG_INCANTESIMI_LC[searchName]);
+  if (SPIEG_INCANTESIMI_LC[clean]) return _ed(_en(EN_INCANTESIMI_LC, clean) || SPIEG_INCANTESIMI_LC[clean]);
 
   // Cerca in INCANTESIMI_DB come fallback
   const dbKey = Object.keys(INCANTESIMI_DB).find(k => k.toLowerCase() === searchName) ||
@@ -1057,6 +1059,6 @@ const SPIEG_METAMAGIA_LC = _lcMap(SPIEG_METAMAGIA);
 export function spiegaMetamagia(nome) {
   const n = String(nome || '').trim().toLowerCase();
   const base = n.replace(/\s*\(.*$/, '').trim();
-  return _en(EN_METAMAGIA_LC, n) || _en(EN_METAMAGIA_LC, base)
-    || SPIEG_METAMAGIA_LC[n] || SPIEG_METAMAGIA_LC[base] || null;
+  return _ed(_en(EN_METAMAGIA_LC, n) || _en(EN_METAMAGIA_LC, base)
+    || SPIEG_METAMAGIA_LC[n] || SPIEG_METAMAGIA_LC[base] || null);
 }
