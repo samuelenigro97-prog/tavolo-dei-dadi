@@ -2,13 +2,21 @@
 const SPIEG_PRIVILEGI = {
   'Lancio di incantesimi': 'Puoi lanciare incantesimi della tua classe, usando la caratteristica da incantatore per CD e attacchi.',
   'Maestria nelle armi': 'Applichi una proprietà di maestria (es. Sanguinare, Spingere, Rallentare) alle armi in cui sei competente.',
-  'Stile di combattimento': 'Scegli uno stile (Duellare, Tiro, Difesa, ecc.) che ti dà un bonus permanente in combattimento.',
+  'Stile di combattimento': {
+    base: '*Ti specializzi in un modo di combattere.*',
+    '2014': 'Scegli uno **stile di combattimento** dalla lista della tua classe (Arciere, Difesa, Duellare, Combattere con due armi, Protezione, Combattere a due mani). Non puoi sceglierne due volte lo stesso.',
+    '2024': "Gli stili di combattimento sono diventati **talenti** di categoria *Stile di combattimento*: ne scegli uno (Arciere, Difesa, Duellare, Combattere con due armi, Interruzione Incantesimi, Protezione, Combattere a due mani, Lancio d'Arma) e, quando aumenti di livello, alcune classi ti permettono di sostituirlo.",
+  },
   'Attacco extra': "Quando compi l'azione di Attacco, puoi attaccare due volte invece di una.",
   'Due attacchi extra': "Con l'azione di Attacco compi tre attacchi in totale.",
   'Tre attacchi extra': "Con l'azione di Attacco compi quattro attacchi in totale.",
   'Difesa senza armatura': "Se non indossi armatura, la tua CA usa un modificatore di caratteristica al posto dell'armatura.",
   // Barbaro
-  'Ira': 'Azione bonus: +danni in mischia con la Forza (da +2 a +4 col livello), vantaggio alle prove/TS di Forza e resistenza a contundenti/perforanti/taglienti. Dura 1 min; usi limitati per riposo lungo.',
+  'Ira': {
+    base: "*Ti abbandoni alla furia: più danni, più resistenza, meno finezza.*\n\nCon un'**azione bonus** ottieni: **danni extra in mischia con la Forza** (da +2 a +4 secondo il livello), **vantaggio** a prove e TS di Forza e **resistenza** ai danni contundenti, perforanti e taglienti. Mentre sei in Ira non puoi lanciare né concentrarti su incantesimi.",
+    '2014': "- Dura **1 minuto**. Termina prima se resti **privo di sensi** oppure se chiudi il turno **senza aver attaccato una creatura ostile e senza aver subito danni** dal turno precedente; puoi anche interromperla con un'azione bonus.\n- Non funziona in **armatura pesante**.\n- Gli usi si recuperano solo con un **riposo lungo**.",
+    '2024': "- Dura **10 minuti**. Termina prima se resti **incapacitato**, se indossi un'**armatura pesante** o se chiudi il turno senza aver fatto almeno una di queste cose: un tiro per colpire contro un nemico, costringere un nemico a un tiro salvezza, oppure usare un'azione bonus per prolungarla.\n- Recuperi **un uso** con un **riposo breve** (uno solo per riposo) e **tutti** con un riposo lungo.",
+  },
   'Attacco irruento': 'Attacchi in mischia con vantaggio, ma fino al tuo prossimo turno i nemici hanno vantaggio contro di te.',
   'Percezione del pericolo': 'Vantaggio ai TS su Destrezza contro effetti che puoi vedere (trappole, incantesimi).',
   'Movimento veloce': 'La tua velocità aumenta di 3 metri quando non indossi armatura pesante.',
@@ -20,17 +28,37 @@ const SPIEG_PRIVILEGI = {
   'Colpo brutale': "*Rinunci alla precisione per un colpo devastante (solo 5.5; sostituisce il Critico Brutale).*\n\nSe usi **Attacco Irruento**, puoi rinunciare al vantaggio su un tiro per colpire del turno: se colpisci infliggi **1d10 danni extra** e scegli un effetto — **Colpo Poderoso** (spingi il bersaglio di 4,5 m e puoi seguirlo per metà velocità) oppure **Colpo Azzoppante** (la sua velocità cala di 4,5 m fino all'inizio del tuo turno successivo).",
   'Colpo brutale migliorato': "*Il Colpo Brutale si fa più crudele (solo 5.5).*\n\n- Al **13° livello** aggiungi due effetti: **Colpo Stordente** (svantaggio al prossimo TS del bersaglio) e **Colpo Frantumante** (il prossimo attacco contro di lui ha +1d10 danni).\n- Al **17° livello** i danni extra salgono a **2d10** e puoi applicare **due effetti diversi** con lo stesso Colpo Brutale.",
   'Ira implacabile': "Se scenderesti a 0 PF durante l'Ira, con un TS su Costituzione (CD 10, +5 a ogni uso) resti a 1 PF.",
-  'Ira persistente': "La tua Ira non termina anticipatamente per mancanza di attacchi o perché sei incapacitato.",
+  'Ira persistente': {
+    base: '*La tua furia non si spegne più tanto facilmente.*',
+    '2014': "La tua **Ira** non termina anticipatamente: continua per tutta la durata finché non cadi **privo di sensi** o non sei tu a interromperla.",
+    '2024': "- Quando tiri l'**iniziativa**, puoi recuperare **tutti gli usi di Ira** spesi; devi poi completare un riposo lungo prima di rifarlo.\n- La tua **Ira dura 10 minuti** senza che tu debba attaccare o subire danni per mantenerla: termina prima solo se resti **incapacitato**, se indossi **armatura pesante** o se decidi tu di farla finire.",
+  },
   'Forza indomabile': 'Se una prova di Forza dà meno del tuo punteggio di Forza, usi il punteggio.',
   'Campione primordiale': 'Forza e Costituzione aumentano fino a un massimo più alto: il culmine del barbaro.',
   // Bardo
-  'Ispirazione bardica': 'Come azione bonus dai a un alleato un dado da aggiungere a una prova, un attacco o un TS.',
+  'Ispirazione bardica': {
+    base: "*Una parola, una nota, e l'alleato dà il meglio di sé.*\n\nCon un'**azione bonus** dai a una creatura che ti vede o ti sente un **Dado di Ispirazione** (d6, che cresce con i livelli). Il numero di usi è pari al tuo modificatore di **Carisma** (minimo 1).",
+    '2014': "- Il bersaglio può aggiungere il dado a **una prova di caratteristica, un tiro per colpire o un tiro salvezza**, ma deve decidere **prima di sapere se ha successo**.\n- Il dado dura **10 minuti**, poi si perde.\n- Gli usi si recuperano con un **riposo lungo** (dal 5° livello anche con uno breve).",
+    '2024': "- Il bersaglio può aggiungere il dado a **una prova di caratteristica, un tiro per colpire o un tiro salvezza**, e può deciderlo **dopo aver visto il risultato del d20**, purché prima di conoscerne l'esito.\n- Il dado resta disponibile fino al **riposo lungo** successivo.\n- Gli usi si recuperano con un **riposo lungo** (dal 5° livello anche con uno breve).",
+  },
   'Factotum': 'Aggiungi metà del bonus di competenza alle prove in cui non sei competente.',
   'Canzone di riposo': 'Durante un riposo breve tu e gli alleati recuperate PF extra grazie alla tua musica.',
   'Competenza': 'Raddoppi il bonus di competenza in alcune abilità scelte (maestria).',
-  "Fonte d'ispirazione": 'Recuperi gli usi di Ispirazione bardica dopo un riposo breve, non solo lungo.',
-  'Segreti magici': 'Impari incantesimi da qualsiasi lista di classe.',
-  'Ispirazione superiore': "All'inizio del combattimento recuperi usi di Ispirazione bardica se ne hai pochi.",
+  "Fonte d'ispirazione": {
+    base: "*L'ispirazione torna in fretta.*",
+    '2014': 'Recuperi **tutti gli usi di Ispirazione bardica** alla fine di un **riposo breve**, oltre che di un riposo lungo.',
+    '2024': "- Recuperi tutti gli usi di **Ispirazione bardica** alla fine di un **riposo breve** o lungo.\n- Inoltre, se non ti resta alcun uso, puoi spendere uno **slot incantesimo** (nessuna azione richiesta) per recuperarne uno.",
+  },
+  'Segreti magici': {
+    base: '*Attingi alla magia di tutte le tradizioni.*',
+    '2014': 'Ai livelli **10°, 14° e 18°** scegli **due incantesimi** da **qualsiasi lista di classe** (di un livello che puoi già lanciare, oppure trucchetti). Contano come incantesimi da bardo e **si aggiungono** al numero di incantesimi che conosci.',
+    '2024': "Dal **10° livello**, quando prepari i tuoi incantesimi da bardo puoi sceglierli anche dalle liste di **chierico, druido e mago**: per te contano come incantesimi da bardo e usano il **Carisma**. Non ottieni incantesimi in più, ma una scelta molto più ampia.",
+  },
+  'Ispirazione superiore': {
+    base: "*Il palcoscenico ti ricarica appena inizia lo scontro.*",
+    '2014': "Al **20° livello**, quando tiri l'iniziativa e **non ti resta alcun uso** di Ispirazione bardica, ne **recuperi uno**.",
+    '2024': "Dal **18° livello**, quando tiri l'iniziativa **recuperi usi di Ispirazione bardica finché non ne hai due** (se ne hai già due o più, non cambia nulla).",
+  },
   'Parole di creazione': 'Padroneggi due potenti incantesimi finali del bardo.',
   'Controincantesimo': 'Con la musica disturbi incantesimi che affascinano o spaventano.',
   // Chierico
@@ -39,20 +67,35 @@ const SPIEG_PRIVILEGI = {
   'Distruggere non morti': 'Quando Scacci i non morti, quelli di grado basso vengono distrutti subito.',
   'Colpo benedetto': 'Aggiungi danni radiosi ai tuoi attacchi o potenzi i trucchetti.',
   'Colpo benedetto migliorato': 'La versione potenziata di Colpo benedetto, con più danni.',
-  'Intervento divino': 'Preghi la tua divinità perché intervenga direttamente in tuo aiuto.',
+  'Intervento divino': {
+    base: '*Chiedi alla tua divinità di intervenire di persona.*',
+    '2014': "Con un'azione descrivi l'aiuto che ti serve e tiri **d100**: se il risultato è **pari o inferiore al tuo livello da chierico**, la divinità interviene (di norma con l'effetto di un incantesimo da chierico adatto). Se riesce non puoi riprovare per **7 giorni**, altrimenti puoi ritentare dopo un riposo lungo. Al **20° livello** riesce **automaticamente**, senza tirare.",
+    '2024': "Con un'**azione magica** lanci un qualsiasi incantesimo della lista del chierico di **livello 5 o inferiore**, senza spendere slot e senza componenti materiali. Puoi usarlo **una volta per riposo lungo**.",
+  },
+  'Intervento divino migliorato': "*Il favore divino non conosce quasi limiti (solo 5.5).*\n\nAl **20° livello**, quando usi **Intervento Divino** puoi scegliere l'incantesimo **Desiderio**. Se lo fai, non puoi più usare Intervento Divino finché non completi **2d4 riposi lunghi**.",
   'Dominio divino': 'La tua sottoclasse: il dominio della divinità, con incantesimi e poteri.',
   // Druido
   'Ordine primordiale': "Scegli un'inclinazione (Mago o Guardiano) che dà un beneficio.",
   'Linguaggio druidico': 'Conosci il linguaggio segreto dei druidi.',
   'Druidico': 'Conosci il linguaggio segreto dei druidi.',
-  'Forma selvatica': 'Ti trasformi in una bestia, assumendone le statistiche di combattimento.',
+  'Forma selvatica': {
+    base: '*Assumi le sembianze di una bestia.*',
+    '2014': "- Con un'**azione** ti trasformi in una bestia che hai già visto, **2 volte per riposo** (breve o lungo).\n- La forma dura **ore pari a metà del tuo livello da druido** (arrotondato per difetto); puoi tornare normale con un'azione bonus.\n- Grado di sfida massimo: **1/4** al 2° livello (senza velocità di nuoto o volo), **1/2** al 4° (senza volo), **1** all'8°.\n- Assumi **le statistiche della bestia, punti ferita compresi**: quando i PF della forma arrivano a 0 torni normale e i danni in eccesso passano ai tuoi PF.\n- Mantieni personalità, Intelligenza, Saggezza e Carisma, e usi le competenze migliori fra le tue e quelle della bestia.\n- **Non puoi lanciare incantesimi** né parlare finché non ottieni i privilegi successivi.",
+    '2024': "- Con un'**azione bonus** assumi la forma di una bestia che conosci. Hai **2 usi** (**3** dal 6° livello, **4** dal 17°): ne recuperi uno con un riposo breve e tutti con un riposo lungo.\n- La forma dura **ore pari a metà del tuo livello da druido**; torni normale con un'azione bonus o quando i punti ferita temporanei finiscono.\n- Ottieni **punti ferita temporanei pari al tuo livello da druido**: **conservi i tuoi punti ferita**, il tuo tipo di creatura e i tuoi privilegi di classe.\n- Prendi taglia, velocità e caratteristiche fisiche (**Forza, Destrezza, Costituzione**) della bestia; mantieni **Intelligenza, Saggezza e Carisma** e le competenze migliori.\n- Grado di sfida massimo: **1/4** al 2° livello (senza velocità di volo), **1/2** al 4°, **1** all'8°.\n- Puoi **continuare a parlare**; puoi lanciare i tuoi incantesimi in questa forma solo dal 18° livello (Incantesimi Bestiali).",
+  },
   'Forma selvatica migliorata': 'Puoi assumere forme di bestie più potenti (grado di sfida più alto).',
   'Compagno selvatico': 'Evochi uno spirito bestiale che ti assiste (come Trova Famiglio).',
-  'Furia elementale': 'I tuoi trucchetti o la forma selvatica infliggono danni elementali extra.',
+  'Rinascita selvatica': "*Trasformi la magia in forma bestiale e viceversa (solo 5.5).*\n\n- Una volta per turno, se hai **esaurito gli usi di Forma Selvatica**, puoi spendere uno **slot incantesimo** (nessuna azione richiesta) per recuperarne uno.\n- Puoi anche fare il contrario: spendi un uso di **Forma Selvatica** per ottenere uno **slot di 1° livello**, ma devi completare un **riposo lungo** prima di rifarlo.",
+  'Furia elementale': "*Scegli come si scatena la tua magia primordiale (solo 5.5).*\n\nAl 7° livello scegli una delle due opzioni:\n- **Incantesimi Potenti**: aggiungi il modificatore di **Saggezza** ai danni dei tuoi trucchetti da druido.\n- **Colpo Primordiale**: una volta per turno, quando colpisci con un trucchetto d'attacco o con un attacco in **Forma Selvatica**, infliggi **1d8 danni** extra da freddo, fuoco, fulmine o tuono.",
+  'Furia elementale migliorata': "*L'opzione scelta al 7° livello cresce con te (solo 5.5).*\n\n- Se hai scelto **Incantesimi Potenti**, la gittata dei tuoi trucchetti da druido aumenta di **90 m** (se ne hanno già almeno 3 m).\n- Se hai scelto **Colpo Primordiale**, i danni extra salgono a **2d8**.",
   'Incantesimi nella forma selvatica': 'Puoi lanciare incantesimi anche in forma selvatica.',
   'Incantesimi bestiali': 'Puoi lanciare incantesimi mentre sei in Forma Selvatica.',
   'Corpo senza tempo': "*Il ki sostiene il tuo corpo contro il tempo.*\n\n- Non subisci gli **svantaggi dell'età** e non puoi essere invecchiato magicamente.\n- Non hai più bisogno di cibo né acqua.",
-  'Arcidruido': 'Usi la Forma Selvatica quasi senza limiti e altri benefici supremi.',
+  'Arcidruido': {
+    base: '*Sei tuttʼuno con la natura.*',
+    '2014': "- Puoi usare la **Forma Selvatica un numero illimitato di volte**.\n- Puoi ignorare le componenti **verbali e somatiche** dei tuoi incantesimi da druido, e anche le componenti materiali prive di costo e non consumate dallʼincantesimo.",
+    '2024': "- Quando tiri l'**iniziativa** e non ti resta alcun uso di **Forma Selvatica**, ne recuperi uno.\n- Puoi usare **Rinascita Selvatica** per convertire usi di Forma Selvatica in slot incantesimo **senza il limite di una volta per riposo lungo**.\n- **Smetti di invecchiare** e non puoi essere invecchiato per via magica.",
+  },
   // Guerriero
   'Recuperare energie': 'Come azione bonus recuperi alcuni PF, una volta per riposo.',
   'Azione impetuosa': 'Compi unʼazione aggiuntiva nel tuo turno, una volta per riposo.',
@@ -87,7 +130,11 @@ const SPIEG_PRIVILEGI = {
   'Padronanza degli incantesimi': 'Lanci a volontà un incantesimo di 1° e uno di 2° livello scelti.',
   'Incantesimi distintivi': 'Due incantesimi di 3° livello che lanci gratis una volta per riposo.',
   // Monaco
-  'Arti marziali': "Le armi da monaco usano Destrezza e infliggono danni crescenti; ottieni un colpo senz'armi bonus.",
+  'Arti marziali': {
+    base: "*Il tuo corpo è l'arma.*",
+    '2014': "- Mentre non indossi armature né usi scudi, con **colpi senzʼarmi e armi da monaco** puoi usare la **Destrezza** al posto della Forza per attacco e danni.\n- Il **dado delle arti marziali** parte da **1d4** (1d6 al 5°, 1d8 all'11°, 1d10 al 17°) e sostituisce i danni normali di quelle armi.\n- Quando attacchi con un colpo senzʼarmi o unʼarma da monaco, puoi effettuare un **colpo senzʼarmi come azione bonus**.",
+    '2024': "- Mentre non indossi armature né usi scudi, con **colpi senzʼarmi e armi da monaco** puoi usare la **Destrezza** al posto della Forza.\n- Il **dado delle arti marziali** parte da **1d6** (1d8 al 5°, 1d10 all'11°, 1d12 al 17°).\n- **Colpo Senzʼarmi Bonus**: quando compi l'azione di Attacco puoi fare un colpo senzʼarmi come azione bonus.\n- **Arma Prediletta**: puoi rendere un'arma semplice o marziale a una mano un'arma da monaco, se non ha la proprietà Pesante o Speciale.",
+  },
   'Concentrazione monastica': 'Hai punti Ki/Concentrazione per tecniche come Raffica di colpi, Scatto e Difesa.',
   'Ki': "*Incanali il ki in Punti Focus per alimentare le tue tecniche.*\n\n- Hai un numero di **Punti Focus** pari al tuo livello da monaco (dal 2° livello); li recuperi **tutti** con un riposo breve o lungo.\n- **Raffica di Colpi** (1 punto): come azione bonus fai 2 colpi senzʼarmi (3 dal 10° livello).\n- **Difesa Paziente** (1 punto): come azione bonus ottieni Disimpegno *e* Schivata.\n- **Scatto Vertiginoso** (1 punto): come azione bonus ottieni Scatto *e* Disimpegno, e il salto raddoppia per il turno.",
   'Movimento senza armatura': "*Ti muovi con la rapidità del vento finché resti leggero.*\n\n- Mentre non indossi armature né usi scudi, la tua velocità aumenta di **+3 m** (2° livello).\n- Il bonus sale: **+4,5 m** (6°), **+6 m** (10°), **+7,5 m** (14°), **+9 m** (18°).\n- Dal 9° livello puoi muoverti su **superfici verticali e sui liquidi** durante il tuo movimento, senza cadere.",
@@ -95,7 +142,11 @@ const SPIEG_PRIVILEGI = {
   'Deviare attacchi': "*Respingi i colpi con mani e ki.*\n\n- Come **reazione**, quando subisci danni contundenti, perforanti o taglienti da un attacco, riduci quel danno di **1d10 + modificatore di Destrezza + livello da monaco**.\n- Se così **azzeri** il danno e hai almeno 1 Punto Focus, puoi spenderne 1 per rimandare l'energia: un bersaglio entro 1,5 m subisce un tuo colpo senzʼarmi oppure lʼattacco a distanza viene rilanciato contro un nemico entro 18 m.",
   'Deviare i proiettili': 'Come reazione riduci i danni di un attacco a distanza di 1d10 + Destrezza + livello da monaco; se li annulli puoi rilanciare il proiettile.',
   'Caduta lenta': 'Come reazione riduci i danni da caduta di 5 × il tuo livello da monaco.',
-  'Colpo stordente': "*Un colpo mirato che paralizza il nemico.*\n\n- Una volta per turno, quando colpisci una creatura con un **attacco senzʼarmi**, puoi spendere **1 Punto Focus** per tentare di stordirla.\n- Il bersaglio effettua un **tiro salvezza su Costituzione**: se **fallisce** è **Stordito** fino allʼinizio del tuo prossimo turno; se **supera**, ha velocità dimezzata fino allʼinizio del tuo prossimo turno e il prossimo attacco contro di lui entro quel tempo ha vantaggio.",
+  'Colpo stordente': {
+    base: '*Un colpo mirato che paralizza il nemico.*',
+    '2014': "- Quando colpisci una creatura con un **attacco con arma da monaco**, puoi spendere **1 punto ki** per tentare un colpo stordente (nessun limite di una volta per turno).\n- Il bersaglio effettua un **tiro salvezza su Costituzione**: se fallisce è **stordito** fino alla fine del tuo prossimo turno.",
+    '2024': "- Una volta per turno, quando colpisci una creatura con un **attacco senzʼarmi**, puoi spendere **1 Punto Focus** per tentare di stordirla.\n- Il bersaglio effettua un **tiro salvezza su Costituzione**: se **fallisce** è **Stordito** fino allʼinizio del tuo prossimo turno; se **supera**, ha velocità dimezzata fino allʼinizio del tuo prossimo turno e il prossimo attacco contro di lui entro quel tempo ha vantaggio.",
+  },
   'Colpi potenziati dal ki': "*I tuoi pugni feriscono anche ciò che resiste al comune acciaio.*\n\n- I tuoi **attacchi senzʼarmi** contano come **magici** per superare resistenze e immunità ai danni da armi non magiche.",
   'Quiete della mente': "*Ritrovi la calma con un atto di volontà.*\n\n- Con unʼ**azione** puoi porre fine a un effetto su di te stesso che ti renda **Affascinato** o **Spaventato**.",
   'Movimento acrobatico': 'Ti muovi su superfici verticali e sui liquidi senza cadere.',
@@ -112,7 +163,11 @@ const SPIEG_PRIVILEGI = {
   'Sé perfetto': 'Il culmine del monaco: recuperi Ki e potenzi corpo e mente.',
   'Corpo e mente': 'Il culmine del monaco: Destrezza e Saggezza aumentano notevolmente.',
   // Paladino
-  'Imposizione delle mani': 'Riserva di cura pari a 5 × il tuo livello da paladino, da distribuire toccando i feriti (5 punti curano anche un veleno o una malattia). Si ricarica col riposo lungo.',
+  'Imposizione delle mani': {
+    base: '*Le tue mani sanano.*\n\nHai una riserva di cura pari a **5 × il tuo livello da paladino**, che si ricarica con un **riposo lungo**. Toccando una creatura ne spendi quanti punti vuoi per ridarle altrettanti punti ferita.',
+    '2014': "- La cura richiede unʼ**azione**.\n- Puoi spendere **5 punti** per curare una **malattia** oppure neutralizzare un **veleno** (una malattia o un veleno per ogni 5 punti spesi).\n- Non funziona su non morti e costrutti.",
+    '2024': "- La cura richiede unʼ**azione bonus**.\n- Puoi anche spendere **5 punti** per rimuovere la condizione **Avvelenato**, oppure spenderne 0 e usare l'azione bonus solo per quello.\n- Non funziona su non morti e costrutti.",
+  },
   'Colpo divino': 'Quando colpisci in mischia, spendi uno slot incantesimo per +2d8 danni radiosi (+1d8 per livello di slot oltre il 1°; +1d8 contro non morti/immondi).',
   'Punizione divina': 'Quando colpisci in mischia, spendi uno slot incantesimo per +2d8 danni radiosi (+1d8 per livello di slot oltre il 1°; +1d8 contro non morti/immondi).',
   'Punizione divina migliorata': 'Tutti i tuoi attacchi in mischia infliggono danni radiosi extra.',
@@ -138,11 +193,19 @@ const SPIEG_PRIVILEGI = {
   'Cacciatore implacabile': 'Il tuo Marchio del Cacciatore si mantiene meglio (meno concentrazione).',
   'Velo della natura': 'Come azione bonus diventi invisibile per un turno.',
   'Cacciatore preciso': 'Vantaggio agli attacchi contro il bersaglio del tuo Marchio.',
-  'Sensi ferini': 'Percepisci le creature invisibili vicine e le colpisci meglio.',
+  'Sensi ferini': {
+    base: '*I tuoi sensi superano la vista.*',
+    '2014': "Non subisci **svantaggio** ai tiri per colpire contro creature che non vedi (a meno che tu non sia accecato o assordato) e percepisci la posizione di ogni creatura **invisibile** entro **9 m**, purché non sia nascosta e tu non sia accecato o assordato.",
+    '2024': "Ottieni **Vista Cieca con portata 9 m**: entro quella distanza percepisci ciò che ti circonda senza bisogno di vedere.",
+  },
   'Andatura nel terreno': 'Il terreno difficile naturale non ti rallenta.',
   'Nascondersi in piena vista': 'Puoi nasconderti restando immobile e mimetizzato.',
   'Svanire': 'Come azione bonus puoi Nasconderti; non puoi essere tracciato.',
-  'Sterminatore di nemici': 'Una volta per turno aggiungi danni extra a un attacco contro un nemico.',
+  'Sterminatore di nemici': {
+    base: '*Il colpo di grazia del cacciatore.*',
+    '2014': "Una volta per turno puoi aggiungere il modificatore di **Saggezza** al tiro per colpire **oppure** al tiro dei danni di un attacco contro il tuo **nemico prediletto**.",
+    '2024': "Il dado di danno extra di **Marchio del Cacciatore** diventa un **d10** al posto di un d6.",
+  },
   // Stregone
   'Stregoneria innata': "La magia scorre naturale nelle tue vene, dono di un blocco di stirpe, di un influsso ultraterreno o di una singolarità cosmica. Scegli un'Origine Stregonesca (es. Draconica, Magia Selvaggia, Aberrante, Meccanica) che determina i tuoi poteri unici fin dal 1° livello e ti concede privilegi aggiuntivi al 3°, 6°, 14° e 18° livello.",
   'Origine stregonesca': "Scegli la fonte del tuo potere magico innato, come la Stirpe Draconica o la Magia Selvaggia. Questa scelta ti concede privilegi specifici al 1°, 6°, 14° e 18° livello.",
@@ -933,6 +996,39 @@ const SPIEG_TRATTI = {
   'Resistenza implacabile': "Quando scenderesti a 0 punti ferita senza essere ucciso sul colpo, resti invece a 1 punto ferita. Una volta per riposo lungo.",
   // Tiefling
   'Presenza ultraterrena': "Conosci il trucchetto Taumaturgia; la caratteristica da incantatore per lanciarlo è il Carisma.",
+  // Aumenti di caratteristica da specie (solo 5.0)
+  'Forza +2': "Nella **5.0** il Nano delle Montagne aumenta il punteggio di **Forza di 2**. Nella 5.5 gli aumenti di caratteristica non arrivano più dalla specie ma dal **background**.",
+  '+2 Carisma': "Nella **5.0** il Mezzelfo aumenta il **Carisma di 2** e altre due caratteristiche a scelta di 1. Nella 5.5 gli aumenti di caratteristica arrivano dal **background**.",
+  // Elfo (sottorazze 5.0)
+  '1 Trucchetto da Mago': "Conosci un trucchetto a tua scelta dalla lista del mago: la caratteristica da incantatore per lanciarlo è l'**Intelligenza**.",
+  'Competenza armi elfiche': 'Sei competente con **spada lunga, spada corta, arco corto** e **arco lungo**.',
+  'Lingua extra': 'Conosci una **lingua aggiuntiva** a tua scelta, oltre a quelle che parli già.',
+  'Piedi veloci': 'La tua velocità base sul terreno è di **10,5 metri** invece di 9.',
+  'Maschera della selva': 'Puoi tentare di **Nasconderti** anche quando sei coperto soltanto da fogliame fitto, pioggia battente, neve, nebbia o altri fenomeni naturali.',
+  'Sensibilità alla luce solare': 'Alla luce del sole hai **svantaggio** ai tiri per colpire e alle prove di Percezione basate sulla vista.',
+  'Magia Drow': 'Conosci il trucchetto **Luce danzante**. Al 3° livello puoi lanciare **Fuoco fatuo** e al 5° **Oscurità**, una volta ciascuno per riposo lungo. La caratteristica da incantatore è il **Carisma**.',
+  'Armi drow': 'Sei competente con **spada corta, spadone** (rapier) e **balestra a mano**.',
+  // Gnomo (sottorazze 5.0)
+  'Illusionista nato': "Conosci il trucchetto **Illusione minore**: la caratteristica da incantatore per lanciarlo è l'**Intelligenza**.",
+  'Parlare con le piccole bestie': 'Riesci a comunicare idee semplici alle **bestie di taglia Piccola o inferiore** con suoni e gesti, e a coglierne le risposte.',
+  'Conoscenza degli artefatti': "Quando fai una prova di Intelligenza (Storia) su un oggetto **magico, alchemico o tecnologico**, aggiungi **il doppio** del tuo bonus di competenza.",
+  'Inventore': 'Sei competente con gli **arnesi da artigiano** (attrezzi da manovale). Durante un riposo lungo puoi costruire un piccolo **congegno meccanico** (accendino, giocattolo, scatola musicale) del valore di 10 mo.',
+  // Halfling (sottorazze 5.0)
+  'Resilienza tozza': 'Hai **vantaggio** ai tiri salvezza contro il veleno e **resistenza** ai danni da veleno.',
+  // Nano / Mezzorco (5.0)
+  'Competenza negli strumenti': 'Sei competente con un tipo di **arnesi da artigiano** a tua scelta fra attrezzi da fabbro, da birraio e da muratore.',
+  'Competenza nelle armature leggere e medie': 'Sei competente con le **armature leggere e medie**.',
+  'Minaccioso': "Ottieni la competenza nell'abilità **Intimidire**.",
+  'Attacchi selvaggi': 'Quando metti a segno un **colpo critico** con un attacco in mischia con arma, tiri **un dado di danno in più** e lo aggiungi ai danni extra del critico.',
+  // Mezzelfo (5.0)
+  'Versatilità': 'Ottieni la competenza in **due abilità** a tua scelta.',
+  // Tiefling
+  'Resistenza al fuoco': 'Hai **resistenza ai danni da fuoco**.',
+  'Eredità infernale/abisso': "Scegli un retaggio (Infernale, Abissale o degli Inferi): ti dà un **trucchetto** al 1° livello e un incantesimo al **3°** e al **5°**, lanciabili una volta per riposo lungo. La caratteristica da incantatore è il **Carisma**.",
+  // Dragonide / Aasimar / Goliath (5.5)
+  'Volo draconico': "Dal 5° livello, con un'azione bonus fai spuntare **ali spettrali** per 10 minuti: ottieni una **velocità di volo pari alla tua velocità base**. Una volta per riposo lungo.",
+  'Rivelazione celestiale': "Dal 3° livello, con un'azione bonus mostri la tua natura celestiale per 1 minuto: scegli una forma (Necrotica, Radiosa o Infuocata) che aggiunge danni ai tuoi attacchi e ti dà un beneficio (per esempio il volo). Una volta per riposo lungo.",
+  'Forma Grande': "Dal 5° livello, con un'azione bonus diventi di **taglia Grande** per 10 minuti (se lo spazio lo consente): ottieni **vantaggio alle prove di Forza** e la tua velocità aumenta di 3 m. Una volta per riposo lungo.",
   // Umano (2024)
   'Pieno di risorse': "Ottieni Ispirazione Eroica ogni volta che concludi un riposo lungo.",
   'Abile': "Ottieni competenza in un'abilità a tua scelta.",
