@@ -1,5 +1,9 @@
 # 🎲 Scheda Interattiva
 
+[![Licenza MIT](https://img.shields.io/github/license/samuelenigro97-prog/tavolo-dei-dadi)](LICENSE.md)
+[![Deploy](https://github.com/samuelenigro97-prog/tavolo-dei-dadi/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/samuelenigro97-prog/tavolo-dei-dadi/actions/workflows/deploy.yml)
+[![Release](https://img.shields.io/github/v/release/samuelenigro97-prog/tavolo-dei-dadi?display_name=tag&sort=semver)](https://github.com/samuelenigro97-prog/tavolo-dei-dadi/releases)
+
 Scheda del personaggio D&D 5e interattiva con tiratore di dadi integrato,
 nel formato della scheda ufficiale 2024. Provala online:
 <https://samuelenigro97-prog.github.io/tavolo-dei-dadi/>.
