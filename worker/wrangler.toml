@@ -19,3 +19,13 @@ ALLOW_ORIGIN = "https://samuelenigro97-prog.github.io"
 # [[kv_namespaces]]
 # binding = "SCHEDE"
 # id = "INCOLLA_QUI_L_ID"
+
+# Rate limiter nativo consigliato per /room (Wrangler >= 4.36). Scegli un
+# namespace_id numerico non usato da altri limiter nello stesso account.
+# Se omesso, il Worker applica comunque un limite best-effort tramite SCHEDE.
+# [[ratelimits]]
+# name = "ROOM_RATE_LIMITER"
+# namespace_id = "1001"
+#   [ratelimits.simple]
+#   limit = 10
+#   period = 60

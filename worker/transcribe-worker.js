@@ -1,5 +1,5 @@
 /**
- * Cloudflare Worker di Tavolo dei Dadi. Due funzioni, sullo stesso Worker:
+ * Cloudflare Worker di Tavolo dei Dadi. Tre funzioni, sullo stesso Worker:
  *
  *  1) POST /            → trascrizione di una scheda PDF in JSON (Anthropic).
  *  2) /pg               → ARCHIVIO DELLE SCHEDE (KV), per il DM:
@@ -7,6 +7,7 @@
  *       GET  /pg?key=…      elenco di tutte le schede      (solo con la chiave DM)
  *       GET  /pg/<id>?key=… una scheda completa            (solo con la chiave DM)
  *       DELETE /pg/<id>?key=…  cancella una scheda         (solo con la chiave DM)
+ *  3) /room            → snapshot temporanei condivisi tramite codice (KV)
  *
  * Segreti/variabili (impostati con `wrangler secret put` o dal dashboard):
  *   - ANTHROPIC_API_KEY  (per la trascrizione PDF) la tua chiave API Anthropic
@@ -86,12 +87,124 @@ function cors(origin) {
 // Dimensione massima di una scheda depositata (le immagini non vengono salvate,
 // quindi 256 KB sono abbondanti e impediscono che qualcuno riempia l'archivio).
 const MAX_SCHEDA_BYTES = 256 * 1024;
+const MAX_STANZA_BYTES = 128 * 1024;
+const DURATA_STANZA_SEC = 24 * 60 * 60;
+const DURATA_RECORD_SEC = 25 * 60 * 60; // un'ora per distinguere scaduta da inesistente
+const ALFABETO_STANZA = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 
 /** Toglie i campi pesanti (immagini) prima di archiviare. */
 function alleggerisci(scheda) {
   if (!scheda || typeof scheda !== 'object') return {};
   const { ritratto, mappaCampagna, ...resto } = scheda;
   return resto;
+}
+
+function jsonSicuro(valore, profondita = 0, contatore = { nodi: 0 }) {
+  if (profondita > 8 || ++contatore.nodi > 5000) return false;
+  if (valore == null || ['string', 'number', 'boolean'].includes(typeof valore)) {
+    return typeof valore !== 'number' || Number.isFinite(valore);
+  }
+  if (Array.isArray(valore)) return valore.length <= 500 && valore.every((v) => jsonSicuro(v, profondita + 1, contatore));
+  if (typeof valore !== 'object' || Object.getPrototypeOf(valore) !== Object.prototype) return false;
+  const chiavi = Object.keys(valore);
+  if (chiavi.length > 500 || chiavi.some((k) => k.length > 80 || ['__proto__', 'prototype', 'constructor'].includes(k))) return false;
+  return chiavi.every((k) => jsonSicuro(valore[k], profondita + 1, contatore));
+}
+
+/** Valida il sottoinsieme minimo e i limiti strutturali prima di scrivere nel KV. */
+export function validaSchedaStanza(input) {
+  if (!input || typeof input !== 'object' || Array.isArray(input) || !jsonSicuro(input)) return null;
+  const scheda = alleggerisci(input);
+  const campiTesto = ['nome', 'classe', 'sottoclasse', 'specie', 'background', 'allineamento'];
+  if (campiTesto.some((k) => scheda[k] != null && (typeof scheda[k] !== 'string' || scheda[k].length > 120))) return null;
+  if (scheda.livello != null && (!Number.isInteger(scheda.livello) || scheda.livello < 1 || scheda.livello > 20)) return null;
+  if (scheda.caratteristiche != null) {
+    if (!scheda.caratteristiche || typeof scheda.caratteristiche !== 'object' || Array.isArray(scheda.caratteristiche)) return null;
+    if (Object.values(scheda.caratteristiche).some((v) => !Number.isFinite(v) || v < 1 || v > 30)) return null;
+  }
+  const testo = JSON.stringify(scheda);
+  return new TextEncoder().encode(testo).length <= MAX_STANZA_BYTES ? { scheda, testo } : null;
+}
+
+export function generaCodiceStanza() {
+  const bytes = new Uint8Array(10);
+  crypto.getRandomValues(bytes);
+  let codice = '';
+  for (let i = 0; i < 10; i++) codice += ALFABETO_STANZA[bytes[i] & 31];
+  return codice;
+}
+
+async function hashBreve(testo) {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(testo));
+  return [...new Uint8Array(digest).slice(0, 8)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function superaRateLimit(request, env) {
+  const ip = request.headers.get('cf-connecting-ip') || 'sconosciuto';
+  if (env.ROOM_RATE_LIMITER?.limit) {
+    const esito = await env.ROOM_RATE_LIMITER.limit({ key: ip });
+    return esito?.success !== false;
+  }
+  // Fallback best-effort sul KV esistente; il binding Cloudflare nativo resta
+  // consigliato in produzione perché è atomico e distribuito.
+  const finestra = Math.floor(Date.now() / 60000);
+  const key = `rate:room:${finestra}:${await hashBreve(ip)}`;
+  const usi = Number(await env.SCHEDE.get(key)) || 0;
+  if (usi >= 10) return false;
+  await env.SCHEDE.put(key, String(usi + 1), { expirationTtl: 120 });
+  return true;
+}
+
+/** Snapshot pubblico temporaneo. Nessuna operazione di aggiornamento o delete. */
+export async function gestisciStanze(request, env, headers, percorso) {
+  headers = { ...headers, 'Cache-Control': 'no-store' };
+  if (!env.SCHEDE) {
+    return new Response(JSON.stringify({ code: 'ROOM_SERVICE_UNAVAILABLE', error: 'Servizio stanza non configurato' }), { status: 503, headers });
+  }
+  if (!(await superaRateLimit(request, env))) {
+    return new Response(JSON.stringify({ code: 'ROOM_RATE_LIMITED', error: 'Troppe richieste' }), { status: 429, headers: { ...headers, 'Retry-After': '60' } });
+  }
+
+  if (request.method === 'POST' && percorso === '/room') {
+    const lunghezza = Number(request.headers.get('content-length')) || 0;
+    if (lunghezza > MAX_STANZA_BYTES + 4096) {
+      return new Response(JSON.stringify({ code: 'ROOM_TOO_LARGE', error: 'Scheda troppo grande' }), { status: 413, headers });
+    }
+    let corpo;
+    try { corpo = await request.json(); } catch { corpo = null; }
+    const valido = validaSchedaStanza(corpo?.scheda);
+    if (!valido) {
+      const status = corpo?.scheda && new TextEncoder().encode(JSON.stringify(corpo.scheda)).length > MAX_STANZA_BYTES ? 413 : 400;
+      return new Response(JSON.stringify({ code: status === 413 ? 'ROOM_TOO_LARGE' : 'ROOM_INVALID_PAYLOAD', error: status === 413 ? 'Scheda troppo grande' : 'Scheda non valida' }), { status, headers });
+    }
+    let codice = '';
+    for (let tentativo = 0; tentativo < 6; tentativo++) {
+      const candidato = generaCodiceStanza();
+      if (await env.SCHEDE.get(`room:${candidato}`) == null) { codice = candidato; break; }
+    }
+    if (!codice) return new Response(JSON.stringify({ code: 'ROOM_COLLISION', error: 'Impossibile generare un codice' }), { status: 503, headers });
+    const creato = Date.now();
+    const expiresAt = creato + DURATA_STANZA_SEC * 1000;
+    await env.SCHEDE.put(`room:${codice}`, JSON.stringify({ version: 1, creato, expiresAt, scheda: valido.scheda }), { expirationTtl: DURATA_RECORD_SEC });
+    return new Response(JSON.stringify({ code: codice, expiresAt }), { status: 201, headers });
+  }
+
+  const codice = percorso.startsWith('/room/') ? percorso.slice(6).toUpperCase() : '';
+  if (request.method === 'GET' && /^[2-9A-HJ-NP-Z]{10}$/.test(codice)) {
+    const testo = await env.SCHEDE.get(`room:${codice}`);
+    if (testo == null) return new Response(JSON.stringify({ code: 'ROOM_NOT_FOUND', error: 'Stanza inesistente' }), { status: 404, headers });
+    let record;
+    try { record = JSON.parse(testo); } catch { record = null; }
+    if (!record || record.expiresAt <= Date.now()) {
+      return new Response(JSON.stringify({ code: 'ROOM_EXPIRED', error: 'Stanza scaduta' }), { status: 410, headers });
+    }
+    const valido = validaSchedaStanza(record.scheda);
+    if (!valido) return new Response(JSON.stringify({ code: 'ROOM_INVALID_PAYLOAD', error: 'Contenuto stanza non valido' }), { status: 422, headers });
+    return new Response(JSON.stringify({ scheda: valido.scheda, expiresAt: record.expiresAt }), { headers });
+  }
+
+  if (request.method === 'GET') return new Response(JSON.stringify({ code: 'ROOM_NOT_FOUND', error: 'Codice stanza non valido' }), { status: 404, headers });
+  return new Response(JSON.stringify({ code: 'ROOM_METHOD_NOT_ALLOWED', error: 'Metodo non supportato' }), { status: 405, headers });
 }
 
 /**
@@ -175,8 +288,11 @@ export default {
 
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors(origin) });
 
-    // Rotta dell'archivio schede (tutto il resto resta la trascrizione PDF).
+    // Rotte KV (tutto il resto resta la trascrizione PDF).
     const percorso = new URL(request.url).pathname.replace(/\/+$/, '') || '/';
+    if (percorso === '/room' || percorso.startsWith('/room/')) {
+      return gestisciStanze(request, env, headers, percorso);
+    }
     if (percorso === '/pg' || percorso.startsWith('/pg/')) {
       return gestisciArchivio(request, env, headers, percorso);
     }
