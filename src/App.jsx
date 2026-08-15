@@ -42,6 +42,23 @@ function SfondoVit({ children }) {
   );
 }
 
+function IconaMonetaOro({ size = 20 }) {
+  return (
+    <span
+      aria-label="Moneta d'oro"
+      role="img"
+      style={{
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        width: size, height: size, flex: `0 0 ${size}px`, borderRadius: '50%', boxSizing: 'border-box',
+        background: 'radial-gradient(circle at 35% 30%, #ffdf73, #d9a93a 55%, #9a6a08)',
+        border: '1px solid #b8860b', color: '#fff0a6', fontSize: Math.max(9, size * 0.55),
+        lineHeight: 1, textShadow: '0 1px 1px rgba(88,52,0,0.55)',
+        boxShadow: 'inset 0 0 0 1px rgba(255,235,145,0.35)',
+      }}
+    >✦</span>
+  );
+}
+
 
 // Colore identità per ogni classe (variante chiara e scura per restare leggibile).
 // `match` = sottostringhe riconosciute nel campo classe (italiano + inglese).
@@ -992,7 +1009,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.88.2';
+const APP_VERSION = '2.88.3';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -6728,18 +6745,7 @@ export default function App() {
                             {(!filtroInventario || 'monete'.includes(filtroInventario.trim().toLowerCase())) && (
                               <tr style={{ opacity: 0.9 }} title="Monete d'oro: modificando qui aggiorni la sezione Monete (e viceversa). Il peso di tutte le monete è contato nell'ingombro.">
                                 <td style={{ ...styles.td, textAlign: 'center' }}>
-                                  <span
-                                    aria-label="Moneta d'oro"
-                                    role="img"
-                                    style={{
-                                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                                      width: 20, height: 20, borderRadius: '50%', boxSizing: 'border-box',
-                                      background: 'radial-gradient(circle at 35% 30%, #ffdf73, #d9a93a 55%, #9a6a08)',
-                                      border: '1px solid #b8860b', color: '#fff0a6', fontSize: 11,
-                                      lineHeight: 1, textShadow: '0 1px 1px rgba(88,52,0,0.55)',
-                                      boxShadow: 'inset 0 0 0 1px rgba(255,235,145,0.35)',
-                                    }}
-                                  >✦</span>
+                                  <IconaMonetaOro />
                                 </td>
                                 <td style={styles.td}>Monete d'oro (MO)</td>
                                 <td style={styles.td}>
@@ -6795,18 +6801,32 @@ export default function App() {
                     </div>
                     
                     <div style={{ background: C.panelLight, padding: '12px 14px', borderRadius: 8, border: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ ...styles.panelTitle, marginBottom: 8 }}>{t('monete.titolo')}</div>
                       {(() => {
                         const d = scheda.denari || {};
                         const totMo = ((d.mr || 0) / 100) + ((d.ma || 0) / 10) + ((d.me || 0) / 2) + (d.mo || 0) + ((d.mp || 0) * 10);
                         const numMonete = (d.mr || 0) + (d.ma || 0) + (d.me || 0) + (d.mo || 0) + (d.mp || 0);
                         const pesoMonete = numMonete * 0.01; // 50 monete = 0.5 kg (0.01 kg a moneta)
                         return (
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, gap: 8, ...styles.detail }}>
-                            <strong style={{ color: C.ink, fontSize: 13 }}>Monete</strong>
-                            <span title={`${numMonete} monete · peso contato nell'ingombro`} style={{ fontSize: 12, color: C.goldDark, fontWeight: 700, textAlign: 'right' }}>
-                              💎 ≈ {totMo.toFixed(2)} MO · {pesoMonete.toFixed(2)} kg
-                            </span>
-                          </div>
+                          <>
+                            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
+                              <button
+                                style={{ ...styles.buttonMini, fontSize: 11, color: C.goldDark, borderColor: C.goldDark }}
+                                title={t('monete.converti_tip')}
+                                onClick={() => {
+                                  const mr = d.mr || 0;
+                                  const ma = d.ma || 0;
+                                  const addMo = Math.floor(mr / 100) + Math.floor(ma / 10);
+                                  if (addMo > 0) aggiorna({ denari: { ...d, mr: mr % 100, ma: ma % 10, mo: (d.mo || 0) + addMo } });
+                                  else alert(t('monete.insufficienti'));
+                                }}
+                              >🔄 {t('monete.converti')}</button>
+                            </div>
+                            <div title={t('monete.totale_tip', { n: numMonete })} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 7, marginBottom: 10, fontSize: 12, color: C.goldDark, fontWeight: 700, textAlign: 'center' }}>
+                              <IconaMonetaOro size={18} />
+                              <span>≈ {totMo.toFixed(2)} MO · {pesoMonete.toFixed(2)} kg</span>
+                            </div>
+                          </>
                         );
                       })()}
                       <div className="griglia-monete" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 8, marginTop: 'auto' }}>
@@ -6819,33 +6839,6 @@ export default function App() {
                           </div>
                         ))}
                       </div>
-                      {(() => {
-                        const d = scheda.denari || {};
-                        return (
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
-                            <button
-                              style={{ ...styles.buttonMini, fontSize: 11, color: C.goldDark, borderColor: C.goldDark }}
-                              title="Converte tutte le Monete di Rame (100 MR = 1 MO) e d'Argento (10 MA = 1 MO) in equivalenti Monete d'Oro, tenendo i resti"
-                              onClick={() => {
-                                const mr = d.mr || 0;
-                                const ma = d.ma || 0;
-                                const moFromMr = Math.floor(mr / 100);
-                                const moFromMa = Math.floor(ma / 10);
-                                const remMr = mr % 100;
-                                const remMa = ma % 10;
-                                const addMo = moFromMr + moFromMa;
-                                if (addMo > 0) {
-                                  aggiorna({ denari: { ...d, mr: remMr, ma: remMa, mo: (d.mo || 0) + addMo } });
-                                } else {
-                                  alert("Non hai abbastanza monete di rame o argento per convertire in 1 MO!");
-                                }
-                              }}
-                            >
-                              🔄 Converti MR/MA in MO
-                            </button>
-                          </div>
-                        );
-                      })()}
                     </div>
                   </div>
                 );
