@@ -100,3 +100,38 @@ guida dell'app** se il sito resta aperto a tutti. Per cancellare una scheda:
 ```bash
 curl -X DELETE "https://IL-TUO-WORKER.workers.dev/pg/<id>?key=LA_TUA_CHIAVE"
 ```
+
+---
+
+# Stanze temporanee — condivisione senza account
+
+Lo stesso Worker espone anche:
+
+- `POST /room` con `{ "scheda": { ... } }`: crea uno snapshot immutabile;
+- `GET /room/<CODICE>`: legge lo snapshot tramite il codice pubblico.
+
+La stanza dura 24 ore. Il record resta al massimo un'ora aggiuntiva soltanto
+per poter rispondere chiaramente “stanza scaduta”, poi KV lo elimina. Il Worker
+genera codici casuali non sequenziali da 10 caratteri (circa 50 bit), rimuove
+ritratto e mappa, limita il JSON a 128 KB e valida struttura e valori principali.
+Non esistono endpoint per aggiornare una stanza: chi vuole condividere una
+versione nuova crea un nuovo codice.
+
+La funzione riusa il binding KV `SCHEDE`, con chiavi `room:` separate da `pg:`.
+Non richiede nuovi segreti. Per attivarla nell'app imposta durante la build:
+
+```text
+VITE_STANZE_URL=https://IL-TUO-WORKER.workers.dev
+```
+
+Se `VITE_STANZE_URL` manca, l'app prova `VITE_ARCHIVIO_PG_URL`; se mancano
+entrambi mostra un errore locale e continua a funzionare normalmente.
+
+Per la protezione da abuso è consigliato il binding Rate Limiting nativo di
+Cloudflare indicato (commentato) in `wrangler.toml`. Richiede Wrangler 4.36 o
+successivo e un `namespace_id` numerico scelto nell'account. In sua assenza è
+attivo un fallback KV best-effort di 10 richieste/minuto per identificatore IP
+hashato. Nessun IP viene memorizzato in chiaro.
+
+Il backup Gist resta disponibile come funzione separata per gli utenti che lo
+avevano già configurato. Le stanze non leggono né richiedono il relativo token.

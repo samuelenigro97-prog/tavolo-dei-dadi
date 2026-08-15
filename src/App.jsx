@@ -10,6 +10,7 @@ import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza } from 
 import { FLYORA_JSON, ESEMPIO_GNOMO } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { codificaScheda, decodificaScheda, preparaPerCondivisione, costruisciLink, payloadDaUrl, LIMITE_PAYLOAD } from './utils/condivisione.js';
+import { creaStanza, apriStanza, normalizzaCodiceStanza, formattaCodiceStanza, DURATA_STANZA_ORE } from './utils/stanze.js';
 import { salvaJson, rosterSenzaImmagini, riagganciaImmagini, salvaImmaginiRoster, caricaImmaginiRoster, rimuoviImmaginePersonaggio } from './utils/persistenza.js';
 
 // ---------------------------------------------------------------------------
@@ -1009,7 +1010,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.88.3';
+const APP_VERSION = '2.89.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1020,6 +1021,9 @@ const APP_VERSION = '2.88.3';
  */
 const URL_ARCHIVIO_PG = (
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ARCHIVIO_PG_URL) || ''
+).trim();
+const URL_STANZE = (
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_STANZE_URL) || URL_ARCHIVIO_PG
 ).trim();
 const ORDINE_AMBIENTAZIONI = ['default', 'taverna', 'mercato', 'citta', 'accampamento', 'foresta', 'palude', 'montagna', 'tundra', 'deserto', 'mare', 'tempesta', 'dungeon', 'tempio'];
 
@@ -1702,6 +1706,7 @@ export default function App() {
   const [promemoriaBackup, setPromemoriaBackup] = useState(false); // banner "fai un backup"
   const [mostraGuida, setMostraGuida] = useState(false); // guida rapida al primo avvio
   const [condivisione, setCondivisione] = useState(null); // { link, copiato, ritrattoRimosso, lungo }
+  const [stanzaUi, setStanzaUi] = useState({ aperta: false, codice: '', creato: '', scadenza: 0, caricamento: false, errore: '' });
   const [pgDaLink, setPgDaLink] = useState(null);      // personaggio ricevuto tramite link
   const [mostraRipristino, setMostraRipristino] = useState(false); // modale "ripristina versione precedente"
   const [rinominando, setRinominando] = useState(false); // rinomina inline del PG attivo
@@ -2913,6 +2918,38 @@ export default function App() {
     setCondivisione({ link, copiato, ritrattoRimosso, lungo: payload.length > LIMITE_PAYLOAD });
   }
 
+  function messaggioErroreStanza(codice) {
+    if (codice === 'ROOM_NOT_FOUND') return t('stanze.errore_inesistente');
+    if (codice === 'ROOM_EXPIRED') return t('stanze.errore_scaduta');
+    if (codice === 'ROOM_TOO_LARGE') return t('stanze.errore_grande');
+    if (codice === 'ROOM_INVALID_PAYLOAD') return t('stanze.errore_non_valida');
+    if (codice === 'ROOM_RATE_LIMITED') return t('stanze.errore_limite');
+    return t('stanze.errore_servizio');
+  }
+
+  async function creaStanzaCorrente() {
+    setStanzaUi((s) => ({ ...s, caricamento: true, errore: '', creato: '' }));
+    try {
+      const risultato = await creaStanza(URL_STANZE, scheda);
+      setStanzaUi((s) => ({ ...s, caricamento: false, creato: risultato.code, scadenza: risultato.expiresAt }));
+    } catch (err) {
+      setStanzaUi((s) => ({ ...s, caricamento: false, errore: messaggioErroreStanza(err.message) }));
+    }
+  }
+
+  async function apriStanzaDaCodice() {
+    const codice = normalizzaCodiceStanza(stanzaUi.codice);
+    setStanzaUi((s) => ({ ...s, codice, caricamento: true, errore: '' }));
+    try {
+      const risultato = await apriStanza(URL_STANZE, codice);
+      setPgDaLink(normalizeImported(risultato.scheda));
+      setStanzaUi({ aperta: false, codice: '', creato: '', scadenza: 0, caricamento: false, errore: '' });
+      setMostraMenu(false);
+    } catch (err) {
+      setStanzaUi((s) => ({ ...s, caricamento: false, errore: messaggioErroreStanza(err.message) }));
+    }
+  }
+
   /** Segna che è stato fatto un backup (esportazione o sync cloud): azzera il promemoria. */
   function segnaBackupFatto() {
     try { localStorage.setItem('scheda-interattiva:ultimo-backup', String(Date.now())); } catch { /* niente */ }
@@ -3570,6 +3607,17 @@ export default function App() {
               >
                 {t('menu.pg_casuale')}
               </button>
+            </div>
+            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
+              <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>🔗 {t('stanze.condivisione')}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
+                <button style={{ ...styles.button, width: '100%' }} onClick={() => { condividiLink(); setMostraMenu(false); }} title={t('condividi.tooltip')}>
+                  🔗 {t('stanze.link')}
+                </button>
+                <button style={{ ...styles.button, width: '100%', borderColor: C.gold, color: C.goldDark }} onClick={() => { setStanzaUi({ aperta: true, codice: '', creato: '', scadenza: 0, caricamento: false, errore: '' }); setMostraMenu(false); }}>
+                  🚪 {t('stanze.apri_menu')}
+                </button>
+              </div>
             </div>
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
               <div style={{ ...styles.detail, marginBottom: 8 }}>🛟 Backup di sicurezza (tutti i personaggi in un file):</div>
@@ -4638,6 +4686,48 @@ export default function App() {
             <button style={{ ...styles.buttonPrimary, width: '100%', marginTop: 16 }} onClick={chiudiGuida}>
               {t('guida.ok')}
             </button>
+          </div>
+        </div>
+      )}
+
+      {stanzaUi.aperta && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 1010, padding: 16, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setStanzaUi((s) => ({ ...s, aperta: false })); }}
+        >
+          <div style={{ background: C.panel, border: `1px solid ${C.gold}`, borderRadius: 12, padding: '18px 20px', maxWidth: 480, width: '100%' }}>
+            <h2 style={{ ...styles.title, fontSize: 20, margin: '0 0 6px', textAlign: 'center' }}>🚪 {t('stanze.titolo')}</h2>
+            <p style={{ ...styles.detail, fontSize: 13, margin: '0 0 14px', textAlign: 'center' }}>{t('stanze.snapshot_desc', { ore: DURATA_STANZA_ORE })}</p>
+
+            <button style={{ ...styles.buttonPrimary, width: '100%' }} disabled={stanzaUi.caricamento} onClick={creaStanzaCorrente}>
+              {stanzaUi.caricamento ? t('stanze.attendi') : t('stanze.crea')}
+            </button>
+            {stanzaUi.creato && (
+              <div style={{ marginTop: 12, padding: 12, textAlign: 'center', background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8 }}>
+                <div style={styles.detail}>{t('stanze.codice')}</div>
+                <div style={{ color: C.goldDark, fontSize: 28, fontWeight: 800, letterSpacing: 3, fontFamily: 'monospace', margin: '4px 0' }}>{formattaCodiceStanza(stanzaUi.creato)}</div>
+                <button style={styles.buttonMini} onClick={() => navigator.clipboard?.writeText(formattaCodiceStanza(stanzaUi.creato))}>📋 {t('stanze.copia')}</button>
+                <div style={{ ...styles.detail, fontSize: 11, marginTop: 6 }}>{t('stanze.scade')}</div>
+              </div>
+            )}
+
+            <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 16, paddingTop: 14 }}>
+              <label style={{ ...styles.detail, display: 'block', fontWeight: 700, marginBottom: 5 }}>{t('stanze.inserisci')}</label>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input
+                  value={formattaCodiceStanza(stanzaUi.codice)}
+                  onChange={(e) => setStanzaUi((s) => ({ ...s, codice: normalizzaCodiceStanza(e.target.value), errore: '' }))}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && normalizzaCodiceStanza(stanzaUi.codice).length === 10) apriStanzaDaCodice(); }}
+                  placeholder="23456-ABCDE"
+                  autoCapitalize="characters"
+                  style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: 1.5 }}
+                />
+                <button style={styles.buttonPrimary} disabled={stanzaUi.caricamento || normalizzaCodiceStanza(stanzaUi.codice).length !== 10} onClick={apriStanzaDaCodice}>{t('stanze.apri')}</button>
+              </div>
+            </div>
+            {stanzaUi.errore && <div role="alert" style={{ color: C.red, fontSize: 13, marginTop: 10 }}>{stanzaUi.errore}</div>}
+            {!URL_STANZE && <div style={{ ...styles.detail, color: C.red, fontSize: 12, marginTop: 10 }}>{t('stanze.non_configurato')}</div>}
+            <button style={{ ...styles.button, width: '100%', marginTop: 14 }} onClick={() => setStanzaUi((s) => ({ ...s, aperta: false }))}>{t('common.chiudi')}</button>
           </div>
         </div>
       )}

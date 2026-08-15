@@ -5,6 +5,8 @@ Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 ## [Unreleased]
 
 ### Aggiunto
+- Condivisione temporanea di una scheda tramite codice stanza, senza account o token GitHub.
+- Endpoint Cloudflare Worker `/room` con snapshot immutabili, scadenza, validazione e rate limiting.
 - Licenza MIT (`LICENSE.md`).
 - Template GitHub per bug report, feature request e pull request.
 - Note di sviluppo spostate in `docs/`.
