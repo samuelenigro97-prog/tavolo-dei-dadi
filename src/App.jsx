@@ -992,7 +992,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.88.1';
+const APP_VERSION = '2.88.2';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2143,7 +2143,18 @@ export default function App() {
     mappaMarkerRef.current = val;
     setMappaMarker(val);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roster.attivo]);
+  }, [roster.attivo, scheda.mappaMarker?.x, scheda.mappaMarker?.y]);
+  // Su Safari mobile il trascinamento può terminare con pointercancel invece di
+  // pointerup. Salva quindi anche poco dopo ogni spostamento: il pin non dipende
+  // dall'evento finale e conserva la posizione a ogni riapertura/ricaricamento.
+  useEffect(() => {
+    if (!mappaAperta) return undefined;
+    const salvato = scheda.mappaMarker;
+    if (salvato && salvato.x === mappaMarker.x && salvato.y === mappaMarker.y) return undefined;
+    const timer = setTimeout(() => aggiorna({ mappaMarker: mappaMarkerRef.current }), 180);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mappaMarker.x, mappaMarker.y, mappaAperta]);
   const trascinaMarker = (e) => {
     const wrap = mappaWrapRef.current;
     if (!wrap) return;
