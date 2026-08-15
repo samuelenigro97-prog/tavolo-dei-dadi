@@ -42,6 +42,23 @@ function SfondoVit({ children }) {
   );
 }
 
+function IconaMonetaOro({ size = 20 }) {
+  return (
+    <span
+      aria-label="Moneta d'oro"
+      role="img"
+      style={{
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        width: size, height: size, flex: `0 0 ${size}px`, borderRadius: '50%', boxSizing: 'border-box',
+        background: 'radial-gradient(circle at 35% 30%, #ffdf73, #d9a93a 55%, #9a6a08)',
+        border: '1px solid #b8860b', color: '#fff0a6', fontSize: Math.max(9, size * 0.55),
+        lineHeight: 1, textShadow: '0 1px 1px rgba(88,52,0,0.55)',
+        boxShadow: 'inset 0 0 0 1px rgba(255,235,145,0.35)',
+      }}
+    >✦</span>
+  );
+}
+
 
 // Colore identità per ogni classe (variante chiara e scura per restare leggibile).
 // `match` = sottostringhe riconosciute nel campo classe (italiano + inglese).
@@ -992,7 +1009,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.88.0';
+const APP_VERSION = '2.88.3';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1007,6 +1024,7 @@ const URL_ARCHIVIO_PG = (
 const ORDINE_AMBIENTAZIONI = ['default', 'taverna', 'mercato', 'citta', 'accampamento', 'foresta', 'palude', 'montagna', 'tundra', 'deserto', 'mare', 'tempesta', 'dungeon', 'tempio'];
 
 function iconaAmbientazione(id) {
+  if (!id || id === 'default') return '📍';
   const nome = PRESET_COLORI.find((p) => p.id === id)?.nome || '';
   return nome.split(' ')[0] || '🎨';
 }
@@ -1979,21 +1997,24 @@ export default function App() {
     // sfondo della scheda: alone tematico che cambia con la classe selezionata
     // Sfondo atmosferico "tavolo a lume di candela" (ispirato alla palette D&D):
     // bagliore della classe + luce ambrata calda in alto + vignettatura profonda.
-    const tintaClasse = acc ? acc[modo] : t.gold;
-    const glowClasse = `radial-gradient(135% 95% at 50% -14%, ${mescola(t.bg, tintaClasse, scuroEff ? 0.26 : 0.17)}, transparent 60%)`;
-    const ambra = `radial-gradient(70% 46% at 50% -2%, rgba(224,162,74,${scuroEff ? 0.13 : 0.06}), transparent 66%)`;
-    const vignetta = `radial-gradient(116% 116% at 50% 42%, transparent 52%, ${mescola(t.bg, '#000000', scuroEff ? 0.42 : 0.13)} 100%)`;
-    // sfondo atmosferico dell'ambientazione (gradienti tematici nei margini pagina)
-    const sfondoAmbiente = presetDati.sfondo || '';
-    // Immagine di sfondo a tema (foto libere/di pubblico dominio in
-    // public/ambientazioni/<id>.jpg): riempie i margini della pagina e cambia
-    // con l'ambientazione. La "Classica" (default) resta senza immagine.
     const hexRgba = (hex, a) => {
       const m = /^#?([0-9a-fA-F]{6})$/.exec(hex || '');
       if (!m) return `rgba(0,0,0,${a})`;
       const n = parseInt(m[1], 16);
       return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
     };
+    const tintaClasse = acc ? acc[modo] : t.gold;
+    const coloreGlow = mescola(t.bg, tintaClasse, scuroEff ? 0.26 : 0.17);
+    // In modalità giorno il colore miscelato è quasi bianco: opaco lavava la
+    // fotografia. La trasparenza conserva la tinta di classe senza sovraesporre.
+    const glowClasse = `radial-gradient(135% 95% at 50% -14%, ${hexRgba(coloreGlow, scuroEff ? 1 : 0.34)}, transparent 60%)`;
+    const ambra = `radial-gradient(70% 46% at 50% -2%, rgba(224,162,74,${scuroEff ? 0.13 : 0.06}), transparent 66%)`;
+    const vignetta = `radial-gradient(116% 116% at 50% 42%, transparent 52%, ${mescola(t.bg, '#000000', scuroEff ? 0.42 : 0.13)} 100%)`;
+    // sfondo atmosferico dell'ambientazione (gradienti tematici nei margini pagina)
+    const sfondoAmbiente = presetDati.sfondo || '';
+    // Immagine di sfondo a tema (foto libere/di pubblico dominio in
+    // public/ambientazioni/<id>.jpg): riempie i margini della pagina e cambia
+    // con il luogo. Il preset tecnico di base resta senza immagine.
     const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/';
     const idAmb = presetDati.id;
     const conImmagine = idAmb && idAmb !== 'default';
@@ -2139,7 +2160,18 @@ export default function App() {
     mappaMarkerRef.current = val;
     setMappaMarker(val);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roster.attivo]);
+  }, [roster.attivo, scheda.mappaMarker?.x, scheda.mappaMarker?.y]);
+  // Su Safari mobile il trascinamento può terminare con pointercancel invece di
+  // pointerup. Salva quindi anche poco dopo ogni spostamento: il pin non dipende
+  // dall'evento finale e conserva la posizione a ogni riapertura/ricaricamento.
+  useEffect(() => {
+    if (!mappaAperta) return undefined;
+    const salvato = scheda.mappaMarker;
+    if (salvato && salvato.x === mappaMarker.x && salvato.y === mappaMarker.y) return undefined;
+    const timer = setTimeout(() => aggiorna({ mappaMarker: mappaMarkerRef.current }), 180);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mappaMarker.x, mappaMarker.y, mappaAperta]);
   const trascinaMarker = (e) => {
     const wrap = mappaWrapRef.current;
     if (!wrap) return;
@@ -4527,7 +4559,7 @@ export default function App() {
           <button
             ref={ambientazioneBtnRef}
             className="game-actions-btn"
-            title="Ambientazione: cambia insieme colori, sfondo e audio"
+            title={t('luogo.tooltip')}
             onClick={() => {
               sbloccaAudio();
               if (!mostraPannelloAudio) {
@@ -4539,7 +4571,7 @@ export default function App() {
               }
               setMostraPannelloAudio(!mostraPannelloAudio);
             }}
-          >{iconaAmbientazione(presetColori)} Ambientazione</button>
+          >{iconaAmbientazione(presetColori)} {t('luogo.titolo')}</button>
           <button
             className="game-actions-btn"
             onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())}
@@ -4550,7 +4582,7 @@ export default function App() {
               className="game-actions-btn"
               onClick={() => (combat.combattenti.length ? setCombat((c) => ({ ...c, attivo: true, aperto: true })) : aggiungiPgAlCombat())}
               title={t('ct.apri')}
-            >⚔️ {t('ct.titolo')}{combat.combattenti.length ? ` (${combat.combattenti.length})` : ''}</button>
+            >⚔️ <span className="game-action-combat-full">{t('ct.titolo')}</span><span className="game-action-combat-short">{t('ct.tasto')}</span>{combat.combattenti.length ? ` (${combat.combattenti.length})` : ''}</button>
           )}
         </div>
         </div>
@@ -4731,8 +4763,8 @@ export default function App() {
         >
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
             <div style={{ fontWeight: 'bold', color: C.goldDark, display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <span>{iconaAmbientazione(presetColori)} Ambientazione</span>
-              <span style={{ fontSize: 11, fontWeight: 'normal', color: C.inkDim }}>(colori, sfondo e audio insieme · tutto offline)</span>
+              <span>{iconaAmbientazione(presetColori)} {t('luogo.titolo')}</span>
+              <span style={{ fontSize: 11, fontWeight: 'normal', color: C.inkDim }}>{t('luogo.descrizione')}</span>
             </div>
             <button
               style={{ ...styles.btnMini }}
@@ -4741,7 +4773,7 @@ export default function App() {
           </div>
           <button
             style={{ ...styles.btnMini, width: '100%', padding: '7px 10px', borderColor: C.goldDark, color: C.ink, background: C.panelLight }}
-            title="Passa subito dalla versione diurna a quella notturna senza chiudere Ambientazione"
+            title={t('luogo.giorno_notte_tip')}
             onClick={() => setTema(notteAttiva ? 'chiaro' : 'scuro')}
           >
             {notteAttiva ? '☀️ Passa al giorno' : '🌙 Passa alla notte'}
@@ -4795,7 +4827,7 @@ export default function App() {
 
           {/* Ambientazioni: un click applica palette + sfondo + audio abbinato */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 4 }}>
-          {[...PRESET_COLORI].sort((a, b) => ORDINE_AMBIENTAZIONI.indexOf(a.id) - ORDINE_AMBIENTAZIONI.indexOf(b.id)).map((p) => {
+          {[...PRESET_COLORI].filter((p) => p.id !== 'default').sort((a, b) => ORDINE_AMBIENTAZIONI.indexOf(a.id) - ORDINE_AMBIENTAZIONI.indexOf(b.id)).map((p) => {
               const attivo = presetColori === p.id;
               const conSuono = p.audio && p.audio !== 'spento';
               return (
@@ -6713,18 +6745,7 @@ export default function App() {
                             {(!filtroInventario || 'monete'.includes(filtroInventario.trim().toLowerCase())) && (
                               <tr style={{ opacity: 0.9 }} title="Monete d'oro: modificando qui aggiorni la sezione Monete (e viceversa). Il peso di tutte le monete è contato nell'ingombro.">
                                 <td style={{ ...styles.td, textAlign: 'center' }}>
-                                  <span
-                                    aria-label="Moneta d'oro"
-                                    role="img"
-                                    style={{
-                                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                                      width: 20, height: 20, borderRadius: '50%', boxSizing: 'border-box',
-                                      background: 'radial-gradient(circle at 35% 30%, #ffdf73, #d9a93a 55%, #9a6a08)',
-                                      border: '1px solid #b8860b', color: '#fff0a6', fontSize: 11,
-                                      lineHeight: 1, textShadow: '0 1px 1px rgba(88,52,0,0.55)',
-                                      boxShadow: 'inset 0 0 0 1px rgba(255,235,145,0.35)',
-                                    }}
-                                  >✦</span>
+                                  <IconaMonetaOro />
                                 </td>
                                 <td style={styles.td}>Monete d'oro (MO)</td>
                                 <td style={styles.td}>
@@ -6780,18 +6801,32 @@ export default function App() {
                     </div>
                     
                     <div style={{ background: C.panelLight, padding: '12px 14px', borderRadius: 8, border: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ ...styles.panelTitle, marginBottom: 8 }}>{t('monete.titolo')}</div>
                       {(() => {
                         const d = scheda.denari || {};
                         const totMo = ((d.mr || 0) / 100) + ((d.ma || 0) / 10) + ((d.me || 0) / 2) + (d.mo || 0) + ((d.mp || 0) * 10);
                         const numMonete = (d.mr || 0) + (d.ma || 0) + (d.me || 0) + (d.mo || 0) + (d.mp || 0);
                         const pesoMonete = numMonete * 0.01; // 50 monete = 0.5 kg (0.01 kg a moneta)
                         return (
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, gap: 8, ...styles.detail }}>
-                            <strong style={{ color: C.ink, fontSize: 13 }}>Monete</strong>
-                            <span title={`${numMonete} monete · peso contato nell'ingombro`} style={{ fontSize: 12, color: C.goldDark, fontWeight: 700, textAlign: 'right' }}>
-                              💎 ≈ {totMo.toFixed(2)} MO · {pesoMonete.toFixed(2)} kg
-                            </span>
-                          </div>
+                          <>
+                            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
+                              <button
+                                style={{ ...styles.buttonMini, fontSize: 11, color: C.goldDark, borderColor: C.goldDark }}
+                                title={t('monete.converti_tip')}
+                                onClick={() => {
+                                  const mr = d.mr || 0;
+                                  const ma = d.ma || 0;
+                                  const addMo = Math.floor(mr / 100) + Math.floor(ma / 10);
+                                  if (addMo > 0) aggiorna({ denari: { ...d, mr: mr % 100, ma: ma % 10, mo: (d.mo || 0) + addMo } });
+                                  else alert(t('monete.insufficienti'));
+                                }}
+                              >🔄 {t('monete.converti')}</button>
+                            </div>
+                            <div title={t('monete.totale_tip', { n: numMonete })} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 7, marginBottom: 10, fontSize: 12, color: C.goldDark, fontWeight: 700, textAlign: 'center' }}>
+                              <IconaMonetaOro size={18} />
+                              <span>≈ {totMo.toFixed(2)} MO · {pesoMonete.toFixed(2)} kg</span>
+                            </div>
+                          </>
                         );
                       })()}
                       <div className="griglia-monete" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 8, marginTop: 'auto' }}>
@@ -6804,33 +6839,6 @@ export default function App() {
                           </div>
                         ))}
                       </div>
-                      {(() => {
-                        const d = scheda.denari || {};
-                        return (
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
-                            <button
-                              style={{ ...styles.buttonMini, fontSize: 11, color: C.goldDark, borderColor: C.goldDark }}
-                              title="Converte tutte le Monete di Rame (100 MR = 1 MO) e d'Argento (10 MA = 1 MO) in equivalenti Monete d'Oro, tenendo i resti"
-                              onClick={() => {
-                                const mr = d.mr || 0;
-                                const ma = d.ma || 0;
-                                const moFromMr = Math.floor(mr / 100);
-                                const moFromMa = Math.floor(ma / 10);
-                                const remMr = mr % 100;
-                                const remMa = ma % 10;
-                                const addMo = moFromMr + moFromMa;
-                                if (addMo > 0) {
-                                  aggiorna({ denari: { ...d, mr: remMr, ma: remMa, mo: (d.mo || 0) + addMo } });
-                                } else {
-                                  alert("Non hai abbastanza monete di rame o argento per convertire in 1 MO!");
-                                }
-                              }}
-                            >
-                              🔄 Converti MR/MA in MO
-                            </button>
-                          </div>
-                        );
-                      })()}
                     </div>
                   </div>
                 );

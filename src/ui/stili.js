@@ -595,6 +595,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   box-shadow: 0 1px 4px rgba(0,0,0,0.16);
 }
 .game-actions-btn:hover { filter: brightness(1.08); }
+.game-action-combat-short { display: none; }
 @media (max-width: 780px) {
   .spell-filters { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
   .spell-filters > input:first-child { grid-column: 1 / -1; }
@@ -634,6 +635,8 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     min-height: 34px; padding: 4px 3px; text-align: center; font-size: 11px;
     overflow: hidden; text-overflow: ellipsis;
   }
+  .game-action-combat-full { display: none; }
+  .game-action-combat-short { display: inline; }
   /* dadi: pulsanti compatti e leggibili su telefono in riga singola */
   .dadi-riga { justify-content: space-between; flex-wrap: wrap !important; gap: 4px !important; }
   .dadi-riga .dado-btn { flex: 0 0 auto; min-width: 28px !important; width: 28px !important; height: 28px !important; padding: 0 !important; text-align: center; }
