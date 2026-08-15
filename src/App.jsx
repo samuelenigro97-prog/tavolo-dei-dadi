@@ -1010,7 +1010,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.90.0';
+const APP_VERSION = '2.90.1';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -6960,10 +6960,10 @@ export default function App() {
                         const numMonete = (d.mr || 0) + (d.ma || 0) + (d.me || 0) + (d.mo || 0) + (d.mp || 0);
                         const pesoMonete = numMonete * 0.01; // 50 monete = 0.5 kg (0.01 kg a moneta)
                         return (
-                          <>
-                            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 10, minWidth: 0 }}>
+                            <div style={{ display: 'flex', justifyContent: 'flex-start', minWidth: 0 }}>
                               <button
-                                style={{ ...styles.buttonMini, fontSize: 11, color: C.goldDark, borderColor: C.goldDark }}
+                                style={{ ...styles.buttonMini, fontSize: 11, color: C.goldDark, borderColor: C.goldDark, whiteSpace: 'nowrap' }}
                                 title={t('monete.converti_tip')}
                                 onClick={() => {
                                   const mr = d.mr || 0;
@@ -6974,11 +6974,11 @@ export default function App() {
                                 }}
                               >🔄 {t('monete.converti')}</button>
                             </div>
-                            <div title={t('monete.totale_tip', { n: numMonete })} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 7, marginBottom: 10, fontSize: 12, color: C.goldDark, fontWeight: 700, textAlign: 'center' }}>
+                            <div title={t('monete.totale_tip', { n: numMonete })} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 7, minWidth: 0, fontSize: 12, color: C.goldDark, fontWeight: 700, textAlign: 'right', whiteSpace: 'nowrap' }}>
                               <IconaMonetaOro size={18} />
                               <span>≈ {totMo.toFixed(2)} MO · {pesoMonete.toFixed(2)} kg</span>
                             </div>
-                          </>
+                          </div>
                         );
                       })()}
                       <div className="griglia-monete" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 8, marginTop: 'auto' }}>
