@@ -11,6 +11,7 @@ Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 - Runbook release manuale in `docs/RELEASE.md`.
 
 ### Modificato
+- Il menu "Ambientazione" diventa "Luogo", non mostra più il preset tecnico "Classica" e attenua il bagliore del tema giorno.
 - Rimossa dalla repository la cartella `scratchpad/` già ignorata da `.gitignore`.
 
 ### Da automatizzare quando il permesso `workflow` sarà attivo

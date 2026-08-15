@@ -992,7 +992,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.88.0';
+const APP_VERSION = '2.88.1';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1007,6 +1007,7 @@ const URL_ARCHIVIO_PG = (
 const ORDINE_AMBIENTAZIONI = ['default', 'taverna', 'mercato', 'citta', 'accampamento', 'foresta', 'palude', 'montagna', 'tundra', 'deserto', 'mare', 'tempesta', 'dungeon', 'tempio'];
 
 function iconaAmbientazione(id) {
+  if (!id || id === 'default') return '📍';
   const nome = PRESET_COLORI.find((p) => p.id === id)?.nome || '';
   return nome.split(' ')[0] || '🎨';
 }
@@ -1979,21 +1980,24 @@ export default function App() {
     // sfondo della scheda: alone tematico che cambia con la classe selezionata
     // Sfondo atmosferico "tavolo a lume di candela" (ispirato alla palette D&D):
     // bagliore della classe + luce ambrata calda in alto + vignettatura profonda.
-    const tintaClasse = acc ? acc[modo] : t.gold;
-    const glowClasse = `radial-gradient(135% 95% at 50% -14%, ${mescola(t.bg, tintaClasse, scuroEff ? 0.26 : 0.17)}, transparent 60%)`;
-    const ambra = `radial-gradient(70% 46% at 50% -2%, rgba(224,162,74,${scuroEff ? 0.13 : 0.06}), transparent 66%)`;
-    const vignetta = `radial-gradient(116% 116% at 50% 42%, transparent 52%, ${mescola(t.bg, '#000000', scuroEff ? 0.42 : 0.13)} 100%)`;
-    // sfondo atmosferico dell'ambientazione (gradienti tematici nei margini pagina)
-    const sfondoAmbiente = presetDati.sfondo || '';
-    // Immagine di sfondo a tema (foto libere/di pubblico dominio in
-    // public/ambientazioni/<id>.jpg): riempie i margini della pagina e cambia
-    // con l'ambientazione. La "Classica" (default) resta senza immagine.
     const hexRgba = (hex, a) => {
       const m = /^#?([0-9a-fA-F]{6})$/.exec(hex || '');
       if (!m) return `rgba(0,0,0,${a})`;
       const n = parseInt(m[1], 16);
       return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
     };
+    const tintaClasse = acc ? acc[modo] : t.gold;
+    const coloreGlow = mescola(t.bg, tintaClasse, scuroEff ? 0.26 : 0.17);
+    // In modalità giorno il colore miscelato è quasi bianco: opaco lavava la
+    // fotografia. La trasparenza conserva la tinta di classe senza sovraesporre.
+    const glowClasse = `radial-gradient(135% 95% at 50% -14%, ${hexRgba(coloreGlow, scuroEff ? 1 : 0.34)}, transparent 60%)`;
+    const ambra = `radial-gradient(70% 46% at 50% -2%, rgba(224,162,74,${scuroEff ? 0.13 : 0.06}), transparent 66%)`;
+    const vignetta = `radial-gradient(116% 116% at 50% 42%, transparent 52%, ${mescola(t.bg, '#000000', scuroEff ? 0.42 : 0.13)} 100%)`;
+    // sfondo atmosferico dell'ambientazione (gradienti tematici nei margini pagina)
+    const sfondoAmbiente = presetDati.sfondo || '';
+    // Immagine di sfondo a tema (foto libere/di pubblico dominio in
+    // public/ambientazioni/<id>.jpg): riempie i margini della pagina e cambia
+    // con il luogo. Il preset tecnico di base resta senza immagine.
     const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/';
     const idAmb = presetDati.id;
     const conImmagine = idAmb && idAmb !== 'default';
@@ -4527,7 +4531,7 @@ export default function App() {
           <button
             ref={ambientazioneBtnRef}
             className="game-actions-btn"
-            title="Ambientazione: cambia insieme colori, sfondo e audio"
+            title={t('luogo.tooltip')}
             onClick={() => {
               sbloccaAudio();
               if (!mostraPannelloAudio) {
@@ -4539,7 +4543,7 @@ export default function App() {
               }
               setMostraPannelloAudio(!mostraPannelloAudio);
             }}
-          >{iconaAmbientazione(presetColori)} Ambientazione</button>
+          >{iconaAmbientazione(presetColori)} {t('luogo.titolo')}</button>
           <button
             className="game-actions-btn"
             onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())}
@@ -4731,8 +4735,8 @@ export default function App() {
         >
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
             <div style={{ fontWeight: 'bold', color: C.goldDark, display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <span>{iconaAmbientazione(presetColori)} Ambientazione</span>
-              <span style={{ fontSize: 11, fontWeight: 'normal', color: C.inkDim }}>(colori, sfondo e audio insieme · tutto offline)</span>
+              <span>{iconaAmbientazione(presetColori)} {t('luogo.titolo')}</span>
+              <span style={{ fontSize: 11, fontWeight: 'normal', color: C.inkDim }}>{t('luogo.descrizione')}</span>
             </div>
             <button
               style={{ ...styles.btnMini }}
@@ -4741,7 +4745,7 @@ export default function App() {
           </div>
           <button
             style={{ ...styles.btnMini, width: '100%', padding: '7px 10px', borderColor: C.goldDark, color: C.ink, background: C.panelLight }}
-            title="Passa subito dalla versione diurna a quella notturna senza chiudere Ambientazione"
+            title={t('luogo.giorno_notte_tip')}
             onClick={() => setTema(notteAttiva ? 'chiaro' : 'scuro')}
           >
             {notteAttiva ? '☀️ Passa al giorno' : '🌙 Passa alla notte'}
@@ -4795,7 +4799,7 @@ export default function App() {
 
           {/* Ambientazioni: un click applica palette + sfondo + audio abbinato */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 4 }}>
-          {[...PRESET_COLORI].sort((a, b) => ORDINE_AMBIENTAZIONI.indexOf(a.id) - ORDINE_AMBIENTAZIONI.indexOf(b.id)).map((p) => {
+          {[...PRESET_COLORI].filter((p) => p.id !== 'default').sort((a, b) => ORDINE_AMBIENTAZIONI.indexOf(a.id) - ORDINE_AMBIENTAZIONI.indexOf(b.id)).map((p) => {
               const attivo = presetColori === p.id;
               const conSuono = p.audio && p.audio !== 'spento';
               return (
