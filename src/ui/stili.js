@@ -596,6 +596,19 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 }
 .game-actions-btn:hover { filter: brightness(1.08); }
 .game-action-combat-short { display: none; }
+.ts-morte-box { align-items: center; }
+.ts-morte-controlli {
+  display: grid; gap: 5px; width: max-content; margin: 2px auto 0;
+  font-size: 11px;
+}
+.ts-morte-riga {
+  display: grid; grid-template-columns: 14px repeat(3, 15px);
+  align-items: center; justify-items: center; column-gap: 5px;
+}
+.ts-morte-riga input[type="checkbox"] {
+  width: 14px; height: 14px; margin: 0;
+}
+.ts-morte-reset { display: block !important; margin: 5px auto 0 !important; }
 @media (max-width: 780px) {
   .spell-filters { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
   .spell-filters > input:first-child { grid-column: 1 / -1; }
@@ -625,7 +638,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .app-header-side .game-actions-dock { display: contents; }
   .app-header-group:first-of-type .header-label { display: none; }
   .app-header-side .app-header-group > button {
-    width: 100%; max-width: none;
+    width: 100%; min-width: 0 !important; max-width: none; box-sizing: border-box;
     min-height: 34px; padding: 4px 6px !important; font-size: 18px !important;
   }
   .app-shell { padding-left: 8px !important; padding-right: 8px !important; overflow-x: clip; }

@@ -259,8 +259,9 @@ export function CampoConTendina({ value, opzioni, onChange, width, title, lookup
  * Se il valore corrente non è tra le opzioni, mostra sotto un campo di testo
  * così i valori personalizzati/importati non vanno persi.
  */
-export function CampoTendina({ value, opzioni, onChange, title }) {
+export function CampoTendina({ value, opzioni, onChange, title, formattaOpzione }) {
   const std = Array.isArray(opzioni) ? opzioni.includes(value) : Object.values(opzioni).flat().includes(value);
+  const etichetta = (opzione) => formattaOpzione ? formattaOpzione(opzione) : traduciDato(opzione);
   return (
     <>
       <select
@@ -285,10 +286,10 @@ export function CampoTendina({ value, opzioni, onChange, title }) {
       >
         <option value="" style={{ background: C.panel }}>{t("common.scegli")}</option>
         {Array.isArray(opzioni) ? opzioni.map((o) => (
-          <option key={o} value={o} style={{ background: C.panel }}>{traduciDato(o)}</option>
+          <option key={o} value={o} style={{ background: C.panel }}>{etichetta(o)}</option>
         )) : Object.entries(opzioni).map(([group, opts]) => (
           <optgroup key={group} label={traduciDato(group)} style={{ background: C.panel }}>
-            {opts.map((o) => <option key={o} value={o} style={{ background: C.panel }}>{traduciDato(o)}</option>)}
+            {opts.map((o) => <option key={o} value={o} style={{ background: C.panel }}>{etichetta(o)}</option>)}
           </optgroup>
         ))}
         <option value="__altro" style={{ background: C.panel }}>{t("common.altro")}</option>
