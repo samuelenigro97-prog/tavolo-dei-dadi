@@ -423,6 +423,7 @@ export const DIZIONARIO = {
     'update.ignora': 'Ignora',
     // Combat tracker
     'ct.titolo': 'Combattimento',
+    'ct.tasto': 'Scontro',
     'ct.apri': 'Apri il tracker combattimento',
     'ct.round': 'Round',
     'ct.turno': 'Turno',
@@ -1013,6 +1014,7 @@ export const DIZIONARIO = {
     'update.ignora': 'Dismiss',
     // Combat tracker
     'ct.titolo': 'Combat',
+    'ct.tasto': 'Combat',
     'ct.apri': 'Open the combat tracker',
     'ct.round': 'Round',
     'ct.turno': 'Turn',

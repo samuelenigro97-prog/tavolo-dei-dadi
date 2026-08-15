@@ -4554,7 +4554,7 @@ export default function App() {
               className="game-actions-btn"
               onClick={() => (combat.combattenti.length ? setCombat((c) => ({ ...c, attivo: true, aperto: true })) : aggiungiPgAlCombat())}
               title={t('ct.apri')}
-            >⚔️ {t('ct.titolo')}{combat.combattenti.length ? ` (${combat.combattenti.length})` : ''}</button>
+            >⚔️ <span className="game-action-combat-full">{t('ct.titolo')}</span><span className="game-action-combat-short">{t('ct.tasto')}</span>{combat.combattenti.length ? ` (${combat.combattenti.length})` : ''}</button>
           )}
         </div>
         </div>
