@@ -301,3 +301,17 @@ test('creazione a livello alto: trucchetti e incantesimi coerenti con classe e s
   // Chi non lancia incantesimi non riceve nulla.
   assert.equal(incantesimiInizialiPerLivello('Guerriero', 10, '2024', { forza: 18 }), null);
 });
+
+test('catalogo preparabili: solo classi preparatrici, senza trucchetti e senza duplicati', async () => {
+  const { classePreparaIncantesimi, catalogoIncantesimiPreparabili } = await import('../src/rules/regole.js');
+  assert.equal(classePreparaIncantesimi('Mago'), true);
+  assert.equal(classePreparaIncantesimi('Chierico'), true);
+  assert.equal(classePreparaIncantesimi('Stregone'), false);
+  assert.deepEqual(catalogoIncantesimiPreparabili('Stregone'), []);
+
+  const catalogo = catalogoIncantesimiPreparabili('Mago');
+  assert.ok(catalogo.length > 20);
+  assert.ok(catalogo.every((s) => s.livello >= 1));
+  assert.equal(new Set(catalogo.map((s) => `${s.livello}:${s.nome.toLowerCase()}`)).size, catalogo.length);
+  assert.ok(catalogo.some((s) => s.nome === 'Dardo Incantato' && s.livello === 1));
+});

@@ -6,7 +6,7 @@ import { CLASSI, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, SLOT_FULL_CASTER, SLOT
   INCANTESIMI_CLASSE, CARATT_INCANTATORE } from '../data/dati5e.js';
 import { modificatore } from './dadi.js';
 import { spiegaIncantesimo } from '../data/spiegazioni.js';
-import { datiIncantesimo } from '../data/incantesimi.js';
+import { INCANTESIMI_DB, datiIncantesimo } from '../data/incantesimi.js';
 
 export function trucchettiMax(classe, livello) {
   const k = chiaveClasse(classe);
@@ -40,6 +40,34 @@ export function sottoclasseLivPer(versione) {
 export function chiaveClasse(classe) {
   const c = coloreClasse(classe);
   return c ? c.match[0] : null;
+}
+
+/** Classi che scelgono ogni giorno gli incantesimi preparati da una lista ampia. */
+export function classePreparaIncantesimi(classe) {
+  return ['mago', 'chierico', 'druido', 'paladino'].includes(chiaveClasse(classe));
+}
+
+/**
+ * Catalogo completo disponibile per una classe preparatrice. Unisce il database
+ * dettagliato alle liste curate, così eventuali voci presenti in una sola fonte
+ * non spariscono. I trucchetti restano esclusi: si conoscono, non si preparano.
+ */
+export function catalogoIncantesimiPreparabili(classe) {
+  const chiave = chiaveClasse(classe);
+  if (!classePreparaIncantesimi(classe)) return [];
+  const catalogo = new Map();
+  for (const [nome, dati] of Object.entries(INCANTESIMI_DB)) {
+    if (!(dati.livello >= 1) || !(dati.classi || []).some((c) => chiaveClasse(c) === chiave)) continue;
+    catalogo.set(`${dati.livello}:${nome.toLocaleLowerCase('it')}`, { nome, ...dati });
+  }
+  for (const [livello, nomi] of Object.entries(INCANTESIMI_CLASSE[chiave] || {})) {
+    if (Number(livello) < 1) continue;
+    for (const nome of nomi) {
+      const key = `${Number(livello)}:${nome.toLocaleLowerCase('it')}`;
+      if (!catalogo.has(key)) catalogo.set(key, { nome, livello: Number(livello), ...(datiIncantesimo(nome) || {}) });
+    }
+  }
+  return [...catalogo.values()].sort((a, b) => a.livello - b.livello || a.nome.localeCompare(b.nome, 'it'));
 }
 
 export function privilegiClasseLivello(classe, livello, versione = '2024') {
