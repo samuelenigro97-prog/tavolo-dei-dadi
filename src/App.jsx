@@ -1010,7 +1010,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.89.0';
+const APP_VERSION = '2.89.1';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1737,6 +1737,10 @@ export default function App() {
   const [mutoAudio, setMutoAudio] = useState(() => localStorage.getItem('scheda-interattiva:muto-audio') === 'true');
   // Effetti sonori attivi solo se non sono in muto.
   const suoniEffOn = effettiSonoriAttivi && !mutoAudio;
+  // Safari iOS consente l'avvio dei file audio solo nello stesso gesto che li
+  // attiva. Quando partono già dal click, evita che l'effect li fermi e ricrei
+  // subito dopo fuori dal gesto (operazione che Safari bloccherebbe).
+  const audioAvviatoDaGestoRef = useRef(false);
 
   useEffect(() => {
     try {
@@ -1757,6 +1761,10 @@ export default function App() {
     // overlay. Riattivandolo, l'ambiente corrente riparte da zero.
     if (mutoAudio) {
       fermaAmbiente();
+      return;
+    }
+    if (audioAvviatoDaGestoRef.current) {
+      audioAvviatoDaGestoRef.current = false;
       return;
     }
     avviaAmbiente(ambienteAudio, volumeAudio * (notteAttiva ? 0.6 : 1), urlCustomAudio, notteAttiva);
@@ -2012,7 +2020,7 @@ export default function App() {
     const coloreGlow = mescola(t.bg, tintaClasse, scuroEff ? 0.26 : 0.17);
     // In modalità giorno il colore miscelato è quasi bianco: opaco lavava la
     // fotografia. La trasparenza conserva la tinta di classe senza sovraesporre.
-    const glowClasse = `radial-gradient(135% 95% at 50% -14%, ${hexRgba(coloreGlow, scuroEff ? 1 : 0.34)}, transparent 60%)`;
+    const glowClasse = `radial-gradient(135% 95% at 50% -14%, ${hexRgba(coloreGlow, scuroEff ? 0.18 : 0.12)}, transparent 60%)`;
     const ambra = `radial-gradient(70% 46% at 50% -2%, rgba(224,162,74,${scuroEff ? 0.13 : 0.06}), transparent 66%)`;
     const vignetta = `radial-gradient(116% 116% at 50% 42%, transparent 52%, ${mescola(t.bg, '#000000', scuroEff ? 0.42 : 0.13)} 100%)`;
     // sfondo atmosferico dell'ambientazione (gradienti tematici nei margini pagina)
@@ -4904,7 +4912,14 @@ export default function App() {
               }}
             >🎲 Suoni dadi {effettiSonoriAttivi ? 'ON' : 'OFF'}</button>
             <button
-              onClick={() => setMutoAudio((m) => !m)}
+              onClick={() => {
+                if (mutoAudio) {
+                  sbloccaAudio();
+                  audioAvviatoDaGestoRef.current = true;
+                  avviaAmbiente(ambienteAudio, volumeAudio * (notteAttiva ? 0.6 : 1), urlCustomAudio, notteAttiva);
+                }
+                setMutoAudio((m) => !m);
+              }}
               title={mutoAudio ? 'Audio in muto · click per riattivare tutto' : 'Muta rapidamente tutto l’audio (sottofondo + effetti)'}
               style={{
                 ...styles.btnMini, flex: 1, padding: '8px 6px', whiteSpace: 'nowrap',
@@ -4923,7 +4938,15 @@ export default function App() {
               return (
                 <button
                   key={p.id}
-                  onClick={() => { sbloccaAudio(); setPresetColori(p.id); setAmbienteAudio(p.audio); }}
+                  onClick={() => {
+                    sbloccaAudio();
+                    if (!mutoAudio) {
+                      audioAvviatoDaGestoRef.current = p.audio !== ambienteAudio;
+                      avviaAmbiente(p.audio, volumeAudio * (notteAttiva ? 0.6 : 1), urlCustomAudio, notteAttiva);
+                    }
+                    setPresetColori(p.id);
+                    setAmbienteAudio(p.audio);
+                  }}
                   title={`${p.nome}${conSuono ? ' · audio ambientale incluso' : ' · silenzio'}`}
                   style={{
                     padding: '4px 6px', minHeight: 29, borderRadius: 6, border: `1px solid ${attivo ? C.goldDark : C.border}`,
@@ -4942,7 +4965,15 @@ export default function App() {
           {/* Audio personalizzato (facoltativo): sovrascrive il sottofondo con un MP3/stream */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <button
-              onClick={() => { sbloccaAudio(); setAmbienteAudio(ambienteAudio === 'custom' ? 'spento' : 'custom'); }}
+              onClick={() => {
+                const prossimo = ambienteAudio === 'custom' ? 'spento' : 'custom';
+                sbloccaAudio();
+                if (!mutoAudio) {
+                  audioAvviatoDaGestoRef.current = prossimo !== ambienteAudio;
+                  avviaAmbiente(prossimo, volumeAudio * (notteAttiva ? 0.6 : 1), urlCustomAudio, notteAttiva);
+                }
+                setAmbienteAudio(prossimo);
+              }}
               title="Usa un file/stream audio da URL al posto del sottofondo generato"
               style={{
                 ...styles.btnMini,

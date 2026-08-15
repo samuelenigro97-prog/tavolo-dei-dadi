@@ -81,7 +81,7 @@ export const PRESET_COLORI = [
     scuro:  { bg: '#0b1009', panel: '#141b11', panelLight: '#1c2617', border: '#34452a', ink: '#dbe7cf', inkDim: '#849873', gold: '#8ea64a', goldDark: '#b2c96b', title: '#b2c96b' },
   },
   {
-    id: 'mare', nome: '🌊 Mare / Costa', audio: 'mare',
+    id: 'mare', nome: '🌊 Mare', audio: 'mare',
     sfondo: 'radial-gradient(55% 60% at 0% 15%, rgba(30,150,170,0.15), transparent 62%), radial-gradient(55% 60% at 100% 85%, rgba(40,170,190,0.13), transparent 62%)',
     chiaro: { bg: '#e8f5f4', panel: '#f4fcfb', panelLight: '#dcf0ee', border: '#96ccc8', ink: '#0e2c2a', inkDim: '#3e807a', gold: '#0e9088', goldDark: '#066660', title: '#066660' },
     scuro:  { bg: '#06110f', panel: '#0d1c1a', panelLight: '#132724', border: '#1e4440', ink: '#c6ece6', inkDim: '#54a09a', gold: '#20b0a4', goldDark: '#50d0c4', title: '#50d0c4' },
@@ -99,7 +99,7 @@ export const PRESET_COLORI = [
     scuro:  { bg: '#0c1217', panel: '#141d24', panelLight: '#1b2730', border: '#30414d', ink: '#d8e2e8', inkDim: '#7f96a4', gold: '#7899ad', goldDark: '#a2bed0', title: '#a2bed0' },
   },
   {
-    id: 'tempesta', nome: '🌧️ Pioggia / Tempesta', audio: 'tempesta',
+    id: 'tempesta', nome: '🌧️ Pioggia', audio: 'tempesta',
     sfondo: 'radial-gradient(55% 60% at 0% 15%, rgba(90,110,140,0.17), transparent 62%), radial-gradient(55% 60% at 100% 85%, rgba(70,90,120,0.15), transparent 62%)',
     chiaro: { bg: '#edeff2', panel: '#f6f8fa', panelLight: '#e2e6ec', border: '#aeb8c6', ink: '#1e242e', inkDim: '#586474', gold: '#5878a0', goldDark: '#3a5678', title: '#3a5678' },
     scuro:  { bg: '#0b0e13', panel: '#13171f', panelLight: '#1a1f2a', border: '#2a3340', ink: '#d2dae6', inkDim: '#68758c', gold: '#6890c0', goldDark: '#88acd8', title: '#88acd8' },
