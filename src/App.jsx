@@ -596,7 +596,7 @@ const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(I
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, incantesimiInizialiPerLivello, pesoStimato, pesoArmatura } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, pesoStimato, pesoArmatura } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -1010,7 +1010,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.89.1';
+const APP_VERSION = '2.90.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3248,7 +3248,21 @@ export default function App() {
   // dei conosciuti è illimitato, ma ogni giorno se ne preparano fino a un massimo.
   // Gli altri (Stregone, Bardo, Warlock, Ranger) CONOSCONO un numero fisso, sempre
   // pronto: nessuna preparazione separata.
-  const classePreparata = /(\bmago\b|wizard|chierico|cleric|druido|druid|paladino|paladin)/i.test(scheda.classe || '');
+  const classePreparata = classePreparaIncantesimi(scheda.classe);
+  const maxLivelloPreparabile = Math.max(0, ...Object.entries(scheda.slotIncantesimo || {})
+    .filter(([, slot]) => Number(slot?.totale) > 0)
+    .map(([livello]) => Number(livello) || 0));
+  const chiaviIncantesimiSalvati = new Set(scheda.incantesimiLista
+    .filter((s) => s.livello >= 1)
+    .map((s) => `${s.livello}:${String(s.nome || '').toLocaleLowerCase('it')}`));
+  const incantesimiVisualizzati = classePreparata
+    ? [
+        ...scheda.incantesimiLista,
+        ...catalogoIncantesimiPreparabili(scheda.classe)
+          .filter((s) => s.livello <= maxLivelloPreparabile && !chiaviIncantesimiSalvati.has(`${s.livello}:${s.nome.toLocaleLowerCase('it')}`))
+          .map((s) => ({ ...s, id: `catalogo-${s.livello}-${s.nome}`, catalogo: true, preparato: false })),
+      ]
+    : scheda.incantesimiLista;
   const nPreparati = scheda.incantesimiLista.filter((s) => s.livello > 0 && !s.bonus && s.preparato !== false).length;
   // base = override manuale (>0) oppure automatico da classe/livello/versione
   const baseTrucchetti = (scheda.maxTrucchetti > 0) ? scheda.maxTrucchetti : trucchettiMax(scheda.classe, scheda.livello);
@@ -6395,11 +6409,11 @@ export default function App() {
                   </select>
                   <select value={filtroScuolaInc} onChange={(e) => setFiltroScuolaInc(e.target.value)} style={{ ...styles.inlineInput, padding: '6px 7px' }} aria-label={t('spell.filtro_scuola')}>
                     <option value="">{t('spell.tutte_scuole')}</option>
-                    {[...new Set(scheda.incantesimiLista.map((s) => s.scuola || datiIncantesimo(s.nome)?.scuola).filter(Boolean))].sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((scuola) => <option key={scuola} value={scuola}>{traduciDato(scuola)}</option>)}
+                    {[...new Set(incantesimiVisualizzati.map((s) => s.scuola || datiIncantesimo(s.nome)?.scuola).filter(Boolean))].sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((scuola) => <option key={scuola} value={scuola}>{traduciDato(scuola)}</option>)}
                   </select>
                   <select value={filtroClasseInc} onChange={(e) => setFiltroClasseInc(e.target.value)} style={{ ...styles.inlineInput, padding: '6px 7px' }} aria-label={t('spell.filtro_classe')}>
                     <option value="">{t('spell.tutte_classi')}</option>
-                    {[...new Set(scheda.incantesimiLista.flatMap((s) => datiIncantesimo(s.nome)?.classi || []))].sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((classe) => <option key={classe} value={classe}>{traduciDato(classe)}</option>)}
+                    {[...new Set(incantesimiVisualizzati.flatMap((s) => s.classi || datiIncantesimo(s.nome)?.classi || []))].sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((classe) => <option key={classe} value={classe}>{traduciDato(classe)}</option>)}
                   </select>
                   <button type="button" onClick={() => setSoloRitualiInc((v) => !v)} title={t('spell.solo_rituali')}
                     style={{ ...styles.buttonMini, padding: '6px 8px', fontSize: 12, borderColor: soloRitualiInc ? C.goldDark : C.border, color: soloRitualiInc ? C.goldDark : C.inkDim, fontWeight: soloRitualiInc ? 700 : 400 }}>
@@ -6420,13 +6434,27 @@ export default function App() {
                     && (!filtroClasseInc || (d.classi || []).includes(filtroClasseInc))
                     && (!soloRitualiInc || d.rituale === true);
                 };
-                const maxSpellLiv = Math.max(0, ...scheda.incantesimiLista.map(s => s.livello || 0));
+                const maxSpellLiv = Math.max(0, ...incantesimiVisualizzati.map(s => s.livello || 0));
                 const maxSlotLiv = Math.max(0, ...Object.entries(scheda.slotIncantesimo || {}).filter(([_, v]) => v.totale > 0).map(([k]) => parseInt(k, 10)));
                 const maxLiv = Math.min(9, Math.max(scheda.incantatore?.caratteristica ? 1 : 0, maxSpellLiv, maxSlotLiv + 1));
                 const aggiungiInc = (nome, liv, manuale, bonus) => {
                   const d = dettagliIncantesimo(nome) || { tempo: manuale ? '1 Az.' : 'AZ', gittata: '', note: '' };
                   aggiorna({ incantesimiLista: [...scheda.incantesimiLista,
                     { id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, livello: liv, nome, tempo: d.tempo, gittata: d.gittata, note: d.note, scuola: d.scuola || '', area: d.area || '', danno: d.danno || '', tipoDanno: d.tipoDanno || '', preparato: true, ...(bonus ? { bonus: true } : {}) }] });
+                };
+                const cambiaPreparazione = (s) => {
+                  const staPreparando = s.preparato === false;
+                  if (staPreparando && preparatiPieni && !s.bonus) return;
+                  if (s.catalogo) {
+                    const { catalogo: _catalogo, id: _id, desc: _desc, classi: _classi, conc: _conc, rituale: _rituale, ...base } = s;
+                    aggiorna({ incantesimiLista: [...scheda.incantesimiLista, {
+                      ...base,
+                      id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                      preparato: true,
+                    }] });
+                    return;
+                  }
+                  aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, preparato: x.preparato === false } : x)) });
                 };
                 // Tastino piccolo di aggiunta sotto ogni livello: menu compatto con
                 // i suggerimenti di quel livello + "scrivi a mano", e toggle ✦ bonus.
@@ -6457,7 +6485,9 @@ export default function App() {
                   );
                 };
                 const renderLivello = (liv) => {
-                  const spells = scheda.incantesimiLista.filter((s) => s.livello === liv && match(s));
+                  const spells = incantesimiVisualizzati
+                    .filter((s) => s.livello === liv && match(s))
+                    .sort((a, b) => Number(b.preparato !== false) - Number(a.preparato !== false) || String(a.nome || '').localeCompare(String(b.nome || ''), lingua));
                   if (filtriAttivi && spells.length === 0) return null;
                   const countLiv = scheda.incantesimiLista.filter((x) => x.livello === liv).length;
                   return (
@@ -6561,12 +6591,13 @@ export default function App() {
                                     {classePreparata && s.livello >= 1 && (
                                       <button
                                         style={{ ...styles.buttonMini, color: s.preparato !== false ? C.goldDark : C.inkDim, borderColor: s.preparato !== false ? C.goldDark : C.border }}
-                                        title={s.preparato !== false ? t('spell.preparato_si') : t('spell.preparato_no')}
-                                        onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, preparato: x.preparato === false } : x)) })}
+                                        title={s.preparato === false && preparatiPieni && !s.bonus ? t('spell.max_tooltip') : (s.preparato !== false ? t('spell.preparato_si') : t('spell.preparato_no'))}
+                                        disabled={s.preparato === false && preparatiPieni && !s.bonus}
+                                        onClick={() => cambiaPreparazione(s)}
                                       >{s.preparato !== false ? '⭐' : '☆'}</button>
                                     )}
-                                    <button style={styles.buttonMini} title={t('tip.modifica')} onClick={() => setDettaglioInc(s.id)}>✎</button>
-                                    <button style={{ ...styles.buttonMini, color: C.red }} title={t('tip.elimina_inc')} onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })}>🗑</button>
+                                    {!s.catalogo && <button style={styles.buttonMini} title={t('tip.modifica')} onClick={() => setDettaglioInc(s.id)}>✎</button>}
+                                    {!s.catalogo && <button style={{ ...styles.buttonMini, color: C.red }} title={t('tip.elimina_inc')} onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })}>🗑</button>}
                                   </div>
                                 </div>
                               </div>
@@ -6579,7 +6610,7 @@ export default function App() {
                   );
                 };
                 const livelliInc = Array.from({ length: maxLiv }, (_, i) => i + 1);
-                if (filtriAttivi && !scheda.incantesimiLista.some(match)) {
+                if (filtriAttivi && !incantesimiVisualizzati.some(match)) {
                   return <p style={{ ...styles.detail, textAlign: 'center', padding: '12px 0', opacity: 0.8 }}>{t('spell.nessun_risultato')}</p>;
                 }
                 return (
