@@ -680,6 +680,7 @@ const DENARI = [
 function schedaVuota() {
   return {
     nome: 'Avventuriero senza nome',
+    sesso: '', // maschio | femmina | altro; modifica solo il nome mostrato della specie
     ritratto: '', // immagine del personaggio come data URL (jpeg ridimensionato)
     background: '',
     classe: '',
@@ -764,6 +765,31 @@ function schedaVuota() {
     mappaCampagna: '',
     mappaMarker: { x: 50, y: 50 },
   };
+}
+
+/** Forma italiana della specie coerente col sesso, senza cambiare il valore
+ * canonico usato dalle regole (es. il dato resta "Elfo Alto"). */
+function nomeSpeciePerSesso(specie, sesso, lingua = 'it') {
+  if (lingua !== 'it' || sesso !== 'femmina') return traduciDato(specie);
+  const femminili = {
+    Elfo: 'Elfa',
+    'Elfo Alto': 'Elfa Alta',
+    'Elfo dei Boschi': 'Elfa dei Boschi',
+    'Elfo Oscuro (Drow)': 'Elfa Oscura (Drow)',
+    Gnomo: 'Gnoma',
+    'Gnomo delle Foreste': 'Gnoma delle Foreste',
+    'Gnomo delle Rocce': 'Gnoma delle Rocce',
+    'Halfling Piedelesto': 'Halfling Piedelesta',
+    'Halfling Tozzo': 'Halfling Tozza',
+    Nano: 'Nana',
+    'Nano delle Colline': 'Nana delle Colline',
+    'Nano delle Montagne': 'Nana delle Montagne',
+    Mezzorco: 'Mezzorca',
+    Orco: 'Orca',
+    Umano: 'Umana',
+    Mezzelfo: 'Mezzelfa',
+  };
+  return femminili[specie] || traduciDato(specie);
 }
 
 const TIPI_ARMATURA = [
@@ -935,6 +961,40 @@ function risorseAutoClasse(classe, livello, caratteristiche, versione = '2024') 
       return [];
   }
 }
+
+/**
+ * Completa e aggiorna le risorse automatiche senza toccare quelle aggiunte a
+ * mano. Quando il massimo cresce conserva il numero di utilizzi già spesi.
+ */
+function sincronizzaRisorseClasse(scheda, versione = '2024') {
+  if (!scheda) return [];
+  const correnti = Array.isArray(scheda.risorse) ? scheda.risorse : [];
+  const automatiche = risorseAutoClasse(scheda.classe, scheda.livello, scheda.caratteristiche, versione);
+  if (!automatiche.length) return correnti;
+
+  let cambiate = false;
+  const risultato = [...correnti];
+  for (const auto of automatiche) {
+    const indice = risultato.findIndex((r) =>
+      r?.id === auto.id || String(r?.nome || '').toLocaleLowerCase('it') === auto.nome.toLocaleLowerCase('it')
+    );
+    if (indice < 0) {
+      risultato.push(auto);
+      cambiate = true;
+      continue;
+    }
+    const corrente = risultato[indice];
+    const vecchioMax = Math.max(0, Number(corrente.max) || 0);
+    const vecchiAttuali = Math.max(0, Math.min(vecchioMax, Number(corrente.attuali) || 0));
+    const usati = Math.max(0, vecchioMax - vecchiAttuali);
+    const attuali = Math.max(0, auto.max - usati);
+    if (corrente.max !== auto.max || corrente.reset !== auto.reset || corrente.id !== auto.id || corrente.nome !== auto.nome || corrente.attuali !== attuali) {
+      risultato[indice] = { ...corrente, ...auto, attuali };
+      cambiate = true;
+    }
+  }
+  return cambiate ? risultato : correnti;
+}
 // Spiegazioni delle risorse di classe (parole proprie, meccaniche 5e/5.5):
 // mostrate al passaggio del cursore sul nome, come per le altre sezioni.
 const SPIEG_RISORSE = {
@@ -943,6 +1003,8 @@ const SPIEG_RISORSE = {
   'Punti Focus': 'La riserva di Ki del Monaco (punti = livello). Li spendi per le tue tecniche: Raffica di Colpi (1 attacco bonus extra), Scatto Vertiginoso, Difesa Paziente. Si recuperano tutti con un riposo breve o lungo.',
   'Recupero Arcano': 'Una volta al giorno, durante un riposo breve, recuperi slot incantesimo spesi per un totale di livelli pari alla metà del tuo livello da Mago (arrotondata per eccesso): 4 livelli al 7°, 5 al 9°, e nessuno slot di 6° livello o superiore. Si ricarica con un riposo lungo.',
   'Punti Stregoneria': 'La riserva di energia magica dello Stregone (punti = livello). Puoi convertirli in slot incantesimo (o viceversa) e alimentano la Metamagia. Si recuperano con un riposo lungo.',
+  'Stregoneria Innata': 'Come azione bonus sprigioni la tua magia interiore per 1 minuto: la CD dei tuoi incantesimi da Stregone aumenta di 1 e hai Vantaggio ai loro tiri per colpire. Hai 2 utilizzi e li recuperi con un riposo lungo.',
+  'Borsa del Guaritore': 'Contiene 10 utilizzi. Come azione puoi spenderne uno per stabilizzare una creatura a 0 PF senza effettuare una prova di Medicina.',
   'Recuperare Energie': 'Azione bonus: recuperi 1d10 + il tuo livello da Guerriero in PF. Si ricarica con un riposo breve o lungo.',
   'Azione Impetuosa': 'Una volta per riposo (due volte dal 17° livello) compi un’azione aggiuntiva nel tuo turno, oltre a quella normale. Si ricarica con un riposo breve o lungo.',
   'Forma Selvatica': 'Ti trasformi in una bestia che conosci, entro i limiti di grado sfida della tua edizione (azione nella 5.0, azione bonus nella 5.5). Usi limitati, recuperati con un riposo breve o lungo.',
@@ -1010,7 +1072,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.90.1';
+const APP_VERSION = '2.91.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1272,6 +1334,7 @@ function normalizeImported(dati) {
       fallimenti: clampTs(dati.tsMorte?.fallimenti),
     },
     nome: str(dati.nome, base.nome) || base.nome,
+    sesso: ['maschio', 'femmina', 'altro'].includes(dati.sesso) ? dati.sesso : '',
     ritratto:
       typeof dati.ritratto === 'string' &&
       (dati.ritratto.startsWith('data:image/') || dati.ritratto.startsWith('https://api.dicebear.com')) &&
@@ -1711,7 +1774,7 @@ export default function App() {
   const [mostraRipristino, setMostraRipristino] = useState(false); // modale "ripristina versione precedente"
   const [rinominando, setRinominando] = useState(false); // rinomina inline del PG attivo
   const [mostraCrea, setMostraCrea] = useState(false); // schermata di creazione guidata
-  const [bozzaCrea, setBozzaCrea] = useState({ nome: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' });
+  const [bozzaCrea, setBozzaCrea] = useState({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' });
   // versione delle regole: '2024' (5.5, default) o '2014' (5.0)
   const [regoleVersione, setRegoleVersione] = useState(() => localStorage.getItem('scheda-interattiva:versione') || '2024');
   useEffect(() => {
@@ -2066,6 +2129,22 @@ export default function App() {
   // 5.0 e 5.5 mostrano solo le regole dell'edizione di questo personaggio.
   setEdizioneAttuale(versione);
 
+  // Le risorse tipiche della classe devono esserci anche nelle schede vecchie
+  // o importate e devono seguire automaticamente livello e caratteristiche.
+  useEffect(() => {
+    if (!scheda) return;
+    setRoster((r) => {
+      const corrente = r.personaggi[r.attivo];
+      if (!corrente) return r;
+      const sincronizzate = sincronizzaRisorseClasse(corrente, corrente.versione || regoleVersione || '2024');
+      if (sincronizzate === corrente.risorse) return r;
+      return {
+        ...r,
+        personaggi: { ...r.personaggi, [r.attivo]: { ...corrente, risorse: sincronizzate } },
+      };
+    });
+  }, [roster.attivo, scheda?.classe, scheda?.livello, scheda?.versione, scheda?.caratteristiche, regoleVersione]);
+
   useEffect(() => {
     const esito = saveState(roster);
     salvaImmaginiRoster(roster).catch(() => {
@@ -2244,12 +2323,13 @@ export default function App() {
   }
 
   /** Genera un personaggio coerente da classe/specie/background (creazione guidata). */
-  function creaPersonaggio({ nome, classe, sottoclasse, specie, background, metodo, pool, assegna, competenzeClasse, competenzeSpecie, dotazione, livello }) {
+  function creaPersonaggio({ nome, sesso, classe, sottoclasse, specie, background, metodo, pool, assegna, competenzeClasse, competenzeSpecie, dotazione, livello }) {
     const s = schedaVuota();
     // Livello iniziale scelto in creazione (1-20): impostato SUBITO così dado vita,
     // slot incantesimo e bonus di competenza vengono calcolati per quel livello.
     s.livello = Math.max(1, Math.min(20, Number(livello) || 1));
     s.nome = nome?.trim() || 'Nuovo personaggio';
+    s.sesso = ['maschio', 'femmina', 'altro'].includes(sesso) ? sesso : '';
     s.classe = classe;
     s.sottoclasse = sottoclasse || '';
     s.specie = specie;
@@ -4310,12 +4390,20 @@ export default function App() {
                 <button style={styles.buttonMini} title={t('crea.genera_nome')} onClick={() => setB({ nome: nomeCasuale(bozzaCrea.specie) })}>🎲</button>
               </div>
 
+              <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{t('profilo.sesso')}</label>
+              <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.sesso} onChange={(e) => setB({ sesso: e.target.value })}>
+                <option value="">{t('profilo.sesso_non_specificato')}</option>
+                <option value="maschio">{t('profilo.sesso_maschio')}</option>
+                <option value="femmina">{t('profilo.sesso_femmina')}</option>
+                <option value="altro">{t('profilo.sesso_altro')}</option>
+              </select>
+
               <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{regoleVersione === '2024' ? t('crea.specie') : t('crea.razza')}</label>
               <select style={{ ...stileSelect, marginBottom: bozzaCrea.specie ? 4 : 12 }} value={bozzaCrea.specie} onChange={(e) => setB({ specie: e.target.value, competenzeSpecie: [] })}>
                 <option value="">{t('crea.scegli')}</option>
                 {Object.entries(SPECIE_5E).map(([g, opts]) => (
                   <optgroup key={g} label={g}>
-                    {opts.map((n) => <option key={n} value={n}>{n}</option>)}
+                    {opts.map((n) => <option key={n} value={n}>{nomeSpeciePerSesso(n, bozzaCrea.sesso, lingua)}</option>)}
                   </optgroup>
                 ))}
               </select>
@@ -4620,7 +4708,7 @@ export default function App() {
             title={lingua === 'it' ? 'Interfaccia in italiano — click per passare all’inglese' : 'Interface in English — click to switch to Italian'}
             onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
           >
-            {lingua === 'it' ? '🇮🇹 IT' : '🇬🇧 EN'}
+            {lingua === 'it' ? '🇮🇹 ITA' : '🇬🇧 ENG'}
           </button>
         </div>
 
@@ -5383,9 +5471,22 @@ export default function App() {
             <div className="profilo-main">
               {/* Riga 1 — Anagrafica (allineata a Forza) */}
               <div className="pm-anagrafica">
-              <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px 10px', alignItems: 'end' }}>
+              <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px 10px', alignItems: 'end' }}>
+                <CampoModulo label={t("profilo.sesso")}>
+                  <select
+                    value={scheda.sesso || ''}
+                    onChange={(e) => aggiorna({ sesso: e.target.value })}
+                    title={t('profilo.sesso_tooltip')}
+                    style={{ background: 'transparent', border: 'none', color: C.ink, fontFamily: 'inherit', width: '100%', outline: 'none', cursor: 'pointer' }}
+                  >
+                    <option value="">{t('profilo.sesso_non_specificato')}</option>
+                    <option value="maschio">{t('profilo.sesso_maschio')}</option>
+                    <option value="femmina">{t('profilo.sesso_femmina')}</option>
+                    <option value="altro">{t('profilo.sesso_altro')}</option>
+                  </select>
+                </CampoModulo>
                 <CampoModulo label={versione === "2024" ? t("profilo.specie") : t("profilo.razza")}>
-                  <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} onChange={(v) => { const sp = datiSpecieDi(v); aggiorna({ specie: v, ...(sp ? { velocita: sp.velocita, sensi: sp.sensi, taglia: sp.taglia, trattiSpecie: trattiSpecieTesto(sp.tratti) } : {}), ...abilitaConSpecie(v), ...ritrattoAuto(scheda.classe, v, scheda.nome) }); }} title={t('tip.scegli_specie')} />
+                  <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} formattaOpzione={(v) => nomeSpeciePerSesso(v, scheda.sesso, lingua)} onChange={(v) => { const sp = datiSpecieDi(v); aggiorna({ specie: v, ...(sp ? { velocita: sp.velocita, sensi: sp.sensi, taglia: sp.taglia, trattiSpecie: trattiSpecieTesto(sp.tratti) } : {}), ...abilitaConSpecie(v), ...ritrattoAuto(scheda.classe, v, scheda.nome) }); }} title={t('tip.scegli_specie')} />
                 </CampoModulo>
                 <CampoModulo label={t("profilo.taglia")}>
                   <CampoTendina value={scheda.taglia} opzioni={TAGLIE_5E} onChange={(v) => aggiorna({ taglia: v })} title={t('tip.scegli_taglia')} />
@@ -5675,11 +5776,11 @@ export default function App() {
               </div>
               {/* Riga 4 — Salvezza e sensi (allineata a Saggezza) */}
               <div className="vitali pm-gruppo">
-                <div style={{ ...styles.vitalBox }}>
+                <div className="ts-morte-box" style={{ ...styles.vitalBox }}>
                   <SfondoVit>💀</SfondoVit>
                   <div style={styles.vitalLabel}>{t("vital.ts_morte")}</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3, fontSize: 11 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div className="ts-morte-controlli">
+                    <div className="ts-morte-riga">
                       <span style={{ color: C.green, fontWeight: 600 }}>✔</span>
                       {[1, 2, 3].map((n) => (
                         <input key={`s-${n}`} type="checkbox" checked={(scheda.tsMorte?.successi || 0) >= n} onChange={() => {
@@ -5688,7 +5789,7 @@ export default function App() {
                         }} />
                       ))}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <div className="ts-morte-riga">
                       <span style={{ color: C.red, fontWeight: 600 }}>✘</span>
                       {[1, 2, 3].map((n) => (
                         <input key={`f-${n}`} type="checkbox" checked={(scheda.tsMorte?.fallimenti || 0) >= n} onChange={() => {
@@ -5698,7 +5799,7 @@ export default function App() {
                       ))}
                     </div>
                   </div>
-                  <button style={{ ...styles.buttonMini, fontSize: 10, marginTop: 2 }} onClick={() => aggiorna({ tsMorte: { successi: 0, fallimenti: 0 } })}>{t("vital.reset_ts")}</button>
+                  <button className="ts-morte-reset" style={{ ...styles.buttonMini, fontSize: 10 }} onClick={() => aggiorna({ tsMorte: { successi: 0, fallimenti: 0 } })}>{t("vital.reset_ts")}</button>
                   {scheda.pfAttuali <= 0 && (
                     <button
                       style={{ ...styles.buttonMini, fontSize: 10, marginTop: 3, color: C.red, borderColor: C.red, fontWeight: 700 }}
@@ -5991,10 +6092,20 @@ export default function App() {
               {scheda.risorse.map((r) => {
                 const modifica = (patch) =>
                   aggiorna({ risorse: scheda.risorse.map((x) => (x.id === r.id ? { ...x, ...patch } : x)) });
+                const spiegazione = spiegaRisorsa(r.nome);
                 return (
                   <div key={r.id} style={{ marginBottom: 8, fontSize: 12 }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
-                      <Editable value={r.nome} onChange={(v) => modifica({ nome: v })} width={110} title={spiegaRisorsa(r.nome) || t('tip.nome_risorsa')} />
+                      {spiegazione ? (
+                        <button
+                          type="button"
+                          title={spiegazione}
+                          onClick={() => setInfo({ titolo: r.nome, testo: spiegazione })}
+                          style={{ padding: 0, border: 0, background: 'transparent', color: C.ink, font: 'inherit', fontWeight: 600, textAlign: 'left', cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
+                        >{r.nome}</button>
+                      ) : (
+                        <Editable value={r.nome} onChange={(v) => modifica({ nome: v })} width={110} title={t('tip.nome_risorsa')} />
+                      )}
                       <button
                         style={{ ...styles.buttonMini, padding: '0 6px', color: C.red }}
                         title={t('tip.rimuovi_risorsa')}
@@ -6492,9 +6603,11 @@ export default function App() {
                   const countLiv = scheda.incantesimiLista.filter((x) => x.livello === liv).length;
                   return (
                     <div key={liv} style={{ marginBottom: 14 }}>
-                      <h4 style={{ fontSize: 12, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5, borderBottom: `1px solid ${C.border}`, paddingBottom: 2, marginBottom: 6, display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                        <span>{liv === 0 ? t('spell.trucchetti_liv0') : t('spell.n_livello', { n: liv })}</span>
-                      </h4>
+                      {liv > 0 && (
+                        <h4 style={{ fontSize: 12, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5, borderBottom: `1px solid ${C.border}`, paddingBottom: 2, marginBottom: 6, display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                          <span>{t('spell.n_livello', { n: liv })}</span>
+                        </h4>
+                      )}
                       {liv >= 1 && (() => {
                         const slot = scheda.slotIncantesimo[liv] || { totale: 0, spesi: 0 };
                         const aggiornaSlot = (patch) => aggiorna({ slotIncantesimo: { ...scheda.slotIncantesimo, [liv]: { ...slot, ...patch } } });

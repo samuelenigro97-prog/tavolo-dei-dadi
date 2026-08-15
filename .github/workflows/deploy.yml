@@ -36,7 +36,13 @@ jobs:
       - run: npm test
       # 2) Smoke test: costruisce l'app e la carica in un browser reale.
       #    Se la pagina va in crash (schermata bianca), il job fallisce.
-      - run: npx playwright install --with-deps chromium
+      # Evita che un problema temporaneo di apt/Playwright tenga bloccata per
+      # ore tutta la coda dei deploy di main. Se l'installazione delle
+      # dipendenze supera 3 minuti, riprova installando il solo browser (le
+      # immagini ubuntu-latest includono già normalmente le librerie runtime).
+      - name: Installa Chromium per lo smoke test
+        timeout-minutes: 5
+        run: timeout --kill-after=15s 180s npx playwright install --with-deps chromium || npx playwright install chromium
       - run: npm run build
         env:
           BASE_PATH: /tavolo-dei-dadi/
