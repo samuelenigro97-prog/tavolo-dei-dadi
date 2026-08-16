@@ -556,7 +556,18 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
    griglia ordinata). Su desktop MOLTO largo i pulsanti passano in colonna a
    sinistra (vedi @media min-width:1440px), lasciando spazio verticale in cima. */
 .app-header { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.app-header-title { text-align: center; white-space: nowrap; margin: 0; }
+.app-header-title {
+  text-align: center; white-space: nowrap; margin: 0;
+  display: inline-flex; align-items: baseline; justify-content: center; gap: 7px;
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--c-panel) 70%, transparent);
+}
+.app-version {
+  display: inline-flex; align-items: center; min-height: 17px; padding: 1px 6px;
+  border: 1px solid color-mix(in srgb, var(--c-border) 75%, transparent);
+  border-radius: 999px; background: color-mix(in srgb, var(--c-panel) 82%, transparent);
+  color: var(--c-ink-dim); font: 600 9px/1 Georgia, serif; letter-spacing: .35px;
+  vertical-align: middle;
+}
 /* Tutti i tasti su UNA riga sotto il titolo: i gruppi si sciolgono con
    display:contents, così i bottoni sono figli diretti della riga. */
 .app-header-side {
@@ -589,7 +600,9 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   background: var(--c-panel-light) !important; color: var(--c-ink) !important;
   border-color: var(--c-gold-dark) !important;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.16);
+  border-radius: 8px !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.14), inset 0 1px 0 rgba(255,255,255,0.09);
+  transition: filter .15s ease, transform .1s ease, box-shadow .15s ease;
 }
 /* schermata di caricamento dal cloud: nuvola che pulsa e barra che scorre */
 .cloud-spinner { animation: cloud-bob 1.4s ease-in-out infinite; }
@@ -607,9 +620,13 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   border: 1px solid var(--c-gold-dark); background: var(--c-panel-light);
   color: var(--c-ink); font-family: inherit; font-size: 13px; font-weight: normal;
   text-align: center; white-space: nowrap; cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.16);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.14), inset 0 1px 0 rgba(255,255,255,0.09);
+  transition: filter .15s ease, transform .1s ease, box-shadow .15s ease;
 }
 .game-actions-btn:hover { filter: brightness(1.08); }
+.app-header-group > button:not(:disabled):active,
+.game-actions-btn:not(:disabled):active { box-shadow: inset 0 1px 3px rgba(0,0,0,.2); }
 .game-action-combat-short { display: none; }
 .ts-morte-box { align-items: center; }
 .ts-morte-controlli {
@@ -696,6 +713,41 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     background: var(--c-panel);
     box-shadow: -6px 0 6px -5px rgba(0,0,0,0.35);
   }
+  /* Inventario: sul telefono ogni oggetto diventa una scheda leggibile. Non si
+     perde alcuna colonna e non serve trascinare lateralmente la tabella. */
+  .inventario-wrap { overflow-x: visible !important; }
+  .inventario-table, .inventario-table tbody { display: block; width: 100%; }
+  .inventario-table thead { display: none; }
+  .inventario-table .inventario-riga {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    align-items: center; gap: 3px 8px;
+    margin: 0 0 8px; padding: 8px;
+    border: 1px solid var(--c-border); border-radius: 9px;
+    background: color-mix(in srgb, var(--c-panel-light) 84%, transparent);
+    box-shadow: 0 1px 3px rgba(0,0,0,.1);
+  }
+  .inventario-table .inventario-riga > td {
+    display: flex; align-items: center; min-width: 0;
+    padding: 3px 2px !important; border: 0 !important;
+  }
+  .inventario-table .inventario-riga > td:nth-child(1) { grid-column: 1; grid-row: 1; justify-content: center; }
+  .inventario-table .inventario-riga > td:nth-child(2) { grid-column: 2 / 4; grid-row: 1; font-weight: 700; }
+  .inventario-table .inventario-riga > td:nth-child(2) > * { max-width: 100%; }
+  .inventario-table .inventario-riga > td:nth-child(3) { grid-column: 1; grid-row: 2; justify-content: center; }
+  .inventario-table .inventario-riga > td:nth-child(4) { grid-column: 2; grid-row: 2; justify-content: flex-start; }
+  .inventario-table .inventario-riga > td:nth-child(5) { grid-column: 3; grid-row: 2; justify-content: flex-end; }
+  .inventario-table .inventario-riga > .inventario-azioni {
+    grid-column: 1 / -1; grid-row: 3; justify-content: flex-end;
+    padding-top: 6px !important; border-top: 1px solid var(--c-border) !important;
+  }
+  .inventario-table .inventario-riga > td:nth-child(n+3):not(.inventario-azioni)::before {
+    content: attr(data-label); margin-right: 4px; color: var(--c-ink-dim);
+    font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
+  }
+  .inventario-table .inventario-riga > .inventario-azioni button { min-width: 32px; min-height: 30px; }
+  .inventario-table tr:not(.inventario-riga) { display: block; margin: -8px 0 8px; }
+  .inventario-table tr:not(.inventario-riga) td[colspan] { display: block; width: auto; padding: 8px !important; }
 }
 @media (max-width: 820px) {
   .griglia-scheda { grid-template-columns: 1fr; }

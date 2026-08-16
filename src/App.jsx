@@ -1145,7 +1145,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.92.4';
+const APP_VERSION = '2.93.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -4767,10 +4767,8 @@ export default function App() {
 
       <header className="app-header" style={styles.header}>
         <h1 className="app-header-title" style={{ ...styles.title, margin: 0 }}>
-          <span style={{ position: 'relative' }}>
-            Tavolo dei Dadi
-            <span style={{ position: 'absolute', left: '100%', bottom: 3, marginLeft: 6, fontSize: 11, color: C.inkDim, fontWeight: 'normal', letterSpacing: 0.5 }}>v{APP_VERSION}</span>
-          </span>
+          <span>Tavolo dei Dadi</span>
+          <span className="app-version">v{APP_VERSION}</span>
         </h1>
         <div className="app-header-side">
         <div className="app-header-group">
@@ -7133,8 +7131,8 @@ export default function App() {
                     </div>
                     {/* Lista oggetti */}
                     {(inv.length > 0 || numMonete > 0) && (
-                      <div style={{ overflowX: 'auto' }}>
-                        <table style={styles.table}>
+                      <div className="inventario-wrap" style={{ overflowX: 'auto' }}>
+                        <table className="inventario-table" style={styles.table}>
                           <thead><tr>
                             <th style={styles.th} title={t('inv.equip_tooltip')}>{t('inv.equip')}</th>
                             <th style={styles.th}>{t('inv.nome')}</th>
@@ -7151,13 +7149,13 @@ export default function App() {
                               const effettoAttivo = !!o.effettoMeccanico && isEquip && (!o.richiedeSintonia || isSintonizzato);
                               return (
                                 <Fragment key={o.id}>
-                                <tr style={{ opacity: isEquip ? 1 : 0.82 }}>
-                                  <td style={{ ...styles.td, textAlign: 'center' }}>
+                                <tr className="inventario-riga" style={{ opacity: isEquip ? 1 : 0.82 }}>
+                                  <td data-label={t('inv.equip')} style={{ ...styles.td, textAlign: 'center' }}>
                                     <input type="checkbox" checked={isEquip} onChange={(e) => toggleEquip(o, e.target.checked)} title={t('inv.equip_tooltip')} />
                                   </td>
-                                  <td style={styles.td}><Editable value={o.nome} width={150} onChange={(v) => rinominaItem(o, v)} /></td>
-                                  <td style={styles.td}>×<Editable value={o.qta} tipo="numero" width={30} onChange={(v) => modInv(o.id, { qta: Math.max(1, v) })} /></td>
-                                  <td style={{ ...styles.td, textAlign: 'center' }}>
+                                  <td data-label={t('inv.nome')} style={styles.td}><Editable value={o.nome} width={150} onChange={(v) => rinominaItem(o, v)} /></td>
+                                  <td data-label={t('inv.qta')} style={styles.td}>×<Editable value={o.qta} tipo="numero" width={30} onChange={(v) => modInv(o.id, { qta: Math.max(1, v) })} /></td>
+                                  <td data-label={t('inv.sintonia')} style={{ ...styles.td, textAlign: 'center' }}>
                                     <button
                                       type="button"
                                       aria-pressed={isSintonizzato}
@@ -7167,8 +7165,8 @@ export default function App() {
                                       style={{ border: 0, background: 'transparent', padding: '1px 5px', fontSize: 20, lineHeight: 1, color: isSintonizzato ? C.goldDark : C.inkDim, cursor: 'pointer' }}
                                     >{isSintonizzato ? '✦' : '◇'}</button>
                                   </td>
-                                  <td style={{ ...styles.td, color: C.inkDim, whiteSpace: 'nowrap' }}><Editable value={o.peso} tipo="numero" width={40} onChange={(v) => modInv(o.id, { peso: Math.max(0, v) })} /> kg</td>
-                                  <td style={{ ...styles.td, textAlign: 'right', whiteSpace: 'nowrap' }}>
+                                  <td data-label={t('inv.peso')} style={{ ...styles.td, color: C.inkDim, whiteSpace: 'nowrap' }}><Editable value={o.peso} tipo="numero" width={40} onChange={(v) => modInv(o.id, { peso: Math.max(0, v) })} /> kg</td>
+                                  <td className="inventario-azioni" style={{ ...styles.td, textAlign: 'right', whiteSpace: 'nowrap' }}>
                                     <button
                                       style={{ ...styles.buttonMini, color: effettoAttivo ? C.goldDark : C.inkDim, borderColor: effettoAttivo ? C.goldDark : C.border }}
                                       title={t('inv.gestisci_effetti')}
@@ -7227,17 +7225,17 @@ export default function App() {
                               );
                             })}
                             {(!filtroInventario || 'monete'.includes(filtroInventario.trim().toLowerCase())) && (
-                              <tr style={{ opacity: 0.9 }} title="Monete d'oro: modificando qui aggiorni la sezione Monete (e viceversa). Il peso di tutte le monete è contato nell'ingombro.">
-                                <td style={{ ...styles.td, textAlign: 'center' }}>
+                              <tr className="inventario-riga inventario-monete" style={{ opacity: 0.9 }} title="Monete d'oro: modificando qui aggiorni la sezione Monete (e viceversa). Il peso di tutte le monete è contato nell'ingombro.">
+                                <td data-label={t('inv.equip')} style={{ ...styles.td, textAlign: 'center' }}>
                                   <IconaMonetaOro />
                                 </td>
-                                <td style={styles.td}>Monete d'oro (MO)</td>
-                                <td style={styles.td}>
+                                <td data-label={t('inv.nome')} style={styles.td}>Monete d'oro (MO)</td>
+                                <td data-label={t('inv.qta')} style={styles.td}>
                                   <Editable value={dMon.mo || 0} tipo="numero" width={44} onChange={(v) => aggiorna({ denari: { ...scheda.denari, mo: Math.max(0, v) } })} title="Monete d'oro: sincronizzate con la sezione Monete" />
                                 </td>
-                                <td style={{ ...styles.td, textAlign: 'center', color: C.inkDim }}>—</td>
-                                <td style={{ ...styles.td, color: C.inkDim, whiteSpace: 'nowrap' }}>{pesoMonete.toFixed(2)} kg{numMonete > (dMon.mo || 0) ? ` · ${numMonete} monete tot.` : ''}</td>
-                                <td style={styles.td} />
+                                <td data-label={t('inv.sintonia')} style={{ ...styles.td, textAlign: 'center', color: C.inkDim }}>—</td>
+                                <td data-label={t('inv.peso')} style={{ ...styles.td, color: C.inkDim, whiteSpace: 'nowrap' }}>{pesoMonete.toFixed(2)} kg{numMonete > (dMon.mo || 0) ? ` · ${numMonete} monete tot.` : ''}</td>
+                                <td className="inventario-azioni" style={styles.td} />
                               </tr>
                             )}
                           </tbody>
