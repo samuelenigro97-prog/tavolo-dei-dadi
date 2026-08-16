@@ -1,154 +1,210 @@
-# Continua qui — lavoro rimasto su Tavolo dei Dadi
+# Continua qui — stato reale di Tavolo dei Dadi
 
-Stato al **v2.60.0** (aggiornato dopo il consolidamento di persistenza, PWA e audio).
+Aggiornato il **16 agosto 2026**. Versione pubblicata: **v2.91.0**.
 App: https://samuelenigro97-prog.github.io/tavolo-dei-dadi/
 
-> ⚠️ Si lavora anche con **Antigravity** in parallelo su questo repo: prima di ogni
-> push fare `git fetch` e, se il remote si è mosso, `git pull --rebase`. Evitare che
-> due strumenti tocchino `src/App.jsx` contemporaneamente.
+> Si lavora anche con altre IA sul repository. Prima di modificare o pubblicare:
+> controllare branch, modifiche locali e ultimo `main`; non sovrascrivere lavoro
+> non proprio e non far modificare `src/App.jsx` contemporaneamente.
 
-## Novità dopo la 2.24.0
+## Implementato localmente, non ancora pubblicato
 
-- **2.68.0** — Competenze concesse dalla specie: dati completati
-  (`COMPETENZE_SPECIE` → Elfo Sensi Acuti, Umano Abile, Mezzelfo Versatilità,
-  Mezzorco Minaccioso) e applicate **anche** cambiando la specie nella scheda
-  (prima valevano solo in creazione): le abilità concesse diventano ★ nella
-  tabella abilità, come le competenze di classe. `competenzeSpecieDi` ora
-  risolve 'tutte' (qualsiasi abilità) ed evita il match errato Mezzelfo→Elfo.
-- **2.25.0** — Riordino sezioni finalmente unico: le sezioni erano in tre container
-  separati (il `order` CSS non poteva spostarle tra i gruppi). Ora i wrapper usano
-  `display:contents`, quindi tutte le sezioni sono nello stesso contesto flex di
-  `.griglia-scheda` e il trascinamento vale per tutte insieme. Talenti torna sopra
-  Addestramento come da `ORDINE_SEZIONI_DEFAULT`. Incantesimi: nella riga azioni il
-  tiro **Colpire** viene sempre prima dei **danni**.
-- **2.26.0** — Ritratto ridimensionato per finire alla linea di Costituzione
-  (`.profilo-ritratto` a `grid-row: 1 / 3`). Sezione **Addestramento** spostata dal
-  corpo scheda alla colonna destra del Profilo, sotto il ritratto. Badge versione
-  (5.5/5.0) portato a filo destro del selettore, prima della freccina.
-- **2.27.0** — Sezione **Risorse di classe** spostata sotto l'Addestramento nella
-  colonna destra del Profilo (wrapper `.profilo-extra`, vedi `src/ui/stili.js`).
-  Ordine colonna destra: ritratto → Addestramento → Risorse di classe. Entrambe
-  non sono più sezioni riordinabili del corpo (tolte da `ORDINE_SEZIONI_DEFAULT`).
+Già presente nel working tree, con **87 test superati** e build riuscita:
 
-## Come si lavora su questo progetto
+- Inventario: riga generica per oggetti con utilizzi, massimo e ricarica.
+- **Perla del Potere**: 1 utilizzo, recupero di uno slot di 3° livello o inferiore
+  e ricarica **all'alba**.
+- Inventario e menu testuali riusabili in ordine alfabetico; restano nel loro
+  ordine logico le sequenze meccaniche come livelli e dadi.
+- Aggiornamento PWA meno aggressivo: non elimina più service worker e cache.
+- Controllo aggiornamenti ogni 20 secondi e quando l'app torna visibile, online
+  o in primo piano.
+- Aggiornamento rimandato durante un salvataggio cloud.
+- Salvataggi Gist serializzati: le modifiche nuove vengono accodate e una
+  richiesta vecchia non può sovrascrivere dati più recenti.
+- Cache offline con timeout di rete di 3 secondi, senza attese indefinite.
 
-- `npm test` → **67 test** (regole 5e, scheda, i18n, traduzioni, condivisione). Devono restare verdi.
-- `node test/smoke.mjs` → apre l'app in un browser vero e fallisce se va in schermata bianca.
-  Serve `BASE_PATH=/tavolo-dei-dadi/` e, in locale, `SMOKE_CHROMIUM=/opt/pw-browsers/chromium`.
-- La CI (`.github/workflows/deploy.yml`) esegue test + smoke **prima** di build e deploy:
-  se falliscono, l'app non viene pubblicata.
-- Ogni modifica visibile: alzare `APP_VERSION` in `src/App.jsx`, poi commit + push su `main`.
-- I test i18n bloccano il deploy se una scritta manca in italiano o in inglese.
+Queste modifiche devono ancora essere versionate, pubblicate e provate sul sito.
 
----
+## Registro delle richieste inviate oggi
 
-## 1. Griglia unica del Profilo ✅ FATTO (v2.24.0)
+Ricostruito direttamente dalla cronologia locale del task del **15–16 agosto
+2026**. Questo registro conserva le richieste singole anche quando sono già
+completate, evitando che scompaiano dentro un riepilogo generico.
 
-**Risolto in v2.24.0.** Caratteristiche (sinistra) e riquadri vitali (centro) ora
-vivono nella **stessa griglia con righe condivise** grazie a `grid-template-rows: subgrid`
-(vedi `.profilo-caratteristiche` / `.profilo-main` in `src/ui/stili.js`). I riquadri
-vitali sono stati raggruppati in cinque "righe" (anagrafica, Punti Ferita, difesa,
-salvezza, stato) dentro `.profilo-main`; a sinistra Destrezza+Costituzione sono
-impilate in `.car-coppia` così la coppia si allinea ai Punti Ferita. Rimosso l'uso di
-`order` nei box (l'ordine è ora dato dal DOM). Verifica: su desktop 1400×1000 i top/bottom
-di ogni caratteristica coincidono al pixel col gruppo vitali corrispondente; sotto 820px
-la sezione torna a colonna singola (dati → caratteristiche → ritratto).
+| Ora | Richiesta | Stato |
+|---|---|---|
+| 20:33 | Condivisione tramite codice stanza senza token GitHub, con Worker/KV, scadenza, limiti, validazione, rate limiting, IT/EN e compatibilità link | **Fatto e pubblicato** |
+| 20:54 | Rimuovere Classica, rinominare Ambientazione in Luogo e ridurre la luce del tema giorno | **Fatto e pubblicato** |
+| 21:03 | Accorciare il pulsante «Combattimento» che appariva troncato | **Corretto localmente: Scontro anche su desktop** |
+| 21:04 | Ricordare la posizione del pin della mappa a ogni apertura | **Implementato, da riverificare sul sito** |
+| 21:07 | Ridisegnare il pannello Monete, centrare Converti e togliere il diamante non coerente | **Fatto e pubblicato** |
+| 21:28 | Ridurre ulteriormente l'effetto bianco, ripristinare l'audio e chiamare i luoghi soltanto Pioggia e Mare | **Fatto e pubblicato** |
+| 21:37 | Per le classi con incantesimi preparati mostrare tutto il catalogo e portare i preparati stellinati in cima a ogni livello | **Fatto e pubblicato** |
+| 21:48 | Mettere riepilogo e conversione Monete uno a sinistra e uno a destra sopra i tagli monetari | **Fatto e pubblicato** |
+| 21:51 | Importare Vaelion Leafwhisper dal PDF/ZIP nell'account Tavolo dei Dadi | **Importazione eseguita; inventario da completare e verificare** |
+| 21:58 | Correggere versione non aggiornata e numeri del badge disallineati | **Fatto in v2.91.0** |
+| 21:59 | Mostrare la nuova scritta del pulsante Combattimento/Scontro | **Fatto in v2.91.0** |
+| 22:01 | Compilare automaticamente le Risorse di classe secondo la classe usata | **Fatto in v2.91.0** |
+| 22:07 | Inserire il sesso prima della specie e adattare Elfo/Elfa e forme disponibili | **Fatto in v2.91.0** |
+| 22:13 | Tasto lingua ITA/ENG e allineamento Tiri Salvezza contro Morte | **Fatto in v2.91.0** |
+| 22:14 | Eliminare l'intestazione «Livello 0» dai trucchetti | **Fatto in v2.91.0** |
+| 22:14 | Sistemare disposizione e dimensioni dei pulsanti su mobile | **Implementato, da riverificare su iPhone** |
+| 22:18 | Nuvoletta/click con spiegazione dell'effetto delle Risorse di classe, senza rinominarle | **Completato localmente: aggiunta Ira e interazione ⓘ più evidente** |
+| 23:xx | Riducendo il ritratto non deve restare spazio vuoto; compattare Risorse di classe eliminando spazio e comandi ridondanti | **Corretto localmente, da verificare visivamente** |
+| 23:xx | Scambiare Percezione passiva e Sfinimento; centrare tutti i titoli delle sezioni | **Corretto localmente, da verificare visivamente** |
+| 23:xx | Inventario: vera tendina alfabetica anche su Safari, Focus druidico selezionabile e colonna Sintonia comprensibile | **Corretto localmente, da verificare su iPhone** |
+| 22:33 | Riga per oggetti a utilizzi, Perla del Potere e tutti i menu alfabetici | **Implementato localmente, non pubblicato** |
+| 22:42 | Evitare inceppamenti e rendere più rapidi gli aggiornamenti | **Implementato localmente, non pubblicato** |
 
-<details><summary>Contesto originale della richiesta</summary>
+La richiesta delle 21:51 non è chiusa finché l'inventario di Vaelion non viene
+confrontato con i documenti originali e verificato nel cloud.
 
-**Obiettivo:** allineare riga per riga i blocchi caratteristica (colonna sinistra)
-con i riquadri vitali (colonna centrale).
+## Completato e da mantenere
 
-Corrispondenze chieste:
+### Persistenza e condivisione
 
-| Sinistra | Destra |
-|---|---|
-| Forza | anagrafica (specie/taglia/allineamento…) |
-| Destrezza + Costituzione | Punti Ferita |
-| Intelligenza | Classe Armatura → Percezione Passiva |
-| Saggezza | TS Morte → Sfinimento |
-| Carisma | Condizioni + Ispirazione |
+- Salvataggio locale automatico del roster.
+- Immagini di ritratto e mappa conservate in IndexedDB, indipendenti dal file
+  originale in Download/Desktop.
+- Mappa e posizione del segnalino associate al singolo personaggio.
+- Sezioni minimizzate ricordate dopo aggiornamento o riapertura.
+- Snapshot locali e ripristino senza cancellare le immagini correnti.
+- Condivisione tramite link mantenuta.
+- Condivisione tramite **codice stanza** senza account e token GitHub: codici
+  casuali, scadenza, limiti, validazione, rate limiting e fallback locale.
+- Vecchio supporto Gist conservato e separato dalle stanze.
+- Auto-salvataggio Gist e caricamento della copia più recente all'avvio.
 
-**Misure reali già rilevate** (viewport 1400×1000, personaggio di livello 5):
+### Scheda e regole
 
-```
-DESTRA (colonna "main")          SINISTRA (blocchi caratteristica, dopo il fix 2.22.0)
-anagrafica        250 → 334      FORZA          250 → 338
-Punti Ferita      344 → 547      DESTREZZA      346 → 474
-CA / Riposo       547 → 666      COSTITUZIONE   482 → 550
-Bonus/Iniz/Vel/PP 666 → 762      INTELLIGENZA   558 → 726
-TSMorte/Res/Vis/Sf 762 → 881     SAGGEZZA       734 → 902
-Condizioni/Isp    881 → 955      CARISMA        910 → 1058
-```
+- Combat tracker presente e funzionante.
+- Creazione guidata con privilegi automatici fino al livello scelto.
+- Competenze di classe e della specie applicate automaticamente.
+- Differenze 2014/2024 già modellate per creazione, privilegi, sottoclassi,
+  slot e incantesimi.
+- Risorse di classe automatiche secondo classe, livello e caratteristiche,
+  conservando utilizzi spesi e risorse personalizzate.
+- Spiegazione cliccabile per le risorse di classe conosciute.
+- Catalogo completo per le classi che preparano incantesimi; quelli preparati
+  sono stellinati e portati in cima a ogni livello.
+- Trucchetti separati dagli incantesimi, senza intestazione «Livello 0».
+- Tiro guidato dei Tiri Salvezza contro Morte a 0 PF.
+- Dadi Vita collegati a classe e livello.
+- Classe Armatura, scudo e competenze nelle armature collegati.
+- Armi ordinate alfabeticamente senza alterare i dati originali per categoria.
+- Tiro per colpire con suono di dadi; danni con effetto coerente per arma,
+  distanza o magia.
+- Sesso del personaggio prima della specie e forma femminile della specie quando
+  disponibile.
 
-**Cosa è già stato fatto:** le due colonne partono e finiscono insieme (stesso top e
-stesso bottom); corretta una spaziatura doppia (`gap` + `marginBottom` insieme) che
-faceva sforare la colonna sinistra.
+### Interfaccia
 
-**Perché non basta il CSS:** le due colonne sono griglie *indipendenti*, nessuna può
-leggere le altezze dell'altra. Serve metterle **nella stessa griglia con righe condivise**.
+- Interfaccia italiana e inglese; tasto abbreviato **ITA/ENG**.
+- Profilo desktop allineato tramite griglia condivisa.
+- Pulsanti principali raccolti in alto su mobile; Luogo, Mappa e Scontro restano
+  laterali su desktop.
+- Menu **Luogo** al posto di Ambientazione; tema Classica rimosso.
+- Nomi Mare e Pioggia semplificati.
+- Tema Montagna, variante giorno/notte, immagini e audio dedicati.
+- Tema chiaro attenuato e contrasto dei pulsanti migliorato.
+- Moneta d'oro CSS al posto dell'emoji argentata.
+- Sezione Monete compattata e riallineata.
+- Dadi Vita, Salto e Tiri Salvezza contro Morte riallineati.
+- Icona del luogo coerente col luogo selezionato; icona Palude corretta.
+- Tasto muto interrompe sottofondo, effetti e timer e resta memorizzato.
 
-**Punti di intervento:**
-- `src/App.jsx` ~riga 4241: `.profilo-griglia` (`gridTemplateAreas: '"car main ritratto"'`)
-- `src/App.jsx` ~riga 4305: colonna `main`
-- `src/App.jsx` ~riga 4758: colonna `.profilo-caratteristiche`
-- `src/ui/stili.js`: `.vitali` usa `order` per disporre i riquadri → va ripensato se si
-  spostano i riquadri come righe della griglia principale.
+### Audio e ambientazioni
 
-**Attenzione:** su mobile (`max-width: 820px`) la griglia diventa una colonna sola
-(`"main" "car" "ritratto"`): la nuova struttura deve continuare a funzionare lì.
+- Sottofondo ed effetti con volumi separati.
+- Eventi di Città, Dungeon e Montagna casuali e senza ripetizione immediata.
+- Cinguettii rimossi dagli scenari notturni; gufi usati dove coerenti.
+- Suoni di montagna giorno/notte e vento dedicato presenti.
+- Sfondi giorno/notte gestiti automaticamente da `public/ambientazioni/`.
+- Sfondi Mercato, Montagna e Dungeon mantenuti secondo richiesta.
 
-</details>
+### Qualità verificata
 
----
+- **87 test** automatici su condivisione, persistenza, regole, stanze e traduzioni.
+- Build di produzione riuscita.
+- Workflow GitHub Pages con test, smoke test, build e deploy.
+- Traduzioni di incantesimi, privilegi, tratti, talenti, metamagie, nomi delle
+  sottoclassi e scuole coperte dai test.
 
-## 2. Panoramiche e tratti ✅ FATTO
+## Implementato ma da riverificare sul sito reale
 
-Classe e sottoclasse hanno panoramiche per livello. I tratti della specie sono
-presenti nella loro sezione e sono cliccabili per leggerne la spiegazione; non
-serve una progressione 1→20 perché le specie base non avanzano per livello.
+Questi punti richiedono una prova visiva o sonora su iPhone e desktop prima di
+considerarli definitivamente chiusi:
 
----
+- Persistenza della mappa dopo eliminazione del file originale e riavvio.
+- Persistenza del segnalino dopo spostamento, cambio personaggio e riapertura.
+- Tutti gli sfondi giorno/notte, soprattutto Città, Taverna e Deserto.
+- Montagna giorno/notte: vento, lupi, volume e assenza di loop percepibili.
+- Città: carro e campane non troppo frequenti.
+- Audio notturno più inquietante ma coerente, senza animali diurni.
+- Suoni di tiro per colpire e danno per spada, arco e incantesimo.
+- Mobile: simmetria dei pulsanti, assenza di spazi vuoti e righe incantesimi
+  contenute nello schermo.
+- Ritratto richiudibile e resa delle immagini già caricate in precedenza.
+- Uniformità finale di icone, emoji e palette delle classi.
 
-## 3. Voci realmente aperte della roadmap
+Un difetto osservato durante la verifica torna nella roadmap aperta con passaggi
+riproducibili; non va riaperto soltanto per prudenza.
 
-**Regole 5e non automatizzate**
-- Punti Stregoneria: il tracker esiste; manca la conversione slot ↔ punti
-- Tiri Salvezza contro Morte: il tiro guidato compare a 0 PF; manca l'eventuale
-  sincronizzazione automatica avanzata col combat tracker
-- Forma Selvatica / famigli / evocazioni con statblock
-- Condizioni con effetti meccanici applicati ai tiri
+## Roadmap realmente aperta
 
-**Funzionalità**
-- Statblock pronti di mostri/PNG da inserire nel Combat tracker (il tracker è fatto)
-- QR code per la condivisione (il link sta in ~1150 caratteri, entrerebbe: serve un
-  generatore scritto a mano, ~300 righe, perché la CSP blocca le librerie esterne)
-- Stampa / esporta PDF, diario di sessione
+### Scheda di Vaelion
 
-**Qualità del codice**
-- `App.jsx` è sceso da 7058 a ~5800 righe, ma la funzione `App()` resta ~4700 righe:
-  lo stato è tutto intrecciato, spezzarla richiede context o prop-drilling
-- Nessun ESLint/Prettier configurato
+- **Completare e verificare l'inventario di Vaelion Leafwhisper** confrontando
+  la scheda presente nel cloud con i PDF e il materiale originale in
+  `/Users/samuele/Documents/Dungeons & Dragons/I Segreti del Faerûn/`.
+- Recuperare tutti gli oggetti mancanti con nome, quantità, peso ed eventuale
+  stato equipaggiato; non limitarsi al testo generico dell'equipaggiamento.
+- Verificare separatamente gli oggetti magici sintonizzati.
+- Per gli oggetti a utilizzi registrare cariche massime, cariche rimaste,
+  effetto e tipo di ricarica. In particolare la **Perla del Potere** deve avere
+  1 utilizzo e ricarica all'alba.
+- Dopo il confronto, aggiornare il personaggio nel cloud senza creare un
+  duplicato e verificare che l'inventario resti presente su un altro dispositivo.
 
-**Traduzione**
-- Fatta: 186 incantesimi, tutti i privilegi di classe, 31 tratti, 20 talenti, 13 metamagie
-- Manca: **nomi** di sottoclassi e scuole di magia (le descrizioni sono tradotte)
+Questa voce è **aperta**: l'importazione generale di Vaelion è stata eseguita,
+ma il controllo conclusivo dell'inventario non risulta documentato.
 
----
+### Regole e automazioni D&D
 
-## 4. Audio
+- Conversione slot incantesimo ↔ Punti Stregoneria.
+- Effetti meccanici delle condizioni sui tiri e sulle azioni.
+- Statblock per Forma Selvatica, famigli ed evocazioni.
+- Statblock pronti di mostri e PNG per il Combat tracker.
+- Eventuale sincronizzazione avanzata dei Tiri Salvezza contro Morte con il
+  Combat tracker.
+- Audit completo delle differenze 2014/2024 non ancora rappresentate.
 
-Gli eventi di Città, Dungeon e Montagna usano intervalli casuali e non ripetono
-subito lo stesso effetto. I grilli notturni non hanno più una cadenza fissa. Il
-muto ferma base, effetti e timer ed è ricordato dopo il riavvio; sottofondo ed
-effetti hanno volumi separati. La resa finale va comunque controllata a orecchio.
+### Funzioni
 
-Volumi degli effetti pareggiati a mano in `GUADAGNO_SFX` (`src/utils/audioAmbiente.js`).
+- Stampa ed esportazione PDF della scheda.
+- Diario di sessione.
+- QR code facoltativo per link o codice stanza.
+- Valutare il nuovo nome pubblico dell'app solo dopo che l'utente avrà scelto
+  quello definitivo; il repository può restare `tavolo-dei-dadi`.
+- Verificare e documentare l'attivazione online del Worker PDF→JSON; non
+  considerarla conclusa soltanto perché il codice del Worker è presente.
 
----
+### Stabilità e manutenzione
 
-## 5. Da riverificare a occhio (non testabile in automatico)
+- Spezzare gradualmente `App.jsx`, mantenendo invariato il comportamento.
+- Ridurre il bundle principale, attualmente circa **887 kB** prima di gzip,
+  caricando su richiesta le parti non necessarie all'avvio.
+- Configurare ESLint e formattazione automatica.
+- Aggiungere test mirati per oggetti con utilizzi, aggiornamento PWA e coda dei
+  salvataggi cloud.
+- Aggiornare questo documento insieme a ogni PR: spostare una voce in
+  «Completato» solo dopo test e, per UI/audio, dopo verifica sul sito reale.
 
-- Il ritratto ora viene salvato a 1280px invece di 512: **le foto caricate prima
-  vanno ricaricate** per vedere il miglioramento.
-- Resa dell'ambiente "città" (brusio + carretti + fabbro + campane).
+## Procedura prima di pubblicare
+
+1. Controllare ultimo `main`, branch e modifiche locali delle altre IA.
+2. Eseguire test, build e smoke test quando il browser è disponibile.
+3. Incrementare `APP_VERSION` per ogni modifica visibile.
+4. Pubblicare tramite branch dedicato e PR; controllare GitHub Pages.
+5. Aprire il sito su desktop e iPhone e verificare la versione mostrata.

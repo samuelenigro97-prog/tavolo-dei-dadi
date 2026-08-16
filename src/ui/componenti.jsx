@@ -5,6 +5,10 @@ import { t, traduciDato } from '../i18n';
 import { C } from './tema.js';
 import { styles } from './stili.js';
 
+/** Ordine coerente per tutte le tendine testuali riusabili. */
+function ordinaAlfabeticamente(opzioni, etichetta = traduciDato) {
+  return [...opzioni].sort((a, b) => String(etichetta(a)).localeCompare(String(etichetta(b)), 'it', { sensitivity: 'base' }));
+}
 
 /**
  * Valore modificabile in linea. Un click apre l'editor; se `onRoll` è
@@ -203,7 +207,10 @@ export function CampoModulo({ label, children, style }) {
  * "＋" per aggiungere velocemente voci da una lista, senza perdere il testo.
  */
 export function CampoConTendina({ value, opzioni, onChange, width, title, lookup, setInfo }) {
-  const attuali = value ? value.split(',').map((s) => s.trim()).filter(Boolean) : [];
+  // Accetta sia il formato storico separato da virgole sia le voci su righe
+  // distinte: ogni elemento viene comunque mostrato nel proprio riquadro.
+  const attuali = value ? value.split(/[,\n]/).map((s) => s.trim()).filter(Boolean) : [];
+  const visualizzati = ordinaAlfabeticamente(attuali);
 
   const aggiungi = (v) => {
     if (!v) return;
@@ -219,7 +226,7 @@ export function CampoConTendina({ value, opzioni, onChange, width, title, lookup
   const chip = { background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '5px 10px', fontSize: 13, color: C.ink, display: 'inline-flex', alignItems: 'center', gap: 6 };
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', minHeight: 24 }} title={title}>
-      {attuali.map(t => {
+      {visualizzati.map(t => {
         const sp = lookup && setInfo ? lookup(t) : null;
         return (
         <span key={t} title={sp || t} style={chip}>
@@ -245,7 +252,7 @@ export function CampoConTendina({ value, opzioni, onChange, width, title, lookup
           style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }}
         >
           <option value="">{t('common.aggiungi')}…</option>
-          {opzioni.map((o) => (
+          {ordinaAlfabeticamente(opzioni).map((o) => (
             <option key={o} value={o}>{traduciDato(o)}</option>
           ))}
         </select>
@@ -285,11 +292,11 @@ export function CampoTendina({ value, opzioni, onChange, title, formattaOpzione 
         title={title}
       >
         <option value="" style={{ background: C.panel }}>{t("common.scegli")}</option>
-        {Array.isArray(opzioni) ? opzioni.map((o) => (
+        {Array.isArray(opzioni) ? ordinaAlfabeticamente(opzioni, etichetta).map((o) => (
           <option key={o} value={o} style={{ background: C.panel }}>{etichetta(o)}</option>
         )) : Object.entries(opzioni).map(([group, opts]) => (
           <optgroup key={group} label={traduciDato(group)} style={{ background: C.panel }}>
-            {opts.map((o) => <option key={o} value={o} style={{ background: C.panel }}>{etichetta(o)}</option>)}
+            {ordinaAlfabeticamente(opts, etichetta).map((o) => <option key={o} value={o} style={{ background: C.panel }}>{etichetta(o)}</option>)}
           </optgroup>
         ))}
         <option value="__altro" style={{ background: C.panel }}>{t("common.altro")}</option>
@@ -350,7 +357,9 @@ export function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni,
   };
   const elimina = () => { salva(righe.filter((_, i) => i !== edit.index)); setEdit(null); };
   // Le opzioni possono arrivare come stringhe o come oggetti { nome, desc }.
-  const listaOpzioni = (opzioni || []).map((o) => (typeof o === 'string' ? { nome: o, desc: '' } : o));
+  const listaOpzioni = (opzioni || [])
+    .map((o) => (typeof o === 'string' ? { nome: o, desc: '' } : o))
+    .sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'it', { sensitivity: 'base' }));
   const chip = { background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '5px 10px', fontSize: 13, cursor: 'pointer', color: C.ink, whiteSpace: unicaRiga ? 'nowrap' : 'normal' };
   const spEdit = edit ? (lookup ? lookup(edit.valore) : null) : null;
   return (
@@ -463,7 +472,8 @@ export function Sezione({ titolo, children, aperto = true, onToggleAperto, manig
       style={{ ...styles.panel, opacity: trascinando ? 0.4 : 1, ...style }}
       className="sezione"
     >
-      <summary style={{ ...styles.panelTitle, cursor: 'pointer', listStyle: 'none', marginBottom: 0, userSelect: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
+      <summary className="sezione-titolo" style={{ ...styles.panelTitle, cursor: 'pointer', listStyle: 'none', marginBottom: 0, userSelect: 'none' }}>
+        <span className="sezione-titolo-sinistra">
         {manigliaProps && (
           <span
             className="tirabile"
@@ -475,16 +485,14 @@ export function Sezione({ titolo, children, aperto = true, onToggleAperto, manig
             ⠿
           </span>
         )}
-        <span className="freccia">▾</span> {titolo}
+        <span className="freccia">▾</span>
+        </span>
+        <span className="sezione-titolo-testo">{titolo}</span>
         {/* Comandi nella riga del titolo: il click non deve aprire/chiudere. */}
-        {azioni && (
-          <span
-            style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-          >
-            {azioni}
-          </span>
-        )}
+        <span
+          className="sezione-titolo-azioni"
+          onClick={azioni ? (e) => { e.preventDefault(); e.stopPropagation(); } : undefined}
+        >{azioni}</span>
       </summary>
       <div style={{ marginTop: 10 }}>{children}</div>
     </details>

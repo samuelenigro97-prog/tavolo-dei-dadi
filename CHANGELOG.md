@@ -5,6 +5,8 @@ Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 ## [Unreleased]
 
 ### Aggiunto
+- Inventario con sintonia ed effetti meccanici degli oggetti: bonus alla Classe Armatura e ai tiri salvezza, caratteristiche impostate e oggetti magici preconfigurati.
+- Campo Punti Esperienza nel Profilo e gestione degli utilizzi/ricariche degli oggetti.
 - Le classi preparatrici mostrano automaticamente tutti gli incantesimi di classe lanciabili; quelli preparati sono stellinati e ordinati per primi a ogni livello.
 - Condivisione temporanea di una scheda tramite codice stanza, senza account o token GitHub.
 - Endpoint Cloudflare Worker `/room` con snapshot immutabili, scadenza, validazione e rate limiting.
@@ -14,6 +16,8 @@ Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 - Runbook release manuale in `docs/RELEASE.md`.
 
 ### Modificato
+- Addestramento nelle armi mostrato in riquadri separati; menu testuali e inventario ordinati alfabeticamente.
+- Profilo, risorse di classe, ritratto e disposizione mobile resi più compatti e coerenti.
 - Nel pannello Monete, conversione e riepilogo sono allineati rispettivamente a sinistra e a destra sopra le valute.
 - Ridotto il bagliore chiaro sopra gli sfondi giorno/notte; i sottofondi partono direttamente dal tocco su iOS; nel menu Luogo le voci diventano “Mare” e “Pioggia”.
 - Ridisegnato il pannello Monete: titolo coerente, conversione centrata e moneta d'oro al posto del diamante.

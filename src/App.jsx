@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { ICONE_CLASSE, ICONE_SPECIE } from './ritratti';
 import { t, setLinguaAttuale, DIZIONARIO, traduciDato } from './i18n';
@@ -6,7 +6,7 @@ import { avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro, s
 import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI } from './ui/tema.js';
 import { styles, GLOBAL_CSS } from './ui/stili.js';
 import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, Sezione, CampoBloccato } from './ui/componenti.jsx';
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza } from './rules/scheda.js';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, punteggioCaratteristica } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { codificaScheda, decodificaScheda, preparaPerCondivisione, costruisciLink, payloadDaUrl, LIMITE_PAYLOAD } from './utils/condivisione.js';
@@ -436,6 +436,62 @@ function separaQtaOggetto(nomeRaw) {
   return { nome: s, qta: 1 };
 }
 
+/** Impostazioni note per oggetti con cariche. La Perla del Potere recupera
+ * uno slot di 3° livello o inferiore e torna utilizzabile all'alba. */
+function utilizziOggettoNoto(nome) {
+  if (/perla del pot(?:ere)?/i.test(String(nome || ''))) {
+    return {
+      usi: 1, usiMax: 1, ricarica: 'alba',
+      effetto: 'Azione Magica: recuperi uno slot incantesimo speso di 3° livello o inferiore. La Perla torna utilizzabile all’alba successiva.',
+    };
+  }
+  return null;
+}
+
+function effettoOggettoNoto(nome) {
+  const n = String(nome || '');
+  if (/guanti (?:del potere orchesco|della forza orchesca)/i.test(n)) {
+    return { nome: 'Guanti del Potere Orchesco', effettoMeccanico: 'forza_impostata_19', richiedeSintonia: true };
+  }
+  if (/mantello (?:della|di) protezione/i.test(n)) {
+    return { nome: 'Mantello della Protezione', effettoMeccanico: 'classe_armatura_tiri_salvezza_1', richiedeSintonia: true };
+  }
+  return null;
+}
+
+function completaUtilizziOggetto(oggetto) {
+  const noto = utilizziOggettoNoto(oggetto?.nome);
+  const effettoNoto = effettoOggettoNoto(oggetto?.nome);
+  const conEffetto = effettoNoto ? {
+    ...oggetto,
+    nome: effettoNoto.nome,
+    effettoMeccanico: oggetto.effettoMeccanico || effettoNoto.effettoMeccanico,
+    richiedeSintonia: oggetto.richiedeSintonia ?? effettoNoto.richiedeSintonia,
+  } : oggetto;
+  if (!noto) return conEffetto;
+  return {
+    ...conEffetto,
+    usi: Number.isFinite(Number(oggetto.usi)) ? Number(oggetto.usi) : noto.usi,
+    usiMax: Math.max(1, Number(oggetto.usiMax) || noto.usiMax),
+    ricarica: oggetto.ricarica || noto.ricarica,
+    effetto: conEffetto.effetto || noto.effetto,
+  };
+}
+
+const EFFETTI_OGGETTO = [
+  ['', 'Nessun effetto meccanico', 'No mechanical effect'],
+  ['classe_armatura_1', 'Classe Armatura +1', 'Armor Class +1'],
+  ['classe_armatura_2', 'Classe Armatura +2', 'Armor Class +2'],
+  ['classe_armatura_3', 'Classe Armatura +3', 'Armor Class +3'],
+  ['classe_armatura_tiri_salvezza_1', 'Classe Armatura e tiri salvezza +1', 'Armor Class and saving throws +1'],
+  ['tiri_salvezza_1', 'Tiri salvezza +1', 'Saving throws +1'],
+  ['tiri_salvezza_2', 'Tiri salvezza +2', 'Saving throws +2'],
+  ['tiri_salvezza_3', 'Tiri salvezza +3', 'Saving throws +3'],
+  ['costituzione_impostata_19', 'Costituzione impostata a 19', 'Constitution set to 19'],
+  ['forza_impostata_19', 'Forza impostata a 19', 'Strength set to 19'],
+  ['intelligenza_impostata_19', 'Intelligenza impostata a 19', 'Intelligence set to 19'],
+];
+
 /** Arma da tiro che consuma munizioni (arco, balestra, fionda: proprietà "Munizioni"). */
 function armaUsaMunizioni(nomeArma) {
   const a = ARMI_5E.find((w) => w.nome === nomeArma);
@@ -740,7 +796,7 @@ function schedaVuota() {
     talenti: '',
     metamagie: '', // opzioni di Metamagia attive (solo Stregone)
     equipaggiamento: '',
-    // inventario strutturato: { id, nome, qta, peso (kg, per unità), equip, categoria }
+    // inventario strutturato: { id, nome, qta, peso, equip, categoria, usi, usiMax, ricarica, effetto }
     inventario: [],
     sintonia: '',
     lingue: '',
@@ -838,8 +894,8 @@ const TIPI_ARMATURA = [
  * o Accurata e più alta). Restituisce un patch { nome, danno, tipoDanno, note, bonus }.
  */
 function attaccoDaArma(arma, scheda) {
-  const forza = modificatore(scheda.caratteristiche.forza);
-  const destr = modificatore(scheda.caratteristiche.destrezza);
+  const forza = modificatore(punteggioCaratteristica(scheda, 'forza'));
+  const destr = modificatore(punteggioCaratteristica(scheda, 'destrezza'));
   let mod;
   if (arma.ranged) mod = destr;
   else if (arma.finesse) mod = Math.max(forza, destr);
@@ -998,6 +1054,7 @@ function sincronizzaRisorseClasse(scheda, versione = '2024') {
 // Spiegazioni delle risorse di classe (parole proprie, meccaniche 5e/5.5):
 // mostrate al passaggio del cursore sul nome, come per le altre sezioni.
 const SPIEG_RISORSE = {
+  'Ira': 'Azione bonus: entri in Ira, ottenendo resistenza ai danni contundenti, perforanti e taglienti e un bonus ai danni degli attacchi basati sulla Forza. Termina se resti incapacitato o non la mantieni secondo le regole della tua edizione.',
   'Ispirazione Bardica': 'Azione bonus: doni a un alleato entro 18 m un dado Ispirazione (d6, poi d8/d10/d12 col livello) da sommare a un tiro per colpire, una prova o un TS. Usi pari al mod. Carisma; si recuperano con un riposo lungo (breve dal 5° livello).',
   'Punti Ki': 'La riserva di Ki del Monaco nelle regole 5.0 (punti = livello). Li spendi per Raffica di Colpi (2 attacchi senz’armi bonus), Scatto Vertiginoso e Difesa Paziente. Si recuperano tutti con un riposo breve o lungo.',
   'Punti Focus': 'La riserva di Ki del Monaco (punti = livello). Li spendi per le tue tecniche: Raffica di Colpi (1 attacco bonus extra), Scatto Vertiginoso, Difesa Paziente. Si recuperano tutti con un riposo breve o lungo.',
@@ -1072,7 +1129,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.91.0';
+const APP_VERSION = '2.92.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1146,7 +1203,7 @@ function loadState() {
           if ((!Array.isArray(s.inventario) || s.inventario.length === 0) && typeof s.equipaggiamento === 'string' && s.equipaggiamento.trim()) {
             s.inventario = s.equipaggiamento.split(/[;,\n]/).map((x) => x.trim()).filter(Boolean).map((raw, i) => {
               const { nome, qta } = separaQtaOggetto(raw);
-              return { id: `inv-mig-${i}`, nome, qta, peso: pesoStimato(nome), equip: false, categoria: '' };
+              return completaUtilizziOggetto({ id: `inv-mig-${i}`, nome, qta, peso: pesoStimato(nome), equip: false, categoria: '' });
             });
             s.equipaggiamento = '';
           }
@@ -1156,9 +1213,9 @@ function loadState() {
           if (Array.isArray(s.inventario)) {
             s.inventario = s.inventario.map((o) => {
               const parsed = separaQtaOggetto(String(o.nome || ''));
-              return (parsed.qta > 1 && parsed.nome && parsed.nome !== o.nome)
+              return completaUtilizziOggetto((parsed.qta > 1 && parsed.nome && parsed.nome !== o.nome)
                 ? { ...o, nome: parsed.nome, qta: parsed.qta }
-                : o;
+                : o);
             });
           }
           // Tratti di specie salvati come stringa con virgole (formato vecchio):
@@ -1390,11 +1447,17 @@ function normalizeImported(dati) {
           const qtaVal = parsed.qta > 1 ? parsed.qta : Math.max(1, num(o.qta, 1));
           let pesoVal = Math.max(0, Number(o.peso) || 0);
           if (pesoVal === 0 && nomeVal) pesoVal = pesoStimato(nomeVal);
-          return {
+          return completaUtilizziOggetto({
             id: o.id || `inv-${i}-${Math.random().toString(36).slice(2, 6)}`,
             nome: nomeVal, qta: qtaVal, peso: pesoVal,
             equip: !!o.equip, categoria: str(o.categoria),
-          };
+            usi: Number.isFinite(Number(o.usi)) ? Math.max(0, Number(o.usi)) : undefined,
+            usiMax: Number.isFinite(Number(o.usiMax)) ? Math.max(0, Number(o.usiMax)) : undefined,
+            ricarica: ['alba', 'breve', 'lungo', 'manuale'].includes(o.ricarica) ? o.ricarica : '',
+            effetto: str(o.effetto),
+            effettoMeccanico: EFFETTI_OGGETTO.some(([id]) => id === o.effettoMeccanico) ? o.effettoMeccanico : '',
+            richiedeSintonia: typeof o.richiedeSintonia === 'boolean' ? o.richiedeSintonia : undefined,
+          });
         });
       }
       // Migrazione: il vecchio equipaggiamento testuale (voci separate da ; , o
@@ -1403,7 +1466,7 @@ function normalizeImported(dati) {
       if (!testo) return [];
       return testo.split(/[;,\n]/).map((s) => s.trim()).filter(Boolean).map((raw, i) => {
         const { nome, qta } = separaQtaOggetto(raw);
-        return { id: `inv-mig-${i}`, nome, qta, peso: pesoStimato(nome), equip: false, categoria: '' };
+        return completaUtilizziOggetto({ id: `inv-mig-${i}`, nome, qta, peso: pesoStimato(nome), equip: false, categoria: '' });
       });
     })(),
     sintonia: Array.isArray(dati.sintonia) ? dati.sintonia.slice(0, 3).map(str) : str(dati.sintonia),
@@ -1555,35 +1618,29 @@ function ArchivioDm({ url, onChiudi, onApri }) {
 // Componenti di editing inline (1 click = modifica, doppio click = tiro)
 // ---------------------------------------------------------------------------
 export default function App() {
+  // Dichiarato prima del rilevatore PWA: un aggiornamento aspetta che il
+  // salvataggio cloud corrente sia terminato prima di ricaricare la pagina.
+  const [sincronizzando, setSincronizzando] = useState(false);
   // aggiornamenti PWA: mostra un banner quando è pronta una nuova versione
   const {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
   } = useRegisterSW({
     onRegisteredSW(_url, r) {
-      if (r) setInterval(() => r.update(), 60 * 1000); // controlla ogni minuto
+      if (r) setInterval(() => r.update(), 20 * 1000);
     },
   });
 
-  // Aggiornamento manuale: svuota le cache della PWA e ricarica dalla rete.
-  // Utile quando il service worker serve ancora una versione vecchia: così
-  // l'utente può forzare l'ultima versione con un solo click.
+  // Aggiorna tramite il normale ciclo di vita PWA. Non cancelliamo più tutte le
+  // cache e non deregistriamo il worker: quella procedura poteva interrompere
+  // audio, immagini IndexedDB o un salvataggio ancora in corso.
   const [aggiornando, setAggiornando] = useState(false);
   async function forzaAggiornamento() {
+    if (aggiornando) return;
     setAggiornando(true);
     try {
-      // 1) rimuovi del tutto i service worker: nessuno intercetta più le richieste
-      if ('serviceWorker' in navigator) {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(regs.map((r) => r.unregister().catch(() => {})));
-      }
-      // 2) svuota ogni cache della PWA
-      if ('caches' in window) {
-        const chiavi = await caches.keys();
-        await Promise.all(chiavi.map((k) => caches.delete(k)));
-      }
-    } catch { /* ignora: ricarichiamo comunque */ }
-    // 3) ricarica bypassando anche la cache HTTP (query cache-busting)
+      await updateServiceWorker(true);
+    } catch { /* il controllo version.json consente comunque il reload */ }
     const u = new URL(window.location.href);
     u.searchParams.set('agg', Date.now().toString());
     window.location.replace(u.toString());
@@ -1606,23 +1663,32 @@ export default function App() {
         }
       } catch { /* offline o file assente: nessun avviso */ }
     };
-    const t = setTimeout(controlla, 6000);          // primo controllo dopo l'avvio
-    const id = setInterval(controlla, 60 * 1000);   // poi ogni minuto
-    return () => { annullato = true; clearTimeout(t); clearInterval(id); };
+    const quandoVisibile = () => { if (document.visibilityState === 'visible') controlla(); };
+    const t = setTimeout(controlla, 1500);
+    const id = setInterval(controlla, 20 * 1000);
+    window.addEventListener('focus', controlla);
+    window.addEventListener('online', controlla);
+    document.addEventListener('visibilitychange', quandoVisibile);
+    return () => {
+      annullato = true; clearTimeout(t); clearInterval(id);
+      window.removeEventListener('focus', controlla);
+      window.removeEventListener('online', controlla);
+      document.removeEventListener('visibilitychange', quandoVisibile);
+    };
   }, []);
   // il pulsante lampeggia se c'è una nuova versione (rilevata in un modo o nell'altro)
   const nuovaVersione = aggiornamentoPronto || needRefresh;
 
   // Auto-aggiornamento silenzioso: se rileva un update su GitHub e non stai scrivendo, aggiorna da solo!
   useEffect(() => {
-    if (nuovaVersione && !aggiornando) {
+    if (nuovaVersione && !aggiornando && !sincronizzando) {
       const active = document.activeElement;
       const staScrivendo = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable);
       if (!staScrivendo) {
         forzaAggiornamento();
       }
     }
-  }, [nuovaVersione, aggiornando]);
+  }, [nuovaVersione, aggiornando, sincronizzando]);
 
   const [roster, setRoster] = useState(loadState);
   const [erroreSalvataggio, setErroreSalvataggio] = useState('');
@@ -1685,6 +1751,7 @@ export default function App() {
   const [filtroClasseInc, setFiltroClasseInc] = useState('');
   const [soloRitualiInc, setSoloRitualiInc] = useState(false);
   const [filtroInventario, setFiltroInventario] = useState('');
+  const [effettoInventarioAperto, setEffettoInventarioAperto] = useState(null);
   const [addLivIncantesimo, setAddLivIncantesimo] = useState(0); // livello scelto nella barra "aggiungi"
   const [addBonusIncantesimo, setAddBonusIncantesimo] = useState(false); // aggiungi come incantesimo bonus ✦
   const [espressioneLibera, setEspressioneLibera] = useState('');
@@ -1929,8 +1996,15 @@ export default function App() {
   const [mostraToken, setMostraToken] = useState(false);
   const [autoSync, setAutoSync] = useState(() => localStorage.getItem('scheda-interattiva:auto-sync') !== 'off');
   const [ultimoSync, setUltimoSync] = useState(() => localStorage.getItem('scheda-interattiva:ultimo-sync') || '');
-  const [sincronizzando, setSincronizzando] = useState(false);
   const [caricandoCloud, setCaricandoCloud] = useState(false); // overlay di caricamento dal cloud
+  const rosterSyncRef = useRef(roster);
+  const tokenSyncRef = useRef(githubToken);
+  const gistSyncRef = useRef(gistId);
+  const syncInCorsoRef = useRef(false);
+  const syncPendenteRef = useRef(false);
+  rosterSyncRef.current = roster;
+  tokenSyncRef.current = githubToken;
+  gistSyncRef.current = gistId;
 
   // Level Up
   const [mostraLevelUp, setMostraLevelUp] = useState(false);
@@ -2566,12 +2640,12 @@ export default function App() {
 
   /** Aggiunge il personaggio attivo al combattimento, tirando l'iniziativa. */
   function aggiungiPgAlCombat() {
-    const initRoll = tiraDado(20) + modificatore(scheda.caratteristiche.destrezza);
+    const initRoll = tiraDado(20) + modificatore(punteggioCaratteristica(scheda, 'destrezza'));
     aggiungiCombattente('pg', {
       nome: scheda.nome, iniziativa: initRoll,
       pfMax: scheda.pfMax, pfAttuali: scheda.pfAttuali, ca: caTotale(scheda),
     });
-    registra({ etichetta: `${t('vital.iniziativa')}: ${scheda.nome}`, tipo: 'd20', totale: initRoll, dettaglio: `d20 ${conSegno(modificatore(scheda.caratteristiche.destrezza))}` });
+    registra({ etichetta: `${t('vital.iniziativa')}: ${scheda.nome}`, tipo: 'd20', totale: initRoll, dettaglio: `d20 ${conSegno(modificatore(punteggioCaratteristica(scheda, 'destrezza')))}` });
   }
 
   /** Aggiorna (o inserisce) il PG attivo nel combat tracker con l'iniziativa tirata,
@@ -2843,7 +2917,7 @@ export default function App() {
       return;
     }
     const dado = tiraDado(facce);
-    const mod = modificatore(scheda.caratteristiche.costituzione);
+    const mod = modificatore(punteggioCaratteristica(scheda, 'costituzione'));
     const recupero = Math.max(0, dado + mod);
     conAnimazione(() => {
       setScheda((s) => ({
@@ -3166,34 +3240,43 @@ export default function App() {
   // --- Cloud Sync (GitHub Gist) ---
 
   async function salvaSuCloud(silenzioso = false) {
-    if (!githubToken) {
+    if (!tokenSyncRef.current) {
       if (!silenzioso) setCloudStatus({ text: 'Inserisci il GitHub Token per salvare.', type: 'error' });
       return;
     }
+    // Accoda una sola scrittura aggiornata se arriva una modifica mentre il
+    // salvataggio precedente è ancora in volo. Evita che una risposta vecchia
+    // finisca dopo quella nuova e sovrascriva il Gist con dati arretrati.
+    if (syncInCorsoRef.current) {
+      syncPendenteRef.current = true;
+      return;
+    }
+    syncInCorsoRef.current = true;
     try {
       setSincronizzando(true);
       if (!silenzioso) setCloudStatus({ text: 'Salvataggio in corso...', type: 'info' });
       const quando = Date.now();
-      const dati = JSON.stringify({ ...roster, _updatedAt: quando }, null, 2);
+      const dati = JSON.stringify({ ...rosterSyncRef.current, _updatedAt: quando }, null, 2);
       const corpo = { files: { 'roster_tavolo_dei_dadi.json': { content: dati } } };
 
-      let nuovoId = gistId;
-      if (gistId) {
-        const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+      let nuovoId = gistSyncRef.current;
+      if (nuovoId) {
+        const res = await fetch(`https://api.github.com/gists/${nuovoId}`, {
           method: 'PATCH',
-          headers: { 'Authorization': `token ${githubToken}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+          headers: { 'Authorization': `token ${tokenSyncRef.current}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
           body: JSON.stringify(corpo),
         });
         if (!res.ok) throw new Error('Errore aggiornamento Gist. Token o ID non validi.');
       } else {
         const res = await fetch(`https://api.github.com/gists`, {
           method: 'POST',
-          headers: { 'Authorization': `token ${githubToken}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+          headers: { 'Authorization': `token ${tokenSyncRef.current}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
           body: JSON.stringify({ description: 'Salvataggio Cloud - Tavolo dei Dadi', public: false, ...corpo }),
         });
         if (!res.ok) throw new Error('Errore creazione Gist. Token non valido.');
         const out = await res.json();
         nuovoId = out.id;
+        gistSyncRef.current = out.id;
         setGistId(out.id);
         localStorage.setItem('scheda-interattiva:gist-id', out.id);
       }
@@ -3207,7 +3290,13 @@ export default function App() {
     } catch (err) {
       setCloudStatus({ text: err.message, type: 'error' });
     } finally {
-      setSincronizzando(false);
+      syncInCorsoRef.current = false;
+      if (syncPendenteRef.current) {
+        syncPendenteRef.current = false;
+        setTimeout(() => salvaSuCloud(true), 0);
+      } else {
+        setSincronizzando(false);
+      }
     }
   }
 
@@ -3314,7 +3403,7 @@ export default function App() {
   const indagarePassivo = 10 + bonusAbilita(scheda, 'indagare');
   const intuizionePassiva = 10 + bonusAbilita(scheda, 'intuizione');
   const modIncantatore = scheda.incantatore.caratteristica
-    ? modificatore(scheda.caratteristiche[scheda.incantatore.caratteristica])
+    ? modificatore(punteggioCaratteristica(scheda, scheda.incantatore.caratteristica))
     : null;
 
   // Limiti di trucchetti/incantesimi (come il lock delle armature): quando sei al
@@ -3449,7 +3538,7 @@ export default function App() {
 
       {/* TS Concentrazione automatico: appare quando i PF calano mentre concentri */}
       {checkConc && (() => {
-        const bonusCon = modificatore(scheda.caratteristiche.costituzione) + (scheda.tiriSalvezza?.costituzione ? scheda.bonusCompetenza : 0);
+        const bonusCon = bonusTiroSalvezza(scheda, 'costituzione');
         const esito = checkConc.esito;
         return (
           <div style={{ position: 'fixed', inset: 0, zIndex: 3300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'rgba(0,0,0,0.55)' }} onClick={() => setCheckConc(null)}>
@@ -3997,7 +4086,7 @@ export default function App() {
 
         // Dadi Vita ed HP Gain per LA CLASSE SCELTA
         const facceTargetDV = dadoVitaClasse(targetClasse);
-        const modCos = modificatore(scheda.caratteristiche?.costituzione || 10) || 0;
+        const modCos = modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10) || 0;
         const avgHpGainTarget = Math.floor(facceTargetDV / 2) + 1 + modCos;
 
         const gain = levelUpBozza.metodo === 'media'
@@ -4185,7 +4274,7 @@ export default function App() {
                   onChange={(e) => setLevelUpBozza((b) => ({ ...b, sottoclasse: e.target.value }))}
                 >
                   <option value="">{t('crea.scegli')}</option>
-                  {scelteSub.map((s) => <option key={s} value={s}>{traduciDato(s)}</option>)}
+                  {[...scelteSub].sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((s) => <option key={s} value={s}>{traduciDato(s)}</option>)}
                 </select>
               </div>
             )}
@@ -4209,7 +4298,7 @@ export default function App() {
                       }}
                     >
                       <option value="">{t('crea.scegli')}</option>
-                      {TALENTI_5E.map((tl) => <option key={tl.nome} value={tl.nome}>{tl.nome} — {tl.desc}</option>)}
+                      {[...TALENTI_5E].sort((a, b) => a.nome.localeCompare(b.nome, lingua)).map((tl) => <option key={tl.nome} value={tl.nome}>{tl.nome} — {tl.desc}</option>)}
                       <option value="__altro">{t('levelup.altro_talento')}</option>
                     </select>
                     {(!levelUpBozza.talento || !TALENTI_5E.some((t) => t.nome === levelUpBozza.talento)) && (
@@ -4233,7 +4322,7 @@ export default function App() {
                           onChange={(e) => setLevelUpBozza((b) => ({ ...b, [campo]: e.target.value }))}
                         >
                           <option value="">—</option>
-                          {CARATTERISTICHE.map(({ key }) => <option key={key} value={key}>{t('attr.' + key)}</option>)}
+                          {[...CARATTERISTICHE].sort((a, b) => t('attr.' + a.key).localeCompare(t('attr.' + b.key), lingua)).map(({ key }) => <option key={key} value={key}>{t('attr.' + key)}</option>)}
                         </select>
                       </label>
                     ))}
@@ -4403,7 +4492,7 @@ export default function App() {
                 <option value="">{t('crea.scegli')}</option>
                 {Object.entries(SPECIE_5E).map(([g, opts]) => (
                   <optgroup key={g} label={g}>
-                    {opts.map((n) => <option key={n} value={n}>{nomeSpeciePerSesso(n, bozzaCrea.sesso, lingua)}</option>)}
+                    {[...opts].sort((a, b) => nomeSpeciePerSesso(a, bozzaCrea.sesso, lingua).localeCompare(nomeSpeciePerSesso(b, bozzaCrea.sesso, lingua), lingua)).map((n) => <option key={n} value={n}>{nomeSpeciePerSesso(n, bozzaCrea.sesso, lingua)}</option>)}
                   </optgroup>
                 ))}
               </select>
@@ -4425,7 +4514,7 @@ export default function App() {
               <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{t('crea.classe')}</label>
               <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.classe} onChange={(e) => setB({ classe: e.target.value, sottoclasse: '', competenzeClasse: [] })}>
                 <option value="">{t('crea.scegli')}</option>
-                {NOMI_CLASSI.map((n) => <option key={n} value={n}>{n}</option>)}
+                {[...NOMI_CLASSI].sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
               </select>
 
               {/* Livello iniziale: crea subito un PG di livello alto senza fare Level Up a mano */}
@@ -4455,7 +4544,7 @@ export default function App() {
                   <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>⚔️ {lingua === 'it' ? 'Sottoclasse' : 'Subclass'}</label>
                   <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.sottoclasse} onChange={(e) => setB({ sottoclasse: e.target.value })}>
                     <option value="">{t('crea.scegli')}</option>
-                    {sottoclassiPerClasse(bozzaCrea.classe).map((n) => <option key={n} value={n}>{n}</option>)}
+                    {[...sottoclassiPerClasse(bozzaCrea.classe)].sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
                   </select>
                 </>
               )}
@@ -4463,7 +4552,7 @@ export default function App() {
               <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{t('crea.background')}</label>
               <select style={{ ...stileSelect, marginBottom: 6 }} value={bozzaCrea.background} onChange={(e) => setB({ background: e.target.value })}>
                 <option value="">{t('crea.scegli')}</option>
-                {BACKGROUND_5E.map((n) => <option key={n} value={n}>{n}</option>)}
+                {[...BACKGROUND_5E].sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
               </select>
               {bozzaCrea.background && (
                 <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 10px', marginBottom: 12, fontSize: 11, lineHeight: 1.5 }}>
@@ -5367,7 +5456,7 @@ export default function App() {
               onClick={() => {
                 const dvMatch = String(scheda.dadiVita || '').match(/d(\d+)/i);
                 const facceDV = dvMatch ? parseInt(dvMatch[1]) : 8;
-                const modCos = modificatore(scheda.caratteristiche?.costituzione || 10) || 0;
+                const modCos = modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10) || 0;
                 const avgHpGain = Math.floor(facceDV / 2) + 1 + modCos;
                 setLevelUpBozza({
                   metodo: 'media', hpGainMedia: Math.max(1, avgHpGain), facceDV, modCos, tiroFatto: 0,
@@ -5389,9 +5478,7 @@ export default function App() {
 
         {/* Testata: anagrafica + riquadri vitali uniformi */}
         <section style={styles.panel}>
-          {/* Titolo allineato a sinistra come quello delle altre sezioni
-              (che sono <summary> in flex, quindi non centrati). */}
-          <h2 style={{ ...styles.panelTitle, display: 'flex', alignItems: 'center', gap: 6 }}>{t("profilo.titolo")}</h2>
+          <h2 style={styles.panelTitle}>{t("profilo.titolo")}</h2>
           {/* Con il ritratto ridotto, Addestramento/Risorse si prendono lo spazio libero. */}
           <div className={`profilo-griglia${(scheda.sezioniAperte?.ritratto ?? true) ? '' : ' senza-ritratto'}`}>
             {/* RITRATTO — colonna destra, occupa tutta l'altezza */}
@@ -5527,6 +5614,16 @@ export default function App() {
                     ) : null))}
                   </div>
                 </CampoModulo>
+                <CampoModulo label={t("profilo.pe")}>
+                  <Editable
+                    value={Math.max(0, Number(scheda.pe) || 0)}
+                    tipo="numero"
+                    width="100%"
+                    style={{ width: '100%', textAlign: 'left' }}
+                    title={t('profilo.pe_tooltip')}
+                    onChange={(v) => aggiorna({ pe: Math.max(0, v) })}
+                  />
+                </CampoModulo>
               </div>
           {/* Multiclasse (opzionale, non invasivo): quando vuoto è solo un
               tastino; aggiungendo classi secondarie puoi applicare competenza e
@@ -5548,7 +5645,7 @@ export default function App() {
                   <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 6, flexWrap: 'wrap' }}>
                     <select value={m.classe} onChange={(e) => setMc(mc.map((x, j) => (j === i ? { ...x, classe: e.target.value } : x)))} style={{ ...styles.inlineInput, padding: '4px 6px', flex: 1, minWidth: 120 }}>
                       <option value="">{t('crea.scegli')}</option>
-                      {NOMI_CLASSI.map((n) => <option key={n} value={n}>{traduciDato(n)}</option>)}
+                      {[...NOMI_CLASSI].sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((n) => <option key={n} value={n}>{traduciDato(n)}</option>)}
                     </select>
                     <span style={{ ...styles.detail }}>{t('mc.liv')}</span>
                     <Editable value={m.livello} tipo="numero" width={28} onChange={(v) => setMc(mc.map((x, j) => (j === i ? { ...x, livello: Math.max(1, v) } : x)))} />
@@ -5669,7 +5766,7 @@ export default function App() {
               <SfondoVit>🛡️</SfondoVit>
               <div style={styles.vitalLabel}>{t("vital.ca")}</div>
               <div style={styles.vitalValue}>
-                {scheda.armatura.tipo === 'manuale' && !scheda.armatura.scudo && !scheda.armatura.bonus ? (
+                {scheda.armatura.tipo === 'manuale' && !scheda.armatura.scudo && !scheda.armatura.bonus && !bonusClasseArmaturaOggetti(scheda) ? (
                   <Editable value={scheda.ca} tipo="numero" onChange={(v) => aggiorna({ ca: v })} width={48} />
                 ) : (
                   <span title={t('tip.ca_calcolata')}>{caTotale(scheda)}</span>
@@ -5716,6 +5813,7 @@ export default function App() {
                   );
                 })()}
                 <span>+ <Editable value={scheda.armatura.bonus} tipo="numero" width={22} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, bonus: v } })} /></span>
+                {bonusClasseArmaturaOggetti(scheda) > 0 && <span title={t('inv.effetto_attivo')}>✨ +{bonusClasseArmaturaOggetti(scheda)}</span>}
               </div>
               {(!competenteInArmatura(scheda, scheda.armatura.tipo) || (scheda.armatura.scudo && !scheda.addestramento?.armature?.scudi)) && (
                 <div style={{ fontSize: 9, color: C.red, marginTop: 3, lineHeight: 1.2 }} title={t('tip.senza_comp_armatura')}>
@@ -5749,14 +5847,14 @@ export default function App() {
                   <SfondoVit>⚡</SfondoVit>
                   <div style={styles.vitalLabel}>{t("vital.iniziativa")}</div>
                   <div style={styles.vitalValue}>
-                    <Rollable onRoll={() => lanciaD20(t('vital.iniziativa'), modificatore(scheda.caratteristiche.destrezza), { dopoTiro: (tot) => sincronizzaIniziativaPg(tot) })}>
-                      {conSegno(modificatore(scheda.caratteristiche.destrezza))}
+                    <Rollable onRoll={() => lanciaD20(t('vital.iniziativa'), modificatore(punteggioCaratteristica(scheda, 'destrezza')), { dopoTiro: (tot) => sincronizzaIniziativaPg(tot) })}>
+                      {conSegno(modificatore(punteggioCaratteristica(scheda, 'destrezza')))}
                     </Rollable>
                   </div>
                 </div>
                 <div
                   style={{ ...styles.vitalBox }}
-                  title={`🏃 Salto in Lungo (con rincorsa): ${(scheda.caratteristiche?.forza || 10)} piedi (${((scheda.caratteristiche?.forza || 10) * 0.3).toFixed(1)} m) • ⬆️ Salto in Alto: ${3 + modificatore(scheda.caratteristiche?.forza || 10)} piedi (${((3 + modificatore(scheda.caratteristiche?.forza || 10)) * 0.3).toFixed(1)} m) • 🫁 Trattenere il Respiro: ${Math.max(1, 1 + modificatore(scheda.caratteristiche?.costituzione || 10))} minuti`}
+                  title={`🏃 Salto in Lungo (con rincorsa): ${punteggioCaratteristica(scheda, 'forza') || 10} piedi (${((punteggioCaratteristica(scheda, 'forza') || 10) * 0.3).toFixed(1)} m) • ⬆️ Salto in Alto: ${3 + modificatore(punteggioCaratteristica(scheda, 'forza') || 10)} piedi (${((3 + modificatore(punteggioCaratteristica(scheda, 'forza') || 10)) * 0.3).toFixed(1)} m) • 🫁 Trattenere il Respiro: ${Math.max(1, 1 + modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10))} minuti`}
                 >
                   <SfondoVit>🏃</SfondoVit>
                   <div style={styles.vitalLabel}>{t("vital.movimento")}</div>
@@ -5765,13 +5863,22 @@ export default function App() {
                     <span style={{ fontSize: 17, color: C.inkDim, marginLeft: 2, fontWeight: 600 }}> m</span>
                   </div>
                   <div style={{ position: 'absolute', bottom: 5, left: 0, right: 0, fontSize: 10, color: C.goldDark, textAlign: 'center', fontWeight: 600 }}>
-                    🏃 Salto: {((scheda.caratteristiche?.forza || 10) * 0.3).toFixed(1)}m
+                    🏃 Salto: {((punteggioCaratteristica(scheda, 'forza') || 10) * 0.3).toFixed(1)}m
                   </div>
                 </div>
-                <div style={{ ...styles.vitalBox }} title={t('vital.passive_tooltip')}>
-                  <SfondoVit>👁️</SfondoVit>
-                  <div style={styles.vitalLabel}>{t("vital.percezione_passiva")}</div>
-                  <div style={styles.vitalValue}>{percezionePassiva}</div>
+                <div style={{ ...styles.vitalBox }}>
+                  <SfondoVit>🥱</SfondoVit>
+                  <div style={styles.vitalLabel}>{t("vital.sfinimento")}</div>
+                  <div style={styles.vitalValue}>
+                    <button style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 13 }} onClick={() => aggiorna({ sfinimento: Math.max(0, scheda.sfinimento - 1) })} title={t('tip.diminuisci')}>−</button>
+                    {' '}<strong style={{ color: scheda.sfinimento ? C.red : C.ink }}>{scheda.sfinimento}</strong>{' '}
+                    <button style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 13 }} onClick={() => aggiorna({ sfinimento: Math.min(6, scheda.sfinimento + 1) })} title={t('tip.aumenta')}>+</button>
+                  </div>
+                  {scheda.sfinimento > 0 && (
+                    <div style={{ fontSize: 9, color: C.red }} title={versione === '2024' ? 'Regole 2024: −2 ai tiri di d20 per livello' : `Regole 2014: ${SFINIMENTO_2014[scheda.sfinimento]}`}>
+                      {versione === '2024' ? `−${scheda.sfinimento * 2}` : SFINIMENTO_2014[scheda.sfinimento]}
+                    </div>
+                  )}
                 </div>
               </div>
               {/* Riga 4 — Salvezza e sensi (allineata a Saggezza) */}
@@ -5833,22 +5940,11 @@ export default function App() {
                     />
                   </div>
                 </div>
-            <div style={{ ...styles.vitalBox }}>
-              <SfondoVit>🥱</SfondoVit>
-              <div style={styles.vitalLabel}>{t("vital.sfinimento")}</div>
-              <div style={styles.vitalValue}>
-                <button style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 13 }} onClick={() => aggiorna({ sfinimento: Math.max(0, scheda.sfinimento - 1) })} title={t('tip.diminuisci')}>−</button>
-                {' '}
-                <strong style={{ color: scheda.sfinimento ? C.red : C.ink }}>{scheda.sfinimento}</strong>
-                {' '}
-                <button style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 13 }} onClick={() => aggiorna({ sfinimento: Math.min(6, scheda.sfinimento + 1) })} title={t('tip.aumenta')}>+</button>
-              </div>
-              {scheda.sfinimento > 0 && (
-                <div style={{ fontSize: 9, color: C.red }} title={versione === '2024' ? 'Regole 2024: −2 ai tiri di d20 per livello' : `Regole 2014: ${SFINIMENTO_2014[scheda.sfinimento]}`}>
-                  {versione === '2024' ? `−${scheda.sfinimento * 2}` : SFINIMENTO_2014[scheda.sfinimento]}
+                <div style={{ ...styles.vitalBox }} title={t('vital.passive_tooltip')}>
+                  <SfondoVit>👁️</SfondoVit>
+                  <div style={styles.vitalLabel}>{t("vital.percezione_passiva")}</div>
+                  <div style={styles.vitalValue}>{percezionePassiva}</div>
                 </div>
-              )}
-            </div>
               </div>
               {/* Riga 5 — Stato: condizioni e ispirazione (allineata a Carisma) */}
               <div className="vitali pm-gruppo">
@@ -5874,7 +5970,7 @@ export default function App() {
                   title={t('tip.aggiungi_condizione')}
                 >
                   <option value="">＋ aggiungi</option>
-                  {CONDIZIONI_5E.filter((c) => !scheda.condizioni.includes(c)).map((c) => (
+                  {CONDIZIONI_5E.filter((c) => !scheda.condizioni.includes(c)).sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((c) => (
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
@@ -5912,7 +6008,8 @@ export default function App() {
           <div className="profilo-caratteristiche">
             {(() => {
               const blocco = (key) => {
-              const mod = modificatore(scheda.caratteristiche[key]);
+              const punteggioEffettivo = punteggioCaratteristica(scheda, key);
+              const mod = modificatore(punteggioEffettivo);
               const bonusTS = bonusTiroSalvezza(scheda, key);
               const abilitaDellaCar = ABILITA.filter((a) => a.car === key);
               const sfondoCar = SFONDO_CARATTERISTICA[key];
@@ -5953,6 +6050,7 @@ export default function App() {
                             aggiorna({ caratteristiche: { ...scheda.caratteristiche, [key]: v } })
                           }
                         />
+                        {punteggioEffettivo !== scheda.caratteristiche[key] && <span title={t('inv.effetto_attivo')} style={{ marginLeft: 4 }}>→ {punteggioEffettivo}</span>}
                       </div>
                     </div>
                   </div>
@@ -6056,11 +6154,11 @@ export default function App() {
               </div>
               <div style={{ marginBottom: 10 }}>
                 <div style={{ ...styles.detail, marginBottom: 4 }}>{t("train.armi")}</div>
-                <ListaQuadratini
+                <CampoConTendina
                   value={scheda.addestramento.armi}
                   opzioni={COMP_ARMI_5E}
-                  placeholder={t("train.armi_ph")}
                   onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, armi: v } })}
+                  title={t("train.armi_ph")}
                 />
               </div>
               <div>
@@ -6093,40 +6191,46 @@ export default function App() {
                 const modifica = (patch) =>
                   aggiorna({ risorse: scheda.risorse.map((x) => (x.id === r.id ? { ...x, ...patch } : x)) });
                 const spiegazione = spiegaRisorsa(r.nome);
+                const automatica = String(r.id || '').startsWith('auto-');
                 return (
-                  <div key={r.id} style={{ marginBottom: 8, fontSize: 12 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
+                  <div key={r.id} style={{ marginBottom: 6, fontSize: 12, paddingBottom: 6, borderBottom: `1px dotted ${C.border}` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
                       {spiegazione ? (
                         <button
                           type="button"
                           title={spiegazione}
                           onClick={() => setInfo({ titolo: r.nome, testo: spiegazione })}
-                          style={{ padding: 0, border: 0, background: 'transparent', color: C.ink, font: 'inherit', fontWeight: 600, textAlign: 'left', cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
-                        >{r.nome}</button>
+                          style={{ padding: 0, border: 0, background: 'transparent', color: C.ink, font: 'inherit', fontWeight: 600, textAlign: 'left', cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3, marginRight: 'auto' }}
+                        >{r.nome} ⓘ</button>
                       ) : (
-                        <Editable value={r.nome} onChange={(v) => modifica({ nome: v })} width={110} title={t('tip.nome_risorsa')} />
+                        <span style={{ marginRight: 'auto' }}><Editable value={r.nome} onChange={(v) => modifica({ nome: v })} width={110} title={t('tip.nome_risorsa')} /></span>
                       )}
-                      <button
-                        style={{ ...styles.buttonMini, padding: '0 6px', color: C.red }}
-                        title={t('tip.rimuovi_risorsa')}
-                        onClick={() => aggiorna({ risorse: scheda.risorse.filter((x) => x.id !== r.id) })}
-                      >✕</button>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 3, flexWrap: 'wrap' }}>
-                      <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title={t('tip.recupera')} onClick={() => modifica({ attuali: Math.max(0, r.attuali - 1) })}>−</button>
+                      <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title={t('tip.spendi')} onClick={() => modifica({ attuali: Math.max(0, r.attuali - 1) })}>−</button>
                       <strong style={{ minWidth: 16, textAlign: 'center', display: 'inline-block', color: r.attuali === r.max ? C.goldDark : (r.attuali === 0 ? C.inkDim : C.ink) }}>{r.attuali}</strong>
-                      <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title={t('tip.spendi')} onClick={() => modifica({ attuali: Math.min(r.max, r.attuali + 1) })}>+</button>
-                      <span style={styles.detail}>/ <Editable value={r.max} tipo="numero" width={30} onChange={(v) => modifica({ max: Math.max(0, v), attuali: Math.min(Math.max(0, v), r.attuali) })} /></span>
-                      <select
-                        style={{ ...styles.inlineInput, fontSize: 11, padding: '1px 3px' }}
-                        value={r.reset}
-                        onChange={(e) => modifica({ reset: e.target.value })}
-                        title={t('tip.quando_ricarica')}
-                      >
-                        <option value="">{t("res.manuale")}</option>
-                        <option value="breve">{t("res.breve")}</option>
-                        <option value="lungo">{t("res.lungo")}</option>
-                      </select>
+                      <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title={t('tip.recupera')} onClick={() => modifica({ attuali: Math.min(r.max, r.attuali + 1) })}>+</button>
+                      <span style={styles.detail}>/ {automatica
+                        ? <strong>{r.max}</strong>
+                        : <Editable value={r.max} tipo="numero" width={30} onChange={(v) => modifica({ max: Math.max(0, v), attuali: Math.min(Math.max(0, v), r.attuali) })} />}
+                      </span>
+                      {automatica ? (
+                        <span style={{ ...styles.detail, fontSize: 10, whiteSpace: 'nowrap' }} title={t('tip.quando_ricarica')}>↻ {r.reset === 'breve' ? t('res.breve') : t('res.lungo')}</span>
+                      ) : <>
+                        <select
+                          style={{ ...styles.inlineInput, fontSize: 11, padding: '1px 3px', width: 'auto' }}
+                          value={r.reset}
+                          onChange={(e) => modifica({ reset: e.target.value })}
+                          title={t('tip.quando_ricarica')}
+                        >
+                          <option value="">{t("res.manuale")}</option>
+                          <option value="breve">{t("res.breve")}</option>
+                          <option value="lungo">{t("res.lungo")}</option>
+                        </select>
+                        <button
+                          style={{ ...styles.buttonMini, padding: '0 6px', color: C.red }}
+                          title={t('tip.rimuovi_risorsa')}
+                          onClick={() => aggiorna({ risorse: scheda.risorse.filter((x) => x.id !== r.id) })}
+                        >✕</button>
+                      </>}
                     </div>
                   </div>
                 );
@@ -6142,21 +6246,6 @@ export default function App() {
                 >
                   + {t("res.aggiungi")}
                 </button>
-                {(() => {
-                  const auto = risorseAutoClasse(scheda.classe, scheda.livello, scheda.caratteristiche, versione);
-                  const esistenti = new Set((scheda.risorse || []).map((r) => (r.nome || '').toLowerCase()));
-                  const mancanti = auto.filter((a) => !esistenti.has(a.nome.toLowerCase()));
-                  if (mancanti.length === 0) return null;
-                  return (
-                    <button
-                      style={{ ...styles.buttonMini, borderColor: C.goldDark, color: C.goldDark }}
-                      title={`Aggiunge le risorse tipiche della classe: ${mancanti.map((m) => m.nome).join(', ')}`}
-                      onClick={() => aggiorna({ risorse: [...(scheda.risorse || []), ...mancanti] })}
-                    >
-                      ✨ {t("res.auto")}
-                    </button>
-                  );
-                })()}
               </div>
             </Sezione>
           </div>
@@ -6209,7 +6298,7 @@ export default function App() {
                     const tsMatch = desc.match(/ts\s+(destrezza|saggezza|costituzione|forza|intelligenza|carisma)/i);
                     const nomeTS = tsMatch ? ` (TS ${tsMatch[1].charAt(0).toUpperCase() + tsMatch[1].slice(1)})` : isTS ? ' (TS)' : '';
                     
-                    const modInc = scheda.incantatore?.caratteristica ? modificatore(scheda.caratteristiche[scheda.incantatore.caratteristica]) : 0;
+                    const modInc = scheda.incantatore?.caratteristica ? modificatore(punteggioCaratteristica(scheda, scheda.incantatore.caratteristica)) : 0;
                     const bonusComp = scheda.bonusCompetenza || 2;
                     const bonus = isTS ? 0 : bonusComp + modInc;
                     const cd = 8 + bonusComp + modInc;
@@ -6440,7 +6529,7 @@ export default function App() {
               <div style={{ marginBottom: 14 }}>
                 {(() => {
                   const conc = incantesimiConcentrazioneClasse(scheda.classe);
-                  const bonusCon = modificatore(scheda.caratteristiche.costituzione) + (scheda.tiriSalvezza?.costituzione ? scheda.bonusCompetenza : 0);
+                  const bonusCon = bonusTiroSalvezza(scheda, 'costituzione');
                   const attivo = Boolean(scheda.concentrazione);
                   return (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, width: '100%', marginTop: 8 }}>
@@ -6455,7 +6544,7 @@ export default function App() {
                         >
                           <option value="">{t('conc.nessuna')}</option>
                           {attivo && !conc.includes(scheda.concentrazione) && <option value={scheda.concentrazione}>{scheda.concentrazione}</option>}
-                          {conc.map((n) => <option key={n} value={n}>{n}</option>)}
+                          {[...conc].sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
                         </select>
                         <button
                           className="tirabile"
@@ -6584,7 +6673,7 @@ export default function App() {
                         <option value="__manuale__">{t('spell.scrivi_mano')}</option>
                         {suggeriti.length > 0 && (
                           <optgroup label={t('spell.incantesimi_da', { classe: scheda.classe })}>
-                            {suggeriti.map((n) => <option key={n} value={n} disabled={gia.has(n.toLowerCase())}>{gia.has(n.toLowerCase()) ? `✓ ${n}` : n}</option>)}
+                            {[...suggeriti].sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n} disabled={gia.has(n.toLowerCase())}>{gia.has(n.toLowerCase()) ? `✓ ${n}` : n}</option>)}
                           </optgroup>
                         )}
                       </select>
@@ -6875,7 +6964,7 @@ export default function App() {
                 const numMonete = (dMon.mr || 0) + (dMon.ma || 0) + (dMon.me || 0) + (dMon.mo || 0) + (dMon.mp || 0);
                 const pesoMonete = numMonete * 0.01;
                 const pesoTot = pesoInv + pesoArmi + pesoArm + pesoMonete;
-                const forza = scheda.caratteristiche.forza || 10;
+                const forza = punteggioCaratteristica(scheda, 'forza') || 10;
                 // Borsa Conservante equipaggiata: contenitore magico che regge fino a
                 // ~250 kg a peso fisso, quindi mentre la usi aumenta la capacità di carico.
                 const borsaEquip = inv.some((o) => o.equip && /borsa\s+conservante|bag of holding/i.test(o.nome || ''));
@@ -6892,6 +6981,43 @@ export default function App() {
                 const colore = stato === 'ok' ? '#3e9b4f' : stato === 'ingombrato' ? '#e08a1e' : '#c0392b';
                 const perc = Math.min(100, (pesoTot / cap) * 100);
                 const modInv = (id, patch) => aggiorna({ inventario: inv.map((x) => (x.id === id ? { ...x, ...patch } : x)) });
+                const sintoniaArr = Array.isArray(scheda.sintonia) ? scheda.sintonia : (scheda.sintonia ? [scheda.sintonia] : []);
+                const normalizzaNomeOggetto = (v) => String(v || '').toLocaleLowerCase('it').replace(/[^a-zà-ÿ0-9]/gi, ' ').replace(/\s+/g, ' ').trim();
+                const indiceSintonia = (nome) => {
+                  const n = normalizzaNomeOggetto(nome);
+                  return sintoniaArr.findIndex((s) => {
+                    const voce = normalizzaNomeOggetto(s);
+                    return n && voce && (voce.includes(n) || n.includes(voce));
+                  });
+                };
+                const toggleSintonia = (o) => {
+                  const indice = indiceSintonia(o.nome);
+                  if (indice >= 0) {
+                    aggiorna({ sintonia: sintoniaArr.filter((_, i) => i !== indice) });
+                    return;
+                  }
+                  const occupati = sintoniaArr.filter((s) => String(s || '').trim());
+                  if (occupati.length >= 3) {
+                    setInfo({ titolo: t('equip.sintonia'), testo: t('inv.sintonia_piena') });
+                    return;
+                  }
+                  aggiorna({ sintonia: [...occupati, o.nome] });
+                };
+                const rinominaItem = (o, nome) => {
+                  const indice = indiceSintonia(o.nome);
+                  const nuovaSintonia = indice < 0 ? sintoniaArr : sintoniaArr.map((s, i) => (i === indice ? nome : s));
+                  aggiorna({
+                    inventario: inv.map((x) => (x.id === o.id ? completaUtilizziOggetto({ ...x, nome }) : x)),
+                    sintonia: nuovaSintonia,
+                  });
+                };
+                const eliminaItem = (o) => {
+                  const indice = indiceSintonia(o.nome);
+                  aggiorna({
+                    inventario: inv.filter((x) => x.id !== o.id),
+                    ...(indice >= 0 ? { sintonia: sintoniaArr.filter((_, i) => i !== indice) } : {}),
+                  });
+                };
                 const toggleEquip = (o, checked) => {
                   // 1) Scudo: aggiorna il flag scudo del riquadro CA.
                   if (eScudo(o.nome)) {
@@ -6939,7 +7065,7 @@ export default function App() {
                   // Peso automatico dal nome (match esatto → parziale): l'oggetto
                   // viene salvato già col suo peso noto, senza doverlo scrivere.
                   const peso = pesoStimato(nome);
-                  aggiorna({ inventario: [...inv, { id: `inv-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`, nome: nome || '', qta: 1, peso, equip: false, categoria: '' }] });
+                  aggiorna({ inventario: [...inv, completaUtilizziOggetto({ id: `inv-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`, nome: nome || '', qta: 1, peso, equip: false, categoria: '' })] });
                 };
                 return (
                   <div>
@@ -6988,23 +7114,91 @@ export default function App() {
                             <th style={styles.th} title={t('inv.equip_tooltip')}>{t('inv.equip')}</th>
                             <th style={styles.th}>{t('inv.nome')}</th>
                             <th style={styles.th}>{t('inv.qta')}</th>
+                            <th style={{ ...styles.th, textAlign: 'center' }} title={t('inv.sintonia_tooltip')}>{t('inv.sintonia')}</th>
                             <th style={styles.th}>{t('inv.peso')}</th>
                             <th style={styles.th} />
                           </tr></thead>
                           <tbody>
-                            {inv.filter((o) => !filtroInventario || (o.nome || '').toLowerCase().includes(filtroInventario.trim().toLowerCase())).map((o) => {
+                            {inv.filter((o) => !filtroInventario || (o.nome || '').toLowerCase().includes(filtroInventario.trim().toLowerCase())).sort((a, b) => String(a.nome || '').localeCompare(String(b.nome || ''), 'it', { sensitivity: 'base' })).map((o) => {
                               const isWeapon = ARMI_5E.some((w) => w.nome === o.nome) || attacchi.some((a) => a.nome === o.nome);
                               const isEquip = isWeapon ? attacchi.some((a) => a.nome === o.nome) : !!o.equip;
+                              const isSintonizzato = indiceSintonia(o.nome) >= 0;
+                              const effettoAttivo = !!o.effettoMeccanico && isEquip && (!o.richiedeSintonia || isSintonizzato);
                               return (
-                                <tr key={o.id} style={{ opacity: isEquip ? 1 : 0.82 }}>
+                                <Fragment key={o.id}>
+                                <tr style={{ opacity: isEquip ? 1 : 0.82 }}>
                                   <td style={{ ...styles.td, textAlign: 'center' }}>
                                     <input type="checkbox" checked={isEquip} onChange={(e) => toggleEquip(o, e.target.checked)} title={t('inv.equip_tooltip')} />
                                   </td>
-                                  <td style={styles.td}><Editable value={o.nome} width={150} onChange={(v) => modInv(o.id, { nome: v })} /></td>
+                                  <td style={styles.td}><Editable value={o.nome} width={150} onChange={(v) => rinominaItem(o, v)} /></td>
                                   <td style={styles.td}>×<Editable value={o.qta} tipo="numero" width={30} onChange={(v) => modInv(o.id, { qta: Math.max(1, v) })} /></td>
+                                  <td style={{ ...styles.td, textAlign: 'center' }}>
+                                    <button
+                                      type="button"
+                                      aria-pressed={isSintonizzato}
+                                      aria-label={isSintonizzato ? t('inv.sintonizzato') : t('inv.non_sintonizzato')}
+                                      title={isSintonizzato ? t('inv.sintonizzato') : t('inv.non_sintonizzato')}
+                                      onClick={() => toggleSintonia(o)}
+                                      style={{ border: 0, background: 'transparent', padding: '1px 5px', fontSize: 20, lineHeight: 1, color: isSintonizzato ? C.goldDark : C.inkDim, cursor: 'pointer' }}
+                                    >{isSintonizzato ? '✦' : '◇'}</button>
+                                  </td>
                                   <td style={{ ...styles.td, color: C.inkDim, whiteSpace: 'nowrap' }}><Editable value={o.peso} tipo="numero" width={40} onChange={(v) => modInv(o.id, { peso: Math.max(0, v) })} /> kg</td>
-                                  <td style={{ ...styles.td, textAlign: 'right' }}><button style={{ ...styles.buttonMini, color: C.red }} title={t('modal.elimina')} onClick={() => aggiorna({ inventario: inv.filter((x) => x.id !== o.id) })}>🗑</button></td>
+                                  <td style={{ ...styles.td, textAlign: 'right', whiteSpace: 'nowrap' }}>
+                                    <button
+                                      style={{ ...styles.buttonMini, color: effettoAttivo ? C.goldDark : C.inkDim, borderColor: effettoAttivo ? C.goldDark : C.border }}
+                                      title={t('inv.gestisci_effetti')}
+                                      onClick={() => setEffettoInventarioAperto((id) => id === o.id ? null : o.id)}
+                                    >✨</button>{' '}
+                                    <button style={styles.buttonMini} title={t('inv.gestisci_utilizzi')} onClick={() => modInv(o.id, o.usiMax > 0 ? { usi: undefined, usiMax: 0, ricarica: '', effetto: '' } : { usi: 1, usiMax: 1, ricarica: 'manuale' })}>⚡</button>{' '}
+                                    <button style={{ ...styles.buttonMini, color: C.red }} title={t('modal.elimina')} onClick={() => eliminaItem(o)}>🗑</button>
+                                  </td>
                                 </tr>
+                                {(effettoInventarioAperto === o.id || o.effettoMeccanico) && (
+                                  <tr style={{ background: effettoAttivo ? 'rgba(201,162,39,0.08)' : 'rgba(0,0,0,0.035)' }}>
+                                    <td style={styles.td} />
+                                    <td colSpan={5} style={{ ...styles.td, paddingTop: 5, paddingBottom: 7 }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                                        <strong style={{ fontSize: 12 }}>✨ {t('inv.effetto')}</strong>
+                                        <select
+                                          value={o.effettoMeccanico || ''}
+                                          onChange={(e) => modInv(o.id, { effettoMeccanico: e.target.value })}
+                                          style={{ ...styles.inlineInput, flex: '1 1 250px', minWidth: 190, padding: '4px 7px', fontSize: 12 }}
+                                        >
+                                          <option value="">{EFFETTI_OGGETTO[0][lingua === 'it' ? 1 : 2]}</option>
+                                          {EFFETTI_OGGETTO.slice(1).sort((a, b) => a[lingua === 'it' ? 1 : 2].localeCompare(b[lingua === 'it' ? 1 : 2], lingua)).map(([id, labelIt, labelEn]) => <option key={id} value={id}>{lingua === 'it' ? labelIt : labelEn}</option>)}
+                                        </select>
+                                        <label style={{ ...styles.detail, display: 'inline-flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}>
+                                          <input type="checkbox" checked={!!o.richiedeSintonia} onChange={(e) => modInv(o.id, { richiedeSintonia: e.target.checked })} />
+                                          {t('inv.richiede_sintonia')}
+                                        </label>
+                                        <span title={t('inv.effetto_inattivo')} style={{ color: effettoAttivo ? C.green : C.inkDim, fontSize: 12 }}>
+                                          {effettoAttivo ? '●' : '○'}
+                                        </span>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+                                {o.usiMax > 0 && (
+                                  <tr style={{ background: 'rgba(0,0,0,0.035)' }}>
+                                    <td style={styles.td} />
+                                    <td colSpan={5} style={{ ...styles.td, paddingTop: 4, paddingBottom: 7 }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
+                                        <strong style={{ fontSize: 12 }}>⚡ {t('inv.utilizzi')}</strong>
+                                        <button style={styles.buttonMini} onClick={() => modInv(o.id, { usi: Math.max(0, (Number(o.usi) || 0) - 1) })}>−</button>
+                                        <Editable value={Math.min(Number(o.usi) || 0, Number(o.usiMax) || 1)} tipo="numero" width={30} onChange={(v) => modInv(o.id, { usi: Math.max(0, Math.min(Number(o.usiMax) || 1, v)) })} />
+                                        <span>/</span>
+                                        <Editable value={o.usiMax || 1} tipo="numero" width={30} onChange={(v) => modInv(o.id, { usiMax: Math.max(1, v), usi: Math.min(Number(o.usi) || 0, Math.max(1, v)) })} />
+                                        <button style={styles.buttonMini} onClick={() => modInv(o.id, { usi: Math.min(Number(o.usiMax) || 1, (Number(o.usi) || 0) + 1) })}>＋</button>
+                                        <span style={{ fontSize: 12 }}>{t('inv.ricarica')}:</span>
+                                        <select value={o.ricarica || 'manuale'} onChange={(e) => modInv(o.id, { ricarica: e.target.value })} style={{ ...styles.inlineInput, width: 'auto', padding: '3px 6px', fontSize: 12 }}>
+                                          {['alba', 'breve', 'lungo', 'manuale'].sort((a, b) => t(`inv.${a}`).localeCompare(t(`inv.${b}`), 'it')).map((r) => <option key={r} value={r}>{t(`inv.${r}`)}</option>)}
+                                        </select>
+                                        {o.effetto && <button style={styles.buttonMini} title={o.effetto} onClick={() => setInfo({ titolo: o.nome, testo: o.effetto })}>ⓘ</button>}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+                                </Fragment>
                               );
                             })}
                             {(!filtroInventario || 'monete'.includes(filtroInventario.trim().toLowerCase())) && (
@@ -7016,6 +7210,7 @@ export default function App() {
                                 <td style={styles.td}>
                                   <Editable value={dMon.mo || 0} tipo="numero" width={44} onChange={(v) => aggiorna({ denari: { ...scheda.denari, mo: Math.max(0, v) } })} title="Monete d'oro: sincronizzate con la sezione Monete" />
                                 </td>
+                                <td style={{ ...styles.td, textAlign: 'center', color: C.inkDim }}>—</td>
                                 <td style={{ ...styles.td, color: C.inkDim, whiteSpace: 'nowrap' }}>{pesoMonete.toFixed(2)} kg{numMonete > (dMon.mo || 0) ? ` · ${numMonete} monete tot.` : ''}</td>
                                 <td style={styles.td} />
                               </tr>
@@ -7036,6 +7231,15 @@ export default function App() {
                         onKeyDown={(e) => { if (e.key === 'Enter' && e.target.value.trim()) { addItem(e.target.value.trim()); e.target.value = ''; } }}
                       />
                       <datalist id="inv-presets">{NOMI_OGGETTI.map((n) => <option key={n} value={n} />)}</datalist>
+                      <select
+                        value=""
+                        onChange={(e) => { if (e.target.value) addItem(e.target.value); }}
+                        style={{ ...styles.inlineInput, flex: '0 1 230px', minWidth: 180, padding: '6px 28px 6px 8px' }}
+                        aria-label={t('inv.scegli_oggetto')}
+                      >
+                        <option value="">▾ {t('inv.scegli_oggetto')}</option>
+                        {NOMI_OGGETTI.map((n) => <option key={n} value={n}>{n}</option>)}
+                      </select>
                     </div>
                   </div>
                 );
@@ -7210,7 +7414,7 @@ export default function App() {
                     ...c,
                     combattenti: c.combattenti.map((cb) => ({
                       ...cb,
-                      iniziativa: cb.iniziativa ? cb.iniziativa : tiraDado(20) + (cb.tipo === 'pg' ? modificatore(scheda.caratteristiche?.destrezza || 10) : Math.floor(Math.random() * 5))
+                      iniziativa: cb.iniziativa ? cb.iniziativa : tiraDado(20) + (cb.tipo === 'pg' ? modificatore(punteggioCaratteristica(scheda, 'destrezza') || 10) : Math.floor(Math.random() * 5))
                     }))
                   }));
                   setTimeout(ordinaIniziativa, 50);
@@ -7265,7 +7469,7 @@ export default function App() {
                             style={{ ...styles.buttonMini, padding: '0 3px', fontSize: 11, border: 'none', color: C.inkDim, height: 20 }}
                             title="Tira d20 per iniziativa e ordina"
                             onClick={() => {
-                              const roll = tiraDado(20) + (cb.tipo === 'pg' ? modificatore(scheda.caratteristiche?.destrezza || 10) : Math.floor(Math.random() * 5));
+                              const roll = tiraDado(20) + (cb.tipo === 'pg' ? modificatore(punteggioCaratteristica(scheda, 'destrezza') || 10) : Math.floor(Math.random() * 5));
                               modCombat(cb.id, { iniziativa: roll });
                               setTimeout(ordinaIniziativa, 10);
                             }}
@@ -7333,7 +7537,7 @@ export default function App() {
                           style={{ ...styles.inlineInput, fontSize: 10, padding: '1px 2px' }}
                         >
                           <option value="">＋ {t('ct.condizione')}</option>
-                          {CONDIZIONI_5E.filter((c) => !cb.condizioni.includes(c)).map((c) => (
+                          {CONDIZIONI_5E.filter((c) => !cb.condizioni.includes(c)).sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((c) => (
                             <option key={c} value={c}>{c}</option>
                           ))}
                         </select>

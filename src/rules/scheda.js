@@ -3,6 +3,50 @@
 import { modificatore } from './dadi.js';
 import { ABILITA } from '../data/caratteristiche.js';
 
+function nomeNormalizzato(v) {
+  return String(v || '').toLocaleLowerCase('it').replace(/[^a-zà-ÿ0-9]/gi, ' ').replace(/\s+/g, ' ').trim();
+}
+
+/** Un effetto dell'inventario funziona solo se l'oggetto è indossato e,
+ * quando richiesto, occupa anche uno degli slot di sintonia. */
+export function oggettiConEffettoAttivo(scheda) {
+  const sintonia = Array.isArray(scheda?.sintonia) ? scheda.sintonia : (scheda?.sintonia ? [scheda.sintonia] : []);
+  return (Array.isArray(scheda?.inventario) ? scheda.inventario : []).filter((o) => {
+    if (!o?.equip || !o.effettoMeccanico) return false;
+    if (!o.richiedeSintonia) return true;
+    const nome = nomeNormalizzato(o.nome);
+    return sintonia.some((s) => {
+      const voce = nomeNormalizzato(s);
+      return nome && voce && (nome.includes(voce) || voce.includes(nome));
+    });
+  });
+}
+
+export function bonusClasseArmaturaOggetti(scheda) {
+  return oggettiConEffettoAttivo(scheda).reduce((tot, o) => {
+    if (o.effettoMeccanico === 'classe_armatura_tiri_salvezza_1') return tot + 1;
+    const m = /^classe_armatura_([123])$/.exec(o.effettoMeccanico);
+    return tot + (m ? Number(m[1]) : 0);
+  }, 0);
+}
+
+export function bonusTiriSalvezzaOggetti(scheda) {
+  return oggettiConEffettoAttivo(scheda).reduce((tot, o) => {
+    if (o.effettoMeccanico === 'classe_armatura_tiri_salvezza_1') return tot + 1;
+    const m = /^tiri_salvezza_([123])$/.exec(o.effettoMeccanico);
+    return tot + (m ? Number(m[1]) : 0);
+  }, 0);
+}
+
+export function punteggioCaratteristica(scheda, caratteristica) {
+  const base = Number(scheda?.caratteristiche?.[caratteristica]) || 0;
+  const valori = oggettiConEffettoAttivo(scheda)
+    .map((o) => new RegExp(`^${caratteristica}_impostata_(\\d+)$`).exec(o.effettoMeccanico))
+    .filter(Boolean)
+    .map((m) => Number(m[1]));
+  return valori.length ? Math.max(base, ...valori) : base;
+}
+
 /**
  * CA totale in base all'equipaggiamento (regole 5e):
  * a mano = valore scritto · nessuna 10+DES · leggera base+DES ·
@@ -11,14 +55,14 @@ import { ABILITA } from '../data/caratteristiche.js';
  */
 export function caTotale(scheda) {
   const a = scheda.armatura || {};
-  const des = modificatore(scheda.caratteristiche.destrezza);
+  const des = modificatore(punteggioCaratteristica(scheda, 'destrezza'));
   let ca;
   if (a.tipo === 'nessuna') ca = 10 + des;
   else if (a.tipo === 'leggera') ca = (a.base || 0) + des;
   else if (a.tipo === 'media') ca = (a.base || 0) + Math.min(des, 2);
   else if (a.tipo === 'pesante') ca = a.base || 0;
   else ca = Number(scheda.ca) || 0; // 'manuale': valore scritto a mano
-  return ca + (a.scudo ? 2 : 0) + (Number(a.bonus) || 0);
+  return ca + (a.scudo ? 2 : 0) + (Number(a.bonus) || 0) + bonusClasseArmaturaOggetti(scheda);
 }
 
 /**
@@ -40,13 +84,14 @@ export function bonusAbilita(scheda, abilita) {
   // (stellina). Entrambe le competenze valgono ×1 il bonus (la 2 è solo un
   // marcatore d'origine, non maestria): così i numeri restano fedeli alla scheda.
   const competente = livComp >= 1 ? 1 : 0;
-  return modificatore(scheda.caratteristiche[def.car]) + competente * scheda.bonusCompetenza;
+  return modificatore(punteggioCaratteristica(scheda, def.car)) + competente * scheda.bonusCompetenza;
 }
 
 /** Bonus di un tiro salvezza: mod caratteristica + eventuale competenza. */
 export function bonusTiroSalvezza(scheda, car) {
   return (
-    modificatore(scheda.caratteristiche[car]) +
-    (scheda.tiriSalvezza[car] ? scheda.bonusCompetenza : 0)
+    modificatore(punteggioCaratteristica(scheda, car)) +
+    (scheda.tiriSalvezza[car] ? scheda.bonusCompetenza : 0) +
+    bonusTiriSalvezzaOggetti(scheda)
   );
 }

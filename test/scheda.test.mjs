@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza } from '../src/rules/scheda.js';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, punteggioCaratteristica } from '../src/rules/scheda.js';
 import { ABILITA, CARATTERISTICHE } from '../src/data/caratteristiche.js';
 
 // Scheda minima di prova: DES 16 (+3), FOR 8 (-1), bonus competenza +3.
@@ -120,6 +120,24 @@ test('bonusTiroSalvezza: senza competenza = solo modificatore', () => {
 test('bonusTiroSalvezza: con competenza aggiunge il bonus', () => {
   const s = schedaBase({ tiriSalvezza: { destrezza: true } });
   assert.equal(bonusTiroSalvezza(s, 'destrezza'), 6);
+});
+
+test('oggetti: Mantello della Protezione aggiunge 1 a CA e TS solo se indossato e sintonizzato', () => {
+  const mantello = { nome: 'Mantello della Protezione', equip: true, richiedeSintonia: true, effettoMeccanico: 'classe_armatura_tiri_salvezza_1' };
+  const nonSintonizzato = schedaBase({ inventario: [mantello] });
+  assert.equal(caTotale(nonSintonizzato), 13);
+  assert.equal(bonusTiroSalvezza(nonSintonizzato, 'destrezza'), 3);
+  const attivo = { ...nonSintonizzato, sintonia: ['Mantello della Protezione'] };
+  assert.equal(caTotale(attivo), 14);
+  assert.equal(bonusTiroSalvezza(attivo, 'destrezza'), 4);
+});
+
+test('oggetti: Guanti del Potere Orchesco impostano Forza a 19 senza abbassare valori superiori', () => {
+  const guanti = { nome: 'Guanti del Potere Orchesco', equip: true, richiedeSintonia: true, effettoMeccanico: 'forza_impostata_19' };
+  const attivo = schedaBase({ inventario: [guanti], sintonia: ['Guanti del Potere Orchesco'] });
+  assert.equal(punteggioCaratteristica(attivo, 'forza'), 19);
+  assert.equal(bonusTiroSalvezza(attivo, 'forza'), 4);
+  assert.equal(punteggioCaratteristica({ ...attivo, caratteristiche: { ...attivo.caratteristiche, forza: 20 } }, 'forza'), 20);
 });
 
 // ========================= Coerenza tabelle =========================

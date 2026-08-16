@@ -406,6 +406,15 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .sezione > summary::-webkit-details-marker { display: none; }
 .sezione .freccia { display: inline-block; transition: transform 0.15s; font-size: 11px; color: var(--c-ink-dim); }
 .sezione:not([open]) .freccia { transform: rotate(-90deg); }
+.sezione-titolo {
+  display: grid !important;
+  grid-template-columns: minmax(28px, 1fr) auto minmax(28px, 1fr);
+  align-items: center;
+  column-gap: 6px;
+}
+.sezione-titolo-sinistra { justify-self: start; display: inline-flex; align-items: center; gap: 6px; }
+.sezione-titolo-testo { justify-self: center; text-align: center; }
+.sezione-titolo-azioni { justify-self: end; display: inline-flex; align-items: center; gap: 6px; }
 /* Corpo scheda: le sezioni ora sono a PIENA LARGHEZZA, impilate in verticale.
    L'ordine è controllato con 'order' (Combattimento/Magia prima, poi il resto). */
 .griglia-scheda {
@@ -478,11 +487,16 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 /* Ritratto ridotto: Addestramento/Risorse salgono e usano tutta la colonna,
    altrimenti resterebbe un buco (le righe le detta la colonna caratteristiche). */
 .profilo-griglia.senza-ritratto .profilo-ritratto { grid-row: 1 / 2; align-self: start; }
-.profilo-griglia.senza-ritratto .profilo-extra { grid-row: 2 / -1; }
+.profilo-griglia.senza-ritratto .profilo-extra {
+  grid-row: 1 / -1;
+  /* La barretta per riaprire il ritratto resta sopra; il resto della colonna
+     parte subito sotto, senza lasciare vuota l'intera prima riga. */
+  padding-top: 36px;
+}
 .profilo-extra > .sezione { margin-bottom: 0 !important; }
-/* l'ultima sezione aperta (Risorse) cresce per riempire lo spazio rimanente
-   sotto; da chiusa resta alta quanto il suo titolo. */
-.profilo-extra > .sezione[open]:last-child { flex: 1 1 auto; }
+/* Le sezioni mantengono l'altezza del contenuto: Risorse non si allunga più
+   artificialmente lasciando un grande spazio vuoto sotto i contatori. */
+.profilo-extra > .sezione { flex: 0 0 auto; }
 /* colonna stretta (~210px): titolo sezione più piccolo e meno spaziato, così
    "ADDESTRAMENTO" non sborda; se serve va a capo invece di tagliarsi. */
 .profilo-extra .sezione > summary { font-size: 12.5px !important; letter-spacing: 1px !important; overflow-wrap: anywhere; }
@@ -510,6 +524,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .profilo-caratteristiche { order: 2; display: flex; flex-direction: column; gap: 8px; width: 100%; }
   .profilo-ritratto { order: 3; width: 100%; }
   .profilo-extra { order: 4; width: 100%; }
+  .profilo-griglia.senza-ritratto .profilo-extra { padding-top: 0; }
   .profilo-caratteristiche > *, .car-coppia, .car-coppia > * { width: 100%; box-sizing: border-box; }
   .ritratto-box { min-height: 300px; }
   .car-coppia { gap: 8px; }
