@@ -1134,7 +1134,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.92.1';
+const APP_VERSION = '2.92.2';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1645,10 +1645,12 @@ export default function App() {
     setAggiornando(true);
     try {
       await updateServiceWorker(true);
-    } catch { /* il controllo version.json consente comunque il reload */ }
-    const u = new URL(window.location.href);
-    u.searchParams.set('agg', Date.now().toString());
-    window.location.replace(u.toString());
+    } catch {
+      // Se il service worker non è disponibile, basta una sola normale ricarica.
+      // Non aggiungiamo parametri all'URL: combinata con updateServiceWorker(true)
+      // la seconda navigazione poteva innescare un ciclo infinito di reload.
+      window.location.reload();
+    }
   }
 
   // Rilevatore di nuove versioni INDIPENDENTE dal service worker: interroga
@@ -1684,16 +1686,10 @@ export default function App() {
   // il pulsante lampeggia se c'è una nuova versione (rilevata in un modo o nell'altro)
   const nuovaVersione = aggiornamentoPronto || needRefresh;
 
-  // Auto-aggiornamento silenzioso: se rileva un update su GitHub e non stai scrivendo, aggiorna da solo!
-  useEffect(() => {
-    if (nuovaVersione && !aggiornando && !sincronizzando) {
-      const active = document.activeElement;
-      const staScrivendo = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable);
-      if (!staScrivendo) {
-        forzaAggiornamento();
-      }
-    }
-  }, [nuovaVersione, aggiornando, sincronizzando]);
+  // Non ricaricare automaticamente: needRefresh può restare vero durante il
+  // passaggio fra due service worker e riattivare il reload a ogni avvio.
+  // Il banner e il pulsante dedicato lasciano all'utente il controllo e non
+  // interrompono modifiche locali o sincronizzazioni in corso.
 
   const [roster, setRoster] = useState(loadState);
   const [erroreSalvataggio, setErroreSalvataggio] = useState('');

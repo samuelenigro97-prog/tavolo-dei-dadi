@@ -16,6 +16,7 @@ Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 - Runbook release manuale in `docs/RELEASE.md`.
 
 ### Modificato
+- Corretto il ciclo infinito di aggiornamento PWA: la nuova versione viene segnalata senza ricaricare automaticamente e il comando manuale esegue una sola navigazione.
 - Vaelion corretto come Druido del Circolo del Pastore; competenze nelle armi con iniziale maiuscola e immagini cloud riagganciate all’archivio locale prima della sincronizzazione.
 - Addestramento nelle armi mostrato in riquadri separati; menu testuali e inventario ordinati alfabeticamente.
 - Profilo, risorse di classe, ritratto e disposizione mobile resi più compatti e coerenti.
