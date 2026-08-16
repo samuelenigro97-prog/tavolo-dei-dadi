@@ -11,11 +11,15 @@ test('aggiornamento PWA: non combina il reload del worker con location.replace',
   assert.doesNotMatch(app, /window\.location\.replace\(/);
 });
 
-test('aggiornamento PWA: una nuova versione non forza un reload da un effect', () => {
-  assert.doesNotMatch(
-    app,
-    /useEffect\(\(\) => \{[\s\S]{0,800}if \(nuovaVersione[\s\S]{0,800}forzaAggiornamento\(\)/,
-  );
+test('aggiornamento PWA: tenta automaticamente una sola volta per build', () => {
+  assert.match(app, /sessionStorage\.getItem\(chiave\)/);
+  assert.match(app, /sessionStorage\.setItem\(chiave, 'tentato'\)/);
+  assert.match(app, /setTimeout\(forzaAggiornamento, 700\)/);
+});
+
+test('aggiornamento PWA: Safari non può restare bloccato su Aggiornamento', () => {
+  assert.match(app, /setTimeout\(ricaricaUnaVolta, 4500\)/);
+  assert.match(app, /let navigazioneAvviata = false/);
 });
 
 test('avvio: cloud e IndexedDB non possono bloccare indefinitamente la scheda', () => {
