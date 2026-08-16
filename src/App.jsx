@@ -22,6 +22,17 @@ import { salvaJson, rosterSenzaImmagini, riagganciaImmagini, salvaImmaginiRoster
 /** Numero valido o fallback (helper condiviso: usato da loader e dal Level Up). */
 function num(v, fallback) { return Number.isFinite(Number(v)) ? Number(v) : fallback; }
 
+/** Fetch che non può lasciare l'interfaccia sospesa indefinitamente (Safari/iOS). */
+async function fetchConTimeout(url, opzioni = {}, timeoutMs = 8000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...opzioni, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 const SFONDO_CARATTERISTICA = {
   forza:        { symbol: '⚔️', label: 'Forza' },
   destrezza:    { symbol: '🏹', label: 'Destrezza' },
@@ -1134,7 +1145,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.92.2';
+const APP_VERSION = '2.92.3';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3338,7 +3349,7 @@ export default function App() {
     (async () => {
       try {
         setCaricandoCloud(true);
-        const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+        const res = await fetchConTimeout(`https://api.github.com/gists/${gistId}`, {
           headers: { 'Authorization': `token ${githubToken}`, 'Accept': 'application/vnd.github.v3+json' },
         });
         if (!res.ok) return;
@@ -3360,7 +3371,11 @@ export default function App() {
           localStorage.setItem('scheda-interattiva:sync-ts', String(cloudTs));
           setCloudStatus({ text: '☁️ Personaggi caricati dal cloud', type: 'success' });
         }
-      } catch { /* offline o errore: si resta sui dati locali */ }
+      } catch {
+        // Offline, GitHub lento o IndexedDB bloccato: il roster locale resta
+        // già disponibile e l'overlay deve sempre scomparire.
+        setCloudStatus({ text: 'Cloud non raggiungibile: uso i personaggi salvati sul dispositivo.', type: 'error' });
+      }
       finally { setCaricandoCloud(false); }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -3374,7 +3389,7 @@ export default function App() {
     try {
       setCaricandoCloud(true);
       setCloudStatus({ text: 'Caricamento in corso...', type: 'info' });
-      const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+      const res = await fetchConTimeout(`https://api.github.com/gists/${gistId}`, {
         headers: {
           'Authorization': `token ${githubToken}`,
           'Accept': 'application/vnd.github.v3+json',
