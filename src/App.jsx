@@ -1145,7 +1145,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.93.2';
+const APP_VERSION = '2.93.3';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -6539,11 +6539,12 @@ export default function App() {
             {/* Incantesimi — sezione collassabile */}
             <Sezione
               titolo={t("sez.incantesimi")}
+              className="sezione-magia"
               {...propsSez('incantesimi')}
               {...apertoProps('incantesimi', !!(caratteristicaIncantatore || (scheda.incantesimiLista || []).length > 0))}
               azioni={(
                 // Nella riga del titolo: recupera l'altezza di una riga intera.
-                <label style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, textTransform: 'none', letterSpacing: 0 }}>
+                <label className="magia-caratteristica" style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, textTransform: 'none', letterSpacing: 0 }}>
                   {t('spell.caratteristica')}{' '}
                   <select
                     style={{ ...styles.inlineInput, padding: '3px 6px', fontSize: 12 }}
