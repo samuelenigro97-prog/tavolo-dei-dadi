@@ -1145,7 +1145,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.93.0';
+const APP_VERSION = '2.93.1';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1654,21 +1654,27 @@ export default function App() {
   async function forzaAggiornamento() {
     if (aggiornando) return;
     setAggiornando(true);
+    let navigazioneAvviata = false;
+    const ricaricaUnaVolta = () => {
+      if (navigazioneAvviata) return;
+      navigazioneAvviata = true;
+      window.location.reload();
+    };
+    // Safari può lasciare pendente updateServiceWorker senza risolvere né
+    // rifiutare la Promise. Il watchdog impedisce "Aggiornamento…" infinito.
+    const watchdog = setTimeout(ricaricaUnaVolta, 4500);
     try {
       await updateServiceWorker(true);
-    } catch {
-      // Se il service worker non è disponibile, basta una sola normale ricarica.
-      // Non aggiungiamo parametri all'URL: combinata con updateServiceWorker(true)
-      // la seconda navigazione poteva innescare un ciclo infinito di reload.
-      window.location.reload();
-    }
+      ricaricaUnaVolta();
+    } catch { ricaricaUnaVolta(); }
+    finally { clearTimeout(watchdog); }
   }
 
   // Rilevatore di nuove versioni INDIPENDENTE dal service worker: interroga
   // `version.json` (che non è nella cache, quindi va sempre in rete) e confronta
   // il `build` pubblicato con quello di questa build (__BUILD_ID__ iniettato da
   // Vite). Se differiscono, il pulsante 🔄 lampeggia di verde per invitare al click.
-  const [aggiornamentoPronto, setAggiornamentoPronto] = useState(false);
+  const [aggiornamentoPronto, setAggiornamentoPronto] = useState('');
   useEffect(() => {
     let annullato = false;
     const controlla = async () => {
@@ -1677,7 +1683,7 @@ export default function App() {
         if (!r.ok) return;
         const dati = await r.json();
         if (!annullato && dati && dati.build && String(dati.build) !== String(__BUILD_ID__)) {
-          setAggiornamentoPronto(true);
+          setAggiornamentoPronto(String(dati.build));
         }
       } catch { /* offline o file assente: nessun avviso */ }
     };
@@ -1695,12 +1701,20 @@ export default function App() {
     };
   }, []);
   // il pulsante lampeggia se c'è una nuova versione (rilevata in un modo o nell'altro)
-  const nuovaVersione = aggiornamentoPronto || needRefresh;
+  const nuovaVersione = !!aggiornamentoPronto || needRefresh;
 
-  // Non ricaricare automaticamente: needRefresh può restare vero durante il
-  // passaggio fra due service worker e riattivare il reload a ogni avvio.
-  // Il banner e il pulsante dedicato lasciano all'utente il controllo e non
-  // interrompono modifiche locali o sincronizzazioni in corso.
+  // Aggiorna automaticamente una sola volta per ogni build pubblicata. La
+  // chiave in sessionStorage sopravvive al reload e impedisce il vecchio ciclo
+  // infinito se Safari dovesse continuare a servire la build precedente.
+  useEffect(() => {
+    if (!aggiornamentoPronto || aggiornando || sincronizzando) return;
+    const chiave = `tavolo-dei-dadi:update:${aggiornamentoPronto}`;
+    if (sessionStorage.getItem(chiave)) return;
+    sessionStorage.setItem(chiave, 'tentato');
+    const timer = setTimeout(forzaAggiornamento, 700);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aggiornamentoPronto, aggiornando, sincronizzando]);
 
   const [roster, setRoster] = useState(loadState);
   const [erroreSalvataggio, setErroreSalvataggio] = useState('');
@@ -3742,21 +3756,6 @@ export default function App() {
           <div style={{ width: 180, height: 5, borderRadius: 3, overflow: 'hidden', background: 'rgba(255,255,255,0.2)' }}>
             <div className="cloud-bar" style={{ height: '100%', background: 'linear-gradient(90deg,#e0521c,#d6a90f,#3f9a3a,#1f74d4)' }} />
           </div>
-        </div>
-      )}
-
-      {needRefresh && (
-        <div
-          style={{
-            position: 'fixed', bottom: 16, left: '50%', transform: 'translateX(-50%)', zIndex: 2000,
-            display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderRadius: 10,
-            background: C.panel, border: `1px solid var(--c-gold-dark)`, boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
-            maxWidth: '92vw',
-          }}
-        >
-          <span style={{ ...styles.detail, color: C.ink }}>🔄 {t('update.disponibile')}</span>
-          <button style={styles.buttonPrimary} disabled={aggiornando} onClick={forzaAggiornamento}>{aggiornando ? t('btn.aggiorno') : t('update.ricarica')}</button>
-          <button style={styles.buttonMini} title={t('update.ignora')} onClick={() => setNeedRefresh(false)}>✕</button>
         </div>
       )}
 
