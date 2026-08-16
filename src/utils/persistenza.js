@@ -48,14 +48,27 @@ export function riagganciaImmagini(rosterSnapshot, rosterCorrente) {
 
 const DB_IMMAGINI = 'tavolo-dei-dadi-immagini';
 const STORE_IMMAGINI = 'personaggi';
+const TIMEOUT_INDEXED_DB_MS = 4000;
 
 function apriDbImmagini() {
   return new Promise((resolve, reject) => {
     if (typeof indexedDB === 'undefined') return reject(new Error('IndexedDB non disponibile'));
     const richiesta = indexedDB.open(DB_IMMAGINI, 1);
+    let conclusa = false;
+    const termina = (azione, valore) => {
+      if (conclusa) return;
+      conclusa = true;
+      clearTimeout(timer);
+      azione(valore);
+    };
+    const timer = setTimeout(
+      () => termina(reject, new Error('IndexedDB non risponde')),
+      TIMEOUT_INDEXED_DB_MS,
+    );
     richiesta.onupgradeneeded = () => richiesta.result.createObjectStore(STORE_IMMAGINI);
-    richiesta.onsuccess = () => resolve(richiesta.result);
-    richiesta.onerror = () => reject(richiesta.error);
+    richiesta.onsuccess = () => termina(resolve, richiesta.result);
+    richiesta.onerror = () => termina(reject, richiesta.error);
+    richiesta.onblocked = () => termina(reject, new Error('IndexedDB bloccato'));
   });
 }
 
