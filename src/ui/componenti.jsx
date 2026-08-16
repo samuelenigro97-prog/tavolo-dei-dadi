@@ -206,11 +206,12 @@ export function CampoModulo({ label, children, style }) {
  * Campo di testo libero (elementi separati da virgola) con un menù a tendina
  * "＋" per aggiungere velocemente voci da una lista, senza perdere il testo.
  */
-export function CampoConTendina({ value, opzioni, onChange, width, title, lookup, setInfo }) {
+export function CampoConTendina({ value, opzioni, onChange, width, title, lookup, setInfo, formattaVoce }) {
   // Accetta sia il formato storico separato da virgole sia le voci su righe
   // distinte: ogni elemento viene comunque mostrato nel proprio riquadro.
   const attuali = value ? value.split(/[,\n]/).map((s) => s.trim()).filter(Boolean) : [];
-  const visualizzati = ordinaAlfabeticamente(attuali);
+  const mostraVoce = (v) => formattaVoce ? formattaVoce(v) : traduciDato(v);
+  const visualizzati = ordinaAlfabeticamente(attuali, mostraVoce);
 
   const aggiungi = (v) => {
     if (!v) return;
@@ -233,7 +234,7 @@ export function CampoConTendina({ value, opzioni, onChange, width, title, lookup
           <span
             style={sp ? { cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 } : undefined}
             onClick={sp ? () => setInfo({ titolo: traduciDato(t), testo: sp }) : undefined}
-          >{traduciDato(t)}</span>
+          >{mostraVoce(t)}</span>
           <button
             style={{ background: 'transparent', border: 'none', color: '#c0392b', cursor: 'pointer', padding: 0, fontSize: 16, lineHeight: 0.8 }}
             onClick={() => rimuovi(t)}

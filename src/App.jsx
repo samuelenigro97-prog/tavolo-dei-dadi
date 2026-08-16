@@ -848,6 +848,11 @@ function nomeSpeciePerSesso(specie, sesso, lingua = 'it') {
   return femminili[specie] || traduciDato(specie);
 }
 
+function inizialeMaiuscola(v) {
+  const testo = String(v || '').trim();
+  return testo ? testo.charAt(0).toLocaleUpperCase('it') + testo.slice(1) : '';
+}
+
 const TIPI_ARMATURA = [
   { key: 'manuale', label: 'CA Manuale' },
   { key: 'nessuna', label: 'Senza armatura' },
@@ -1129,7 +1134,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.92.0';
+const APP_VERSION = '2.92.1';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3256,7 +3261,11 @@ export default function App() {
       setSincronizzando(true);
       if (!silenzioso) setCloudStatus({ text: 'Salvataggio in corso...', type: 'info' });
       const quando = Date.now();
-      const dati = JSON.stringify({ ...rosterSyncRef.current, _updatedAt: quando }, null, 2);
+      // Le immagini vivono in IndexedDB per non saturare localStorage. Prima
+      // del cloud le riagganciamo esplicitamente: così ritratto e mappa seguono
+      // davvero il personaggio anche su un altro dispositivo.
+      const rosterCloud = await caricaImmaginiRoster(rosterSyncRef.current).catch(() => rosterSyncRef.current);
+      const dati = JSON.stringify({ ...rosterCloud, _updatedAt: quando }, null, 2);
       const corpo = { files: { 'roster_tavolo_dei_dadi.json': { content: dati } } };
 
       let nuovoId = gistSyncRef.current;
@@ -3348,7 +3357,10 @@ export default function App() {
         for (const id in parsed.personaggi) caricato.personaggi[id] = normalizeImported(parsed.personaggi[id]);
         if (!caricato.attivo || !caricato.personaggi[caricato.attivo]) caricato.attivo = Object.keys(caricato.personaggi)[0] || '';
         if (Object.keys(caricato.personaggi).length) {
-          setRoster(caricato);
+          // Se il cloud non contiene ancora un'immagine, conserva quella già
+          // archiviata sul dispositivo invece di cancellarla durante il merge.
+          const conImmaginiLocali = await caricaImmaginiRoster(caricato).catch(() => caricato);
+          setRoster(conImmaginiLocali);
           localStorage.setItem('scheda-interattiva:sync-ts', String(cloudTs));
           setCloudStatus({ text: '☁️ Personaggi caricati dal cloud', type: 'success' });
         }
@@ -3386,7 +3398,8 @@ export default function App() {
         loadedRoster.attivo = Object.keys(loadedRoster.personaggi)[0] || '';
       }
       
-      setRoster(loadedRoster);
+      const conImmaginiLocali = await caricaImmaginiRoster(loadedRoster).catch(() => loadedRoster);
+      setRoster(conImmaginiLocali);
       if (parsed._updatedAt) localStorage.setItem('scheda-interattiva:sync-ts', String(parsed._updatedAt));
       setCloudStatus({ text: '✅ Roster caricato e sincronizzato!', type: 'success' });
     } catch (err) {
@@ -6157,7 +6170,8 @@ export default function App() {
                 <CampoConTendina
                   value={scheda.addestramento.armi}
                   opzioni={COMP_ARMI_5E}
-                  onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, armi: v } })}
+                  formattaVoce={inizialeMaiuscola}
+                  onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, armi: v.split(',').map(inizialeMaiuscola).join(', ') } })}
                   title={t("train.armi_ph")}
                 />
               </div>

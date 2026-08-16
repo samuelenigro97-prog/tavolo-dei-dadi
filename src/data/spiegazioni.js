@@ -658,6 +658,7 @@ const SPIEG_PRIVILEGI = {
   'Circolo della Terra': 'Sottoclasse del Druido: padroneggia gli elementi e la magia legata agli ambienti naturali.',
   'Circolo della Luna': 'Sottoclasse del Druido: maestro della Forma Selvatica per combattere come bestia in mischia.',
   'Circolo del Mare': 'Sottoclasse del Druido: domina le maree e il potere distruttivo degli oceani.',
+  'Circolo del Pastore': 'Sottoclasse del Druido: protegge bestie e folletti e rafforza le creature evocate tramite il Totem Spirituale.',
   'Circolo delle Stelle': 'Sottoclasse del Druido: trae potere e divinazione dalle costellazioni.',
   'Maestro di Battaglia': 'Sottoclasse del Guerriero: usa Manovre tattiche e Dadi Superiorità in combattimento.',
   'Campione': 'Sottoclasse del Guerriero: concentra le sue capacità sulla massima potenza fisica e sui critici.',

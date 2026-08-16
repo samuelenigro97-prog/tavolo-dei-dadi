@@ -915,6 +915,7 @@ export const EN_PRIVILEGI_CLASSE = {
   'Dominio dell’Inganno': 'Cleric subclass: specialised in illusion, stealth and subterfuge.',
   'Dominio della Guerra': 'Cleric subclass: skilled in martial combat and offensive spells.',
   'Circolo della Terra': 'Druid subclass: masters the elements and magic tied to natural environments.',
+  'Circolo del Pastore': 'Druid subclass: protects beasts and fey and empowers summoned creatures through the Spirit Totem.',
   'Circolo della Luna': 'Druid subclass: master of Wild Shape, fighting as a beast in melee.',
   'Circolo del Mare': 'Druid subclass: commands the tides and the destructive power of the oceans.',
   'Circolo delle Stelle': 'Druid subclass: draws power and divination from the constellations.',

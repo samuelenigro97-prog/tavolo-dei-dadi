@@ -20,7 +20,7 @@ export const SOTTOCLASSI_5E = {
   barbaro: ['Berserker', 'Cuore Selvaggio', 'Albero del Mondo', 'Zelota'],
   bardo: ['Collegio della Danza', 'Collegio del Fascino', 'Collegio della Sapienza', 'Collegio del Valore'],
   chierico: ['Dominio della Vita', 'Dominio della Luce', 'Dominio dell’Inganno', 'Dominio della Guerra'],
-  druido: ['Circolo della Terra', 'Circolo della Luna', 'Circolo del Mare', 'Circolo delle Stelle'],
+  druido: ['Circolo della Terra', 'Circolo della Luna', 'Circolo del Mare', 'Circolo del Pastore', 'Circolo delle Stelle'],
   guerriero: ['Maestro di Battaglia', 'Campione', 'Cavaliere Mistico', 'Guerriero Psionico'],
   ladro: ['Mistificatore Arcano', 'Assassino', 'Lama Spirituale', 'Furfante'],
   mago: ['Abiuratore', 'Divinatore', 'Invocatore', 'Illusionista'],
@@ -272,6 +272,7 @@ export const SUBCLASS_PRIVILEGI = {
   'Circolo della Terra': { 3: 'Incantesimi del Circolo\nAusilio dalla Terra', 6: 'Recupero Naturale', 10: 'Interdizione della Natura', 14: 'Rifugio della Natura' },
   'Circolo della Luna': { 3: 'Incantesimi del Circolo\nForme del Circolo', 10: 'Passo Chiardiluna', 14: 'Forma Lunare' },
   'Circolo del Mare': { 3: 'Incantesimi del Circolo\nFuria dei Mari', 6: 'Affinità Acquatica', 10: 'Nato dalla Tempesta', 14: 'Dono Oceanico' },
+  'Circolo del Pastore': { 2: 'Lingua dei Boschi\nTotem Spirituale', 6: 'Evocatore Possente', 10: 'Spirito Guardiano', 14: 'Evocazioni Fedeli' },
   'Circolo delle Stelle': { 3: 'Carta Celeste\nForma Siderale', 6: 'Profezia Cosmica', 10: 'Costellazioni Scintillanti', 14: 'Manto di Stelle' },
 
   // --- GUERRIERO (3, 7, 10, 15, 18) — nomi ufficiali 2024 ---
