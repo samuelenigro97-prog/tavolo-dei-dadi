@@ -663,7 +663,7 @@ const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(I
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, pesoStimato, pesoArmatura } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -1145,7 +1145,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.93.1';
+const APP_VERSION = '2.93.2';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2223,6 +2223,7 @@ export default function App() {
   const ritrattoRef = useRef(null);
 
   const scheda = roster.personaggi[roster.attivo];
+  const caratteristicaIncantatore = caratteristicaIncantatoreEffettiva(scheda);
   // versione delle regole del personaggio attivo (fallback: impostazione globale)
   const versione = scheda?.versione || regoleVersione || '2024';
   // Allinea SUBITO le spiegazioni all'edizione del PG: le voci che cambiano fra
@@ -2313,6 +2314,15 @@ export default function App() {
   function aggiorna(patch) {
     setScheda((s) => ({ ...s, ...patch }));
   }
+
+  // Corregge definitivamente anche le schede create/importate prima
+  // dell'automatismo, senza ritardare i calcoli del render corrente.
+  useEffect(() => {
+    const automatica = caratteristicaIncantatorePerClasse(scheda.classe);
+    if (automatica && scheda.incantatore?.caratteristica !== automatica) {
+      aggiorna({ incantatore: { ...scheda.incantatore, caratteristica: automatica } });
+    }
+  }, [scheda.classe, scheda.incantatore?.caratteristica]);
 
   // --- Archivio DM: deposita una copia della scheda attiva ---
   // Parte ~10 secondi dopo l'ultima modifica (così non si scrive a ogni tasto)
@@ -3440,8 +3450,8 @@ export default function App() {
   const percezionePassiva = 10 + bonusAbilita(scheda, 'percezione');
   const indagarePassivo = 10 + bonusAbilita(scheda, 'indagare');
   const intuizionePassiva = 10 + bonusAbilita(scheda, 'intuizione');
-  const modIncantatore = scheda.incantatore.caratteristica
-    ? modificatore(punteggioCaratteristica(scheda, scheda.incantatore.caratteristica))
+  const modIncantatore = caratteristicaIncantatore
+    ? modificatore(punteggioCaratteristica(scheda, caratteristicaIncantatore))
     : null;
 
   // Limiti di trucchetti/incantesimi (come il lock delle armature): quando sei al
@@ -6320,7 +6330,7 @@ export default function App() {
                     const tsMatch = desc.match(/ts\s+(destrezza|saggezza|costituzione|forza|intelligenza|carisma)/i);
                     const nomeTS = tsMatch ? ` (TS ${tsMatch[1].charAt(0).toUpperCase() + tsMatch[1].slice(1)})` : isTS ? ' (TS)' : '';
                     
-                    const modInc = scheda.incantatore?.caratteristica ? modificatore(punteggioCaratteristica(scheda, scheda.incantatore.caratteristica)) : 0;
+                    const modInc = caratteristicaIncantatore ? modificatore(punteggioCaratteristica(scheda, caratteristicaIncantatore)) : 0;
                     const bonusComp = scheda.bonusCompetenza || 2;
                     const bonus = isTS ? 0 : bonusComp + modInc;
                     const cd = 8 + bonusComp + modInc;
@@ -6349,7 +6359,7 @@ export default function App() {
                   // Per lanciare incantesimi in combattimento serve un focus (o
                   // borsa da componenti / simbolo sacro) EQUIPAGGIATO nell'inventario.
                   const haFocus = (scheda.inventario || []).some((o) => o.equip && /focus|simbolo sacro|borsa (da )?componenti|bacchetta|cristallo|totem|bastone runico|feticcio/i.test(o.nome || ''));
-                  const serveFocus = Boolean(scheda.incantatore?.caratteristica) && attacchiSpettro.length > 0;
+                  const serveFocus = Boolean(caratteristicaIncantatore) && attacchiSpettro.length > 0;
                   const bloccaSpell = serveFocus && !haFocus;
                   const avvisoFocus = bloccaSpell ? (
                     <div style={{ fontSize: 12, color: C.red, background: 'rgba(200,40,40,0.10)', border: `1px solid ${C.red}`, borderRadius: 8, padding: '6px 10px', marginBottom: 10 }}>
@@ -6530,15 +6540,17 @@ export default function App() {
             <Sezione
               titolo={t("sez.incantesimi")}
               {...propsSez('incantesimi')}
-              {...apertoProps('incantesimi', !!(scheda.incantatore?.caratteristica || (scheda.incantesimiLista || []).length > 0))}
+              {...apertoProps('incantesimi', !!(caratteristicaIncantatore || (scheda.incantesimiLista || []).length > 0))}
               azioni={(
                 // Nella riga del titolo: recupera l'altezza di una riga intera.
                 <label style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, textTransform: 'none', letterSpacing: 0 }}>
                   {t('spell.caratteristica')}{' '}
                   <select
                     style={{ ...styles.inlineInput, padding: '3px 6px', fontSize: 12 }}
-                    value={scheda.incantatore.caratteristica}
+                    value={caratteristicaIncantatore}
                     onChange={(e) => aggiorna({ incantatore: { caratteristica: e.target.value } })}
+                    disabled={Boolean(caratteristicaIncantatorePerClasse(scheda.classe))}
+                    title={caratteristicaIncantatorePerClasse(scheda.classe) ? 'Determinata automaticamente dalla classe' : undefined}
                   >
                     <option value="">{t('spell.non_incantatore')}</option>
                     {CARATTERISTICHE.map((c) => (
@@ -6658,7 +6670,7 @@ export default function App() {
                 };
                 const maxSpellLiv = Math.max(0, ...incantesimiVisualizzati.map(s => s.livello || 0));
                 const maxSlotLiv = Math.max(0, ...Object.entries(scheda.slotIncantesimo || {}).filter(([_, v]) => v.totale > 0).map(([k]) => parseInt(k, 10)));
-                const maxLiv = Math.min(9, Math.max(scheda.incantatore?.caratteristica ? 1 : 0, maxSpellLiv, maxSlotLiv + 1));
+                const maxLiv = Math.min(9, Math.max(caratteristicaIncantatore ? 1 : 0, maxSpellLiv, maxSlotLiv + 1));
                 const aggiungiInc = (nome, liv, manuale, bonus) => {
                   const d = dettagliIncantesimo(nome) || { tempo: manuale ? '1 Az.' : 'AZ', gittata: '', note: '' };
                   aggiorna({ incantesimiLista: [...scheda.incantesimiLista,
