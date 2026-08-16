@@ -20,7 +20,7 @@ export function incantesimiMaxAuto(scheda, versione = '2024') {
   const k = chiaveClasse(scheda?.classe);
   if (!k) return null;
   const idx = Math.min(19, Math.max(1, Math.floor(scheda.livello) || 1) - 1);
-  const carKey = scheda.incantatore?.caratteristica;
+  const carKey = caratteristicaIncantatoreEffettiva(scheda);
   const mod = carKey ? modificatore(scheda.caratteristiche?.[carKey]) : 0;
   const lv = idx + 1;
   if (versione === '2014') {
@@ -40,6 +40,14 @@ export function sottoclasseLivPer(versione) {
 export function chiaveClasse(classe) {
   const c = coloreClasse(classe);
   return c ? c.match[0] : null;
+}
+
+/** Una classe incantatrice prevale sul valore sbagliato di una scheda importata. */
+export function caratteristicaIncantatoreEffettiva(scheda) {
+  const automatica = CARATT_INCANTATORE[chiaveClasse(scheda?.classe)] || '';
+  if (automatica) return automatica;
+  const salvata = scheda?.incantatore?.caratteristica;
+  return ['forza', 'destrezza', 'costituzione', 'intelligenza', 'saggezza', 'carisma'].includes(salvata) ? salvata : '';
 }
 
 /** Classi che scelgono ogni giorno gli incantesimi preparati da una lista ampia. */

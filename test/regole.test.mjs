@@ -11,7 +11,7 @@ import {
 import {
   coloreClasse, chiaveClasse, slotDaClasseLivello, livelloIncantatoreCombinato,
   slotMulticlasse, asiAlLivello, privilegiClasseLivello, privilegiClasseFinoA,
-  sottoclasseLivPer, trucchettiMax, incantesimiMaxAuto,
+  sottoclasseLivPer, trucchettiMax, incantesimiMaxAuto, caratteristicaIncantatoreEffettiva,
 } from '../src/rules/regole.js';
 
 // --- Helper: sostituisce Math.random con una coda di valori deterministici ---
@@ -241,6 +241,12 @@ test('incantesimiMaxAuto: 2014 mago = mod + livello', () => {
   };
   assert.equal(incantesimiMaxAuto(scheda, '2014'), 6); // 3 + 3
   assert.equal(incantesimiMaxAuto({ classe: 'Guerriero', livello: 3 }, '2014'), null);
+});
+
+test('caratteristica da incantatore: la classe corregge un valore salvato errato', () => {
+  assert.equal(caratteristicaIncantatoreEffettiva({ classe: 'Druido', incantatore: { caratteristica: 'carisma' } }), 'saggezza');
+  assert.equal(caratteristicaIncantatoreEffettiva({ classe: 'Stregone', incantatore: { caratteristica: 'saggezza' } }), 'carisma');
+  assert.equal(caratteristicaIncantatoreEffettiva({ classe: 'Guerriero', incantatore: { caratteristica: 'intelligenza' } }), 'intelligenza');
 });
 
 test('bonus di caratteristica dalla razza (2014): ogni voce punta a una specie reale', async () => {
