@@ -1322,7 +1322,7 @@ const DATI_EN = {
   'Dominio della Vita': 'Life Domain', 'Dominio della Luce': 'Light Domain',
   'Dominio dell’Inganno': 'Trickery Domain', 'Dominio della Guerra': 'War Domain',
   'Circolo della Terra': 'Circle of the Land', 'Circolo della Luna': 'Circle of the Moon',
-  'Circolo del Mare': 'Circle of the Sea', 'Circolo delle Stelle': 'Circle of the Stars',
+  'Circolo del Mare': 'Circle of the Sea', 'Circolo del Pastore': 'Circle of the Shepherd', 'Circolo delle Stelle': 'Circle of the Stars',
   'Maestro di Battaglia': 'Battle Master', 'Campione': 'Champion', 'Cavaliere Mistico': 'Eldritch Knight',
   'Guerriero Psionico': 'Psi Warrior', 'Mistificatore Arcano': 'Arcane Trickster', 'Assassino': 'Assassin',
   'Lama Spirituale': 'Soulknife', 'Furfante': 'Thief', 'Abiuratore': 'Abjurer', 'Divinatore': 'Diviner',
