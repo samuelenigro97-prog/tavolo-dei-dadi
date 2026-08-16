@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#172117" />
+    <title>Ripristino Tavolo dei Dadi</title>
+    <style>
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; color: #f4f1ea; background: #172117; font-family: Georgia, serif; text-align: center; }
+      main { width: min(86vw, 420px); padding: 28px; border: 1px solid #72c681; border-radius: 14px; background: #111811; }
+      h1 { color: #72c681; font-size: 24px; }
+      p { line-height: 1.5; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>🎲 Ripristino in corso</h1>
+      <p id="stato">Rimuovo soltanto la vecchia cache dell’app. Personaggi, mappe e immagini salvate non vengono cancellati.</p>
+    </main>
+    <script>
+      (async () => {
+        const stato = document.getElementById('stato');
+        const operazioni = [];
+        if ('serviceWorker' in navigator) {
+          operazioni.push(navigator.serviceWorker.getRegistrations().then((registrazioni) =>
+            Promise.all(registrazioni.map((registrazione) => registrazione.unregister()))
+          ));
+        }
+        if ('caches' in window) {
+          operazioni.push(caches.keys().then((nomi) => Promise.all(nomi.map((nome) => caches.delete(nome)))));
+        }
+        await Promise.race([
+          Promise.allSettled(operazioni),
+          new Promise((resolve) => setTimeout(resolve, 5000)),
+        ]);
+        stato.textContent = 'Cache ripristinata. Riapro Tavolo dei Dadi…';
+        setTimeout(() => location.replace(`./?ripristinato=${Date.now()}`), 700);
+      })();
+    </script>
+  </body>
+</html>
