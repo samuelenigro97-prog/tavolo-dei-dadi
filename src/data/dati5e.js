@@ -168,6 +168,9 @@ export const PESI_OGGETTI = {
   // Oggetto magico: peso fisso a prescindere dal contenuto (vedi funzione borsa
   // conservante nell'inventario, che aumenta la capacità di carico se equipaggiata).
   'Borsa Conservante': 7.5,
+  'Guanti del Potere Orchesco': 0.5,
+  'Mantello della Protezione': 1,
+  'Perla del Potere': 0,
 };
 export const NOMI_OGGETTI = Object.keys(PESI_OGGETTI).sort((a, b) => a.localeCompare(b, 'it'));
 export const PESO_ARMATURA_TIPO = { leggera: 5, media: 9, pesante: 25 };

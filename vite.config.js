@@ -65,12 +65,12 @@ export default defineConfig({
           {
             urlPattern: ({ request }) => request.mode === 'navigate',
             handler: 'NetworkFirst',
-            options: { cacheName: 'pages', networkTimeoutSeconds: 0 },
+            options: { cacheName: 'pages', networkTimeoutSeconds: 3 },
           },
           {
             urlPattern: /\.(?:js|css|png|jpg|svg)$/,
             handler: 'NetworkFirst',
-            options: { cacheName: 'assets', networkTimeoutSeconds: 0 },
+            options: { cacheName: 'assets', networkTimeoutSeconds: 3 },
           },
           {
             // i loop audio non cambiano mai: CacheFirst (nessun ri-download)

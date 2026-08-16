@@ -179,60 +179,23 @@ Il repo viene modificato da più agenti/sessioni. Per evitare conflitti:
 Nessuna configurazione elimina i conflitti al 100% se due agenti editano le
 **stesse righe** insieme: la garanzia è la disciplina di sync qui sopra.
 
-## BACKLOG / cose da fare (richieste dall'utente, ancora aperte)
+## Backlog canonico
 
-Aggiornato: le voci qui sono richieste esplicite dell'utente non ancora
-completate. Man mano che si chiudono, spostarle in "Fatto" in fondo.
+Il backlog non viene più duplicato in questo file: la fonte unica e aggiornata è
+[`docs/CONTINUA-QUI.md`](docs/CONTINUA-QUI.md).
 
-### APPUNTI / da riprendere
-- [ ] **Preparati vs conosciuti (incantesimi)**: le stelline ★/☆ sono state
-  RIMOSSE dagli incantesimi (confondevano con la competenza ★ delle abilità;
-  inoltre gli incantesimi in lista sono già quelli scelti dall'utente = di fatto
-  preparati). Trovare un modo DIVERSO per distinguere "conosciuti" da
-  "preparati" (es. un raggruppamento, un colore, un piccolo badge non a stella).
-- [ ] **Traduzione inglese + switch IT/EN** (task #17): grande. Era motivata dal
-  pubblico più ampio; con la scelta "uso privato" è meno urgente ma resta utile
-  se qualcuno gioca in inglese.
-- Nota copyright: progetto tenuto a USO PRIVATO (niente Ko-fi/monetizzazione).
-  Misure adottate: meta `noindex,nofollow` in index.html + `public/robots.txt`
-  (Disallow: /). Spiegazioni di incantesimi/privilegi sono riassunti NOSTRI (non
-  testi del manuale). Nessun marchio D&D nell'app.
+Prima di iniziare una modifica, leggere lì le sezioni:
 
-### A. Creazione guidata — completare l'auto-compilazione
-- [ ] **Privilegi di classe automatici**: tabella privilegi per classe/livello
-  (es. Stregone → Stregoneria Innata, Fonte di Magia…) che riempie la sezione
-  "Privilegi di classe" alla creazione.
-- [ ] **Competenze concesse dalla specie** → devono diventare ★ (competenza di
-  classe/razza). Es. Elfo "Sensi Acuti" (1 fra Intuizione/Percezione/Sopravv.).
-  Oggi la specie imposta velocità/sensi/taglia/tratti ma NON le competenze.
+1. **Implementato localmente, non ancora pubblicato**;
+2. **Implementato ma da riverificare sul sito reale**;
+3. **Roadmap realmente aperta**.
 
-### B. Doppia versione regole 5.5 (2024) e 5.0 (2014)
-- [ ] **Lavorare sempre doppio**: garantire che TUTTO funzioni con entrambe le
-  versioni (liste competenze di classe, background, sfinimento, bonus caratt.
-  di background solo-2024, ecc.). Fare una verifica sistematica per versione.
-- Nota: lo switch versione ora è SOLO nella creazione del PG (rimosso dalla
-  testata su richiesta dell'utente).
+La verifica dell'inventario di **Vaelion Leafwhisper** è una voce aperta anche se
+il personaggio è già stato importato. Non considerarla conclusa finché oggetti,
+quantità, sintonia, utilizzi e ricariche non sono stati confrontati con i PDF e
+la scheda aggiornata non è stata verificata nel cloud.
 
-### C. Internazionalizzazione (grande)
-- [ ] **Tasto lingua 🇬🇧 vicino alla barra del tiro** che passa a inglese.
-  Richiede un sistema i18n IT/EN e la traduzione di TUTTA l'interfaccia.
-
-### D. Estetica
-- [ ] **Colori delle classi più distinti** fra loro (rivedere palette `CLASSI`).
-- ~~Immagini di riferimento → palette~~ (annullato su richiesta dell'utente).
-
-### E. Incantesimi
-- [ ] **Migliorare il sistema incantesimi**: liste per classe/livello, ricerca,
-  distinzione preparati vs conosciuti, slot per livello più chiari.
-
-### F. Varie
-- [ ] **Rinominare il progetto** — in attesa del nome scelto dall'utente
-  (cambiare titolo in-app + nome PWA; il repo resta `tavolo-dei-dadi`).
-- [ ] **Deploy del Worker PDF→JSON** (lato utente): guidarlo nell'attivazione
-  online (vedi `worker/LEGGIMI.md`).
-
-### Fatto di recente (riferimento)
-Abilità a 3 stati (○/●/★), creazione con metodo caratteristiche (auto / scelgo
-io / a mano) e scelta competenze di classe, sync cloud con auto-salvataggio +
-auto-caricamento, import PDF→JSON via Cloudflare Worker, coerenza scheda Flyora
-col PDF, pulsante Aggiorna che lampeggia, tante correzioni estetiche.
+Nota: alcune vecchie voci presenti qui erano ormai completate (ITA/ENG,
+privilegi automatici, competenze della specie e catalogo incantesimi) ma erano
+rimaste segnate come aperte. Sono state rimosse per evitare future regressioni
+nella pianificazione.
