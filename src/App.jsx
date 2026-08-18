@@ -450,12 +450,30 @@ function separaQtaOggetto(nomeRaw) {
 /** Impostazioni note per oggetti con cariche. La Perla del Potere recupera
  * uno slot di 3° livello o inferiore e torna utilizzabile all'alba. */
 function utilizziOggettoNoto(nome) {
-  if (/perla del pot(?:ere)?/i.test(String(nome || ''))) {
+  if (/perla del pot(?:ere)?\.?/i.test(String(nome || ''))) {
     return {
+      nome: 'Perla del Potere',
       usi: 1, usiMax: 1, ricarica: 'alba',
       effetto: 'Azione Magica: recuperi uno slot incantesimo speso di 3° livello o inferiore. La Perla torna utilizzabile all’alba successiva.',
     };
   }
+  return null;
+}
+
+// Nomi abbreviati comuni (import da altri strumenti) → nome per intero, per
+// far scattare il peso noto anche quando l'oggetto non ha un effetto o degli
+// utilizzi da riconoscere (le pozioni, per esempio).
+const NOMI_ABBREVIATI_OGGETTO = [
+  [/^pozione (?:di )?resistenza al freddo\.?$/i, 'Pozione di Resistenza al Freddo'],
+  [/^pozione (?:di )?respirare sott.?acqua\.?$/i, 'Pozione di Respirare sott’Acqua'],
+  [/^pozione (?:di )?resistenza al fuoco\.?$/i, 'Pozione di Resistenza al Fuoco'],
+  [/^pozione (?:di )?resistenza al veleno\.?$/i, 'Pozione di Resistenza al Veleno'],
+  [/^(?:poz\.?|pozione) antitossina\.?$/i, 'Antitossina'],
+  [/^unguento (?:res\.?|di resistenza al) veleno\.?$/i, 'Unguento di Resistenza al Veleno'],
+];
+function nomeAbbreviatoNoto(nome) {
+  const n = String(nome || '').trim();
+  for (const [re, canonico] of NOMI_ABBREVIATI_OGGETTO) if (re.test(n)) return canonico;
   return null;
 }
 
@@ -464,7 +482,7 @@ function effettoOggettoNoto(nome) {
   if (/guanti (?:del potere orchesco|della forza orchesca)/i.test(n)) {
     return { nome: 'Guanti del Potere Orchesco', effettoMeccanico: 'forza_impostata_19', richiedeSintonia: true };
   }
-  if (/mantello (?:della|di) protezione/i.test(n)) {
+  if (/mantello (?:della |di )?prot(?:ezione|\.)?/i.test(n)) {
     return { nome: 'Mantello della Protezione', effettoMeccanico: 'classe_armatura_tiri_salvezza_1', richiedeSintonia: true };
   }
   return null;
@@ -473,12 +491,13 @@ function effettoOggettoNoto(nome) {
 function completaUtilizziOggetto(oggetto) {
   const noto = utilizziOggettoNoto(oggetto?.nome);
   const effettoNoto = effettoOggettoNoto(oggetto?.nome);
+  const nomeCorretto = effettoNoto?.nome || noto?.nome || nomeAbbreviatoNoto(oggetto?.nome) || oggetto.nome;
   const conEffetto = effettoNoto ? {
     ...oggetto,
-    nome: effettoNoto.nome,
+    nome: nomeCorretto,
     effettoMeccanico: oggetto.effettoMeccanico || effettoNoto.effettoMeccanico,
     richiedeSintonia: oggetto.richiedeSintonia ?? effettoNoto.richiedeSintonia,
-  } : oggetto;
+  } : { ...oggetto, nome: nomeCorretto };
   if (!noto) return conEffetto;
   return {
     ...conEffetto,
@@ -1145,7 +1164,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.93.3';
+const APP_VERSION = '2.93.4';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1219,7 +1238,8 @@ function loadState() {
           if ((!Array.isArray(s.inventario) || s.inventario.length === 0) && typeof s.equipaggiamento === 'string' && s.equipaggiamento.trim()) {
             s.inventario = s.equipaggiamento.split(/[;,\n]/).map((x) => x.trim()).filter(Boolean).map((raw, i) => {
               const { nome, qta } = separaQtaOggetto(raw);
-              return completaUtilizziOggetto({ id: `inv-mig-${i}`, nome, qta, peso: pesoStimato(nome), equip: false, categoria: '' });
+              const base = completaUtilizziOggetto({ id: `inv-mig-${i}`, nome, qta, peso: 0, equip: false, categoria: '' });
+              return { ...base, peso: pesoStimato(base.nome) };
             });
             s.equipaggiamento = '';
           }
@@ -1462,8 +1482,7 @@ function normalizeImported(dati) {
           const nomeVal = parsed.nome;
           const qtaVal = parsed.qta > 1 ? parsed.qta : Math.max(1, num(o.qta, 1));
           let pesoVal = Math.max(0, Number(o.peso) || 0);
-          if (pesoVal === 0 && nomeVal) pesoVal = pesoStimato(nomeVal);
-          return completaUtilizziOggetto({
+          const base = completaUtilizziOggetto({
             id: o.id || `inv-${i}-${Math.random().toString(36).slice(2, 6)}`,
             nome: nomeVal, qta: qtaVal, peso: pesoVal,
             equip: !!o.equip, categoria: str(o.categoria),
@@ -1474,6 +1493,10 @@ function normalizeImported(dati) {
             effettoMeccanico: EFFETTI_OGGETTO.some(([id]) => id === o.effettoMeccanico) ? o.effettoMeccanico : '',
             richiedeSintonia: typeof o.richiedeSintonia === 'boolean' ? o.richiedeSintonia : undefined,
           });
+          // Peso ricalcolato sul nome CORRETTO (post-riconoscimento): un oggetto
+          // importato col nome abbreviato ("Mantello Prot.") va rinominato al
+          // nome canonico prima di cercarne il peso, altrimenti resta a 0.
+          return pesoVal > 0 ? base : { ...base, peso: pesoStimato(base.nome) };
         });
       }
       // Migrazione: il vecchio equipaggiamento testuale (voci separate da ; , o
@@ -1482,7 +1505,8 @@ function normalizeImported(dati) {
       if (!testo) return [];
       return testo.split(/[;,\n]/).map((s) => s.trim()).filter(Boolean).map((raw, i) => {
         const { nome, qta } = separaQtaOggetto(raw);
-        return completaUtilizziOggetto({ id: `inv-mig-${i}`, nome, qta, peso: pesoStimato(nome), equip: false, categoria: '' });
+        const base = completaUtilizziOggetto({ id: `inv-mig-${i}`, nome, qta, peso: 0, equip: false, categoria: '' });
+        return { ...base, peso: pesoStimato(base.nome) };
       });
     })(),
     sintonia: Array.isArray(dati.sintonia) ? dati.sintonia.slice(0, 3).map(str) : str(dati.sintonia),
@@ -7096,10 +7120,12 @@ export default function App() {
                   });
                 };
                 const addItem = (nome) => {
-                  // Peso automatico dal nome (match esatto → parziale): l'oggetto
-                  // viene salvato già col suo peso noto, senza doverlo scrivere.
-                  const peso = pesoStimato(nome);
-                  aggiorna({ inventario: [...inv, completaUtilizziOggetto({ id: `inv-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`, nome: nome || '', qta: 1, peso, equip: false, categoria: '' })] });
+                  // Peso automatico dal nome: calcolato DOPO che completaUtilizziOggetto
+                  // ha eventualmente corretto il nome (es. "Mantello Prot." → "Mantello
+                  // della Protezione"), altrimenti la ricerca del peso fallisce sul nome
+                  // abbreviato e resta a 0 anche quando l'oggetto è noto.
+                  const base = completaUtilizziOggetto({ id: `inv-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`, nome: nome || '', qta: 1, peso: 0, equip: false, categoria: '' });
+                  aggiorna({ inventario: [...inv, { ...base, peso: pesoStimato(base.nome) }] });
                 };
                 return (
                   <div>
@@ -7158,15 +7184,21 @@ export default function App() {
                               const isEquip = isWeapon ? attacchi.some((a) => a.nome === o.nome) : !!o.equip;
                               const isSintonizzato = indiceSintonia(o.nome) >= 0;
                               const effettoAttivo = !!o.effettoMeccanico && isEquip && (!o.richiedeSintonia || isSintonizzato);
+                              // Effetto e Utilizzi sono dettagli dello STESSO oggetto: niente riga
+                              // divisoria fra il nome e le sue righe di dettaglio, che restano
+                              // "attaccate" come un unico blocco (bordo solo dopo l'ultima).
+                              const mostraEffetto = effettoInventarioAperto === o.id || o.effettoMeccanico;
+                              const mostraUtilizzi = o.usiMax > 0;
+                              const senzaBordo = { borderBottom: 'none' };
                               return (
                                 <Fragment key={o.id}>
                                 <tr className="inventario-riga" style={{ opacity: isEquip ? 1 : 0.82 }}>
-                                  <td data-label={t('inv.equip')} style={{ ...styles.td, textAlign: 'center' }}>
+                                  <td data-label={t('inv.equip')} style={{ ...styles.td, textAlign: 'center', ...((mostraEffetto || mostraUtilizzi) && senzaBordo) }}>
                                     <input type="checkbox" checked={isEquip} onChange={(e) => toggleEquip(o, e.target.checked)} title={t('inv.equip_tooltip')} />
                                   </td>
-                                  <td data-label={t('inv.nome')} style={styles.td}><Editable value={o.nome} width={150} onChange={(v) => rinominaItem(o, v)} /></td>
-                                  <td data-label={t('inv.qta')} style={styles.td}>×<Editable value={o.qta} tipo="numero" width={30} onChange={(v) => modInv(o.id, { qta: Math.max(1, v) })} /></td>
-                                  <td data-label={t('inv.sintonia')} style={{ ...styles.td, textAlign: 'center' }}>
+                                  <td data-label={t('inv.nome')} style={{ ...styles.td, ...((mostraEffetto || mostraUtilizzi) && senzaBordo) }}><Editable value={o.nome} width={150} onChange={(v) => rinominaItem(o, v)} /></td>
+                                  <td data-label={t('inv.qta')} style={{ ...styles.td, ...((mostraEffetto || mostraUtilizzi) && senzaBordo) }}>×<Editable value={o.qta} tipo="numero" width={30} onChange={(v) => modInv(o.id, { qta: Math.max(1, v) })} /></td>
+                                  <td data-label={t('inv.sintonia')} style={{ ...styles.td, textAlign: 'center', ...((mostraEffetto || mostraUtilizzi) && senzaBordo) }}>
                                     <button
                                       type="button"
                                       aria-pressed={isSintonizzato}
@@ -7176,8 +7208,8 @@ export default function App() {
                                       style={{ border: 0, background: 'transparent', padding: '1px 5px', fontSize: 20, lineHeight: 1, color: isSintonizzato ? C.goldDark : C.inkDim, cursor: 'pointer' }}
                                     >{isSintonizzato ? '✦' : '◇'}</button>
                                   </td>
-                                  <td data-label={t('inv.peso')} style={{ ...styles.td, color: C.inkDim, whiteSpace: 'nowrap' }}><Editable value={o.peso} tipo="numero" width={40} onChange={(v) => modInv(o.id, { peso: Math.max(0, v) })} /> kg</td>
-                                  <td className="inventario-azioni" style={{ ...styles.td, textAlign: 'right', whiteSpace: 'nowrap' }}>
+                                  <td data-label={t('inv.peso')} style={{ ...styles.td, color: C.inkDim, whiteSpace: 'nowrap', ...((mostraEffetto || mostraUtilizzi) && senzaBordo) }}><Editable value={o.peso} tipo="numero" width={40} onChange={(v) => modInv(o.id, { peso: Math.max(0, v) })} /> kg</td>
+                                  <td className="inventario-azioni" style={{ ...styles.td, textAlign: 'right', whiteSpace: 'nowrap', ...((mostraEffetto || mostraUtilizzi) && senzaBordo) }}>
                                     <button
                                       style={{ ...styles.buttonMini, color: effettoAttivo ? C.goldDark : C.inkDim, borderColor: effettoAttivo ? C.goldDark : C.border }}
                                       title={t('inv.gestisci_effetti')}
@@ -7187,10 +7219,10 @@ export default function App() {
                                     <button style={{ ...styles.buttonMini, color: C.red }} title={t('modal.elimina')} onClick={() => eliminaItem(o)}>🗑</button>
                                   </td>
                                 </tr>
-                                {(effettoInventarioAperto === o.id || o.effettoMeccanico) && (
+                                {mostraEffetto && (
                                   <tr style={{ background: effettoAttivo ? 'rgba(201,162,39,0.08)' : 'rgba(0,0,0,0.035)' }}>
-                                    <td style={styles.td} />
-                                    <td colSpan={5} style={{ ...styles.td, paddingTop: 5, paddingBottom: 7 }}>
+                                    <td style={{ ...styles.td, ...(mostraUtilizzi && senzaBordo) }} />
+                                    <td colSpan={5} style={{ ...styles.td, paddingTop: 5, paddingBottom: 7, ...(mostraUtilizzi && senzaBordo) }}>
                                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                                         <strong style={{ fontSize: 12 }}>✨ {t('inv.effetto')}</strong>
                                         <select

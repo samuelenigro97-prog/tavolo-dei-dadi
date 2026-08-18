@@ -171,6 +171,11 @@ export const PESI_OGGETTI = {
   'Guanti del Potere Orchesco': 0.5,
   'Mantello della Protezione': 1,
   'Perla del Potere': 0,
+  // Pozioni e unguenti comuni (variante di quella di guarigione, stesso peso a fiala).
+  'Pozione di Resistenza al Freddo': 0.25, 'Pozione di Respirare sott’Acqua': 0.25,
+  'Pozione di Resistenza al Fuoco': 0.25, 'Pozione di Resistenza al Veleno': 0.25,
+  'Pozione di Invisibilità': 0.25, 'Pozione di Forza del Gigante': 0.25,
+  'Antitossina': 0.05, 'Unguento di Resistenza al Veleno': 0.25,
 };
 export const NOMI_OGGETTI = Object.keys(PESI_OGGETTI).sort((a, b) => a.localeCompare(b, 'it'));
 export const PESO_ARMATURA_TIPO = { leggera: 5, media: 9, pesante: 25 };
