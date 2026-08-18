@@ -87,7 +87,7 @@ export const PRESET_COLORI = [
     scuro:  { bg: '#06110f', panel: '#0d1c1a', panelLight: '#132724', border: '#1e4440', ink: '#c6ece6', inkDim: '#54a09a', gold: '#20b0a4', goldDark: '#50d0c4', title: '#50d0c4' },
   },
   {
-    id: 'tundra', nome: '❄️ Tundra Gelata', audio: 'tundra',
+    id: 'tundra', nome: '❄️ Ghiacciaio', audio: 'tundra',
     sfondo: 'radial-gradient(55% 60% at 0% 15%, rgba(60,160,230,0.15), transparent 62%), radial-gradient(55% 60% at 100% 85%, rgba(90,190,255,0.13), transparent 62%)',
     chiaro: { bg: '#ebf4fa', panel: '#f5fbff', panelLight: '#e0f0fa', border: '#9cc4e0', ink: '#102436', inkDim: '#447294', gold: '#1474b0', goldDark: '#0a5280', title: '#0a5280' },
     scuro:  { bg: '#08101a', panel: '#0f1b2b', panelLight: '#16253b', border: '#1f3a58', ink: '#cae4f8', inkDim: '#5a90ba', gold: '#2aa2f0', goldDark: '#60c0ff', title: '#60c0ff' },
