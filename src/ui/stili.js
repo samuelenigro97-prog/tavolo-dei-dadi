@@ -558,15 +558,15 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .app-header { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .app-header-title {
   text-align: center; white-space: nowrap; margin: 0;
-  display: inline-flex; align-items: baseline; justify-content: center; gap: 7px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
   text-shadow: 0 1px 0 color-mix(in srgb, var(--c-panel) 70%, transparent);
 }
 .app-version {
-  display: inline-flex; align-items: center; min-height: 17px; padding: 1px 6px;
+  display: inline-flex; align-items: center; justify-content: center; min-height: 22px;
+  padding: 3px 9px;
   border: 1px solid color-mix(in srgb, var(--c-border) 75%, transparent);
   border-radius: 999px; background: color-mix(in srgb, var(--c-panel) 82%, transparent);
-  color: var(--c-ink-dim); font: 600 9px/1 Georgia, serif; letter-spacing: .35px;
-  vertical-align: middle;
+  color: var(--c-ink-dim); font: 600 12px/1 Georgia, serif; letter-spacing: .35px;
 }
 /* Tutti i tasti su UNA riga sotto il titolo: i gruppi si sciolgono con
    display:contents, così i bottoni sono figli diretti della riga. */
