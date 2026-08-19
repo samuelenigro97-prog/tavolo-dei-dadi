@@ -1193,7 +1193,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.94.6';
+const APP_VERSION = '2.94.7';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1594,6 +1594,8 @@ function ArchivioDm({ url, onChiudi, onApri }) {
   });
   const [elenco, setElenco] = useState(null);
   const [stato, setStato] = useState('');   // '' | 'carico' | messaggio d'errore
+  const [filtro, setFiltro] = useState('');
+  const [dettagliAperti, setDettagliAperti] = useState({}); // id → scheda completa caricata, o 'carico'
   const base = String(url || '').replace(/\/+$/, '');
 
   const carica = async (k) => {
@@ -1624,11 +1626,34 @@ function ArchivioDm({ url, onChiudi, onApri }) {
     }
   };
 
+  // Espande/comprime i dettagli di una scheda SENZA importarla tra i propri
+  // personaggi: utile per controllare tutto (CA, PF, equip) a colpo d'occhio.
+  const toggleDettagli = async (id) => {
+    if (dettagliAperti[id]) {
+      setDettagliAperti((d) => { const n = { ...d }; delete n[id]; return n; });
+      return;
+    }
+    setDettagliAperti((d) => ({ ...d, [id]: 'carico' }));
+    try {
+      const r = await fetch(`${base}/pg/${encodeURIComponent(id)}?key=${encodeURIComponent(chiave)}`);
+      const d = await r.json();
+      if (!r.ok) { setDettagliAperti((d2) => ({ ...d2, [id]: { errore: d.error || `Errore ${r.status}` } })); return; }
+      setDettagliAperti((d2) => ({ ...d2, [id]: d }));
+    } catch (e) {
+      setDettagliAperti((d2) => ({ ...d2, [id]: { errore: `Connessione fallita: ${e.message}` } }));
+    }
+  };
+
   const quando = (iso) => {
     if (!iso) return '—';
     try { return new Date(iso).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); }
     catch { return iso; }
   };
+
+  const f = filtro.trim().toLowerCase();
+  const elencoFiltrato = elenco
+    ? elenco.filter((s) => !f || [s.nome, s.classe, s.sottoclasse, s.specie, s.background].some((v) => String(v || '').toLowerCase().includes(f)))
+    : null;
 
   return (
     <div
@@ -1661,20 +1686,58 @@ function ArchivioDm({ url, onChiudi, onApri }) {
         )}
         {elenco && (
           <>
-            <div style={{ ...styles.detail, marginBottom: 6 }}>{elenco.length} schede in archivio</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
+              <span style={styles.detail}>{elencoFiltrato.length} / {elenco.length} schede in archivio</span>
+              <input
+                value={filtro}
+                onChange={(e) => setFiltro(e.target.value)}
+                placeholder="Filtra per nome, classe, specie..."
+                style={{ ...styles.inlineInput, flex: '1 1 180px', minWidth: 140, padding: '5px 8px', fontSize: 12 }}
+              />
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {elenco.map((s) => (
-                <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 10px' }}>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, fontSize: 14 }}>{s.nome || '(senza nome)'}</div>
-                    <div style={{ ...styles.detail, fontSize: 11 }}>
-                      {[s.classe, s.livello ? `Liv. ${s.livello}` : ''].filter(Boolean).join(' · ')} — {quando(s.aggiornato)} · {s.dispositivo || '?'}
+              {elencoFiltrato.map((s) => {
+                const dett = dettagliAperti[s.id];
+                const completa = dett && dett !== 'carico' && !dett.errore ? dett : null;
+                const ca = completa ? caTotale(completa) : null;
+                return (
+                  <div key={s.id} style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontWeight: 600, fontSize: 14 }}>{s.nome || '(senza nome)'}</div>
+                        <div style={{ ...styles.detail, fontSize: 11 }}>
+                          {[s.classe, s.sottoclasse, s.specie, s.livello ? `Liv. ${s.livello}` : ''].filter(Boolean).join(' · ')}
+                          {s.pfMax ? ` · PF ${s.pfAttuali ?? '?'}/${s.pfMax}` : ''}
+                        </div>
+                        <div style={{ ...styles.detail, fontSize: 10, opacity: 0.75 }}>
+                          {quando(s.aggiornato)} · {s.dispositivo || '?'}
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                        <button style={styles.buttonMini} onClick={() => toggleDettagli(s.id)}>
+                          {dett && dett !== 'carico' ? '▲ Dettagli' : '▼ Dettagli'}
+                        </button>
+                        <button style={styles.buttonMini} onClick={() => apri(s.id)}>Apri</button>
+                      </div>
                     </div>
+                    {dett === 'carico' && <div style={{ ...styles.detail, fontSize: 12, marginTop: 6 }}>Caricamento…</div>}
+                    {dett && dett.errore && <div style={{ ...styles.detail, fontSize: 12, marginTop: 6, color: C.red }}>{dett.errore}</div>}
+                    {completa && (
+                      <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px dashed ${C.border}`, fontSize: 12, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 6 }}>
+                        <div><strong>CA</strong> {ca ?? '—'}</div>
+                        <div><strong>Background</strong> {completa.background || '—'}</div>
+                        <div><strong>Allineamento</strong> {completa.allineamento || '—'}</div>
+                        <div><strong>Armi</strong> {(completa.attacchi || []).length}</div>
+                        <div><strong>Incantesimi</strong> {(completa.incantesimiLista || []).length}</div>
+                        <div><strong>Inventario</strong> {(completa.inventario || []).length} ogg.</div>
+                        <div><strong>Talenti</strong> {(completa.talenti || '').split('\n').filter(Boolean).length}</div>
+                        <div><strong>Sintonia</strong> {(Array.isArray(completa.sintonia) ? completa.sintonia.length : 0)}/3</div>
+                      </div>
+                    )}
                   </div>
-                  <button style={{ ...styles.buttonMini, flexShrink: 0 }} onClick={() => apri(s.id)}>Apri</button>
-                </div>
-              ))}
-              {elenco.length === 0 && <div style={styles.detail}>Ancora nessuna scheda depositata.</div>}
+                );
+              })}
+              {elencoFiltrato.length === 0 && <div style={styles.detail}>{elenco.length === 0 ? 'Ancora nessuna scheda depositata.' : 'Nessuna scheda corrisponde al filtro.'}</div>}
             </div>
           </>
         )}
