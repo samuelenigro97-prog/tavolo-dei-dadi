@@ -1193,7 +1193,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.94.4';
+const APP_VERSION = '2.94.5';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1829,6 +1829,7 @@ export default function App() {
   const [filtroScuolaInc, setFiltroScuolaInc] = useState('');
   const [filtroClasseInc, setFiltroClasseInc] = useState('');
   const [soloRitualiInc, setSoloRitualiInc] = useState(false);
+  const [listaMagicaMinimizzata, setListaMagicaMinimizzata] = useState(false);
   const [filtroInventario, setFiltroInventario] = useState('');
   const [effettoInventarioAperto, setEffettoInventarioAperto] = useState(null);
   const [addLivIncantesimo, setAddLivIncantesimo] = useState(0); // livello scelto nella barra "aggiungi"
@@ -6837,7 +6838,17 @@ export default function App() {
               {/* Conteggi (compatti) + ricerca. L'aggiunta è un tastino piccolo
                   sotto la lista di ogni livello (vedi più in basso). */}
               <div style={{ marginTop: 14, marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <span style={{ ...styles.detail, fontSize: 11, textAlign: 'center', opacity: 0.75 }}>{t('spell.tocca_nome')}</span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                  <span style={{ ...styles.detail, fontSize: 11, opacity: 0.75 }}>{t('spell.tocca_nome')}</span>
+                  <button
+                    type="button"
+                    onClick={() => setListaMagicaMinimizzata((v) => !v)}
+                    title={listaMagicaMinimizzata ? t('spell.espandi_lista_tip') : t('spell.minimizza_lista_tip')}
+                    style={{ ...styles.buttonMini, padding: '2px 8px', fontSize: 11 }}
+                  >
+                    {listaMagicaMinimizzata ? `▸ ${t('spell.espandi_lista')}` : `▾ ${t('spell.minimizza_lista')}`}
+                  </button>
+                </div>
                 <div className="spell-filters" style={{ display: 'grid', gridTemplateColumns: 'minmax(150px, 2fr) repeat(3, minmax(105px, 1fr)) auto', gap: 6, alignItems: 'center' }}>
                   <input
                     value={filtroIncantesimo}
@@ -7061,27 +7072,29 @@ export default function App() {
                 }
                 return (
                   <>
-                    <h3 style={{ ...bannerStyle, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h3 style={{ ...bannerStyle, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 6 }}>
+                      <span />
                       <span>{t('spell.trucchetti')}</span>
-                      {maxTrucchetti != null && (
-                        <span style={{ fontSize: 13, color: trucchettiPieno ? C.goldDark : C.inkDim, fontWeight: 'normal', display: 'flex', alignItems: 'center', textTransform: 'none', letterSpacing: 'normal' }}>
+                      {maxTrucchetti != null ? (
+                        <span style={{ fontSize: 13, color: trucchettiPieno ? C.goldDark : C.inkDim, fontWeight: 'normal', display: 'flex', alignItems: 'center', justifySelf: 'end', textTransform: 'none', letterSpacing: 'normal' }}>
                           {nTrucchetti} / <Editable value={maxTrucchetti} tipo="numero" width={24} onChange={(v) => aggiorna({ maxTrucchetti: Math.max(0, v) })} />
                         </span>
-                      )}
+                      ) : <span />}
                     </h3>
-                    {renderLivello(0)}
+                    {!listaMagicaMinimizzata && renderLivello(0)}
                     {maxLiv >= 1 && (
-                      <h3 style={{ ...bannerStyle, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h3 style={{ ...bannerStyle, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 6 }}>
+                        <span />
                         <span>{t('spell.incantesimi')}</span>
-                        {maxIncantesimi != null && (
-                          <span style={{ fontSize: 13, color: (classePreparata ? preparatiPieni : incantesimiPieno) ? C.goldDark : C.inkDim, fontWeight: 'normal', display: 'flex', alignItems: 'center', textTransform: 'none', letterSpacing: 'normal' }}>
+                        {maxIncantesimi != null ? (
+                          <span style={{ fontSize: 13, color: (classePreparata ? preparatiPieni : incantesimiPieno) ? C.goldDark : C.inkDim, fontWeight: 'normal', display: 'flex', alignItems: 'center', justifySelf: 'end', textTransform: 'none', letterSpacing: 'normal' }}>
                             ({classePreparata ? t('spell.preparati') : t('spell.conosciuti')}: {classePreparata ? nPreparati : nIncantesimi} / <Editable value={maxIncantesimi} tipo="numero" width={24} onChange={(v) => aggiorna({ maxIncantesimi: Math.max(0, v) })} />)
                             {nBonus > 0 && <span style={{ color: C.goldDark, fontWeight: 700, marginLeft: 4 }}>✦ {nBonus}</span>}
                           </span>
-                        )}
+                        ) : <span />}
                       </h3>
                     )}
-                    {livelliInc.map((liv) => renderLivello(liv))}
+                    {!listaMagicaMinimizzata && livelliInc.map((liv) => renderLivello(liv))}
                   </>
                 );
                 })()}
@@ -7413,16 +7426,17 @@ export default function App() {
                                         <strong style={{ fontSize: 12 }}>✨ {t('inv.effetto')}</strong>
                                         <select
                                           value={o.effettoMeccanico || ''}
-                                          onChange={(e) => modInv(o.id, { effettoMeccanico: e.target.value })}
+                                          onChange={(e) => modInv(o.id, { effettoMeccanico: e.target.value, richiedeSintonia: !!e.target.value })}
                                           style={{ ...styles.inlineInput, flex: '1 1 250px', minWidth: 190, padding: '4px 7px', fontSize: 12 }}
                                         >
                                           <option value="">{EFFETTI_OGGETTO[0][lingua === 'it' ? 1 : 2]}</option>
                                           {EFFETTI_OGGETTO.slice(1).sort((a, b) => a[lingua === 'it' ? 1 : 2].localeCompare(b[lingua === 'it' ? 1 : 2], lingua)).map(([id, labelIt, labelEn]) => <option key={id} value={id}>{lingua === 'it' ? labelIt : labelEn}</option>)}
                                         </select>
-                                        <label style={{ ...styles.detail, display: 'inline-flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap', cursor: 'help' }} title={t('inv.richiede_sintonia_tip')}>
-                                          <input type="checkbox" checked={!!o.richiedeSintonia} onChange={(e) => modInv(o.id, { richiedeSintonia: e.target.checked })} />
-                                          {t('inv.richiede_sintonia')}
-                                        </label>
+                                        {!!o.effettoMeccanico && (
+                                          <span style={{ ...styles.detail, fontSize: 11, whiteSpace: 'nowrap' }} title={t('inv.richiede_sintonia_tip')}>
+                                            🔗 {t('inv.richiede_sintonia')}
+                                          </span>
+                                        )}
                                         <span title={t('inv.effetto_inattivo')} style={{ color: effettoAttivo ? C.green : C.inkDim, fontSize: 12 }}>
                                           {effettoAttivo ? '●' : '○'}
                                         </span>
