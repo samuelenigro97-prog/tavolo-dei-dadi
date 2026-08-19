@@ -550,6 +550,9 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .campi-anagrafica select { max-width: 100%; font-size: 11px !important; padding: 1px 15px 1px 3px !important; height: 20px; line-height: 1.2; background-position: right 3px center !important; background-size: 8px !important; }
 .campi-anagrafica .campo-modulo-box { padding: 0 4px !important; min-height: 28px !important; height: 28px; display: flex; align-items: center; overflow: hidden; }
 .campi-anagrafica .campo-modulo-label { font-size: 9px !important; margin-top: 2px; }
+/* Sottoclasse con più classi (multiclasse): una riga per classe, l'altezza fissa
+   da campo singolo taglierebbe via le righe in più. */
+.campi-anagrafica .campo-modulo-box.sottoclasse-multi { height: auto !important; align-items: flex-start !important; overflow: visible !important; padding-top: 2px !important; padding-bottom: 2px !important; }
 .selettore-personaggio {
   width: 100%;
   margin: 0 0 8px 0 !important;

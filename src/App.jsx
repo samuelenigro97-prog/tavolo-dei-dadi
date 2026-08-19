@@ -1032,7 +1032,7 @@ const KIT_CLASSE = {
   guerriero:{ armi: ['Spada lunga', 'Arco lungo'], equip: ['Cotta di maglia', 'Scudo', 'Frecce ×20', 'Dotazione da avventuriero'], denari: 4, armatura: ARM_MAGLIA, scudo: true, strumenti: '' },
   ladro:    { armi: ['Stocco', 'Arco corto'], equip: ['Armatura di cuoio', 'Pugnale ×2', 'Arnesi da scasso', 'Dotazione da scassinatore', 'Frecce ×20'], denari: 8, armatura: ARM_CUOIO, scudo: false, strumenti: 'Arnesi da scasso' },
   mago:     { armi: ['Pugnale'], equip: ['Focus arcano', 'Libro degli incantesimi', 'Dotazione da studioso'], denari: 5, armatura: ARM_NESSUNA, scudo: false, strumenti: '' },
-  monaco:   { armi: ['Spada corta'], equip: ['Dardo ×10', 'Dotazione da esploratore', 'Attrezzi da artigiano o strumento musicale'], denari: 11, armatura: ARM_NESSUNA, scudo: false, strumenti: 'Un tipo di attrezzi da artigiano o uno strumento musicale' },
+  monaco:   { armi: ['Spada corta'], equip: ['Dardo ×10', 'Dotazione da esploratore'], denari: 11, armatura: ARM_NESSUNA, scudo: false, strumenti: 'Un tipo di attrezzi da artigiano o uno strumento musicale' },
   paladino: { armi: ['Spada lunga'], equip: ['Cotta di maglia', 'Scudo', 'Giavellotto ×6', 'Simbolo sacro', 'Dotazione da sacerdote'], denari: 9, armatura: ARM_MAGLIA, scudo: true, strumenti: '' },
   ranger:   { armi: ['Spada corta', 'Arco lungo'], equip: ['Armatura di cuoio', 'Frecce ×20', 'Dotazione da esploratore'], denari: 7, armatura: ARM_CUOIO, scudo: false, strumenti: '' },
   stregone: { armi: ['Pugnale'], equip: ['Focus arcano', 'Pugnale', 'Dotazione da avventuriero'], denari: 28, armatura: ARM_NESSUNA, scudo: false, strumenti: '' },
@@ -1202,7 +1202,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.95.0';
+const APP_VERSION = '2.95.1';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -5908,36 +5908,52 @@ export default function App() {
                     title={t('profilo.classe_bloccata')}
                   />
                 </CampoModulo>
-                <CampoModulo label={t("profilo.sottoclasse")}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    {/* Sottoclasse della classe principale */}
-                    {campoSottoclasse(scheda.classe, scheda.livello, scheda.sottoclasse, (v) => {
-                      const patch = { sottoclasse: v };
-                      // Riempi in automatico i privilegi di sottoclasse fino al
-                      // livello attuale (se abbiamo i dati per questa sottoclasse).
-                      const auto = privilegiSottoclasseFinoA(v, scheda.livello || 1);
-                      if (auto) patch.privilegiSottoclasse = auto;
-                      // Cavaliere Mistico/Mistificatore Arcano: scegliendo la
-                      // sottoclasse compaiono gli slot incantesimo del "terzo
-                      // incantatore", altrimenti resterebbero a zero finché non
-                      // si passa dalla creazione guidata o da un level up. Solo
-                      // per queste due sottoclassi: non deve mai toccare gli slot
-                      // (e gli "spesi" già segnati) di una classe già incantatrice.
-                      if (sottoclasseTerzoIncantatore(scheda.classe, v)) {
-                        const slot = slotDaClasseLivello(scheda.classe, scheda.livello, v);
-                        if (slot) patch.slotIncantesimo = slot;
-                      }
-                      aggiorna(patch);
-                    })}
-                    {/* Una sottoclasse per ogni classe del multiclasse */}
-                    {(scheda.multiclasse || []).map((m, i) => (m.classe ? (
-                      <div key={i}>
-                        {campoSottoclasse(m.classe, m.livello, m.sottoclasse, (v) =>
-                          aggiorna({ multiclasse: (scheda.multiclasse || []).map((x, j) => (j === i ? { ...x, sottoclasse: v } : x)) })
-                        )}
+                <CampoModulo label={t("profilo.sottoclasse")} boxClassName={(scheda.multiclasse || []).some((m) => m.classe) ? 'sottoclasse-multi' : undefined}>
+                  {(() => {
+                    // Con più classi (multiclasse) ogni riga porta anche il nome
+                    // della classe: senza, un valore bloccato senza bordo (es.
+                    // "Guerriero dell'Ombra" o "Dal 3° livello") si confonde con
+                    // il campo Background appena sopra, che non ha alcun confine
+                    // visivo evidente.
+                    const multi = (scheda.multiclasse || []).some((m) => m.classe);
+                    const riga = (etichetta, contenuto) => multi ? (
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                        <span style={{ ...styles.detail, fontWeight: 700, flexShrink: 0, minWidth: 54 }}>{traduciDato(etichetta)}</span>
+                        <div style={{ minWidth: 0, flex: 1 }}>{contenuto}</div>
                       </div>
-                    ) : null))}
-                  </div>
+                    ) : contenuto;
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: multi ? 6 : 4 }}>
+                        {/* Sottoclasse della classe principale */}
+                        {riga(scheda.classe, campoSottoclasse(scheda.classe, scheda.livello, scheda.sottoclasse, (v) => {
+                          const patch = { sottoclasse: v };
+                          // Riempi in automatico i privilegi di sottoclasse fino al
+                          // livello attuale (se abbiamo i dati per questa sottoclasse).
+                          const auto = privilegiSottoclasseFinoA(v, scheda.livello || 1);
+                          if (auto) patch.privilegiSottoclasse = auto;
+                          // Cavaliere Mistico/Mistificatore Arcano: scegliendo la
+                          // sottoclasse compaiono gli slot incantesimo del "terzo
+                          // incantatore", altrimenti resterebbero a zero finché non
+                          // si passa dalla creazione guidata o da un level up. Solo
+                          // per queste due sottoclassi: non deve mai toccare gli slot
+                          // (e gli "spesi" già segnati) di una classe già incantatrice.
+                          if (sottoclasseTerzoIncantatore(scheda.classe, v)) {
+                            const slot = slotDaClasseLivello(scheda.classe, scheda.livello, v);
+                            if (slot) patch.slotIncantesimo = slot;
+                          }
+                          aggiorna(patch);
+                        }))}
+                        {/* Una sottoclasse per ogni classe del multiclasse */}
+                        {(scheda.multiclasse || []).map((m, i) => (m.classe ? (
+                          <div key={i}>
+                            {riga(m.classe, campoSottoclasse(m.classe, m.livello, m.sottoclasse, (v) =>
+                              aggiorna({ multiclasse: (scheda.multiclasse || []).map((x, j) => (j === i ? { ...x, sottoclasse: v } : x)) })
+                            ))}
+                          </div>
+                        ) : null))}
+                      </div>
+                    );
+                  })()}
                 </CampoModulo>
                 <CampoModulo label={t("profilo.pe")}>
                   <Editable
