@@ -236,7 +236,7 @@ export const EN_INCANTESIMI = {
   'Messaggio': 'You whisper a message (range 36 m) audible only to the target, who can whisper back.',
   'Messaggio a Distanza': 'Lv. 3 · You send a 25-word message to a creature you know, wherever it is, and it can reply. Ritual.',
   'Metallo Rovente': 'Lv. 2 · You heat a metal object (range 18 m): 2d8 fire to whoever holds it, and it may drop it. Concentration, 1 min.',
-  'Morsa del Gelo': 'Ranged spell attack (range 18 m): 1d8 cold and no reactions until its next turn (increases at 5/11/17).',
+  'Morsa del Gelo': 'Constitution save (range 18 m): on a failed save, 1d6 cold damage and disadvantage on its next weapon attack roll before the end of its next turn (increases at 5/11/17).',
   'Muro di Forza': 'Lv. 5 · An invisible, nearly indestructible wall (range 36 m) for 10 min. Concentration.',
   'Muro di Fuoco': 'Lv. 4 · A wall of flame (range 36 m): 5d8 fire to anyone crossing it or standing near it (Dexterity save for half). Concentration, 1 min.',
   'Muro di Pietra': 'Lv. 5 · You create a wall of solid stone (range 36 m) that you can shape as you like. Concentration, 10 min.',
