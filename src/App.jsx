@@ -11,7 +11,7 @@ import { FLYORA_JSON, ESEMPIO_GNOMO } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { codificaScheda, decodificaScheda, preparaPerCondivisione, costruisciLink, payloadDaUrl, LIMITE_PAYLOAD } from './utils/condivisione.js';
 import { creaStanza, apriStanza, normalizzaCodiceStanza, formattaCodiceStanza, DURATA_STANZA_ORE } from './utils/stanze.js';
-import { salvaJson, rosterSenzaImmagini, riagganciaImmagini, salvaImmaginiRoster, caricaImmaginiRoster, rimuoviImmaginePersonaggio } from './utils/persistenza.js';
+import { salvaJson, rosterSenzaImmagini, riagganciaImmagini, salvaImmaginiRoster, caricaImmaginiRoster, rimuoviImmaginePersonaggio, preservaImmaginiSeMancanti } from './utils/persistenza.js';
 
 // ---------------------------------------------------------------------------
 // Palette e stili
@@ -1202,7 +1202,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.95.1';
+const APP_VERSION = '2.95.2';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3447,10 +3447,29 @@ export default function App() {
       // del cloud le riagganciamo esplicitamente: così ritratto e mappa seguono
       // davvero il personaggio anche su un altro dispositivo.
       const rosterCloud = await caricaImmaginiRoster(rosterSyncRef.current).catch(() => rosterSyncRef.current);
-      const dati = JSON.stringify({ ...rosterCloud, _updatedAt: quando }, null, 2);
+      let nuovoId = gistSyncRef.current;
+      let rosterDaInviare = rosterCloud;
+      if (nuovoId) {
+        // Non lasciare che il push di un dispositivo senza l'immagine più
+        // recente (appena caricata da un altro dispositivo, non ancora
+        // scaricata qui) cancelli quella già presente sul cloud.
+        try {
+          const resAttuale = await fetch(`https://api.github.com/gists/${nuovoId}`, {
+            headers: { 'Authorization': `token ${tokenSyncRef.current}`, 'Accept': 'application/vnd.github.v3+json' },
+          });
+          if (resAttuale.ok) {
+            const outAttuale = await resAttuale.json();
+            const fileAttuale = outAttuale.files?.['roster_tavolo_dei_dadi.json'];
+            if (fileAttuale) {
+              const parsedAttuale = JSON.parse(fileAttuale.content);
+              rosterDaInviare = preservaImmaginiSeMancanti(rosterCloud, parsedAttuale);
+            }
+          }
+        } catch { /* offline o rete lenta: si procede comunque con i dati locali */ }
+      }
+      const dati = JSON.stringify({ ...rosterDaInviare, _updatedAt: quando }, null, 2);
       const corpo = { files: { 'roster_tavolo_dei_dadi.json': { content: dati } } };
 
-      let nuovoId = gistSyncRef.current;
       if (nuovoId) {
         const res = await fetch(`https://api.github.com/gists/${nuovoId}`, {
           method: 'PATCH',
@@ -3508,7 +3527,10 @@ export default function App() {
       loadedRoster.attivo = Object.keys(loadedRoster.personaggi)[0] || '';
     }
     const conImmaginiLocali = await caricaImmaginiRoster(loadedRoster).catch(() => loadedRoster);
-    setRoster(conImmaginiLocali);
+    // Se il cloud non porta un'immagine per un personaggio già presente qui
+    // (bug di sincronizzazione, upload non ancora arrivato, dato troppo grande...),
+    // non cancellare quella già visibile su questo dispositivo.
+    setRoster(preservaImmaginiSeMancanti(conImmaginiLocali, rosterSyncRef.current));
     if (parsed._updatedAt) localStorage.setItem('scheda-interattiva:sync-ts', String(parsed._updatedAt));
   }
 
@@ -3599,7 +3621,7 @@ export default function App() {
           // Se il cloud non contiene ancora un'immagine, conserva quella già
           // archiviata sul dispositivo invece di cancellarla durante il merge.
           const conImmaginiLocali = await caricaImmaginiRoster(caricato).catch(() => caricato);
-          setRoster(conImmaginiLocali);
+          setRoster(preservaImmaginiSeMancanti(conImmaginiLocali, rosterSyncRef.current));
           localStorage.setItem('scheda-interattiva:sync-ts', String(cloudTs));
           setCloudStatus({ text: '☁️ Personaggi caricati dal cloud', type: 'success' });
         }

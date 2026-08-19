@@ -46,6 +46,22 @@ export function riagganciaImmagini(rosterSnapshot, rosterCorrente) {
   return ripristinato;
 }
 
+/** Non lasciare che una sincronizzazione (cloud) senza immagine cancelli
+ *  quella già visibile su questo dispositivo per lo stesso personaggio: il
+ *  cloud vince solo se porta davvero un'immagine, altrimenti resta la locale. */
+export function preservaImmaginiSeMancanti(rosterIncoming, rosterCorrente) {
+  const risultato = { ...rosterIncoming, personaggi: { ...(rosterIncoming?.personaggi || {}) } };
+  for (const [id, scheda] of Object.entries(risultato.personaggi)) {
+    const corrente = rosterCorrente?.personaggi?.[id] || {};
+    risultato.personaggi[id] = {
+      ...scheda,
+      ...(!scheda?.ritratto && corrente.ritratto ? { ritratto: corrente.ritratto } : {}),
+      ...(!scheda?.mappaCampagna && corrente.mappaCampagna ? { mappaCampagna: corrente.mappaCampagna } : {}),
+    };
+  }
+  return risultato;
+}
+
 const DB_IMMAGINI = 'tavolo-dei-dadi-immagini';
 const STORE_IMMAGINI = 'personaggi';
 const TIMEOUT_INDEXED_DB_MS = 4000;
