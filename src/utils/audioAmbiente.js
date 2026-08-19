@@ -59,10 +59,8 @@ const BASE_CONDIVISA = { palude: 'foresta' };
 // uccelli); i richiami caratteristici vengono aggiunti separatamente e di rado.
 const BASE_CONDIVISA_NOTTE = { foresta: 'notte', palude: 'notte' };
 
-// Estensione del file per ambientazione (default: mp3). La città usa un loop
-// OGG (mercato con pioggia, dominio pubblico): in questo modo non serve un
-// encoder MP3 e il browser lo riproduce comunque.
-const ESTENSIONE_FILE = { citta: 'ogg' };
+// Estensione del file per ambientazione (default: mp3).
+const ESTENSIONE_FILE = {};
 
 // Alcune ambientazioni hanno registrazioni dedicate per la modalità notturna.
 const AMBIENTI_FILE_NOTTE = new Set(['montagna']);
