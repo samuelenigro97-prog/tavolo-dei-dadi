@@ -277,10 +277,11 @@ export const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     fontSize: 15,
-    // competenza chiara a colpo d'occhio: verde pieno = competente, oro = origine
-    // di classe/razza, oro acceso = Maestria/Expertise (doppia competenza),
-    // anello tenue = non competente (così non sembrano tutte "accese")
-    color: livello === 3 ? '#e0b010' : livello === 2 ? '#d4af37' : livello === 1 ? C.green : C.inkDim,
+    // competenza chiara a colpo d'occhio, con colori a tinta fissa (non legati
+    // al tema/ambientazione attivo, altrimenti sotto certi preset finiscono per
+    // assomigliarsi): verde = competente, blu = competenza di classe/razza,
+    // oro = Maestria/Expertise (doppia competenza), anello tenue = non competente.
+    color: livello === 3 ? '#d4af37' : livello === 2 ? '#3a7ca8' : livello === 1 ? '#3e9b4f' : C.inkDim,
     cursor: 'pointer',
     userSelect: 'none',
   }),
