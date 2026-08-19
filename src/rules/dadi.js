@@ -60,6 +60,15 @@ export function esprDadiVita(livello, facce) {
   return `${Math.max(1, Math.floor(livello) || 1)}d${facce}`;
 }
 
+/** Scompone una formula di dadi vita (anche multiclasse, es. "3d8 + 1d10") nei
+ *  suoi gruppi per tipo di dado, uno per riga nella UI Punti Ferita. */
+export function gruppiDadoVita(espressione) {
+  const parsata = parseEspressioneDado(espressione);
+  const dadi = parsata?.termini.filter((t) => t.tipo === 'dado') || [];
+  if (!dadi.length) return [{ facce: 8, quantita: 1 }];
+  return dadi.map((t) => ({ facce: t.facce, quantita: t.quantita }));
+}
+
 export function bonusCompetenzaDaLivello(livello) {
   return 2 + Math.floor((Math.max(1, Math.floor(livello) || 1) - 1) / 4);
 }

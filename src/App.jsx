@@ -151,13 +151,17 @@ function dadoVitaClasse(classe) {
   return (c && DADO_VITA_CLASSE[c.match[0]]) || 8;
 }
 
-// Calcola la formula unificata dei Dadi Vita (es. "5d10 + 2d6") per PG persino multiclasse
-function calcolaFormulaDadiVita(classePrincipale, livPrincipale, multiclasseArray) {
-  const gruppi = {};
+/** Gruppi di dadi vita nell'ordine delle classi (prima la principale, poi il
+ *  multiclasse nell'ordine in cui è stato aggiunto): stesso tipo di dado →
+ *  un solo gruppo con la somma dei livelli, tipi diversi → gruppi separati. */
+function gruppiDadoVitaClassi(classePrincipale, livPrincipale, multiclasseArray) {
+  const ordine = [];
+  const indice = {};
   const addDV = (cl, lv) => {
     if (!cl || !lv) return;
     const f = dadoVitaClasse(cl);
-    gruppi[f] = (gruppi[f] || 0) + Math.max(1, Math.floor(lv));
+    if (indice[f] == null) { indice[f] = ordine.length; ordine.push({ facce: f, quantita: 0 }); }
+    ordine[indice[f]].quantita += Math.max(1, Math.floor(lv));
   };
   addDV(classePrincipale, livPrincipale);
   if (Array.isArray(multiclasseArray)) {
@@ -165,10 +169,30 @@ function calcolaFormulaDadiVita(classePrincipale, livPrincipale, multiclasseArra
       if (m && m.classe) addDV(m.classe, m.livello);
     }
   }
-  return Object.keys(gruppi)
-    .sort((a, b) => Number(b) - Number(a))
-    .map((f) => `${gruppi[f]}d${f}`)
+  return ordine;
+}
+
+// Calcola la formula unificata dei Dadi Vita (es. "5d10 + 2d6") per PG persino multiclasse
+function calcolaFormulaDadiVita(classePrincipale, livPrincipale, multiclasseArray) {
+  return gruppiDadoVitaClassi(classePrincipale, livPrincipale, multiclasseArray)
+    .map((g) => `${g.quantita}d${g.facce}`)
     .join(' + ');
+}
+
+/** Normalizza i dadi vita spesi in una mappa { facce: quantitàSpesa }, uno
+ *  per gruppo (tipo di dado). Le schede vecchie salvavano un numero unico:
+ *  lo si riassegna al primo gruppo così non si perde nulla. */
+function dadiVitaSpesiNormalizzati(scheda) {
+  const gruppi = gruppiDadoVita(scheda.dadiVita);
+  const raw = scheda.dadiVitaSpesi;
+  const out = {};
+  if (raw && typeof raw === 'object') {
+    for (const g of gruppi) out[g.facce] = Math.max(0, Math.min(g.quantita, Number(raw[g.facce]) || 0));
+  } else {
+    const n = Math.max(0, Number(raw) || 0);
+    gruppi.forEach((g, i) => { out[g.facce] = i === 0 ? Math.min(g.quantita, n) : 0; });
+  }
+  return out;
 }
 
 
@@ -714,7 +738,7 @@ import { INCANTESIMI_DB, datiIncantesimo } from './data/incantesimi.js';
 const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(INCANTESIMI_DB)])).sort((a, b) => a.localeCompare(b, 'it'));
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
-import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
+import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
 import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster } from './rules/regole.js';
 
 /**
@@ -1202,7 +1226,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.95.2';
+const APP_VERSION = '2.96.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1243,8 +1267,9 @@ function loadState() {
         // completa i campi eventualmente mancanti con i default correnti
         for (const id of Object.keys(roster.personaggi)) {
           const s = { ...schedaVuota(), ...roster.personaggi[id] };
-          // i dadi vita seguono sempre il livello (numero = livello, tipo dalla classe)
-          s.dadiVita = esprDadiVita(s.livello, facceDadoVita(s.dadiVita));
+          // i dadi vita seguono sempre livello e classi correnti (anche multiclasse:
+          // ricalcolare da un solo termine cancellerebbe il dado della seconda classe)
+          s.dadiVita = calcolaFormulaDadiVita(s.classe, s.livello, s.multiclasse);
           // assegna un id agli incantesimi che ne fossero privi (schede legacy),
           // così ognuno è modificabile singolarmente nel sottomenu
           if (Array.isArray(s.incantesimiLista)) {
@@ -1456,6 +1481,9 @@ function normalizeImported(dati) {
   const baseIncPin = incantesimiMaxAuto(schedaPin, versionePin);
   const maxTruccIniziale = num(dati.maxTrucchetti, 0) || (baseTruccPin != null && nTruccPin > baseTruccPin ? nTruccPin : 0);
   const maxIncIniziale = num(dati.maxIncantesimi, 0) || (baseIncPin != null && nIncPin > baseIncPin ? nIncPin : 0);
+  const multiclassePin = Array.isArray(dati.multiclasse)
+    ? dati.multiclasse.map((m) => ({ classe: str(m && m.classe), livello: Math.max(1, num(m && m.livello, 1)) })).filter((m) => m.classe)
+    : [];
   return {
     ...base,
     pfTemp: num(dati.pfTemp, 0),
@@ -1475,9 +1503,7 @@ function normalizeImported(dati) {
     background: str(dati.background),
     classe: str(dati.classe),
     sottoclasse: str(dati.sottoclasse),
-    multiclasse: Array.isArray(dati.multiclasse)
-      ? dati.multiclasse.map((m) => ({ classe: str(m && m.classe), livello: Math.max(1, num(m && m.livello, 1)) })).filter((m) => m.classe)
-      : [],
+    multiclasse: multiclassePin,
     specie: str(dati.specie),
     allineamento: str(dati.allineamento),
     versione: dati.versione === '2014' ? '2014' : '2024',
@@ -1490,8 +1516,11 @@ function normalizeImported(dati) {
     condizioni,
     pfMax,
     pfAttuali: num(dati.pfAttuali, pfMax),
-    dadiVita: esprDadiVita(num(dati.livello, base.livello), facceDadoVita(typeof dati.dadiVita === 'string' ? dati.dadiVita : base.dadiVita)),
-    dadiVitaSpesi: Math.max(0, num(dati.dadiVitaSpesi, 0)),
+    dadiVita: calcolaFormulaDadiVita(str(dati.classe), livelloPin, multiclassePin)
+      || esprDadiVita(num(dati.livello, base.livello), facceDadoVita(typeof dati.dadiVita === 'string' ? dati.dadiVita : base.dadiVita)),
+    dadiVitaSpesi: (dati.dadiVitaSpesi && typeof dati.dadiVitaSpesi === 'object' && !Array.isArray(dati.dadiVitaSpesi))
+      ? Object.fromEntries(Object.entries(dati.dadiVitaSpesi).map(([k, v]) => [k, Math.max(0, num(v, 0))]))
+      : Math.max(0, num(dati.dadiVitaSpesi, 0)),
     velocita: num(dati.velocita, base.velocita),
     taglia: str(dati.taglia, base.taglia) || base.taglia,
     bonusCompetenza: num(dati.bonusCompetenza, base.bonusCompetenza),
@@ -1993,7 +2022,7 @@ export default function App() {
   const [mostraRipristino, setMostraRipristino] = useState(false); // modale "ripristina versione precedente"
   const [rinominando, setRinominando] = useState(false); // rinomina inline del PG attivo
   const [mostraCrea, setMostraCrea] = useState(false); // schermata di creazione guidata
-  const [bozzaCrea, setBozzaCrea] = useState({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', dotazione: 'pacchetto' });
+  const [bozzaCrea, setBozzaCrea] = useState({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, dotazione: 'pacchetto' });
   // versione delle regole: '2024' (5.5, default) o '2014' (5.0)
   const [regoleVersione, setRegoleVersione] = useState(() => localStorage.getItem('scheda-interattiva:versione') || '2024');
   useEffect(() => {
@@ -2559,7 +2588,7 @@ export default function App() {
   }
 
   /** Genera un personaggio coerente da classe/specie/background (creazione guidata). */
-  function creaPersonaggio({ nome, sesso, classe, sottoclasse, specie, background, metodo, pool, assegna, competenzeClasse, competenzeSpecie, maestria, talentoOrigine, asiTalenti, multiclasseClasse2, dotazione, livello }) {
+  function creaPersonaggio({ nome, sesso, classe, sottoclasse, specie, background, metodo, pool, assegna, competenzeClasse, competenzeSpecie, maestria, talentoOrigine, asiTalenti, multiclasseClasse2, multiclasseLivello2, dotazione, livello }) {
     const s = schedaVuota();
     // Livello iniziale scelto in creazione (1-20): impostato SUBITO così dado vita,
     // slot incantesimo e bonus di competenza vengono calcolati per quel livello.
@@ -2681,21 +2710,24 @@ export default function App() {
     if (inc && (inc.trucchetti.length || inc.incantesimi.length)) {
       s.incantesimiLista = [...inc.trucchetti, ...inc.incantesimi];
     }
-    // Multiclasse alla creazione: una seconda classe, sempre al 1° livello (lo
-    // scenario più comune per iniziare già multiclasse). Le competenze di
-    // addestramento/TS restano quelle della classe principale, come da regola
-    // (solo la prima classe presa dà le competenze piene): privilegi, dadi
-    // vita, slot e PF invece sommano anche la classe secondaria.
+    // Multiclasse alla creazione: una seconda classe, al livello scelto in
+    // creazione guidata. Le competenze di addestramento/TS restano quelle
+    // della classe principale, come da regola (solo la prima classe presa dà
+    // le competenze piene): privilegi, dadi vita, slot e PF invece sommano
+    // anche la classe secondaria.
     if (multiclasseClasse2 && multiclasseClasse2 !== classe) {
-      s.multiclasse = [{ classe: multiclasseClasse2, livello: 1 }];
+      const liv2 = Math.max(1, Math.min(19, Number(multiclasseLivello2) || 1));
+      s.multiclasse = [{ classe: multiclasseClasse2, livello: liv2 }];
       s.dadiVita = calcolaFormulaDadiVita(classe, s.livello, s.multiclasse);
-      const privSecondaria = privilegiClasseFinoA(multiclasseClasse2, 1, regoleVersione);
+      const privSecondaria = privilegiClasseFinoA(multiclasseClasse2, liv2, regoleVersione);
       if (privSecondaria) s.privilegi = [s.privilegi, `[${multiclasseClasse2}]`, privSecondaria].filter(Boolean).join('\n');
-      const slotMc = slotMulticlasse([{ classe, livello: s.livello }, { classe: multiclasseClasse2, livello: 1 }]);
+      const slotMc = slotMulticlasse([{ classe, livello: s.livello }, { classe: multiclasseClasse2, livello: liv2 }]);
       if (slotMc) s.slotIncantesimo = slotMc;
+      // Ogni dado vita della classe secondaria (anche il primo) conta per la
+      // media: solo il 1° livello della classe PRIMARIA dà il dado massimo.
       const facce2 = dadoVitaClasse(multiclasseClasse2);
       const conMod = modificatore(s.caratteristiche.costituzione);
-      s.pfMax += Math.floor(facce2 / 2) + 1 + conMod;
+      s.pfMax += liv2 * (Math.floor(facce2 / 2) + 1 + conMod);
       s.pfAttuali = s.pfMax;
     }
     // avatar e chiusura schermate
@@ -3090,10 +3122,15 @@ export default function App() {
    * Spende un dado vita: tira 1 dado + mod COS, applica la guarigione ai PF
    * (fino al massimo) e segna il dado come speso.
    */
-  function tiraDadoVita() {
-    const facce = facceDadoVita(scheda.dadiVita);
-    const totali = Math.max(1, scheda.livello || 1); // in 5e i dadi vita = livello
-    if (scheda.dadiVitaSpesi >= totali) {
+  function tiraDadoVita(facceScelte) {
+    const gruppi = gruppiDadoVita(scheda.dadiVita);
+    const spesiMap = dadiVitaSpesiNormalizzati(scheda);
+    const gruppo = gruppi.find((g) => g.facce === facceScelte)
+      || gruppi.find((g) => (spesiMap[g.facce] || 0) < g.quantita)
+      || gruppi[0];
+    const facce = gruppo.facce;
+    const spesiAttuali = spesiMap[facce] || 0;
+    if (spesiAttuali >= gruppo.quantita) {
       setTiro(null);
       setDanni({
         etichetta: 'Dadi vita',
@@ -3107,11 +3144,14 @@ export default function App() {
     const mod = modificatore(punteggioCaratteristica(scheda, 'costituzione'));
     const recupero = Math.max(0, dado + mod);
     conAnimazione(() => {
-      setScheda((s) => ({
-        ...s,
-        pfAttuali: Math.min(s.pfMax, s.pfAttuali + recupero),
-        dadiVitaSpesi: s.dadiVitaSpesi + 1,
-      }));
+      setScheda((s) => {
+        const mappa = dadiVitaSpesiNormalizzati(s);
+        return {
+          ...s,
+          pfAttuali: Math.min(s.pfMax, s.pfAttuali + recupero),
+          dadiVitaSpesi: { ...mappa, [facce]: (mappa[facce] || 0) + 1 },
+        };
+      });
       setDanni({
         etichetta: 'Dado vita speso (PF applicati)',
         totale: recupero,
@@ -3133,14 +3173,28 @@ export default function App() {
       const slot = Object.fromEntries(
         Object.entries(s.slotIncantesimo).map(([liv, v]) => [liv, { ...v, spesi: 0 }])
       );
-      const recuperoDadi = Math.max(1, Math.floor((s.livello || 1) / 2));
+      // Il totale recuperabile è condiviso fra tutte le classi (metà del livello
+      // totale DI TUTTE LE CLASSI, non solo la principale, arrotondato per
+      // difetto): si applica prima al gruppo più speso.
+      const livelloTotalePerRiposo = (s.livello || 1) + (Array.isArray(s.multiclasse) ? s.multiclasse.reduce((a, m) => a + (m?.livello || 0), 0) : 0);
+      let recuperoDadi = Math.max(1, Math.floor(livelloTotalePerRiposo / 2));
+      const gruppi = gruppiDadoVita(s.dadiVita);
+      const spesiMap = dadiVitaSpesiNormalizzati(s);
+      const nuovoSpesi = { ...spesiMap };
+      for (const g of [...gruppi].sort((a, b) => (spesiMap[b.facce] || 0) - (spesiMap[a.facce] || 0))) {
+        if (recuperoDadi <= 0) break;
+        const attuale = nuovoSpesi[g.facce] || 0;
+        const riduci = Math.min(attuale, recuperoDadi);
+        nuovoSpesi[g.facce] = attuale - riduci;
+        recuperoDadi -= riduci;
+      }
       return {
         ...s,
         pfAttuali: s.pfMax,
         pfTemp: 0,
         tsMorte: { successi: 0, fallimenti: 0 },
         slotIncantesimo: slot,
-        dadiVitaSpesi: Math.max(0, s.dadiVitaSpesi - recuperoDadi),
+        dadiVitaSpesi: nuovoSpesi,
         risorse: s.risorse.map((r) => (r.reset ? { ...r, attuali: 0 } : r)),
         sfinimento: Math.max(0, s.sfinimento - 1),
         concentrazione: '',
@@ -4774,6 +4828,36 @@ export default function App() {
               }}>
                 {Array.from({ length: 20 }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{lingua === 'it' ? `Livello ${n}` : `Level ${n}`}</option>)}
               </select>
+
+              {/* Multiclasse: classe e livello della classe principale prima,
+                  poi il flag e la classe/livello della seconda, in quest'ordine
+                  per rendere più chiaro il flusso di creazione. */}
+              {bozzaCrea.classe && (
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontWeight: 'bold' }}>
+                    <input
+                      type="checkbox"
+                      checked={!!bozzaCrea.multiclasseClasse2}
+                      onChange={(e) => setB({ multiclasseClasse2: e.target.checked ? (NOMI_CLASSI.find((n) => n !== bozzaCrea.classe) || '') : '', multiclasseLivello2: 1 })}
+                    />
+                    ➕ {lingua === 'it' ? 'Multiclasse: aggiungi una seconda classe' : 'Multiclass: add a second class'}
+                  </label>
+                  {bozzaCrea.multiclasseClasse2 && (() => {
+                    const maxLiv2 = Math.max(1, 20 - Number(bozzaCrea.livello || 1));
+                    return (
+                      <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                        <select style={{ ...stileSelect, flex: 2 }} value={bozzaCrea.multiclasseClasse2} onChange={(e) => setB({ multiclasseClasse2: e.target.value })}>
+                          {[...NOMI_CLASSI].filter((n) => n !== bozzaCrea.classe).sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
+                        </select>
+                        <select style={{ ...stileSelect, flex: 1 }} value={Math.min(bozzaCrea.multiclasseLivello2 || 1, maxLiv2)} onChange={(e) => setB({ multiclasseLivello2: Math.max(1, Math.min(maxLiv2, parseInt(e.target.value, 10) || 1)) })}>
+                          {Array.from({ length: maxLiv2 }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{lingua === 'it' ? `Liv. ${n}` : `Lv. ${n}`}</option>)}
+                        </select>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
               {/* Aumenti di caratteristica dei livelli già superati: per ognuno si
                   può scegliere +2 automatico o un talento (come nel Level Up). */}
               {bozzaCrea.classe && (() => {
@@ -4829,26 +4913,6 @@ export default function App() {
                     {[...sottoclassiPerClasse(bozzaCrea.classe)].sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
                   </select>
                 </>
-              )}
-
-              {/* Multiclasse: parte già con una seconda classe al 1° livello
-                  (lo scenario più comune per un PG multiclasse fin dall'inizio). */}
-              {bozzaCrea.classe && (
-                <div style={{ marginBottom: 12 }}>
-                  <label style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontWeight: 'bold' }}>
-                    <input
-                      type="checkbox"
-                      checked={!!bozzaCrea.multiclasseClasse2}
-                      onChange={(e) => setB({ multiclasseClasse2: e.target.checked ? (NOMI_CLASSI.find((n) => n !== bozzaCrea.classe) || '') : '' })}
-                    />
-                    ➕ {lingua === 'it' ? 'Multiclasse: aggiungi una seconda classe (1° livello)' : 'Multiclass: add a second class (level 1)'}
-                  </label>
-                  {bozzaCrea.multiclasseClasse2 && (
-                    <select style={{ ...stileSelect, marginTop: 6 }} value={bozzaCrea.multiclasseClasse2} onChange={(e) => setB({ multiclasseClasse2: e.target.value })}>
-                      {[...NOMI_CLASSI].filter((n) => n !== bozzaCrea.classe).sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
-                    </select>
-                  )}
-                </div>
               )}
 
               <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{t('crea.background')}</label>
@@ -6089,38 +6153,44 @@ export default function App() {
                 </span>
               </div>
 
-              <div style={{ ...styles.detail, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 14, paddingTop: 12, paddingBottom: 2, borderTop: `1px solid ${C.border}`, textAlign: 'center', position: 'relative', top: 3 }}>
-                <span style={{ width: '100%', display: 'inline-flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
-                  {t('vital.dadi_vita')}{' '}
-                  <Rollable onRoll={tiraDadoVita} title={t('vital.dadi_vita_tooltip')}>
-                    <strong style={{ color: C.goldDark }}>{Math.max(1, scheda.livello || 1)}</strong>
-                  </Rollable>
-                  {' × d'}
-                  <strong style={{ color: C.goldDark }} title={t('vital.dado_tipo_tooltip')}>
-                    {facceDadoVita(scheda.dadiVita)}
-                  </strong>
-                  {' · '}{t('vital.spesi')}{' '}
-                  <select
-                    style={{ ...styles.inlineInput, fontSize: 12, padding: '1px 3px' }}
-                    value={Math.min(Math.max(0, scheda.dadiVitaSpesi || 0), Math.max(1, scheda.livello || 1))}
-                    onChange={(e) => aggiorna({ dadiVitaSpesi: Number(e.target.value) })}
-                    title={t('vital.spesi_tooltip')}
-                  >
-                    {Array.from({ length: Math.max(1, scheda.livello || 1) + 1 }, (_, i) => (
-                      <option key={i} value={i}>{i}</option>
-                    ))}
-                  </select>
-                  <span style={{ color: C.inkDim }}>/ {Math.max(1, scheda.livello || 1)}</span>
-                  <button
-                    style={{ ...styles.buttonMini, padding: '2px 8px', color: C.green, borderColor: C.green }}
-                    title={t('vital.usa_tooltip')}
-                    disabled={scheda.dadiVitaSpesi >= Math.max(1, scheda.livello || 1)}
-                    onClick={tiraDadoVita}
-                  >
-                    🎲 {t('vital.usa')}
-                  </button>
-                </span>
-              </div>
+              {(() => {
+                const gruppiDV = gruppiDadoVita(scheda.dadiVita);
+                const spesiMapDV = dadiVitaSpesiNormalizzati(scheda);
+                return gruppiDV.map((g, i) => (
+                  <div key={g.facce} style={{ ...styles.detail, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: i === 0 ? 14 : 4, paddingTop: i === 0 ? 12 : 0, paddingBottom: 2, borderTop: i === 0 ? `1px solid ${C.border}` : 'none', textAlign: 'center', position: 'relative', top: i === 0 ? 3 : 0 }}>
+                    <span style={{ width: '100%', display: 'inline-flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
+                      {t('vital.dadi_vita')}{' '}
+                      <Rollable onRoll={() => tiraDadoVita(g.facce)} title={t('vital.dadi_vita_tooltip')}>
+                        <strong style={{ color: C.goldDark }}>{g.quantita}</strong>
+                      </Rollable>
+                      {' × d'}
+                      <strong style={{ color: C.goldDark }} title={t('vital.dado_tipo_tooltip')}>
+                        {g.facce}
+                      </strong>
+                      {' · '}{t('vital.spesi')}{' '}
+                      <select
+                        style={{ ...styles.inlineInput, fontSize: 12, padding: '1px 3px' }}
+                        value={Math.min(Math.max(0, spesiMapDV[g.facce] || 0), g.quantita)}
+                        onChange={(e) => aggiorna({ dadiVitaSpesi: { ...spesiMapDV, [g.facce]: Number(e.target.value) } })}
+                        title={t('vital.spesi_tooltip')}
+                      >
+                        {Array.from({ length: g.quantita + 1 }, (_, n) => (
+                          <option key={n} value={n}>{n}</option>
+                        ))}
+                      </select>
+                      <span style={{ color: C.inkDim }}>/ {g.quantita}</span>
+                      <button
+                        style={{ ...styles.buttonMini, padding: '2px 8px', color: C.green, borderColor: C.green }}
+                        title={t('vital.usa_tooltip')}
+                        disabled={(spesiMapDV[g.facce] || 0) >= g.quantita}
+                        onClick={() => tiraDadoVita(g.facce)}
+                      >
+                        🎲 {t('vital.usa')}
+                      </button>
+                    </span>
+                  </div>
+                ));
+              })()}
             </div>
               </div>
               {/* Riga 3 — Difesa e mobilità (allineata a Intelligenza) */}
