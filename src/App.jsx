@@ -1229,7 +1229,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.98.0';
+const APP_VERSION = '2.99.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2034,7 +2034,7 @@ export default function App() {
   const [mostraRipristino, setMostraRipristino] = useState(false); // modale "ripristina versione precedente"
   const [rinominando, setRinominando] = useState(false); // rinomina inline del PG attivo
   const [mostraCrea, setMostraCrea] = useState(false); // schermata di creazione guidata
-  const [bozzaCrea, setBozzaCrea] = useState({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, dotazione: 'pacchetto' });
+  const [bozzaCrea, setBozzaCrea] = useState({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', dotazione: 'pacchetto' });
   // versione delle regole: '2024' (5.5, default) o '2014' (5.0)
   const [regoleVersione, setRegoleVersione] = useState(() => localStorage.getItem('scheda-interattiva:versione') || '2024');
   useEffect(() => {
@@ -2600,7 +2600,7 @@ export default function App() {
   }
 
   /** Genera un personaggio coerente da classe/specie/background (creazione guidata). */
-  function creaPersonaggio({ nome, sesso, classe, sottoclasse, specie, background, metodo, pool, assegna, competenzeClasse, competenzeSpecie, maestria, talentoOrigine, asiTalenti, multiclasseClasse2, multiclasseLivello2, dotazione, livello }) {
+  function creaPersonaggio({ nome, sesso, classe, sottoclasse, specie, background, metodo, pool, assegna, competenzeClasse, competenzeSpecie, maestria, talentoOrigine, asiTalenti, multiclasseClasse2, multiclasseLivello2, sottoclasseMc2, dotazione, livello }) {
     const s = schedaVuota();
     // Livello iniziale scelto in creazione (1-20): impostato SUBITO così dado vita,
     // slot incantesimo e bonus di competenza vengono calcolati per quel livello.
@@ -2729,10 +2729,14 @@ export default function App() {
     // anche la classe secondaria.
     if (multiclasseClasse2 && multiclasseClasse2 !== classe) {
       const liv2 = Math.max(1, Math.min(19, Number(multiclasseLivello2) || 1));
-      s.multiclasse = [{ classe: multiclasseClasse2, livello: liv2 }];
+      s.multiclasse = [{ classe: multiclasseClasse2, livello: liv2, ...(sottoclasseMc2 ? { sottoclasse: sottoclasseMc2 } : {}) }];
       s.dadiVita = calcolaFormulaDadiVita(classe, s.livello, s.multiclasse);
       const privSecondaria = privilegiClasseFinoA(multiclasseClasse2, liv2, regoleVersione);
       if (privSecondaria) s.privilegi = [s.privilegi, `[${multiclasseClasse2}]`, privSecondaria].filter(Boolean).join('\n');
+      if (sottoclasseMc2) {
+        const subPrivSecondaria = privilegiSottoclasseFinoA(sottoclasseMc2, liv2);
+        if (subPrivSecondaria) s.privilegiSottoclasse = [s.privilegiSottoclasse, subPrivSecondaria].filter(Boolean).join('\n');
+      }
       const slotMc = slotMulticlasse([{ classe, livello: s.livello }, { classe: multiclasseClasse2, livello: liv2 }]);
       if (slotMc) s.slotIncantesimo = slotMc;
       // Ogni dado vita della classe secondaria (anche il primo) conta per la
@@ -4874,15 +4878,25 @@ export default function App() {
                   </label>
                   {bozzaCrea.multiclasseClasse2 && (() => {
                     const maxLiv2 = Math.max(1, 20 - Number(bozzaCrea.livello || 1));
+                    const serveSubMc2 = Number(bozzaCrea.multiclasseLivello2 || 1) >= livelloSceltaSottoclasse(bozzaCrea.multiclasseClasse2, regoleVersione);
+                    const scelteSubMc2 = serveSubMc2 ? sottoclassiPerClasse(bozzaCrea.multiclasseClasse2) : [];
                     return (
-                      <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-                        <select style={{ ...stileSelect, flex: 2 }} value={bozzaCrea.multiclasseClasse2} onChange={(e) => setB({ multiclasseClasse2: e.target.value })}>
-                          {[...NOMI_CLASSI].filter((n) => n !== bozzaCrea.classe).sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
-                        </select>
-                        <select style={{ ...stileSelect, flex: 1 }} value={Math.min(bozzaCrea.multiclasseLivello2 || 1, maxLiv2)} onChange={(e) => setB({ multiclasseLivello2: Math.max(1, Math.min(maxLiv2, parseInt(e.target.value, 10) || 1)) })}>
-                          {Array.from({ length: maxLiv2 }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{lingua === 'it' ? `Liv. ${n}` : `Lv. ${n}`}</option>)}
-                        </select>
-                      </div>
+                      <>
+                        <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                          <select style={{ ...stileSelect, flex: 2 }} value={bozzaCrea.multiclasseClasse2} onChange={(e) => setB({ multiclasseClasse2: e.target.value, sottoclasseMc2: '' })}>
+                            {[...NOMI_CLASSI].filter((n) => n !== bozzaCrea.classe).sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
+                          </select>
+                          <select style={{ ...stileSelect, flex: 1 }} value={Math.min(bozzaCrea.multiclasseLivello2 || 1, maxLiv2)} onChange={(e) => setB({ multiclasseLivello2: Math.max(1, Math.min(maxLiv2, parseInt(e.target.value, 10) || 1)), sottoclasseMc2: '' })}>
+                            {Array.from({ length: maxLiv2 }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{lingua === 'it' ? `Liv. ${n}` : `Lv. ${n}`}</option>)}
+                          </select>
+                        </div>
+                        {serveSubMc2 && scelteSubMc2.length > 0 && (
+                          <select style={{ ...stileSelect, marginTop: 6 }} value={bozzaCrea.sottoclasseMc2} onChange={(e) => setB({ sottoclasseMc2: e.target.value })}>
+                            <option value="">{lingua === 'it' ? `⚔️ Sottoclasse (${bozzaCrea.multiclasseClasse2}) — scegli...` : `⚔️ Subclass (${bozzaCrea.multiclasseClasse2}) — choose...`}</option>
+                            {[...scelteSubMc2].sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
+                          </select>
+                        )}
+                      </>
                     );
                   })()}
                 </div>
@@ -5152,14 +5166,20 @@ export default function App() {
                 {(() => {
                   // A livello alto la sottoclasse non è facoltativa: un Mago di 7°
                   // senza Tradizione Arcana non esiste. Blocchiamo la creazione.
+                  // Stesso discorso per la classe secondaria da multiclasse.
                   const serveSub = !!bozzaCrea.classe
                     && Number(bozzaCrea.livello) >= livelloSceltaSottoclasse(bozzaCrea.classe, regoleVersione)
                     && !bozzaCrea.sottoclasse;
+                  const serveSubMc2 = !!bozzaCrea.multiclasseClasse2
+                    && Number(bozzaCrea.multiclasseLivello2 || 1) >= livelloSceltaSottoclasse(bozzaCrea.multiclasseClasse2, regoleVersione)
+                    && sottoclassiPerClasse(bozzaCrea.multiclasseClasse2).length > 0
+                    && !bozzaCrea.sottoclasseMc2;
+                  const bloccato = serveSub || serveSubMc2;
                   return (
                     <button
-                      style={{ ...styles.buttonPrimary, flex: 1, opacity: serveSub ? 0.5 : 1, cursor: serveSub ? 'not-allowed' : 'pointer' }}
-                      disabled={serveSub}
-                      title={serveSub ? (lingua === 'it' ? 'Scegli prima la sottoclasse: a questo livello è obbligatoria.' : 'Choose a subclass first: it is required at this level.') : ''}
+                      style={{ ...styles.buttonPrimary, flex: 1, opacity: bloccato ? 0.5 : 1, cursor: bloccato ? 'not-allowed' : 'pointer' }}
+                      disabled={bloccato}
+                      title={bloccato ? (lingua === 'it' ? 'Scegli prima la sottoclasse: a questo livello è obbligatoria.' : 'Choose a subclass first: it is required at this level.') : ''}
                       onClick={() => creaPersonaggio(bozzaCrea)}
                     >
                       {t('crea.crea_pg')}
