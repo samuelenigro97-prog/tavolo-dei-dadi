@@ -98,6 +98,12 @@ test('bonusAbilita: livello 2 (competenza di classe) vale come ×1', () => {
   assert.equal(bonusAbilita(s, 'furtivita'), 6);
 });
 
+test('bonusAbilita: livello 3 (Maestria/Expertise) raddoppia la competenza', () => {
+  // Ladro/Bardo: doppia competenza sulle abilità già competenti.
+  const s = schedaBase({ abilita: { furtivita: 3 } });
+  assert.equal(bonusAbilita(s, 'furtivita'), 9); // 3 (mod) + 2×3 (competenza raddoppiata)
+});
+
 test('bonusAbilita: abilità inesistente = 0', () => {
   assert.equal(bonusAbilita(schedaBase(), 'nonEsiste'), 0);
 });

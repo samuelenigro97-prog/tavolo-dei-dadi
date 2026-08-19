@@ -80,11 +80,11 @@ export function bonusAbilita(scheda, abilita) {
   const def = ABILITA.find((a) => a.key === abilita);
   if (!def) return 0;
   const livComp = scheda.abilita[abilita] || 0;
-  // 0 = niente, 1 = competenza (cerchietto), 2 = competenza di classe/razza
-  // (stellina). Entrambe le competenze valgono ×1 il bonus (la 2 è solo un
-  // marcatore d'origine, non maestria): così i numeri restano fedeli alla scheda.
-  const competente = livComp >= 1 ? 1 : 0;
-  return modificatore(punteggioCaratteristica(scheda, def.car)) + competente * scheda.bonusCompetenza;
+  // 0 = niente, 1 = competenza (cerchietto ●), 2 = competenza di classe/razza
+  // (stellina ★, solo un marcatore d'origine: vale ×1 come la 1), 3 = Maestria
+  // /Expertise (✦, doppia competenza — Ladro e Bardo): vale ×2.
+  const moltiplicatore = livComp >= 3 ? 2 : livComp >= 1 ? 1 : 0;
+  return modificatore(punteggioCaratteristica(scheda, def.car)) + moltiplicatore * scheda.bonusCompetenza;
 }
 
 /** Bonus di un tiro salvezza: mod caratteristica + eventuale competenza. */

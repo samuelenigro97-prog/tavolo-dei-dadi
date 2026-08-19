@@ -277,9 +277,10 @@ export const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     fontSize: 15,
-    // competenza chiara a colpo d'occhio: verde pieno = competente, oro = maestria,
+    // competenza chiara a colpo d'occhio: verde pieno = competente, oro = origine
+    // di classe/razza, oro acceso = Maestria/Expertise (doppia competenza),
     // anello tenue = non competente (così non sembrano tutte "accese")
-    color: livello === 2 ? '#d4af37' : livello === 1 ? C.green : C.inkDim,
+    color: livello === 3 ? '#e0b010' : livello === 2 ? '#d4af37' : livello === 1 ? C.green : C.inkDim,
     cursor: 'pointer',
     userSelect: 'none',
   }),
