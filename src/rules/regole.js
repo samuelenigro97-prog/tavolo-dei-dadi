@@ -4,10 +4,12 @@ import { CLASSI, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, SLOT_FULL_CASTER, SLOT
   PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV,
   PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, PESI_OGGETTI, PESO_ARMATURA_TIPO,
   INCANTESIMI_CLASSE, CARATT_INCANTATORE, SOTTOCLASSE_TERZO_CASTER,
-  SCUOLE_TERZO_CASTER_2014, SLOT_TERZO_CASTER, INC_MAX_TERZO, TRUCCHETTI_TERZO_CASTER } from '../data/dati5e.js';
+  SCUOLE_TERZO_CASTER_2014, SLOT_TERZO_CASTER, INC_MAX_TERZO, TRUCCHETTI_TERZO_CASTER,
+  TS_CLASSE, COMPETENZE_CLASSE, COMPETENZE_SPECIE, BACKGROUND_COMPETENZE } from '../data/dati5e.js';
 import { modificatore } from './dadi.js';
 import { spiegaIncantesimo } from '../data/spiegazioni.js';
 import { INCANTESIMI_DB, datiIncantesimo } from '../data/incantesimi.js';
+import { ABILITA, CARATTERISTICHE } from '../data/caratteristiche.js';
 
 /** Restituisce 'guerriero'/'ladro' se la scheda è un "terzo incantatore" (la
  *  sottoclasse specifica, non l'intera classe: un Campione o un Assassino non
@@ -322,4 +324,91 @@ export function incantesimiInizialiPerLivello(classe, livello, versione, caratte
     }
   }
   return { trucchetti, incantesimi };
+}
+
+/** Competenze concesse dalla specie (anche per sottorazze come "Elfo dei
+ *  Boschi", per corrispondenza di sottostringa): { numero, lista } o null. */
+function competenzeSpecieDi(specie) {
+  if (!specie) return null;
+  const s = String(specie).toLowerCase();
+  const chiavi = Object.keys(COMPETENZE_SPECIE);
+  const esatta = chiavi.find((x) => x.toLowerCase() === s);
+  const chiave = esatta || [...chiavi].sort((a, b) => b.length - a.length).find((x) => s.includes(x.toLowerCase()));
+  if (!chiave) return null;
+  const dati = COMPETENZE_SPECIE[chiave];
+  const lista = dati.lista === 'tutte' ? ABILITA.map((a) => a.key) : dati.lista;
+  return { numero: dati.numero, lista };
+}
+
+/**
+ * Controlli "leggeri" su una scheda: cose che vale la pena ricontrollare a
+ * mano, non correzioni automatiche. Solo i Tiri Salvezza e le competenze
+ * fisse del background sono segnalati come "certi" (per regola non hanno
+ * eccezioni: un talento può solo aggiungerne, mai far mancare quelli dovuti).
+ * Il resto delle abilità è un suggerimento, perché talenti, multiclasse e
+ * oggetti magici possono spiegare competenze "in più" che qui non si vedono.
+ * Ogni voce ha un id stabile, comodo per farla ignorare in modo permanente.
+ */
+export function controlliScheda(scheda) {
+  const risultati = [];
+  if (!scheda) return risultati;
+
+  const classeKey = chiaveClasse(scheda.classe);
+  const abilita = scheda.abilita || {};
+  const tiriSalvezza = scheda.tiriSalvezza || {};
+
+  // --- Tiri salvezza: solo la classe principale li concede, sempre. ---
+  const tsAttesi = (classeKey && TS_CLASSE[classeKey]) || [];
+  for (const { key, label } of CARATTERISTICHE) {
+    if (tsAttesi.includes(key) && !tiriSalvezza[key]) {
+      risultati.push({
+        id: `ts-${key}`,
+        gravita: 'certo',
+        testo: `${scheda.classe || 'La classe'}: manca la competenza nel Tiro Salvezza di ${label}.`,
+      });
+    }
+  }
+
+  // --- Competenze fisse del background: sempre concesse, nessuna scelta. ---
+  const bgLista = BACKGROUND_COMPETENZE[scheda.background] || [];
+  for (const chiave of bgLista) {
+    const def = ABILITA.find((a) => a.key === chiave);
+    if (def && !(abilita[chiave] > 0)) {
+      risultati.push({
+        id: `bg-${chiave}`,
+        gravita: 'certo',
+        testo: `${scheda.background}: manca la competenza in ${def.label}.`,
+      });
+    }
+  }
+
+  // --- Abilità: quante sono spiegabili da razza+classe+background, e quali
+  // non hanno nessuna fonte automatica. Solo suggerimenti. ---
+  const raceInfo = competenzeSpecieDi(scheda.specie);
+  const classeDati = classeKey && COMPETENZE_CLASSE[classeKey];
+  const classeInfo = classeDati
+    ? { numero: classeDati.numero, lista: classeDati.lista === 'tutte' ? ABILITA.map((a) => a.key) : classeDati.lista }
+    : null;
+  const unione = new Set([...(raceInfo?.lista || []), ...(classeInfo?.lista || []), ...bgLista]);
+  const budget = (raceInfo?.numero || 0) + (classeInfo?.numero || 0) + bgLista.length;
+
+  const segnate = ABILITA.filter((a) => (abilita[a.key] || 0) > 0);
+  for (const a of segnate.filter((a) => !unione.has(a.key))) {
+    risultati.push({
+      id: `fonte-${a.key}`,
+      gravita: 'da_controllare',
+      testo: `${a.label}: nessuna fonte automatica (né razza, né classe, né background). Se non deriva da un talento, un oggetto o una concessione del DM, controllala.`,
+    });
+  }
+
+  const segnateSpiegabili = segnate.filter((a) => unione.has(a.key)).length;
+  if (budget > 0 && segnateSpiegabili > budget) {
+    risultati.push({
+      id: 'budget-abilita',
+      gravita: 'da_controllare',
+      testo: `Hai ${segnateSpiegabili} competenze segnate tra quelle spiegabili da razza (${raceInfo?.numero || 0}), classe (${classeInfo?.numero || 0}) e background (${bgLista.length}), che insieme ne concederebbero ${budget}. Se non hai talenti o multiclasse che ne spiegano altre, controlla quali tenere.`,
+    });
+  }
+
+  return risultati;
 }

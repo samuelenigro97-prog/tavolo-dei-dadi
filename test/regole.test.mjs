@@ -13,6 +13,7 @@ import {
   slotMulticlasse, asiAlLivello, privilegiClasseLivello, privilegiClasseFinoA,
   sottoclasseLivPer, trucchettiMax, incantesimiMaxAuto, caratteristicaIncantatoreEffettiva,
   classificaIncantesimoCombattimento, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello,
+  controlliScheda,
 } from '../src/rules/regole.js';
 
 // --- Helper: sostituisce Math.random con una coda di valori deterministici ---
@@ -428,4 +429,51 @@ test('classificaIncantesimoCombattimento: un vero attacco magico resta un attacc
   const r = classificaIncantesimoCombattimento({ nome: 'Frusta di Spine', danno: '1d6', tipoDanno: 'Perforante' });
   assert.equal(r.mostraInCombattimento, true);
   assert.equal(r.isTS, false);
+});
+
+// ========================= controlliScheda =========================
+
+test('controlliScheda: scheda vuota o assente -> nessun controllo', () => {
+  assert.deepEqual(controlliScheda(null), []);
+  assert.deepEqual(controlliScheda({}), []);
+});
+
+test('controlliScheda: caso reale, Druido con competenze incomplete e sballate', () => {
+  // Caso reale trovato in sessione: Druido/Elfo dei Boschi/Eremita a cui
+  // mancavano Religione (background) e il TS di Intelligenza (classe),
+  // aveva Atletica senza nessuna fonte possibile, e 7 abilità segnate contro
+  // un budget di 5 (razza 1 + classe 2 + background 2).
+  const scheda = {
+    classe: 'Druido', specie: 'Elfo dei Boschi', background: 'Eremita',
+    abilita: { addestrareAnimali: 1, arcano: 1, atletica: 1, intuizione: 1, medicina: 1, natura: 1, percezione: 1, sopravvivenza: 1 },
+    tiriSalvezza: { saggezza: true },
+  };
+  const trovati = controlliScheda(scheda).map((r) => r.id).sort();
+  assert.deepEqual(trovati, ['bg-religione', 'budget-abilita', 'fonte-atletica', 'ts-intelligenza'].sort());
+});
+
+test('controlliScheda: la stessa scheda corretta non genera controlli', () => {
+  const scheda = {
+    classe: 'Druido', specie: 'Elfo dei Boschi', background: 'Eremita',
+    abilita: { addestrareAnimali: 1, natura: 1, medicina: 1, religione: 1, percezione: 1 },
+    tiriSalvezza: { saggezza: true, intelligenza: true },
+  };
+  assert.deepEqual(controlliScheda(scheda), []);
+});
+
+test('controlliScheda: TS mancante segnalato solo per la classe principale (il multiclasse non ne aggiunge)', () => {
+  const scheda = {
+    classe: 'Guerriero', specie: '', background: '',
+    multiclasse: [{ classe: 'Mago', livello: 3 }],
+    abilita: {},
+    tiriSalvezza: { forza: true, costituzione: true },
+  };
+  assert.deepEqual(controlliScheda(scheda).filter((r) => r.gravita === 'certo'), []);
+});
+
+test('controlliScheda: nessuna competenza segnata su una scheda vuota di classe -> nessun avviso "in più"', () => {
+  const scheda = { classe: 'Ladro', specie: '', background: '', abilita: {}, tiriSalvezza: {} };
+  const trovati = controlliScheda(scheda);
+  assert.ok(!trovati.some((r) => r.id === 'budget-abilita'));
+  assert.ok(!trovati.some((r) => r.id.startsWith('fonte-')));
 });
