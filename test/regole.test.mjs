@@ -12,7 +12,7 @@ import {
   coloreClasse, chiaveClasse, slotDaClasseLivello, livelloIncantatoreCombinato,
   slotMulticlasse, asiAlLivello, privilegiClasseLivello, privilegiClasseFinoA,
   sottoclasseLivPer, trucchettiMax, incantesimiMaxAuto, caratteristicaIncantatoreEffettiva,
-  classificaIncantesimoCombattimento,
+  classificaIncantesimoCombattimento, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello,
 } from '../src/rules/regole.js';
 
 // --- Helper: sostituisce Math.random con una coda di valori deterministici ---
@@ -172,6 +172,81 @@ test('slotDaClasseLivello: non incantatori -> null', () => {
   assert.equal(slotDaClasseLivello('Guerriero', 5), null);
   assert.equal(slotDaClasseLivello('Warlock', 5), null); // patto gestito a parte
   assert.equal(slotDaClasseLivello('inesistente', 5), null);
+});
+
+// ===================== Terzo incantatore (Cavaliere Mistico / Mistificatore Arcano) =====================
+
+test('slotDaClasseLivello: guerriero/ladro SENZA la sottoclasse giusta restano non incantatori', () => {
+  assert.equal(slotDaClasseLivello('Guerriero', 5, 'Campione'), null);
+  assert.equal(slotDaClasseLivello('Ladro', 5, 'Assassino'), null);
+  assert.equal(slotDaClasseLivello('Guerriero', 5), null); // nessuna sottoclasse indicata
+});
+
+test('slotDaClasseLivello: terzo incantatore, niente magia prima del 3° livello', () => {
+  assert.equal(slotDaClasseLivello('Guerriero', 1, 'Cavaliere Mistico'), null);
+  assert.equal(slotDaClasseLivello('Guerriero', 2, 'Cavaliere Mistico'), null);
+  assert.equal(slotDaClasseLivello('Ladro', 2, 'Mistificatore Arcano'), null);
+});
+
+test('slotDaClasseLivello: terzo incantatore, progressione dal 3° al 19° livello', () => {
+  const s3 = slotDaClasseLivello('Guerriero', 3, 'Cavaliere Mistico');
+  assert.equal(s3[1].totale, 2);
+  assert.equal(s3[2].totale, 0);
+  const s7 = slotDaClasseLivello('Ladro', 7, 'Mistificatore Arcano');
+  assert.equal(s7[1].totale, 4);
+  assert.equal(s7[2].totale, 2);
+  const s19 = slotDaClasseLivello('Guerriero', 19, 'Cavaliere Mistico');
+  assert.deepEqual([s19[1].totale, s19[2].totale, s19[3].totale, s19[4].totale], [4, 3, 3, 1]);
+});
+
+test('trucchettiMax: terzo incantatore, 2/3 dal 3° livello, +1 dal 10°', () => {
+  assert.equal(trucchettiMax('Guerriero', 2, 'Cavaliere Mistico'), null);
+  assert.equal(trucchettiMax('Guerriero', 3, 'Cavaliere Mistico'), 2);
+  assert.equal(trucchettiMax('Guerriero', 9, 'Cavaliere Mistico'), 2);
+  assert.equal(trucchettiMax('Guerriero', 10, 'Cavaliere Mistico'), 3);
+  assert.equal(trucchettiMax('Ladro', 3, 'Mistificatore Arcano'), 3);
+  assert.equal(trucchettiMax('Ladro', 10, 'Mistificatore Arcano'), 4);
+});
+
+test('incantesimiMaxAuto: terzo incantatore segue la tabella "Spells Known" indipendentemente dalla versione', () => {
+  const base = { classe: 'Guerriero', sottoclasse: 'Cavaliere Mistico' };
+  assert.equal(incantesimiMaxAuto({ ...base, livello: 2 }, '2024'), null);
+  assert.equal(incantesimiMaxAuto({ ...base, livello: 3 }, '2024'), 3);
+  assert.equal(incantesimiMaxAuto({ ...base, livello: 3 }, '2014'), 3);
+  assert.equal(incantesimiMaxAuto({ ...base, livello: 20 }, '2024'), 13);
+  assert.equal(incantesimiMaxAuto({ classe: 'Ladro', sottoclasse: 'Mistificatore Arcano', livello: 13 }, '2024'), 9);
+});
+
+test('caratteristicaIncantatoreEffettiva: terzo incantatore usa Intelligenza solo con la sottoclasse giusta', () => {
+  assert.equal(caratteristicaIncantatoreEffettiva({ classe: 'Guerriero', sottoclasse: 'Cavaliere Mistico' }), 'intelligenza');
+  assert.equal(caratteristicaIncantatoreEffettiva({ classe: 'Ladro', sottoclasse: 'Mistificatore Arcano' }), 'intelligenza');
+  assert.equal(caratteristicaIncantatoreEffettiva({ classe: 'Guerriero', sottoclasse: 'Campione' }), '');
+  assert.equal(caratteristicaIncantatoreEffettiva({ classe: 'Ladro' }), '');
+});
+
+test('sottoclasseTerzoIncantatore: riconosce solo le due sottoclassi corrette', () => {
+  assert.equal(sottoclasseTerzoIncantatore('Guerriero', 'Cavaliere Mistico'), 'guerriero');
+  assert.equal(sottoclasseTerzoIncantatore('Ladro', 'Mistificatore Arcano'), 'ladro');
+  assert.equal(sottoclasseTerzoIncantatore('Guerriero', 'Mistificatore Arcano'), null);
+  assert.equal(sottoclasseTerzoIncantatore('Mago', 'Cavaliere Mistico'), null);
+});
+
+test('incantesimiTerzoCasterLivello: 5.0 limita alle due scuole, 5.5 apre tutta la lista del Mago', () => {
+  const l1_2014 = incantesimiTerzoCasterLivello('Guerriero', 'Cavaliere Mistico', 1, '2014');
+  assert.ok(l1_2014.length > 0);
+  assert.ok(!l1_2014.includes('Sonno')); // Ammaliamento: non abiurazione/evocazione
+  assert.ok(l1_2014.includes('Scudo')); // Abiurazione
+  const l1_2024 = incantesimiTerzoCasterLivello('Guerriero', 'Cavaliere Mistico', 1, '2024');
+  assert.ok(l1_2024.includes('Sonno')); // nella 5.5 nessuna restrizione di scuola
+  // I trucchetti non hanno mai restrizione di scuola, nemmeno nella 5.0.
+  const trucchetti_2014 = incantesimiTerzoCasterLivello('Guerriero', 'Cavaliere Mistico', 0, '2014');
+  assert.deepEqual(trucchetti_2014, incantesimiTerzoCasterLivello('Guerriero', 'Cavaliere Mistico', 0, '2024'));
+  // Ammaliamento/Illusione per il Mistificatore Arcano.
+  const at_2014 = incantesimiTerzoCasterLivello('Ladro', 'Mistificatore Arcano', 1, '2014');
+  assert.ok(at_2014.includes('Sonno')); // Ammaliamento
+  assert.ok(!at_2014.includes('Scudo')); // Abiurazione: non ammaliamento/illusione
+  // Nessuna sottoclasse -> nessun incantesimo.
+  assert.deepEqual(incantesimiTerzoCasterLivello('Guerriero', 'Campione', 1, '2024'), []);
 });
 
 test('livelloIncantatoreCombinato: full pieno, mezzo dimezzato per difetto', () => {

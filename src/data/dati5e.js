@@ -333,6 +333,33 @@ export const CARATT_INCANTATORE = {
   chierico: 'saggezza', druido: 'saggezza', ranger: 'saggezza',
   mago: 'intelligenza',
 };
+
+// "Terzo incantatore": Guerriero con Cavaliere Mistico e Ladro con Mistificatore
+// Arcano lanciano incantesimi da Mago (Intelligenza) con una progressione tutta
+// loro, più lenta di un mezzo incantatore — ma SOLO con quella sottoclasse
+// specifica, non l'intera classe. Attivo dal 3° livello (dove si sceglie la
+// sottoclasse), fino a incantesimi di 4° livello al 19°.
+export const SOTTOCLASSE_TERZO_CASTER = {
+  guerriero: 'Cavaliere Mistico',
+  ladro: 'Mistificatore Arcano',
+};
+// Scuole a cui la scelta è ristretta nella 5.0 (2014); nella 5.5 (2024) la
+// restrizione è stata rimossa e si accede all'intera lista del Mago.
+export const SCUOLE_TERZO_CASTER_2014 = {
+  guerriero: ['Abiurazione', 'Evocazione'],
+  ladro: ['Ammaliamento', 'Illusione'],
+};
+// Slot incantesimo del terzo incantatore (identica in 5.0 e 5.5), per livello.
+export const SLOT_TERZO_CASTER = {
+  3: [2], 4: [3], 5: [3], 6: [3], 7: [4, 2], 8: [4, 2], 9: [4, 2],
+  10: [4, 3], 11: [4, 3], 12: [4, 3], 13: [4, 3, 2], 14: [4, 3, 2], 15: [4, 3, 2],
+  16: [4, 3, 3], 17: [4, 3, 3], 18: [4, 3, 3], 19: [4, 3, 3, 1], 20: [4, 3, 3, 1],
+};
+// Incantesimi di 1° livello o superiore conosciuti (indice 0 = liv. personaggio 1).
+export const INC_MAX_TERZO = [0, 0, 3, 4, 4, 4, 5, 6, 6, 7, 8, 8, 9, 10, 10, 11, 11, 11, 12, 13];
+// Trucchetti dal Mago conosciuti dal 3° livello (secondo valore dal 10°): il
+// Mistificatore Arcano include Mano Magica in più rispetto al Cavaliere Mistico.
+export const TRUCCHETTI_TERZO_CASTER = { guerriero: [2, 3], ladro: [3, 4] };
 export const PRIORITA_CARATT = {
   barbaro: ['forza', 'costituzione', 'destrezza', 'saggezza', 'carisma', 'intelligenza'],
   bardo: ['carisma', 'destrezza', 'costituzione', 'saggezza', 'intelligenza', 'forza'],
