@@ -19,7 +19,7 @@ export const INCANTESIMI_DB = {
   'Luci Danzanti':         { livello:0, scuola:'Evocazione', classi:['Bardo','Mago','Stregone'], tempo:'1 Azione', gittata:'36m', desc:'4 luci fluttuanti. Concentrazione, 1 min.' },
   'Mano Magica':           { livello:0, scuola:'Invocazione', classi:['Bardo','Mago','Stregone','Warlock'], tempo:'1 Azione', gittata:'9m', desc:'Mano spettrale muove oggetti <5kg. 1 min.' },
   'Messaggio':             { livello:0, scuola:'Trasmutazione', classi:['Bardo','Mago','Stregone'], tempo:'1 Azione', gittata:'36m', desc:'Sussurro udibile solo dal bersaglio.' },
-  'Morsa del Gelo':        { livello:0, scuola:'Evocazione', classi:['Mago','Stregone','Warlock'], tempo:'1 Azione', gittata:'18m', danno:'1d8', tipoDanno:'Freddo', desc:'Attacco magico, blocca reazioni. Scala a 5/11/17.' },
+  'Morsa del Gelo':        { livello:0, scuola:'Evocazione', classi:['Mago','Stregone','Warlock'], tempo:'1 Azione', gittata:'18m', danno:'1d6', tipoDanno:'Freddo', desc:'TS Costituzione: danno e svantaggio al prossimo attacco con arma. Scala a 5/11/17.' },
   'Prestidigitazione':     { livello:0, scuola:'Trasmutazione', classi:['Bardo','Mago','Stregone','Warlock'], tempo:'1 Azione', gittata:'3m', desc:'Piccoli trucchi innocui.' },
   'Produrre Fiamma':       { livello:0, scuola:'Invocazione', classi:['Druido'], tempo:'1 Azione', gittata:'9m', danno:'1d8', tipoDanno:'Fuoco', desc:'Fiamma in mano o lanciabile. Scala a 5/11/17.' },
   'Raffica Occulta':       { livello:0, scuola:'Evocazione', classi:['Warlock'], tempo:'1 Azione', gittata:'36m', danno:'1d10', tipoDanno:'Forza', desc:'1 raggio (2 a 5°, 3 a 11°, 4 a 17°). Attacco magico.' },

@@ -851,7 +851,7 @@ const SPIEG_INCANTESIMI = {
   'Messaggio': 'Sussurri un messaggio (gittata 36 m) udibile solo dal bersaglio, che può risponderti.',
   'Messaggio a Distanza': 'Liv. 3 · Invii un messaggio di 25 parole a una creatura nota ovunque si trovi, che può rispondere. Rituale.',
   'Metallo Rovente': 'Liv. 2 · Arroventi un oggetto di metallo (gittata 18 m): 2d8 fuoco a chi lo tiene e può fargli mollare la presa. Concentrazione, 1 min.',
-  'Morsa del Gelo': 'Attacco magico a distanza (gittata 18 m): 1d8 freddo e niente reazioni fino al suo prossimo turno (aumenta a 5/11/17).',
+  'Morsa del Gelo': 'TS Costituzione (gittata 18 m): se fallisce, 1d6 freddo e svantaggio al prossimo attacco con arma prima della fine del suo prossimo turno (aumenta a 5/11/17).',
   'Muro di Forza': 'Liv. 5 · Un muro invisibile e quasi indistruttibile (gittata 36 m) per 10 min. Concentrazione.',
   'Muro di Fuoco': 'Liv. 4 · Muro di fiamme (gittata 36 m): 5d8 fuoco a chi lo attraversa o gli sta vicino (TS Destrezza per metà). Concentrazione, 1 min.',
   'Muro di Pietra': 'Liv. 5 · Crei un muro di pietra solida (gittata 36 m) modellabile a piacere. Concentrazione, 10 min.',
