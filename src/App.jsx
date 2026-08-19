@@ -739,7 +739,7 @@ const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(I
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -904,6 +904,9 @@ function schedaVuota() {
     denari: { mr: 0, ma: 0, me: 0, mo: 0, mp: 0 },
     // Preferenze UI del personaggio: persistono insieme alla scheda.
     sezioniAperte: {},
+    // Id dei controlliScheda() che l'utente ha scelto di non vedere più
+    // (homebrew, concessioni del DM: non sono errori, solo eccezioni).
+    controlliIgnorati: [],
     // La mappa viene convertita in data URL: non dipende più dal file originale.
     mappaCampagna: '',
     mappaMarker: { x: 50, y: 50 },
@@ -1226,7 +1229,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.97.1';
+const APP_VERSION = '2.98.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1611,6 +1614,7 @@ function normalizeImported(dati) {
     sezioniAperte: dati.sezioniAperte && typeof dati.sezioniAperte === 'object' && !Array.isArray(dati.sezioniAperte)
       ? Object.fromEntries(Object.entries(dati.sezioniAperte).map(([id, aperta]) => [id, Boolean(aperta)]))
       : {},
+    controlliIgnorati: Array.isArray(dati.controlliIgnorati) ? dati.controlliIgnorati.filter((x) => typeof x === 'string') : [],
     mappaCampagna: typeof dati.mappaCampagna === 'string' && dati.mappaCampagna.startsWith('data:image/')
       ? dati.mappaCampagna
       : '',
@@ -2023,6 +2027,7 @@ export default function App() {
   });
   const [promemoriaBackup, setPromemoriaBackup] = useState(false); // banner "fai un backup"
   const [mostraGuida, setMostraGuida] = useState(false); // guida rapida al primo avvio
+  const [mostraControlliScheda, setMostraControlliScheda] = useState(false);
   const [condivisione, setCondivisione] = useState(null); // { link, copiato, ritrattoRimosso, lungo }
   const [stanzaUi, setStanzaUi] = useState({ aperta: false, codice: '', creato: '', scadenza: 0, caricamento: false, errore: '' });
   const [pgDaLink, setPgDaLink] = useState(null);      // personaggio ricevuto tramite link
@@ -5281,6 +5286,60 @@ export default function App() {
           >Più tardi</button>
         </div>
       )}
+
+      {/* Controlli scheda: suggerimenti su competenze/TS che il calcolo
+          automatico non trova (razza/classe/background). Mai una correzione
+          automatica: talenti, multiclasse e oggetti magici possono spiegare
+          eccezioni legittime, quindi ogni voce si può ignorare per sempre. */}
+      {scheda && (() => {
+        const tutti = controlliScheda(scheda);
+        const ignorati = scheda.controlliIgnorati || [];
+        const controlli = tutti.filter((r) => !ignorati.includes(r.id));
+        if (!controlli.length) return null;
+        const certi = controlli.filter((r) => r.gravita === 'certo').length;
+        return (
+          <div style={{
+            maxWidth: 1080, margin: '0 auto 8px', padding: '10px 14px', borderRadius: 10,
+            background: certi ? 'rgba(200,60,60,0.10)' : 'rgba(200,140,20,0.14)',
+            border: `1px solid ${certi ? C.red : C.gold}`,
+            fontSize: 14,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+              <span
+                style={{ flex: 1, minWidth: 200, color: C.ink, cursor: 'pointer' }}
+                onClick={() => setMostraControlliScheda((v) => !v)}
+              >
+                ⚠️ <strong>{controlli.length} {controlli.length === 1 ? 'cosa da controllare' : 'cose da controllare'}</strong> su {scheda.nome || 'questa scheda'}
+              </span>
+              <button style={styles.buttonMini} onClick={() => setMostraControlliScheda((v) => !v)}>
+                {mostraControlliScheda ? '▲ Nascondi' : '▼ Mostra'}
+              </button>
+            </div>
+            {mostraControlliScheda && (
+              <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {controlli.map((r) => (
+                  <div key={r.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 10px' }}>
+                    <span style={{ flex: 1, fontSize: 13, color: C.ink }}>
+                      {r.gravita === 'certo' ? '🔴' : '🟡'} {r.testo}
+                    </span>
+                    <button
+                      style={{ ...styles.buttonMini, fontSize: 11, flexShrink: 0 }}
+                      title="Non segnalarlo più per questo personaggio"
+                      onClick={() => aggiorna({ controlliIgnorati: [...ignorati, r.id] })}
+                    >Ignora</button>
+                  </div>
+                ))}
+                {ignorati.length > 0 && (
+                  <button
+                    style={{ ...styles.buttonMini, fontSize: 11, alignSelf: 'flex-start' }}
+                    onClick={() => aggiorna({ controlliIgnorati: [] })}
+                  >↺ Mostra anche i {ignorati.length} ignorati</button>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Guida rapida al primo avvio: spiega i tre gesti fondamentali. */}
       {mostraGuida && (
