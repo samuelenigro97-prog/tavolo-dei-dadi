@@ -64,6 +64,11 @@ jobs:
       - run: npm run build
         env:
           BASE_PATH: /tavolo-dei-dadi/
+          # Archivio DM (vedi worker/LEGGIMI.md): impostale in Settings → Secrets
+          # and variables → Actions → Variables una volta fatto il deploy del
+          # Worker. Se lasciate vuote la funzione resta semplicemente spenta.
+          VITE_ARCHIVIO_PG_URL: ${{ vars.VITE_ARCHIVIO_PG_URL }}
+          VITE_STANZE_URL: ${{ vars.VITE_STANZE_URL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
