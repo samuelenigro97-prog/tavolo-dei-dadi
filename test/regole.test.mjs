@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  modificatore, conSegno, parseEspressioneDado, facceDadoVita, esprDadiVita,
+  modificatore, conSegno, parseEspressioneDado, facceDadoVita, esprDadiVita, gruppiDadoVita,
   bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico,
 } from '../src/rules/dadi.js';
 
@@ -86,6 +86,13 @@ test('facceDadoVita / esprDadiVita', () => {
   assert.equal(esprDadiVita(5, 8), '5d8');
   assert.equal(esprDadiVita(0, 6), '1d6');   // livello minimo 1
   assert.equal(esprDadiVita(3.9, 12), '3d12');
+});
+
+test('gruppiDadoVita: singola classe e multiclasse (stesso dado unito, diverso in righe separate)', () => {
+  assert.deepEqual(gruppiDadoVita('5d8'), [{ facce: 8, quantita: 5 }]);
+  assert.deepEqual(gruppiDadoVita('3d10 + 2d8'), [{ facce: 10, quantita: 3 }, { facce: 8, quantita: 2 }]);
+  assert.deepEqual(gruppiDadoVita('4d8'), [{ facce: 8, quantita: 4 }]); // due classi d8 fuse in un solo gruppo a monte
+  assert.deepEqual(gruppiDadoVita('nessun dado'), [{ facce: 8, quantita: 1 }]); // default
 });
 
 test('bonusCompetenzaDaLivello: soglie ufficiali', () => {
