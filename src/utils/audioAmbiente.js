@@ -559,6 +559,24 @@ export function avviaAmbiente(id, volume = 0.5, urlCustom = '', notte = false) {
       };
       programmaRichiamo(true);
     }
+    // Palude: condivide il letto sonoro con la foresta (stesso file), ma sopra
+    // aggiunge gocce d'acqua frequenti e richiami di rane/insetti, così i due
+    // ambienti restano distinguibili all'ascolto invece di suonare identici.
+    if (id === 'palude') {
+      precaricaSfx();
+      const programmaPalude = (primo = false) => {
+        const minimo = primo ? 4000 : 6000;
+        const intervallo = primo ? 5000 : 9000;
+        intervalTimer = setTimeout(() => {
+          programmaPalude();
+          const ctx = getAudioContext();
+          if (!ctx || ctx.state !== 'running' || (typeof document !== 'undefined' && document.hidden)) return;
+          const evento = Math.random() < 0.65 ? 'goccia' : 'verso';
+          playSfx(evento, currentVolume * (evento === 'goccia' ? 0.4 : 0.3));
+        }, minimo + Math.random() * intervallo);
+      };
+      programmaPalude(true);
+    }
     return;
   }
 
