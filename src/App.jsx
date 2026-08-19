@@ -1193,7 +1193,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.94.2';
+const APP_VERSION = '2.94.3';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3418,12 +3418,69 @@ export default function App() {
     }
   }
 
+  /** Carica un Gist per id e lo applica come roster locale. Condivisa da
+   *  caricaDaCloud() e da attivaBackupAuto() quando trova un backup esistente. */
+  async function caricaGistById(id, tokenUsato) {
+    const res = await fetchConTimeout(`https://api.github.com/gists/${id}`, {
+      headers: { 'Authorization': `token ${tokenUsato}`, 'Accept': 'application/vnd.github.v3+json' },
+    });
+    if (!res.ok) throw new Error('Errore caricamento. Token o ID non validi.');
+    const out = await res.json();
+    const file = out.files['roster_tavolo_dei_dadi.json'];
+    if (!file) throw new Error('Il file "roster_tavolo_dei_dadi.json" non è presente nel Gist.');
+    const parsed = JSON.parse(file.content);
+    const loadedRoster = { attivo: parsed.attivo, personaggi: {} };
+    for (const pid in parsed.personaggi) loadedRoster.personaggi[pid] = normalizeImported(parsed.personaggi[pid]);
+    if (!loadedRoster.attivo || !loadedRoster.personaggi[loadedRoster.attivo]) {
+      loadedRoster.attivo = Object.keys(loadedRoster.personaggi)[0] || '';
+    }
+    const conImmaginiLocali = await caricaImmaginiRoster(loadedRoster).catch(() => loadedRoster);
+    setRoster(conImmaginiLocali);
+    if (parsed._updatedAt) localStorage.setItem('scheda-interattiva:sync-ts', String(parsed._updatedAt));
+  }
+
   /** Attiva il backup automatico: abilita l'auto-sync e fa subito il primo salvataggio
-   *  (che crea il Gist se non esiste). Basta averlo fatto una volta. */
+   *  (che crea il Gist se non esiste). Basta averlo fatto una volta.
+   *  Su un dispositivo nuovo (nessun Gist ID salvato) controlla prima se questo
+   *  account ha già un backup creato da un altro dispositivo: altrimenti il
+   *  primo salvataggio ne creerebbe uno nuovo e vuoto, "sdoppiando" i personaggi
+   *  invece di farli comparire su questo dispositivo. */
   async function attivaBackupAuto() {
-    if (!githubToken.trim()) {
+    const token = githubToken.trim();
+    if (!token) {
       setCloudStatus({ text: 'Prima crea e incolla il token GitHub qui sopra.', type: 'error' });
       return;
+    }
+    if (!gistSyncRef.current) {
+      try {
+        setSincronizzando(true);
+        setCloudStatus({ text: 'Controllo backup esistenti...', type: 'info' });
+        const res = await fetchConTimeout('https://api.github.com/gists', {
+          headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' },
+        });
+        if (res.ok) {
+          const lista = await res.json();
+          const esistente = lista.find((g) => g.files && g.files['roster_tavolo_dei_dadi.json']);
+          if (esistente) {
+            const usaEsistente = window.confirm('Trovato un backup già esistente su questo account GitHub, creato con un altro dispositivo.\n\nVuoi caricarlo su questo dispositivo invece di crearne uno nuovo e vuoto?');
+            if (usaEsistente) {
+              gistSyncRef.current = esistente.id;
+              setGistId(esistente.id);
+              localStorage.setItem('scheda-interattiva:gist-id', esistente.id);
+              await caricaGistById(esistente.id, token);
+              setCloudStatus({ text: '✅ Backup esistente caricato e sincronizzato!', type: 'success' });
+              setAutoSync(true);
+              localStorage.setItem('scheda-interattiva:auto-sync', 'on');
+              return;
+            }
+          }
+        }
+      } catch {
+        // Offline o rete lenta: si prosegue comunque con l'attivazione normale,
+        // non deve bloccare chi sta configurando il backup per la prima volta.
+      } finally {
+        setSincronizzando(false);
+      }
     }
     setAutoSync(true);
     localStorage.setItem('scheda-interattiva:auto-sync', 'on');
@@ -3491,29 +3548,7 @@ export default function App() {
     try {
       setCaricandoCloud(true);
       setCloudStatus({ text: 'Caricamento in corso...', type: 'info' });
-      const res = await fetchConTimeout(`https://api.github.com/gists/${gistId}`, {
-        headers: {
-          'Authorization': `token ${githubToken}`,
-          'Accept': 'application/vnd.github.v3+json',
-        }
-      });
-      if (!res.ok) throw new Error('Errore caricamento. Token o ID non validi.');
-      const out = await res.json();
-      const file = out.files['roster_tavolo_dei_dadi.json'];
-      if (!file) throw new Error('Il file "roster_tavolo_dei_dadi.json" non è presente nel Gist.');
-      const parsed = JSON.parse(file.content);
-      
-      const loadedRoster = { attivo: parsed.attivo, personaggi: {} };
-      for (const id in parsed.personaggi) {
-        loadedRoster.personaggi[id] = normalizeImported(parsed.personaggi[id]);
-      }
-      if (!loadedRoster.attivo || !loadedRoster.personaggi[loadedRoster.attivo]) {
-        loadedRoster.attivo = Object.keys(loadedRoster.personaggi)[0] || '';
-      }
-      
-      const conImmaginiLocali = await caricaImmaginiRoster(loadedRoster).catch(() => loadedRoster);
-      setRoster(conImmaginiLocali);
-      if (parsed._updatedAt) localStorage.setItem('scheda-interattiva:sync-ts', String(parsed._updatedAt));
+      await caricaGistById(gistId, githubToken);
       setCloudStatus({ text: '✅ Roster caricato e sincronizzato!', type: 'success' });
     } catch (err) {
       setCloudStatus({ text: err.message, type: 'error' });
@@ -3975,6 +4010,9 @@ export default function App() {
               <>
                 <p style={{ ...styles.detail, marginBottom: 12, lineHeight: 1.5 }}>
                   Attivalo <strong>una volta sola</strong>: da lì in poi i tuoi personaggi si salvano da soli sul cloud a ogni modifica — non perdi nulla anche cambiando telefono o svuotando la cache.
+                </p>
+                <p style={{ ...styles.detail, fontSize: 11, marginTop: 0, marginBottom: 12, lineHeight: 1.5 }}>
+                  Su un <strong>nuovo dispositivo</strong> (es. hai già attivato il backup su telefono/tablet): usa lo stesso token e, quando lo attivi qui, se trova un backup esistente ti chiede se vuoi caricarlo — così i tuoi personaggi arrivano subito su questo dispositivo invece di iniziare da zero.
                 </p>
                 <div style={{ ...styles.detail, fontWeight: 'bold', marginBottom: 4 }}>1. Crea un token gratuito su GitHub</div>
                 <a href="https://github.com/settings/tokens/new?scopes=gist&description=Tavolo+dei+Dadi+Backup" target="_blank" rel="noreferrer" style={{ ...styles.button, display: 'inline-block', textDecoration: 'none', borderColor: C.gold, color: C.goldDark, marginBottom: 4 }}>
