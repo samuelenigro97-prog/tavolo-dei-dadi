@@ -193,10 +193,10 @@ export function Rollable({ onRoll, children, style, title, as: Tag = 'span' }) {
 }
 
 /** Campo in stile modulo ufficiale: valore su riga, etichetta minuscola sotto. */
-export function CampoModulo({ label, children, style }) {
+export function CampoModulo({ label, children, style, boxClassName }) {
   return (
     <div style={style}>
-      <div className="campo-modulo-box" style={styles.moduloCampo}>{children}</div>
+      <div className={boxClassName ? `campo-modulo-box ${boxClassName}` : 'campo-modulo-box'} style={styles.moduloCampo}>{children}</div>
       <div className="campo-modulo-label" style={styles.moduloLabel}>{label}</div>
     </div>
   );
