@@ -1001,6 +1001,11 @@ const ARMATURE_5E = [
 function trovaArmatura(nome) {
   const n = String(nome || '').toLowerCase();
   if (!n) return null;
+  // Nomi che uniscono "corazza" e "piastre" (armature reflavorate, es. "a
+  // piastre di legno e ferro"): il sostantivo è "corazza" (media, CA 14);
+  // "piastre" qui è solo un aggettivo, non l'Armatura a Piastre pesante
+  // (CA 18) — altrimenti vincerebbe sempre "piastre" per primo in elenco.
+  if (n.includes('corazza') && n.includes('piastre')) return { tipo: 'media', base: 14 };
   for (const a of ARMATURE_5E) {
     if (a.match.some((k) => n.includes(k))) return { tipo: a.tipo, base: a.base };
   }
@@ -1188,7 +1193,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.94.1';
+const APP_VERSION = '2.94.2';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -6388,18 +6393,31 @@ export default function App() {
                 const spiegazione = spiegaRisorsa(r.nome);
                 const automatica = String(r.id || '').startsWith('auto-');
                 return (
-                  <div key={r.id} style={{ marginBottom: 6, fontSize: 12, paddingBottom: 6, borderBottom: `1px dotted ${C.border}` }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                  <div key={r.id} style={{ marginBottom: 8, fontSize: 12, paddingBottom: 8, borderBottom: `1px dotted ${C.border}` }}>
+                    {/* Riga 1: nome (con la spiegazione se nota) + rimuovi. Su una riga
+                        propria così non si mescola coi controlli del contatore quando
+                        la colonna Profilo è stretta. */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                       {spiegazione ? (
                         <button
                           type="button"
                           title={spiegazione}
                           onClick={() => setInfo({ titolo: r.nome, testo: spiegazione })}
-                          style={{ padding: 0, border: 0, background: 'transparent', color: C.ink, font: 'inherit', fontWeight: 600, textAlign: 'left', cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3, marginRight: 'auto' }}
+                          style={{ padding: 0, border: 0, background: 'transparent', color: C.ink, font: 'inherit', fontWeight: 600, textAlign: 'left', cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3, marginRight: 'auto', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
                         >{r.nome} ⓘ</button>
                       ) : (
-                        <span style={{ marginRight: 'auto' }}><Editable value={r.nome} onChange={(v) => modifica({ nome: v })} width={110} title={t('tip.nome_risorsa')} /></span>
+                        <span style={{ marginRight: 'auto', minWidth: 0 }}><Editable value={r.nome} onChange={(v) => modifica({ nome: v })} width={110} title={t('tip.nome_risorsa')} /></span>
                       )}
+                      {!automatica && (
+                        <button
+                          style={{ ...styles.buttonMini, padding: '0 6px', color: C.red, flexShrink: 0 }}
+                          title={t('tip.rimuovi_risorsa')}
+                          onClick={() => aggiorna({ risorse: scheda.risorse.filter((x) => x.id !== r.id) })}
+                        >✕</button>
+                      )}
+                    </div>
+                    {/* Riga 2: contatore (− n/max +) e quando si ricarica. */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
                       <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title={t('tip.spendi')} onClick={() => modifica({ attuali: Math.max(0, r.attuali - 1) })}>−</button>
                       <strong style={{ minWidth: 16, textAlign: 'center', display: 'inline-block', color: r.attuali === r.max ? C.goldDark : (r.attuali === 0 ? C.inkDim : C.ink) }}>{r.attuali}</strong>
                       <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title={t('tip.recupera')} onClick={() => modifica({ attuali: Math.min(r.max, r.attuali + 1) })}>+</button>
@@ -6408,10 +6426,10 @@ export default function App() {
                         : <Editable value={r.max} tipo="numero" width={30} onChange={(v) => modifica({ max: Math.max(0, v), attuali: Math.min(Math.max(0, v), r.attuali) })} />}
                       </span>
                       {automatica ? (
-                        <span style={{ ...styles.detail, fontSize: 10, whiteSpace: 'nowrap' }} title={t('tip.quando_ricarica')}>↻ {r.reset === 'breve' ? t('res.breve') : t('res.lungo')}</span>
-                      ) : <>
+                        <span style={{ ...styles.detail, fontSize: 10, whiteSpace: 'nowrap', marginLeft: 'auto' }} title={t('tip.quando_ricarica')}>↻ {r.reset === 'breve' ? t('res.breve') : t('res.lungo')}</span>
+                      ) : (
                         <select
-                          style={{ ...styles.inlineInput, fontSize: 11, padding: '1px 3px', width: 'auto' }}
+                          style={{ ...styles.inlineInput, fontSize: 11, padding: '1px 3px', width: 'auto', marginLeft: 'auto' }}
                           value={r.reset}
                           onChange={(e) => modifica({ reset: e.target.value })}
                           title={t('tip.quando_ricarica')}
@@ -6420,12 +6438,7 @@ export default function App() {
                           <option value="breve">{t("res.breve")}</option>
                           <option value="lungo">{t("res.lungo")}</option>
                         </select>
-                        <button
-                          style={{ ...styles.buttonMini, padding: '0 6px', color: C.red }}
-                          title={t('tip.rimuovi_risorsa')}
-                          onClick={() => aggiorna({ risorse: scheda.risorse.filter((x) => x.id !== r.id) })}
-                        >✕</button>
-                      </>}
+                      )}
                     </div>
                   </div>
                 );
@@ -7368,7 +7381,7 @@ export default function App() {
                                           <option value="">{EFFETTI_OGGETTO[0][lingua === 'it' ? 1 : 2]}</option>
                                           {EFFETTI_OGGETTO.slice(1).sort((a, b) => a[lingua === 'it' ? 1 : 2].localeCompare(b[lingua === 'it' ? 1 : 2], lingua)).map(([id, labelIt, labelEn]) => <option key={id} value={id}>{lingua === 'it' ? labelIt : labelEn}</option>)}
                                         </select>
-                                        <label style={{ ...styles.detail, display: 'inline-flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}>
+                                        <label style={{ ...styles.detail, display: 'inline-flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap', cursor: 'help' }} title={t('inv.richiede_sintonia_tip')}>
                                           <input type="checkbox" checked={!!o.richiedeSintonia} onChange={(e) => modInv(o.id, { richiedeSintonia: e.target.checked })} />
                                           {t('inv.richiede_sintonia')}
                                         </label>
