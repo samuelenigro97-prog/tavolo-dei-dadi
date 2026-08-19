@@ -1226,7 +1226,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.96.1';
+const APP_VERSION = '2.97.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1682,6 +1682,23 @@ function ArchivioDm({ url, onChiudi, onApri }) {
     }
   };
 
+  const [inEliminazione, setInEliminazione] = useState(null);
+  const elimina = async (id, nome) => {
+    if (!window.confirm(`Eliminare definitivamente "${nome || '(senza nome)'}" dall'Archivio DM? Non tocca la scheda sul dispositivo del giocatore.`)) return;
+    setInEliminazione(id);
+    try {
+      const r = await fetch(`${base}/pg/${encodeURIComponent(id)}?key=${encodeURIComponent(chiave)}`, { method: 'DELETE' });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) { setStato(d.error || `Errore ${r.status}`); return; }
+      setElenco((el) => (el || []).filter((s) => s.id !== id));
+      setDettagliAperti((d2) => { const n = { ...d2 }; delete n[id]; return n; });
+    } catch (e) {
+      setStato(`Connessione fallita: ${e.message}`);
+    } finally {
+      setInEliminazione(null);
+    }
+  };
+
   const quando = (iso) => {
     if (!iso) return '—';
     try { return new Date(iso).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); }
@@ -1756,6 +1773,14 @@ function ArchivioDm({ url, onChiudi, onApri }) {
                           {dett && dett !== 'carico' ? '▲ Dettagli' : '▼ Dettagli'}
                         </button>
                         <button style={styles.buttonMini} onClick={() => apri(s.id)}>Apri</button>
+                        <button
+                          style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }}
+                          onClick={() => elimina(s.id, s.nome)}
+                          disabled={inEliminazione === s.id}
+                          title="Toglie questa scheda dall'Archivio DM (non tocca il dispositivo del giocatore)"
+                        >
+                          {inEliminazione === s.id ? '…' : '🗑️'}
+                        </button>
                       </div>
                     </div>
                     {dett === 'carico' && <div style={{ ...styles.detail, fontSize: 12, marginTop: 6 }}>Caricamento…</div>}
@@ -1933,13 +1958,13 @@ export default function App() {
   const [listaMagicaMinimizzata, setListaMagicaMinimizzata] = useState(false);
   const [filtroInventario, setFiltroInventario] = useState('');
   const [effettoInventarioAperto, setEffettoInventarioAperto] = useState(null);
-  const [fonteTsAperta, setFonteTsAperta] = useState(null); // { key, top, left } del menu "da cosa deriva il bonus TS" aperto
+  const [fontePopover, setFontePopover] = useState(null); // { tipo: 'ts'|'car', key, top, left } menu "da cosa deriva il bonus" aperto
   useEffect(() => {
-    if (!fonteTsAperta) return;
-    const chiudi = () => setFonteTsAperta(null);
+    if (!fontePopover) return;
+    const chiudi = () => setFontePopover(null);
     window.addEventListener('click', chiudi);
     return () => window.removeEventListener('click', chiudi);
-  }, [fonteTsAperta]);
+  }, [fontePopover]);
   const [addLivIncantesimo, setAddLivIncantesimo] = useState(0); // livello scelto nella barra "aggiungi"
   const [addBonusIncantesimo, setAddBonusIncantesimo] = useState(false); // aggiungi come incantesimo bonus ✦
   const [espressioneLibera, setEspressioneLibera] = useState('');
@@ -2772,6 +2797,17 @@ export default function App() {
       testo: `Vuoi eliminare davvero "${scheda.nome || t('menu.senza_nome')}"? L'operazione non si può annullare.`,
       onConferma: () => setRoster((r) => {
         salvaSnapshot(r); // rete di sicurezza: salva lo stato prima di cancellare
+        // Toglie anche la copia nell'Archivio DM: altrimenti il Master continua
+        // a vedere un personaggio che sul dispositivo del giocatore non esiste
+        // più. Nessuna chiave richiesta: un dispositivo può cancellare solo
+        // ciò che ha depositato lui stesso (stessa identità della POST).
+        if (URL_ARCHIVIO_PG) {
+          fetch(`${URL_ARCHIVIO_PG.replace(/\/+$/, '')}/pg`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ dispositivo: idDispositivo, id: r.attivo }),
+          }).catch(() => { /* offline o archivio spento: pazienza, non blocca l'eliminazione locale */ });
+        }
         const personaggi = { ...r.personaggi };
         delete personaggi[r.attivo];
         const ids = Object.keys(personaggi);
@@ -6497,7 +6533,36 @@ export default function App() {
                             aggiorna({ caratteristiche: { ...scheda.caratteristiche, [key]: v } })
                           }
                         />
-                        {punteggioEffettivo !== scheda.caratteristiche[key] && <span title={t('inv.effetto_attivo')} style={{ marginLeft: 4 }}>→ {punteggioEffettivo}</span>}
+                        {punteggioEffettivo !== scheda.caratteristiche[key] && (() => {
+                          const fontiCar = oggettiConEffettoAttivo(scheda).filter((o) => new RegExp(`^${key}_impostata_(\\d+)$`).test(o.effettoMeccanico));
+                          return (
+                            <span style={{ position: 'relative' }}>
+                              <button
+                                type="button"
+                                onPointerDown={(e) => e.stopPropagation()}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const r = e.currentTarget.getBoundingClientRect();
+                                  setFontePopover((v) => (v && v.tipo === 'car' && v.key === key ? null : { tipo: 'car', key, top: r.bottom + 4, left: r.right }));
+                                }}
+                                title={t('inv.fonte_bonus_tip')}
+                                style={{ marginLeft: 4, fontSize: 15, fontWeight: 'bold', color: C.goldDark, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                              >→ {punteggioEffettivo}</button>
+                              {fontePopover?.tipo === 'car' && fontePopover.key === key && (
+                                <div
+                                  onPointerDown={(e) => e.stopPropagation()}
+                                  onClick={(e) => e.stopPropagation()}
+                                  style={{ position: 'fixed', top: fontePopover.top, left: fontePopover.left, transform: 'translateX(-100%)', zIndex: 1050, background: C.panel, border: `1px solid ${C.gold}`, borderRadius: 8, padding: '6px 10px', minWidth: 170, boxShadow: '0 6px 18px rgba(0,0,0,0.35)', fontSize: 11, textAlign: 'left', fontWeight: 'normal' }}
+                                >
+                                  <div style={{ fontWeight: 'bold', marginBottom: 4, color: C.inkDim }}>{t('inv.fonte_bonus')}:</div>
+                                  {fontiCar.length
+                                    ? fontiCar.map((o) => <div key={o.id} style={{ whiteSpace: 'nowrap' }}>🎒 {o.nome}</div>)
+                                    : <div style={{ color: C.inkDim }}>—</div>}
+                                </div>
+                              )}
+                            </span>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>
@@ -6532,16 +6597,16 @@ export default function App() {
                             onClick={(e) => {
                               e.stopPropagation();
                               const r = e.currentTarget.getBoundingClientRect();
-                              setFonteTsAperta((v) => (v && v.key === key ? null : { key, top: r.bottom + 4, left: r.right }));
+                              setFontePopover((v) => (v && v.tipo === 'ts' && v.key === key ? null : { tipo: 'ts', key, top: r.bottom + 4, left: r.right }));
                             }}
                             title={t('inv.fonte_bonus_tip')}
                             style={{ ...styles.buttonMini, fontSize: 10, padding: '0 5px', height: 18, lineHeight: '16px', color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.12)' }}
                           >✨ +{bonusOggettiTS}</button>
-                          {fonteTsAperta?.key === key && (
+                          {fontePopover?.tipo === 'ts' && fontePopover.key === key && (
                             <div
                               onPointerDown={(e) => e.stopPropagation()}
                               onClick={(e) => e.stopPropagation()}
-                              style={{ position: 'fixed', top: fonteTsAperta.top, left: fonteTsAperta.left, transform: 'translateX(-100%)', zIndex: 1050, background: C.panel, border: `1px solid ${C.gold}`, borderRadius: 8, padding: '6px 10px', minWidth: 170, boxShadow: '0 6px 18px rgba(0,0,0,0.35)', fontSize: 11, textAlign: 'left' }}
+                              style={{ position: 'fixed', top: fontePopover.top, left: fontePopover.left, transform: 'translateX(-100%)', zIndex: 1050, background: C.panel, border: `1px solid ${C.gold}`, borderRadius: 8, padding: '6px 10px', minWidth: 170, boxShadow: '0 6px 18px rgba(0,0,0,0.35)', fontSize: 11, textAlign: 'left' }}
                             >
                               <div style={{ fontWeight: 'bold', marginBottom: 4, color: C.inkDim }}>{t('inv.fonte_bonus')}:</div>
                               {fontiTS.length

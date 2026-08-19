@@ -7,6 +7,8 @@
  *       GET  /pg?key=…      elenco di tutte le schede      (solo con la chiave DM)
  *       GET  /pg/<id>?key=… una scheda completa            (solo con la chiave DM)
  *       DELETE /pg/<id>?key=…  cancella una scheda         (solo con la chiave DM)
+ *       DELETE /pg (body {dispositivo,id})  un dispositivo cancella la PROPRIA
+ *              copia depositata (nessuna chiave: stessa identità della POST)
  *  3) /room            → snapshot temporanei condivisi tramite codice (KV)
  *
  * Segreti/variabili (impostati con `wrangler secret put` o dal dashboard):
@@ -252,6 +254,23 @@ async function gestisciArchivio(request, env, headers, percorso) {
       aggiornato: new Date().toISOString(),
     };
     await env.SCHEDE.put(chiave, testo, { metadata });
+    return new Response(JSON.stringify({ ok: true }), { headers });
+  }
+
+  // --- Auto-cancellazione (nessuna chiave richiesta): un dispositivo può
+  // cancellare SOLO una copia depositata da se stesso (stessa identità usata
+  // per il deposito POST), mai quelle di altri dispositivi. Serve a togliere
+  // dall'Archivio DM i personaggi eliminati dal giocatore sul proprio device,
+  // così il DM non continua a vederli come se fossero ancora attivi. */
+  if (request.method === 'DELETE' && !id) {
+    let corpo;
+    try { corpo = await request.json(); } catch { corpo = null; }
+    const dispositivo = String(corpo?.dispositivo || '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 40);
+    const idPg = String(corpo?.id || '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 40);
+    if (!dispositivo || !idPg) {
+      return new Response(JSON.stringify({ error: 'Campi "dispositivo" e "id" obbligatori' }), { status: 400, headers });
+    }
+    await env.SCHEDE.delete(`pg:${dispositivo}:${idPg}`);
     return new Response(JSON.stringify({ ok: true }), { headers });
   }
 
