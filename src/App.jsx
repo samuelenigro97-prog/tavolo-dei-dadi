@@ -112,10 +112,12 @@ function privilegiSottoclasseFinoA(sottoclasse, livello) {
 
 // Caratteristica da incantatore per classe (chiave = primo alias in CLASSI).
 
-/** Caratteristica da incantatore della classe (o '' se non incantatore/ignota). */
-function caratteristicaIncantatorePerClasse(classe) {
+/** Caratteristica da incantatore della classe (o '' se non incantatore/ignota).
+ *  Per Cavaliere Mistico/Mistificatore Arcano (Intelligenza) serve la sottoclasse:
+ *  senza quella specifica sottoclasse, Guerriero e Ladro non sono incantatori. */
+function caratteristicaIncantatorePerClasse(classe, sottoclasse) {
   const c = coloreClasse(classe);
-  return (c && CARATT_INCANTATORE[c.match[0]]) || '';
+  return (c && CARATT_INCANTATORE[c.match[0]]) || (sottoclasseTerzoIncantatore(classe, sottoclasse) ? 'intelligenza' : '');
 }
 
 // Priorità delle caratteristiche per classe (dalla più importante alla meno).
@@ -357,17 +359,24 @@ function livelloSceltaSottoclasse(classe, versione = '2024') {
 // Serve al menu "Aggiungi incantesimo": non è esaustivo (c'è sempre "Scrivi a
 // mano"), ma copre gli incantesimi tipici. I nomi sono indicativi e modificabili.
 
-/** Incantesimi consigliati per la classe a un dato livello (o [] se non previsti). */
-function incantesimiClasseLivello(classe, livello) {
+/** Incantesimi consigliati per la classe a un dato livello (o [] se non previsti).
+ *  Cavaliere Mistico/Mistificatore Arcano pescano dalla lista del Mago (vedi
+ *  sottoclasseTerzoIncantatore), ristretta alle due scuole solo nella 5.0. */
+function incantesimiClasseLivello(classe, livello, sottoclasse, versione) {
+  if (sottoclasseTerzoIncantatore(classe, sottoclasse)) {
+    return incantesimiTerzoCasterLivello(classe, sottoclasse, livello, versione);
+  }
   const k = chiaveClasse(classe);
   return (k && INCANTESIMI_CLASSE[k] && INCANTESIMI_CLASSE[k][livello]) || [];
 }
 
 /** Incantesimi con Concentrazione disponibili per la classe (dalle liste note). */
-function incantesimiConcentrazioneClasse(classe) {
-  const k = chiaveClasse(classe);
-  if (!k || !INCANTESIMI_CLASSE[k]) return [];
-  const tutti = [...new Set(Object.values(INCANTESIMI_CLASSE[k]).flat())];
+function incantesimiConcentrazioneClasse(classe, sottoclasse, versione) {
+  const terzo = sottoclasseTerzoIncantatore(classe, sottoclasse);
+  const k = terzo ? 'mago' : chiaveClasse(classe);
+  const liste = terzo ? listeIncantesimiTerzoCaster(terzo, versione) : INCANTESIMI_CLASSE[k];
+  if (!k || !liste) return [];
+  const tutti = [...new Set(Object.values(liste).flat())];
   return tutti
     .filter((nome) => /concentrazione/i.test(spiegaIncantesimo(nome) || ''))
     .sort((a, b) => a.localeCompare(b, 'it'));
@@ -706,7 +715,7 @@ const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(I
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -1193,7 +1202,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.94.8';
+const APP_VERSION = '2.95.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1298,7 +1307,7 @@ function loadState() {
           if (Array.isArray(s.incantesimiLista)) {
             const nTruc = s.incantesimiLista.filter((x) => x.livello === 0 && !x.bonus).length;
             const nInc = s.incantesimiLista.filter((x) => x.livello > 0 && !x.bonus).length;
-            const baseTruc = trucchettiMax(s.classe, s.livello);
+            const baseTruc = trucchettiMax(s.classe, s.livello, s.sottoclasse);
             const baseInc = incantesimiMaxAuto(s, s.versione === '2014' ? '2014' : '2024');
             if (!(s.maxTrucchetti > 0) && baseTruc != null && nTruc > baseTruc) s.maxTrucchetti = nTruc;
             if (!(s.maxIncantesimi > 0) && baseInc != null && nInc > baseInc) s.maxIncantesimi = nInc;
@@ -1440,10 +1449,10 @@ function normalizeImported(dati) {
   // riporta sotto il tetto e riabilita l'aggiunta.
   const versionePin = dati.versione === '2014' ? '2014' : '2024';
   const livelloPin = num(dati.livello, base.livello);
-  const schedaPin = { classe: str(dati.classe), livello: livelloPin, incantatore: { caratteristica: carIncantatore }, caratteristiche: car };
+  const schedaPin = { classe: str(dati.classe), sottoclasse: str(dati.sottoclasse), livello: livelloPin, incantatore: { caratteristica: carIncantatore }, caratteristiche: car };
   const nTruccPin = incantesimiLista.filter((s) => s.livello === 0 && !s.bonus).length;
   const nIncPin = incantesimiLista.filter((s) => s.livello > 0 && !s.bonus).length;
-  const baseTruccPin = trucchettiMax(str(dati.classe), livelloPin);
+  const baseTruccPin = trucchettiMax(str(dati.classe), livelloPin, str(dati.sottoclasse));
   const baseIncPin = incantesimiMaxAuto(schedaPin, versionePin);
   const maxTruccIniziale = num(dati.maxTrucchetti, 0) || (baseTruccPin != null && nTruccPin > baseTruccPin ? nTruccPin : 0);
   const maxIncIniziale = num(dati.maxIncantesimi, 0) || (baseIncPin != null && nIncPin > baseIncPin ? nIncPin : 0);
@@ -2435,11 +2444,11 @@ export default function App() {
   // Corregge definitivamente anche le schede create/importate prima
   // dell'automatismo, senza ritardare i calcoli del render corrente.
   useEffect(() => {
-    const automatica = caratteristicaIncantatorePerClasse(scheda.classe);
+    const automatica = caratteristicaIncantatorePerClasse(scheda.classe, scheda.sottoclasse);
     if (automatica && scheda.incantatore?.caratteristica !== automatica) {
       aggiorna({ incantatore: { ...scheda.incantatore, caratteristica: automatica } });
     }
-  }, [scheda.classe, scheda.incantatore?.caratteristica]);
+  }, [scheda.classe, scheda.sottoclasse, scheda.incantatore?.caratteristica]);
 
   // --- Archivio DM: deposita una copia della scheda attiva ---
   // Parte ~10 secondi dopo l'ultima modifica (così non si scrive a ogni tasto)
@@ -2562,14 +2571,14 @@ export default function App() {
     s.specie = specie;
     s.background = background;
     // dati dalla classe: incantatore, dado vita, tiri salvezza, addestramento, slot
-    const car = caratteristicaIncantatorePerClasse(classe);
+    const car = caratteristicaIncantatorePerClasse(classe, sottoclasse);
     if (car) s.incantatore = { caratteristica: car };
     s.dadiVita = esprDadiVita(s.livello, dadoVitaClasse(classe));
     const ts = tiriSalvezzaPerClasse(classe);
     if (ts) s.tiriSalvezza = ts;
     const add = addestramentoPerClasse(classe);
     if (add) s.addestramento = { ...s.addestramento, armature: { ...add.armature }, armi: add.armi };
-    const slot = slotDaClasseLivello(classe, s.livello);
+    const slot = slotDaClasseLivello(classe, s.livello, sottoclasse);
     if (slot) s.slotIncantesimo = slot;
     // dati dalla specie: velocità, sensi, taglia, tratti
     const sp = datiSpecieDi(specie);
@@ -2668,7 +2677,7 @@ export default function App() {
     }
     // Trucchetti e incantesimi già noti: senza questi un incantatore creato a
     // livello alto avrebbe gli slot pieni e la lista degli incantesimi vuota.
-    const inc = incantesimiInizialiPerLivello(classe, s.livello, regoleVersione, s.caratteristiche);
+    const inc = incantesimiInizialiPerLivello(classe, s.livello, regoleVersione, s.caratteristiche, sottoclasse);
     if (inc && (inc.trucchetti.length || inc.incantesimi.length)) {
       s.incantesimiLista = [...inc.trucchetti, ...inc.incantesimi];
     }
@@ -3659,7 +3668,7 @@ export default function App() {
     : scheda.incantesimiLista;
   const nPreparati = scheda.incantesimiLista.filter((s) => s.livello > 0 && !s.bonus && s.preparato !== false).length;
   // base = override manuale (>0) oppure automatico da classe/livello/versione
-  const baseTrucchetti = (scheda.maxTrucchetti > 0) ? scheda.maxTrucchetti : trucchettiMax(scheda.classe, scheda.livello);
+  const baseTrucchetti = (scheda.maxTrucchetti > 0) ? scheda.maxTrucchetti : trucchettiMax(scheda.classe, scheda.livello, scheda.sottoclasse);
   const baseIncantesimi = (scheda.maxIncantesimi > 0) ? scheda.maxIncantesimi : incantesimiMaxAuto(scheda, versione);
   const trucchettiPieno = baseTrucchetti != null && nTrucchetti >= baseTrucchetti;
   // Blocco AGGIUNTA: per chi prepara il libro è illimitato (mai pieno); per chi
@@ -4316,16 +4325,21 @@ export default function App() {
               ? [{ classe: scheda.classe, livello: Math.max(1, num(scheda.livello, 1)) }, ...mcArray.map((m, idx) => idx === targetMode ? { ...m, livello: Math.max(1, num(m.livello, 1)) + 1 } : m)]
               : [{ classe: scheda.classe, livello: Math.max(1, num(scheda.livello, 1)) + 1 }, ...mcArray]);
 
+        // La sottoclasse "terzo incantatore" (Cavaliere Mistico/Mistificatore
+        // Arcano) è nota solo per la classe principale: le classi secondarie da
+        // multiclasse non hanno un campo sottoclasse proprio in questa app.
+        const targetSottoclasse = (!isNewMc && !isSecMc) ? scheda.sottoclasse : undefined;
+
         const isTotMc = classiNuove.filter((c) => c && c.classe).length > 1;
-        const slotNuovi = isTotMc ? slotMulticlasse(classiNuove) : slotDaClasseLivello(targetClasse, targetLivelloNuovo);
-        const slotVecchi = isTotMc ? slotMulticlasse([{ classe: scheda.classe, livello: Math.max(1, num(scheda.livello, 1)) }, ...mcArray]) : slotDaClasseLivello(scheda.classe, Math.max(1, num(scheda.livello, 1)));
+        const slotNuovi = isTotMc ? slotMulticlasse(classiNuove) : slotDaClasseLivello(targetClasse, targetLivelloNuovo, targetSottoclasse);
+        const slotVecchi = isTotMc ? slotMulticlasse([{ classe: scheda.classe, livello: Math.max(1, num(scheda.livello, 1)) }, ...mcArray]) : slotDaClasseLivello(scheda.classe, Math.max(1, num(scheda.livello, 1)), scheda.sottoclasse);
 
         const slotStr = slotNuovi
           ? Object.keys(slotNuovi).filter((l) => slotNuovi[l].totale > 0).map((l) => `${l}° ×${slotNuovi[l].totale}`).join(' · ')
           : null;
 
-        const trOld = trucchettiMax(targetClasse, targetLivelloVecchio);
-        const trNew = trucchettiMax(targetClasse, targetLivelloNuovo);
+        const trOld = trucchettiMax(targetClasse, targetLivelloVecchio, targetSottoclasse);
+        const trNew = trucchettiMax(targetClasse, targetLivelloNuovo, targetSottoclasse);
         const nuoviTrucchetti = (trOld != null && trNew != null) ? Math.max(0, trNew - trOld) : (isNewMc && trNew != null ? trNew : 0);
         const incOld = incantesimiMaxAuto(scheda, versione);
         const incNew = incantesimiMaxAuto({ ...scheda, livello: isNewMc || isSecMc ? Math.max(1, num(scheda.livello, 1)) : targetLivelloNuovo }, versione);
@@ -5903,6 +5917,16 @@ export default function App() {
                       // livello attuale (se abbiamo i dati per questa sottoclasse).
                       const auto = privilegiSottoclasseFinoA(v, scheda.livello || 1);
                       if (auto) patch.privilegiSottoclasse = auto;
+                      // Cavaliere Mistico/Mistificatore Arcano: scegliendo la
+                      // sottoclasse compaiono gli slot incantesimo del "terzo
+                      // incantatore", altrimenti resterebbero a zero finché non
+                      // si passa dalla creazione guidata o da un level up. Solo
+                      // per queste due sottoclassi: non deve mai toccare gli slot
+                      // (e gli "spesi" già segnati) di una classe già incantatrice.
+                      if (sottoclasseTerzoIncantatore(scheda.classe, v)) {
+                        const slot = slotDaClasseLivello(scheda.classe, scheda.livello, v);
+                        if (slot) patch.slotIncantesimo = slot;
+                      }
                       aggiorna(patch);
                     })}
                     {/* Una sottoclasse per ogni classe del multiclasse */}
@@ -6823,8 +6847,8 @@ export default function App() {
                     style={{ ...styles.inlineInput, padding: '3px 6px', fontSize: 12 }}
                     value={caratteristicaIncantatore}
                     onChange={(e) => aggiorna({ incantatore: { caratteristica: e.target.value } })}
-                    disabled={Boolean(caratteristicaIncantatorePerClasse(scheda.classe))}
-                    title={caratteristicaIncantatorePerClasse(scheda.classe) ? 'Determinata automaticamente dalla classe' : undefined}
+                    disabled={Boolean(caratteristicaIncantatorePerClasse(scheda.classe, scheda.sottoclasse))}
+                    title={caratteristicaIncantatorePerClasse(scheda.classe, scheda.sottoclasse) ? 'Determinata automaticamente dalla classe' : undefined}
                   >
                     <option value="">{t('spell.non_incantatore')}</option>
                     {CARATTERISTICHE.map((c) => (
@@ -6836,7 +6860,7 @@ export default function App() {
             >
               <div style={{ marginBottom: 14 }}>
                 {(() => {
-                  const conc = incantesimiConcentrazioneClasse(scheda.classe);
+                  const conc = incantesimiConcentrazioneClasse(scheda.classe, scheda.sottoclasse, versione);
                   const bonusCon = bonusTiroSalvezza(scheda, 'costituzione');
                   const attivo = Boolean(scheda.concentrazione);
                   return (
@@ -6977,7 +7001,7 @@ export default function App() {
                 // Tastino piccolo di aggiunta sotto ogni livello: menu compatto con
                 // i suggerimenti di quel livello + "scrivi a mano", e toggle ✦ bonus.
                 const AddControl = (liv) => {
-                  const suggeriti = incantesimiClasseLivello(scheda.classe, liv);
+                  const suggeriti = incantesimiClasseLivello(scheda.classe, liv, scheda.sottoclasse, versione);
                   const gia = new Set(scheda.incantesimiLista.filter((s) => s.livello === liv).map((s) => (s.nome || '').toLowerCase()));
                   const pieno = liv === 0 ? trucchettiPieno : incantesimiPieno;
                   const bloccato = pieno && !addBonusIncantesimo;
