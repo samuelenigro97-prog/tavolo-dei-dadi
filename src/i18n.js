@@ -297,6 +297,8 @@ export const DIZIONARIO = {
     'guida.backup_t': 'I dati restano sul tuo dispositivo',
     'guida.backup_d': 'Fai un backup dal Menu, o attiva il backup automatico dal pulsante Cloud.',
     'guida.ok': 'Ho capito, cominciamo',
+    'guida.archivio_t': 'Il Master vede le vostre schede',
+    'guida.archivio_d': 'Questo tavolo ha l\u2019archivio del DM attivo: una copia dei personaggi (senza immagini) viene inviata automaticamente, cos\u00ec il Master pu\u00f2 consultarli.',
     // Condivisione tramite link
     'condividi.titolo': 'Condividi',
     'condividi.tooltip': 'Crea un link per mandare questo personaggio a qualcun altro',
@@ -938,6 +940,8 @@ export const DIZIONARIO = {
     'guida.backup_t': 'Your data stays on your device',
     'guida.backup_d': 'Make a backup from the Menu, or turn on automatic backup from the Cloud button.',
     'guida.ok': 'Got it, let us start',
+    'guida.archivio_t': 'The GM can see your sheets',
+    'guida.archivio_d': 'This table has the GM archive turned on: a copy of your characters (no images) is sent automatically, so the GM can look them up.',
     // Share via link
     'condividi.titolo': 'Share',
     'condividi.tooltip': 'Create a link to send this character to someone else',

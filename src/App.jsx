@@ -219,6 +219,18 @@ function riepilogoBonusCaratt(mappa) {
     .join(', ');
 }
 
+/**
+ * Slot di Maestria/Expertise (doppia competenza) disponibili a un certo livello:
+ * solo Ladro e Bardo la ottengono, in due tranche da 2 abilità ciascuna.
+ */
+function maestriaSlotDisponibili(classe, livello, versione = '2024') {
+  const k = chiaveClasse(classe);
+  const lv = Number(livello) || 1;
+  if (k === 'ladro') return lv >= 6 ? 4 : lv >= 1 ? 2 : 0;
+  if (k === 'bardo') return versione === '2014' ? (lv >= 10 ? 4 : lv >= 3 ? 2 : 0) : (lv >= 9 ? 4 : lv >= 2 ? 2 : 0);
+  return 0;
+}
+
 /** Livelli in cui la classe ottiene un Aumento dei Punteggi di Caratteristica. */
 function livelliASI(classe) {
   const c = coloreClasse(classe);
@@ -233,12 +245,24 @@ function livelliASI(classe) {
  * grezzi anche al 7°, che a D&D non succede mai).
  * Ritorna il numero di ASI applicati, così la creazione può dirlo all'utente.
  */
-function applicaASIFinoA(caratteristiche, classe, livello) {
-  const quanti = livelliASI(classe).filter((l) => l <= Math.max(1, Number(livello) || 1)).length;
-  if (!quanti) return 0;
+/**
+ * Applica gli ASI dei livelli già superati. Per ogni livello, se in `scelteTalento`
+ * c'è un nome di talento associato, quel livello diventa un talento invece del
+ * classico +2 (esattamente come la scelta "aumento o talento" del Level Up).
+ * Ritorna { applicati, talenti } così il chiamante sa quanti +2 sono scattati
+ * e quali talenti aggiungere al campo talenti.
+ */
+function applicaASIFinoA(caratteristiche, classe, livello, scelteTalento = {}) {
+  const livelli = livelliASI(classe).filter((l) => l <= Math.max(1, Number(livello) || 1));
+  if (!livelli.length) return { applicati: 0, talenti: [] };
   const prio = (coloreClasse(classe) && PRIORITA_CARATT[coloreClasse(classe).match[0]])
     || ['forza', 'destrezza', 'costituzione', 'intelligenza', 'saggezza', 'carisma'];
-  for (let i = 0; i < quanti; i += 1) {
+  let applicati = 0;
+  const talenti = [];
+  for (const lv of livelli) {
+    const talento = (scelteTalento[lv] || '').trim();
+    if (talento) { talenti.push(talento); continue; }
+    applicati += 1;
     let punti = 2; // ogni ASI vale +2, spalmati se la caratteristica tocca il tetto di 20
     for (const k of prio) {
       if (punti <= 0) break;
@@ -249,7 +273,7 @@ function applicaASIFinoA(caratteristiche, classe, livello) {
       punti -= dai;
     }
   }
-  return quanti;
+  return { applicati, talenti };
 }
 
 // Punti esperienza minimi per livello (identici nelle due edizioni).
@@ -1164,7 +1188,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.93.4';
+const APP_VERSION = '2.94.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1891,7 +1915,7 @@ export default function App() {
   const [mostraRipristino, setMostraRipristino] = useState(false); // modale "ripristina versione precedente"
   const [rinominando, setRinominando] = useState(false); // rinomina inline del PG attivo
   const [mostraCrea, setMostraCrea] = useState(false); // schermata di creazione guidata
-  const [bozzaCrea, setBozzaCrea] = useState({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' });
+  const [bozzaCrea, setBozzaCrea] = useState({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', dotazione: 'pacchetto' });
   // versione delle regole: '2024' (5.5, default) o '2014' (5.0)
   const [regoleVersione, setRegoleVersione] = useState(() => localStorage.getItem('scheda-interattiva:versione') || '2024');
   useEffect(() => {
@@ -2457,7 +2481,7 @@ export default function App() {
   }
 
   /** Genera un personaggio coerente da classe/specie/background (creazione guidata). */
-  function creaPersonaggio({ nome, sesso, classe, sottoclasse, specie, background, metodo, pool, assegna, competenzeClasse, competenzeSpecie, dotazione, livello }) {
+  function creaPersonaggio({ nome, sesso, classe, sottoclasse, specie, background, metodo, pool, assegna, competenzeClasse, competenzeSpecie, maestria, talentoOrigine, asiTalenti, multiclasseClasse2, dotazione, livello }) {
     const s = schedaVuota();
     // Livello iniziale scelto in creazione (1-20): impostato SUBITO così dado vita,
     // slot incantesimo e bonus di competenza vengono calcolati per quel livello.
@@ -2499,6 +2523,9 @@ export default function App() {
     (BACKGROUND_COMPETENZE[background] || []).forEach((k) => { s.abilita[k] = Math.max(s.abilita[k] || 0, 1); });
     (Array.isArray(competenzeClasse) ? competenzeClasse : []).forEach((k) => { if (k in s.abilita) s.abilita[k] = 2; });
     (Array.isArray(competenzeSpecie) ? competenzeSpecie : []).forEach((k) => { if (k in s.abilita) s.abilita[k] = 2; });
+    // Maestria/Expertise (Ladro, Bardo): doppia competenza (✦) sulle abilità scelte,
+    // già competenti per costruzione (l'interfaccia le propone solo fra quelle).
+    (Array.isArray(maestria) ? maestria : []).forEach((k) => { if (k in s.abilita) s.abilita[k] = 3; });
     // versione delle regole scelta per questo personaggio
     s.versione = regoleVersione;
     // Privilegi ottenuti fino al livello iniziale, secondo l'edizione scelta.
@@ -2516,8 +2543,13 @@ export default function App() {
       }
     }
     // Aumenti di caratteristica dei livelli già superati (4°, 8°, …): senza
-    // questi un PG creato al 7° livello resterebbe coi punteggi del 1°.
-    applicaASIFinoA(s.caratteristiche, classe, s.livello);
+    // questi un PG creato al 7° livello resterebbe coi punteggi del 1°. Ogni
+    // livello può diventare un talento invece del +2, secondo la scelta fatta
+    // nella creazione guidata (stesso meccanismo del Level Up).
+    const { talenti: talentiDaASI } = applicaASIFinoA(s.caratteristiche, classe, s.livello, asiTalenti || {});
+    // Talento di Origine (2024): il background ne dà uno già al 1° livello.
+    const talentiIniziali = [...(regoleVersione === '2024' && talentoOrigine ? [talentoOrigine] : []), ...talentiDaASI];
+    if (talentiIniziali.length) s.talenti = talentiIniziali.join('\n');
     // lingue iniziali (Comune + lingua a tema specie)
     s.lingue = lingueIniziali(specie);
     // bonus competenza coerente col livello (serve per gli attacchi iniziali)
@@ -2570,6 +2602,23 @@ export default function App() {
     const inc = incantesimiInizialiPerLivello(classe, s.livello, regoleVersione, s.caratteristiche);
     if (inc && (inc.trucchetti.length || inc.incantesimi.length)) {
       s.incantesimiLista = [...inc.trucchetti, ...inc.incantesimi];
+    }
+    // Multiclasse alla creazione: una seconda classe, sempre al 1° livello (lo
+    // scenario più comune per iniziare già multiclasse). Le competenze di
+    // addestramento/TS restano quelle della classe principale, come da regola
+    // (solo la prima classe presa dà le competenze piene): privilegi, dadi
+    // vita, slot e PF invece sommano anche la classe secondaria.
+    if (multiclasseClasse2 && multiclasseClasse2 !== classe) {
+      s.multiclasse = [{ classe: multiclasseClasse2, livello: 1 }];
+      s.dadiVita = calcolaFormulaDadiVita(classe, s.livello, s.multiclasse);
+      const privSecondaria = privilegiClasseFinoA(multiclasseClasse2, 1, regoleVersione);
+      if (privSecondaria) s.privilegi = [s.privilegi, `[${multiclasseClasse2}]`, privSecondaria].filter(Boolean).join('\n');
+      const slotMc = slotMulticlasse([{ classe, livello: s.livello }, { classe: multiclasseClasse2, livello: 1 }]);
+      if (slotMc) s.slotIncantesimo = slotMc;
+      const facce2 = dadoVitaClasse(multiclasseClasse2);
+      const conMod = modificatore(s.caratteristiche.costituzione);
+      s.pfMax += Math.floor(facce2 / 2) + 1 + conMod;
+      s.pfAttuali = s.pfMax;
     }
     // avatar e chiusura schermate
     s.ritratto = generaAvatar(classe, specie, s.nome);
@@ -4582,19 +4631,52 @@ export default function App() {
               }}>
                 {Array.from({ length: 20 }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{lingua === 'it' ? `Livello ${n}` : `Level ${n}`}</option>)}
               </select>
-              {/* Avviso sugli ASI dei livelli già superati: senza questa nota
-                  sembrerebbe che i punteggi tirati non vengano rispettati. */}
-              {(() => {
-                const asi = bozzaCrea.classe ? livelliASI(bozzaCrea.classe).filter((l) => l <= Number(bozzaCrea.livello || 1)) : [];
+              {/* Aumenti di caratteristica dei livelli già superati: per ognuno si
+                  può scegliere +2 automatico o un talento (come nel Level Up). */}
+              {bozzaCrea.classe && (() => {
+                const asi = livelliASI(bozzaCrea.classe).filter((l) => l <= Number(bozzaCrea.livello || 1));
                 if (!asi.length) return null;
+                const talentiOrdinati = [...TALENTI_5E].sort((a, b) => a.nome.localeCompare(b.nome, lingua));
                 return (
-                  <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 10px', marginTop: -6, marginBottom: 12, fontSize: 11, lineHeight: 1.5, color: C.inkDim }}>
-                    💪 {lingua === 'it'
-                      ? `${asi.length} ${asi.length > 1 ? 'aumenti' : 'aumento'} di caratteristica dal livello${asi.length > 1 ? 'i' : ''} ${asi.join(', ')}: +2 alle caratteristiche più utili alla classe (max 20). Puoi ritoccarli a mano nella scheda.`
-                      : `${asi.length} ability score increase${asi.length > 1 ? 's' : ''} from level${asi.length > 1 ? 's' : ''} ${asi.join(', ')}: +2 to the scores that matter most for the class (max 20). You can adjust them by hand on the sheet.`}
+                  <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', marginTop: -6, marginBottom: 12, fontSize: 11 }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: 6, color: C.inkDim }}>
+                      💪 {asi.length} {asi.length > 1 ? 'aumenti' : 'aumento'} di caratteristica (livello{asi.length > 1 ? 'i' : ''} {asi.join(', ')})
+                    </div>
+                    {asi.map((lv) => {
+                      const scelta = bozzaCrea.asiTalenti?.[lv] || '';
+                      return (
+                        <div key={lv} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' }}>
+                          <span style={{ minWidth: 44 }}>Liv. {lv}</span>
+                          <button
+                            style={{ ...styles.modeButton(!scelta), fontSize: 10, padding: '2px 7px' }}
+                            onClick={() => setB({ asiTalenti: { ...bozzaCrea.asiTalenti, [lv]: '' } })}
+                          >+2 auto</button>
+                          <select
+                            value={scelta}
+                            onChange={(e) => setB({ asiTalenti: { ...bozzaCrea.asiTalenti, [lv]: e.target.value } })}
+                            style={{ ...styles.inlineInput, fontSize: 11, padding: '2px 4px', flex: '1 1 150px', minWidth: 0 }}
+                          >
+                            <option value="">— o scegli un talento —</option>
+                            {talentiOrdinati.map((tl) => <option key={tl.nome} value={tl.nome}>{tl.nome}</option>)}
+                          </select>
+                        </div>
+                      );
+                    })}
+                    <div style={{ color: C.inkDim, marginTop: 2 }}>Il +2 va alle caratteristiche più utili alla classe (max 20); puoi ritoccare tutto a mano dopo la creazione.</div>
                   </div>
                 );
               })()}
+
+              {/* Talento di Origine (2024): il background lo concede già al 1° livello. */}
+              {regoleVersione === '2024' && bozzaCrea.background && (
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ ...styles.detail, display: 'block', marginBottom: 3, fontWeight: 'bold' }}>🎖️ Talento di Origine (dal background)</label>
+                  <select value={bozzaCrea.talentoOrigine} onChange={(e) => setB({ talentoOrigine: e.target.value })} style={stileSelect}>
+                    <option value="">{t('crea.scegli')}</option>
+                    {[...TALENTI_5E].sort((a, b) => a.nome.localeCompare(b.nome, lingua)).map((tl) => <option key={tl.nome} value={tl.nome}>{tl.nome} — {tl.desc}</option>)}
+                  </select>
+                </div>
+              )}
 
               {bozzaCrea.classe && Number(bozzaCrea.livello) >= livelloSceltaSottoclasse(bozzaCrea.classe, regoleVersione) && (
                 <>
@@ -4604,6 +4686,26 @@ export default function App() {
                     {[...sottoclassiPerClasse(bozzaCrea.classe)].sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
                   </select>
                 </>
+              )}
+
+              {/* Multiclasse: parte già con una seconda classe al 1° livello
+                  (lo scenario più comune per un PG multiclasse fin dall'inizio). */}
+              {bozzaCrea.classe && (
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontWeight: 'bold' }}>
+                    <input
+                      type="checkbox"
+                      checked={!!bozzaCrea.multiclasseClasse2}
+                      onChange={(e) => setB({ multiclasseClasse2: e.target.checked ? (NOMI_CLASSI.find((n) => n !== bozzaCrea.classe) || '') : '' })}
+                    />
+                    ➕ {lingua === 'it' ? 'Multiclasse: aggiungi una seconda classe (1° livello)' : 'Multiclass: add a second class (level 1)'}
+                  </label>
+                  {bozzaCrea.multiclasseClasse2 && (
+                    <select style={{ ...stileSelect, marginTop: 6 }} value={bozzaCrea.multiclasseClasse2} onChange={(e) => setB({ multiclasseClasse2: e.target.value })}>
+                      {[...NOMI_CLASSI].filter((n) => n !== bozzaCrea.classe).sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                  )}
+                </div>
               )}
 
               <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{t('crea.background')}</label>
@@ -4687,6 +4789,42 @@ export default function App() {
                         );
                       })}
                     </div>
+                  </div>
+                );
+              })()}
+
+              {/* Maestria/Expertise (Ladro, Bardo): doppia competenza fra le abilità già scelte. */}
+              {(() => {
+                const nMaestria = maestriaSlotDisponibili(bozzaCrea.classe, bozzaCrea.livello, regoleVersione);
+                if (!nMaestria) return null;
+                const bgSkills = BACKGROUND_COMPETENZE[bozzaCrea.background] || [];
+                const pool = [...new Set([...bgSkills, ...(bozzaCrea.competenzeClasse || []), ...(bozzaCrea.competenzeSpecie || [])])];
+                const scelte = bozzaCrea.maestria || [];
+                const pieno = scelte.length >= nMaestria;
+                const toggle = (k) => {
+                  if (scelte.includes(k)) setB({ maestria: scelte.filter((x) => x !== k) });
+                  else if (!pieno) setB({ maestria: [...scelte, k] });
+                };
+                return (
+                  <div style={{ marginBottom: 14 }}>
+                    <label style={{ ...styles.detail, display: 'block', marginBottom: 4, fontWeight: 'bold' }}>
+                      ✦ {lingua === 'it' ? 'Maestria' : 'Expertise'} ({lingua === 'it' ? 'doppia competenza' : 'double proficiency'}) — {t('crea.scegli_n')} {nMaestria} <span style={{ fontWeight: 'normal', color: pieno ? C.green : C.inkDim }}>({scelte.length}/{nMaestria})</span>
+                    </label>
+                    {!pool.length ? (
+                      <div style={{ ...styles.detail, fontSize: 11 }}>{lingua === 'it' ? 'Scegli prima le competenze di background/classe/specie: la Maestria si applica solo ad abilità già competenti.' : 'Choose background/class/species proficiencies first: Expertise only applies to skills you are already proficient in.'}</div>
+                    ) : (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                        {pool.map((k) => {
+                          const lab = t('skill.' + k);
+                          const sel = scelte.includes(k);
+                          return (
+                            <button key={k} disabled={!sel && pieno} onClick={() => toggle(k)} style={{ ...styles.modeButton(sel), fontSize: 11, padding: '3px 8px' }}>
+                              {sel ? '✦ ' : ''}{lab}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 );
               })()}
@@ -4927,6 +5065,7 @@ export default function App() {
                 ['👆👆', t('guida.doppio_t'), t('guida.doppio_d')],
                 ['🎲', t('guida.dadi_t'), t('guida.dadi_d')],
                 ['🛟', t('guida.backup_t'), t('guida.backup_d')],
+                ...(URL_ARCHIVIO_PG ? [['🗄️', t('guida.archivio_t'), t('guida.archivio_d')]] : []),
               ].map(([icona, titolo, desc]) => (
                 <div key={titolo} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px' }}>
                   <span style={{ fontSize: 20, lineHeight: 1.2, flexShrink: 0 }} aria-hidden>{icona}</span>
@@ -6138,7 +6277,7 @@ export default function App() {
                         as="div"
                         key={a.key}
                         style={{ ...styles.skillRow(true), opacity: liv === 0 ? 0.5 : 1 }}
-                        title={`Tieni premuto e rilascia: prova di ${t('skill.' + a.key)} · click sul pallino: niente → competenza (●) → competenza di classe/razza (★)`}
+                        title={`Tieni premuto e rilascia: prova di ${t('skill.' + a.key)} · click sul pallino: niente → competenza (●) → competenza di classe/razza (★) → Maestria/Expertise, doppia competenza (✦)`}
                         onRoll={() => lanciaD20(`${t('skill.' + a.key)}`, bonus)}
                       >
                         <span
@@ -6146,10 +6285,10 @@ export default function App() {
                           onPointerDown={(e) => e.stopPropagation()}
                           onClick={(e) => {
                             e.stopPropagation();
-                            aggiorna({ abilita: { ...scheda.abilita, [a.key]: liv === 0 ? 1 : liv === 1 ? 2 : 0 } });
+                            aggiorna({ abilita: { ...scheda.abilita, [a.key]: liv === 0 ? 1 : liv === 1 ? 2 : liv === 2 ? 3 : 0 } });
                           }}
                         >
-                          {liv === 2 ? '★\uFE0E' : liv === 1 ? '●' : '○'}
+                          {liv === 3 ? '✦' : liv === 2 ? '★\uFE0E' : liv === 1 ? '●' : '○'}
                         </span>
                         <strong style={{ width: 32 }}>{conSegno(bonus)}</strong>
                         <span>{t('skill.' + a.key)}</span>
@@ -6563,11 +6702,12 @@ export default function App() {
             {/* Incantesimi — sezione collassabile */}
             <Sezione
               titolo={t("sez.incantesimi")}
+              className="sezione-magia"
               {...propsSez('incantesimi')}
               {...apertoProps('incantesimi', !!(caratteristicaIncantatore || (scheda.incantesimiLista || []).length > 0))}
               azioni={(
                 // Nella riga del titolo: recupera l'altezza di una riga intera.
-                <label style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, textTransform: 'none', letterSpacing: 0 }}>
+                <label className="magia-caratteristica" style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, textTransform: 'none', letterSpacing: 0 }}>
                   {t('spell.caratteristica')}{' '}
                   <select
                     style={{ ...styles.inlineInput, padding: '3px 6px', fontSize: 12 }}

@@ -277,9 +277,10 @@ export const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     fontSize: 15,
-    // competenza chiara a colpo d'occhio: verde pieno = competente, oro = maestria,
+    // competenza chiara a colpo d'occhio: verde pieno = competente, oro = origine
+    // di classe/razza, oro acceso = Maestria/Expertise (doppia competenza),
     // anello tenue = non competente (così non sembrano tutte "accese")
-    color: livello === 2 ? '#d4af37' : livello === 1 ? C.green : C.inkDim,
+    color: livello === 3 ? '#e0b010' : livello === 2 ? '#d4af37' : livello === 1 ? C.green : C.inkDim,
     cursor: 'pointer',
     userSelect: 'none',
   }),
@@ -654,6 +655,19 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .app-header-language { grid-template-columns: 1fr; max-width: 100px !important; align-self: center; }
 }
 @media (max-width: 560px) {
+  /* Magia: il selettore della caratteristica non condivide più la riga del
+     titolo. Prima la griglia a tre colonne lo faceva sovrapporre a “Magia”. */
+  .sezione-magia > .sezione-titolo {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
+  }
+  .sezione-magia .sezione-titolo-sinistra { grid-column: 1; grid-row: 1; }
+  .sezione-magia .sezione-titolo-testo { grid-column: 2; grid-row: 1; justify-self: center; }
+  .sezione-magia .sezione-titolo-azioni {
+    grid-column: 1 / -1; grid-row: 2; justify-self: stretch; width: 100%;
+  }
+  .magia-caratteristica { justify-content: space-between; width: 100%; }
+  .magia-caratteristica select { flex: 1 1 150px; min-width: 0; max-width: 210px; }
   /* su schermi stretti: titolo su una riga sopra, poi ciascun gruppo di pulsanti
      su una propria riga a piena larghezza, centrata e ordinata */
   .app-header { display: flex; flex-direction: column; align-items: stretch; }
