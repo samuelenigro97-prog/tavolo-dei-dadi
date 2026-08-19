@@ -237,11 +237,17 @@ async function gestisciArchivio(request, env, headers, percorso) {
       return new Response(JSON.stringify({ error: 'Scheda troppo grande' }), { status: 413, headers });
     }
     const chiave = `pg:${dispositivo}:${idPg}`;
-    // I metadati alimentano l'elenco senza dover leggere ogni scheda intera.
+    // I metadati alimentano l'elenco senza dover leggere ogni scheda intera:
+    // il DM vede già l'essenziale a colpo d'occhio, senza aprire ogni scheda.
     const metadata = {
       nome: String(scheda.nome || '').slice(0, 60),
       classe: String(scheda.classe || '').slice(0, 40),
+      sottoclasse: String(scheda.sottoclasse || '').slice(0, 40),
+      specie: String(scheda.specie || '').slice(0, 40),
+      background: String(scheda.background || '').slice(0, 40),
       livello: Number(scheda.livello) || 1,
+      pfMax: Number(scheda.pfMax) || 0,
+      pfAttuali: Number(scheda.pfAttuali) || 0,
       dispositivo,
       aggiornato: new Date().toISOString(),
     };
