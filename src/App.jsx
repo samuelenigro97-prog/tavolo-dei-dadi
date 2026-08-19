@@ -706,7 +706,7 @@ const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(I
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -1188,7 +1188,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.94.0';
+const APP_VERSION = '2.94.1';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -6477,19 +6477,14 @@ export default function App() {
                 {(() => {
                   const attacchiSpettro = (scheda.incantesimiLista || []).filter((s) => {
                     if (scheda.mostraIncantesimiAttacco === false || s.nascondiAttacco) return false;
-                    const d = dettagliIncantesimo(s.nome) || {};
-                    const db = datiIncantesimo(s.nome) || {};
-                    const desc = (s.note || '') + ' ' + (db.desc || '');
-                    const danno = s.danno || d.danno || '';
-                    const area = s.area || d.area || '';
-                    return Boolean(danno || area || /attacco magico|tiro per colpire|ts \w+|tiro salvezza|danni/i.test(desc));
+                    return classificaIncantesimoCombattimento(s).mostraInCombattimento;
                   }).map((s) => {
                     const d = dettagliIncantesimo(s.nome) || {};
                     const db = datiIncantesimo(s.nome) || {};
-                    const desc = (s.note || '') + ' ' + (db.desc || '');
+                    const desc = (s.note || '') + ' ' + (spiegaIncantesimo(s.nome) || '');
                     const danno = s.danno || d.danno || '';
                     const tipoDanno = s.tipoDanno || d.tipoDanno || '';
-                    const isTS = /ts (\w+)|tiro salvezza/i.test(desc);
+                    const { isTS } = classificaIncantesimoCombattimento(s);
                     const tsMatch = desc.match(/ts\s+(destrezza|saggezza|costituzione|forza|intelligenza|carisma)/i);
                     const nomeTS = tsMatch ? ` (TS ${tsMatch[1].charAt(0).toUpperCase() + tsMatch[1].slice(1)})` : isTS ? ' (TS)' : '';
                     

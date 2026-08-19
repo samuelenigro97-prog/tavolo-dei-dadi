@@ -12,6 +12,7 @@ import {
   coloreClasse, chiaveClasse, slotDaClasseLivello, livelloIncantatoreCombinato,
   slotMulticlasse, asiAlLivello, privilegiClasseLivello, privilegiClasseFinoA,
   sottoclasseLivPer, trucchettiMax, incantesimiMaxAuto, caratteristicaIncantatoreEffettiva,
+  classificaIncantesimoCombattimento,
 } from '../src/rules/regole.js';
 
 // --- Helper: sostituisce Math.random con una coda di valori deterministici ---
@@ -320,4 +321,29 @@ test('catalogo preparabili: solo classi preparatrici, senza trucchetti e senza d
   assert.ok(catalogo.every((s) => s.livello >= 1));
   assert.equal(new Set(catalogo.map((s) => `${s.livello}:${s.nome.toLowerCase()}`)).size, catalogo.length);
   assert.ok(catalogo.some((s) => s.nome === 'Dardo Incantato' && s.livello === 1));
+});
+
+test('classificaIncantesimoCombattimento: una cura non è un attacco', () => {
+  // Bug reale: Cura Ferite/Cura Ferite di Massa finivano nella tabella
+  // Combattimento con un bonus di attacco finto, perché usano il campo
+  // "danno" anche per i dadi di guarigione.
+  const cura = classificaIncantesimoCombattimento({ nome: 'Cura Ferite', danno: '2d8', tipoDanno: 'Guarigione' });
+  assert.equal(cura.mostraInCombattimento, false);
+  const curaMassa = classificaIncantesimoCombattimento({ nome: 'Cura Ferite di Massa', danno: '3d8', tipoDanno: 'Guarigione' });
+  assert.equal(curaMassa.mostraInCombattimento, false);
+});
+
+test('classificaIncantesimoCombattimento: un incantesimo a tiro salvezza mostra la CD, non un bonus finto', () => {
+  // Bug reale: Intralciare (TS Forza) veniva etichettato "Attacco Magico" con
+  // un bonus di attacco, perché datiIncantesimo() non riporta la descrizione
+  // e isTS non trovava mai "tiro salvezza" nel testo.
+  const r = classificaIncantesimoCombattimento({ nome: 'Intralciare' });
+  assert.equal(r.mostraInCombattimento, true);
+  assert.equal(r.isTS, true);
+});
+
+test('classificaIncantesimoCombattimento: un vero attacco magico resta un attacco', () => {
+  const r = classificaIncantesimoCombattimento({ nome: 'Frusta di Spine', danno: '1d6', tipoDanno: 'Perforante' });
+  assert.equal(r.mostraInCombattimento, true);
+  assert.equal(r.isTS, false);
 });

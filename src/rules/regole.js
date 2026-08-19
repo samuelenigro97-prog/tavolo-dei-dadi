@@ -179,6 +179,28 @@ export function dettagliIncantesimo(nome) {
   };
 }
 
+/**
+ * Un incantesimo va mostrato nella tabella "Combattimento" solo se richiede
+ * un tiro per colpire o un tiro salvezza — una cura non è un attacco, non ha
+ * senso mostrarla con un bonus di attacco finto. `isTS` distingue i due casi:
+ * true → mostra la CD dell'incantesimo, false → mostra il bonus di attacco.
+ *
+ * datiIncantesimo() non riporta la descrizione (per non duplicare il testo),
+ * quindi per riconoscere "tiro salvezza" nel testo serve spiegaIncantesimo().
+ */
+export function classificaIncantesimoCombattimento(s) {
+  const db = datiIncantesimo(s?.nome) || {};
+  const tipoDanno = s?.tipoDanno || db.tipoDanno || '';
+  if (tipoDanno === 'Guarigione') return { mostraInCombattimento: false, isTS: false };
+  const d = dettagliIncantesimo(s?.nome) || {};
+  const desc = (s?.note || '') + ' ' + (spiegaIncantesimo(s?.nome) || '');
+  const danno = s?.danno || d.danno || '';
+  const area = s?.area || d.area || '';
+  const mostraInCombattimento = Boolean(danno || area || /attacco magico|tiro per colpire|ts \w+|tiro salvezza|danni/i.test(desc));
+  const isTS = /ts (\w+)|tiro salvezza/i.test(desc);
+  return { mostraInCombattimento, isTS };
+}
+
 export function pesoStimato(nome) {
   if (!nome) return 0;
   if (PESI_OGGETTI[nome] != null) return PESI_OGGETTI[nome];
