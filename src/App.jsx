@@ -6,7 +6,7 @@ import { avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro, s
 import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI } from './ui/tema.js';
 import { styles, GLOBAL_CSS } from './ui/stili.js';
 import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, Sezione, CampoBloccato } from './ui/componenti.jsx';
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, punteggioCaratteristica } from './rules/scheda.js';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { codificaScheda, decodificaScheda, preparaPerCondivisione, costruisciLink, payloadDaUrl, LIMITE_PAYLOAD } from './utils/condivisione.js';
@@ -1226,7 +1226,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.96.0';
+const APP_VERSION = '2.96.1';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1933,6 +1933,13 @@ export default function App() {
   const [listaMagicaMinimizzata, setListaMagicaMinimizzata] = useState(false);
   const [filtroInventario, setFiltroInventario] = useState('');
   const [effettoInventarioAperto, setEffettoInventarioAperto] = useState(null);
+  const [fonteTsAperta, setFonteTsAperta] = useState(null); // { key, top, left } del menu "da cosa deriva il bonus TS" aperto
+  useEffect(() => {
+    if (!fonteTsAperta) return;
+    const chiudi = () => setFonteTsAperta(null);
+    window.addEventListener('click', chiudi);
+    return () => window.removeEventListener('click', chiudi);
+  }, [fonteTsAperta]);
   const [addLivIncantesimo, setAddLivIncantesimo] = useState(0); // livello scelto nella barra "aggiungi"
   const [addBonusIncantesimo, setAddBonusIncantesimo] = useState(false); // aggiungi come incantesimo bonus ✦
   const [espressioneLibera, setEspressioneLibera] = useState('');
@@ -4765,7 +4772,14 @@ export default function App() {
             onClick={(e) => { if (e.target === e.currentTarget) setMostraCrea(false); }}
           >
             <div style={{ ...styles.panel, maxWidth: 460, width: '100%', maxHeight: '88vh', overflowY: 'auto' }}>
-              <h1 style={{ ...styles.title, marginBottom: 12 }}>{t('menu.nuovo_personaggio')}</h1>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12, position: 'relative' }}>
+                <h1 style={{ ...styles.title, margin: 0 }}>{t('menu.nuovo_personaggio')}</h1>
+                <button
+                  style={{ ...styles.buttonMini, position: 'absolute', right: 0, borderRadius: '50%', width: 26, height: 26, padding: 0, fontWeight: 'bold' }}
+                  title={lingua === 'it' ? 'Come funziona l’app (tutorial)' : 'How the app works (tutorial)'}
+                  onClick={() => setMostraGuida(true)}
+                >ℹ️</button>
+              </div>
 
               <div style={{ display: 'flex', gap: 6, justifyContent: 'center', alignItems: 'center', marginBottom: 14 }}>
                 <span style={styles.detail}>{t('crea.versione')}</span>
@@ -6490,7 +6504,7 @@ export default function App() {
 
                   <Rollable
                     as="div"
-                    style={{ ...styles.skillRow(true), opacity: scheda.tiriSalvezza[key] ? 1 : 0.5 }}
+                    style={{ ...styles.skillRow(true), opacity: scheda.tiriSalvezza[key] ? 1 : 0.5, position: 'relative' }}
                     title={`Tieni premuto e rilascia: tiro salvezza di ${t('attr.' + key)} · click sul pallino: competenza`}
                     onRoll={() => lanciaD20(`Tiro salvezza: ${t('attr.' + key)}`, bonusTS)}
                   >
@@ -6506,6 +6520,38 @@ export default function App() {
                     </span>
                     <strong style={{ width: 32 }}>{conSegno(bonusTS)}</strong>
                     <em>{t('attr.tiro_salvezza')}</em>
+                    {(() => {
+                      const bonusOggettiTS = bonusTiriSalvezzaOggetti(scheda);
+                      if (!bonusOggettiTS) return null;
+                      const fontiTS = oggettiConEffettoAttivo(scheda).filter((o) => o.effettoMeccanico === 'classe_armatura_tiri_salvezza_1' || /^tiri_salvezza_[123]$/.test(o.effettoMeccanico));
+                      return (
+                        <span style={{ marginLeft: 'auto' }}>
+                          <button
+                            type="button"
+                            onPointerDown={(e) => e.stopPropagation()}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const r = e.currentTarget.getBoundingClientRect();
+                              setFonteTsAperta((v) => (v && v.key === key ? null : { key, top: r.bottom + 4, left: r.right }));
+                            }}
+                            title={t('inv.fonte_bonus_tip')}
+                            style={{ ...styles.buttonMini, fontSize: 10, padding: '0 5px', height: 18, lineHeight: '16px', color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.12)' }}
+                          >✨ +{bonusOggettiTS}</button>
+                          {fonteTsAperta?.key === key && (
+                            <div
+                              onPointerDown={(e) => e.stopPropagation()}
+                              onClick={(e) => e.stopPropagation()}
+                              style={{ position: 'fixed', top: fonteTsAperta.top, left: fonteTsAperta.left, transform: 'translateX(-100%)', zIndex: 1050, background: C.panel, border: `1px solid ${C.gold}`, borderRadius: 8, padding: '6px 10px', minWidth: 170, boxShadow: '0 6px 18px rgba(0,0,0,0.35)', fontSize: 11, textAlign: 'left' }}
+                            >
+                              <div style={{ fontWeight: 'bold', marginBottom: 4, color: C.inkDim }}>{t('inv.fonte_bonus')}:</div>
+                              {fontiTS.length
+                                ? fontiTS.map((o) => <div key={o.id} style={{ whiteSpace: 'nowrap' }}>🎒 {o.nome}</div>)
+                                : <div style={{ color: C.inkDim }}>—</div>}
+                            </div>
+                          )}
+                        </span>
+                      );
+                    })()}
                   </Rollable>
 
                   {abilitaDellaCar.map((a) => {
