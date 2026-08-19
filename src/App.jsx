@@ -1226,7 +1226,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.97.0';
+const APP_VERSION = '2.97.1';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1682,23 +1682,6 @@ function ArchivioDm({ url, onChiudi, onApri }) {
     }
   };
 
-  const [inEliminazione, setInEliminazione] = useState(null);
-  const elimina = async (id, nome) => {
-    if (!window.confirm(`Eliminare definitivamente "${nome || '(senza nome)'}" dall'Archivio DM? Non tocca la scheda sul dispositivo del giocatore.`)) return;
-    setInEliminazione(id);
-    try {
-      const r = await fetch(`${base}/pg/${encodeURIComponent(id)}?key=${encodeURIComponent(chiave)}`, { method: 'DELETE' });
-      const d = await r.json().catch(() => ({}));
-      if (!r.ok) { setStato(d.error || `Errore ${r.status}`); return; }
-      setElenco((el) => (el || []).filter((s) => s.id !== id));
-      setDettagliAperti((d2) => { const n = { ...d2 }; delete n[id]; return n; });
-    } catch (e) {
-      setStato(`Connessione fallita: ${e.message}`);
-    } finally {
-      setInEliminazione(null);
-    }
-  };
-
   const quando = (iso) => {
     if (!iso) return '—';
     try { return new Date(iso).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); }
@@ -1773,14 +1756,6 @@ function ArchivioDm({ url, onChiudi, onApri }) {
                           {dett && dett !== 'carico' ? '▲ Dettagli' : '▼ Dettagli'}
                         </button>
                         <button style={styles.buttonMini} onClick={() => apri(s.id)}>Apri</button>
-                        <button
-                          style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }}
-                          onClick={() => elimina(s.id, s.nome)}
-                          disabled={inEliminazione === s.id}
-                          title="Toglie questa scheda dall'Archivio DM (non tocca il dispositivo del giocatore)"
-                        >
-                          {inEliminazione === s.id ? '…' : '🗑️'}
-                        </button>
                       </div>
                     </div>
                     {dett === 'carico' && <div style={{ ...styles.detail, fontSize: 12, marginTop: 6 }}>Caricamento…</div>}
