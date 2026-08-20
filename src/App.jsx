@@ -2337,9 +2337,14 @@ export default function App() {
       t.title = colore;
       t.gold = colore;
       t.goldDark = colore;
-      // tonalità: sfondo, pannelli e bordi virano leggermente verso il colore classe
-      t.bg = mescola(t.bg, colore, scuroEff ? 0.07 : 0.05);
-      t.panelLight = mescola(t.panelLight, colore, scuroEff ? 0.1 : 0.06);
+      // tonalità: bordi sempre, sfondo e pannelli solo in tema scuro. In tema
+      // chiaro, intonare anche lo sfondo verso colori "caldi" (rosso, arancio,
+      // cremisi) lo appiattisce contro il crema di base: restano quindi
+      // neutri, e solo testo/bordi portano il colore della classe.
+      if (scuroEff) {
+        t.bg = mescola(t.bg, colore, 0.07);
+        t.panelLight = mescola(t.panelLight, colore, 0.1);
+      }
       t.border = mescola(t.border, colore, 0.2);
     }
     const root = document.documentElement;
@@ -6832,12 +6837,12 @@ export default function App() {
                                 <div
                                   onPointerDown={(e) => e.stopPropagation()}
                                   onClick={(e) => e.stopPropagation()}
-                                  style={{ position: 'fixed', top: fontePopover.top, left: fontePopover.left, transform: 'translateX(-100%)', zIndex: 1050, background: C.panel, border: `1px solid ${C.gold}`, borderRadius: 8, padding: '6px 10px', minWidth: 170, boxShadow: '0 6px 18px rgba(0,0,0,0.35)', fontSize: 11, textAlign: 'left', fontWeight: 'normal' }}
+                                  style={{ position: 'fixed', top: fontePopover.top, left: fontePopover.left, transform: 'translateX(-100%)', zIndex: 1050, background: '#1c150f', border: `2px solid ${C.gold}`, borderRadius: 8, padding: '6px 10px', minWidth: 170, boxShadow: '0 6px 18px rgba(0,0,0,0.55)', fontSize: 11, textAlign: 'left', fontWeight: 'normal' }}
                                 >
-                                  <div style={{ fontWeight: 'bold', marginBottom: 4, color: C.inkDim }}>{t('inv.fonte_bonus')}:</div>
+                                  <div style={{ fontWeight: 'bold', marginBottom: 4, color: '#c9bfa8' }}>{t('inv.fonte_bonus')}:</div>
                                   {fontiCar.length
-                                    ? fontiCar.map((o) => <div key={o.id} style={{ whiteSpace: 'nowrap' }}>🎒 {o.nome}</div>)
-                                    : <div style={{ color: C.inkDim }}>—</div>}
+                                    ? fontiCar.map((o) => <div key={o.id} style={{ whiteSpace: 'nowrap', color: '#f0e6d2' }}>🎒 {o.nome}</div>)
+                                    : <div style={{ color: '#c9bfa8' }}>—</div>}
                                 </div>
                               )}
                             </span>
@@ -6886,12 +6891,12 @@ export default function App() {
                             <div
                               onPointerDown={(e) => e.stopPropagation()}
                               onClick={(e) => e.stopPropagation()}
-                              style={{ position: 'fixed', top: fontePopover.top, left: fontePopover.left, transform: 'translateX(-100%)', zIndex: 1050, background: C.panel, border: `1px solid ${C.gold}`, borderRadius: 8, padding: '6px 10px', minWidth: 170, boxShadow: '0 6px 18px rgba(0,0,0,0.35)', fontSize: 11, textAlign: 'left' }}
+                              style={{ position: 'fixed', top: fontePopover.top, left: fontePopover.left, transform: 'translateX(-100%)', zIndex: 1050, background: '#1c150f', border: `2px solid ${C.gold}`, borderRadius: 8, padding: '6px 10px', minWidth: 170, boxShadow: '0 6px 18px rgba(0,0,0,0.55)', fontSize: 11, textAlign: 'left' }}
                             >
-                              <div style={{ fontWeight: 'bold', marginBottom: 4, color: C.inkDim }}>{t('inv.fonte_bonus')}:</div>
+                              <div style={{ fontWeight: 'bold', marginBottom: 4, color: '#c9bfa8' }}>{t('inv.fonte_bonus')}:</div>
                               {fontiTS.length
-                                ? fontiTS.map((o) => <div key={o.id} style={{ whiteSpace: 'nowrap' }}>🎒 {o.nome}</div>)
-                                : <div style={{ color: C.inkDim }}>—</div>}
+                                ? fontiTS.map((o) => <div key={o.id} style={{ whiteSpace: 'nowrap', color: '#f0e6d2' }}>🎒 {o.nome}</div>)
+                                : <div style={{ color: '#c9bfa8' }}>—</div>}
                             </div>
                           )}
                         </span>
