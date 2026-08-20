@@ -821,6 +821,25 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   50% { background: #2e8b57; border-color: #2e8b57; color: #fff; box-shadow: 0 0 12px 2px rgba(46,139,87,0.75); }
 }
 
+/* Nuvoletta "Bonus dato da": tooltip INVERTITO rispetto al tema, così
+   risalta sempre. Un fondo scuro su tema scuro spariva contro lo sfondo
+   della pagina (contrasto 1.02) proprio quando la nuvoletta cadeva nello
+   spazio fra due riquadri: sembrava trasparente. */
+.popover-fonte {
+  background: #241c12;
+  color: #f6efe2;
+  border: 1px solid #241c12;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.45);
+}
+.popover-fonte .popover-titolo { color: #cbbfa6; }
+:root[data-tema="scuro"] .popover-fonte {
+  background: #f3ead9;
+  color: #241c12;
+  border-color: #f3ead9;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.75);
+}
+:root[data-tema="scuro"] .popover-fonte .popover-titolo { color: #6b5c42; }
+
 /* ------------------------------------------------------------------ */
 /* STAMPA / PDF                                                        */
 /* "Stampa" del browser (o "Salva come PDF") produce la sola scheda:   */
