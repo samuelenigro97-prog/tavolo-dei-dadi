@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { ICONE_CLASSE, ICONE_SPECIE } from './ritratti';
 import { t, setLinguaAttuale, DIZIONARIO, traduciDato } from './i18n';
@@ -1233,7 +1234,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.5.1';
+const APP_VERSION = '3.5.2';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -6923,7 +6924,7 @@ export default function App() {
                                 title={t('inv.fonte_bonus_tip')}
                                 style={{ marginLeft: 4, fontSize: 15, fontWeight: 'bold', color: C.goldDark, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                               >→ {punteggioEffettivo}</button>
-                              {fontePopover?.tipo === 'car' && fontePopover.key === key && (
+                              {fontePopover?.tipo === 'car' && fontePopover.key === key && createPortal(
                                 <div
                                   onPointerDown={(e) => e.stopPropagation()}
                                   onClick={(e) => e.stopPropagation()}
@@ -6933,7 +6934,8 @@ export default function App() {
                                   {fontiCar.length
                                     ? fontiCar.map((o) => <div key={o.id}>🎒 {o.nome}</div>)
                                     : <div className="popover-titolo">—</div>}
-                                </div>
+                                </div>,
+                                document.body
                               )}
                             </span>
                           );
@@ -6977,7 +6979,7 @@ export default function App() {
                             title={t('inv.fonte_bonus_tip')}
                             style={{ ...styles.buttonMini, fontSize: 10, padding: '0 5px', height: 18, lineHeight: '16px', color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.12)' }}
                           >✨ +{bonusOggettiTS}</button>
-                          {fontePopover?.tipo === 'ts' && fontePopover.key === key && (
+                          {fontePopover?.tipo === 'ts' && fontePopover.key === key && createPortal(
                             <div
                               onPointerDown={(e) => e.stopPropagation()}
                               onClick={(e) => e.stopPropagation()}
@@ -6987,7 +6989,8 @@ export default function App() {
                               {fontiTS.length
                                 ? fontiTS.map((o) => <div key={o.id}>🎒 {o.nome}</div>)
                                 : <div className="popover-titolo">—</div>}
-                            </div>
+                            </div>,
+                            document.body
                           )}
                         </span>
                       );
