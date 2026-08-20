@@ -10,6 +10,7 @@ import { modificatore } from './dadi.js';
 import { spiegaIncantesimo } from '../data/spiegazioni.js';
 import { INCANTESIMI_DB, datiIncantesimo } from '../data/incantesimi.js';
 import { ABILITA, CARATTERISTICHE } from '../data/caratteristiche.js';
+import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from '../data/condizioni.js';
 
 /** Restituisce 'guerriero'/'ladro' se la scheda è un "terzo incantatore" (la
  *  sottoclasse specifica, non l'intera classe: un Campione o un Assassino non
@@ -411,4 +412,92 @@ export function controlliScheda(scheda) {
   }
 
   return risultati;
+}
+
+/**
+ * Risorse di classe dopo un riposo. Nel modello `attuali` sono gli usi ANCORA
+ * DISPONIBILI (una risorsa nasce con attuali = max e il pulsante "−" spende),
+ * quindi un riposo le riporta al massimo: non le azzera.
+ * `tipo` è 'lungo' (ricarica tutto ciò che ha un reset) o 'breve' (solo le
+ * risorse che si ricaricano con il riposo breve).
+ */
+export function risorseDopoRiposo(risorse, tipo) {
+  return (Array.isArray(risorse) ? risorse : []).map((r) => {
+    if (!r || !r.reset) return r;
+    if (tipo === 'breve' && r.reset !== 'breve') return r;
+    const max = Math.max(0, Number(r.max) || 0);
+    return { ...r, attuali: max };
+  });
+}
+
+/**
+ * Fonte di Magia (Stregone): costo in Punti Stregoneria per creare uno slot.
+ * Stessa tabella nella 5.0 e nella 5.5; oltre il 5° livello non si può.
+ */
+export const COSTO_SLOT_IN_PUNTI = { 1: 2, 2: 3, 3: 5, 4: 6, 5: 7 };
+
+/** Livelli di slot che la Fonte di Magia può creare, dal più economico. */
+export const LIVELLI_CONVERTIBILI = [1, 2, 3, 4, 5];
+
+function slotDi(slotIncantesimo, livello) {
+  const v = (slotIncantesimo || {})[livello] || (slotIncantesimo || {})[String(livello)];
+  return { totale: Math.max(0, Number(v?.totale) || 0), spesi: Math.max(0, Number(v?.spesi) || 0) };
+}
+
+/**
+ * Spende Punti Stregoneria per recuperare uno slot già speso di quel livello.
+ * Modelliamo il recupero di uno slot speso (non uno slot in più): il totale
+ * degli slot dipende da classe e livello, quindi aumentarlo resterebbe anche
+ * dopo il riposo lungo, che azzera solo gli slot spesi.
+ * Ritorna { ok: false, motivo } oppure { ok: true, slotIncantesimo, punti }.
+ */
+export function puntiVersoSlot(slotIncantesimo, punti, livello) {
+  const costo = COSTO_SLOT_IN_PUNTI[livello];
+  if (!costo) return { ok: false, motivo: 'La Fonte di Magia crea slot solo fino al 5° livello.' };
+  const disponibili = Math.max(0, Number(punti) || 0);
+  if (disponibili < costo) return { ok: false, motivo: `Servono ${costo} Punti Stregoneria, ne hai ${disponibili}.` };
+  const s = slotDi(slotIncantesimo, livello);
+  if (s.totale === 0) return { ok: false, motivo: `Non hai slot di ${livello}° livello sulla scheda.` };
+  if (s.spesi === 0) return { ok: false, motivo: `Hai già tutti gli slot di ${livello}° livello disponibili.` };
+  return {
+    ok: true,
+    punti: disponibili - costo,
+    slotIncantesimo: { ...slotIncantesimo, [livello]: { ...s, spesi: s.spesi - 1 } },
+  };
+}
+
+/**
+ * Spende uno slot disponibile per ottenere Punti Stregoneria pari al suo livello.
+ * I punti non possono superare il massimo della riserva.
+ */
+export function slotVersoPunti(slotIncantesimo, punti, puntiMax, livello) {
+  const liv = Number(livello) || 0;
+  if (liv < 1) return { ok: false, motivo: 'Livello di slot non valido.' };
+  const s = slotDi(slotIncantesimo, liv);
+  const disponibili = s.totale - s.spesi;
+  if (disponibili <= 0) return { ok: false, motivo: `Non hai slot di ${liv}° livello disponibili.` };
+  const attuali = Math.max(0, Number(punti) || 0);
+  const max = Math.max(0, Number(puntiMax) || 0);
+  if (attuali >= max) return { ok: false, motivo: 'La riserva di Punti Stregoneria è già piena.' };
+  return {
+    ok: true,
+    punti: Math.min(max, attuali + liv),
+    slotIncantesimo: { ...slotIncantesimo, [liv]: { ...s, spesi: s.spesi + 1 } },
+  };
+}
+
+/**
+ * Riepilogo degli effetti meccanici delle condizioni attive. Restituisce una
+ * riga per ogni effetto in gioco, con l'elenco delle condizioni che lo causano
+ * (così si capisce da dove arriva lo svantaggio, e cosa resta se ne togli una).
+ * Ordine stabile: quello di ETICHETTE_EFFETTI, non quello di inserimento.
+ */
+export function riepilogoCondizioni(condizioni) {
+  const attive = (Array.isArray(condizioni) ? condizioni : []).filter((c) => EFFETTI_CONDIZIONI[c]);
+  const righe = [];
+  for (const flag of Object.keys(ETICHETTE_EFFETTI)) {
+    const da = attive.filter((c) => EFFETTI_CONDIZIONI[c][flag]);
+    if (da.length) righe.push({ flag, da });
+  }
+  return righe;
 }

@@ -820,4 +820,53 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   0%, 100% { background: transparent; border-color: #2e8b57; color: #2e8b57; box-shadow: 0 0 0 rgba(46,139,87,0); }
   50% { background: #2e8b57; border-color: #2e8b57; color: #fff; box-shadow: 0 0 12px 2px rgba(46,139,87,0.75); }
 }
+
+/* ------------------------------------------------------------------ */
+/* STAMPA / PDF                                                        */
+/* "Stampa" del browser (o "Salva come PDF") produce la sola scheda:   */
+/* via comandi interattivi, sfondi scenografici e tema scuro, che su   */
+/* carta sprecherebbero inchiostro e renderebbero il testo illeggibile. */
+@media print {
+  /* Sempre fondo bianco e testo nero, anche se a schermo è notte.
+     Le variabili sono impostate inline su :root da App.jsx (style.setProperty),
+     quindi qui serve !important: un foglio di stile non batte uno stile inline. */
+  :root, :root[data-tema="scuro"], :root[data-tema="chiaro"] {
+    --c-bg: #ffffff !important; --c-panel: #ffffff !important; --c-panel-light: #ffffff !important;
+    --c-border: #999999 !important; --c-ink: #000000 !important; --c-ink-dim: #444444 !important;
+    --c-gold: #6b5300 !important; --c-gold-dark: #4a3900 !important; --c-title: #000000 !important;
+    --c-green: #1a6b2a !important; --c-red: #9e2b25 !important;
+  }
+  html, body { background: #fff !important; color: #000 !important; }
+  /* Gli sfondi a tema vivono su pseudo-elementi del body: via anche quelli. */
+  body::before, body::after { display: none !important; }
+  .app-shell { padding: 0 !important; }
+
+  /* Comandi, banner e overlay non hanno senso su carta. */
+  .no-stampa,
+  .app-header-side,
+  .dadi-riga,
+  .cloud-bar,
+  .game-actions-dock,
+  .app-version,
+  .inventario-azioni,
+  .col-azioni,
+  .add-spell { display: none !important; }
+
+  /* Un pannello non deve spezzarsi a metà fra due pagine. */
+  .blocco-car,
+  .inventario-wrap,
+  .inventario-riga,
+  .privilegi-duo { break-inside: avoid; page-break-inside: avoid; }
+  .app-shell * { box-shadow: none !important; }
+
+  /* I campi editabili, su carta, sono testo normale e non caselle. */
+  input, select, textarea {
+    border: none !important;
+    background: transparent !important;
+    color: #000 !important;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  @page { margin: 12mm; }
+}
 `;

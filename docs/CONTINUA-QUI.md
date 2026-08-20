@@ -1,7 +1,6 @@
 # Continua qui — stato reale di Tavolo dei Dadi
 
-Aggiornato il **20 agosto 2026**. Ultima versione su `main`: **v2.99.0** (PR #61,
-sottoclasse anche per la classe secondaria del multiclasse).
+Aggiornato il **20 agosto 2026**. Ultima versione: **v3.5.0**.
 App: https://samuelenigro97-prog.github.io/tavolo-dei-dadi/
 
 > Si lavora anche con altre IA sul repository. Prima di modificare o pubblicare:
@@ -9,8 +8,8 @@ App: https://samuelenigro97-prog.github.io/tavolo-dei-dadi/
 > non proprio e non far modificare `src/App.jsx` contemporaneamente.
 >
 > **Nota su questo ambiente sandbox**: il container di questa sessione ha
-> ripristinato il working tree a uno snapshot vecchio **due volte** durante lo
-> sviluppo della funzione qui sotto, cancellando tutto il lavoro non ancora
+> ripristinato il working tree a uno snapshot vecchio **due volte**,
+> cancellando tutto il lavoro non ancora
 > committato. Se ti succede: `git status --short` (per non perdere lavoro vero),
 > poi `git fetch origin main -q && git checkout -B claude/profilo-grid-alignment-9wda3o origin/main -q`,
 > quindi ricostruisci. **Committa e pusha appena hai qualcosa di coerente che
@@ -19,70 +18,59 @@ App: https://samuelenigro97-prog.github.io/tavolo-dei-dadi/
 > conflitto) risolto ripetendo il push — se ricapita, riprova un paio di volte
 > prima di sospettare un problema di permessi reale.
 
-## Ultima funzione consegnata: sincronizzazione tramite codice, senza token GitHub
+## Stato attuale: v3.5.0 su `main`
 
-Richiesta utente: **"sync senza token GitHub"**. Alternativa più semplice al
-backup cloud esistente (che resta invariato, a base di token GitHub + Gist):
-un codice a 10 caratteri collega due dispositivi senza account né password,
-sullo stesso modello delle Stanze temporanee già esistenti.
+La sincronizzazione tramite codice è **pubblicata** (PR #62), insieme a tutto
+quello che segue. Nessuna funzione è rimasta a metà.
 
-**Stato: codice pronto, testato (10 test dedicati + build + 127/127 test
-automatici del repo), committato e pushato su
-`claude/profilo-grid-alignment-9wda3o`. Manca solo aprire la PR verso `main`,
-farla passare in CI, fare merge e — soprattutto — che l'utente ripubblichi
-manualmente il Worker su Cloudflare, perché la rotta `/sync` esiste nel codice
-ma non è ancora online in produzione finché non lo fa.**
+> ⚠️ **Una cosa dipende ancora dall'utente**: il Worker su Cloudflare va
+> **ripubblicato a mano dalla dashboard** perché la rotta `/sync` funzioni in
+> produzione. Il codice è in `worker/transcribe-worker.js`, ma il Worker
+> deployato non si aggiorna da solo col merge della PR. Finché non lo fa, la
+> sincronizzazione tramite codice non funziona sul sito reale (tutto il resto sì).
 
-File toccati:
+### Pubblicato in questa tornata
 
-- `src/utils/sync.js` (nuovo) — client: `generaCodiceSync`, `salvaSync`,
-  `caricaSync`, `messaggioErroreSync`, `normalizzaCodiceSync`/`formattaCodiceSync`
-  (ri-esportati da `stanze.js`, stesso alfabeto delle Stanze).
-- `worker/transcribe-worker.js` — nuova rotta `/sync/<codice>` (`gestisciSync`):
-  `PUT` salva `{roster, updatedAt}` in KV con prefisso `sync:` (180 giorni,
-  4 MB max), `GET` lo rilegge; riusa il rate limiting esistente
-  (`ROOM_RATE_LIMITER`) e la KV `SCHEDE` già in uso da `/room` e `/pg`.
-- `src/App.jsx` — nuova sezione "🔗 Sincronizza con un codice (senza account)"
-  nel modale ☁️ Cloud, subito sotto "🛟 Backup automatico"; il backup a token
-  GitHub esistente è stato spostato in un `<details>` "🔑 Backup con token
-  GitHub (per il DM / uso avanzato)" per non confondere chi non lo usa. Stato
-  e funzioni: `codiceSync`, `autoSyncCodice`, `salvaSuCodiceSync`,
-  `caricaDaCodiceSync`, `creaCodiceSync`, `usaCodiceSyncEsistente`,
-  `disattivaSyncCodice`, con autosalvataggio debounced e caricamento
-  automatico all'avvio se un codice è già attivo su quel dispositivo — stessa
-  logica del backup a token, chiave `localStorage` separata
-  (`sync-codice-ts` invece di `sync-ts`). Il pulsante ☁️ in intestazione mostra
-  la spunta verde anche quando la sync-by-code è l'unica attiva.
-- `test/sync.test.mjs` (nuovo) — 10 test: salvataggio/rilettura, codice mai
-  usato → 404, malformato → 400, corpo senza roster valido → 400, roster
-  troppo grande → 413, KV mancante → 500, rate limit → 429, client che non
-  tocca mai GitHub, formato del codice generato, copertura dei messaggi
-  d'errore.
-- `worker/LEGGIMI.md` — nuova sezione "Sincronizzazione tra dispositivi
-  tramite codice — senza token GitHub", analoga a quella delle Stanze.
+| Versione | Cosa |
+|---|---|
+| v2.100.0 | Sincronizzazione tra dispositivi tramite **codice a 10 caratteri**, senza token GitHub (rotta Worker `/sync`, `src/utils/sync.js`, 10 test) |
+| v2.100.0 | **Fix**: il salvataggio cloud non sovrascrive più alla cieca quando non riesce a verificare lo stato remoto — era il motivo per cui un ritratto caricato da un altro dispositivo poteva sparire |
+| v2.100.0 | **Fix**: popover "Bonus dato da" con sfondo opaco (sembrava trasparente perché usava lo stesso colore del riquadro sotto) |
+| v2.100.0 | **Fix**: in tema chiaro lo sfondo non si tinge più del colore di classe (slavato con le tinte calde: Stregone, Barbaro) |
+| v3.0.0 | **Archivio DM raggruppato**: un personaggio per riga invece di una copia per dispositivo/re-import, con "▼ mostra N copie precedenti". Nessuna cancellazione |
+| v3.1.0 | **Stampa / Salva PDF** della scheda (`@media print`, pulsante nel Menu) |
+| v3.2.0 | **Fix serio**: il riposo *ricarica* le risorse di classe invece di azzerarle (Ira, Punti Stregoneria, Ki restavano a 0 dopo un riposo lungo) |
+| v3.3.0 | **Fonte di Magia**: conversione slot ↔ Punti Stregoneria per lo Stregone |
+| v3.4.0 | **Diario di sessione** per personaggio, voci datate |
+| v3.5.0 | **Effetti meccanici delle condizioni**, con riepilogo di cosa comportano sommate |
 
-### Cosa manca per chiudere davvero questa richiesta
+Da 127 a **141 test** automatici, tutti verdi.
 
-1. Aprire la PR da `claude/profilo-grid-alignment-9wda3o` verso `main`,
-   spiegando la funzione **e ricordando esplicitamente che il Worker va
-   ripubblicato a mano su Cloudflare** prima che `/sync` funzioni sul sito
-   reale (il codice del Worker da solo non basta, come sempre in questo
-   repository: il Worker non si aggiorna da solo col merge della PR).
-2. Verifica manuale nel browser non ancora fatta in questa sessione (era in
-   corso in una sessione precedente ma il tentativo si è perso in uno dei due
-   rollback dell'ambiente): aprire l'app, creare un codice su un "dispositivo",
-   verificare che compaia nel modale Cloud, e su un secondo profilo/browser
-   digitare lo stesso codice e controllare che il roster arrivi. Non
-   strettamente bloccante per il merge (i 10 test coprono già la logica), ma
-   consigliata almeno una volta prima di considerarla definitivamente chiusa.
-3. Dopo il merge: verificare che il bundle pubblicato su GitHub Pages mostri
-   `v2.100.0`, e avvisare l'utente che deve ripubblicare il Worker.
+### Perché la versione è passata da 2.100.0 a 3.0.0
 
-Dopo questa richiesta, altre idee già proposte e accettate in linea di
-principio ("Tavolo dal vivo" per il combat tracker condiviso in tempo reale,
-"Scheda stampabile/PDF", "Diario di campagna condiviso") **restano in coda e
-non vanno iniziate finché l'utente non le chiede esplicitamente per nome**,
-esattamente come ha fatto per "sync senza token GitHub".
+Dopo la 2.99.0 la numerazione era arrivata a "2.100.0", che si legge male.
+Su indicazione dell'utente si è passati alla serie **3.x**.
+
+### Note utili per chi riprende
+
+- **L'utente ha segnalato più volte "non mi arriva l'update"**: quasi sempre è
+  la cache della PWA installata, non un bug. Il meccanismo è stato verificato e
+  funziona: l'app confronta `version.json` (fuori dalla precache) con
+  `__BUILD_ID__` ogni 20 secondi, al focus e quando torna online. Dopo un merge
+  il deploy di GitHub Pages impiega **qualche minuto**: prima di indagare,
+  controllare che `version.json` sia davvero cambiato.
+  L'utente usa l'app **installata come PWA su macOS**, dove il modo affidabile
+  di forzare l'aggiornamento è chiudere la finestra con Cmd+Q e riaprirla.
+- Quando l'utente dice che un difetto grafico "c'è ancora", **verificare prima
+  sul bundle realmente pubblicato** (scaricarlo con `curl` e servirlo in locale)
+  invece di fidarsi solo del codice sorgente: due volte su tre il codice era
+  già corretto e si trattava di cache.
+
+### Idee proposte e non ancora richieste
+
+"Tavolo dal vivo" (combat tracker condiviso in tempo reale) resta in coda e
+**non va iniziata finché l'utente non la chiede esplicitamente**. Richiede
+anche una nuova rotta sul Worker, quindi un altro deploy manuale.
 
 ## Registro delle richieste inviate oggi
 

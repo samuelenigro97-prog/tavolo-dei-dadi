@@ -9,6 +9,7 @@ import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTes
 import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
+import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from './data/condizioni.js';
 import { codificaScheda, decodificaScheda, preparaPerCondivisione, costruisciLink, payloadDaUrl, LIMITE_PAYLOAD } from './utils/condivisione.js';
 import { creaStanza, apriStanza, normalizzaCodiceStanza, formattaCodiceStanza, DURATA_STANZA_ORE } from './utils/stanze.js';
 import { generaCodiceSync, normalizzaCodiceSync, formattaCodiceSync, salvaSync, caricaSync, messaggioErroreSync } from './utils/sync.js';
@@ -628,7 +629,7 @@ function regexMunizione(nomeArma) {
 // privilegi/privilegiSottoclasse/talenti sono nel blocco fisso "Privilegi & Talenti"
 // sotto la Magia (non riordinabili singolarmente).
 // 'metamagia' NON è qui: non è trascinabile, resta sempre agganciata sotto la Magia.
-const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'equipaggiamento', 'aspetto'];
+const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'equipaggiamento', 'aspetto', 'diario'];
 
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 
@@ -740,7 +741,7 @@ const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(I
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -890,6 +891,7 @@ function schedaVuota() {
     lingue: '',
     aspetto: '',
     trattiCaratteriali: '',
+    diario: [], // diario di sessione: [{ id, data, titolo, testo }]
     note: '',
     // stato di gioco
     risorse: [], // { id, nome, attuali, max, reset: 'breve' | 'lungo' | '' }
@@ -1230,7 +1232,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.0.0';
+const APP_VERSION = '3.5.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1584,6 +1586,7 @@ function normalizeImported(dati) {
     lingue: str(dati.lingue),
     aspetto: str(dati.aspetto),
     trattiCaratteriali: str(dati.trattiCaratteriali),
+    diario: Array.isArray(dati.diario) ? dati.diario : [],
     note: str(dati.note),
     risorse: Array.isArray(dati.risorse)
       ? dati.risorse
@@ -3285,7 +3288,7 @@ export default function App() {
         tsMorte: { successi: 0, fallimenti: 0 },
         slotIncantesimo: slot,
         dadiVitaSpesi: nuovoSpesi,
-        risorse: s.risorse.map((r) => (r.reset ? { ...r, attuali: 0 } : r)),
+        risorse: risorseDopoRiposo(s.risorse, 'lungo'),
         sfinimento: Math.max(0, s.sfinimento - 1),
         concentrazione: '',
       };
@@ -3300,7 +3303,7 @@ export default function App() {
     const isWarlock = /warlock|patto/i.test(scheda.classe || '');
     setScheda((s) => ({
       ...s,
-      risorse: s.risorse.map((r) => (r.reset === 'breve' ? { ...r, attuali: 0 } : r)),
+      risorse: risorseDopoRiposo(s.risorse, 'breve'),
       ...(isWarlock ? { slotIncantesimo: Object.fromEntries(Object.entries(s.slotIncantesimo).map(([liv, v]) => [liv, { ...v, spesi: 0 }])) } : {}),
     }));
     registra({ etichetta: `🔥 ${t('vital.riposo_breve_tooltip')}`, tipo: 'riposo', dettaglio: isWarlock ? t('rest.breve_fatto_warlock') : t('rest.breve_fatto') });
@@ -4015,14 +4018,14 @@ export default function App() {
       <style>{GLOBAL_CSS}</style>
 
       {erroreSalvataggio && (
-        <div style={{ position: 'sticky', top: 0, zIndex: 10000, padding: '10px 14px', background: '#8b1e1e', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap', boxShadow: '0 3px 12px rgba(0,0,0,0.35)', fontSize: 13, fontWeight: 700 }}>
+        <div className="no-stampa" style={{ position: 'sticky', top: 0, zIndex: 10000, padding: '10px 14px', background: '#8b1e1e', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap', boxShadow: '0 3px 12px rgba(0,0,0,0.35)', fontSize: 13, fontWeight: 700 }}>
           <span>⚠️ {erroreSalvataggio}</span>
           <button style={{ ...styles.buttonMini, background: '#fff', color: '#8b1e1e', borderColor: '#fff' }} onClick={esportaJson}>⬇️ Esporta JSON</button>
         </div>
       )}
 
       {nuovaVersione && (
-        <div style={{
+        <div className="no-stampa" style={{
           background: 'linear-gradient(90deg, #1b4d3e, #2a7a62)',
           color: '#fff',
           padding: '10px 16px',
@@ -4356,6 +4359,18 @@ export default function App() {
                 <button style={{ ...styles.button, width: '100%', borderColor: C.gold, color: C.goldDark }} onClick={() => { setStanzaUi({ aperta: true, codice: '', creato: '', scadenza: 0, caricamento: false, errore: '' }); setMostraMenu(false); }}>
                   🚪 {t('stanze.apri_menu')}
                 </button>
+              </div>
+            </div>
+            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
+              <button
+                style={{ ...styles.button, width: '100%' }}
+                onClick={() => { setMostraMenu(false); setTimeout(() => window.print(), 150); }}
+                title="Stampa la scheda o salvala in PDF (scegli “Salva come PDF” nella finestra di stampa)"
+              >
+                🖨️ Stampa / Salva PDF
+              </button>
+              <div style={{ ...styles.detail, fontSize: 11, marginTop: 4 }}>
+                Stampa quello che vedi: le sezioni chiuse restano chiuse.
               </div>
             </div>
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
@@ -5563,7 +5578,7 @@ export default function App() {
       </header>
 
       {promemoriaBackup && !mostraGuida && (
-        <div style={{
+        <div className="no-stampa" style={{
           maxWidth: 1080, margin: '0 auto 8px', padding: '10px 14px', borderRadius: 10,
           background: 'rgba(200,140,20,0.14)', border: `1px solid ${C.gold}`,
           display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', fontSize: 14,
@@ -5594,7 +5609,7 @@ export default function App() {
         if (!controlli.length) return null;
         const certi = controlli.filter((r) => r.gravita === 'certo').length;
         return (
-          <div style={{
+          <div className="no-stampa" style={{
             maxWidth: 1080, margin: '0 auto 8px', padding: '10px 14px', borderRadius: 10,
             background: certi ? 'rgba(200,60,60,0.10)' : 'rgba(200,140,20,0.14)',
             border: `1px solid ${certi ? C.red : C.gold}`,
@@ -5975,7 +5990,7 @@ export default function App() {
       <main style={styles.main}>
 
         {/* Barra del tiro */}
-        <div style={styles.rollBar}>
+        <div className="barra-tiro no-stampa" style={styles.rollBar}>
           {(rolling || tiro || danni) && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', paddingBottom: 6, borderBottom: `1px solid ${C.border}`, marginBottom: 2 }}>
               <div style={styles.dado(rolling, !rolling && (tiro?.naturale === 20 || danni?.critico), !rolling && (tiro?.naturale === 1), tipoDadoInUso)}>{faccia}</div>
@@ -6765,17 +6780,29 @@ export default function App() {
               <SfondoVit>⚠️</SfondoVit>
               <div style={styles.vitalLabel}>{t("vital.condizioni")}</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center', alignItems: 'center', marginTop: 2 }}>
-                {scheda.condizioni.map((c) => (
-                  <button
-                    key={c}
-                    className="tirabile"
-                    style={{ ...styles.modeButton(true), fontSize: 9, padding: '1px 4px', margin: 0, lineHeight: 1.4 }}
-                    title={t('tip.click_rimuovi')}
-                    onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
-                  >
-                    {c} ✕
-                  </button>
-                ))}
+                {scheda.condizioni.map((c) => {
+                  const eff = EFFETTI_CONDIZIONI[c];
+                  const testoEff = eff ? (lingua === 'en' ? eff.en : eff.it) : '';
+                  return (
+                    <span key={c} style={{ ...styles.modeButton(true), fontSize: 9, padding: '1px 3px', margin: 0, lineHeight: 1.4, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                      {/* Il nome apre gli effetti, la ✕ toglie la condizione:
+                          prima l'intera etichetta cancellava, quindi non c'era
+                          modo di leggere cosa comportasse. */}
+                      <button
+                        type="button"
+                        style={{ background: 'none', border: 0, padding: 0, font: 'inherit', color: 'inherit', cursor: eff ? 'help' : 'default' }}
+                        title={testoEff || c}
+                        onClick={() => eff && setInfo({ titolo: `⚠️ ${traduciDato(c)}`, testo: testoEff })}
+                      >{c}</button>
+                      <button
+                        type="button"
+                        style={{ background: 'none', border: 0, padding: 0, font: 'inherit', color: 'inherit', cursor: 'pointer', opacity: 0.75 }}
+                        title={t('tip.click_rimuovi')}
+                        onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
+                      >✕</button>
+                    </span>
+                  );
+                })}
                 <select
                   value=""
                   onChange={(e) => { if (e.target.value) aggiorna({ condizioni: [...scheda.condizioni, e.target.value] }); }}
@@ -6788,6 +6815,23 @@ export default function App() {
                   ))}
                 </select>
               </div>
+              {/* Riepilogo: cosa comportano, sommate, le condizioni attive.
+                  Fra parentesi la condizione che causa l'effetto, così si vede
+                  subito cosa resterebbe togliendone una. */}
+              {(() => {
+                const righe = riepilogoCondizioni(scheda.condizioni);
+                if (!righe.length) return null;
+                return (
+                  <div style={{ marginTop: 5, paddingTop: 5, borderTop: `1px dotted ${C.border}`, textAlign: 'left' }}>
+                    {righe.map(({ flag, da }) => (
+                      <div key={flag} style={{ fontSize: 9, lineHeight: 1.45, color: C.ink }}>
+                        • {(lingua === 'en' ? ETICHETTE_EFFETTI[flag].en : ETICHETTE_EFFETTI[flag].it)}
+                        <span style={{ opacity: 0.65 }}> ({da.map(traduciDato).join(', ')})</span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
                 <div style={{
                   ...styles.vitalBox, gridColumn: 'span 2',
@@ -7763,11 +7807,71 @@ export default function App() {
                   return (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, flexWrap: 'wrap', fontSize: 13 }}>
                       <span style={{ ...styles.detail, fontWeight: 700, color: C.goldDark }}>✨ Punti Stregoneria</span>
-                      <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title="Recupera 1" onClick={() => modR({ attuali: Math.max(0, r.attuali - 1) })}>−</button>
+                      <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title="Spendi 1 punto" onClick={() => modR({ attuali: Math.max(0, r.attuali - 1) })}>−</button>
                       <strong style={{ minWidth: 18, textAlign: 'center', color: r.attuali === 0 ? C.inkDim : C.ink }}>{r.attuali}</strong>
-                      <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title="Spendi 1" onClick={() => modR({ attuali: Math.min(r.max, r.attuali + 1) })}>+</button>
+                      <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title="Recupera 1 punto" onClick={() => modR({ attuali: Math.min(r.max, r.attuali + 1) })}>+</button>
                       <span style={styles.detail}>/ <Editable value={r.max} tipo="numero" width={30} onChange={(v) => modR({ max: Math.max(0, v), attuali: Math.min(Math.max(0, v), r.attuali) })} /></span>
                       <span style={{ ...styles.detail, fontSize: 11, opacity: 0.75 }}>· sincronizzati con Risorse di classe</span>
+                    </div>
+                  );
+                })()}
+
+                {/* Fonte di Magia: converte i Punti Stregoneria in slot già
+                    spesi e viceversa. Tocca sia i punti (una risorsa) sia gli
+                    slot, quindi scrive con un solo aggiorna() per non perdere
+                    una delle due modifiche. */}
+                {(() => {
+                  const risorse = scheda.risorse || [];
+                  const idx = risorse.findIndex((r) => /stregoneria/i.test(r.nome || ''));
+                  if (idx < 0) return null;
+                  const r = risorse[idx];
+                  const applica = (esito) => {
+                    if (!esito.ok) { setInfo({ titolo: '✨ Fonte di Magia', testo: esito.motivo }); return; }
+                    aggiorna({
+                      slotIncantesimo: esito.slotIncantesimo,
+                      risorse: risorse.map((x, i) => (i === idx ? { ...x, attuali: esito.punti } : x)),
+                    });
+                  };
+                  const slotOra = scheda.slotIncantesimo || {};
+                  return (
+                    <div style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', marginBottom: 10 }}>
+                      <div style={{ ...styles.detail, fontWeight: 700, marginBottom: 2 }}>🔄 Fonte di Magia</div>
+                      <div style={{ ...styles.detail, fontSize: 11, marginBottom: 8 }}>
+                        Converti i punti in uno slot già speso, o brucia uno slot per riavere punti.
+                      </div>
+                      <div style={{ ...styles.detail, fontSize: 11, marginBottom: 4 }}>Punti → slot (recupera uno slot speso):</div>
+                      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 8 }}>
+                        {LIVELLI_CONVERTIBILI.map((liv) => {
+                          const costo = COSTO_SLOT_IN_PUNTI[liv];
+                          const possibile = puntiVersoSlot(slotOra, r.attuali, liv).ok;
+                          return (
+                            <button
+                              key={liv}
+                              style={{ ...styles.buttonMini, padding: '2px 7px', opacity: possibile ? 1 : 0.45 }}
+                              title={`Spendi ${costo} punti per recuperare uno slot di ${liv}° livello`}
+                              onClick={() => applica(puntiVersoSlot(slotOra, r.attuali, liv))}
+                            >{liv}° <span style={{ opacity: 0.7 }}>({costo}p)</span></button>
+                          );
+                        })}
+                      </div>
+                      <div style={{ ...styles.detail, fontSize: 11, marginBottom: 4 }}>Slot → punti (spendi uno slot disponibile):</div>
+                      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                        {Object.keys(slotOra)
+                          .map(Number)
+                          .filter((liv) => liv >= 1 && (slotOra[liv]?.totale || 0) > 0)
+                          .sort((a, b) => a - b)
+                          .map((liv) => {
+                            const possibile = slotVersoPunti(slotOra, r.attuali, r.max, liv).ok;
+                            return (
+                              <button
+                                key={liv}
+                                style={{ ...styles.buttonMini, padding: '2px 7px', opacity: possibile ? 1 : 0.45 }}
+                                title={`Spendi uno slot di ${liv}° livello per ottenere ${liv} Punti Stregoneria`}
+                                onClick={() => applica(slotVersoPunti(slotOra, r.attuali, r.max, liv))}
+                              >{liv}° <span style={{ opacity: 0.7 }}>(+{liv}p)</span></button>
+                            );
+                          })}
+                      </div>
                     </div>
                   );
                 })()}
@@ -8235,6 +8339,67 @@ export default function App() {
                 placeholder={t("aspetto.storia_ph")}
                 onChange={(v) => aggiorna({ note: v })}
               />
+            </Sezione>
+
+            {/* Diario di sessione: voci datate legate al singolo personaggio.
+                Le più recenti in cima, così l'ultima sessione resta subito
+                sotto il titolo anche quando il diario diventa lungo. */}
+            <Sezione titolo={t("sez.diario")} {...propsSez('diario')} {...apertoProps('diario', false)}>
+              {(() => {
+                const diario = Array.isArray(scheda.diario) ? scheda.diario : [];
+                const modificaVoce = (id, patch) =>
+                  aggiorna({ diario: diario.map((v) => (v.id === id ? { ...v, ...patch } : v)) });
+                const oggi = new Date().toISOString().slice(0, 10);
+                return (
+                  <>
+                    <button
+                      className="no-stampa"
+                      style={{ ...styles.buttonMini, borderColor: C.goldDark, color: C.goldDark, marginBottom: 10 }}
+                      onClick={() => aggiorna({
+                        diario: [{ id: `d-${Date.now()}`, data: oggi, titolo: '', testo: '' }, ...diario],
+                      })}
+                    >＋ {t('diario.aggiungi')}</button>
+
+                    {diario.length === 0 && (
+                      <div style={{ ...styles.detail, fontSize: 12 }}>{t('diario.vuoto')}</div>
+                    )}
+
+                    {diario.map((v) => (
+                      <div key={v.id} style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', marginBottom: 8 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
+                          <input
+                            type="date"
+                            value={v.data || ''}
+                            onChange={(e) => modificaVoce(v.id, { data: e.target.value })}
+                            style={{ ...styles.inlineInput, padding: '3px 6px', fontSize: 12, width: 140 }}
+                          />
+                          <input
+                            value={v.titolo || ''}
+                            placeholder={t('diario.titolo_ph')}
+                            onChange={(e) => modificaVoce(v.id, { titolo: e.target.value })}
+                            style={{ ...styles.inlineInput, flex: '1 1 200px', minWidth: 140, padding: '3px 6px', fontSize: 13, fontWeight: 700 }}
+                          />
+                          <button
+                            className="no-stampa"
+                            style={{ ...styles.buttonMini, padding: '0 7px', color: C.red, flexShrink: 0 }}
+                            title={t('diario.elimina')}
+                            onClick={() => setConferma({
+                              titolo: t('sez.diario'),
+                              testo: t('diario.elimina_conferma'),
+                              onConferma: () => aggiorna({ diario: diario.filter((x) => x.id !== v.id) }),
+                            })}
+                          >✕</button>
+                        </div>
+                        <AreaTesto
+                          value={v.testo || ''}
+                          placeholder={t('diario.testo_ph')}
+                          onChange={(nuovo) => modificaVoce(v.id, { testo: nuovo })}
+                        />
+                      </div>
+                    ))}
+                  </>
+                );
+              })()}
             </Sezione>
           </div>
         </div>

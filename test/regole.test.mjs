@@ -13,8 +13,11 @@ import {
   slotMulticlasse, asiAlLivello, privilegiClasseLivello, privilegiClasseFinoA,
   sottoclasseLivPer, trucchettiMax, incantesimiMaxAuto, caratteristicaIncantatoreEffettiva,
   classificaIncantesimoCombattimento, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello,
-  controlliScheda,
+  controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, puntiVersoSlot, slotVersoPunti,
+  riepilogoCondizioni,
 } from '../src/rules/regole.js';
+import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from '../src/data/condizioni.js';
+import { CONDIZIONI_5E } from '../src/data/dati5e.js';
 
 // --- Helper: sostituisce Math.random con una coda di valori deterministici ---
 function conRandom(valori, fn) {
@@ -476,4 +479,127 @@ test('controlliScheda: nessuna competenza segnata su una scheda vuota di classe 
   const trovati = controlliScheda(scheda);
   assert.ok(!trovati.some((r) => r.id === 'budget-abilita'));
   assert.ok(!trovati.some((r) => r.id.startsWith('fonte-')));
+});
+
+test('riposo lungo: le risorse di classe tornano al massimo, non a zero', () => {
+  const risorse = [
+    { id: 'auto-ira', nome: 'Ira', attuali: 0, max: 3, reset: 'lungo' },
+    { id: 'auto-punti-stregoneria', nome: 'Punti Stregoneria', attuali: 2, max: 10, reset: 'lungo' },
+    { id: 'auto-punti-ki', nome: 'Punti Ki', attuali: 1, max: 5, reset: 'breve' },
+  ];
+  const dopo = risorseDopoRiposo(risorse, 'lungo');
+  assert.equal(dopo[0].attuali, 3);
+  assert.equal(dopo[1].attuali, 10);
+  assert.equal(dopo[2].attuali, 5, 'il riposo lungo ricarica anche le risorse "brevi"');
+});
+
+test('riposo breve: ricarica solo le risorse che si recuperano col riposo breve', () => {
+  const risorse = [
+    { id: 'auto-ira', nome: 'Ira', attuali: 0, max: 3, reset: 'lungo' },
+    { id: 'auto-punti-ki', nome: 'Punti Ki', attuali: 1, max: 5, reset: 'breve' },
+  ];
+  const dopo = risorseDopoRiposo(risorse, 'breve');
+  assert.equal(dopo[0].attuali, 0, 'una risorsa "lunga" non si ricarica col riposo breve');
+  assert.equal(dopo[1].attuali, 5);
+});
+
+test('riposo: le risorse senza reset (usi una tantum) restano intatte', () => {
+  const risorse = [{ id: 'mia', nome: 'Pozione unica', attuali: 0, max: 1, reset: '' }];
+  assert.deepEqual(risorseDopoRiposo(risorse, 'lungo'), risorse);
+  assert.deepEqual(risorseDopoRiposo(undefined, 'lungo'), []);
+});
+
+// --- Fonte di Magia: conversione slot <-> Punti Stregoneria ---
+const slotBase = () => ({ 1: { totale: 4, spesi: 2 }, 2: { totale: 3, spesi: 0 }, 3: { totale: 3, spesi: 3 } });
+
+test('Fonte di Magia: i costi seguono la tabella 5e', () => {
+  assert.deepEqual(COSTO_SLOT_IN_PUNTI, { 1: 2, 2: 3, 3: 5, 4: 6, 5: 7 });
+});
+
+test('punti -> slot: spende i punti e recupera uno slot speso', () => {
+  const r = puntiVersoSlot(slotBase(), 6, 3);
+  assert.equal(r.ok, true);
+  assert.equal(r.punti, 1, '6 punti - 5 per uno slot di 3°');
+  assert.equal(r.slotIncantesimo[3].spesi, 2, 'uno slot speso in meno');
+  assert.equal(r.slotIncantesimo[3].totale, 3, 'il totale non cambia mai');
+});
+
+test('punti -> slot: rifiuta senza punti a sufficienza, senza slot spesi, o oltre il 5°', () => {
+  assert.equal(puntiVersoSlot(slotBase(), 4, 3).ok, false, 'servono 5 punti');
+  assert.equal(puntiVersoSlot(slotBase(), 9, 2).ok, false, 'slot di 2° tutti disponibili');
+  assert.equal(puntiVersoSlot(slotBase(), 20, 6).ok, false, 'la Fonte di Magia arriva al 5°');
+  assert.equal(puntiVersoSlot({ 1: { totale: 0, spesi: 0 } }, 9, 1).ok, false, 'nessuno slot di quel livello');
+  for (const esito of [puntiVersoSlot(slotBase(), 4, 3), puntiVersoSlot(slotBase(), 20, 6)]) {
+    assert.equal(typeof esito.motivo, 'string');
+    assert.ok(esito.motivo.length > 0);
+  }
+});
+
+test('slot -> punti: spende uno slot disponibile e dà punti pari al livello', () => {
+  const r = slotVersoPunti(slotBase(), 1, 10, 2);
+  assert.equal(r.ok, true);
+  assert.equal(r.punti, 3, '1 + 2 (livello dello slot)');
+  assert.equal(r.slotIncantesimo[2].spesi, 1);
+});
+
+test('slot -> punti: non supera il massimo e rifiuta se non ci sono slot liberi', () => {
+  assert.equal(slotVersoPunti(slotBase(), 9, 10, 2).punti, 10, 'si ferma al massimo');
+  assert.equal(slotVersoPunti(slotBase(), 10, 10, 2).ok, false, 'riserva già piena');
+  assert.equal(slotVersoPunti(slotBase(), 0, 10, 3).ok, false, 'slot di 3° tutti spesi');
+});
+
+test('conversione: il giro completo è in perdita, non è una macchina per fare punti', () => {
+  // Uno slot di 1° dà 1 punto, ma ricrearlo ne costa 2: il giro non si chiude.
+  const a = slotVersoPunti(slotBase(), 0, 10, 1);
+  assert.equal(a.ok, true);
+  assert.equal(a.punti, 1);
+  const b = puntiVersoSlot(a.slotIncantesimo, a.punti, 1);
+  assert.equal(b.ok, false, 'con 1 solo punto non si ricompra lo slot appena bruciato');
+
+  // Con punti a sufficienza il giro si chiude e i TOTALI restano intatti:
+  // cambia solo quanti slot risultano spesi.
+  const c = puntiVersoSlot(a.slotIncantesimo, 5, 1);
+  assert.equal(c.ok, true);
+  assert.deepEqual(c.slotIncantesimo[1], slotBase()[1], 'gli slot tornano come prima');
+  assert.equal(c.punti, 3, '5 punti - 2 per lo slot di 1°');
+});
+
+// --- Effetti meccanici delle condizioni ---
+test('condizioni: raggruppa gli effetti e dice quali condizioni li causano', () => {
+  const righe = riepilogoCondizioni(['Avvelenato', 'Prono']);
+  const svant = righe.find((r) => r.flag === 'svantaggioAttacchi');
+  assert.deepEqual(svant.da, ['Avvelenato', 'Prono'], 'entrambe danno svantaggio ai tiri per colpire');
+  const prove = righe.find((r) => r.flag === 'svantaggioProve');
+  assert.deepEqual(prove.da, ['Avvelenato'], 'solo Avvelenato tocca le prove');
+  const contro = righe.find((r) => r.flag === 'vantaggioControDiTe');
+  assert.deepEqual(contro.da, ['Prono']);
+});
+
+test('condizioni: nessuna condizione (o nomi ignoti) non produce effetti', () => {
+  assert.deepEqual(riepilogoCondizioni([]), []);
+  assert.deepEqual(riepilogoCondizioni(undefined), []);
+  assert.deepEqual(riepilogoCondizioni(['Innamorato', 'Bagnato']), []);
+});
+
+test('condizioni: Paralizzato accumula tutti i suoi effetti', () => {
+  const flag = riepilogoCondizioni(['Paralizzato']).map((r) => r.flag);
+  for (const atteso of ['incapacitato', 'vantaggioControDiTe', 'fallisciTsForzaDes', 'criticoRavvicinato']) {
+    assert.ok(flag.includes(atteso), `manca ${atteso}`);
+  }
+});
+
+test('condizioni: ogni condizione della scheda ha testo in entrambe le lingue', () => {
+  for (const [nome, e] of Object.entries(EFFETTI_CONDIZIONI)) {
+    assert.equal(typeof e.it, 'string', `${nome}: manca l'italiano`);
+    assert.equal(typeof e.en, 'string', `${nome}: manca l'inglese`);
+    assert.ok(e.it.length > 10 && e.en.length > 10, `${nome}: testo troppo corto`);
+  }
+  for (const [flag, e] of Object.entries(ETICHETTE_EFFETTI)) {
+    assert.ok(e.it && e.en, `etichetta ${flag} incompleta`);
+  }
+});
+
+test('condizioni: ogni voce dell\'elenco CONDIZIONI_5E ha i suoi effetti', () => {
+  const senzaEffetti = CONDIZIONI_5E.filter((c) => !EFFETTI_CONDIZIONI[c]);
+  assert.deepEqual(senzaEffetti, [], 'condizioni selezionabili ma senza spiegazione meccanica');
 });
