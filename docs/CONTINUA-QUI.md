@@ -1,6 +1,6 @@
 # Continua qui — stato reale di Tavolo dei Dadi
 
-Aggiornato il **20 agosto 2026**. Ultima versione: **v3.5.0**.
+Aggiornato il **20 agosto 2026**. Ultima versione pubblicata e verificata online: **v3.5.2**.
 App: https://samuelenigro97-prog.github.io/tavolo-dei-dadi/
 
 > Si lavora anche con altre IA sul repository. Prima di modificare o pubblicare:
@@ -8,7 +8,8 @@ App: https://samuelenigro97-prog.github.io/tavolo-dei-dadi/
 > non proprio e non far modificare `src/App.jsx` contemporaneamente.
 >
 > **Nota su questo ambiente sandbox**: il container di questa sessione ha
-> ripristinato il working tree a uno snapshot vecchio **due volte**,
+> ripristinato il working tree a uno snapshot vecchio **tre volte** (l'ultima
+> fino alla v2.88.0),
 > cancellando tutto il lavoro non ancora
 > committato. Se ti succede: `git status --short` (per non perdere lavoro vero),
 > poi `git fetch origin main -q && git checkout -B claude/profilo-grid-alignment-9wda3o origin/main -q`,
@@ -18,7 +19,7 @@ App: https://samuelenigro97-prog.github.io/tavolo-dei-dadi/
 > conflitto) risolto ripetendo il push — se ricapita, riprova un paio di volte
 > prima di sospettare un problema di permessi reale.
 
-## Stato attuale: v3.5.0 su `main`
+## Stato attuale: v3.5.2 su `main`
 
 La sincronizzazione tramite codice è **pubblicata** (PR #62), insieme a tutto
 quello che segue. Nessuna funzione è rimasta a metà.
@@ -43,8 +44,10 @@ quello che segue. Nessuna funzione è rimasta a metà.
 | v3.3.0 | **Fonte di Magia**: conversione slot ↔ Punti Stregoneria per lo Stregone |
 | v3.4.0 | **Diario di sessione** per personaggio, voci datate |
 | v3.5.0 | **Effetti meccanici delle condizioni**, con riepilogo di cosa comportano sommate |
+| v3.5.1 | **Fix**: la nuvoletta "Bonus dato da" era invisibile sul tema scuro (contrasto 1.02) e poteva sbordare su schermo stretto |
+| v3.5.2 | **Fix**: la stessa nuvoletta veniva *tagliata* dal riquadro della caratteristica (`overflow: hidden`); ora è montata su `document.body` con `createPortal` |
 
-Da 127 a **141 test** automatici, tutti verdi.
+Da 127 a **145 test** automatici, tutti verdi.
 
 ### Perché la versione è passata da 2.100.0 a 3.0.0
 
@@ -52,6 +55,18 @@ Dopo la 2.99.0 la numerazione era arrivata a "2.100.0", che si legge male.
 Su indicazione dell'utente si è passati alla serie **3.x**.
 
 ### Note utili per chi riprende
+
+- **Il caso della nuvoletta "Bonus dato da" merita di essere letto**: l'utente
+  l'ha segnalata **tre volte** e per due volte ho risposto che era a posto,
+  perché su desktop lo era davvero. Il difetto esisteva solo alla larghezza del
+  telefono e in tema scuro, ed erano in realtà **due difetti diversi** (colore
+  invisibile, poi ritaglio). Morale: quando l'utente insiste, **riprodurre nelle
+  sue condizioni** (390px, tema scuro, dati veri) prima di concludere che il
+  codice è corretto.
+- **Build verde e test verdi non bastano.** Un tentativo di correzione ha rotto
+  il rendering dell'app per un import mancante (`createPortal`): `npm run build`
+  e tutti i 145 test passavano lo stesso, perché era un errore a runtime. Dopo
+  una modifica al JSX, **aprire davvero l'app** e controllare `pageerror`.
 
 - **L'utente ha segnalato più volte "non mi arriva l'update"**: quasi sempre è
   la cache della PWA installata, non un bug. Il meccanismo è stato verificato e
@@ -66,11 +81,37 @@ Su indicazione dell'utente si è passati alla serie **3.x**.
   invece di fidarsi solo del codice sorgente: due volte su tre il codice era
   già corretto e si trattava di cache.
 
-### Idee proposte e non ancora richieste
+### Da dove ripartire
 
-"Tavolo dal vivo" (combat tracker condiviso in tempo reale) resta in coda e
-**non va iniziata finché l'utente non la chiede esplicitamente**. Richiede
-anche una nuova rotta sul Worker, quindi un altro deploy manuale.
+**1. L'unica cosa in sospeso che dipende dall'utente** è la ripubblicazione del
+Worker su Cloudflare (vedi riquadro in cima). Prima di dare per rotta la
+sincronizzazione tramite codice, chiedere se l'ha fatta: il codice è corretto e
+testato, ma senza quel passaggio la rotta `/sync` non esiste in produzione.
+
+**2. Voci di roadmap non ancora affrontate**, in ordine di utilità pratica per
+questo tavolo:
+
+- **Statblock per Forma Selvatica** (Vaelion è un Druido: sarebbe la più utile),
+  famigli ed evocazioni.
+- **Statblock pronti di mostri e PNG** per il Combat tracker.
+- **QR code** per link o codice stanza (serve valutare come generarlo senza
+  aggiungere dipendenze).
+- **Audit delle differenze 2014/2024** non ancora rappresentate.
+- **Completare e verificare l'inventario di Vaelion** (voce aperta da tempo,
+  vedi più sotto).
+- Manutenzione: ESLint, riduzione del bundle (~940 kB prima di gzip),
+  spezzare gradualmente `App.jsx` (oltre 8000 righe).
+
+**3. Idee proposte ma NON richieste**: "Tavolo dal vivo" (combat tracker
+condiviso in tempo reale) resta in coda e **non va iniziata finché l'utente non
+la chiede esplicitamente**. Richiede anche una nuova rotta sul Worker, quindi un
+altro deploy manuale.
+
+**4. Come lavora questo utente**: chiede una cosa alla volta, con parole sue, e
+spesso segnala difetti con uno screenshot da telefono. Preferisce che si vada
+avanti senza chiedere conferma a ogni passo, ma vuole essere avvisato quando
+serve un'azione sua. Se dice che un difetto c'è ancora, **ha ragione**: va
+riprodotto nelle sue condizioni invece di rispondere che il codice è a posto.
 
 ## Registro delle richieste inviate oggi
 
