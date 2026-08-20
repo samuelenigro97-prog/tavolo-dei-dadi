@@ -1230,7 +1230,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.0.0';
+const APP_VERSION = '3.1.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -4015,14 +4015,14 @@ export default function App() {
       <style>{GLOBAL_CSS}</style>
 
       {erroreSalvataggio && (
-        <div style={{ position: 'sticky', top: 0, zIndex: 10000, padding: '10px 14px', background: '#8b1e1e', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap', boxShadow: '0 3px 12px rgba(0,0,0,0.35)', fontSize: 13, fontWeight: 700 }}>
+        <div className="no-stampa" style={{ position: 'sticky', top: 0, zIndex: 10000, padding: '10px 14px', background: '#8b1e1e', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap', boxShadow: '0 3px 12px rgba(0,0,0,0.35)', fontSize: 13, fontWeight: 700 }}>
           <span>⚠️ {erroreSalvataggio}</span>
           <button style={{ ...styles.buttonMini, background: '#fff', color: '#8b1e1e', borderColor: '#fff' }} onClick={esportaJson}>⬇️ Esporta JSON</button>
         </div>
       )}
 
       {nuovaVersione && (
-        <div style={{
+        <div className="no-stampa" style={{
           background: 'linear-gradient(90deg, #1b4d3e, #2a7a62)',
           color: '#fff',
           padding: '10px 16px',
@@ -4356,6 +4356,18 @@ export default function App() {
                 <button style={{ ...styles.button, width: '100%', borderColor: C.gold, color: C.goldDark }} onClick={() => { setStanzaUi({ aperta: true, codice: '', creato: '', scadenza: 0, caricamento: false, errore: '' }); setMostraMenu(false); }}>
                   🚪 {t('stanze.apri_menu')}
                 </button>
+              </div>
+            </div>
+            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
+              <button
+                style={{ ...styles.button, width: '100%' }}
+                onClick={() => { setMostraMenu(false); setTimeout(() => window.print(), 150); }}
+                title="Stampa la scheda o salvala in PDF (scegli “Salva come PDF” nella finestra di stampa)"
+              >
+                🖨️ Stampa / Salva PDF
+              </button>
+              <div style={{ ...styles.detail, fontSize: 11, marginTop: 4 }}>
+                Stampa quello che vedi: le sezioni chiuse restano chiuse.
               </div>
             </div>
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
@@ -5563,7 +5575,7 @@ export default function App() {
       </header>
 
       {promemoriaBackup && !mostraGuida && (
-        <div style={{
+        <div className="no-stampa" style={{
           maxWidth: 1080, margin: '0 auto 8px', padding: '10px 14px', borderRadius: 10,
           background: 'rgba(200,140,20,0.14)', border: `1px solid ${C.gold}`,
           display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', fontSize: 14,
@@ -5594,7 +5606,7 @@ export default function App() {
         if (!controlli.length) return null;
         const certi = controlli.filter((r) => r.gravita === 'certo').length;
         return (
-          <div style={{
+          <div className="no-stampa" style={{
             maxWidth: 1080, margin: '0 auto 8px', padding: '10px 14px', borderRadius: 10,
             background: certi ? 'rgba(200,60,60,0.10)' : 'rgba(200,140,20,0.14)',
             border: `1px solid ${certi ? C.red : C.gold}`,
@@ -5975,7 +5987,7 @@ export default function App() {
       <main style={styles.main}>
 
         {/* Barra del tiro */}
-        <div style={styles.rollBar}>
+        <div className="barra-tiro no-stampa" style={styles.rollBar}>
           {(rolling || tiro || danni) && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', paddingBottom: 6, borderBottom: `1px solid ${C.border}`, marginBottom: 2 }}>
               <div style={styles.dado(rolling, !rolling && (tiro?.naturale === 20 || danni?.critico), !rolling && (tiro?.naturale === 1), tipoDadoInUso)}>{faccia}</div>
