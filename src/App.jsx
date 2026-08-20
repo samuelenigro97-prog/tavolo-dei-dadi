@@ -13,6 +13,7 @@ import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from './data/condizioni.js';
 import { codificaScheda, decodificaScheda, preparaPerCondivisione, costruisciLink, payloadDaUrl, LIMITE_PAYLOAD } from './utils/condivisione.js';
 import { creaStanza, apriStanza, normalizzaCodiceStanza, formattaCodiceStanza, DURATA_STANZA_ORE } from './utils/stanze.js';
 import { generaCodiceSync, normalizzaCodiceSync, formattaCodiceSync, salvaSync, caricaSync, messaggioErroreSync } from './utils/sync.js';
+import { posizionePopover, stilePopover } from './utils/popover.js';
 import { salvaJson, rosterSenzaImmagini, riagganciaImmagini, salvaImmaginiRoster, caricaImmaginiRoster, rimuoviImmaginePersonaggio, preservaImmaginiSeMancanti } from './utils/persistenza.js';
 
 // ---------------------------------------------------------------------------
@@ -1232,7 +1233,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.5.0';
+const APP_VERSION = '3.5.1';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -6917,7 +6918,7 @@ export default function App() {
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   const r = e.currentTarget.getBoundingClientRect();
-                                  setFontePopover((v) => (v && v.tipo === 'car' && v.key === key ? null : { tipo: 'car', key, top: r.bottom + 4, left: r.right }));
+                                  setFontePopover((v) => (v && v.tipo === 'car' && v.key === key ? null : { tipo: 'car', key, ...posizionePopover(r, window) }));
                                 }}
                                 title={t('inv.fonte_bonus_tip')}
                                 style={{ marginLeft: 4, fontSize: 15, fontWeight: 'bold', color: C.goldDark, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
@@ -6926,12 +6927,12 @@ export default function App() {
                                 <div
                                   onPointerDown={(e) => e.stopPropagation()}
                                   onClick={(e) => e.stopPropagation()}
-                                  style={{ position: 'fixed', top: fontePopover.top, left: fontePopover.left, transform: 'translateX(-100%)', zIndex: 1050, background: '#1c150f', border: `2px solid ${C.gold}`, borderRadius: 8, padding: '6px 10px', minWidth: 170, boxShadow: '0 6px 18px rgba(0,0,0,0.55)', fontSize: 11, textAlign: 'left', fontWeight: 'normal' }}
+                                  className="popover-fonte" style={{ position: 'fixed', ...stilePopover(fontePopover), zIndex: 1050, borderRadius: 8, padding: '6px 10px', fontSize: 11, textAlign: 'left', fontWeight: 'normal' }}
                                 >
-                                  <div style={{ fontWeight: 'bold', marginBottom: 4, color: '#c9bfa8' }}>{t('inv.fonte_bonus')}:</div>
+                                  <div className="popover-titolo" style={{ fontWeight: 'bold', marginBottom: 4 }}>{t('inv.fonte_bonus')}:</div>
                                   {fontiCar.length
-                                    ? fontiCar.map((o) => <div key={o.id} style={{ whiteSpace: 'nowrap', color: '#f0e6d2' }}>🎒 {o.nome}</div>)
-                                    : <div style={{ color: '#c9bfa8' }}>—</div>}
+                                    ? fontiCar.map((o) => <div key={o.id}>🎒 {o.nome}</div>)
+                                    : <div className="popover-titolo">—</div>}
                                 </div>
                               )}
                             </span>
@@ -6971,7 +6972,7 @@ export default function App() {
                             onClick={(e) => {
                               e.stopPropagation();
                               const r = e.currentTarget.getBoundingClientRect();
-                              setFontePopover((v) => (v && v.tipo === 'ts' && v.key === key ? null : { tipo: 'ts', key, top: r.bottom + 4, left: r.right }));
+                              setFontePopover((v) => (v && v.tipo === 'ts' && v.key === key ? null : { tipo: 'ts', key, ...posizionePopover(r, window) }));
                             }}
                             title={t('inv.fonte_bonus_tip')}
                             style={{ ...styles.buttonMini, fontSize: 10, padding: '0 5px', height: 18, lineHeight: '16px', color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.12)' }}
@@ -6980,12 +6981,12 @@ export default function App() {
                             <div
                               onPointerDown={(e) => e.stopPropagation()}
                               onClick={(e) => e.stopPropagation()}
-                              style={{ position: 'fixed', top: fontePopover.top, left: fontePopover.left, transform: 'translateX(-100%)', zIndex: 1050, background: '#1c150f', border: `2px solid ${C.gold}`, borderRadius: 8, padding: '6px 10px', minWidth: 170, boxShadow: '0 6px 18px rgba(0,0,0,0.55)', fontSize: 11, textAlign: 'left' }}
+                              className="popover-fonte" style={{ position: 'fixed', ...stilePopover(fontePopover), zIndex: 1050, borderRadius: 8, padding: '6px 10px', fontSize: 11, textAlign: 'left' }}
                             >
-                              <div style={{ fontWeight: 'bold', marginBottom: 4, color: '#c9bfa8' }}>{t('inv.fonte_bonus')}:</div>
+                              <div className="popover-titolo" style={{ fontWeight: 'bold', marginBottom: 4 }}>{t('inv.fonte_bonus')}:</div>
                               {fontiTS.length
-                                ? fontiTS.map((o) => <div key={o.id} style={{ whiteSpace: 'nowrap', color: '#f0e6d2' }}>🎒 {o.nome}</div>)
-                                : <div style={{ color: '#c9bfa8' }}>—</div>}
+                                ? fontiTS.map((o) => <div key={o.id}>🎒 {o.nome}</div>)
+                                : <div className="popover-titolo">—</div>}
                             </div>
                           )}
                         </span>
