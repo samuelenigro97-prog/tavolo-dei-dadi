@@ -13,7 +13,7 @@ import {
   slotMulticlasse, asiAlLivello, privilegiClasseLivello, privilegiClasseFinoA,
   sottoclasseLivPer, trucchettiMax, incantesimiMaxAuto, caratteristicaIncantatoreEffettiva,
   classificaIncantesimoCombattimento, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello,
-  controlliScheda,
+  controlliScheda, risorseDopoRiposo,
 } from '../src/rules/regole.js';
 
 // --- Helper: sostituisce Math.random con una coda di valori deterministici ---
@@ -476,4 +476,32 @@ test('controlliScheda: nessuna competenza segnata su una scheda vuota di classe 
   const trovati = controlliScheda(scheda);
   assert.ok(!trovati.some((r) => r.id === 'budget-abilita'));
   assert.ok(!trovati.some((r) => r.id.startsWith('fonte-')));
+});
+
+test('riposo lungo: le risorse di classe tornano al massimo, non a zero', () => {
+  const risorse = [
+    { id: 'auto-ira', nome: 'Ira', attuali: 0, max: 3, reset: 'lungo' },
+    { id: 'auto-punti-stregoneria', nome: 'Punti Stregoneria', attuali: 2, max: 10, reset: 'lungo' },
+    { id: 'auto-punti-ki', nome: 'Punti Ki', attuali: 1, max: 5, reset: 'breve' },
+  ];
+  const dopo = risorseDopoRiposo(risorse, 'lungo');
+  assert.equal(dopo[0].attuali, 3);
+  assert.equal(dopo[1].attuali, 10);
+  assert.equal(dopo[2].attuali, 5, 'il riposo lungo ricarica anche le risorse "brevi"');
+});
+
+test('riposo breve: ricarica solo le risorse che si recuperano col riposo breve', () => {
+  const risorse = [
+    { id: 'auto-ira', nome: 'Ira', attuali: 0, max: 3, reset: 'lungo' },
+    { id: 'auto-punti-ki', nome: 'Punti Ki', attuali: 1, max: 5, reset: 'breve' },
+  ];
+  const dopo = risorseDopoRiposo(risorse, 'breve');
+  assert.equal(dopo[0].attuali, 0, 'una risorsa "lunga" non si ricarica col riposo breve');
+  assert.equal(dopo[1].attuali, 5);
+});
+
+test('riposo: le risorse senza reset (usi una tantum) restano intatte', () => {
+  const risorse = [{ id: 'mia', nome: 'Pozione unica', attuali: 0, max: 1, reset: '' }];
+  assert.deepEqual(risorseDopoRiposo(risorse, 'lungo'), risorse);
+  assert.deepEqual(risorseDopoRiposo(undefined, 'lungo'), []);
 });

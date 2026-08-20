@@ -412,3 +412,19 @@ export function controlliScheda(scheda) {
 
   return risultati;
 }
+
+/**
+ * Risorse di classe dopo un riposo. Nel modello `attuali` sono gli usi ANCORA
+ * DISPONIBILI (una risorsa nasce con attuali = max e il pulsante "−" spende),
+ * quindi un riposo le riporta al massimo: non le azzera.
+ * `tipo` è 'lungo' (ricarica tutto ciò che ha un reset) o 'breve' (solo le
+ * risorse che si ricaricano con il riposo breve).
+ */
+export function risorseDopoRiposo(risorse, tipo) {
+  return (Array.isArray(risorse) ? risorse : []).map((r) => {
+    if (!r || !r.reset) return r;
+    if (tipo === 'breve' && r.reset !== 'breve') return r;
+    const max = Math.max(0, Number(r.max) || 0);
+    return { ...r, attuali: max };
+  });
+}
