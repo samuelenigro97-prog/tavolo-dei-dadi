@@ -1,30 +1,88 @@
 # Continua qui — stato reale di Tavolo dei Dadi
 
-Aggiornato il **16 agosto 2026**. Versione pubblicata: **v2.91.0**.
+Aggiornato il **20 agosto 2026**. Ultima versione su `main`: **v2.99.0** (PR #61,
+sottoclasse anche per la classe secondaria del multiclasse).
 App: https://samuelenigro97-prog.github.io/tavolo-dei-dadi/
 
 > Si lavora anche con altre IA sul repository. Prima di modificare o pubblicare:
 > controllare branch, modifiche locali e ultimo `main`; non sovrascrivere lavoro
 > non proprio e non far modificare `src/App.jsx` contemporaneamente.
+>
+> **Nota su questo ambiente sandbox**: il container di questa sessione ha
+> ripristinato il working tree a uno snapshot vecchio **due volte** durante lo
+> sviluppo della funzione qui sotto, cancellando tutto il lavoro non ancora
+> committato. Se ti succede: `git status --short` (per non perdere lavoro vero),
+> poi `git fetch origin main -q && git checkout -B claude/profilo-grid-alignment-9wda3o origin/main -q`,
+> quindi ricostruisci. **Committa e pusha appena hai qualcosa di coerente che
+> passa i test**, non aspettare la fine dell'intera funzione: qui il `git push`
+> diretto su questo branch ha anche restituito un 403 sporadico (non un vero
+> conflitto) risolto ripetendo il push — se ricapita, riprova un paio di volte
+> prima di sospettare un problema di permessi reale.
 
-## Implementato localmente, non ancora pubblicato
+## Ultima funzione consegnata: sincronizzazione tramite codice, senza token GitHub
 
-Già presente nel working tree, con **87 test superati** e build riuscita:
+Richiesta utente: **"sync senza token GitHub"**. Alternativa più semplice al
+backup cloud esistente (che resta invariato, a base di token GitHub + Gist):
+un codice a 10 caratteri collega due dispositivi senza account né password,
+sullo stesso modello delle Stanze temporanee già esistenti.
 
-- Inventario: riga generica per oggetti con utilizzi, massimo e ricarica.
-- **Perla del Potere**: 1 utilizzo, recupero di uno slot di 3° livello o inferiore
-  e ricarica **all'alba**.
-- Inventario e menu testuali riusabili in ordine alfabetico; restano nel loro
-  ordine logico le sequenze meccaniche come livelli e dadi.
-- Aggiornamento PWA meno aggressivo: non elimina più service worker e cache.
-- Controllo aggiornamenti ogni 20 secondi e quando l'app torna visibile, online
-  o in primo piano.
-- Aggiornamento rimandato durante un salvataggio cloud.
-- Salvataggi Gist serializzati: le modifiche nuove vengono accodate e una
-  richiesta vecchia non può sovrascrivere dati più recenti.
-- Cache offline con timeout di rete di 3 secondi, senza attese indefinite.
+**Stato: codice pronto, testato (10 test dedicati + build + 127/127 test
+automatici del repo), committato e pushato su
+`claude/profilo-grid-alignment-9wda3o`. Manca solo aprire la PR verso `main`,
+farla passare in CI, fare merge e — soprattutto — che l'utente ripubblichi
+manualmente il Worker su Cloudflare, perché la rotta `/sync` esiste nel codice
+ma non è ancora online in produzione finché non lo fa.**
 
-Queste modifiche devono ancora essere versionate, pubblicate e provate sul sito.
+File toccati:
+
+- `src/utils/sync.js` (nuovo) — client: `generaCodiceSync`, `salvaSync`,
+  `caricaSync`, `messaggioErroreSync`, `normalizzaCodiceSync`/`formattaCodiceSync`
+  (ri-esportati da `stanze.js`, stesso alfabeto delle Stanze).
+- `worker/transcribe-worker.js` — nuova rotta `/sync/<codice>` (`gestisciSync`):
+  `PUT` salva `{roster, updatedAt}` in KV con prefisso `sync:` (180 giorni,
+  4 MB max), `GET` lo rilegge; riusa il rate limiting esistente
+  (`ROOM_RATE_LIMITER`) e la KV `SCHEDE` già in uso da `/room` e `/pg`.
+- `src/App.jsx` — nuova sezione "🔗 Sincronizza con un codice (senza account)"
+  nel modale ☁️ Cloud, subito sotto "🛟 Backup automatico"; il backup a token
+  GitHub esistente è stato spostato in un `<details>` "🔑 Backup con token
+  GitHub (per il DM / uso avanzato)" per non confondere chi non lo usa. Stato
+  e funzioni: `codiceSync`, `autoSyncCodice`, `salvaSuCodiceSync`,
+  `caricaDaCodiceSync`, `creaCodiceSync`, `usaCodiceSyncEsistente`,
+  `disattivaSyncCodice`, con autosalvataggio debounced e caricamento
+  automatico all'avvio se un codice è già attivo su quel dispositivo — stessa
+  logica del backup a token, chiave `localStorage` separata
+  (`sync-codice-ts` invece di `sync-ts`). Il pulsante ☁️ in intestazione mostra
+  la spunta verde anche quando la sync-by-code è l'unica attiva.
+- `test/sync.test.mjs` (nuovo) — 10 test: salvataggio/rilettura, codice mai
+  usato → 404, malformato → 400, corpo senza roster valido → 400, roster
+  troppo grande → 413, KV mancante → 500, rate limit → 429, client che non
+  tocca mai GitHub, formato del codice generato, copertura dei messaggi
+  d'errore.
+- `worker/LEGGIMI.md` — nuova sezione "Sincronizzazione tra dispositivi
+  tramite codice — senza token GitHub", analoga a quella delle Stanze.
+
+### Cosa manca per chiudere davvero questa richiesta
+
+1. Aprire la PR da `claude/profilo-grid-alignment-9wda3o` verso `main`,
+   spiegando la funzione **e ricordando esplicitamente che il Worker va
+   ripubblicato a mano su Cloudflare** prima che `/sync` funzioni sul sito
+   reale (il codice del Worker da solo non basta, come sempre in questo
+   repository: il Worker non si aggiorna da solo col merge della PR).
+2. Verifica manuale nel browser non ancora fatta in questa sessione (era in
+   corso in una sessione precedente ma il tentativo si è perso in uno dei due
+   rollback dell'ambiente): aprire l'app, creare un codice su un "dispositivo",
+   verificare che compaia nel modale Cloud, e su un secondo profilo/browser
+   digitare lo stesso codice e controllare che il roster arrivi. Non
+   strettamente bloccante per il merge (i 10 test coprono già la logica), ma
+   consigliata almeno una volta prima di considerarla definitivamente chiusa.
+3. Dopo il merge: verificare che il bundle pubblicato su GitHub Pages mostri
+   `v2.100.0`, e avvisare l'utente che deve ripubblicare il Worker.
+
+Dopo questa richiesta, altre idee già proposte e accettate in linea di
+principio ("Tavolo dal vivo" per il combat tracker condiviso in tempo reale,
+"Scheda stampabile/PDF", "Diario di campagna condiviso") **restano in coda e
+non vanno iniziate finché l'utente non le chiede esplicitamente per nome**,
+esattamente come ha fatto per "sync senza token GitHub".
 
 ## Registro delle richieste inviate oggi
 

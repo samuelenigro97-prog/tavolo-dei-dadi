@@ -11,6 +11,7 @@ import { FLYORA_JSON, ESEMPIO_GNOMO } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { codificaScheda, decodificaScheda, preparaPerCondivisione, costruisciLink, payloadDaUrl, LIMITE_PAYLOAD } from './utils/condivisione.js';
 import { creaStanza, apriStanza, normalizzaCodiceStanza, formattaCodiceStanza, DURATA_STANZA_ORE } from './utils/stanze.js';
+import { generaCodiceSync, normalizzaCodiceSync, formattaCodiceSync, salvaSync, caricaSync, messaggioErroreSync } from './utils/sync.js';
 import { salvaJson, rosterSenzaImmagini, riagganciaImmagini, salvaImmaginiRoster, caricaImmaginiRoster, rimuoviImmaginePersonaggio, preservaImmaginiSeMancanti } from './utils/persistenza.js';
 
 // ---------------------------------------------------------------------------
@@ -1229,7 +1230,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '2.99.0';
+const APP_VERSION = '2.100.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2199,6 +2200,18 @@ export default function App() {
   tokenSyncRef.current = githubToken;
   gistSyncRef.current = gistId;
 
+  // Sincronizzazione tramite codice, senza token GitHub: alternativa più
+  // semplice al backup a token, sullo stesso modello delle Stanze temporanee.
+  const [codiceSync, setCodiceSync] = useState(() => localStorage.getItem('scheda-interattiva:codice-sync') || '');
+  const [autoSyncCodice, setAutoSyncCodice] = useState(() => localStorage.getItem('scheda-interattiva:auto-sync-codice') === 'on');
+  const [ultimoSyncCodice, setUltimoSyncCodice] = useState(() => localStorage.getItem('scheda-interattiva:ultimo-sync-codice') || '');
+  const [codiceSyncInput, setCodiceSyncInput] = useState('');
+  const [syncCodiceStatus, setSyncCodiceStatus] = useState({ text: '', type: '' });
+  const codiceSyncRef = useRef(codiceSync);
+  const syncCodiceInCorsoRef = useRef(false);
+  const syncCodicePendenteRef = useRef(false);
+  codiceSyncRef.current = codiceSync;
+
   // Level Up
   const [mostraLevelUp, setMostraLevelUp] = useState(false);
   const [mostraPrivilegi, setMostraPrivilegi] = useState(false); // panoramica privilegi per livello
@@ -2324,9 +2337,14 @@ export default function App() {
       t.title = colore;
       t.gold = colore;
       t.goldDark = colore;
-      // tonalità: sfondo, pannelli e bordi virano leggermente verso il colore classe
-      t.bg = mescola(t.bg, colore, scuroEff ? 0.07 : 0.05);
-      t.panelLight = mescola(t.panelLight, colore, scuroEff ? 0.1 : 0.06);
+      // tonalità: bordi sempre, sfondo e pannelli solo in tema scuro. In tema
+      // chiaro, intonare anche lo sfondo verso colori "caldi" (rosso, arancio,
+      // cremisi) lo appiattisce contro il crema di base: restano quindi
+      // neutri, e solo testo/bordi portano il colore della classe.
+      if (scuroEff) {
+        t.bg = mescola(t.bg, colore, 0.07);
+        t.panelLight = mescola(t.panelLight, colore, 0.1);
+      }
       t.border = mescola(t.border, colore, 0.2);
     }
     const root = document.documentElement;
@@ -3533,20 +3551,23 @@ export default function App() {
       if (nuovoId) {
         // Non lasciare che il push di un dispositivo senza l'immagine più
         // recente (appena caricata da un altro dispositivo, non ancora
-        // scaricata qui) cancelli quella già presente sul cloud.
-        try {
-          const resAttuale = await fetch(`https://api.github.com/gists/${nuovoId}`, {
-            headers: { 'Authorization': `token ${tokenSyncRef.current}`, 'Accept': 'application/vnd.github.v3+json' },
-          });
-          if (resAttuale.ok) {
-            const outAttuale = await resAttuale.json();
-            const fileAttuale = outAttuale.files?.['roster_tavolo_dei_dadi.json'];
-            if (fileAttuale) {
-              const parsedAttuale = JSON.parse(fileAttuale.content);
-              rosterDaInviare = preservaImmaginiSeMancanti(rosterCloud, parsedAttuale);
-            }
-          }
-        } catch { /* offline o rete lenta: si procede comunque con i dati locali */ }
+        // scaricata qui) cancelli quella già presente sul cloud: se non
+        // riusciamo a leggere lo stato attuale per fare il confronto, meglio
+        // rimandare il salvataggio (ci riprova il prossimo cambiamento) che
+        // scrivere alla cieca e rischiare di cancellare un'immagine.
+        const resAttuale = await fetch(`https://api.github.com/gists/${nuovoId}`, {
+          headers: { 'Authorization': `token ${tokenSyncRef.current}`, 'Accept': 'application/vnd.github.v3+json' },
+        }).catch(() => null);
+        if (!resAttuale || !resAttuale.ok) {
+          if (!silenzioso) setCloudStatus({ text: 'Rete non raggiungibile: salvataggio rimandato per non rischiare di sovrascrivere dati più recenti.', type: 'error' });
+          return;
+        }
+        const outAttuale = await resAttuale.json();
+        const fileAttuale = outAttuale.files?.['roster_tavolo_dei_dadi.json'];
+        if (fileAttuale) {
+          const parsedAttuale = JSON.parse(fileAttuale.content);
+          rosterDaInviare = preservaImmaginiSeMancanti(rosterCloud, parsedAttuale);
+        }
       }
       const dati = JSON.stringify({ ...rosterDaInviare, _updatedAt: quando }, null, 2);
       const corpo = { files: { 'roster_tavolo_dei_dadi.json': { content: dati } } };
@@ -3732,6 +3753,166 @@ export default function App() {
       setCaricandoCloud(false);
     }
   }
+
+  // --- Sincronizzazione tramite codice (senza token GitHub) ---
+
+  async function salvaSuCodiceSync(silenzioso = false) {
+    if (!codiceSyncRef.current) return;
+    if (syncCodiceInCorsoRef.current) {
+      syncCodicePendenteRef.current = true;
+      return;
+    }
+    syncCodiceInCorsoRef.current = true;
+    try {
+      if (!silenzioso) setSyncCodiceStatus({ text: 'Salvataggio in corso...', type: 'info' });
+      const quando = Date.now();
+      const rosterCloud = await caricaImmaginiRoster(rosterSyncRef.current).catch(() => rosterSyncRef.current);
+      let rosterDaInviare = rosterCloud;
+      try {
+        const attuale = await caricaSync(URL_STANZE, codiceSyncRef.current);
+        rosterDaInviare = preservaImmaginiSeMancanti(rosterCloud, attuale.roster);
+      } catch (errAttuale) {
+        // "Codice non ancora popolato" è l'unico caso in cui è sicuro procedere
+        // senza il confronto: per qualsiasi altro errore (rete, rate limit...)
+        // scrivere alla cieca rischierebbe di cancellare un'immagine più
+        // recente salvata da un altro dispositivo con lo stesso codice.
+        if (errAttuale.message !== 'SYNC_NOT_FOUND') {
+          if (!silenzioso) setSyncCodiceStatus({ text: 'Rete non raggiungibile: salvataggio rimandato per non rischiare di sovrascrivere dati più recenti.', type: 'error' });
+          return;
+        }
+      }
+      await salvaSync(URL_STANZE, codiceSyncRef.current, rosterDaInviare, quando);
+      const orario = new Date(quando).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+      setUltimoSyncCodice(orario);
+      localStorage.setItem('scheda-interattiva:ultimo-sync-codice', orario);
+      localStorage.setItem('scheda-interattiva:sync-codice-ts', String(quando));
+      segnaBackupFatto();
+      setSyncCodiceStatus({ text: `✅ Sincronizzato · ${orario}`, type: 'success' });
+    } catch (err) {
+      setSyncCodiceStatus({ text: messaggioErroreSync(err.message), type: 'error' });
+    } finally {
+      syncCodiceInCorsoRef.current = false;
+      if (syncCodicePendenteRef.current) {
+        syncCodicePendenteRef.current = false;
+        setTimeout(() => salvaSuCodiceSync(true), 0);
+      }
+    }
+  }
+
+  /** Applica al roster locale ciò che è salvato sotto un codice. Condivisa da
+   *  caricaDaCodiceSync() e usaCodiceSyncEsistente(). */
+  async function caricaDaCodiceSyncPer(codice) {
+    const { roster: rosterRicevuto, updatedAt } = await caricaSync(URL_STANZE, codice);
+    const caricato = { attivo: rosterRicevuto.attivo, personaggi: {} };
+    for (const id in (rosterRicevuto.personaggi || {})) caricato.personaggi[id] = normalizeImported(rosterRicevuto.personaggi[id]);
+    if (!caricato.attivo || !caricato.personaggi[caricato.attivo]) caricato.attivo = Object.keys(caricato.personaggi)[0] || '';
+    const conImmaginiLocali = await caricaImmaginiRoster(caricato).catch(() => caricato);
+    setRoster(preservaImmaginiSeMancanti(conImmaginiLocali, rosterSyncRef.current));
+    if (updatedAt) localStorage.setItem('scheda-interattiva:sync-codice-ts', String(updatedAt));
+    return updatedAt;
+  }
+
+  async function caricaDaCodiceSync() {
+    if (!codiceSyncRef.current) {
+      setSyncCodiceStatus({ text: 'Nessun codice attivo su questo dispositivo.', type: 'error' });
+      return;
+    }
+    try {
+      setCaricandoCloud(true);
+      setSyncCodiceStatus({ text: 'Caricamento in corso...', type: 'info' });
+      await caricaDaCodiceSyncPer(codiceSyncRef.current);
+      setSyncCodiceStatus({ text: '✅ Roster caricato e sincronizzato!', type: 'success' });
+    } catch (err) {
+      setSyncCodiceStatus({ text: messaggioErroreSync(err.message), type: 'error' });
+    } finally {
+      setCaricandoCloud(false);
+    }
+  }
+
+  /** Crea un nuovo codice su questo dispositivo e lo pubblica subito, così è
+   *  pronto da digitare sull'altro dispositivo. */
+  async function creaCodiceSync() {
+    const nuovo = generaCodiceSync();
+    codiceSyncRef.current = nuovo;
+    setCodiceSync(nuovo);
+    localStorage.setItem('scheda-interattiva:codice-sync', nuovo);
+    setAutoSyncCodice(true);
+    localStorage.setItem('scheda-interattiva:auto-sync-codice', 'on');
+    await salvaSuCodiceSync(false);
+  }
+
+  /** Entra in un codice creato su un altro dispositivo: lo adotta come proprio
+   *  e carica subito il roster che contiene. */
+  async function usaCodiceSyncEsistente() {
+    const pulito = normalizzaCodiceSync(codiceSyncInput);
+    if (pulito.length !== 10) {
+      setSyncCodiceStatus({ text: messaggioErroreSync('SYNC_INVALID_CODE'), type: 'error' });
+      return;
+    }
+    try {
+      setCaricandoCloud(true);
+      setSyncCodiceStatus({ text: 'Caricamento in corso...', type: 'info' });
+      await caricaDaCodiceSyncPer(pulito);
+      codiceSyncRef.current = pulito;
+      setCodiceSync(pulito);
+      localStorage.setItem('scheda-interattiva:codice-sync', pulito);
+      setAutoSyncCodice(true);
+      localStorage.setItem('scheda-interattiva:auto-sync-codice', 'on');
+      setCodiceSyncInput('');
+      setSyncCodiceStatus({ text: '✅ Roster caricato e sincronizzato!', type: 'success' });
+    } catch (err) {
+      setSyncCodiceStatus({ text: messaggioErroreSync(err.message), type: 'error' });
+    } finally {
+      setCaricandoCloud(false);
+    }
+  }
+
+  function disattivaSyncCodice() {
+    setAutoSyncCodice(false);
+    localStorage.setItem('scheda-interattiva:auto-sync-codice', 'off');
+  }
+
+  // Auto-salvataggio con codice: stessa logica di debounce del backup a token.
+  const primoRenderSyncCodice = useRef(true);
+  useEffect(() => {
+    if (primoRenderSyncCodice.current) { primoRenderSyncCodice.current = false; return; }
+    if (!autoSyncCodice || !codiceSync) return;
+    const t = setTimeout(() => { salvaSuCodiceSync(true); }, 2500);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roster, autoSyncCodice, codiceSync]);
+
+  // Auto-caricamento all'avvio se un codice è già attivo su questo dispositivo
+  // e il cloud ha una copia più recente di quella locale (stessa logica del
+  // caricamento automatico col token, ma sulla chiave "sync-codice-ts").
+  const autoCaricatoCodice = useRef(false);
+  useEffect(() => {
+    if (autoCaricatoCodice.current) return;
+    autoCaricatoCodice.current = true;
+    if (!codiceSync) return;
+    (async () => {
+      try {
+        setCaricandoCloud(true);
+        const { roster: rosterRicevuto, updatedAt } = await caricaSync(URL_STANZE, codiceSync);
+        const localTs = Number(localStorage.getItem('scheda-interattiva:sync-codice-ts')) || 0;
+        if (updatedAt <= localTs) return;
+        const caricato = { attivo: rosterRicevuto.attivo, personaggi: {} };
+        for (const id in (rosterRicevuto.personaggi || {})) caricato.personaggi[id] = normalizeImported(rosterRicevuto.personaggi[id]);
+        if (!caricato.attivo || !caricato.personaggi[caricato.attivo]) caricato.attivo = Object.keys(caricato.personaggi)[0] || '';
+        if (Object.keys(caricato.personaggi).length) {
+          const conImmaginiLocali = await caricaImmaginiRoster(caricato).catch(() => caricato);
+          setRoster(preservaImmaginiSeMancanti(conImmaginiLocali, rosterSyncRef.current));
+          localStorage.setItem('scheda-interattiva:sync-codice-ts', String(updatedAt));
+          setSyncCodiceStatus({ text: '☁️ Personaggi caricati dal codice di sincronizzazione', type: 'success' });
+        }
+      } catch {
+        // Offline o codice non più valido: il roster locale resta comunque disponibile.
+      } finally {
+        setCaricandoCloud(false);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const critico = tiro?.naturale === 20;
   const fallimento = tiro?.naturale === 1;
@@ -4176,6 +4357,54 @@ export default function App() {
         >
           <div style={{ ...styles.panel, maxWidth: 460, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
             <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 8 }}>🛟 Backup automatico</h1>
+
+            <div style={{ padding: 12, borderRadius: 8, background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, marginBottom: 16 }}>
+              <div style={{ ...styles.detail, fontWeight: 'bold', marginBottom: 6 }}>🔗 Sincronizza con un codice (senza account)</div>
+              {codiceSync && autoSyncCodice ? (
+                <>
+                  <p style={{ ...styles.detail, fontSize: 12, marginTop: 0, marginBottom: 8, lineHeight: 1.5 }}>
+                    Digita questo stesso codice sull'altro dispositivo per collegarlo.
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                    <div style={{ color: C.goldDark, fontSize: 20, fontWeight: 800, letterSpacing: 2, fontFamily: 'monospace' }}>{formattaCodiceSync(codiceSync)}</div>
+                    <button style={styles.buttonMini} onClick={() => navigator.clipboard?.writeText(formattaCodiceSync(codiceSync))}>📋</button>
+                  </div>
+                  {ultimoSyncCodice && <div style={{ ...styles.detail, fontSize: 11, marginBottom: 8 }}>Ultimo salvataggio: {ultimoSyncCodice}</div>}
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button style={{ ...styles.button, flex: 1 }} onClick={caricaDaCodiceSync}>⬇️ Carica ora</button>
+                    <button style={styles.buttonMini} onClick={disattivaSyncCodice}>Disattiva</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p style={{ ...styles.detail, fontSize: 12, marginTop: 0, marginBottom: 8, lineHeight: 1.5 }}>
+                    Alternativa più semplice al backup con token GitHub qui sotto: crea un codice a 10 caratteri
+                    su questo dispositivo e digitalo sull'altro per collegarli, senza account né password.
+                  </p>
+                  <button style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 10 }} onClick={creaCodiceSync}>🆕 Crea un nuovo codice</button>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <input
+                      type="text"
+                      style={{ ...styles.inlineInput, flex: 1, padding: '6px 8px', fontSize: 15, fontFamily: 'monospace', textTransform: 'uppercase' }}
+                      placeholder="XXXXX-XXXXX"
+                      value={formattaCodiceSync(codiceSyncInput)}
+                      onChange={(e) => setCodiceSyncInput(normalizzaCodiceSync(e.target.value))}
+                      onKeyDown={(e) => { if (e.key === 'Enter' && normalizzaCodiceSync(codiceSyncInput).length === 10) usaCodiceSyncEsistente(); }}
+                    />
+                    <button style={styles.buttonPrimary} disabled={normalizzaCodiceSync(codiceSyncInput).length !== 10} onClick={usaCodiceSyncEsistente}>Usa</button>
+                  </div>
+                </>
+              )}
+              {syncCodiceStatus.text && (
+                <div style={{ marginTop: 10, padding: 8, borderRadius: 6, background: syncCodiceStatus.type === 'error' ? 'rgba(255,0,0,0.1)' : syncCodiceStatus.type === 'success' ? 'rgba(0,255,0,0.1)' : 'rgba(255,255,255,0.05)', color: syncCodiceStatus.type === 'error' ? C.red : syncCodiceStatus.type === 'success' ? C.green : C.goldDark, fontSize: 12, textAlign: 'center' }}>
+                  {syncCodiceStatus.text}
+                </div>
+              )}
+            </div>
+
+            <details style={{ marginBottom: 12 }}>
+              <summary style={{ ...styles.detail, cursor: 'pointer', fontWeight: 'bold' }}>🔑 Backup con token GitHub (per il DM / uso avanzato)</summary>
+              <div style={{ marginTop: 10 }}>
             {githubToken && gistId && autoSync ? (
               <div style={{ padding: 12, borderRadius: 8, background: 'rgba(60,160,60,0.14)', border: `1px solid ${C.green}`, marginBottom: 14, fontSize: 14 }}>
                 ✅ <strong>Backup automatico attivo.</strong> I personaggi si salvano sul cloud da soli a ogni modifica.
@@ -4268,6 +4497,8 @@ export default function App() {
                 {ultimoSync && <><br />{t('cloud.ultimo_sync')}: {ultimoSync}{sincronizzando ? ` · ${t('cloud.salvando')}` : ''}</>}
               </span>
             </label>
+              </div>
+            </details>
               </div>
             </details>
 
@@ -5209,10 +5440,10 @@ export default function App() {
           </button>
           <button
             style={{ ...styles.modeButton(mostraCloud), color: C.goldDark, borderColor: C.goldDark }}
-            title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato (auto-salvataggio spento)') : 'Sincronizza i tuoi personaggi sul Cloud GitHub'}
+            title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato (auto-salvataggio spento)') : (codiceSync && autoSyncCodice ? `Sincronizzato con codice${ultimoSyncCodice ? ` · ultimo ${ultimoSyncCodice}` : ''}` : 'Sincronizza i tuoi personaggi sul Cloud')}
             onClick={() => { setCloudStatus({ text: '', type: '' }); setMostraCloud(true); }}
           >
-            ☁️ <span className="header-label">Cloud</span>{sincronizzando ? ' …' : (githubToken && gistId && autoSync
+            ☁️ <span className="header-label">Cloud</span>{sincronizzando ? ' …' : ((githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice)
               ? <span aria-label="Sincronizzazione automatica attiva" style={{ color: '#2e9d4d', fontWeight: 900 }}>✓</span>
               : '')}
           </button>
@@ -6606,12 +6837,12 @@ export default function App() {
                                 <div
                                   onPointerDown={(e) => e.stopPropagation()}
                                   onClick={(e) => e.stopPropagation()}
-                                  style={{ position: 'fixed', top: fontePopover.top, left: fontePopover.left, transform: 'translateX(-100%)', zIndex: 1050, background: C.panel, border: `1px solid ${C.gold}`, borderRadius: 8, padding: '6px 10px', minWidth: 170, boxShadow: '0 6px 18px rgba(0,0,0,0.35)', fontSize: 11, textAlign: 'left', fontWeight: 'normal' }}
+                                  style={{ position: 'fixed', top: fontePopover.top, left: fontePopover.left, transform: 'translateX(-100%)', zIndex: 1050, background: '#1c150f', border: `2px solid ${C.gold}`, borderRadius: 8, padding: '6px 10px', minWidth: 170, boxShadow: '0 6px 18px rgba(0,0,0,0.55)', fontSize: 11, textAlign: 'left', fontWeight: 'normal' }}
                                 >
-                                  <div style={{ fontWeight: 'bold', marginBottom: 4, color: C.inkDim }}>{t('inv.fonte_bonus')}:</div>
+                                  <div style={{ fontWeight: 'bold', marginBottom: 4, color: '#c9bfa8' }}>{t('inv.fonte_bonus')}:</div>
                                   {fontiCar.length
-                                    ? fontiCar.map((o) => <div key={o.id} style={{ whiteSpace: 'nowrap' }}>🎒 {o.nome}</div>)
-                                    : <div style={{ color: C.inkDim }}>—</div>}
+                                    ? fontiCar.map((o) => <div key={o.id} style={{ whiteSpace: 'nowrap', color: '#f0e6d2' }}>🎒 {o.nome}</div>)
+                                    : <div style={{ color: '#c9bfa8' }}>—</div>}
                                 </div>
                               )}
                             </span>
@@ -6660,12 +6891,12 @@ export default function App() {
                             <div
                               onPointerDown={(e) => e.stopPropagation()}
                               onClick={(e) => e.stopPropagation()}
-                              style={{ position: 'fixed', top: fontePopover.top, left: fontePopover.left, transform: 'translateX(-100%)', zIndex: 1050, background: C.panel, border: `1px solid ${C.gold}`, borderRadius: 8, padding: '6px 10px', minWidth: 170, boxShadow: '0 6px 18px rgba(0,0,0,0.35)', fontSize: 11, textAlign: 'left' }}
+                              style={{ position: 'fixed', top: fontePopover.top, left: fontePopover.left, transform: 'translateX(-100%)', zIndex: 1050, background: '#1c150f', border: `2px solid ${C.gold}`, borderRadius: 8, padding: '6px 10px', minWidth: 170, boxShadow: '0 6px 18px rgba(0,0,0,0.55)', fontSize: 11, textAlign: 'left' }}
                             >
-                              <div style={{ fontWeight: 'bold', marginBottom: 4, color: C.inkDim }}>{t('inv.fonte_bonus')}:</div>
+                              <div style={{ fontWeight: 'bold', marginBottom: 4, color: '#c9bfa8' }}>{t('inv.fonte_bonus')}:</div>
                               {fontiTS.length
-                                ? fontiTS.map((o) => <div key={o.id} style={{ whiteSpace: 'nowrap' }}>🎒 {o.nome}</div>)
-                                : <div style={{ color: C.inkDim }}>—</div>}
+                                ? fontiTS.map((o) => <div key={o.id} style={{ whiteSpace: 'nowrap', color: '#f0e6d2' }}>🎒 {o.nome}</div>)
+                                : <div style={{ color: '#c9bfa8' }}>—</div>}
                             </div>
                           )}
                         </span>
