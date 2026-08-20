@@ -740,7 +740,7 @@ const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(I
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -1230,7 +1230,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.2.0';
+const APP_VERSION = '3.3.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7780,6 +7780,66 @@ export default function App() {
                       <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title="Recupera 1 punto" onClick={() => modR({ attuali: Math.min(r.max, r.attuali + 1) })}>+</button>
                       <span style={styles.detail}>/ <Editable value={r.max} tipo="numero" width={30} onChange={(v) => modR({ max: Math.max(0, v), attuali: Math.min(Math.max(0, v), r.attuali) })} /></span>
                       <span style={{ ...styles.detail, fontSize: 11, opacity: 0.75 }}>· sincronizzati con Risorse di classe</span>
+                    </div>
+                  );
+                })()}
+
+                {/* Fonte di Magia: converte i Punti Stregoneria in slot già
+                    spesi e viceversa. Tocca sia i punti (una risorsa) sia gli
+                    slot, quindi scrive con un solo aggiorna() per non perdere
+                    una delle due modifiche. */}
+                {(() => {
+                  const risorse = scheda.risorse || [];
+                  const idx = risorse.findIndex((r) => /stregoneria/i.test(r.nome || ''));
+                  if (idx < 0) return null;
+                  const r = risorse[idx];
+                  const applica = (esito) => {
+                    if (!esito.ok) { setInfo({ titolo: '✨ Fonte di Magia', testo: esito.motivo }); return; }
+                    aggiorna({
+                      slotIncantesimo: esito.slotIncantesimo,
+                      risorse: risorse.map((x, i) => (i === idx ? { ...x, attuali: esito.punti } : x)),
+                    });
+                  };
+                  const slotOra = scheda.slotIncantesimo || {};
+                  return (
+                    <div style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', marginBottom: 10 }}>
+                      <div style={{ ...styles.detail, fontWeight: 700, marginBottom: 2 }}>🔄 Fonte di Magia</div>
+                      <div style={{ ...styles.detail, fontSize: 11, marginBottom: 8 }}>
+                        Converti i punti in uno slot già speso, o brucia uno slot per riavere punti.
+                      </div>
+                      <div style={{ ...styles.detail, fontSize: 11, marginBottom: 4 }}>Punti → slot (recupera uno slot speso):</div>
+                      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 8 }}>
+                        {LIVELLI_CONVERTIBILI.map((liv) => {
+                          const costo = COSTO_SLOT_IN_PUNTI[liv];
+                          const possibile = puntiVersoSlot(slotOra, r.attuali, liv).ok;
+                          return (
+                            <button
+                              key={liv}
+                              style={{ ...styles.buttonMini, padding: '2px 7px', opacity: possibile ? 1 : 0.45 }}
+                              title={`Spendi ${costo} punti per recuperare uno slot di ${liv}° livello`}
+                              onClick={() => applica(puntiVersoSlot(slotOra, r.attuali, liv))}
+                            >{liv}° <span style={{ opacity: 0.7 }}>({costo}p)</span></button>
+                          );
+                        })}
+                      </div>
+                      <div style={{ ...styles.detail, fontSize: 11, marginBottom: 4 }}>Slot → punti (spendi uno slot disponibile):</div>
+                      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                        {Object.keys(slotOra)
+                          .map(Number)
+                          .filter((liv) => liv >= 1 && (slotOra[liv]?.totale || 0) > 0)
+                          .sort((a, b) => a - b)
+                          .map((liv) => {
+                            const possibile = slotVersoPunti(slotOra, r.attuali, r.max, liv).ok;
+                            return (
+                              <button
+                                key={liv}
+                                style={{ ...styles.buttonMini, padding: '2px 7px', opacity: possibile ? 1 : 0.45 }}
+                                title={`Spendi uno slot di ${liv}° livello per ottenere ${liv} Punti Stregoneria`}
+                                onClick={() => applica(slotVersoPunti(slotOra, r.attuali, r.max, liv))}
+                              >{liv}° <span style={{ opacity: 0.7 }}>(+{liv}p)</span></button>
+                            );
+                          })}
+                      </div>
                     </div>
                   );
                 })()}

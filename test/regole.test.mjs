@@ -13,7 +13,7 @@ import {
   slotMulticlasse, asiAlLivello, privilegiClasseLivello, privilegiClasseFinoA,
   sottoclasseLivPer, trucchettiMax, incantesimiMaxAuto, caratteristicaIncantatoreEffettiva,
   classificaIncantesimoCombattimento, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello,
-  controlliScheda, risorseDopoRiposo,
+  controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, puntiVersoSlot, slotVersoPunti,
 } from '../src/rules/regole.js';
 
 // --- Helper: sostituisce Math.random con una coda di valori deterministici ---
@@ -504,4 +504,59 @@ test('riposo: le risorse senza reset (usi una tantum) restano intatte', () => {
   const risorse = [{ id: 'mia', nome: 'Pozione unica', attuali: 0, max: 1, reset: '' }];
   assert.deepEqual(risorseDopoRiposo(risorse, 'lungo'), risorse);
   assert.deepEqual(risorseDopoRiposo(undefined, 'lungo'), []);
+});
+
+// --- Fonte di Magia: conversione slot <-> Punti Stregoneria ---
+const slotBase = () => ({ 1: { totale: 4, spesi: 2 }, 2: { totale: 3, spesi: 0 }, 3: { totale: 3, spesi: 3 } });
+
+test('Fonte di Magia: i costi seguono la tabella 5e', () => {
+  assert.deepEqual(COSTO_SLOT_IN_PUNTI, { 1: 2, 2: 3, 3: 5, 4: 6, 5: 7 });
+});
+
+test('punti -> slot: spende i punti e recupera uno slot speso', () => {
+  const r = puntiVersoSlot(slotBase(), 6, 3);
+  assert.equal(r.ok, true);
+  assert.equal(r.punti, 1, '6 punti - 5 per uno slot di 3°');
+  assert.equal(r.slotIncantesimo[3].spesi, 2, 'uno slot speso in meno');
+  assert.equal(r.slotIncantesimo[3].totale, 3, 'il totale non cambia mai');
+});
+
+test('punti -> slot: rifiuta senza punti a sufficienza, senza slot spesi, o oltre il 5°', () => {
+  assert.equal(puntiVersoSlot(slotBase(), 4, 3).ok, false, 'servono 5 punti');
+  assert.equal(puntiVersoSlot(slotBase(), 9, 2).ok, false, 'slot di 2° tutti disponibili');
+  assert.equal(puntiVersoSlot(slotBase(), 20, 6).ok, false, 'la Fonte di Magia arriva al 5°');
+  assert.equal(puntiVersoSlot({ 1: { totale: 0, spesi: 0 } }, 9, 1).ok, false, 'nessuno slot di quel livello');
+  for (const esito of [puntiVersoSlot(slotBase(), 4, 3), puntiVersoSlot(slotBase(), 20, 6)]) {
+    assert.equal(typeof esito.motivo, 'string');
+    assert.ok(esito.motivo.length > 0);
+  }
+});
+
+test('slot -> punti: spende uno slot disponibile e dà punti pari al livello', () => {
+  const r = slotVersoPunti(slotBase(), 1, 10, 2);
+  assert.equal(r.ok, true);
+  assert.equal(r.punti, 3, '1 + 2 (livello dello slot)');
+  assert.equal(r.slotIncantesimo[2].spesi, 1);
+});
+
+test('slot -> punti: non supera il massimo e rifiuta se non ci sono slot liberi', () => {
+  assert.equal(slotVersoPunti(slotBase(), 9, 10, 2).punti, 10, 'si ferma al massimo');
+  assert.equal(slotVersoPunti(slotBase(), 10, 10, 2).ok, false, 'riserva già piena');
+  assert.equal(slotVersoPunti(slotBase(), 0, 10, 3).ok, false, 'slot di 3° tutti spesi');
+});
+
+test('conversione: il giro completo è in perdita, non è una macchina per fare punti', () => {
+  // Uno slot di 1° dà 1 punto, ma ricrearlo ne costa 2: il giro non si chiude.
+  const a = slotVersoPunti(slotBase(), 0, 10, 1);
+  assert.equal(a.ok, true);
+  assert.equal(a.punti, 1);
+  const b = puntiVersoSlot(a.slotIncantesimo, a.punti, 1);
+  assert.equal(b.ok, false, 'con 1 solo punto non si ricompra lo slot appena bruciato');
+
+  // Con punti a sufficienza il giro si chiude e i TOTALI restano intatti:
+  // cambia solo quanti slot risultano spesi.
+  const c = puntiVersoSlot(a.slotIncantesimo, 5, 1);
+  assert.equal(c.ok, true);
+  assert.deepEqual(c.slotIncantesimo[1], slotBase()[1], 'gli slot tornano come prima');
+  assert.equal(c.punti, 3, '5 punti - 2 per lo slot di 1°');
 });
