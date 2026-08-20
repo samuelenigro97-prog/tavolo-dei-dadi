@@ -135,3 +135,26 @@ hashato. Nessun IP viene memorizzato in chiaro.
 
 Il backup Gist resta disponibile come funzione separata per gli utenti che lo
 avevano già configurato. Le stanze non leggono né richiedono il relativo token.
+
+# Sincronizzazione tra dispositivi tramite codice — senza token GitHub
+
+Terza funzione sullo stesso Worker, pensata come alternativa più semplice al
+backup Gist per chi non vuole creare un token GitHub: un codice a 10 caratteri
+collega due (o più) dispositivi e il roster si sincronizza da solo.
+
+- `PUT /sync/<CODICE>` con `{ "roster": { ... }, "updatedAt": <numero> }`:
+  salva/sovrascrive il roster sotto quel codice;
+- `GET /sync/<CODICE>`: rilegge l'ultimo roster salvato con quel codice.
+
+Il codice è generato **sempre lato client** (mai dal Worker) e fa da identità
+e da segreto insieme: chi lo conosce può leggere e scrivere. Il salvataggio
+dura 180 giorni da ogni scrittura, con limite di 4 MB (immagini comprese).
+Riusa lo stesso binding KV `SCHEDE`, con chiavi `sync:`, e lo stesso rate
+limiting delle Stanze. Non serve nessun nuovo segreto né una nuova variabile
+di build: usa `VITE_STANZE_URL`/`VITE_ARCHIVIO_PG_URL` già configurate sopra.
+
+Dall'app: nel modale ☁️ Cloud, sezione "🔗 Sincronizza con un codice (senza
+account)" — crea un codice su un dispositivo, digitalo sull'altro. Il backup
+con token GitHub resta disponibile più sotto, sotto "🔑 Backup con token
+GitHub (per il DM / uso avanzato)", per chi lo preferisce o lo aveva già
+configurato: le due funzioni non si toccano tra loro.
