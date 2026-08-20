@@ -10,6 +10,11 @@
  *       DELETE /pg (body {dispositivo,id})  un dispositivo cancella la PROPRIA
  *              copia depositata (nessuna chiave: stessa identità della POST)
  *  3) /room            → snapshot temporanei condivisi tramite codice (KV)
+ *  4) /sync/<codice>   → sincronizzazione roster tra dispositivi senza token
+ *       GET  /sync/<codice>  legge l'ultimo roster salvato con quel codice
+ *       PUT  /sync/<codice>  salva/sovrascrive {roster, updatedAt} (180 giorni)
+ *              il codice è generato SEMPRE lato client e fa da identità e da
+ *              segreto insieme: nessun account, nessun token GitHub.
  *
  * Segreti/variabili (impostati con `wrangler secret put` o dal dashboard):
  *   - ANTHROPIC_API_KEY  (per la trascrizione PDF) la tua chiave API Anthropic
@@ -91,6 +96,8 @@ function cors(origin) {
 const MAX_SCHEDA_BYTES = 256 * 1024;
 const MAX_STANZA_BYTES = 128 * 1024;
 const DURATA_STANZA_SEC = 24 * 60 * 60;
+const MAX_SYNC_BYTES = 4 * 1024 * 1024;
+const DURATA_SYNC_SEC = 180 * 24 * 3600;
 const DURATA_RECORD_SEC = 25 * 60 * 60; // un'ora per distinguere scaduta da inesistente
 const ALFABETO_STANZA = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 
@@ -209,6 +216,53 @@ export async function gestisciStanze(request, env, headers, percorso) {
   return new Response(JSON.stringify({ code: 'ROOM_METHOD_NOT_ALLOWED', error: 'Metodo non supportato' }), { status: 405, headers });
 }
 
+function codiceSyncValido(percorso) {
+  const codice = percorso.startsWith('/sync/') ? decodeURIComponent(percorso.slice(6)).toUpperCase() : '';
+  return /^[2-9A-HJ-NP-Z]{10}$/.test(codice) ? codice : '';
+}
+
+/** Sincronizzazione roster tra dispositivi senza account né token: il codice
+ *  a 10 caratteri è generato SEMPRE lato client (mai dal server) e fa da
+ *  identità e da segreto insieme, sullo stesso modello delle Stanze. */
+export async function gestisciSync(request, env, headers, percorso) {
+  headers = { ...headers, 'Cache-Control': 'no-store' };
+  if (!env.SCHEDE) {
+    return new Response(JSON.stringify({ error: 'SYNC_SERVICE_UNAVAILABLE', dettaglio: 'Servizio sync non configurato' }), { status: 500, headers });
+  }
+  if (!(await superaRateLimit(request, env))) {
+    return new Response(JSON.stringify({ error: 'SYNC_RATE_LIMITED' }), { status: 429, headers: { ...headers, 'Retry-After': '60' } });
+  }
+  const codice = codiceSyncValido(percorso);
+  if (!codice) {
+    return new Response(JSON.stringify({ error: 'SYNC_INVALID_CODE' }), { status: 400, headers });
+  }
+  const chiave = `sync:${codice}`;
+
+  if (request.method === 'PUT') {
+    let corpo;
+    try { corpo = await request.json(); } catch { corpo = null; }
+    const roster = corpo?.roster;
+    if (!roster || typeof roster !== 'object' || Array.isArray(roster) || !roster.personaggi || typeof roster.personaggi !== 'object') {
+      return new Response(JSON.stringify({ error: 'SYNC_INVALID_PAYLOAD' }), { status: 400, headers });
+    }
+    const updatedAt = Number(corpo.updatedAt) || Date.now();
+    const testo = JSON.stringify({ roster, updatedAt });
+    if (new TextEncoder().encode(testo).length > MAX_SYNC_BYTES) {
+      return new Response(JSON.stringify({ error: 'SYNC_TOO_LARGE' }), { status: 413, headers });
+    }
+    await env.SCHEDE.put(chiave, testo, { expirationTtl: DURATA_SYNC_SEC });
+    return new Response(JSON.stringify({ ok: true, updatedAt }), { status: 200, headers });
+  }
+
+  if (request.method === 'GET') {
+    const testo = await env.SCHEDE.get(chiave);
+    if (testo == null) return new Response(JSON.stringify({ error: 'SYNC_NOT_FOUND' }), { status: 404, headers });
+    return new Response(testo, { status: 200, headers });
+  }
+
+  return new Response(JSON.stringify({ error: 'SYNC_METHOD_NOT_ALLOWED' }), { status: 405, headers });
+}
+
 /**
  * Archivio schede su KV.
  * Le scritture sono libere (l'app deposita da sola), le LETTURE richiedono la
@@ -320,6 +374,9 @@ export default {
     }
     if (percorso === '/pg' || percorso.startsWith('/pg/')) {
       return gestisciArchivio(request, env, headers, percorso);
+    }
+    if (percorso.startsWith('/sync/')) {
+      return gestisciSync(request, env, headers, percorso);
     }
 
     if (request.method !== 'POST') {
