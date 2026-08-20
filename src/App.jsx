@@ -628,7 +628,7 @@ function regexMunizione(nomeArma) {
 // privilegi/privilegiSottoclasse/talenti sono nel blocco fisso "Privilegi & Talenti"
 // sotto la Magia (non riordinabili singolarmente).
 // 'metamagia' NON è qui: non è trascinabile, resta sempre agganciata sotto la Magia.
-const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'equipaggiamento', 'aspetto'];
+const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'equipaggiamento', 'aspetto', 'diario'];
 
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 
@@ -890,6 +890,7 @@ function schedaVuota() {
     lingue: '',
     aspetto: '',
     trattiCaratteriali: '',
+    diario: [], // diario di sessione: [{ id, data, titolo, testo }]
     note: '',
     // stato di gioco
     risorse: [], // { id, nome, attuali, max, reset: 'breve' | 'lungo' | '' }
@@ -1230,7 +1231,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.3.0';
+const APP_VERSION = '3.4.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1584,6 +1585,7 @@ function normalizeImported(dati) {
     lingue: str(dati.lingue),
     aspetto: str(dati.aspetto),
     trattiCaratteriali: str(dati.trattiCaratteriali),
+    diario: Array.isArray(dati.diario) ? dati.diario : [],
     note: str(dati.note),
     risorse: Array.isArray(dati.risorse)
       ? dati.risorse
@@ -8307,6 +8309,67 @@ export default function App() {
                 placeholder={t("aspetto.storia_ph")}
                 onChange={(v) => aggiorna({ note: v })}
               />
+            </Sezione>
+
+            {/* Diario di sessione: voci datate legate al singolo personaggio.
+                Le più recenti in cima, così l'ultima sessione resta subito
+                sotto il titolo anche quando il diario diventa lungo. */}
+            <Sezione titolo={t("sez.diario")} {...propsSez('diario')} {...apertoProps('diario', false)}>
+              {(() => {
+                const diario = Array.isArray(scheda.diario) ? scheda.diario : [];
+                const modificaVoce = (id, patch) =>
+                  aggiorna({ diario: diario.map((v) => (v.id === id ? { ...v, ...patch } : v)) });
+                const oggi = new Date().toISOString().slice(0, 10);
+                return (
+                  <>
+                    <button
+                      className="no-stampa"
+                      style={{ ...styles.buttonMini, borderColor: C.goldDark, color: C.goldDark, marginBottom: 10 }}
+                      onClick={() => aggiorna({
+                        diario: [{ id: `d-${Date.now()}`, data: oggi, titolo: '', testo: '' }, ...diario],
+                      })}
+                    >＋ {t('diario.aggiungi')}</button>
+
+                    {diario.length === 0 && (
+                      <div style={{ ...styles.detail, fontSize: 12 }}>{t('diario.vuoto')}</div>
+                    )}
+
+                    {diario.map((v) => (
+                      <div key={v.id} style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', marginBottom: 8 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
+                          <input
+                            type="date"
+                            value={v.data || ''}
+                            onChange={(e) => modificaVoce(v.id, { data: e.target.value })}
+                            style={{ ...styles.inlineInput, padding: '3px 6px', fontSize: 12, width: 140 }}
+                          />
+                          <input
+                            value={v.titolo || ''}
+                            placeholder={t('diario.titolo_ph')}
+                            onChange={(e) => modificaVoce(v.id, { titolo: e.target.value })}
+                            style={{ ...styles.inlineInput, flex: '1 1 200px', minWidth: 140, padding: '3px 6px', fontSize: 13, fontWeight: 700 }}
+                          />
+                          <button
+                            className="no-stampa"
+                            style={{ ...styles.buttonMini, padding: '0 7px', color: C.red, flexShrink: 0 }}
+                            title={t('diario.elimina')}
+                            onClick={() => setConferma({
+                              titolo: t('sez.diario'),
+                              testo: t('diario.elimina_conferma'),
+                              onConferma: () => aggiorna({ diario: diario.filter((x) => x.id !== v.id) }),
+                            })}
+                          >✕</button>
+                        </div>
+                        <AreaTesto
+                          value={v.testo || ''}
+                          placeholder={t('diario.testo_ph')}
+                          onChange={(nuovo) => modificaVoce(v.id, { testo: nuovo })}
+                        />
+                      </div>
+                    ))}
+                  </>
+                );
+              })()}
             </Sezione>
           </div>
         </div>
