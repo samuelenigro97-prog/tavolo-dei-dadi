@@ -564,6 +564,16 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .app-header-title {
   text-align: center; white-space: nowrap; margin: 0;
   display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+}
+/* Il titolo sta sopra la FOTO dell'ambientazione, non sopra un pannello: una
+   sola ombra da 1px non bastava e il testo spariva sui punti scuri della foto
+   (tronchi, rocce). Un alone del colore del pannello, ripetuto su più raggi,
+   stacca le lettere da qualunque sfondo in entrambi i temi. */
+.app-header-nome {
+  padding: 3px 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--c-panel) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c-border) 65%, transparent);
   text-shadow: 0 1px 0 color-mix(in srgb, var(--c-panel) 70%, transparent);
 }
 .app-version {
