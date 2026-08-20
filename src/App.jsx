@@ -3546,20 +3546,23 @@ export default function App() {
       if (nuovoId) {
         // Non lasciare che il push di un dispositivo senza l'immagine più
         // recente (appena caricata da un altro dispositivo, non ancora
-        // scaricata qui) cancelli quella già presente sul cloud.
-        try {
-          const resAttuale = await fetch(`https://api.github.com/gists/${nuovoId}`, {
-            headers: { 'Authorization': `token ${tokenSyncRef.current}`, 'Accept': 'application/vnd.github.v3+json' },
-          });
-          if (resAttuale.ok) {
-            const outAttuale = await resAttuale.json();
-            const fileAttuale = outAttuale.files?.['roster_tavolo_dei_dadi.json'];
-            if (fileAttuale) {
-              const parsedAttuale = JSON.parse(fileAttuale.content);
-              rosterDaInviare = preservaImmaginiSeMancanti(rosterCloud, parsedAttuale);
-            }
-          }
-        } catch { /* offline o rete lenta: si procede comunque con i dati locali */ }
+        // scaricata qui) cancelli quella già presente sul cloud: se non
+        // riusciamo a leggere lo stato attuale per fare il confronto, meglio
+        // rimandare il salvataggio (ci riprova il prossimo cambiamento) che
+        // scrivere alla cieca e rischiare di cancellare un'immagine.
+        const resAttuale = await fetch(`https://api.github.com/gists/${nuovoId}`, {
+          headers: { 'Authorization': `token ${tokenSyncRef.current}`, 'Accept': 'application/vnd.github.v3+json' },
+        }).catch(() => null);
+        if (!resAttuale || !resAttuale.ok) {
+          if (!silenzioso) setCloudStatus({ text: 'Rete non raggiungibile: salvataggio rimandato per non rischiare di sovrascrivere dati più recenti.', type: 'error' });
+          return;
+        }
+        const outAttuale = await resAttuale.json();
+        const fileAttuale = outAttuale.files?.['roster_tavolo_dei_dadi.json'];
+        if (fileAttuale) {
+          const parsedAttuale = JSON.parse(fileAttuale.content);
+          rosterDaInviare = preservaImmaginiSeMancanti(rosterCloud, parsedAttuale);
+        }
       }
       const dati = JSON.stringify({ ...rosterDaInviare, _updatedAt: quando }, null, 2);
       const corpo = { files: { 'roster_tavolo_dei_dadi.json': { content: dati } } };
@@ -3763,7 +3766,16 @@ export default function App() {
       try {
         const attuale = await caricaSync(URL_STANZE, codiceSyncRef.current);
         rosterDaInviare = preservaImmaginiSeMancanti(rosterCloud, attuale.roster);
-      } catch { /* primo salvataggio, o codice non ancora popolato: si procede coi dati locali */ }
+      } catch (errAttuale) {
+        // "Codice non ancora popolato" è l'unico caso in cui è sicuro procedere
+        // senza il confronto: per qualsiasi altro errore (rete, rate limit...)
+        // scrivere alla cieca rischierebbe di cancellare un'immagine più
+        // recente salvata da un altro dispositivo con lo stesso codice.
+        if (errAttuale.message !== 'SYNC_NOT_FOUND') {
+          if (!silenzioso) setSyncCodiceStatus({ text: 'Rete non raggiungibile: salvataggio rimandato per non rischiare di sovrascrivere dati più recenti.', type: 'error' });
+          return;
+        }
+      }
       await salvaSync(URL_STANZE, codiceSyncRef.current, rosterDaInviare, quando);
       const orario = new Date(quando).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
       setUltimoSyncCodice(orario);
