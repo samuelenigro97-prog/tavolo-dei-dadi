@@ -3,6 +3,16 @@
 Aggiornato il **20 agosto 2026**. Ultima versione pubblicata e verificata online: **v3.5.2**.
 App: https://samuelenigro97-prog.github.io/tavolo-dei-dadi/
 
+### Dove sta cosa
+
+| Documento | Contiene |
+|---|---|
+| [`README.md`](../README.md) | Cos'è il progetto: funzioni, architettura, dove si salvano i dati, Worker, test/build/deploy |
+| [`CLAUDE.md`](../CLAUDE.md) | Convenzioni di sviluppo e regole di dominio D&D |
+| **questo file** | Stato reale, cosa è pubblicato, cosa è aperto, come lavora l'utente. **Fonte unica del backlog** |
+| [`CHANGELOG.md`](../CHANGELOG.md) | Storico delle versioni |
+| [`worker/LEGGIMI.md`](../worker/LEGGIMI.md) | Attivazione del Worker Cloudflare |
+
 > Si lavora anche con altre IA sul repository. Prima di modificare o pubblicare:
 > controllare branch, modifiche locali e ultimo `main`; non sovrascrivere lavoro
 > non proprio e non far modificare `src/App.jsx` contemporaneamente.
@@ -99,7 +109,7 @@ questo tavolo:
 - **Audit delle differenze 2014/2024** non ancora rappresentate.
 - **Completare e verificare l'inventario di Vaelion** (voce aperta da tempo,
   vedi più sotto).
-- Manutenzione: ESLint, riduzione del bundle (~940 kB prima di gzip),
+- Manutenzione: ESLint, riduzione del bundle (953 kB prima di gzip),
   spezzare gradualmente `App.jsx` (oltre 8000 righe).
 
 **3. Idee proposte ma NON richieste**: "Tavolo dal vivo" (combat tracker
@@ -212,7 +222,9 @@ confrontato con i documenti originali e verificato nel cloud.
 
 ### Qualità verificata
 
-- **87 test** automatici su condivisione, persistenza, regole, stanze e traduzioni.
+- **145 test** automatici su regole e dadi, calcoli di scheda, persistenza e
+  migrazioni, condivisione, stanze, sincronizzazione, aggiornamento e ripristino
+  della PWA, traduzioni ed estetica mobile.
 - Build di produzione riuscita.
 - Workflow GitHub Pages con test, smoke test, build e deploy.
 - Traduzioni di incantesimi, privilegi, tratti, talenti, metamagie, nomi delle
@@ -259,8 +271,10 @@ ma il controllo conclusivo dell'inventario non risulta documentato.
 
 ### Regole e automazioni D&D
 
-- Conversione slot incantesimo ↔ Punti Stregoneria.
-- Effetti meccanici delle condizioni sui tiri e sulle azioni.
+> Conversione slot ↔ Punti Stregoneria (v3.3.0) ed effetti meccanici delle
+> condizioni (v3.5.0) erano elencati qui ma sono **pubblicati**: rimossi per non
+> farli riaprire per sbaglio.
+
 - Statblock per Forma Selvatica, famigli ed evocazioni.
 - Statblock pronti di mostri e PNG per il Combat tracker.
 - Eventuale sincronizzazione avanzata dei Tiri Salvezza contro Morte con il
@@ -269,8 +283,9 @@ ma il controllo conclusivo dell'inventario non risulta documentato.
 
 ### Funzioni
 
-- Stampa ed esportazione PDF della scheda.
-- Diario di sessione.
+> Stampa/esportazione PDF (v3.1.0) e diario di sessione (v3.4.0) erano elencati
+> qui ma sono **pubblicati**: rimossi per non farli riaprire per sbaglio.
+
 - QR code facoltativo per link o codice stanza.
 - Valutare il nuovo nome pubblico dell'app solo dopo che l'utente avrà scelto
   quello definitivo; il repository può restare `tavolo-dei-dadi`.
@@ -280,8 +295,9 @@ ma il controllo conclusivo dell'inventario non risulta documentato.
 ### Stabilità e manutenzione
 
 - Spezzare gradualmente `App.jsx`, mantenendo invariato il comportamento.
-- Ridurre il bundle principale, attualmente circa **887 kB** prima di gzip,
-  caricando su richiesta le parti non necessarie all'avvio.
+- Ridurre il bundle principale, **953 kB** prima di gzip (286 kB gzip, misurati
+  il 20/08/2026 con `npm run build`), caricando su richiesta le parti non
+  necessarie all'avvio.
 - Configurare ESLint e formattazione automatica.
 - Aggiungere test mirati per oggetti con utilizzi, aggiornamento PWA e coda dei
   salvataggi cloud.

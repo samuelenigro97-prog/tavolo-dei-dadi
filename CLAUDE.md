@@ -25,25 +25,32 @@ minuti per la fascia oraria. Chiaro/Scuro forzano il modo.
 
 ## Stack
 
-- **Frontend:** React 18 + Vite. Tutta la UI vive in `src/App.jsx`: la scheda
-  interattiva È l'interfaccia (formato della scheda ufficiale D&D 2024), con la
-  barra del tiro sticky in alto. Componenti principali: `App`, `Editable`
-  (1 click = modifica inline, doppio click = tiro se `onRoll` è definito),
-  `Rollable` (solo doppio click = tiro). Stili inline nell'oggetto `styles`
-  con la palette `C`. Niente CSS framework, niente TypeScript.
-- **Backend:** Express (`server/index.js`) su porta 3001, fa solo da proxy
-  all'API Anthropic per la trascrizione delle schede PDF
-  (`POST /api/transcribe`). Richiede `ANTHROPIC_API_KEY` (file `.env`). **Online**
-  (GitHub Pages non ha backend) la stessa funzione è servita da un Cloudflare
-  Worker (`worker/transcribe-worker.js`, vedi `worker/LEGGIMI.md`): il client
-  chiama un endpoint **configurabile** — `transcribeUrl` in `localStorage`
+- **Frontend:** React 18 + Vite. La UI vive quasi tutta in `src/App.jsx`
+  (~8600 righe): la scheda interattiva È l'interfaccia (formato della scheda
+  ufficiale D&D 2024), con la barra del tiro sticky in alto. Componenti
+  principali: `App`, `Editable` (1 click = modifica inline, doppio click = tiro
+  se `onRoll` è definito), `Rollable` (solo doppio click = tiro). Stili inline
+  nell'oggetto `styles` con la palette `C`. Niente CSS framework, niente
+  TypeScript. Fuori da `App.jsx`: `src/rules/` (regole D&D pure, la parte
+  testata), `src/data/` (dati 5e), `src/ui/` (componenti, stili, tema),
+  `src/utils/` (persistenza, condivisione, stanze, sync, audio), `src/i18n.js`.
+- **Backend: non esiste.** Il progetto è un frontend puro; **non c'è nessuna
+  cartella `server/`** e nessuna dipendenza Express. Le funzioni che richiedono
+  un server sono servite da un **Cloudflare Worker**
+  (`worker/transcribe-worker.js`, vedi `worker/LEGGIMI.md`): trascrizione dei
+  PDF via API Anthropic, Archivio DM (`/pg`), stanze (`/room`) e
+  sincronizzazione del roster (`/sync`). Il client chiama un endpoint
+  **configurabile** — `transcribeUrl` in `localStorage`
   (`scheda-interattiva:transcribe-url`) o `VITE_TRANSCRIBE_URL`, con fallback
-  `/api/transcribe` per lo sviluppo locale. Lo **schema del PROMPT** (server e
-  Worker) deve restare allineato a `normalizeImported`.
-- **Dev:** `npm run dev` avvia Vite (5173, con proxy `/api` → 3001) e il server
-  insieme via concurrently.
+  `/api/transcribe`, che però in locale non risponde a nulla. Lo **schema del
+  PROMPT** nel Worker deve restare allineato a `normalizeImported`.
+  ⚠️ Il Worker **non si aggiorna** quando una PR viene unita: va ripubblicato a
+  mano dalla dashboard Cloudflare.
+- **Dev:** `npm run dev` avvia solo Vite (porta 5173). Non serve nessuna chiave
+  API né un file `.env`: tutto funziona in locale tranne l'import da PDF, che
+  ha bisogno del Worker.
 - **Persistenza:** `localStorage` tramite `loadState`/`saveState` in
-  `src/App.jsx`. Il formato è un **roster multi-personaggio**
+  `src/utils/persistenza.js`. Il formato è un **roster multi-personaggio**
   `{ attivo, personaggi: {id: scheda} }` (chiave `scheda-interattiva:v1`,
   con migrazione automatica dalla vecchia chiave a scheda singola).
   **Non modificare** la logica di `transcribePdf`; toccare
