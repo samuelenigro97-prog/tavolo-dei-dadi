@@ -10,6 +10,7 @@ import { modificatore } from './dadi.js';
 import { spiegaIncantesimo } from '../data/spiegazioni.js';
 import { INCANTESIMI_DB, datiIncantesimo } from '../data/incantesimi.js';
 import { ABILITA, CARATTERISTICHE } from '../data/caratteristiche.js';
+import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from '../data/condizioni.js';
 
 /** Restituisce 'guerriero'/'ladro' se la scheda è un "terzo incantatore" (la
  *  sottoclasse specifica, non l'intera classe: un Campione o un Assassino non
@@ -483,4 +484,20 @@ export function slotVersoPunti(slotIncantesimo, punti, puntiMax, livello) {
     punti: Math.min(max, attuali + liv),
     slotIncantesimo: { ...slotIncantesimo, [liv]: { ...s, spesi: s.spesi + 1 } },
   };
+}
+
+/**
+ * Riepilogo degli effetti meccanici delle condizioni attive. Restituisce una
+ * riga per ogni effetto in gioco, con l'elenco delle condizioni che lo causano
+ * (così si capisce da dove arriva lo svantaggio, e cosa resta se ne togli una).
+ * Ordine stabile: quello di ETICHETTE_EFFETTI, non quello di inserimento.
+ */
+export function riepilogoCondizioni(condizioni) {
+  const attive = (Array.isArray(condizioni) ? condizioni : []).filter((c) => EFFETTI_CONDIZIONI[c]);
+  const righe = [];
+  for (const flag of Object.keys(ETICHETTE_EFFETTI)) {
+    const da = attive.filter((c) => EFFETTI_CONDIZIONI[c][flag]);
+    if (da.length) righe.push({ flag, da });
+  }
+  return righe;
 }

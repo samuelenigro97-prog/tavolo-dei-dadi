@@ -14,7 +14,10 @@ import {
   sottoclasseLivPer, trucchettiMax, incantesimiMaxAuto, caratteristicaIncantatoreEffettiva,
   classificaIncantesimoCombattimento, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello,
   controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, puntiVersoSlot, slotVersoPunti,
+  riepilogoCondizioni,
 } from '../src/rules/regole.js';
+import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from '../src/data/condizioni.js';
+import { CONDIZIONI_5E } from '../src/data/dati5e.js';
 
 // --- Helper: sostituisce Math.random con una coda di valori deterministici ---
 function conRandom(valori, fn) {
@@ -559,4 +562,44 @@ test('conversione: il giro completo è in perdita, non è una macchina per fare 
   assert.equal(c.ok, true);
   assert.deepEqual(c.slotIncantesimo[1], slotBase()[1], 'gli slot tornano come prima');
   assert.equal(c.punti, 3, '5 punti - 2 per lo slot di 1°');
+});
+
+// --- Effetti meccanici delle condizioni ---
+test('condizioni: raggruppa gli effetti e dice quali condizioni li causano', () => {
+  const righe = riepilogoCondizioni(['Avvelenato', 'Prono']);
+  const svant = righe.find((r) => r.flag === 'svantaggioAttacchi');
+  assert.deepEqual(svant.da, ['Avvelenato', 'Prono'], 'entrambe danno svantaggio ai tiri per colpire');
+  const prove = righe.find((r) => r.flag === 'svantaggioProve');
+  assert.deepEqual(prove.da, ['Avvelenato'], 'solo Avvelenato tocca le prove');
+  const contro = righe.find((r) => r.flag === 'vantaggioControDiTe');
+  assert.deepEqual(contro.da, ['Prono']);
+});
+
+test('condizioni: nessuna condizione (o nomi ignoti) non produce effetti', () => {
+  assert.deepEqual(riepilogoCondizioni([]), []);
+  assert.deepEqual(riepilogoCondizioni(undefined), []);
+  assert.deepEqual(riepilogoCondizioni(['Innamorato', 'Bagnato']), []);
+});
+
+test('condizioni: Paralizzato accumula tutti i suoi effetti', () => {
+  const flag = riepilogoCondizioni(['Paralizzato']).map((r) => r.flag);
+  for (const atteso of ['incapacitato', 'vantaggioControDiTe', 'fallisciTsForzaDes', 'criticoRavvicinato']) {
+    assert.ok(flag.includes(atteso), `manca ${atteso}`);
+  }
+});
+
+test('condizioni: ogni condizione della scheda ha testo in entrambe le lingue', () => {
+  for (const [nome, e] of Object.entries(EFFETTI_CONDIZIONI)) {
+    assert.equal(typeof e.it, 'string', `${nome}: manca l'italiano`);
+    assert.equal(typeof e.en, 'string', `${nome}: manca l'inglese`);
+    assert.ok(e.it.length > 10 && e.en.length > 10, `${nome}: testo troppo corto`);
+  }
+  for (const [flag, e] of Object.entries(ETICHETTE_EFFETTI)) {
+    assert.ok(e.it && e.en, `etichetta ${flag} incompleta`);
+  }
+});
+
+test('condizioni: ogni voce dell\'elenco CONDIZIONI_5E ha i suoi effetti', () => {
+  const senzaEffetti = CONDIZIONI_5E.filter((c) => !EFFETTI_CONDIZIONI[c]);
+  assert.deepEqual(senzaEffetti, [], 'condizioni selezionabili ma senza spiegazione meccanica');
 });

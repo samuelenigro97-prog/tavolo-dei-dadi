@@ -9,6 +9,7 @@ import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTes
 import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
+import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from './data/condizioni.js';
 import { codificaScheda, decodificaScheda, preparaPerCondivisione, costruisciLink, payloadDaUrl, LIMITE_PAYLOAD } from './utils/condivisione.js';
 import { creaStanza, apriStanza, normalizzaCodiceStanza, formattaCodiceStanza, DURATA_STANZA_ORE } from './utils/stanze.js';
 import { generaCodiceSync, normalizzaCodiceSync, formattaCodiceSync, salvaSync, caricaSync, messaggioErroreSync } from './utils/sync.js';
@@ -740,7 +741,7 @@ const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(I
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -1231,7 +1232,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.4.0';
+const APP_VERSION = '3.5.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -6779,17 +6780,29 @@ export default function App() {
               <SfondoVit>⚠️</SfondoVit>
               <div style={styles.vitalLabel}>{t("vital.condizioni")}</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center', alignItems: 'center', marginTop: 2 }}>
-                {scheda.condizioni.map((c) => (
-                  <button
-                    key={c}
-                    className="tirabile"
-                    style={{ ...styles.modeButton(true), fontSize: 9, padding: '1px 4px', margin: 0, lineHeight: 1.4 }}
-                    title={t('tip.click_rimuovi')}
-                    onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
-                  >
-                    {c} ✕
-                  </button>
-                ))}
+                {scheda.condizioni.map((c) => {
+                  const eff = EFFETTI_CONDIZIONI[c];
+                  const testoEff = eff ? (lingua === 'en' ? eff.en : eff.it) : '';
+                  return (
+                    <span key={c} style={{ ...styles.modeButton(true), fontSize: 9, padding: '1px 3px', margin: 0, lineHeight: 1.4, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                      {/* Il nome apre gli effetti, la ✕ toglie la condizione:
+                          prima l'intera etichetta cancellava, quindi non c'era
+                          modo di leggere cosa comportasse. */}
+                      <button
+                        type="button"
+                        style={{ background: 'none', border: 0, padding: 0, font: 'inherit', color: 'inherit', cursor: eff ? 'help' : 'default' }}
+                        title={testoEff || c}
+                        onClick={() => eff && setInfo({ titolo: `⚠️ ${traduciDato(c)}`, testo: testoEff })}
+                      >{c}</button>
+                      <button
+                        type="button"
+                        style={{ background: 'none', border: 0, padding: 0, font: 'inherit', color: 'inherit', cursor: 'pointer', opacity: 0.75 }}
+                        title={t('tip.click_rimuovi')}
+                        onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
+                      >✕</button>
+                    </span>
+                  );
+                })}
                 <select
                   value=""
                   onChange={(e) => { if (e.target.value) aggiorna({ condizioni: [...scheda.condizioni, e.target.value] }); }}
@@ -6802,6 +6815,23 @@ export default function App() {
                   ))}
                 </select>
               </div>
+              {/* Riepilogo: cosa comportano, sommate, le condizioni attive.
+                  Fra parentesi la condizione che causa l'effetto, così si vede
+                  subito cosa resterebbe togliendone una. */}
+              {(() => {
+                const righe = riepilogoCondizioni(scheda.condizioni);
+                if (!righe.length) return null;
+                return (
+                  <div style={{ marginTop: 5, paddingTop: 5, borderTop: `1px dotted ${C.border}`, textAlign: 'left' }}>
+                    {righe.map(({ flag, da }) => (
+                      <div key={flag} style={{ fontSize: 9, lineHeight: 1.45, color: C.ink }}>
+                        • {(lingua === 'en' ? ETICHETTE_EFFETTI[flag].en : ETICHETTE_EFFETTI[flag].it)}
+                        <span style={{ opacity: 0.65 }}> ({da.map(traduciDato).join(', ')})</span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
                 <div style={{
                   ...styles.vitalBox, gridColumn: 'span 2',
