@@ -717,6 +717,9 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   /* modalità di tiro: riga intera a 4 colonne uguali, testo rimpicciolito
      quanto basta perché "Svantaggio" e "Cronologia" stiano su una sola riga */
   .dadi-riga .dadi-modi { flex: 1 1 100%; margin-left: 0 !important; gap: 4px !important; }
+  /* Su telefono la barra va a capo: il titolo prende una riga sua, centrato,
+     sopra i modi di tiro (i margini automatici del desktop non servono più). */
+  .dadi-riga .app-header-title { flex: 1 1 100%; margin: 2px auto 0 !important; justify-content: center; }
   .dadi-riga .dadi-modi button { font-size: 11px !important; padding: 5px 2px !important; }
   /* tabelle incantesimi più compatte sul telefono: celle strette così i
      tasti azione (✎ 🗑) restano visibili senza scorrere in orizzontale */
@@ -829,6 +832,27 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 @keyframes aggiorna-lampeggia {
   0%, 100% { background: transparent; border-color: #2e8b57; color: #2e8b57; box-shadow: 0 0 0 rgba(46,139,87,0); }
   50% { background: #2e8b57; border-color: #2e8b57; color: #fff; box-shadow: 0 0 12px 2px rgba(46,139,87,0.75); }
+}
+
+/* Puntino di notifica sul pulsante Avvisi: lampeggia finché c'è qualcosa da
+   vedere (promemoria di backup, controlli sulla scheda, novità non lette). */
+.avvisi-pallino {
+  /* In linea dentro il pulsante e non in posizione assoluta fuori dal bordo:
+     i pulsanti dell'intestazione hanno overflow:hidden per l'ellissi, quindi
+     un pallino sporgente veniva tagliato a metà. */
+  min-width: 16px; height: 16px; padding: 0 4px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 999px; flex-shrink: 0;
+  background: #c0392b; color: #fff;
+  font: 700 10px/1 Georgia, serif;
+  animation: avvisi-lampeggia 1.4s ease-in-out infinite;
+}
+@keyframes avvisi-lampeggia {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(192,57,43,0.55); }
+  50% { transform: scale(1.12); box-shadow: 0 0 0 5px rgba(192,57,43,0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .avvisi-pallino { animation: none; }
 }
 
 /* Nuvoletta "Bonus dato da": tooltip INVERTITO rispetto al tema, così

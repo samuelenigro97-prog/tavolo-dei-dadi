@@ -11,6 +11,7 @@ import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusC
 import { FLYORA_JSON, ESEMPIO_GNOMO } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from './data/condizioni.js';
+import { novitaRecenti, ultimaVersioneNovita } from './data/novita.js';
 import { codificaScheda, decodificaScheda, preparaPerCondivisione, costruisciLink, payloadDaUrl, LIMITE_PAYLOAD } from './utils/condivisione.js';
 import { creaStanza, apriStanza, normalizzaCodiceStanza, formattaCodiceStanza, DURATA_STANZA_ORE } from './utils/stanze.js';
 import { generaCodiceSync, normalizzaCodiceSync, formattaCodiceSync, salvaSync, caricaSync, messaggioErroreSync } from './utils/sync.js';
@@ -1234,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.5.3';
+const APP_VERSION = '3.6.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2079,6 +2080,15 @@ export default function App() {
   const [promemoriaBackup, setPromemoriaBackup] = useState(false); // banner "fai un backup"
   const [mostraGuida, setMostraGuida] = useState(false); // guida rapida al primo avvio
   const [mostraControlliScheda, setMostraControlliScheda] = useState(false);
+  // Pannello Avvisi: raccoglie i promemoria (backup, controlli scheda) e le
+  // novità di versione, al posto dei riquadri a tutta larghezza che rubavano
+  // spazio in cima e, sopra la foto del luogo, si leggevano male.
+  const [mostraAvvisi, setMostraAvvisi] = useState(false);
+  const [posAvvisi, setPosAvvisi] = useState({ top: 60, left: 16 });
+  const avvisiBtnRef = useRef(null);
+  const [novitaViste, setNovitaViste] = useState(() => {
+    try { return localStorage.getItem('scheda-interattiva:novita-viste') || ''; } catch { return ''; }
+  });
   const [condivisione, setCondivisione] = useState(null); // { link, copiato, ritrattoRimosso, lungo }
   const [stanzaUi, setStanzaUi] = useState({ aperta: false, codice: '', creato: '', scadenza: 0, caricamento: false, errore: '' });
   const [pgDaLink, setPgDaLink] = useState(null);      // personaggio ricevuto tramite link
@@ -4015,6 +4025,33 @@ export default function App() {
   // conosce non scende mai sotto quanti ne ha già.
   const maxIncantesimi = baseIncantesimi == null ? null : (classePreparata ? baseIncantesimi : Math.max(baseIncantesimi, nIncantesimi));
 
+  // Avvisi in sospeso e novità non ancora lette: pilotano il puntino rosso
+  // lampeggiante sul pulsante 🔔 dell'intestazione.
+  const controlliAttivi = useMemo(() => {
+    if (!scheda) return [];
+    const ignorati = scheda.controlliIgnorati || [];
+    return controlliScheda(scheda).filter((r) => !ignorati.includes(r.id));
+  }, [scheda]);
+  const avvisoBackup = promemoriaBackup && !mostraGuida;
+  const nAvvisi = (avvisoBackup ? 1 : 0) + controlliAttivi.length;
+  const novitaNonLette = novitaViste !== ultimaVersioneNovita();
+  const daNotificare = nAvvisi > 0 || novitaNonLette;
+
+  function apriAvvisi() {
+    if (!mostraAvvisi) {
+      const r = avvisiBtnRef.current?.getBoundingClientRect();
+      if (r) setPosAvvisi({
+        top: Math.max(8, Math.min(window.innerHeight - 200, r.bottom + 5)),
+        left: Math.max(8, Math.min(window.innerWidth - 330, r.left)),
+      });
+      // Aprendo il pannello le novità risultano lette: il puntino si spegne.
+      const ultima = ultimaVersioneNovita();
+      setNovitaViste(ultima);
+      try { localStorage.setItem('scheda-interattiva:novita-viste', ultima); } catch { /* niente */ }
+    }
+    setMostraAvvisi((v) => !v);
+  }
+
   return (
     <div className="app-shell" style={styles.app}>
       <style>{GLOBAL_CSS}</style>
@@ -5487,10 +5524,6 @@ export default function App() {
       })()}
 
       <header className="app-header" style={styles.header}>
-        <h1 className="app-header-title" style={{ ...styles.title, margin: 0 }}>
-          <span className="app-header-nome">Tavolo dei Dadi</span>
-          <span className="app-version">v{APP_VERSION}</span>
-        </h1>
         <div className="app-header-side">
         <div className="app-header-group">
           <button
@@ -5531,6 +5564,22 @@ export default function App() {
             onClick={() => jsonRef.current?.click()}
           >
             📂 <span className="header-label">Importa</span>
+          </button>
+          <button
+            ref={avvisiBtnRef}
+            style={styles.modeButton(mostraAvvisi)}
+            title={nAvvisi > 0
+              ? `${nAvvisi} ${nAvvisi === 1 ? 'avviso' : 'avvisi'} da vedere`
+              : (novitaNonLette ? 'Novità di questa versione' : 'Avvisi e novità')}
+            onClick={apriAvvisi}
+          >
+            🔔 <span className="header-label">Avvisi</span>
+            {daNotificare && (
+              <span
+                className="avvisi-pallino"
+                aria-label={nAvvisi > 0 ? `${nAvvisi} avvisi` : 'novità non lette'}
+              >{nAvvisi > 0 ? nAvvisi : '!'}</span>
+            )}
           </button>
         </div>
 
@@ -5579,80 +5628,107 @@ export default function App() {
 
       </header>
 
-      {promemoriaBackup && !mostraGuida && (
-        <div className="no-stampa" style={{
-          maxWidth: 1080, margin: '0 auto 8px', padding: '10px 14px', borderRadius: 10,
-          background: 'rgba(200,140,20,0.14)', border: `1px solid ${C.gold}`,
-          display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', fontSize: 14,
-        }}>
-          <span style={{ flex: 1, minWidth: 200, color: C.ink }}>
-            🛟 <strong>Fai un backup dei tuoi personaggi.</strong> I dati sono salvati solo su questo dispositivo:
-            un backup ti protegge se cambi telefono o svuoti la cache.
-          </span>
-          <button style={{ ...styles.buttonPrimary, fontSize: 13, padding: '7px 14px' }} onClick={esportaBackupCompleto}>
-            💾 Scarica backup
-          </button>
-          <button
-            style={{ ...styles.buttonMini }}
-            onClick={() => { try { localStorage.setItem('scheda-interattiva:snooze-backup', String(Date.now() + 3 * 24 * 3600 * 1000)); } catch { /* niente */ } setPromemoriaBackup(false); }}
-            title="Ricordamelo tra qualche giorno"
-          >Più tardi</button>
-        </div>
-      )}
-
-      {/* Controlli scheda: suggerimenti su competenze/TS che il calcolo
-          automatico non trova (razza/classe/background). Mai una correzione
-          automatica: talenti, multiclasse e oggetti magici possono spiegare
-          eccezioni legittime, quindi ogni voce si può ignorare per sempre. */}
-      {scheda && (() => {
-        const tutti = controlliScheda(scheda);
-        const ignorati = scheda.controlliIgnorati || [];
-        const controlli = tutti.filter((r) => !ignorati.includes(r.id));
-        if (!controlli.length) return null;
-        const certi = controlli.filter((r) => r.gravita === 'certo').length;
-        return (
-          <div className="no-stampa" style={{
-            maxWidth: 1080, margin: '0 auto 8px', padding: '10px 14px', borderRadius: 10,
-            background: certi ? 'rgba(200,60,60,0.10)' : 'rgba(200,140,20,0.14)',
-            border: `1px solid ${certi ? C.red : C.gold}`,
-            fontSize: 14,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-              <span
-                style={{ flex: 1, minWidth: 200, color: C.ink, cursor: 'pointer' }}
-                onClick={() => setMostraControlliScheda((v) => !v)}
-              >
-                ⚠️ <strong>{controlli.length} {controlli.length === 1 ? 'cosa da controllare' : 'cose da controllare'}</strong> su {scheda.nome || 'questa scheda'}
-              </span>
-              <button style={styles.buttonMini} onClick={() => setMostraControlliScheda((v) => !v)}>
-                {mostraControlliScheda ? '▲ Nascondi' : '▼ Mostra'}
-              </button>
+      {/* Pannello Avvisi: promemoria (backup, controlli scheda) e novità di
+          versione. Prima erano due riquadri a tutta larghezza sempre aperti in
+          cima alla pagina; qui stanno in una tendina come quella del Luogo, e
+          il pulsante 🔔 avvisa con un puntino quando c'è qualcosa da vedere. */}
+      {mostraAvvisi && (
+        <div onClick={() => setMostraAvvisi(false)} style={{ position: 'fixed', inset: 0, zIndex: 1400, background: 'transparent' }}>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="no-stampa"
+            style={{
+              position: 'fixed', top: posAvvisi.top, left: posAvvisi.left,
+              width: 'min(320px, calc(100vw - 16px))', maxHeight: 'min(70vh, 560px)', overflowY: 'auto',
+              background: C.panel, border: `1px solid ${C.gold}`, borderRadius: 10,
+              boxShadow: '0 10px 30px rgba(0,0,0,0.45)', padding: '10px 12px', zIndex: 1401,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <strong style={{ color: C.goldDark, fontSize: 15, marginRight: 'auto' }}>🔔 Avvisi e novità</strong>
+              <button style={{ ...styles.buttonMini, padding: '2px 7px' }} onClick={() => setMostraAvvisi(false)}>✕</button>
             </div>
-            {mostraControlliScheda && (
-              <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {controlli.map((r) => (
-                  <div key={r.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 10px' }}>
-                    <span style={{ flex: 1, fontSize: 13, color: C.ink }}>
-                      {r.gravita === 'certo' ? '🔴' : '🟡'} {r.testo}
-                    </span>
-                    <button
-                      style={{ ...styles.buttonMini, fontSize: 11, flexShrink: 0 }}
-                      title="Non segnalarlo più per questo personaggio"
-                      onClick={() => aggiorna({ controlliIgnorati: [...ignorati, r.id] })}
-                    >Ignora</button>
-                  </div>
-                ))}
-                {ignorati.length > 0 && (
-                  <button
-                    style={{ ...styles.buttonMini, fontSize: 11, alignSelf: 'flex-start' }}
-                    onClick={() => aggiorna({ controlliIgnorati: [] })}
-                  >↺ Mostra anche i {ignorati.length} ignorati</button>
-                )}
+
+            {nAvvisi === 0 && (
+              <div style={{ ...styles.detail, fontSize: 12, marginBottom: 10 }}>
+                ✅ Nessun avviso: è tutto a posto.
               </div>
             )}
+
+            {avvisoBackup && (
+              <div style={{ border: `1px solid ${C.gold}`, borderRadius: 8, padding: '8px 10px', marginBottom: 8, background: 'color-mix(in srgb, var(--c-panel) 88%, #c88c14)' }}>
+                <div style={{ fontSize: 13, color: C.ink, marginBottom: 6 }}>
+                  🛟 <strong>Fai un backup dei tuoi personaggi.</strong> I dati sono salvati solo su questo
+                  dispositivo: un backup ti protegge se cambi telefono o svuoti la cache.
+                </div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <button style={{ ...styles.buttonPrimary, fontSize: 12, padding: '6px 12px' }} onClick={esportaBackupCompleto}>
+                    💾 Scarica backup
+                  </button>
+                  <button
+                    style={styles.buttonMini}
+                    onClick={() => { try { localStorage.setItem('scheda-interattiva:snooze-backup', String(Date.now() + 3 * 24 * 3600 * 1000)); } catch { /* niente */ } setPromemoriaBackup(false); }}
+                    title="Ricordamelo tra qualche giorno"
+                  >Più tardi</button>
+                </div>
+              </div>
+            )}
+
+            {/* Controlli scheda: suggerimenti su competenze/TS che il calcolo
+                automatico non trova. Mai una correzione automatica: talenti,
+                multiclasse e oggetti magici possono spiegare eccezioni
+                legittime, quindi ogni voce si può ignorare per sempre. */}
+            {controlliAttivi.length > 0 && (() => {
+              const certi = controlliAttivi.filter((r) => r.gravita === 'certo').length;
+              const ignorati = scheda.controlliIgnorati || [];
+              return (
+                <div style={{ border: `1px solid ${certi ? C.red : C.gold}`, borderRadius: 8, padding: '8px 10px', marginBottom: 10, background: certi ? 'color-mix(in srgb, var(--c-panel) 88%, #c83c3c)' : 'color-mix(in srgb, var(--c-panel) 88%, #c88c14)' }}>
+                  <div style={{ fontSize: 13, color: C.ink, marginBottom: 6 }}>
+                    ⚠️ <strong>{controlliAttivi.length} {controlliAttivi.length === 1 ? 'cosa da controllare' : 'cose da controllare'}</strong> su {scheda.nome || 'questa scheda'}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                    {controlliAttivi.map((r) => (
+                      <div key={r.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 6, padding: '5px 8px' }}>
+                        <span style={{ flex: 1, fontSize: 12, color: C.ink }}>
+                          {r.gravita === 'certo' ? '🔴' : '🟡'} {r.testo}
+                        </span>
+                        <button
+                          style={{ ...styles.buttonMini, fontSize: 10, padding: '3px 6px', flexShrink: 0 }}
+                          title="Non segnalarlo più per questo personaggio"
+                          onClick={() => aggiorna({ controlliIgnorati: [...ignorati, r.id] })}
+                        >Ignora</button>
+                      </div>
+                    ))}
+                    {ignorati.length > 0 && (
+                      <button
+                        style={{ ...styles.buttonMini, fontSize: 10, alignSelf: 'flex-start' }}
+                        onClick={() => aggiorna({ controlliIgnorati: [] })}
+                      >↺ Mostra anche i {ignorati.length} ignorati</button>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Novità: cosa è cambiato nelle ultime versioni, in breve. */}
+            <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 8 }}>
+              <div style={{ ...styles.detail, fontWeight: 700, marginBottom: 6 }}>✨ Novità</div>
+              {novitaRecenti(3).map((n) => (
+                <div key={n.versione} style={{ marginBottom: 8 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark }}>
+                    v{n.versione}{n.versione === APP_VERSION ? ' · questa versione' : ''}
+                  </div>
+                  <ul style={{ margin: '3px 0 0', paddingLeft: 18 }}>
+                    {(lingua === 'en' ? n.voci.en : n.voci.it).map((v, i) => (
+                      <li key={i} style={{ fontSize: 12, color: C.ink, lineHeight: 1.45 }}>{v}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </div>
-        );
-      })()}
+        </div>
+      )}
 
       {/* Guida rapida al primo avvio: spiega i tre gesti fondamentali. */}
       {mostraGuida && (
@@ -6113,9 +6189,18 @@ export default function App() {
               />
             </div>
 
+            {/* Il titolo vive qui, nello spazio vuoto al centro della barra: prima
+                occupava una riga tutta sua sopra i pulsanti. I margini automatici
+                lo centrano fra i dadi e i modi di tiro; su schermo stretto la
+                barra va a capo e il titolo torna su una riga propria. */}
+            <h1 className="app-header-title" style={{ ...styles.title, margin: '0 auto', fontSize: 18 }}>
+              <span className="app-header-nome">Tavolo dei Dadi</span>
+              <span className="app-version">v{APP_VERSION}</span>
+            </h1>
+
             {/* Quattro pulsanti a colonne uguali: restano sempre sulla stessa
                 riga (Cronologia subito dopo Svantaggio) e allineati fra loro. */}
-            <div className="dadi-modi" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 6, alignItems: 'center', marginLeft: 'auto' }}>
+            <div className="dadi-modi" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 6, alignItems: 'center' }}>
               {['normale', 'vantaggio', 'svantaggio'].map((m) => (
                 <button key={m} style={{ ...styles.modeButton(modalita === m), width: '100%', minWidth: 0, textAlign: 'center', whiteSpace: 'nowrap' }} onClick={() => setModalita(m)}>
                   {m === 'normale' ? t('roll.normale') : m === 'vantaggio' ? t('roll.vantaggio') : t('roll.svantaggio')}
