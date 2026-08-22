@@ -307,7 +307,9 @@ async function gestisciArchivio(request, env, headers, percorso) {
       dispositivo,
       aggiornato: new Date().toISOString(),
     };
-    await env.SCHEDE.put(chiave, testo, { metadata });
+    // TTL 180 giorni: le schede si aggiornano ad ogni modifica; i resti orfani
+    // scadono da soli se la DELETE non arriva (cambio dispositivo, offline).
+    await env.SCHEDE.put(chiave, testo, { metadata, expirationTtl: 15552000 });
     return new Response(JSON.stringify({ ok: true }), { headers });
   }
 

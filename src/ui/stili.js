@@ -631,10 +631,12 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 }
 .game-actions-btn {
   width: 100%; min-width: 0;
-  min-height: 30px; padding: 5px 12px; border-radius: 6px;
+  min-height: 32px; padding: 5px 12px;
   border: 1px solid var(--c-gold-dark); background: var(--c-panel-light);
   color: var(--c-ink); font-family: inherit; font-size: 13px; font-weight: normal;
-  text-align: center; white-space: nowrap; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+  text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  cursor: pointer;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.14), inset 0 1px 0 rgba(255,255,255,0.09);
   transition: filter .15s ease, transform .1s ease, box-shadow .15s ease;
@@ -702,11 +704,11 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     min-height: 34px; padding: 4px 6px !important; font-size: 18px !important;
   }
   .app-shell { padding-left: 8px !important; padding-right: 8px !important; overflow-x: clip; }
-  /* Le tre funzioni di gioco occupano due colonne ciascuna: seconda fila piena. */
+  /* Le tre funzioni di gioco occupano due colonne ciascuna: seconda fila piena. Stesse dimensioni dei tasti in alto. */
   .app-header-side .game-actions-btn {
     grid-column: span 2; width: 100%; min-width: 0; max-width: none;
-    min-height: 34px; padding: 4px 3px; text-align: center; font-size: 11px;
-    overflow: hidden; text-overflow: ellipsis;
+    min-height: 34px; padding: 4px 6px; text-align: center; font-size: 13px;
+    overflow: hidden; text-overflow: ellipsis; display: inline-flex; align-items: center; justify-content: center; gap: 3px;
   }
   .game-action-combat-full { display: none; }
   .game-action-combat-short { display: inline; }

@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.6.0';
+const APP_VERSION = '3.7.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1360,7 +1360,8 @@ function loadState() {
   } catch {
     // dati corrotti: riparti da zero
   }
-  return rosterVuoto();
+  // Nessun dato salvato: parti vuoto e apri il Menu (niente più Avventuriero fantoccio).
+  return { attivo: '', personaggi: {} };
 }
 
 function saveState(roster) {
@@ -2856,26 +2857,35 @@ export default function App() {
   function eliminaPersonaggio() {
     setConferma({
       titolo: t('menu.elimina_titolo'),
-      testo: `Vuoi eliminare davvero "${scheda.nome || t('menu.senza_nome')}"? L'operazione non si può annullare.`,
-      onConferma: () => setRoster((r) => {
-        salvaSnapshot(r); // rete di sicurezza: salva lo stato prima di cancellare
+      testo: `Vuoi eliminare davvero "${scheda?.nome || t('menu.senza_nome')}"? L'operazione non si può annullare.`,
+      onConferma: () => {
+        const idDaCancellare = roster.attivo;
         // Toglie anche la copia nell'Archivio DM: altrimenti il Master continua
         // a vedere un personaggio che sul dispositivo del giocatore non esiste
         // più. Nessuna chiave richiesta: un dispositivo può cancellare solo
         // ciò che ha depositato lui stesso (stessa identità della POST).
-        if (URL_ARCHIVIO_PG) {
+        if (URL_ARCHIVIO_PG && idDaCancellare) {
           fetch(`${URL_ARCHIVIO_PG.replace(/\/+$/, '')}/pg`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ dispositivo: idDispositivo, id: r.attivo }),
+            body: JSON.stringify({ dispositivo: idDispositivo, id: idDaCancellare }),
+            keepalive: true,
           }).catch(() => { /* offline o archivio spento: pazienza, non blocca l'eliminazione locale */ });
         }
-        const personaggi = { ...r.personaggi };
-        delete personaggi[r.attivo];
-        const ids = Object.keys(personaggi);
-        if (ids.length === 0) return rosterVuoto();
-        return { attivo: ids[0], personaggi };
-      }),
+        setRoster((r) => {
+          salvaSnapshot(r);
+          const personaggi = { ...r.personaggi };
+          delete personaggi[r.attivo];
+          const ids = Object.keys(personaggi);
+          if (ids.length === 0) {
+            // Niente più "Avventuriero senza nome" fantoccio: apri il Menu
+            // così l'utente sceglie da zero (nuovo PG, importa, ecc.).
+            setTimeout(() => setMostraMenu(true), 0);
+            return { attivo: '', personaggi: {} };
+          }
+          return { attivo: ids[0], personaggi };
+        });
+      },
     });
   }
 
@@ -4361,12 +4371,23 @@ export default function App() {
                     onClick={() => setConferma({
                       titolo: t('menu.elimina_titolo'),
                       testo: `Vuoi eliminare davvero "${p.nome || t('menu.senza_nome')}"? L'azione è irreversibile.`,
-                      onConferma: () => setRoster((r) => {
-                        const nuovi = { ...r.personaggi };
-                        delete nuovi[id];
-                        const nuovoAttivo = r.attivo === id ? (Object.keys(nuovi)[0] ?? null) : r.attivo;
-                        return { personaggi: nuovi, attivo: nuovoAttivo };
-                      }),
+                      onConferma: () => {
+                        if (URL_ARCHIVIO_PG) {
+                          fetch(`${URL_ARCHIVIO_PG.replace(/\/+$/, '')}/pg`, {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ dispositivo: idDispositivo, id }),
+                            keepalive: true,
+                          }).catch(() => {});
+                        }
+                        setRoster((r) => {
+                          const nuovi = { ...r.personaggi };
+                          delete nuovi[id];
+                          const nuovoAttivo = r.attivo === id ? (Object.keys(nuovi)[0] ?? '') : r.attivo;
+                          if (Object.keys(nuovi).length === 0) setTimeout(() => setMostraMenu(true), 0);
+                          return { personaggi: nuovi, attivo: nuovoAttivo };
+                        });
+                      },
                     })}
                   >
                     🗑️
@@ -5524,6 +5545,10 @@ export default function App() {
       })()}
 
       <header className="app-header" style={styles.header}>
+        <h1 className="app-header-title" style={{ ...styles.title, fontSize: 22, textAlign: 'center', marginBottom: 4 }}>
+          <span className="app-header-nome">Tavolo dei Dadi</span>
+          <span className="app-version">v{APP_VERSION}</span>
+        </h1>
         <div className="app-header-side">
         <div className="app-header-group">
           <button
@@ -6132,9 +6157,9 @@ export default function App() {
             </div>
           )}
 
-          <div className="dadi-riga" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', width: '100%', padding: '1px 0' }}>
-            <span style={{ ...styles.detail, marginRight: 2, flexShrink: 0, fontWeight: 700, fontSize: 13 }}>{t('roll.dado')}:</span>
+          <div className="dadi-riga" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', width: '100%', padding: '1px 0' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+              <span style={{ ...styles.detail, marginRight: 2, flexShrink: 0, fontWeight: 700, fontSize: 13 }}>{t('roll.dado')}:</span>
               {[4, 6, 8, 10, 12, 20, 100].map((facce) => {
                 let pts = "";
                 if (facce === 4) pts = "20,4 36,36 4,36";
@@ -6189,18 +6214,8 @@ export default function App() {
               />
             </div>
 
-            {/* Il titolo vive qui, nello spazio vuoto al centro della barra: prima
-                occupava una riga tutta sua sopra i pulsanti. I margini automatici
-                lo centrano fra i dadi e i modi di tiro; su schermo stretto la
-                barra va a capo e il titolo torna su una riga propria. */}
-            <h1 className="app-header-title" style={{ ...styles.title, margin: '0 auto', fontSize: 18 }}>
-              <span className="app-header-nome">Tavolo dei Dadi</span>
-              <span className="app-version">v{APP_VERSION}</span>
-            </h1>
-
-            {/* Quattro pulsanti a colonne uguali: restano sempre sulla stessa
-                riga (Cronologia subito dopo Svantaggio) e allineati fra loro. */}
-            <div className="dadi-modi" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 6, alignItems: 'center' }}>
+            {/* Modi di tiro: 4 colonne uguali */}
+            <div className="dadi-modi" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 6, alignItems: 'center', flex: '1 1 280px', maxWidth: 360 }}>
               {['normale', 'vantaggio', 'svantaggio'].map((m) => (
                 <button key={m} style={{ ...styles.modeButton(modalita === m), width: '100%', minWidth: 0, textAlign: 'center', whiteSpace: 'nowrap' }} onClick={() => setModalita(m)}>
                   {m === 'normale' ? t('roll.normale') : m === 'vantaggio' ? t('roll.vantaggio') : t('roll.svantaggio')}
@@ -6270,7 +6285,17 @@ export default function App() {
           </section>
         )}
 
-
+        {!scheda ? (
+          <section style={{ ...styles.panel, textAlign: 'center', padding: '24px 16px' }}>
+            <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--c-title)', marginBottom: 8 }}>Nessun personaggio</div>
+            <div style={{ ...styles.detail, marginBottom: 16 }}>Crea il tuo primo eroe o importane uno dal Menu.</div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button style={styles.buttonPrimary} onClick={() => setMostraMenu(true)}>🏠 Apri Menu</button>
+              <button style={styles.button} onClick={() => { setBozzaCrea({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', dotazione: 'pacchetto' }); setMostraCrea(true); }}>＋ Nuovo personaggio</button>
+            </div>
+          </section>
+        ) : (
+          <>
 
         {/* Personaggi: il riquadro blu È il nome/selettore. Cambia PG al volo; ✎ per rinominare */}
         <section className="selettore-personaggio" style={{ ...styles.panel, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: '6px 12px' }}>
@@ -8492,6 +8517,8 @@ export default function App() {
             </Sezione>
           </div>
         </div>
+          </>
+        )}
 
         <footer style={{ textAlign: 'center', margin: '18px 0 0', fontSize: 11, color: C.inkDim }}>
           Emblemi di classe e specie:{' '}
