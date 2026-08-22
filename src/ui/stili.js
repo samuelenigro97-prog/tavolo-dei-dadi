@@ -688,28 +688,22 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
      su una propria riga a piena larghezza, centrata e ordinata */
   .app-header { display: flex; flex-direction: column; align-items: stretch; }
   .app-header-title { grid-column: auto; justify-self: auto; order: -1; margin-bottom: 6px !important; }
-  /* Telefono: tutti i tasti (comandi + funzioni di gioco) in un'unica barra in
-     alto che si dispone su due file. "display: contents" scioglie i gruppi così
-     i bottoni scorrono uno dopo l'altro da sinistra a destra. */
+  /* Telefono: tutti i tasti in alto ordinati in 2 file da 5, solo icone per compattezza. */
   .app-header-side {
-    display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 5px; align-items: stretch;
   }
   .app-header-side .app-header-group,
   .app-header-side .app-header-language,
   .app-header-side .game-actions-dock { display: contents; }
-  .app-header-group:first-of-type .header-label { display: none; }
-  .app-header-side .app-header-group > button {
+  .app-header-side .header-label { display: none; }
+  .app-header-side .app-header-group > button,
+  .app-header-side .game-actions-btn {
     width: 100%; min-width: 0 !important; max-width: none; box-sizing: border-box;
     min-height: 34px; padding: 4px 6px !important; font-size: 18px !important;
+    display: inline-flex; align-items: center; justify-content: center;
   }
   .app-shell { padding-left: 8px !important; padding-right: 8px !important; overflow-x: clip; }
-  /* Le tre funzioni di gioco occupano due colonne ciascuna: seconda fila piena. Stesse dimensioni dei tasti in alto. */
-  .app-header-side .game-actions-btn {
-    grid-column: span 2; width: 100%; min-width: 0; max-width: none;
-    min-height: 34px; padding: 4px 6px; text-align: center; font-size: 13px;
-    overflow: hidden; text-overflow: ellipsis; display: inline-flex; align-items: center; justify-content: center; gap: 3px;
-  }
   .game-action-combat-full { display: none; }
   .game-action-combat-short { display: inline; }
   /* dadi: pulsanti compatti e leggibili su telefono in riga singola */

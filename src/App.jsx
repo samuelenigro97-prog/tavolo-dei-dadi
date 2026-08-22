@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.8.4';
+const APP_VERSION = '3.8.6';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3523,6 +3523,35 @@ export default function App() {
     const file = evento.target.files?.[0];
     evento.target.value = '';
     if (!file) return;
+    const name = file.name.toLowerCase();
+    const isImageOrPdf = file.type.startsWith('image/') || file.type === 'application/pdf' || /\.(pdf|jpe?g|png|webp|gif)$/.test(name);
+    if (isImageOrPdf) {
+      // File immagine/PDF → usa trascrizione IA (stessa logica di transcribePdf)
+      const endpoint = (transcribeUrl || '').trim() || (typeof URL_ARCHIVIO_PG !== 'undefined' && URL_ARCHIVIO_PG ? URL_ARCHIVIO_PG : '') || (typeof URL_STANZE !== 'undefined' && URL_STANZE ? URL_STANZE : '') || '/api/transcribe';
+      setErroreImport('');
+      setPdfStato('loading');
+      try {
+        const base64 = await new Promise((risolvi, rifiuta) => {
+          const fr = new FileReader();
+          fr.onload = () => risolvi(String(fr.result).split(',')[1] || '');
+          fr.onerror = () => rifiuta(new Error('lettura del file fallita'));
+          fr.readAsDataURL(file);
+        });
+        const mediaType = file.type || (name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+        const body = mediaType.startsWith('image/') ? { fileBase64: base64, mediaType } : { pdfBase64: base64, fileBase64: base64, mediaType: 'application/pdf' };
+        const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || `errore ${res.status}`); }
+        const dati = await res.json();
+        nuovoPersonaggio(normalizeImported(dati));
+        setPdfStato('');
+        setMostraMenu(false);
+      } catch (e) {
+        setPdfStato('');
+        const dove = (transcribeUrl || URL_ARCHIVIO_PG || URL_STANZE || '').trim() ? 'Controlla endpoint IA.' : 'Configura endpoint IA.';
+        setErroreImport(`Import da file fallito: ${e.message}. ${dove}`);
+      }
+      return;
+    }
     setErroreImport('');
     try {
       const dati = JSON.parse(await file.text());
@@ -5586,7 +5615,7 @@ export default function App() {
           >
             ↩︎ <span className="header-label">{t('undo.annulla')}</span>
           </button>
-          <input ref={jsonRef} type="file" accept="application/json,.json" style={{ display: 'none' }} onChange={importaJson} />
+          <input ref={jsonRef} type="file" accept="application/json,.json,application/pdf,image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif,.pdf" style={{ display: 'none' }} onChange={importaJson} />
           <button
             style={styles.modeButton(false)}
             title={t('tip.esporta')}
@@ -5596,7 +5625,7 @@ export default function App() {
           </button>
           <button
             style={styles.modeButton(false)}
-            title={t('tip.importa')}
+            title="Importa JSON, PDF o JPG/PNG (IA) — il Finder ora mostra anche le immagini"
             onClick={() => jsonRef.current?.click()}
           >
             📂 <span className="header-label">Importa</span>
@@ -5625,7 +5654,7 @@ export default function App() {
             title={lingua === 'it' ? 'Interfaccia in italiano — click per passare all’inglese' : 'Interface in English — click to switch to Italian'}
             onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
           >
-            {lingua === 'it' ? '🇮🇹 ITA' : '🇬🇧 ENG'}
+            {lingua === 'it' ? '🇮🇹 ' : '🇬🇧 '}<span className="header-label">{lingua === 'it' ? 'ITA' : 'ENG'}</span>
           </button>
         </div>
 
@@ -5646,18 +5675,18 @@ export default function App() {
               }
               setMostraPannelloAudio(!mostraPannelloAudio);
             }}
-          >{iconaAmbientazione(presetColori)} {t('luogo.titolo')}</button>
+          >{iconaAmbientazione(presetColori)} <span className="header-label">{t('luogo.titolo')}</span></button>
           <button
             className="game-actions-btn"
             onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())}
             title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}
-          >🗺️ {t('mappa.tasto')}</button>
+          >🗺️ <span className="header-label">{t('mappa.tasto')}</span></button>
           {!(combat.attivo && combat.aperto) && (
             <button
               className="game-actions-btn"
               onClick={() => (combat.combattenti.length ? setCombat((c) => ({ ...c, attivo: true, aperto: true })) : aggiungiPgAlCombat())}
               title={t('ct.apri')}
-            >⚔️ <span className="game-action-combat-full">{t('ct.titolo')}</span><span className="game-action-combat-short">{t('ct.tasto')}</span>{combat.combattenti.length ? ` (${combat.combattenti.length})` : ''}</button>
+            >⚔️ <span className="header-label"><span className="game-action-combat-full">{t('ct.titolo')}</span><span className="game-action-combat-short">{t('ct.tasto')}</span></span>{combat.combattenti.length ? ` (${combat.combattenti.length})` : ''}</button>
           )}
         </div>
         </div>
@@ -6228,7 +6257,7 @@ export default function App() {
             {/* Titolo centrato nella barra */}
             <h1 className="app-header-title" style={{ ...styles.title, fontSize: 18, whiteSpace: 'nowrap', color: 'var(--c-title)', display: 'inline-flex', alignItems: 'baseline', gap: 0 }}>
               <span>Tavolo dei Dadi</span>
-              <span className="app-version" style={{ fontSize: 9, color: 'var(--c-ink-dim)', fontWeight: 500, marginLeft: 3, position: 'relative', top: 0, letterSpacing: 0.3, lineHeight: 1, border: 'none', background: 'transparent', padding: 0, minHeight: 'auto', borderRadius: 0, display: 'inline-flex', alignItems: 'baseline' }}>v{APP_VERSION}</span>
+              <span className="app-version" style={{ fontSize: 9, color: 'var(--c-ink-dim)', fontWeight: 500, marginLeft: 3, position: 'relative', top: 0, letterSpacing: 0.3, lineHeight: 1, border: 'none', background: 'transparent', padding: 0, minHeight: 'auto', borderRadius: 0, display: 'inline-block', verticalAlign: 'baseline', fontVariantNumeric: 'tabular-nums', fontFeatureSettings: '"lnum"' }}>v{APP_VERSION}</span>
             </h1>
 
             {/* Modi di tiro: 4 colonne uguali */}

@@ -408,11 +408,11 @@ export default {
         const bytes = new Uint8Array(binary.length);
         for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
         const image = Array.from(bytes);
-        // Modello vision su Workers AI: accurato per estrazione strutturata da screenshot/foto
-        const aiResult = await env.AI.run('@cf/meta/llama-3.2-11b-vision-instruct', {
+        // Modello vision su Workers AI: llava non richiede licenza, gratis 10k/giorno
+        const aiResult = await env.AI.run('@cf/llava-hf/llava-1.5-7b-hf', {
           prompt: PROMPT,
           image,
-          max_tokens: 8192,
+          max_tokens: 4096,
         });
         let testo = '';
         if (typeof aiResult === 'string') testo = aiResult;
