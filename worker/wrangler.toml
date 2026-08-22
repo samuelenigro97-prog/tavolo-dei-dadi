@@ -3,8 +3,10 @@ main = "transcribe-worker.js"
 compatibility_date = "2024-11-01"
 
 # Le chiavi si impostano come SEGRETI, non qui:
-#   wrangler secret put ANTHROPIC_API_KEY   → trascrizione PDF
+#   wrangler secret put ANTHROPIC_API_KEY   → trascrizione PDF (fallback)
 #   wrangler secret put DM_KEY              → password con cui TU leggi l'archivio schede
+#   wrangler secret put OLLAMA_URL          → URL Ollama per trascrizione locale (es. https://ollama.tuodominio.com)
+#   wrangler secret put OLLAMA_MODEL        → modello vision Ollama (default llava, es. qwen2-vl, llama3.2-vision)
 #
 # Limita il CORS al tuo sito: solo le pagine servite da questa origine possono
 # chiamare il Worker (chi ha solo l'URL non lo può usare da un altro sito).

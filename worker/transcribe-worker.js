@@ -19,14 +19,18 @@
  * Segreti/variabili (impostati con `wrangler secret put` o dal dashboard):
  *   - ANTHROPIC_API_KEY  (opzionale, fallback per PDF) la tua chiave API Anthropic.
  *                        Se manca, i PDF non sono trascrivibili, ma le immagini (JPG/PNG/WebP)
- *                        funzionano comunque gratis via Workers AI.
+ *                        funzionano comunque gratis via Workers AI o Ollama.
  *   - DM_KEY             (per l'archivio) la password con cui TU leggi le schede.
  *                        Senza questa chiave l'elenco non è leggibile da nessuno.
  *   - ALLOW_ORIGIN       (opzionale) origine consentita per il CORS,
  *                        es. "https://TUOUTENTE.github.io". Default "*".
  *   - SCHEDE             (binding KV) l'archivio vero e proprio.
- *   - AI                 (binding Workers AI) per trascrizione immagini/PDF gratis (10k req/giorno).
+ *   - AI                 (binding Workers AI) per trascrizione immagini gratis (10k req/giorno).
  *                        Richiede [ai] binding="AI" in wrangler.toml.
+ *   - OLLAMA_URL         (opzionale) URL del tuo server Ollama (es. https://ollama.tuodominio.com
+ *                        o http://IP:11434). Se impostato, le immagini vengono trascritte via
+ *                        Ollama (modello vision) come fallback/prima di Anthropic. Gratis e privato.
+ *   - OLLAMA_MODEL       (opzionale) modello Ollama vision (default llava). Es. llava, qwen2-vl, llama3.2-vision.
  *
  * Deploy: vedi worker/LEGGIMI.md
  */
@@ -405,30 +409,19 @@ export default {
     const isImage = mediaType.startsWith('image/');
 
     // 1) Se è un'immagine e Workers AI è disponibile → gratis, zero chiavi (10k req/giorno)
+    // Fallback a Ollama e poi ad Anthropic se il modello Workers AI non è disponibile (5007/5016)
     if (isImage && env.AI) {
       try {
         const binary = atob(base64);
         const bytes = new Uint8Array(binary.length);
         for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
         const image = Array.from(bytes);
-        // Modello vision su Workers AI: llama-3.2 più forte per FG multiclasse/triclasse (richiede licenza, 10k/giorno gratis)
         let aiResult;
-        try {
-          aiResult = await env.AI.run('@cf/meta/llama-3.2-11b-vision-instruct', {
-            prompt: PROMPT,
-            image,
-            max_tokens: 8192,
-          });
-        } catch (e) {
-          // Se richiede licenza (5016), prova llava come fallback
-          if (String(e.message).includes('5016') || String(e.message).includes('agree')) {
-            aiResult = await env.AI.run('@cf/llava-hf/llava-1.5-13b-hf', {
-              prompt: PROMPT,
-              image,
-              max_tokens: 4096,
-            });
-          } else throw e;
-        }
+        aiResult = await env.AI.run('@cf/meta/llama-3.2-11b-vision-instruct', {
+          prompt: PROMPT,
+          image,
+          max_tokens: 8192,
+        });
         let testo = '';
         if (typeof aiResult === 'string') testo = aiResult;
         else if (aiResult && typeof aiResult.response === 'string') testo = aiResult.response;
@@ -442,7 +435,59 @@ export default {
         const scheda = JSON.parse(testo.slice(inizio, fine + 1));
         return new Response(JSON.stringify(scheda), { headers });
       } catch (err) {
-        return new Response(JSON.stringify({ error: `Workers AI fallita: ${err.message}` }), { status: 500, headers });
+        const msg = String(err.message || err);
+        const isModelMissing = msg.includes('5007') || msg.includes('5016') || msg.includes('No such model') || msg.includes('agree');
+        // Se è un errore di modello mancante e c'è un fallback (Ollama o Anthropic), non fallire subito: prova i fallback sotto
+        if (!isModelMissing) {
+          // Errore diverso (es. payload troppo grande): prova comunque Ollama/Anthropic se configurati, altrimenti ritorna
+          if (!env.OLLAMA_URL && !env.ANTHROPIC_API_KEY) {
+            return new Response(JSON.stringify({ error: `Workers AI fallita: ${msg}` }), { status: 500, headers });
+          }
+        }
+        // Se Ollama è configurato, il blocco 1b sotto ci proverà; se Anthropic c'è, il blocco 2 sotto ci proverà.
+        // Se nessuno è configurato e il modello manca, dai un errore utile.
+        if (!env.OLLAMA_URL && !env.ANTHROPIC_API_KEY) {
+          return new Response(JSON.stringify({ error: `Workers AI fallita: ${msg}. Modello @cf/llava-hf/llava-1.5-13b-hf rimosso da Cloudflare (5007). Configura OLLAMA_URL (es. http://tuo-server:11434) con modello llava/qwen2-vl, oppure imposta ANTHROPIC_API_KEY come fallback.` }), { status: 500, headers });
+        }
+        // Altrimenti lascia proseguire verso Ollama / Anthropic
+      }
+    }
+
+    // 1b) Ollama locale (immagini) — se configurato, prova prima di Anthropic. Gratis e privato.
+    // Configura nel Worker: wrangler secret put OLLAMA_URL (es. https://ollama.tuodominio.com o http://IP:11434)
+    // e opzionalmente OLLAMA_MODEL (default llava). Richiede modello vision (llava, qwen2-vl, llama3.2-vision).
+    if (isImage && env.OLLAMA_URL) {
+      try {
+        const ollamaUrl = String(env.OLLAMA_URL).trim().replace(/\/+$/, '');
+        const ollamaModel = String(env.OLLAMA_MODEL || 'llava').trim() || 'llava';
+        const r = await fetch(`${ollamaUrl}/api/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: ollamaModel,
+            messages: [{ role: 'user', content: PROMPT, images: [base64] }],
+            stream: false,
+          }),
+        });
+        if (!r.ok) {
+          const txt = await r.text().catch(() => '');
+          throw new Error(`Ollama ${r.status}: ${txt.slice(0, 300)}`);
+        }
+        const j = await r.json();
+        let testo = j.message?.content || j.response || '';
+        if (!testo) testo = JSON.stringify(j);
+        const inizio = testo.indexOf('{');
+        const fine = testo.lastIndexOf('}');
+        if (inizio === -1 || fine === -1) {
+          return new Response(JSON.stringify({ error: 'Risposta Ollama non in formato JSON', raw: String(testo).slice(0, 600) }), { status: 502, headers });
+        }
+        const scheda = JSON.parse(testo.slice(inizio, fine + 1));
+        return new Response(JSON.stringify(scheda), { headers });
+      } catch (err) {
+        // Se Anthropic è disponibile, lascia proseguire verso il fallback; altrimenti ritorna errore Ollama
+        if (!env.ANTHROPIC_API_KEY) {
+          return new Response(JSON.stringify({ error: `Ollama fallita: ${err.message}. Verifica OLLAMA_URL, modello (${String(env.OLLAMA_MODEL || 'llava')}) e che Ollama sia raggiungibile dal Worker.` }), { status: 500, headers });
+        }
       }
     }
 
