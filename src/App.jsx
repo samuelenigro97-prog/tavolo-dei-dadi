@@ -1267,6 +1267,43 @@ function rosterVuoto() {
   return { attivo: id, personaggi: { [id]: schedaVuota() } };
 }
 
+function unisciSchedeFG(lista) {
+  if (!lista.length) return null;
+  if (lista.length === 1) return lista[0];
+  const base = { ...lista[0] };
+  for (let i = 1; i < lista.length; i++) {
+    const cur = lista[i];
+    for (const k in cur) {
+      if (k === 'abilita' && cur.abilita && base.abilita) {
+        base.abilita = { ...base.abilita };
+        for (const ak in cur.abilita) if (cur.abilita[ak] > 0) base.abilita[ak] = cur.abilita[ak];
+      } else if (k === 'tiriSalvezza' && cur.tiriSalvezza && base.tiriSalvezza) {
+        base.tiriSalvezza = { ...base.tiriSalvezza };
+        for (const tk in cur.tiriSalvezza) if (cur.tiriSalvezza[tk]) base.tiriSalvezza[tk] = true;
+      } else if (k === 'caratteristiche' && cur.caratteristiche && base.caratteristiche) {
+        base.caratteristiche = { ...base.caratteristiche };
+        for (const ck in cur.caratteristiche) if (cur.caratteristiche[ck] && cur.caratteristiche[ck] !== 10) base.caratteristiche[ck] = cur.caratteristiche[ck];
+      } else if (k === 'attacchi' && Array.isArray(cur.attacchi) && cur.attacchi.length) {
+        base.attacchi = [...(base.attacchi || []), ...cur.attacchi];
+      } else if (k === 'incantesimiLista' && Array.isArray(cur.incantesimiLista) && cur.incantesimiLista.length) {
+        base.incantesimiLista = [...(base.incantesimiLista || []), ...cur.incantesimiLista];
+      } else if (k === 'multiclasse' && Array.isArray(cur.multiclasse) && cur.multiclasse.length) {
+        // Unisce multiclasse senza duplicati
+        const visti = new Set((base.multiclasse || []).map((m) => `${m.classe}:${m.livello}`));
+        for (const m of cur.multiclasse) {
+          const key = `${m.classe}:${m.livello}`;
+          if (!visti.has(key)) { base.multiclasse = [...(base.multiclasse || []), m]; visti.add(key); }
+        }
+      } else if (cur[k] != null && cur[k] !== '' && cur[k] !== 0 && cur[k] !== false) {
+        if (base[k] == null || base[k] === '' || base[k] === 0 || base[k] === false || (typeof base[k] === 'object' && !Array.isArray(base[k]) && Object.keys(base[k] || {}).length === 0)) {
+          base[k] = cur[k];
+        }
+      }
+    }
+  }
+  return base;
+}
+
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -3533,7 +3570,8 @@ export default function App() {
     // Seleziona file immagine/PDF per IA e JSON per import diretto
     const isImageOrPdf = (f) => {
       const n = f.name.toLowerCase();
-      return f.type.startsWith('image/') || f.type === 'application/pdf' || /\.(pdf|jpe?g|png|webp|gif)$/.test(n);
+      const t = f.type || '';
+      return t.startsWith('image/') || t === 'application/pdf' || /\.(pdf|jpe?g|png|webp|gif)$/.test(n);
     };
     const imageFiles = files.filter(isImageOrPdf);
     const jsonFiles = files.filter((f) => !isImageOrPdf(f));
@@ -3552,7 +3590,15 @@ export default function App() {
             fr.onerror = () => rifiuta(new Error('lettura del file fallita'));
             fr.readAsDataURL(file);
           });
-          const mediaType = file.type || (name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+          const mediaType = (() => {
+            if (file.type) return file.type;
+            if (name.endsWith('.pdf')) return 'application/pdf';
+            if (name.endsWith('.png')) return 'image/png';
+            if (name.endsWith('.webp')) return 'image/webp';
+            if (name.endsWith('.gif')) return 'image/gif';
+            if (name.endsWith('.jpg') || name.endsWith('.jpeg')) return 'image/jpeg';
+            return 'image/jpeg';
+          })();
           const body = mediaType.startsWith('image/') ? { fileBase64: base64, mediaType } : { pdfBase64: base64, fileBase64: base64, mediaType: 'application/pdf' };
           const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
           if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || `errore ${res.status} su ${file.name}`); }
@@ -3619,7 +3665,16 @@ export default function App() {
           fr.onerror = () => rifiuta(new Error('lettura del file fallita'));
           fr.readAsDataURL(file);
         });
-        const mediaType = file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+        const mediaType = (() => {
+          if (file.type) return file.type;
+          const n = file.name.toLowerCase();
+          if (n.endsWith('.pdf')) return 'application/pdf';
+          if (n.endsWith('.png')) return 'image/png';
+          if (n.endsWith('.webp')) return 'image/webp';
+          if (n.endsWith('.gif')) return 'image/gif';
+          if (n.endsWith('.jpg') || n.endsWith('.jpeg')) return 'image/jpeg';
+          return 'image/jpeg';
+        })();
         const isImage = mediaType.startsWith('image/');
         const body = isImage
           ? { fileBase64: base64, mediaType }
