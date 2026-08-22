@@ -29,3 +29,8 @@ ALLOW_ORIGIN = "https://samuelenigro97-prog.github.io"
 #   [ratelimits.simple]
 #   limit = 10
 #   period = 60
+
+# Workers AI (gratis): per trascrizione immagini/PDF senza chiavi API.
+# Richiede Wrangler >= 3.30 e piano Workers (free include 10k req/giorno).
+[ai]
+binding = "AI"

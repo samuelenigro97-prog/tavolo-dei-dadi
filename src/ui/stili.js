@@ -500,8 +500,8 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
    artificialmente lasciando un grande spazio vuoto sotto i contatori. */
 .profilo-extra > .sezione { flex: 0 0 auto; }
 /* colonna stretta (~210px): titolo sezione più piccolo e meno spaziato, così
-   "ADDESTRAMENTO" non sborda; se serve va a capo invece di tagliarsi. */
-.profilo-extra .sezione > summary { font-size: 12.5px !important; letter-spacing: 1px !important; overflow-wrap: anywhere; }
+   "ADDESTRAMENTO" entra in una riga sola (prima "nto" andava a capo). */
+.profilo-extra .sezione > summary { font-size: 11px !important; letter-spacing: 0.7px !important; white-space: nowrap !important; overflow: hidden; text-overflow: ellipsis; }
 .profilo-caratteristiche > .blocco-car { margin-bottom: 0 !important; }
 /* Destrezza + Costituzione impilate in un'unica riga condivisa (i Punti Ferita) */
 .car-coppia { display: flex; flex-direction: column; gap: 8px; min-width: 0; }

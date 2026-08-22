@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.7.1';
+const APP_VERSION = '3.8.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3557,11 +3557,12 @@ export default function App() {
    * Import da PDF con l'IA: manda il PDF (base64) all'endpoint di trascrizione
    * (Cloudflare Worker o server locale), che risponde con il JSON della scheda.
    */
-  async function transcribePdf(evento) {
+   async function transcribePdf(evento) {
     const file = evento.target.files?.[0];
     evento.target.value = '';
     if (!file) return;
-    const endpoint = (transcribeUrl || '').trim() || '/api/transcribe';
+    // Endpoint IA: prova prima quello configurato a mano, poi l'URL dell'archivio (stesso Worker), poi /api locale
+    const endpoint = (transcribeUrl || '').trim() || (typeof URL_ARCHIVIO_PG !== 'undefined' && URL_ARCHIVIO_PG ? URL_ARCHIVIO_PG : '') || (typeof URL_STANZE !== 'undefined' && URL_STANZE ? URL_STANZE : '') || '/api/transcribe';
     setErroreImport('');
     setPdfStato('loading');
     try {
@@ -3571,10 +3572,15 @@ export default function App() {
         fr.onerror = () => rifiuta(new Error('lettura del file fallita'));
         fr.readAsDataURL(file);
       });
+      const mediaType = file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+      const isImage = mediaType.startsWith('image/');
+      const body = isImage
+        ? { fileBase64: base64, mediaType }
+        : { pdfBase64: base64, fileBase64: base64, mediaType: 'application/pdf' };
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pdfBase64: base64 }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -3586,10 +3592,10 @@ export default function App() {
       setMostraMenu(false);
     } catch (e) {
       setPdfStato('');
-      const dove = (transcribeUrl || '').trim()
-        ? 'Controlla che l’endpoint IA sia corretto e attivo.'
-        : 'Devi prima configurare l’endpoint IA (campo qui sotto): serve un Cloudflare Worker con la tua chiave API.';
-      setErroreImport(`Import da PDF fallito: ${e.message}. ${dove}`);
+      const dove = (transcribeUrl || URL_ARCHIVIO_PG || URL_STANZE || '').trim()
+        ? 'Controlla che l’endpoint IA sia corretto e attivo (Workers AI richiede [ai] binding).'
+        : 'Configura l’endpoint IA nelle impostazioni o imposta VITE_ARCHIVIO_PG_URL al deploy.';
+      setErroreImport(`Import da file fallito: ${e.message}. ${dove}`);
     }
   }
 
@@ -4409,6 +4415,15 @@ export default function App() {
               >
                 {t('menu.pg_casuale')}
               </button>
+            </div>
+            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
+              <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>🤖 Importa da file (IA) — PDF/JPG/PNG</div>
+              <input ref={pdfRef} type="file" accept="application/pdf,image/jpeg,image/png,image/webp,image/gif" style={{ display: 'none' }} onChange={transcribePdf} />
+              <button style={{ ...styles.buttonPrimary, width: '100%', borderColor: C.gold, color: '#fff' }} onClick={() => pdfRef.current?.click()} disabled={pdfStato === 'loading'}>
+                {pdfStato === 'loading' ? '⏳ Trascrizione IA in corso…' : '🤖 Importa da PDF/JPG (IA)'}
+              </button>
+              <div style={{ ...styles.detail, fontSize: 11, marginTop: 4, lineHeight: 1.4 }}>Gratis via Cloudflare Workers AI per JPG/PNG/WebP (zero chiavi). PDF richiede ANTHROPIC_API_KEY sul Worker.</div>
+              {pdfStato === 'loading' && <div style={{ ...styles.detail, fontSize: 12, marginTop: 6, color: C.goldDark }}>Lettura in corso…</div>}
             </div>
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
               <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>🔗 {t('stanze.condivisione')}</div>
@@ -6211,9 +6226,9 @@ export default function App() {
             </div>
 
             {/* Titolo centrato nella barra */}
-            <h1 className="app-header-title" style={{ ...styles.title, fontSize: 18, whiteSpace: 'nowrap', color: 'var(--c-title)', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-              Tavolo dei Dadi
-              <span className="app-version" style={{ fontSize: 12, color: 'var(--c-ink-dim)', fontWeight: 600 }}>v{APP_VERSION}</span>
+            <h1 className="app-header-title" style={{ ...styles.title, fontSize: 18, whiteSpace: 'nowrap', color: 'var(--c-title)', display: 'inline-flex', alignItems: 'baseline', gap: 0 }}>
+              <span>Tavolo dei Dadi</span>
+              <span className="app-version" style={{ fontSize: 9, color: 'var(--c-ink-dim)', fontWeight: 500, marginLeft: 2, position: 'relative', top: 4, letterSpacing: 0.2, lineHeight: 1, border: 'none', background: 'transparent', padding: 0, minHeight: 'auto', borderRadius: 0 }}>v{APP_VERSION}</span>
             </h1>
 
             {/* Modi di tiro: 4 colonne uguali */}

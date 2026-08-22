@@ -17,12 +17,16 @@
  *              segreto insieme: nessun account, nessun token GitHub.
  *
  * Segreti/variabili (impostati con `wrangler secret put` o dal dashboard):
- *   - ANTHROPIC_API_KEY  (per la trascrizione PDF) la tua chiave API Anthropic
+ *   - ANTHROPIC_API_KEY  (opzionale, fallback per PDF) la tua chiave API Anthropic.
+ *                        Se manca, i PDF non sono trascrivibili, ma le immagini (JPG/PNG/WebP)
+ *                        funzionano comunque gratis via Workers AI.
  *   - DM_KEY             (per l'archivio) la password con cui TU leggi le schede.
  *                        Senza questa chiave l'elenco non è leggibile da nessuno.
  *   - ALLOW_ORIGIN       (opzionale) origine consentita per il CORS,
  *                        es. "https://TUOUTENTE.github.io". Default "*".
  *   - SCHEDE             (binding KV) l'archivio vero e proprio.
+ *   - AI                 (binding Workers AI) per trascrizione immagini/PDF gratis (10k req/giorno).
+ *                        Richiede [ai] binding="AI" in wrangler.toml.
  *
  * Deploy: vedi worker/LEGGIMI.md
  */
@@ -382,23 +386,59 @@ export default {
     }
 
     if (request.method !== 'POST') {
-      return new Response(JSON.stringify({ error: 'Usa POST con { pdfBase64 }' }), { status: 405, headers });
-    }
-    if (!env.ANTHROPIC_API_KEY) {
-      return new Response(JSON.stringify({ error: 'ANTHROPIC_API_KEY non configurata sul Worker' }), { status: 500, headers });
+      return new Response(JSON.stringify({ error: 'Usa POST con { fileBase64, mediaType } o { pdfBase64 }' }), { status: 405, headers });
     }
 
-    let pdfBase64;
-    try {
-      ({ pdfBase64 } = await request.json());
-    } catch {
+    let corpo;
+    try { corpo = await request.json(); } catch {
       return new Response(JSON.stringify({ error: 'Corpo JSON non valido' }), { status: 400, headers });
     }
-    if (!pdfBase64 || typeof pdfBase64 !== 'string') {
-      return new Response(JSON.stringify({ error: 'Campo pdfBase64 mancante' }), { status: 400, headers });
+    // Supporta sia nuovo formato { fileBase64, mediaType } (immagini/JPG/PNG/PDF) sia legacy { pdfBase64 }
+    const base64 = String(corpo?.fileBase64 || corpo?.imageBase64 || corpo?.pdfBase64 || '').trim();
+    const mediaType = String(corpo?.mediaType || (corpo?.pdfBase64 ? 'application/pdf' : '')).toLowerCase();
+    if (!base64) {
+      return new Response(JSON.stringify({ error: 'Campo fileBase64 (o pdfBase64) mancante' }), { status: 400, headers });
+    }
+    const isImage = mediaType.startsWith('image/');
+
+    // 1) Se è un'immagine e Workers AI è disponibile → gratis, zero chiavi (10k req/giorno)
+    if (isImage && env.AI) {
+      try {
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        const image = Array.from(bytes);
+        // Modello vision su Workers AI: accurato per estrazione strutturata da screenshot/foto
+        const aiResult = await env.AI.run('@cf/meta/llama-3.2-11b-vision-instruct', {
+          prompt: PROMPT,
+          image,
+          max_tokens: 8192,
+        });
+        let testo = '';
+        if (typeof aiResult === 'string') testo = aiResult;
+        else if (aiResult && typeof aiResult.response === 'string') testo = aiResult.response;
+        else if (aiResult && typeof aiResult.description === 'string') testo = aiResult.description;
+        else testo = JSON.stringify(aiResult);
+        const inizio = testo.indexOf('{');
+        const fine = testo.lastIndexOf('}');
+        if (inizio === -1 || fine === -1) {
+          return new Response(JSON.stringify({ error: 'Risposta Workers AI non in formato JSON', raw: testo.slice(0, 600) }), { status: 502, headers });
+        }
+        const scheda = JSON.parse(testo.slice(inizio, fine + 1));
+        return new Response(JSON.stringify(scheda), { headers });
+      } catch (err) {
+        return new Response(JSON.stringify({ error: `Workers AI fallita: ${err.message}` }), { status: 500, headers });
+      }
     }
 
+    // 2) Fallback Anthropic (PDF e immagini se Workers AI non c'è o è PDF)
+    if (!env.ANTHROPIC_API_KEY) {
+      return new Response(JSON.stringify({ error: isImage ? 'Workers AI non configurata: aggiungi [ai] binding="AI" in wrangler.toml e fai deploy' : 'ANTHROPIC_API_KEY non configurata e Workers AI disponibile solo per immagini (usa JPG/PNG/WebP)' }), { status: 500, headers });
+    }
     try {
+      const contentBlock = isImage
+        ? { type: 'image', source: { type: 'base64', media_type: mediaType || 'image/jpeg', data: base64 } }
+        : { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } };
       const risposta = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
@@ -412,18 +452,16 @@ export default {
           messages: [{
             role: 'user',
             content: [
-              { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: pdfBase64 } },
+              contentBlock,
               { type: 'text', text: PROMPT },
             ],
           }],
         }),
       });
-
       if (!risposta.ok) {
         const dettaglio = await risposta.text();
         return new Response(JSON.stringify({ error: `Anthropic ${risposta.status}: ${dettaglio.slice(0, 300)}` }), { status: 502, headers });
       }
-
       const dati = await risposta.json();
       const testo = (dati.content || []).find((b) => b.type === 'text')?.text ?? '';
       const inizio = testo.indexOf('{');
@@ -431,7 +469,6 @@ export default {
       if (inizio === -1 || fine === -1) {
         return new Response(JSON.stringify({ error: 'Risposta del modello non in formato JSON' }), { status: 502, headers });
       }
-      // valida che sia JSON prima di rimandarlo
       const scheda = JSON.parse(testo.slice(inizio, fine + 1));
       return new Response(JSON.stringify(scheda), { headers });
     } catch (err) {
