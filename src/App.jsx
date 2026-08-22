@@ -5802,6 +5802,13 @@ export default function App() {
 
       </header>
 
+      {erroreImport && (
+        <div style={{ maxWidth: 1080, margin: '8px auto 0', padding: '10px 12px', background: 'color-mix(in srgb, var(--c-panel) 94%, #c0392b)', border: `1px solid ${C.red}`, borderRadius: 8, color: C.red, fontSize: 13, lineHeight: 1.4, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+          <span style={{ flex: 1 }}>{erroreImport}</span>
+          <button style={{ ...styles.buttonMini, flexShrink: 0, padding: '2px 8px' }} onClick={() => setErroreImport('')}>✕</button>
+        </div>
+      )}
+
       {/* Pannello Avvisi: promemoria (backup, controlli scheda) e novità di
           versione. Prima erano due riquadri a tutta larghezza sempre aperti in
           cima alla pagina; qui stanno in una tendina come quella del Luogo, e
