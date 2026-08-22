@@ -5,6 +5,36 @@
 
 export const NOVITA = [
   {
+    versione: '3.8.6',
+    voci: {
+      it: [
+        'Importa ora accetta anche JPG/PNG/WebP (oltre a JSON/PDF) — il Finder mostra le immagini e la trascrizione IA è gratis via Cloudflare.',
+        'Su telefono i 10 tasti in alto sono ordinati in 2 file da 5, solo icone, tutti uguali.',
+        'Versione allineata con tabular-nums e "Addestramento" in una riga sola.',
+        'Archivio DM: cancellando un PG sparisce anche per il DM; ultimo PG → Menu, niente Avventuriero fantoccio.',
+      ],
+      en: [
+        'Import now also accepts JPG/PNG/WebP (besides JSON/PDF) — Finder shows images and AI transcription is free via Cloudflare.',
+        'On phone the 10 top buttons are ordered in 2 rows of 5, icons only, all equal.',
+        'Version aligned with tabular-nums and "Addestramento" in one line.',
+        'DM archive: deleting a character also removes it for the DM; last character → Menu, no dummy Adventurer.',
+      ],
+    },
+  },
+  {
+    versione: '3.7.0',
+    voci: {
+      it: [
+        'Borsa Conservante: gli oggetti dentro non pesano più sull’ingombro (spazio extradimensionale).',
+        'Sincronizzazione via codice e stanze temporanee stabilizzate (Worker aggiornato).',
+      ],
+      en: [
+        'Bag of Holding: items inside no longer count toward encumbrance (extradimensional space).',
+        'Code sync and temporary rooms stabilized (Worker updated).',
+      ],
+    },
+  },
+  {
     versione: '3.6.0',
     voci: {
       it: [

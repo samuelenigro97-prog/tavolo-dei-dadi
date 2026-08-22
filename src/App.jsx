@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.8.6';
+const APP_VERSION = '3.8.7';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3520,65 +3520,75 @@ export default function App() {
 
   /** Carica una scheda da file JSON come nuovo personaggio. */
   async function importaJson(evento) {
-    const file = evento.target.files?.[0];
+    const files = Array.from(evento.target.files || []);
     evento.target.value = '';
-    if (!file) return;
-    const name = file.name.toLowerCase();
-    const isImageOrPdf = file.type.startsWith('image/') || file.type === 'application/pdf' || /\.(pdf|jpe?g|png|webp|gif)$/.test(name);
-    if (isImageOrPdf) {
-      // File immagine/PDF → usa trascrizione IA (stessa logica di transcribePdf)
+    if (!files.length) return;
+    // Seleziona file immagine/PDF per IA e JSON per import diretto
+    const isImageOrPdf = (f) => {
+      const n = f.name.toLowerCase();
+      return f.type.startsWith('image/') || f.type === 'application/pdf' || /\.(pdf|jpe?g|png|webp|gif)$/.test(n);
+    };
+    const imageFiles = files.filter(isImageOrPdf);
+    const jsonFiles = files.filter((f) => !isImageOrPdf(f));
+
+    // 1) Immagini/PDF → trascrizione IA (supporta selezione multipla, es. 4 JPG FG)
+    if (imageFiles.length) {
       const endpoint = (transcribeUrl || '').trim() || (typeof URL_ARCHIVIO_PG !== 'undefined' && URL_ARCHIVIO_PG ? URL_ARCHIVIO_PG : '') || (typeof URL_STANZE !== 'undefined' && URL_STANZE ? URL_STANZE : '') || '/api/transcribe';
       setErroreImport('');
       setPdfStato('loading');
       try {
-        const base64 = await new Promise((risolvi, rifiuta) => {
-          const fr = new FileReader();
-          fr.onload = () => risolvi(String(fr.result).split(',')[1] || '');
-          fr.onerror = () => rifiuta(new Error('lettura del file fallita'));
-          fr.readAsDataURL(file);
-        });
-        const mediaType = file.type || (name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
-        const body = mediaType.startsWith('image/') ? { fileBase64: base64, mediaType } : { pdfBase64: base64, fileBase64: base64, mediaType: 'application/pdf' };
-        const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-        if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || `errore ${res.status}`); }
-        const dati = await res.json();
-        nuovoPersonaggio(normalizeImported(dati));
+        for (const file of imageFiles) {
+          const name = file.name.toLowerCase();
+          const base64 = await new Promise((risolvi, rifiuta) => {
+            const fr = new FileReader();
+            fr.onload = () => risolvi(String(fr.result).split(',')[1] || '');
+            fr.onerror = () => rifiuta(new Error('lettura del file fallita'));
+            fr.readAsDataURL(file);
+          });
+          const mediaType = file.type || (name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+          const body = mediaType.startsWith('image/') ? { fileBase64: base64, mediaType } : { pdfBase64: base64, fileBase64: base64, mediaType: 'application/pdf' };
+          const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+          if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || `errore ${res.status} su ${file.name}`); }
+          const dati = await res.json();
+          nuovoPersonaggio(normalizeImported(dati));
+        }
         setPdfStato('');
         setMostraMenu(false);
       } catch (e) {
         setPdfStato('');
         const dove = (transcribeUrl || URL_ARCHIVIO_PG || URL_STANZE || '').trim() ? 'Controlla endpoint IA.' : 'Configura endpoint IA.';
         setErroreImport(`Import da file fallito: ${e.message}. ${dove}`);
+        return;
       }
-      return;
     }
-    setErroreImport('');
-    try {
-      const dati = JSON.parse(await file.text());
-      // Backup completo (tutti i personaggi): li aggiunge tutti senza sovrascrivere quelli esistenti.
-      const personaggiBackup = dati?.roster?.personaggi || (dati?.tipo === 'tavolo-dei-dadi-backup' ? dati?.personaggi : null);
-      if (personaggiBackup && typeof personaggiBackup === 'object' && !Array.isArray(personaggiBackup)) {
-        const lista = Object.values(personaggiBackup).filter((s) => s && typeof s === 'object');
-        if (lista.length) {
-          setRoster((r) => {
-            const personaggi = { ...r.personaggi };
-            let ultimo = r.attivo;
-            lista.forEach((s, i) => {
-              const id = `pg-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 6)}`;
-              personaggi[id] = normalizeImported(s);
-              ultimo = id;
+
+    // 2) JSON → import diretto (supporta selezione multipla)
+    for (const file of jsonFiles) {
+      try {
+        const dati = JSON.parse(await file.text());
+        const personaggiBackup = dati?.roster?.personaggi || (dati?.tipo === 'tavolo-dei-dadi-backup' ? dati?.personaggi : null);
+        if (personaggiBackup && typeof personaggiBackup === 'object' && !Array.isArray(personaggiBackup)) {
+          const lista = Object.values(personaggiBackup).filter((s) => s && typeof s === 'object');
+          if (lista.length) {
+            setRoster((r) => {
+              const personaggi = { ...r.personaggi };
+              let ultimo = r.attivo;
+              lista.forEach((s, i) => {
+                const id = `pg-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 6)}`;
+                personaggi[id] = normalizeImported(s);
+                ultimo = id;
+              });
+              return { attivo: ultimo, personaggi };
             });
-            return { attivo: ultimo, personaggi };
-          });
-          setMostraMenu(false);
-          return;
+            setMostraMenu(false);
+            continue;
+          }
         }
+        nuovoPersonaggio(normalizeImported(dati));
+        setMostraMenu(false);
+      } catch {
+        setErroreImport(`File JSON non valido: ${file.name} — usa un file esportato da Tavolo dei Dadi.`);
       }
-      // Altrimenti: singola scheda
-      nuovoPersonaggio(normalizeImported(dati));
-      setMostraMenu(false);
-    } catch {
-      setErroreImport('File JSON non valido: usa un file esportato da Tavolo dei Dadi.');
     }
   }
 
@@ -3587,39 +3597,41 @@ export default function App() {
    * (Cloudflare Worker o server locale), che risponde con il JSON della scheda.
    */
    async function transcribePdf(evento) {
-    const file = evento.target.files?.[0];
+    const files = Array.from(evento.target.files || []);
     evento.target.value = '';
-    if (!file) return;
+    if (!files.length) return;
     // Endpoint IA: prova prima quello configurato a mano, poi l'URL dell'archivio (stesso Worker), poi /api locale
     const endpoint = (transcribeUrl || '').trim() || (typeof URL_ARCHIVIO_PG !== 'undefined' && URL_ARCHIVIO_PG ? URL_ARCHIVIO_PG : '') || (typeof URL_STANZE !== 'undefined' && URL_STANZE ? URL_STANZE : '') || '/api/transcribe';
     setErroreImport('');
     setPdfStato('loading');
     try {
-      const base64 = await new Promise((risolvi, rifiuta) => {
-        const fr = new FileReader();
-        fr.onload = () => risolvi(String(fr.result).split(',')[1] || '');
-        fr.onerror = () => rifiuta(new Error('lettura del file fallita'));
-        fr.readAsDataURL(file);
-      });
-      const mediaType = file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
-      const isImage = mediaType.startsWith('image/');
-      const body = isImage
-        ? { fileBase64: base64, mediaType }
-        : { pdfBase64: base64, fileBase64: base64, mediaType: 'application/pdf' };
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || `errore ${res.status}`);
-      }
-      const dati = await res.json();
-      nuovoPersonaggio(normalizeImported(dati));
-      setPdfStato('');
-      setMostraMenu(false);
-    } catch (e) {
+      for (const file of files) {
+        const base64 = await new Promise((risolvi, rifiuta) => {
+          const fr = new FileReader();
+          fr.onload = () => risolvi(String(fr.result).split(',')[1] || '');
+          fr.onerror = () => rifiuta(new Error('lettura del file fallita'));
+          fr.readAsDataURL(file);
+        });
+        const mediaType = file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+        const isImage = mediaType.startsWith('image/');
+        const body = isImage
+          ? { fileBase64: base64, mediaType }
+          : { pdfBase64: base64, fileBase64: base64, mediaType: 'application/pdf' };
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || `errore ${res.status} su ${file.name}`);
+        }
+        const dati = await res.json();
+          nuovoPersonaggio(normalizeImported(dati));
+        }
+        setPdfStato('');
+        setMostraMenu(false);
+      } catch (e) {
       setPdfStato('');
       const dove = (transcribeUrl || URL_ARCHIVIO_PG || URL_STANZE || '').trim()
         ? 'Controlla che l’endpoint IA sia corretto e attivo (Workers AI richiede [ai] binding).'
@@ -4447,7 +4459,7 @@ export default function App() {
             </div>
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
               <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>🤖 Importa da file (IA) — PDF/JPG/PNG</div>
-              <input ref={pdfRef} type="file" accept="application/pdf,image/jpeg,image/png,image/webp,image/gif" style={{ display: 'none' }} onChange={transcribePdf} />
+              <input ref={pdfRef} type="file" accept="application/pdf,image/jpeg,image/png,image/webp,image/gif" multiple style={{ display: 'none' }} onChange={transcribePdf} />
               <button style={{ ...styles.modeButton(false), width: '100%' }} onClick={() => pdfRef.current?.click()} disabled={pdfStato === 'loading'}>
                 {pdfStato === 'loading' ? '⏳ Trascrizione IA in corso…' : '🤖 Importa da PDF/JPG (IA)'}
               </button>
@@ -5615,7 +5627,7 @@ export default function App() {
           >
             ↩︎ <span className="header-label">{t('undo.annulla')}</span>
           </button>
-          <input ref={jsonRef} type="file" accept="application/json,.json,application/pdf,image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif,.pdf" style={{ display: 'none' }} onChange={importaJson} />
+          <input ref={jsonRef} type="file" accept="application/json,.json,application/pdf,image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif,.pdf" multiple style={{ display: 'none' }} onChange={importaJson} />
           <button
             style={styles.modeButton(false)}
             title={t('tip.esporta')}
@@ -6257,7 +6269,7 @@ export default function App() {
             {/* Titolo centrato nella barra */}
             <h1 className="app-header-title" style={{ ...styles.title, fontSize: 18, whiteSpace: 'nowrap', color: 'var(--c-title)', display: 'inline-flex', alignItems: 'baseline', gap: 0 }}>
               <span>Tavolo dei Dadi</span>
-              <span className="app-version" style={{ fontSize: 9, color: 'var(--c-ink-dim)', fontWeight: 500, marginLeft: 3, position: 'relative', top: 0, letterSpacing: 0.3, lineHeight: 1, border: 'none', background: 'transparent', padding: 0, minHeight: 'auto', borderRadius: 0, display: 'inline-block', verticalAlign: 'baseline', fontVariantNumeric: 'tabular-nums', fontFeatureSettings: '"lnum"' }}>v{APP_VERSION}</span>
+              <span className="app-version" style={{ fontSize: 9, color: 'var(--c-ink-dim)', fontWeight: 500, marginLeft: 3, position: 'relative', top: 0, letterSpacing: 0.3, lineHeight: 1, border: 'none', background: 'transparent', padding: 0, minHeight: 'auto', borderRadius: 0, display: 'inline-block', verticalAlign: 'baseline', fontVariantNumeric: 'tabular-nums lining-nums', fontFeatureSettings: '"lnum" 1, "tnum" 1', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>v{APP_VERSION}</span>
             </h1>
 
             {/* Modi di tiro: 4 colonne uguali */}
