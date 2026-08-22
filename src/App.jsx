@@ -6198,9 +6198,9 @@ export default function App() {
                 className="dadi-espressione"
                 style={{
                   ...styles.inlineInput,
-                  flex: '0 1 95px', minWidth: 70, maxWidth: 120,
-                  padding: '3px 8px', height: 28, fontSize: 13,
-                  marginLeft: 4,
+                  flex: '0 1 80px', minWidth: 55, maxWidth: 100,
+                  padding: '2px 6px', height: 24, fontSize: 12,
+                  marginLeft: 3,
                   ...(erroreEspressione ? { borderColor: C.red } : {}),
                 }}
                 placeholder={t('roll.espr_placeholder') || 'Es. 1d6+2'}
@@ -6213,6 +6213,11 @@ export default function App() {
                 onKeyDown={(e) => e.key === 'Enter' && tiroEspressione()}
               />
             </div>
+
+            {/* Titolo centrato nella barra */}
+            <h1 className="app-header-title" style={{ ...styles.title, fontSize: 18, whiteSpace: 'nowrap', color: 'var(--c-title)' }}>
+              Tavolo dei Dadi
+            </h1>
 
             {/* Modi di tiro: 4 colonne uguali */}
             <div className="dadi-modi" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 6, alignItems: 'center', flex: '1 1 280px', maxWidth: 360 }}>
@@ -8074,15 +8079,20 @@ export default function App() {
                 const dMon = scheda.denari || {};
                 const numMonete = (dMon.mr || 0) + (dMon.ma || 0) + (dMon.me || 0) + (dMon.mo || 0) + (dMon.mp || 0);
                 const pesoMonete = numMonete * 0.01;
-                const pesoTot = pesoInv + pesoArmi + pesoArm + pesoMonete;
                 const forza = punteggioCaratteristica(scheda, 'forza') || 10;
-                // Borsa Conservante equipaggiata: contenitore magico che regge fino a
-                // ~250 kg a peso fisso, quindi mentre la usi aumenta la capacità di carico.
-                const borsaEquip = inv.some((o) => o.equip && /borsa\s+conservante|bag of holding/i.test(o.nome || ''));
+                // Borsa Conservante equipaggiata: spazio extradimensionale (~250 kg).
+                // Gli oggetti CONTRASSEGNATI come "dentro borsa" (dentroBorsa: true)
+                // non pesano nulla sull'ingombro. La borsa stessa pesa il suo peso (15 lb = 6.8 kg).
+                const borsaEquip = inv.find((o) => o.equip && /borsa\s+conservante|bag of holding/i.test(o.nome || ''));
                 const capBonusBorsa = borsaEquip ? 250 : 0;
                 const moltiTaglia = ({ Minuscola: 0.5, Piccola: 1, Media: 1, Grande: 2, Enorme: 4, Mastodontica: 8 })[scheda.taglia] || 1;
                 const capFisica = capacitaCarico(forza) * moltiTaglia;
                 const cap = capFisica + capBonusBorsa;
+                // Peso totale ESCLUSO ciò che sta dentro la Borsa Conservante equipaggiata
+                const pesoDentroBorsa = borsaEquip
+                  ? inv.filter((o) => o.dentroBorsa).reduce((s, o) => s + (o.qta || 1) * (o.peso || 0), 0)
+                  : 0;
+                const pesoTot = pesoInv + pesoArmi + pesoArm + pesoMonete - pesoDentroBorsa;
                 const soglia1 = forza * 2.5 * moltiTaglia; // ingombrato
                 const soglia2 = forza * 5 * moltiTaglia;   // gravemente ingombrato
                 const spingiTrascina = capFisica * 2;
