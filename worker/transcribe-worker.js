@@ -33,8 +33,9 @@
 
 // Deve restare allineato allo schema di normalizeImported in src/App.jsx.
 const PROMPT = `Sei un assistente che trascrive schede di personaggi di D&D 5a edizione.
-Leggi il PDF allegato ed estrai i dati del personaggio (le pagine oltre la
-scheda vera e propria, come le carte incantesimo, vanno ignorate).
+Leggi l'immagine/PDF allegato (può essere Fantasy Grounds, D&D Beyond o scheda cartacea 5e) ed estrai i dati del personaggio.
+In Fantasy Grounds le abilità sono nella tab SKILLS (pallino vuoto=0, pieno blu=1, stella oro=2) e i punteggi a sinistra;
+la tab Main ha nome, classe/livello, background, specie, caratteristiche, CA, PF, velocità, sensi, tiri salvezza.
 
 Rispondi SOLO con un oggetto JSON valido, senza testo prima o dopo, con questo schema:
 {
@@ -42,6 +43,7 @@ Rispondi SOLO con un oggetto JSON valido, senza testo prima o dopo, con questo s
   "background": "string",
   "classe": "string",
   "sottoclasse": "string",
+  "multiclasse": [{ "classe": "string", "livello": number, "sottoclasse": "string" }],
   "specie": "string",
   "allineamento": "string",
   "livello": number,
@@ -85,6 +87,7 @@ Regole:
 - "tiriSalvezza": true solo se COMPETENTE (pallino pieno).
 - "abilita": 0 = nessuna competenza, 1 = competenza (pallino pieno), 2 = maestria.
 - "bonus" è il bonus per colpire; le voci senza bonus e danno (es. un focus) vanno omesse dagli attacchi.
+- "multiclasse": [] se monoclasse, altrimenti le classi secondarie da CLASS & LEVEL (es. "Fighter 1 / Ranger 6 / Rogue 3" → classe Fighter livello 1, multiclasse [{"classe":"Ranger","livello":6},{"classe":"Rogue","livello":3}]).
 - Se un dato non è presente, usa un default ragionevole (caratteristiche 10, livello 1, attacchi [], competenze false/0).`;
 
 function cors(origin) {
@@ -408,12 +411,24 @@ export default {
         const bytes = new Uint8Array(binary.length);
         for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
         const image = Array.from(bytes);
-        // Modello vision su Workers AI: llava non richiede licenza, gratis 10k/giorno
-        const aiResult = await env.AI.run('@cf/llava-hf/llava-1.5-7b-hf', {
-          prompt: PROMPT,
-          image,
-          max_tokens: 4096,
-        });
+        // Modello vision su Workers AI: llama-3.2 più forte per FG multiclasse/triclasse (richiede licenza, 10k/giorno gratis)
+        let aiResult;
+        try {
+          aiResult = await env.AI.run('@cf/meta/llama-3.2-11b-vision-instruct', {
+            prompt: PROMPT,
+            image,
+            max_tokens: 8192,
+          });
+        } catch (e) {
+          // Se richiede licenza (5016), prova llava come fallback
+          if (String(e.message).includes('5016') || String(e.message).includes('agree')) {
+            aiResult = await env.AI.run('@cf/llava-hf/llava-1.5-13b-hf', {
+              prompt: PROMPT,
+              image,
+              max_tokens: 4096,
+            });
+          } else throw e;
+        }
         let testo = '';
         if (typeof aiResult === 'string') testo = aiResult;
         else if (aiResult && typeof aiResult.response === 'string') testo = aiResult.response;

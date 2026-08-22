@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.8.7';
+const APP_VERSION = '3.9.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2096,7 +2096,7 @@ export default function App() {
   const [mostraRipristino, setMostraRipristino] = useState(false); // modale "ripristina versione precedente"
   const [rinominando, setRinominando] = useState(false); // rinomina inline del PG attivo
   const [mostraCrea, setMostraCrea] = useState(false); // schermata di creazione guidata
-  const [bozzaCrea, setBozzaCrea] = useState({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', dotazione: 'pacchetto' });
+  const [bozzaCrea, setBozzaCrea] = useState({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' });
   // versione delle regole: '2024' (5.5, default) o '2014' (5.0)
   const [regoleVersione, setRegoleVersione] = useState(() => localStorage.getItem('scheda-interattiva:versione') || '2024');
   useEffect(() => {
@@ -2200,7 +2200,7 @@ export default function App() {
       const s = r?.personaggi?.[r?.attivo];
       const haPg = s && (s.nome || s.classe);
       if (!haPg) {
-        setBozzaCrea({ nome: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' });
+        setBozzaCrea({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' });
         setMostraMenu(false);
         setMostraCrea(true);
       }
@@ -2679,7 +2679,7 @@ export default function App() {
   }
 
   /** Genera un personaggio coerente da classe/specie/background (creazione guidata). */
-  function creaPersonaggio({ nome, sesso, classe, sottoclasse, specie, background, metodo, pool, assegna, competenzeClasse, competenzeSpecie, maestria, talentoOrigine, asiTalenti, multiclasseClasse2, multiclasseLivello2, sottoclasseMc2, dotazione, livello }) {
+  function creaPersonaggio({ nome, sesso, classe, sottoclasse, specie, background, metodo, pool, assegna, competenzeClasse, competenzeSpecie, maestria, talentoOrigine, asiTalenti, multiclasseClasse2, multiclasseLivello2, sottoclasseMc2, multiclasseClasse3, multiclasseLivello3, sottoclasseMc3, dotazione, livello }) {
     const s = schedaVuota();
     // Livello iniziale scelto in creazione (1-20): impostato SUBITO così dado vita,
     // slot incantesimo e bonus di competenza vengono calcolati per quel livello.
@@ -2801,28 +2801,35 @@ export default function App() {
     if (inc && (inc.trucchetti.length || inc.incantesimi.length)) {
       s.incantesimiLista = [...inc.trucchetti, ...inc.incantesimi];
     }
-    // Multiclasse alla creazione: una seconda classe, al livello scelto in
-    // creazione guidata. Le competenze di addestramento/TS restano quelle
-    // della classe principale, come da regola (solo la prima classe presa dà
-    // le competenze piene): privilegi, dadi vita, slot e PF invece sommano
-    // anche la classe secondaria.
+    // Multiclasse alla creazione: seconda e terza classe (triclasse come Fighter1/Ranger6/Rogue3).
+    // Le competenze di addestramento/TS restano quelle della classe principale, come da regola.
+    const multiclasseDaCreazione = [];
     if (multiclasseClasse2 && multiclasseClasse2 !== classe) {
       const liv2 = Math.max(1, Math.min(19, Number(multiclasseLivello2) || 1));
-      s.multiclasse = [{ classe: multiclasseClasse2, livello: liv2, ...(sottoclasseMc2 ? { sottoclasse: sottoclasseMc2 } : {}) }];
+      multiclasseDaCreazione.push({ classe: multiclasseClasse2, livello: liv2, ...(sottoclasseMc2 ? { sottoclasse: sottoclasseMc2 } : {}) });
+    }
+    if (multiclasseClasse3 && multiclasseClasse3 !== classe && multiclasseClasse3 !== multiclasseClasse2) {
+      const liv3 = Math.max(1, Math.min(19, Number(multiclasseLivello3) || 1));
+      multiclasseDaCreazione.push({ classe: multiclasseClasse3, livello: liv3, ...(sottoclasseMc3 ? { sottoclasse: sottoclasseMc3 } : {}) });
+    }
+    if (multiclasseDaCreazione.length) {
+      s.multiclasse = multiclasseDaCreazione;
       s.dadiVita = calcolaFormulaDadiVita(classe, s.livello, s.multiclasse);
-      const privSecondaria = privilegiClasseFinoA(multiclasseClasse2, liv2, regoleVersione);
-      if (privSecondaria) s.privilegi = [s.privilegi, `[${multiclasseClasse2}]`, privSecondaria].filter(Boolean).join('\n');
-      if (sottoclasseMc2) {
-        const subPrivSecondaria = privilegiSottoclasseFinoA(sottoclasseMc2, liv2);
-        if (subPrivSecondaria) s.privilegiSottoclasse = [s.privilegiSottoclasse, subPrivSecondaria].filter(Boolean).join('\n');
+      for (const mc of s.multiclasse) {
+        const priv = privilegiClasseFinoA(mc.classe, mc.livello, regoleVersione);
+        if (priv) s.privilegi = [s.privilegi, `[${mc.classe}]`, priv].filter(Boolean).join('\n');
+        if (mc.sottoclasse) {
+          const subPriv = privilegiSottoclasseFinoA(mc.sottoclasse, mc.livello);
+          if (subPriv) s.privilegiSottoclasse = [s.privilegiSottoclasse, subPriv].filter(Boolean).join('\n');
+        }
       }
-      const slotMc = slotMulticlasse([{ classe, livello: s.livello }, { classe: multiclasseClasse2, livello: liv2 }]);
+      const slotMc = slotMulticlasse([{ classe, livello: s.livello }, ...s.multiclasse.map((m) => ({ classe: m.classe, livello: m.livello }))]);
       if (slotMc) s.slotIncantesimo = slotMc;
-      // Ogni dado vita della classe secondaria (anche il primo) conta per la
-      // media: solo il 1° livello della classe PRIMARIA dà il dado massimo.
-      const facce2 = dadoVitaClasse(multiclasseClasse2);
       const conMod = modificatore(s.caratteristiche.costituzione);
-      s.pfMax += liv2 * (Math.floor(facce2 / 2) + 1 + conMod);
+      for (const mc of s.multiclasse) {
+        const facce = dadoVitaClasse(mc.classe);
+        s.pfMax += mc.livello * (Math.floor(facce / 2) + 1 + conMod);
+      }
       s.pfAttuali = s.pfMax;
     }
     // avatar e chiusura schermate
@@ -4396,7 +4403,7 @@ export default function App() {
 
             <button
               style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 14 }}
-              onClick={() => { setBozzaCrea({ nome: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' }); setMostraCrea(true); }}
+              onClick={() => { setBozzaCrea({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' }); setMostraCrea(true); }}
             >
               {t('menu.nuovo_personaggio')}
             </button>
@@ -5301,6 +5308,41 @@ export default function App() {
                           <select style={{ ...stileSelect, marginTop: 6 }} value={bozzaCrea.sottoclasseMc2} onChange={(e) => setB({ sottoclasseMc2: e.target.value })}>
                             <option value="">{lingua === 'it' ? `⚔️ Sottoclasse (${bozzaCrea.multiclasseClasse2}) — scegli...` : `⚔️ Subclass (${bozzaCrea.multiclasseClasse2}) — choose...`}</option>
                             {[...scelteSubMc2].sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
+                          </select>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
+              {bozzaCrea.multiclasseClasse2 && (
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ ...styles.detail, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontWeight: 'bold' }}>
+                    <input
+                      type="checkbox"
+                      checked={!!bozzaCrea.multiclasseClasse3}
+                      onChange={(e) => setB({ multiclasseClasse3: e.target.checked ? (NOMI_CLASSI.find((n) => n !== bozzaCrea.classe && n !== bozzaCrea.multiclasseClasse2) || '') : '', multiclasseLivello3: 1 })}
+                    />
+                    ➕ {lingua === 'it' ? 'Triclasse: aggiungi una terza classe' : 'Triclass: add a third class'}
+                  </label>
+                  {bozzaCrea.multiclasseClasse3 && (() => {
+                    const maxLiv3 = Math.max(1, 20 - Number(bozzaCrea.livello || 1) - Number(bozzaCrea.multiclasseLivello2 || 1));
+                    const serveSubMc3 = Number(bozzaCrea.multiclasseLivello3 || 1) >= livelloSceltaSottoclasse(bozzaCrea.multiclasseClasse3, regoleVersione);
+                    const scelteSubMc3 = serveSubMc3 ? sottoclassiPerClasse(bozzaCrea.multiclasseClasse3) : [];
+                    return (
+                      <>
+                        <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                          <select style={{ ...stileSelect, flex: 2 }} value={bozzaCrea.multiclasseClasse3} onChange={(e) => setB({ multiclasseClasse3: e.target.value, sottoclasseMc3: '' })}>
+                            {[...NOMI_CLASSI].filter((n) => n !== bozzaCrea.classe && n !== bozzaCrea.multiclasseClasse2).sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
+                          </select>
+                          <select style={{ ...stileSelect, flex: 1 }} value={Math.min(bozzaCrea.multiclasseLivello3 || 1, maxLiv3)} onChange={(e) => setB({ multiclasseLivello3: Math.max(1, Math.min(maxLiv3, parseInt(e.target.value, 10) || 1)), sottoclasseMc3: '' })}>
+                            {Array.from({ length: maxLiv3 }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{lingua === 'it' ? `Liv. ${n}` : `Lv. ${n}`}</option>)}
+                          </select>
+                        </div>
+                        {serveSubMc3 && scelteSubMc3.length > 0 && (
+                          <select style={{ ...stileSelect, marginTop: 6 }} value={bozzaCrea.sottoclasseMc3} onChange={(e) => setB({ sottoclasseMc3: e.target.value })}>
+                            <option value="">{lingua === 'it' ? `⚔️ Sottoclasse (${bozzaCrea.multiclasseClasse3}) — scegli...` : `⚔️ Subclass (${bozzaCrea.multiclasseClasse3}) — choose...`}</option>
+                            {[...scelteSubMc3].sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
                           </select>
                         )}
                       </>
@@ -6349,7 +6391,7 @@ export default function App() {
             <div style={{ ...styles.detail, marginBottom: 16 }}>Crea il tuo primo eroe o importane uno dal Menu.</div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
               <button style={styles.buttonPrimary} onClick={() => setMostraMenu(true)}>🏠 Apri Menu</button>
-              <button style={styles.button} onClick={() => { setBozzaCrea({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', dotazione: 'pacchetto' }); setMostraCrea(true); }}>＋ Nuovo personaggio</button>
+              <button style={styles.button} onClick={() => { setBozzaCrea({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' }); setMostraCrea(true); }}>＋ Nuovo personaggio</button>
             </div>
           </section>
         ) : (
@@ -6435,7 +6477,7 @@ export default function App() {
               ⬆️
             </button>
             <button style={styles.buttonMini} onClick={() => setRinominando(!rinominando)} title={t('tip.rinomina')}>✎</button>
-            <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], dotazione: 'pacchetto' }); setMostraCrea(true); }} title={t('tip.nuovo_pg')}>＋</button>
+            <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' }); setMostraCrea(true); }} title={t('tip.nuovo_pg')}>＋</button>
             <button style={styles.buttonMini} onClick={duplicaPersonaggio} title={t('tip.duplica')}>⧉</button>
             <button style={styles.buttonMini} onClick={resetScheda} title={t('tip.azzera')}>↺</button>
             <button style={{ ...styles.buttonMini, borderColor: C.red, color: C.red }} onClick={eliminaPersonaggio} title={t('tip.elimina_pg')}>🗑</button>
