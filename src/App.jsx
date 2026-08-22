@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.8.3';
+const APP_VERSION = '3.8.4';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -4419,7 +4419,7 @@ export default function App() {
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
               <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>🤖 Importa da file (IA) — PDF/JPG/PNG</div>
               <input ref={pdfRef} type="file" accept="application/pdf,image/jpeg,image/png,image/webp,image/gif" style={{ display: 'none' }} onChange={transcribePdf} />
-              <button style={{ ...styles.buttonPrimary, width: '100%', borderColor: C.gold, color: '#fff' }} onClick={() => pdfRef.current?.click()} disabled={pdfStato === 'loading'}>
+              <button style={{ ...styles.modeButton(false), width: '100%' }} onClick={() => pdfRef.current?.click()} disabled={pdfStato === 'loading'}>
                 {pdfStato === 'loading' ? '⏳ Trascrizione IA in corso…' : '🤖 Importa da PDF/JPG (IA)'}
               </button>
               <div style={{ ...styles.detail, fontSize: 11, marginTop: 4, lineHeight: 1.4 }}>Gratis via Cloudflare Workers AI per JPG/PNG/WebP (zero chiavi). PDF richiede ANTHROPIC_API_KEY sul Worker.</div>
