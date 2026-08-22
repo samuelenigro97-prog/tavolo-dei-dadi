@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.7.0';
+const APP_VERSION = '3.7.1';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -5545,10 +5545,6 @@ export default function App() {
       })()}
 
       <header className="app-header" style={styles.header}>
-        <h1 className="app-header-title" style={{ ...styles.title, fontSize: 22, textAlign: 'center', marginBottom: 4 }}>
-          <span className="app-header-nome">Tavolo dei Dadi</span>
-          <span className="app-version">v{APP_VERSION}</span>
-        </h1>
         <div className="app-header-side">
         <div className="app-header-group">
           <button
@@ -6215,8 +6211,9 @@ export default function App() {
             </div>
 
             {/* Titolo centrato nella barra */}
-            <h1 className="app-header-title" style={{ ...styles.title, fontSize: 18, whiteSpace: 'nowrap', color: 'var(--c-title)' }}>
+            <h1 className="app-header-title" style={{ ...styles.title, fontSize: 18, whiteSpace: 'nowrap', color: 'var(--c-title)', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
               Tavolo dei Dadi
+              <span className="app-version" style={{ fontSize: 12, color: 'var(--c-ink-dim)', fontWeight: 600 }}>v{APP_VERSION}</span>
             </h1>
 
             {/* Modi di tiro: 4 colonne uguali */}
