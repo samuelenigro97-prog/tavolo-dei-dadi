@@ -4622,13 +4622,13 @@ export default function App() {
               <button style={{ ...styles.button, width: '100%' }} onClick={() => { esportaJson(); setMostraMenu(false); }} title={t('tip.esporta')}>💾 Esporta</button>
               <button style={{ ...styles.button, width: '100%' }} onClick={() => jsonRef.current?.click()} title={t('tip.importa')}>📂 Importa</button>
               <button style={{ ...styles.button, width: '100%' }} onClick={() => { setMostraMenu(false); setTimeout(() => apriAvvisi(), 50); }} title={nAvvisi > 0 ? `${nAvvisi} avvisi` : 'Avvisi e novità'}>🔔 Avvisi{daNotificare ? ` (${nAvvisi > 0 ? nAvvisi : '!'})` : ''}</button>
-              <button style={{ ...styles.button, width: '100%' }} onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))} title={t('tooltip.lingua')}>{lingua === 'it' ? '🇮🇹 Lingua: ITA' : '🇬🇧 Language: ENG'}</button>
+              <button style={{ ...styles.button, width: '100%' }} onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))} title={t('tooltip.lingua')}>{lingua === 'it' ? '🇮🇹 Lingua' : '🇬🇧 Lingua'}</button>
             </div>
 
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
               <div style={{ ...styles.detail, marginBottom: 8 }}>🛟 Backup</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
-                <button style={{ ...styles.button, width: '100%' }} onClick={esportaBackupCompleto} title="Esporta tutti i PG in un file">💾 Backup</button>
+                <button style={{ ...styles.button, width: '100%' }} onClick={esportaBackupCompleto} title="Esporta tutti i PG in file separati">💾 Esporta tutto</button>
                 <button style={{ ...styles.button, width: '100%' }} onClick={() => jsonRef.current?.click()} title="Ripristina">📂 Ripristina</button>
                 {leggiSnapshots().length > 0 && (
                   <button style={{ ...styles.button, width: '100%' }} onClick={() => setMostraRipristino(true)}>🕓 Versioni</button>
