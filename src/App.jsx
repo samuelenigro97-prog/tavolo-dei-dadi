@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.4';
+const APP_VERSION = '3.9.5';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -4554,27 +4554,11 @@ export default function App() {
               {pdfStato === 'loading' && <div style={{ ...styles.detail, fontSize: 12, marginTop: 6, color: C.goldDark }}>Lettura in corso…</div>}
             </div>
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
-              <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>🔗 {t('stanze.condivisione')}</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
-                <button style={{ ...styles.button, width: '100%' }} onClick={() => { condividiLink(); setMostraMenu(false); }} title={t('condividi.tooltip')}>
-                  🔗 {t('stanze.link')}
-                </button>
-                <button style={{ ...styles.button, width: '100%', borderColor: C.gold, color: C.goldDark }} onClick={() => { setStanzaUi({ aperta: true, codice: '', creato: '', scadenza: 0, caricamento: false, errore: '' }); setMostraMenu(false); }}>
-                  🚪 {t('stanze.apri_menu')}
-                </button>
-              </div>
-            </div>
-            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
-              <button
-                style={{ ...styles.button, width: '100%' }}
-                onClick={() => { setMostraMenu(false); setTimeout(() => window.print(), 150); }}
-                title="Stampa la scheda o salvala in PDF (scegli “Salva come PDF” nella finestra di stampa)"
-              >
-                🖨️ Stampa / Salva PDF
+              <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>🔗 Condividi / Esporta</div>
+              <button style={{ ...styles.button, width: '100%' }} onClick={() => { condividiLink(); setMostraMenu(false); }} title={t('condividi.tooltip')}>
+                🔗 {t('stanze.link')} <span style={{ opacity: 0.7, fontSize: 11 }}>(link = esporta)</span>
               </button>
-              <div style={{ ...styles.detail, fontSize: 11, marginTop: 4 }}>
-                Stampa quello che vedi: le sezioni chiuse restano chiuse.
-              </div>
+              <div style={{ ...styles.detail, fontSize: 11, marginTop: 4 }}>Il link contiene la scheda come un file esportato, senza server.</div>
             </div>
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
               <div style={{ ...styles.detail, marginBottom: 8 }}>🛟 Backup di sicurezza (tutti i personaggi in un file):</div>
