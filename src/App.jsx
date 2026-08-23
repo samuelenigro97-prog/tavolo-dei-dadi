@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.24';
+const APP_VERSION = '3.9.25';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -4615,14 +4615,14 @@ export default function App() {
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
               <div style={{ ...styles.detail, marginBottom: 8 }}>🛟 Backup</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
-                <button style={{ ...styles.button, width: '100%' }} onClick={esportaBackupCompleto} title="TUTTI i PG">💾 Tutti</button>
+                <button style={{ ...styles.button, width: '100%' }} onClick={esportaBackupCompleto} title="Esporta tutti i PG in un file">💾 Backup</button>
                 <button style={{ ...styles.button, width: '100%' }} onClick={() => jsonRef.current?.click()} title="Ripristina">📂 Ripristina</button>
                 {leggiSnapshots().length > 0 && (
-                  <button style={{ ...styles.button, width: '100%', gridColumn: '1 / -1' }} onClick={() => setMostraRipristino(true)}>🕓 Versioni</button>
+                  <button style={{ ...styles.button, width: '100%' }} onClick={() => setMostraRipristino(true)}>🕓 Versioni</button>
                 )}
                 {URL_ARCHIVIO_PG && (
                   <button
-                    style={{ ...styles.button, width: '100%', gridColumn: '1 / -1' }}
+                    style={{ ...styles.button, width: '100%' }}
                     onClick={() => { setMostraArchivioDm(true); }}
                     title="Archivio delle schede (serve chiave DM)"
                   >
@@ -6300,7 +6300,7 @@ export default function App() {
                         <polygon points={pts} fill="var(--c-gold)" stroke="var(--c-gold-dark)" strokeWidth="2" strokeLinejoin="round" />
                       )}
                     </svg>
-                    <span style={{ position: 'relative', zIndex: 1, fontWeight: 800, color: '#000', fontSize: 10, marginTop: facce === 4 ? 4 : facce === 10 ? 2 : 0 }}>
+                    <span style={{ position: 'relative', zIndex: 1, fontWeight: 800, color: '#fff', fontSize: 10, marginTop: facce === 4 ? 4 : facce === 10 ? 2 : 0, textShadow: '0 1px 2px rgba(0,0,0,0.7)' }}>
                       d{facce}
                     </span>
                   </button>
