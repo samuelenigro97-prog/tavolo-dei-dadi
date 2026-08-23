@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.21';
+const APP_VERSION = '3.9.22';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -4605,19 +4605,17 @@ export default function App() {
                 {leggiSnapshots().length > 0 && (
                   <button style={{ ...styles.button, width: '100%', gridColumn: '1 / -1' }} onClick={() => setMostraRipristino(true)}>🕓 Versioni</button>
                 )}
+                {URL_ARCHIVIO_PG && (
+                  <button
+                    style={{ ...styles.button, width: '100%', gridColumn: '1 / -1' }}
+                    onClick={() => { setMostraArchivioDm(true); }}
+                    title="Solo per il DM: elenco delle schede create dagli utenti (serve la chiave)"
+                  >
+                    🗂 Archivio DM
+                  </button>
+                )}
               </div>
             </div>
-            {URL_ARCHIVIO_PG && (
-              <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
-                <button
-                  style={{ ...styles.button, width: '100%' }}
-                  onClick={() => { setMostraArchivioDm(true); }}
-                  title="Solo per il DM: elenco delle schede create dagli utenti (serve la chiave)"
-                >
-                  🗂 Archivio DM
-                </button>
-              </div>
-            )}
             {erroreImport && <div style={{ color: C.red, marginTop: 10 }}>{erroreImport}</div>}
           </div>
         </div>

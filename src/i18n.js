@@ -55,7 +55,7 @@ export const DIZIONARIO = {
     'menu.elimina_tooltip': 'Elimina {nome}',
     'menu.nessun_personaggio': 'Nessun personaggio salvato.',
     'menu.da_file': '📂 Importa',
-    'menu.pg_casuale': '🎲 PG casuale',
+    'menu.pg_casuale': '🎲 PG Casuale',
     'menu.pg_casuale_tooltip': 'Genera un personaggio casuale ma coerente (classe, specie, background, stat, competenze e nome)',
 
     // Cloud Modal

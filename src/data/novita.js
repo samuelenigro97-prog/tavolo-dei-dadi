@@ -5,6 +5,119 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.22',
+    voci: {
+      it: [
+        'Backup non distruttivo: il sync non sovrascrive più un roster più grande con uno più piccolo.',
+        'Import Frost/Elevorn ora prende correttamente razza e abilità di background.',
+        'Taglia Media di default alla creazione, modificabile.',
+      ],
+      en: [
+        'Non-destructive backup: sync no longer overwrites a larger roster with a smaller one.',
+        'Frost/Elevorn import now correctly picks race and background skills.',
+        'Size Medium by default at creation, editable.',
+      ],
+    },
+  },
+  {
+    versione: '3.9.21',
+    voci: {
+      it: [
+        'Tasto Lingua mostra la bandiera della lingua caricata (🇮🇹/🇬🇧).',
+      ],
+      en: [
+        'Language button now shows the flag of the loaded language.',
+      ],
+    },
+  },
+  {
+    versione: '3.9.20',
+    voci: {
+      it: [
+        'Sincronizzazione fallback URL per Worker e backup più robusto.',
+      ],
+      en: [
+        'Sync fallback URL for Worker and more robust backup.',
+      ],
+    },
+  },
+  {
+    versione: '3.9.19',
+    voci: {
+      it: [
+        'Fix sync 409 per roster più piccolo con timestamp vecchio.',
+      ],
+      en: [
+        'Fix sync 409 for smaller roster with old timestamp.',
+      ],
+    },
+  },
+  {
+    versione: '3.9.18',
+    voci: {
+      it: [
+        'Elevorn triclasse ora mostra totale 10 (1+6+3) nel selettore PG.',
+        'Menu Carica ora collassabile.',
+      ],
+      en: [
+        'Elevorn triclass now shows total 10 (1+6+3) in PG selector.',
+        'Load menu now collapsible.',
+      ],
+    },
+  },
+  {
+    versione: '3.9.17',
+    voci: {
+      it: [
+        'Import versione 5.0 a sinistra, 5.5 a destra.',
+      ],
+      en: [
+        'Import version 5.0 left, 5.5 right.',
+      ],
+    },
+  },
+  {
+    versione: '3.9.16',
+    voci: {
+      it: [
+        'Menu: ora specchio dei tasti in alto (Nuovo → Carica → Cloud/Annulla/Esporta/Importa/Avvisi/Lingua) + PG Casuale sotto Carica.',
+        'Import: dopo la scelta dei file chiedi subito 5e (2014) a sinistra / 5.5 (2024) a destra.',
+        'Sottotitolo D&D 5e/5.5 rimosso; tasto Lingua ora mostra la bandiera della lingua caricata.',
+      ],
+      en: [
+        'Menu now mirrors top buttons (New → Load → Cloud/Undo/Export/Import/Alerts/Language) + Random PG under Load.',
+        'Import: after picking files, choose 5e (2014) left / 5.5 (2024) right.',
+        'Subtitle removed; Language button now shows the loaded flag.',
+      ],
+    },
+  },
+  {
+    versione: '3.9.15',
+    voci: {
+      it: [
+        'PG Casuale sotto Carica, rimossi Link/Import/IA duplicati dal menu.',
+        'Backup: Archivio DM ora dentro Backup dopo Versioni.',
+      ],
+      en: [
+        'Random PG under Load, removed duplicate Link/Import/AI from menu.',
+        'Backup: DM Archive now inside Backup after Versions.',
+      ],
+    },
+  },
+  {
+    versione: '3.9.14',
+    voci: {
+      it: [
+        'Menu: titolo con versione vX e bottone Carica dedicato.',
+        'Import con scelta edizione già attivo dalla 3.9.10.',
+      ],
+      en: [
+        'Menu: title with version and dedicated Load button.',
+        'Import with edition choice already active since 3.9.10.',
+      ],
+    },
+  },
+  {
     versione: '3.8.6',
     voci: {
       it: [
