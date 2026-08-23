@@ -26,11 +26,15 @@
  *                        es. "https://TUOUTENTE.github.io". Default "*".
  *   - SCHEDE             (binding KV) l'archivio vero e proprio.
  *   - AI                 (binding Workers AI) per trascrizione immagini gratis (10k req/giorno).
- *                        Richiede [ai] binding="AI" in wrangler.toml.
+ *                        Richiede [ai] binding="AI" in wrangler.toml. I modelli tentati in ordine:
+ *                        gemma-4-26b, llama-4-scout, qwen3.8-27b, mistral-small-3.1-24b, llava-1.5-7b, llama-3.2-11b
+ *                        (i primi 4 non hanno blocco EU 5016; llava 13b è rimosso 5007, il 7b resta).
  *   - OLLAMA_URL         (opzionale) URL del tuo server Ollama (es. https://ollama.tuodominio.com
  *                        o http://IP:11434). Se impostato, le immagini vengono trascritte via
  *                        Ollama (modello vision) come fallback/prima di Anthropic. Gratis e privato.
  *   - OLLAMA_MODEL       (opzionale) modello Ollama vision (default llava). Es. llava, qwen2-vl, llama3.2-vision.
+ *   - WORKERS_AI_MODEL   (opzionale) forza un singolo modello Workers AI (es. @cf/google/gemma-4-26b-a4b-it).
+ *   - ANTHROPIC_MODEL    (opzionale) modello Anthropic (default claude-opus-4-8, es. claude-sonnet-4-20250514).
  *
  * Deploy: vedi worker/LEGGIMI.md
  */
@@ -407,50 +411,141 @@ export default {
       return new Response(JSON.stringify({ error: 'Campo fileBase64 (o pdfBase64) mancante' }), { status: 400, headers });
     }
     const isImage = mediaType.startsWith('image/');
+    let erroreWorkersPerFallback = '';
 
     // 1) Se è un'immagine e Workers AI è disponibile → gratis, zero chiavi (10k req/giorno)
-    // Fallback a Ollama e poi ad Anthropic se il modello Workers AI non è disponibile (5007/5016)
+    // Prova una cascata di modelli vision EU-friendly. Fallback a Ollama e poi ad Anthropic.
+    // - @cf/google/gemma-4-26b-a4b-it e @cf/meta/llama-4-scout non richiedono "agree" EU-block (5016)
+    // - @cf/llava-hf/llava-1.5-13b-hf è stato rimosso (5007), @cf/llava-hf/llava-1.5-7b-hf resta come ultimo.
+    // - @cf/meta/llama-3.2-11b-vision-instruct resta come ultima risorsa con auto-agree.
     if (isImage && env.AI) {
-      try {
-        const binary = atob(base64);
-        const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-        const image = Array.from(bytes);
-        let aiResult;
-        aiResult = await env.AI.run('@cf/meta/llama-3.2-11b-vision-instruct', {
-          prompt: PROMPT,
-          image,
-          max_tokens: 8192,
-        });
-        let testo = '';
-        if (typeof aiResult === 'string') testo = aiResult;
-        else if (aiResult && typeof aiResult.response === 'string') testo = aiResult.response;
-        else if (aiResult && typeof aiResult.description === 'string') testo = aiResult.description;
-        else testo = JSON.stringify(aiResult);
-        const inizio = testo.indexOf('{');
-        const fine = testo.lastIndexOf('}');
-        if (inizio === -1 || fine === -1) {
-          return new Response(JSON.stringify({ error: 'Risposta Workers AI non in formato JSON', raw: testo.slice(0, 600) }), { status: 502, headers });
+      const modelliVision = [];
+      if (env.WORKERS_AI_MODEL) modelliVision.push(String(env.WORKERS_AI_MODEL).trim());
+      modelliVision.push(
+        '@cf/google/gemma-4-26b-a4b-it',
+        '@cf/meta/llama-4-scout-17b-16e-instruct',
+        '@cf/qwen/qwen3.8-27b',
+        '@cf/mistralai/mistral-small-3.1-24b-instruct',
+        '@cf/llava-hf/llava-1.5-7b-hf',
+        '@cf/meta/llama-3.2-11b-vision-instruct',
+      );
+      // dedup mantenendo ordine
+      const visti = new Set();
+      const candidati = modelliVision.filter((m) => m && !visti.has(m) && visti.add(m));
+      let ultimoErrore = '';
+      let rispostaWorkersOk = false;
+      let schedaEstratta = null;
+      for (const modello of candidati) {
+        // Costruisci payload adatti al modello
+        const tentativiPayload = [];
+        const dataUrl = `data:${mediaType || 'image/jpeg'};base64,${base64}`;
+        if (modello.includes('llava')) {
+          try {
+            const binary = atob(base64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            tentativiPayload.push({ prompt: PROMPT, image: Array.from(bytes), max_tokens: 8192 });
+          } catch {}
+          // fallback: base64 puro (alcune versioni lo accettano)
+          tentativiPayload.push({ prompt: PROMPT, image: dataUrl, max_tokens: 8192 });
+        } else {
+          // Modelli Image-Text-to-Text moderni: messages con image_url (OpenAI-compatibile)
+          tentativiPayload.push({
+            messages: [
+              { role: 'system', content: 'Sei un assistente che trascrive schede D&D 5e. Rispondi solo con JSON.' },
+              {
+                role: 'user', content: [
+                  { type: 'text', text: PROMPT },
+                  { type: 'image_url', image_url: { url: dataUrl } },
+                ],
+              },
+            ],
+            max_tokens: 8192,
+          });
+          // Variante stile tutorial Llama (messages + image separata)
+          tentativiPayload.push({
+            messages: [
+              { role: 'system', content: 'Sei un assistente che trascrive schede D&D 5e.' },
+              { role: 'user', content: PROMPT },
+            ],
+            image: dataUrl,
+            max_tokens: 8192,
+          });
         }
-        const scheda = JSON.parse(testo.slice(inizio, fine + 1));
-        return new Response(JSON.stringify(scheda), { headers });
-      } catch (err) {
-        const msg = String(err.message || err);
-        const isModelMissing = msg.includes('5007') || msg.includes('5016') || msg.includes('No such model') || msg.includes('agree');
-        // Se è un errore di modello mancante e c'è un fallback (Ollama o Anthropic), non fallire subito: prova i fallback sotto
-        if (!isModelMissing) {
-          // Errore diverso (es. payload troppo grande): prova comunque Ollama/Anthropic se configurati, altrimenti ritorna
-          if (!env.OLLAMA_URL && !env.ANTHROPIC_API_KEY) {
-            return new Response(JSON.stringify({ error: `Workers AI fallita: ${msg}` }), { status: 500, headers });
+        let payloadOk = false;
+        for (const payload of tentativiPayload) {
+          try {
+            const aiResult = await env.AI.run(modello, payload);
+            let testo = '';
+            if (typeof aiResult === 'string') testo = aiResult;
+            else if (aiResult && typeof aiResult.response === 'string') testo = aiResult.response;
+            else if (aiResult && typeof aiResult.description === 'string') testo = aiResult.description;
+            else if (aiResult && typeof aiResult.answer === 'string') testo = aiResult.answer;
+            else if (aiResult && aiResult.choices && aiResult.choices[0]?.message?.content) testo = String(aiResult.choices[0].message.content);
+            else testo = JSON.stringify(aiResult);
+            const inizio = testo.indexOf('{');
+            const fine = testo.lastIndexOf('}');
+            if (inizio === -1 || fine === -1) throw new Error('Risposta Workers AI non in formato JSON');
+            const scheda = JSON.parse(testo.slice(inizio, fine + 1));
+            schedaEstratta = scheda;
+            payloadOk = true;
+            rispostaWorkersOk = true;
+            break;
+          } catch (err) {
+            const msg = String(err?.message || err);
+            ultimoErrore = msg;
+            const isAgree = msg.includes('5016') || msg.toLowerCase().includes('agree');
+            const isMissing = msg.includes('5007') || msg.includes('No such model') || msg.includes('not found');
+            // Auto-agree per Llama 3.2: una tantum per account, poi riprova lo stesso payload
+            if (isAgree && modello.includes('llama-3.2')) {
+              try { await env.AI.run(modello, { prompt: 'agree' }); } catch {}
+              try {
+                const aiRetry = await env.AI.run(modello, payload);
+                let testo2 = '';
+                if (typeof aiRetry === 'string') testo2 = aiRetry;
+                else if (aiRetry && typeof aiRetry.response === 'string') testo2 = aiRetry.response;
+                else if (aiRetry && typeof aiRetry.description === 'string') testo2 = aiRetry.description;
+                else testo2 = JSON.stringify(aiRetry);
+                const ini = testo2.indexOf('{');
+                const fin = testo2.lastIndexOf('}');
+                if (ini !== -1 && fin !== -1) {
+                  schedaEstratta = JSON.parse(testo2.slice(ini, fin + 1));
+                  payloadOk = true;
+                  rispostaWorkersOk = true;
+                  break;
+                }
+              } catch (e2) { ultimoErrore = String(e2?.message || e2); }
+              // se anche il retry fallisce, passa al prossimo modello
+              break;
+            }
+            // errore payload-formato: prova il prossimo payload dello stesso modello
+            if (!isMissing && !isAgree && tentativiPayload.indexOf(payload) < tentativiPayload.length - 1) {
+              continue;
+            }
+            // modello mancante o errore definitivo per questo modello → passa al prossimo modello
+            break;
           }
         }
-        // Se Ollama è configurato, il blocco 1b sotto ci proverà; se Anthropic c'è, il blocco 2 sotto ci proverà.
-        // Se nessuno è configurato e il modello manca, dai un errore utile.
-        if (!env.OLLAMA_URL && !env.ANTHROPIC_API_KEY) {
-          return new Response(JSON.stringify({ error: `Workers AI fallita: ${msg}. Modello @cf/llava-hf/llava-1.5-13b-hf rimosso da Cloudflare (5007). Configura OLLAMA_URL (es. http://tuo-server:11434) con modello llava/qwen2-vl, oppure imposta ANTHROPIC_API_KEY come fallback.` }), { status: 500, headers });
+        if (payloadOk) break;
+        // Se l'errore è "model missing / agree", continua con il prossimo candidato EU-friendly
+        // Se è altro errore ma non abbiamo altri candidati con fallback, si continua comunque
+        const isModelError = ultimoErrore.includes('5007') || ultimoErrore.includes('5016') || ultimoErrore.includes('No such model') || ultimoErrore.toLowerCase().includes('agree');
+        if (!isModelError && ultimoErrore && !ultimoErrore.includes('non in formato JSON')) {
+          // errore non recuperabile (es. payload troppo grande) ma se abbiamo Ollama/Anthropic lasciamo fallback
+          // altrimenti prova comunque il prossimo modello
         }
-        // Altrimenti lascia proseguire verso Ollama / Anthropic
+        // continua al prossimo modello
       }
+      if (rispostaWorkersOk && schedaEstratta) {
+        return new Response(JSON.stringify(schedaEstratta), { headers });
+      }
+      const msg = ultimoErrore || 'Workers AI non disponibile';
+      erroreWorkersPerFallback = msg;
+      const haFallback = !!(env.OLLAMA_URL || env.ANTHROPIC_API_KEY);
+      if (!haFallback) {
+        return new Response(JSON.stringify({ error: `Workers AI fallita: ${msg}. Tutti i modelli tentati hanno fallito (gemma-4 / llama-4-scout / qwen / mistral / llava-7b / llama-3.2). Il modello @cf/llava-hf/llava-1.5-13b-hf è stato rimosso (5007) e @cf/meta/llama-3.2-11b-vision-instruct richiede "agree" e ha blocco EU (5016). Configura OLLAMA_URL (es. http://tuo-server:11434) con modello llava/qwen2-vl, oppure imposta ANTHROPIC_API_KEY come fallback. Se vuoi forzare un modello specifico, imposta WORKERS_AI_MODEL.` }), { status: 500, headers });
+      }
+      // altrimenti lascia proseguire verso Ollama / Anthropic (non ritornare errore qui)
     }
 
     // 1b) Ollama locale (immagini) — se configurato, prova prima di Anthropic. Gratis e privato.
@@ -493,12 +588,17 @@ export default {
 
     // 2) Fallback Anthropic (PDF e immagini se Workers AI non c'è o è PDF)
     if (!env.ANTHROPIC_API_KEY) {
-      return new Response(JSON.stringify({ error: isImage ? 'Workers AI non configurata: aggiungi [ai] binding="AI" in wrangler.toml e fai deploy' : 'ANTHROPIC_API_KEY non configurata e Workers AI disponibile solo per immagini (usa JPG/PNG/WebP)' }), { status: 500, headers });
+      const dettaglio = isImage && erroreWorkersPerFallback ? ` (Workers AI ha fallito: ${erroreWorkersPerFallback.slice(0, 200)})` : '';
+      const suggerimento = isImage
+        ? `Workers AI non disponibile${dettaglio}: aggiungi [ai] binding="AI" in wrangler.toml e fai deploy, oppure configura OLLAMA_URL o ANTHROPIC_API_KEY. Se usi già Workers AI, aggiorna il Worker (cascata gemma-4/llama-4/qwen/mistral/llava-7b gestisce 5007/5016).`
+        : 'ANTHROPIC_API_KEY non configurata e Workers AI disponibile solo per immagini (usa JPG/PNG/WebP)';
+      return new Response(JSON.stringify({ error: suggerimento }), { status: 500, headers });
     }
     try {
       const contentBlock = isImage
         ? { type: 'image', source: { type: 'base64', media_type: mediaType || 'image/jpeg', data: base64 } }
         : { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } };
+      const anthropicModel = String(env.ANTHROPIC_MODEL || 'claude-opus-4-8').trim() || 'claude-opus-4-8';
       const risposta = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
@@ -507,7 +607,7 @@ export default {
           'content-type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'claude-opus-4-8',
+          model: anthropicModel,
           max_tokens: 8192,
           messages: [{
             role: 'user',

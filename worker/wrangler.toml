@@ -7,6 +7,8 @@ compatibility_date = "2024-11-01"
 #   wrangler secret put DM_KEY              → password con cui TU leggi l'archivio schede
 #   wrangler secret put OLLAMA_URL          → URL Ollama per trascrizione locale (es. https://ollama.tuodominio.com)
 #   wrangler secret put OLLAMA_MODEL        → modello vision Ollama (default llava, es. qwen2-vl, llama3.2-vision)
+#   wrangler secret put WORKERS_AI_MODEL    → forza un singolo modello Workers AI (default cascata gemma-4/llama-4/qwen/mistral/llava-7b/llama-3.2)
+#                                            cascade evita 5016 (EU block llama-3.2) e 5007 (llava-13b rimosso)
 #
 # Limita il CORS al tuo sito: solo le pagine servite da questa origine possono
 # chiamare il Worker (chi ha solo l'URL non lo può usare da un altro sito).
