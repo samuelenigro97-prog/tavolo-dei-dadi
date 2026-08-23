@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.15';
+const APP_VERSION = '3.9.16';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -4493,8 +4493,7 @@ export default function App() {
           onClick={(e) => { if (e.target === e.currentTarget) setMostraMenu(false); }}
         >
           <div style={{ ...styles.panel, maxWidth: 460, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
-            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 2 }}>Tavolo dei Dadi <span style={{ fontSize: 11, opacity: 0.55, fontWeight: 400, verticalAlign: 'middle' }}>v{APP_VERSION}</span></h1>
-            <div style={{ textAlign: 'center', fontSize: 11, opacity: 0.6, marginBottom: 12 }}>D&D 5e / 5.5 • {Object.keys(roster.personaggi).length} PG</div>
+            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 12 }}>Tavolo dei Dadi <span style={{ fontSize: 11, opacity: 0.55, fontWeight: 400, verticalAlign: 'middle' }}>v{APP_VERSION}</span></h1>
 
             <button
               style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 10 }}
