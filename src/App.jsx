@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.12';
+const APP_VERSION = '3.9.13';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -4547,43 +4547,7 @@ export default function App() {
               )}
             </div>
 
-            {/* Colonne uguali: i pulsanti hanno tutti la stessa larghezza. */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
-              <button style={{ ...styles.button, width: '100%' }} onClick={() => jsonRef.current?.click()}>{t('menu.da_file')}</button>
-              <button
-                style={{ ...styles.button, width: '100%' }}
-                onClick={() => generaPgCasuale()}
-                title={t('menu.pg_casuale_tooltip')}
-              >
-                {t('menu.pg_casuale')}
-              </button>
-            </div>
-            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
-              <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>🤖 Importa da file (IA) — PDF/JPG/PNG</div>
-              <input ref={pdfRef} type="file" accept="application/pdf,image/jpeg,image/png,image/webp,image/gif" multiple style={{ display: 'none' }} onChange={transcribePdf} />
-              <button style={{ ...styles.modeButton(false), width: '100%' }} onClick={() => pdfRef.current?.click()} disabled={pdfStato === 'loading'}>
-                {pdfStato === 'loading' ? '⏳ Trascrizione IA in corso…' : '🤖 Importa da PDF/JPG (IA)'}
-              </button>
-              <div style={{ ...styles.detail, fontSize: 11, marginTop: 4, lineHeight: 1.4 }}>Gratis via Cloudflare Workers AI per JPG/PNG/WebP (zero chiavi). PDF richiede ANTHROPIC_API_KEY sul Worker.</div>
-              {pdfStato === 'loading' && <div style={{ ...styles.detail, fontSize: 12, marginTop: 6, color: C.goldDark }}>Lettura in corso…</div>}
-            </div>
-            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
-              <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>🔗 Condividi / Esporta</div>
-              <button style={{ ...styles.button, width: '100%' }} onClick={() => { condividiLink(); setMostraMenu(false); }} title={t('condividi.tooltip')}>
-                🔗 {t('stanze.link')} <span style={{ opacity: 0.7, fontSize: 11 }}>(link = esporta)</span>
-              </button>
-              <div style={{ ...styles.detail, fontSize: 11, marginTop: 4 }}>Il link contiene la scheda come un file esportato, senza server.</div>
-            </div>
-            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
-              <div style={{ ...styles.detail, marginBottom: 8 }}>🛟 Backup di sicurezza (tutti i personaggi in un file):</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
-                <button style={{ ...styles.button, width: '100%', borderColor: C.gold, color: C.goldDark }} onClick={esportaBackupCompleto} title="Scarica un file con TUTTI i tuoi personaggi">💾 Backup completo</button>
-                <button style={{ ...styles.button, width: '100%' }} onClick={() => jsonRef.current?.click()} title="Ripristina da un file di backup o importa una scheda">📂 Ripristina / Importa</button>
-                {leggiSnapshots().length > 0 && (
-                  <button style={{ ...styles.button, width: '100%', gridColumn: '1 / -1' }} onClick={() => setMostraRipristino(true)} title="Annulla una modifica o cancellazione recente">🕓 Versioni precedenti</button>
-                )}
-              </div>
-            </div>
+            {/* Specchio tasti header globali subito dopo Carica, nello stesso ordine */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8, marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
               <button style={{ ...styles.button, width: '100%' }} onClick={() => { setMostraMenu(false); setTimeout(() => { setCloudStatus({ text: '', type: '' }); setMostraCloud(true); }, 50); }} title={t('tooltip.cloud_off')}>☁️ Cloud</button>
               <button style={{ ...styles.button, width: '100%', opacity: passiUndo ? 1 : 0.45 }} disabled={!passiUndo} onClick={() => { annullaModifica(); setMostraMenu(false); }} title={passiUndo ? t('undo.tooltip', { n: passiUndo }) : t('undo.vuoto')}>↩︎ {t('undo.annulla')}</button>
@@ -4591,6 +4555,27 @@ export default function App() {
               <button style={{ ...styles.button, width: '100%' }} onClick={() => jsonRef.current?.click()} title={t('tip.importa')}>📂 Importa</button>
               <button style={{ ...styles.button, width: '100%' }} onClick={() => { setMostraMenu(false); setTimeout(() => apriAvvisi(), 50); }} title={nAvvisi > 0 ? `${nAvvisi} avvisi` : 'Avvisi e novità'}>🔔 Avvisi{daNotificare ? ` (${nAvvisi > 0 ? nAvvisi : '!'})` : ''}</button>
               <button style={{ ...styles.button, width: '100%' }} onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))} title={t('tooltip.lingua')}>{lingua === 'it' ? '🇮🇹 ITA → ENG' : '🇬🇧 ENG → ITA'}</button>
+            </div>
+            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
+              <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>✨ Extra menu</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
+                <button style={{ ...styles.button, width: '100%' }} onClick={() => jsonRef.current?.click()}>{t('menu.da_file')}</button>
+                <button style={{ ...styles.button, width: '100%' }} onClick={() => generaPgCasuale()} title={t('menu.pg_casuale_tooltip')}>{t('menu.pg_casuale')}</button>
+                <button style={{ ...styles.button, width: '100%' }} onClick={() => pdfRef.current?.click()} disabled={pdfStato === 'loading'} title="Importa PDF/JPG con IA">{pdfStato === 'loading' ? '⏳ IA…' : '🤖 IA'}</button>
+                <button style={{ ...styles.button, width: '100%' }} onClick={() => { condividiLink(); setMostraMenu(false); }} title={t('condividi.tooltip')}>🔗 Link</button>
+              </div>
+              <input ref={pdfRef} type="file" accept="application/pdf,image/jpeg,image/png,image/webp,image/gif" multiple style={{ display: 'none' }} onChange={transcribePdf} />
+              <div style={{ ...styles.detail, fontSize: 11, marginTop: 6, lineHeight: 1.4 }}>IA gratis per JPG/PNG/WebP.</div>
+            </div>
+            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
+              <div style={{ ...styles.detail, marginBottom: 8 }}>🛟 Backup</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
+                <button style={{ ...styles.button, width: '100%', borderColor: C.gold, color: C.goldDark }} onClick={esportaBackupCompleto} title="TUTTI i PG">💾 Tutti</button>
+                <button style={{ ...styles.button, width: '100%' }} onClick={() => jsonRef.current?.click()} title="Ripristina">📂 Ripristina</button>
+                {leggiSnapshots().length > 0 && (
+                  <button style={{ ...styles.button, width: '100%', gridColumn: '1 / -1' }} onClick={() => setMostraRipristino(true)}>🕓 Versioni</button>
+                )}
+              </div>
             </div>
             {URL_ARCHIVIO_PG && (
               <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
