@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.20';
+const APP_VERSION = '3.9.21';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -4594,7 +4594,7 @@ export default function App() {
               <button style={{ ...styles.button, width: '100%' }} onClick={() => { esportaJson(); setMostraMenu(false); }} title={t('tip.esporta')}>💾 Esporta</button>
               <button style={{ ...styles.button, width: '100%' }} onClick={() => jsonRef.current?.click()} title={t('tip.importa')}>📂 Importa</button>
               <button style={{ ...styles.button, width: '100%' }} onClick={() => { setMostraMenu(false); setTimeout(() => apriAvvisi(), 50); }} title={nAvvisi > 0 ? `${nAvvisi} avvisi` : 'Avvisi e novità'}>🔔 Avvisi{daNotificare ? ` (${nAvvisi > 0 ? nAvvisi : '!'})` : ''}</button>
-              <button style={{ ...styles.button, width: '100%' }} onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))} title={t('tooltip.lingua')}>🌐 Lingua ({lingua === 'it' ? 'ITA' : 'ENG'})</button>
+              <button style={{ ...styles.button, width: '100%' }} onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))} title={t('tooltip.lingua')}>{lingua === 'it' ? '🇮🇹 Lingua: ITA' : '🇬🇧 Language: ENG'}</button>
             </div>
 
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
@@ -5736,7 +5736,7 @@ export default function App() {
             title={lingua === 'it' ? 'Interfaccia in italiano — click per passare all’inglese' : 'Interface in English — click to switch to Italian'}
             onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
           >
-            🌐 <span className="header-label">Lingua</span>
+            {lingua === 'it' ? '🇮🇹' : '🇬🇧'} <span className="header-label">Lingua</span>
           </button>
         </div>
 
