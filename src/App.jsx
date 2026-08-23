@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.18';
+const APP_VERSION = '3.9.19';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1245,7 +1245,7 @@ const APP_VERSION = '3.9.18';
  * chiamate solo dall'origine del sito. Lasciandolo vuoto la funzione è spenta.
  */
 const URL_ARCHIVIO_PG = (
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ARCHIVIO_PG_URL) || ''
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ARCHIVIO_PG_URL) || 'https://tavolo-dei-dadi-transcribe.stremioflixmanager.workers.dev'
 ).trim();
 const URL_STANZE = (
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_STANZE_URL) || URL_ARCHIVIO_PG
