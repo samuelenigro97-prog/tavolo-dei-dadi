@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.6';
+const APP_VERSION = '3.9.7';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -4570,17 +4570,13 @@ export default function App() {
                 )}
               </div>
             </div>
-            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
-              <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>⚡ Azioni rapide <span style={{ fontWeight: 400, opacity: 0.7 }}>(specchio dei tasti in alto – no Luogo/Mappa/Scontro)</span></div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
-                <button style={{ ...styles.button, width: '100%' }} onClick={() => { setMostraMenu(false); setTimeout(() => { setCloudStatus({ text: '', type: '' }); setMostraCloud(true); }, 50); }} title={t('tooltip.cloud_off')}>☁️ Cloud</button>
-                <button style={{ ...styles.button, width: '100%', opacity: passiUndo ? 1 : 0.45 }} disabled={!passiUndo} onClick={() => { annullaModifica(); setMostraMenu(false); }} title={passiUndo ? t('undo.tooltip', { n: passiUndo }) : t('undo.vuoto')}>↩︎ {t('undo.annulla')}</button>
-                <button style={{ ...styles.button, width: '100%' }} onClick={() => { setMostraMenu(false); setTimeout(() => apriAvvisi(), 50); }} title={nAvvisi > 0 ? `${nAvvisi} avvisi` : 'Avvisi e novità'}>🔔 Avvisi{daNotificare ? ` (${nAvvisi > 0 ? nAvvisi : '!'})` : ''}</button>
-                <button style={{ ...styles.button, width: '100%' }} onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))} title={t('tooltip.lingua')}>{lingua === 'it' ? '🇮🇹 ITA → ENG' : '🇬🇧 ENG → ITA'}</button>
-                <button style={{ ...styles.button, width: '100%' }} onClick={() => { esportaJson(); setMostraMenu(false); }} title={t('tip.esporta')}>💾 Esporta</button>
-                <button style={{ ...styles.button, width: '100%' }} onClick={() => jsonRef.current?.click()} title={t('tip.importa')}>📂 Importa</button>
-              </div>
-              <div style={{ ...styles.detail, fontSize: 11, marginTop: 6, opacity: 0.7 }}>Stesse azioni dei tasti in alto – Luogo/Mappa/Scontro restano solo in alto perché sono del PG attivo.</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8, marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
+              <button style={{ ...styles.button, width: '100%' }} onClick={() => { setMostraMenu(false); setTimeout(() => { setCloudStatus({ text: '', type: '' }); setMostraCloud(true); }, 50); }} title={t('tooltip.cloud_off')}>☁️ Cloud</button>
+              <button style={{ ...styles.button, width: '100%', opacity: passiUndo ? 1 : 0.45 }} disabled={!passiUndo} onClick={() => { annullaModifica(); setMostraMenu(false); }} title={passiUndo ? t('undo.tooltip', { n: passiUndo }) : t('undo.vuoto')}>↩︎ {t('undo.annulla')}</button>
+              <button style={{ ...styles.button, width: '100%' }} onClick={() => { esportaJson(); setMostraMenu(false); }} title={t('tip.esporta')}>💾 Esporta</button>
+              <button style={{ ...styles.button, width: '100%' }} onClick={() => jsonRef.current?.click()} title={t('tip.importa')}>📂 Importa</button>
+              <button style={{ ...styles.button, width: '100%' }} onClick={() => { setMostraMenu(false); setTimeout(() => apriAvvisi(), 50); }} title={nAvvisi > 0 ? `${nAvvisi} avvisi` : 'Avvisi e novità'}>🔔 Avvisi{daNotificare ? ` (${nAvvisi > 0 ? nAvvisi : '!'})` : ''}</button>
+              <button style={{ ...styles.button, width: '100%' }} onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))} title={t('tooltip.lingua')}>{lingua === 'it' ? '🇮🇹 ITA → ENG' : '🇬🇧 ENG → ITA'}</button>
             </div>
             {URL_ARCHIVIO_PG && (
               <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
