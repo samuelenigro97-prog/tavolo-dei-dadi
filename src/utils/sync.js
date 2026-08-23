@@ -68,6 +68,6 @@ export function messaggioErroreSync(codice) {
     case 'SYNC_INVALID_CODE': return 'Codice non valido: deve avere 10 caratteri.';
     case 'SYNC_INVALID_PAYLOAD': return 'Dati ricevuti dal server non validi.';
     case 'SYNC_SERVICE_UNAVAILABLE': return 'Servizio di sincronizzazione non raggiungibile: configura il Worker o riprova più tardi.';
-    default: return 'Errore imprevisto durante la sincronizzazione.';
+    default: return `Errore imprevisto durante la sincronizzazione${codice && !String(codice).startsWith('SYNC_') ? `: ${String(codice).slice(0, 120)}` : ''}.`;
   }
 }

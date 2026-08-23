@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.19';
+const APP_VERSION = '3.9.20';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1462,6 +1462,12 @@ function normalizeImported(dati) {
   for (const { key } of ABILITA) {
     const v = dati.abilita?.[key];
     abilita[key] = v === 3 ? 3 : v === 2 ? 2 : v === 1 || v === true ? 1 : 0;
+  }
+  // Se le abilità sono tutte 0 ma background/classe sono noti, applica le competenze di background (es. Soldato→atletica/intimidire, Eremita→medicina/religione)
+  const hasAnyAbilita = Object.values(abilita).some((v) => v > 0);
+  if (!hasAnyAbilita) {
+    const bgComp = BACKGROUND_COMPETENZE[traduciEN(str(dati.background))];
+    if (bgComp) for (const k of bgComp) if (abilita[k] === 0) abilita[k] = 1;
   }
 
   const attacchi = Array.isArray(dati.attacchi)
@@ -2160,8 +2166,7 @@ export default function App() {
   const [mostraSceltaVersione, setMostraSceltaVersione] = useState(false);
   const [importPending, setImportPending] = useState(null); // { files, tipo: 'json'|'pdf' }
   const [mostraListaCarica, setMostraListaCarica] = useState(false);
-  const [mostraCloudInline, setMostraCloudInline] = useState(false);
-  const [mostraAvvisiInline, setMostraAvvisiInline] = useState(false);
+  const [versioneImportScelta, setVersioneImportScelta] = useState(null);
   const [mostraCrea, setMostraCrea] = useState(false); // schermata di creazione guidata
   const [bozzaCrea, setBozzaCrea] = useState({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' });
   // versione delle regole: '2024' (5.5, default) o '2014' (5.0)
@@ -3597,7 +3602,6 @@ export default function App() {
     const files = Array.from(evento.target.files || []);
     evento.target.value = '';
     if (!files.length) return;
-    // Chiedi versione prima di importare (5e / 5.5)
     setImportPending({ files, tipo: 'json' });
     setMostraSceltaVersione(true);
   }
@@ -4021,14 +4025,37 @@ export default function App() {
   }
 
   /** Applica al roster locale ciò che è salvato sotto un codice. Condivisa da
-   *  caricaDaCodiceSync() e usaCodiceSyncEsistente(). */
+   *  caricaDaCodiceSync() e usaCodiceSyncEsistente(). Merge non distruttivo: mantiene i PG locali non presenti sul server. */
   async function caricaDaCodiceSyncPer(codice) {
     const { roster: rosterRicevuto, updatedAt } = await caricaSync(URL_STANZE, codice);
     const caricato = { attivo: rosterRicevuto.attivo, personaggi: {} };
     for (const id in (rosterRicevuto.personaggi || {})) caricato.personaggi[id] = normalizeImported(rosterRicevuto.personaggi[id]);
     if (!caricato.attivo || !caricato.personaggi[caricato.attivo]) caricato.attivo = Object.keys(caricato.personaggi)[0] || '';
     const conImmaginiLocali = await caricaImmaginiRoster(caricato).catch(() => caricato);
-    setRoster(preservaImmaginiSeMancanti(conImmaginiLocali, rosterSyncRef.current));
+    const merged = (() => {
+      const base = rosterSyncRef.current || { attivo: '', personaggi: {} };
+      // Se il server ha meno PG del locale e il timestamp non è più recente, non cancellare i locali
+      const countServer = Object.keys(conImmaginiLocali.personaggi || {}).length;
+      const countLocal = Object.keys(base.personaggi || {}).length;
+      const tsLocal = Number(localStorage.getItem('scheda-interattiva:sync-codice-ts')) || 0;
+      if (countServer < countLocal && Number(updatedAt) <= tsLocal) {
+        // Merge: tieni i locali non presenti sul server
+        const personaggi = { ...base.personaggi };
+        for (const [id, pg] of Object.entries(conImmaginiLocali.personaggi)) personaggi[id] = pg;
+        return { attivo: conImmaginiLocali.attivo || base.attivo, personaggi };
+      }
+      // Altrimenti merge comunque non distruttivo: unisci
+      const personaggi = { ...(base.personaggi || {}) };
+      for (const [id, pg] of Object.entries(conImmaginiLocali.personaggi)) personaggi[id] = pg;
+      // preserva immagini locali per i PG che arrivano senza
+      for (const [id, pg] of Object.entries(personaggi)) {
+        const cur = base.personaggi?.[id];
+        if (cur?.ritratto && !pg.ritratto) pg.ritratto = cur.ritratto;
+        if (cur?.mappaCampagna && !pg.mappaCampagna) pg.mappaCampagna = cur.mappaCampagna;
+      }
+      return { attivo: conImmaginiLocali.attivo || base.attivo, personaggi };
+    })();
+    setRoster(merged);
     if (updatedAt) localStorage.setItem('scheda-interattiva:sync-codice-ts', String(updatedAt));
     return updatedAt;
   }
@@ -4567,7 +4594,7 @@ export default function App() {
               <button style={{ ...styles.button, width: '100%' }} onClick={() => { esportaJson(); setMostraMenu(false); }} title={t('tip.esporta')}>💾 Esporta</button>
               <button style={{ ...styles.button, width: '100%' }} onClick={() => jsonRef.current?.click()} title={t('tip.importa')}>📂 Importa</button>
               <button style={{ ...styles.button, width: '100%' }} onClick={() => { setMostraMenu(false); setTimeout(() => apriAvvisi(), 50); }} title={nAvvisi > 0 ? `${nAvvisi} avvisi` : 'Avvisi e novità'}>🔔 Avvisi{daNotificare ? ` (${nAvvisi > 0 ? nAvvisi : '!'})` : ''}</button>
-              <button style={{ ...styles.button, width: '100%' }} onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))} title={t('tooltip.lingua')}>{lingua === 'it' ? '🇮🇹 ITA → ENG' : '🇬🇧 ENG → ITA'}</button>
+              <button style={{ ...styles.button, width: '100%' }} onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))} title={t('tooltip.lingua')}>🌐 Lingua ({lingua === 'it' ? 'ITA' : 'ENG'})</button>
             </div>
 
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
@@ -5709,7 +5736,7 @@ export default function App() {
             title={lingua === 'it' ? 'Interfaccia in italiano — click per passare all’inglese' : 'Interface in English — click to switch to Italian'}
             onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
           >
-            {lingua === 'it' ? '🇮🇹 ' : '🇬🇧 '}<span className="header-label">{lingua === 'it' ? 'ITA' : 'ENG'}</span>
+            🌐 <span className="header-label">Lingua</span>
           </button>
         </div>
 

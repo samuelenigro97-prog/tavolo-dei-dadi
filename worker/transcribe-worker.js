@@ -267,6 +267,19 @@ export async function gestisciSync(request, env, headers, percorso) {
     if (new TextEncoder().encode(testo).length > MAX_SYNC_BYTES) {
       return new Response(JSON.stringify({ error: 'SYNC_TOO_LARGE' }), { status: 413, headers });
     }
+    // Safety: non sovrascrivere un roster più grande con uno più piccolo se il timestamp non è più recente (evita cancellazioni accidentali)
+    try {
+      const esistente = await env.SCHEDE.get(chiave);
+      if (esistente) {
+        const esistenteDati = JSON.parse(esistente);
+        const countEsistente = Object.keys(esistenteDati?.roster?.personaggi || {}).length;
+        const countNuovo = Object.keys(roster?.personaggi || {}).length;
+        const tsEsistente = Number(esistenteDati?.updatedAt) || 0;
+        if (countNuovo < countEsistente && updatedAt <= tsEsistente) {
+          return new Response(JSON.stringify({ error: 'SYNC_OUTDATED', dettaglio: `Roster più piccolo (${countNuovo} vs ${countEsistente}) con timestamp non più recente` }), { status: 409, headers });
+        }
+      }
+    } catch {}
     await env.SCHEDE.put(chiave, testo, { expirationTtl: DURATA_SYNC_SEC });
     return new Response(JSON.stringify({ ok: true, updatedAt }), { status: 200, headers });
   }
