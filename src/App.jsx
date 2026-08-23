@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.14';
+const APP_VERSION = '3.9.15';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -4513,7 +4513,7 @@ export default function App() {
             </button>
 
             <div id="lista-carica-pg" style={{ ...styles.detail, marginBottom: 6, fontWeight: 'bold' }}>{t('menu.carica_personaggio')}</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
               {Object.entries(roster.personaggi).map(([id, p]) => (
                 <div key={id} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                   <button
@@ -4556,6 +4556,7 @@ export default function App() {
                 <span style={styles.detail}>{t('menu.nessun_personaggio')}</span>
               )}
             </div>
+            <button style={{ ...styles.button, width: '100%', marginBottom: 14 }} onClick={() => generaPgCasuale()} title={t('menu.pg_casuale_tooltip')}>{t('menu.pg_casuale')}</button>
 
             {/* Specchio tasti header globali subito dopo Carica, nello stesso ordine */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8, marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
@@ -4566,17 +4567,7 @@ export default function App() {
               <button style={{ ...styles.button, width: '100%' }} onClick={() => { setMostraMenu(false); setTimeout(() => apriAvvisi(), 50); }} title={nAvvisi > 0 ? `${nAvvisi} avvisi` : 'Avvisi e novità'}>🔔 Avvisi{daNotificare ? ` (${nAvvisi > 0 ? nAvvisi : '!'})` : ''}</button>
               <button style={{ ...styles.button, width: '100%' }} onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))} title={t('tooltip.lingua')}>{lingua === 'it' ? '🇮🇹 ITA → ENG' : '🇬🇧 ENG → ITA'}</button>
             </div>
-            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
-              <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>✨ Extra menu</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
-                <button style={{ ...styles.button, width: '100%' }} onClick={() => jsonRef.current?.click()}>{t('menu.da_file')}</button>
-                <button style={{ ...styles.button, width: '100%' }} onClick={() => generaPgCasuale()} title={t('menu.pg_casuale_tooltip')}>{t('menu.pg_casuale')}</button>
-                <button style={{ ...styles.button, width: '100%' }} onClick={() => pdfRef.current?.click()} disabled={pdfStato === 'loading'} title="Importa PDF/JPG con IA">{pdfStato === 'loading' ? '⏳ IA…' : '🤖 IA'}</button>
-                <button style={{ ...styles.button, width: '100%' }} onClick={() => { condividiLink(); setMostraMenu(false); }} title={t('condividi.tooltip')}>🔗 Link</button>
-              </div>
-              <input ref={pdfRef} type="file" accept="application/pdf,image/jpeg,image/png,image/webp,image/gif" multiple style={{ display: 'none' }} onChange={transcribePdf} />
-              <div style={{ ...styles.detail, fontSize: 11, marginTop: 6, lineHeight: 1.4 }}>IA gratis per JPG/PNG/WebP.</div>
-            </div>
+
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
               <div style={{ ...styles.detail, marginBottom: 8 }}>🛟 Backup</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
