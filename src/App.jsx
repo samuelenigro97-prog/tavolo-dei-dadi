@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.13';
+const APP_VERSION = '3.9.14';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -4493,16 +4493,26 @@ export default function App() {
           onClick={(e) => { if (e.target === e.currentTarget) setMostraMenu(false); }}
         >
           <div style={{ ...styles.panel, maxWidth: 460, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
-            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 16 }}>Tavolo dei Dadi</h1>
+            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 2 }}>Tavolo dei Dadi <span style={{ fontSize: 11, opacity: 0.55, fontWeight: 400, verticalAlign: 'middle' }}>v{APP_VERSION}</span></h1>
+            <div style={{ textAlign: 'center', fontSize: 11, opacity: 0.6, marginBottom: 12 }}>D&D 5e / 5.5 • {Object.keys(roster.personaggi).length} PG</div>
 
             <button
-              style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 14 }}
+              style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 10 }}
               onClick={() => { setBozzaCrea({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' }); setMostraCrea(true); }}
             >
               {t('menu.nuovo_personaggio')}
             </button>
+            <button
+              style={{ ...styles.button, width: '100%', marginBottom: 14 }}
+              onClick={() => {
+                const el = document.getElementById('lista-carica-pg');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            >
+              📂 {t('menu.carica_personaggio')}
+            </button>
 
-            <div style={{ ...styles.detail, marginBottom: 6, fontWeight: 'bold' }}>{t('menu.carica_personaggio')}</div>
+            <div id="lista-carica-pg" style={{ ...styles.detail, marginBottom: 6, fontWeight: 'bold' }}>{t('menu.carica_personaggio')}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
               {Object.entries(roster.personaggi).map(([id, p]) => (
                 <div key={id} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
