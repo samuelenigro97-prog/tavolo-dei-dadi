@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.16';
+const APP_VERSION = '3.9.17';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -4684,11 +4684,11 @@ export default function App() {
               Hai selezionato {importPending?.files?.length || 0} file. Scegli per quale edizione importarlo:
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
-              <button style={{ ...styles.button, padding: '14px 10px', borderColor: C.gold, color: C.goldDark, fontWeight: 700 }} onClick={() => eseguiImportConVersione('2024')}>
-                🐉<br />D&D 5.5<br /><span style={{ fontSize: 11, fontWeight: 400 }}>(2024)</span>
-              </button>
               <button style={{ ...styles.button, padding: '14px 10px' }} onClick={() => eseguiImportConVersione('2014')}>
                 📜<br />D&D 5e<br /><span style={{ fontSize: 11, fontWeight: 400 }}>(2014)</span>
+              </button>
+              <button style={{ ...styles.button, padding: '14px 10px', borderColor: C.gold, color: C.goldDark, fontWeight: 700 }} onClick={() => eseguiImportConVersione('2024')}>
+                🐉<br />D&D 5.5<br /><span style={{ fontSize: 11, fontWeight: 400 }}>(2024)</span>
               </button>
             </div>
             <button style={{ ...styles.button, width: '100%' }} onClick={() => { setMostraSceltaVersione(false); setImportPending(null); }}>{t('modal.annulla')}</button>
