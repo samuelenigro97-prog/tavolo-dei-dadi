@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.17';
+const APP_VERSION = '3.9.18';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2159,6 +2159,9 @@ export default function App() {
   const [rinominando, setRinominando] = useState(false); // rinomina inline del PG attivo
   const [mostraSceltaVersione, setMostraSceltaVersione] = useState(false);
   const [importPending, setImportPending] = useState(null); // { files, tipo: 'json'|'pdf' }
+  const [mostraListaCarica, setMostraListaCarica] = useState(false);
+  const [mostraCloudInline, setMostraCloudInline] = useState(false);
+  const [mostraAvvisiInline, setMostraAvvisiInline] = useState(false);
   const [mostraCrea, setMostraCrea] = useState(false); // schermata di creazione guidata
   const [bozzaCrea, setBozzaCrea] = useState({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' });
   // versione delle regole: '2024' (5.5, default) o '2014' (5.0)
@@ -4502,59 +4505,59 @@ export default function App() {
               {t('menu.nuovo_personaggio')}
             </button>
             <button
-              style={{ ...styles.button, width: '100%', marginBottom: 14 }}
-              onClick={() => {
-                const el = document.getElementById('lista-carica-pg');
-                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }}
+              style={{ ...styles.button, width: '100%', marginBottom: 8 }}
+              onClick={() => setMostraListaCarica((v) => !v)}
             >
-              📂 {t('menu.carica_personaggio')}
+              📂 {t('menu.carica_personaggio')} {mostraListaCarica ? '▴' : '▾'} ({Object.keys(roster.personaggi).length})
             </button>
-
-            <div id="lista-carica-pg" style={{ ...styles.detail, marginBottom: 6, fontWeight: 'bold' }}>{t('menu.carica_personaggio')}</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
-              {Object.entries(roster.personaggi).map(([id, p]) => (
-                <div key={id} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                  <button
-                    style={{ ...styles.button, flex: 1, display: 'flex', justifyContent: 'space-between', gap: 10, textAlign: 'left' }}
-                    onClick={() => { setRoster((r) => ({ ...r, attivo: id })); setMostraMenu(false); }}
-                  >
-                    <span>{p.nome || t('menu.senza_nome')}</span>
-                    <span style={styles.detail}>{p.classe ? `${p.classe}` : '—'}</span>
-                  </button>
-                  <button
-                    style={{ ...styles.buttonDanger, padding: '4px 10px', fontSize: 13, flexShrink: 0 }}
-                    title={t('menu.elimina_tooltip', { nome: p.nome || t('menu.senza_nome') })}
-                    onClick={() => setConferma({
-                      titolo: t('menu.elimina_titolo'),
-                      testo: `Vuoi eliminare davvero "${p.nome || t('menu.senza_nome')}"? L'azione è irreversibile.`,
-                      onConferma: () => {
-                        if (URL_ARCHIVIO_PG) {
-                          fetch(`${URL_ARCHIVIO_PG.replace(/\/+$/, '')}/pg`, {
-                            method: 'DELETE',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ dispositivo: idDispositivo, id }),
-                            keepalive: true,
-                          }).catch(() => {});
-                        }
-                        setRoster((r) => {
-                          const nuovi = { ...r.personaggi };
-                          delete nuovi[id];
-                          const nuovoAttivo = r.attivo === id ? (Object.keys(nuovi)[0] ?? '') : r.attivo;
-                          if (Object.keys(nuovi).length === 0) setTimeout(() => setMostraMenu(true), 0);
-                          return { personaggi: nuovi, attivo: nuovoAttivo };
-                        });
-                      },
-                    })}
-                  >
-                    🗑️
-                  </button>
+            {mostraListaCarica && (
+              <>
+                <div id="lista-carica-pg" style={{ ...styles.detail, marginBottom: 6, fontWeight: 'bold' }}>{t('menu.carica_personaggio')}</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
+                  {Object.entries(roster.personaggi).map(([id, p]) => (
+                    <div key={id} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                      <button
+                        style={{ ...styles.button, flex: 1, display: 'flex', justifyContent: 'space-between', gap: 10, textAlign: 'left' }}
+                        onClick={() => { setRoster((r) => ({ ...r, attivo: id })); setMostraMenu(false); }}
+                      >
+                        <span>{p.nome || t('menu.senza_nome')}</span>
+                        <span style={styles.detail}>{p.classe ? `${p.classe}` : '—'}</span>
+                      </button>
+                      <button
+                        style={{ ...styles.buttonDanger, padding: '4px 10px', fontSize: 13, flexShrink: 0 }}
+                        title={t('menu.elimina_tooltip', { nome: p.nome || t('menu.senza_nome') })}
+                        onClick={() => setConferma({
+                          titolo: t('menu.elimina_titolo'),
+                          testo: `Vuoi eliminare davvero "${p.nome || t('menu.senza_nome')}"? L'azione è irreversibile.`,
+                          onConferma: () => {
+                            if (URL_ARCHIVIO_PG) {
+                              fetch(`${URL_ARCHIVIO_PG.replace(/\/+$/, '')}/pg`, {
+                                method: 'DELETE',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ dispositivo: idDispositivo, id }),
+                                keepalive: true,
+                              }).catch(() => {});
+                            }
+                            setRoster((r) => {
+                              const nuovi = { ...r.personaggi };
+                              delete nuovi[id];
+                              const nuovoAttivo = r.attivo === id ? (Object.keys(nuovi)[0] ?? '') : r.attivo;
+                              if (Object.keys(nuovi).length === 0) setTimeout(() => setMostraMenu(true), 0);
+                              return { personaggi: nuovi, attivo: nuovoAttivo };
+                            });
+                          },
+                        })}
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  ))}
+                  {Object.keys(roster.personaggi).length === 0 && (
+                    <span style={styles.detail}>{t('menu.nessun_personaggio')}</span>
+                  )}
                 </div>
-              ))}
-              {Object.keys(roster.personaggi).length === 0 && (
-                <span style={styles.detail}>{t('menu.nessun_personaggio')}</span>
-              )}
-            </div>
+              </>
+            )}
             <button style={{ ...styles.button, width: '100%', marginBottom: 14 }} onClick={() => generaPgCasuale()} title={t('menu.pg_casuale_tooltip')}>{t('menu.pg_casuale')}</button>
 
             {/* Specchio tasti header globali subito dopo Carica, nello stesso ordine */}
@@ -6401,11 +6404,14 @@ export default function App() {
                 onChange={(e) => setRoster((r) => ({ ...r, attivo: e.target.value }))}
                 title={t('nome.tooltip_selettore')}
               >
-                {Object.entries(roster.personaggi).map(([id, p]) => (
-                  <option key={id} value={id}>
-                    {p.nome || t('menu.senza_nome')}{p.classe ? ` · ${p.classe}` : ''} · {t('nome.liv')} {p.livello || 1}
-                  </option>
-                ))}
+                {Object.entries(roster.personaggi).map(([id, p]) => {
+                  const tot = (p.livello || 1) + (Array.isArray(p.multiclasse) ? p.multiclasse.reduce((s, m) => s + (Number(m.livello) || 0), 0) : 0);
+                  return (
+                    <option key={id} value={id}>
+                      {p.nome || t('menu.senza_nome')}{p.classe ? ` · ${p.classe}` : ''} · {t('nome.liv')} {tot}{tot !== (p.livello || 1) ? ` (${p.livello || 1}+${(p.multiclasse || []).map((m) => m.livello).join('+')})` : ''}
+                    </option>
+                  );
+                })}
               </select>
               <span
                 aria-hidden
