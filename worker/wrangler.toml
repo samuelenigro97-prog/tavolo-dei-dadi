@@ -17,12 +17,11 @@ compatibility_date = "2024-11-01"
 [vars]
 ALLOW_ORIGIN = "https://samuelenigro97-prog.github.io"
 
-# Archivio delle schede (endpoint /pg). Crea il namespace una volta sola con:
-#   wrangler kv namespace create SCHEDE
-# poi incolla qui sotto l'id che ti stampa il comando e togli il commento.
-# [[kv_namespaces]]
-# binding = "SCHEDE"
-# id = "INCOLLA_QUI_L_ID"
+# Archivio delle schede (endpoint /pg) + Stanze + Sync via codice.
+# Namespace già creato: SCHEDE (id 92ac397f93124d5d98491554205be764)
+[[kv_namespaces]]
+binding = "SCHEDE"
+id = "92ac397f93124d5d98491554205be764"
 
 # Rate limiter nativo consigliato per /room (Wrangler >= 4.36). Scegli un
 # namespace_id numerico non usato da altri limiter nello stesso account.

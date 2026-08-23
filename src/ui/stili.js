@@ -551,8 +551,11 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .campi-anagrafica .campo-modulo-box { padding: 0 4px !important; min-height: 28px !important; height: 28px; display: flex; align-items: center; overflow: hidden; }
 .campi-anagrafica .campo-modulo-label { font-size: 9px !important; margin-top: 2px; }
 /* Sottoclasse con più classi (multiclasse): una riga per classe, l'altezza fissa
-   da campo singolo taglierebbe via le righe in più. */
+    da campo singolo taglierebbe via le righe in più. */
 .campi-anagrafica .campo-modulo-box.sottoclasse-multi { height: auto !important; align-items: flex-start !important; overflow: visible !important; padding-top: 2px !important; padding-bottom: 2px !important; }
+/* Classe con multiclasse (triclasse): "Guerriero + Ranger + Ladro" è lungo e andrebbe troncato */
+.campi-anagrafica .campo-modulo-box.classe-multi { height: auto !important; min-height: 28px !important; overflow: visible !important; padding-top: 2px !important; padding-bottom: 2px !important; align-items: flex-start !important; }
+.campi-anagrafica .campo-modulo-box.classe-multi div { white-space: normal !important; word-break: break-word; line-height: 1.3; }
 .selettore-personaggio {
   width: 100%;
   margin: 0 0 8px 0 !important;

@@ -96,6 +96,8 @@ Regole:
 - "abilita": 0 = nessuna competenza, 1 = competenza (pallino pieno), 2 = maestria.
 - "bonus" è il bonus per colpire; le voci senza bonus e danno (es. un focus) vanno omesse dagli attacchi.
 - "multiclasse": [] se monoclasse, altrimenti le classi secondarie da CLASS & LEVEL (es. "Fighter 1 / Ranger 6 / Rogue 3" → classe Fighter livello 1, multiclasse [{"classe":"Ranger","livello":6},{"classe":"Rogue","livello":3}]).
+- ATTENZIONE LIVELLO: "livello" è il livello della CLASSE PRINCIPALE, non il totale. Se la scheda mostra "Level 10" e "Fighter 1 / Ranger 6 / Rogue 3", allora livello=1 (totale 10), non 10. Se monoclassa con "Level 10", allora livello=10.
+- LINGUA OBBLIGATORIA: tutti i campi testuali (background, classe, sottoclasse, specie, allineamento, lingue, sensi, taglia) DEVONO essere in ITALIANO canonico, anche se l'immagine è in inglese. Traduci: Soldier→Soldato, Hermit→Eremita, Fighter→Guerriero, Rogue→Ladro, Ranger→Ranger, Half-Elf→Mezzelfo, Wood Elf→Elfo dei Boschi, High Elf→Elfo Alto, Darkvision 60 ft→Scurovisione 18 m, Common/Elvish→Comune/Elfico, ecc.
 - Se un dato non è presente, usa un default ragionevole (caratteristiche 10, livello 1, attacchi [], competenze false/0).`;
 
 function cors(origin) {

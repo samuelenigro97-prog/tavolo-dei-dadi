@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.2';
+const APP_VERSION = '3.9.3';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1436,6 +1436,16 @@ function normalizeImported(dati) {
 
   const num = (v, fallback) => (Number.isFinite(Number(v)) ? Number(v) : fallback);
   const str = (v, fallback = '') => (typeof v === 'string' ? v : fallback);
+  // Safety net import: il Worker deve già uscire in italiano, ma se arriva EN (Fighter/Soldier/Wood Elf) traduciamo in canonico IT.
+  const EN_IT = { 'Soldier':'Soldato','Acolyte':'Accolito','Criminal':'Criminale','Entertainer':'Intrattenitore','Hermit':'Eremita','Sage':'Saggio','Sailor':'Marinaio','Noble':'Nobile','Charlatan':'Ciarlatano','Artisan':'Artigiano','Guard':'Guardia','Guide':'Guida','Farmer':'Contadino','Merchant':'Mercante','Scribe':'Scriba','Wayfarer':'Viandante','Fighter':'Guerriero','Rogue':'Ladro','Wizard':'Mago','Cleric':'Chierico','Bard':'Bardo','Druid':'Druido','Monk':'Monaco','Paladin':'Paladino','Ranger':'Ranger','Sorcerer':'Stregone','Warlock':'Warlock','Barbarian':'Barbaro','Half-Elf':'Mezzelfo','Half Elf':'Mezzelfo','Wood Elf':'Elfo dei Boschi','High Elf':'Elfo Alto','Dark Elf':'Elfo Oscuro (Drow)','Drow':'Elfo Oscuro (Drow)','Hill Dwarf':'Nano delle Colline','Mountain Dwarf':'Nano delle Montagne','Lightfoot Halfling':'Halfling Piedelesto','Stout Halfling':'Halfling Tozzo','Forest Gnome':'Gnomo delle Foreste','Rock Gnome':'Gnomo delle Rocce','Darkvision':'Scurovisione','Blindsight':'Percezione cieca','Tremorsense':'Percezione tremorsensitiva','Truesight':'Vista vera','Common':'Comune','Elvish':'Elfico','Dwarvish':'Nanico','Gnomish':'Gnomesco','Orc':'Orco','Infernal':'Infernale','Celestial':'Celestiale','Abyssal':'Abissale','Undercommon':'Sottocomune','Sylvan':'Silvano','Draconic':'Draconico','Giant':'Gigante','Goblin':'Goblin' };
+  const traduciEN = (v) => {
+    if (typeof v !== 'string' || !v) return v;
+    let out = v.trim();
+    if (EN_IT[out]) return EN_IT[out];
+    for (const [en,it] of Object.entries(EN_IT)) out = out.replace(new RegExp(`\\b${en.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\b`, 'gi'), it);
+    out = out.replace(/Scurovisione\s*60(\s*ft)?/gi, 'Scurovisione 18 m').replace(/Darkvision\s*60(\s*ft)?/gi, 'Scurovisione 18 m');
+    return out;
+  };
 
   const car = { ...base.caratteristiche };
   for (const { key } of CARATTERISTICHE) {
@@ -1529,8 +1539,23 @@ function normalizeImported(dati) {
   const maxTruccIniziale = num(dati.maxTrucchetti, 0) || (baseTruccPin != null && nTruccPin > baseTruccPin ? nTruccPin : 0);
   const maxIncIniziale = num(dati.maxIncantesimi, 0) || (baseIncPin != null && nIncPin > baseIncPin ? nIncPin : 0);
   const multiclassePin = Array.isArray(dati.multiclasse)
-    ? dati.multiclasse.map((m) => ({ classe: str(m && m.classe), livello: Math.max(1, num(m && m.livello, 1)) })).filter((m) => m.classe)
+    ? dati.multiclasse.map((m) => ({ classe: traduciEN(str(m && m.classe)), livello: Math.max(1, num(m && m.livello, 1)) })).filter((m) => m.classe)
     : [];
+  // Auto-correzione livello se il JSON ha messo il totale in "livello" (es. Elevorn: livello 10 con Ranger6/Ladro3 → totale 19 ma bonus 4 da 10)
+  let livelloCorretto = num(dati.livello, base.livello);
+  {
+    const sommaMulti = multiclassePin.reduce((s, m) => s + (Number(m.livello) || 0), 0);
+    const totaleDati = livelloCorretto + sommaMulti;
+    const bonusDati = num(dati.bonusCompetenza, null);
+    if (Number.isFinite(bonusDati) && sommaMulti > 0 && totaleDati > 12) {
+      const bonusMain = typeof bonusCompetenzaDaLivello === 'function' ? bonusCompetenzaDaLivello(livelloCorretto) : null;
+      const bonusTot = typeof bonusCompetenzaDaLivello === 'function' ? bonusCompetenzaDaLivello(totaleDati) : null;
+      if (bonusDati === bonusMain && bonusDati !== bonusTot) {
+        const nuovo = livelloCorretto - sommaMulti;
+        if (nuovo >= 1 && nuovo <= 20) livelloCorretto = nuovo;
+      }
+    }
+  }
   return {
     ...base,
     pfTemp: num(dati.pfTemp, 0),
@@ -1547,24 +1572,24 @@ function normalizeImported(dati) {
       dati.ritratto.length < 800000
         ? dati.ritratto
         : '',
-    background: str(dati.background),
-    classe: str(dati.classe),
-    sottoclasse: str(dati.sottoclasse),
+    background: traduciEN(str(dati.background)),
+    classe: traduciEN(str(dati.classe)),
+    sottoclasse: traduciEN(str(dati.sottoclasse)),
     multiclasse: multiclassePin,
-    specie: str(dati.specie),
-    allineamento: str(dati.allineamento),
+    specie: traduciEN(str(dati.specie)),
+    allineamento: traduciEN(str(dati.allineamento)),
     versione: dati.versione === '2014' ? '2014' : '2024',
     maxTrucchetti: maxTruccIniziale,
     maxIncantesimi: maxIncIniziale,
-    livello: num(dati.livello, base.livello),
+    livello: livelloCorretto,
     pe: num(dati.pe, 0),
     ca: num(dati.ca, base.ca),
     armatura,
     condizioni,
     pfMax,
     pfAttuali: num(dati.pfAttuali, pfMax),
-    dadiVita: calcolaFormulaDadiVita(str(dati.classe), livelloPin, multiclassePin)
-      || esprDadiVita(num(dati.livello, base.livello), facceDadoVita(typeof dati.dadiVita === 'string' ? dati.dadiVita : base.dadiVita)),
+    dadiVita: calcolaFormulaDadiVita(traduciEN(str(dati.classe)), livelloCorretto, multiclassePin)
+      || esprDadiVita(livelloCorretto, facceDadoVita(typeof dati.dadiVita === 'string' ? dati.dadiVita : base.dadiVita)),
     dadiVitaSpesi: (dati.dadiVitaSpesi && typeof dati.dadiVitaSpesi === 'object' && !Array.isArray(dati.dadiVitaSpesi))
       ? Object.fromEntries(Object.entries(dati.dadiVitaSpesi).map(([k, v]) => [k, Math.max(0, num(v, 0))]))
       : Math.max(0, num(dati.dadiVitaSpesi, 0)),
@@ -6657,7 +6682,7 @@ export default function App() {
                     title={t('profilo.background_bloccato')}
                   />
                 </CampoModulo>
-                <CampoModulo label={t("profilo.classe")}>
+                <CampoModulo label={t("profilo.classe")} boxClassName={(scheda.multiclasse || []).some((m) => m.classe) ? 'classe-multi' : undefined}>
                   <CampoBloccato
                     valore={[traduciDato(scheda.classe), ...(scheda.multiclasse || []).filter((m) => m.classe).map((m) => traduciDato(m.classe))].filter(Boolean).join(' + ') || t('profilo.nessuna')}
                     title={t('profilo.classe_bloccata')}
