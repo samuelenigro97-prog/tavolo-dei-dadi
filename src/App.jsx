@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.10';
+const APP_VERSION = '3.9.11';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -5748,13 +5748,15 @@ export default function App() {
             onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())}
             title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}
           >🗺️ <span className="header-label">{t('mappa.tasto')}</span></button>
-          {!(combat.attivo && combat.aperto) && (
             <button
               className="game-actions-btn"
-              onClick={() => (combat.combattenti.length ? setCombat((c) => ({ ...c, attivo: true, aperto: true })) : aggiungiPgAlCombat())}
-              title={t('ct.apri')}
+              onClick={() => {
+                if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
+                else if (combat.combattenti.length) setCombat((c) => ({ ...c, attivo: true, aperto: true }));
+                else aggiungiPgAlCombat();
+              }}
+              title={combat.attivo && combat.aperto ? t('ct.minimizza') : t('ct.apri')}
             >⚔️ <span className="header-label"><span className="game-action-combat-full">{t('ct.titolo')}</span><span className="game-action-combat-short">{t('ct.tasto')}</span></span>{combat.combattenti.length ? ` (${combat.combattenti.length})` : ''}</button>
-          )}
         </div>
         </div>
 
@@ -6501,7 +6503,11 @@ export default function App() {
             <span style={{ width: 1, height: 18, background: C.border, margin: '0 2px', flexShrink: 0, opacity: 0.6 }} aria-hidden />
             <button style={styles.buttonMini} title={t('luogo.tooltip')} onClick={() => { sbloccaAudio(); if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
             <button style={styles.buttonMini} onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())} title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}>🗺️</button>
-            <button style={styles.buttonMini} onClick={() => (combat.combattenti.length ? setCombat((c) => ({ ...c, attivo: true, aperto: true })) : aggiungiPgAlCombat())} title={t('ct.apri') + (combat.combattenti.length ? ` (${combat.combattenti.length})` : '')}>⚔️</button>
+            <button style={styles.buttonMini} onClick={() => {
+              if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
+              else if (combat.combattenti.length) setCombat((c) => ({ ...c, attivo: true, aperto: true }));
+              else aggiungiPgAlCombat();
+            }} title={(combat.attivo && combat.aperto ? t('ct.minimizza') : t('ct.apri')) + (combat.combattenti.length ? ` (${combat.combattenti.length})` : '')}>⚔️</button>
           </div>
         </section>
 
