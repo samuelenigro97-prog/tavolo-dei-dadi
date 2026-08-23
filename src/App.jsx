@@ -3553,17 +3553,30 @@ export default function App() {
     setPromemoriaBackup(false);
   }
 
-  /** Backup COMPLETO: esporta TUTTI i personaggi in un unico file, per non perdere nulla. */
+  /** Backup COMPLETO: esporta OGNI personaggio in un file separato, per non perdere nulla. */
   function esportaBackupCompleto() {
-    const nPg = Object.keys(roster.personaggi || {}).length;
-    const dati = { tipo: 'tavolo-dei-dadi-backup', app: 'Tavolo dei Dadi', versione: APP_VERSION, data: new Date().toISOString(), personaggi: nPg, roster };
-    const blob = new Blob([JSON.stringify(dati, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `tavolo-dei-dadi-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const ids = Object.keys(roster.personaggi || {});
+    if (!ids.length) return;
+    const dataStr = new Date().toISOString().slice(0, 10);
+    ids.forEach((id) => {
+      const pg = roster.personaggi[id];
+      const dati = {
+        tipo: 'tavolo-dei-dadi-backup',
+        app: 'Tavolo dei Dadi',
+        versione: APP_VERSION,
+        data: new Date().toISOString(),
+        personaggi: 1,
+        roster: { attivo: id, personaggi: { [id]: pg } }
+      };
+      const blob = new Blob([JSON.stringify(dati, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const safeNome = String(pg.nome || 'pg').replace(/[^a-zA-Z0-9_.-]/g, '_');
+      a.download = `tavolo-dei-dadi-${safeNome}-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
     segnaBackupFatto();
   }
 
