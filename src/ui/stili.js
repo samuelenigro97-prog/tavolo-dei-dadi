@@ -719,7 +719,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   /* Su telefono la barra va a capo: il titolo prende una riga sua, centrato,
      sopra i modi di tiro (i margini automatici del desktop non servono più). */
   .dadi-riga .app-header-title { flex: 1 1 100%; margin: 2px auto 0 !important; justify-content: center; }
-  .dadi-riga .dadi-modi button { font-size: 11px !important; padding: 5px 2px !important; }
+   .dadi-riga .dadi-modi button { font-size: 10px !important; padding: 5px 1px !important; overflow: hidden; text-overflow: ellipsis; }
   /* tabelle incantesimi più compatte sul telefono: celle strette così i
      tasti azione (✎ 🗑) restano visibili senza scorrere in orizzontale */
   .spell-table { font-size: 12px; }
