@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.3';
+const APP_VERSION = '3.9.4';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -4641,8 +4641,7 @@ export default function App() {
               ) : (
                 <>
                   <p style={{ ...styles.detail, fontSize: 12, marginTop: 0, marginBottom: 8, lineHeight: 1.5 }}>
-                    Alternativa più semplice al backup con token GitHub qui sotto: crea un codice a 10 caratteri
-                    su questo dispositivo e digitalo sull'altro per collegarli, senza account né password.
+                    Crea un codice a 10 caratteri su questo dispositivo e digitalo sull'altro per collegarli, senza account né password.
                   </p>
                   <button style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 10 }} onClick={creaCodiceSync}>🆕 Crea un nuovo codice</button>
                   <div style={{ display: 'flex', gap: 6 }}>
@@ -4665,105 +4664,7 @@ export default function App() {
               )}
             </div>
 
-            <details style={{ marginBottom: 12 }}>
-              <summary style={{ ...styles.detail, cursor: 'pointer', fontWeight: 'bold' }}>🔑 Backup con token GitHub (per il DM / uso avanzato)</summary>
-              <div style={{ marginTop: 10 }}>
-            {githubToken && gistId && autoSync ? (
-              <div style={{ padding: 12, borderRadius: 8, background: 'rgba(60,160,60,0.14)', border: `1px solid ${C.green}`, marginBottom: 14, fontSize: 14 }}>
-                ✅ <strong>Backup automatico attivo.</strong> I personaggi si salvano sul cloud da soli a ogni modifica.
-                {ultimoSync && <div style={{ ...styles.detail, marginTop: 4 }}>Ultimo salvataggio: {ultimoSync}{sincronizzando ? ' · salvataggio…' : ''}</div>}
-                <button style={{ ...styles.buttonMini, marginTop: 8 }} onClick={() => { setAutoSync(false); localStorage.setItem('scheda-interattiva:auto-sync', 'off'); }}>Disattiva</button>
-              </div>
-            ) : (
-              <>
-                <p style={{ ...styles.detail, marginBottom: 12, lineHeight: 1.5 }}>
-                  Attivalo <strong>una volta sola</strong>: da lì in poi i tuoi personaggi si salvano da soli sul cloud a ogni modifica — non perdi nulla anche cambiando telefono o svuotando la cache.
-                </p>
-                <p style={{ ...styles.detail, fontSize: 11, marginTop: 0, marginBottom: 12, lineHeight: 1.5 }}>
-                  Su un <strong>nuovo dispositivo</strong> (es. hai già attivato il backup su telefono/tablet): usa lo stesso token e, quando lo attivi qui, se trova un backup esistente ti chiede se vuoi caricarlo — così i tuoi personaggi arrivano subito su questo dispositivo invece di iniziare da zero.
-                </p>
-                <div style={{ ...styles.detail, fontWeight: 'bold', marginBottom: 4 }}>1. Crea un token gratuito su GitHub</div>
-                <a href="https://github.com/settings/tokens/new?scopes=gist&description=Tavolo+dei+Dadi+Backup" target="_blank" rel="noreferrer" style={{ ...styles.button, display: 'inline-block', textDecoration: 'none', borderColor: C.gold, color: C.goldDark, marginBottom: 4 }}>
-                  🔑 Apri GitHub e crea il token
-                </a>
-                <p style={{ ...styles.detail, fontSize: 11, marginTop: 0, marginBottom: 12 }}>
-                  Il permesso “gist” è già selezionato: scorri in fondo, premi <em>Generate token</em>, poi copia il codice che inizia con <code>ghp_</code>.
-                </p>
-                <div style={{ ...styles.detail, fontWeight: 'bold', marginBottom: 4 }}>2. Incolla qui il token</div>
-              </>
-            )}
 
-            <label style={{ ...styles.detail, display: 'block', marginBottom: 3, fontWeight: 'bold' }}>{t('cloud.label_token')}</label>
-            <div style={{ display: 'flex', gap: 6, marginBottom: 4 }}>
-              <input
-                type={mostraToken ? 'text' : 'password'}
-                style={{ ...styles.inlineInput, flex: 1, padding: '6px 8px', fontSize: 13 }}
-                placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-                value={githubToken}
-                onChange={(e) => {
-                  setGithubToken(e.target.value);
-                  localStorage.setItem('scheda-interattiva:github-token', e.target.value);
-                }}
-              />
-              <button style={styles.buttonMini} title={mostraToken ? t('cloud.nascondi') : t('cloud.mostra')} onClick={() => setMostraToken((v) => !v)}>{mostraToken ? '🙈' : '👁'}</button>
-              <button style={styles.buttonMini} title={t('cloud.copia_token')} onClick={() => navigator.clipboard?.writeText(githubToken).then(() => setCloudStatus({ text: 'Token copiato', type: 'success' }))}>📋</button>
-            </div>
-            <p style={{ ...styles.detail, fontSize: 11, marginTop: 0, marginBottom: 12 }}>
-              {t('cloud.aiuto_token')}
-            </p>
-
-            {!(githubToken && gistId && autoSync) && (
-              <>
-                <div style={{ ...styles.detail, fontWeight: 'bold', marginBottom: 6 }}>3. Attiva</div>
-                <button style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 14 }} onClick={attivaBackupAuto} disabled={sincronizzando}>
-                  {sincronizzando ? '… attivazione' : '✅ Attiva backup automatico'}
-                </button>
-              </>
-            )}
-
-            <details style={{ marginBottom: 12 }}>
-              <summary style={{ ...styles.detail, cursor: 'pointer', fontWeight: 'bold' }}>⚙️ Avanzate (Gist e salvataggio manuale)</summary>
-              <div style={{ marginTop: 10 }}>
-            <label style={{ ...styles.detail, display: 'block', marginBottom: 3, fontWeight: 'bold' }}>{t('cloud.label_gist')}</label>
-            <div style={{ display: 'flex', gap: 6, marginBottom: 4 }}>
-              <input
-                type="text"
-                style={{ ...styles.inlineInput, flex: 1, padding: '6px 8px', fontSize: 13, fontFamily: 'monospace' }}
-                placeholder={t('cloud.placeholder_gist')}
-                value={gistId}
-                onChange={(e) => {
-                  setGistId(e.target.value);
-                  localStorage.setItem('scheda-interattiva:gist-id', e.target.value);
-                }}
-              />
-              <button style={styles.buttonMini} title={t('cloud.copia_gist')} onClick={() => navigator.clipboard?.writeText(gistId).then(() => setCloudStatus({ text: 'Gist ID copiato', type: 'success' }))}>📋</button>
-              {gistId && <a href={`https://gist.github.com/${gistId}`} target="_blank" rel="noreferrer" style={{ ...styles.buttonMini, textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }} title={t('cloud.apri_gist')}>↗</a>}
-            </div>
-            <p style={{ ...styles.detail, fontSize: 11, marginTop: 0, marginBottom: 16 }}>
-              {t('cloud.aiuto_gist')}
-            </p>
-
-            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-              <button style={{ ...styles.buttonPrimary, flex: 1 }} onClick={() => salvaSuCloud(false)}>⬆️ {t('cloud.salva')}</button>
-              <button style={{ ...styles.button, flex: 1, borderColor: C.green, color: C.green }} onClick={caricaDaCloud}>⬇️ {t('cloud.carica')}</button>
-            </div>
-
-            {/* Auto-salvataggio: quando attivo, ogni modifica va sul cloud da sola */}
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={autoSync}
-                onChange={(e) => { setAutoSync(e.target.checked); localStorage.setItem('scheda-interattiva:auto-sync', e.target.checked ? 'on' : 'off'); }}
-              />
-              <span style={styles.detail}>
-                {t('cloud.auto_sync')}
-                {ultimoSync && <><br />{t('cloud.ultimo_sync')}: {ultimoSync}{sincronizzando ? ` · ${t('cloud.salvando')}` : ''}</>}
-              </span>
-            </label>
-              </div>
-            </details>
-              </div>
-            </details>
 
             {cloudStatus.text && (
               <div style={{ padding: 10, borderRadius: 6, background: cloudStatus.type === 'error' ? 'rgba(255,0,0,0.1)' : cloudStatus.type === 'success' ? 'rgba(0,255,0,0.1)' : 'rgba(255,255,255,0.05)', color: cloudStatus.type === 'error' ? C.red : cloudStatus.type === 'success' ? C.green : C.goldDark, fontSize: 13, textAlign: 'center', marginBottom: 12 }}>
