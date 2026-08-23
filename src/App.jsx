@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.9';
+const APP_VERSION = '3.9.10';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2157,6 +2157,8 @@ export default function App() {
   const [pgDaLink, setPgDaLink] = useState(null);      // personaggio ricevuto tramite link
   const [mostraRipristino, setMostraRipristino] = useState(false); // modale "ripristina versione precedente"
   const [rinominando, setRinominando] = useState(false); // rinomina inline del PG attivo
+  const [mostraSceltaVersione, setMostraSceltaVersione] = useState(false);
+  const [importPending, setImportPending] = useState(null); // { files, tipo: 'json'|'pdf' }
   const [mostraCrea, setMostraCrea] = useState(false); // schermata di creazione guidata
   const [bozzaCrea, setBozzaCrea] = useState({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' });
   // versione delle regole: '2024' (5.5, default) o '2014' (5.0)
@@ -3592,7 +3594,20 @@ export default function App() {
     const files = Array.from(evento.target.files || []);
     evento.target.value = '';
     if (!files.length) return;
-    // Seleziona file immagine/PDF per IA e JSON per import diretto
+    // Chiedi versione prima di importare (5e / 5.5)
+    setImportPending({ files, tipo: 'json' });
+    setMostraSceltaVersione(true);
+  }
+
+  async function eseguiImportConVersione(versione) {
+    const pending = importPending;
+    if (!pending || !pending.files || !pending.files.length) { setMostraSceltaVersione(false); return; }
+    const files = pending.files;
+    const versioneScelta = versione === '2014' ? '2014' : '2024';
+    setMostraSceltaVersione(false);
+    setImportPending(null);
+    // Applica versione scelta a tutti i dati importati
+    const forzaVersione = (dati) => ({ ...dati, versione: versioneScelta });
     const isImageOrPdf = (f) => {
       const n = f.name.toLowerCase();
       const t = f.type || '';
@@ -3600,8 +3615,6 @@ export default function App() {
     };
     const imageFiles = files.filter(isImageOrPdf);
     const jsonFiles = files.filter((f) => !isImageOrPdf(f));
-
-    // 1) Immagini/PDF → trascrizione IA (supporta selezione multipla, es. 4 JPG FG)
     if (imageFiles.length) {
       const endpoint = (transcribeUrl || '').trim() || (typeof URL_ARCHIVIO_PG !== 'undefined' && URL_ARCHIVIO_PG ? URL_ARCHIVIO_PG : '') || (typeof URL_STANZE !== 'undefined' && URL_STANZE ? URL_STANZE : '') || '/api/transcribe';
       setErroreImport('');
@@ -3628,7 +3641,7 @@ export default function App() {
           const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
           if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || `errore ${res.status} su ${file.name}`); }
           const dati = await res.json();
-          nuovoPersonaggio(normalizeImported(dati));
+          nuovoPersonaggio(normalizeImported(forzaVersione(dati)));
         }
         setPdfStato('');
         setMostraMenu(false);
@@ -3639,8 +3652,6 @@ export default function App() {
         return;
       }
     }
-
-    // 2) JSON → import diretto (supporta selezione multipla)
     for (const file of jsonFiles) {
       try {
         const dati = JSON.parse(await file.text());
@@ -3653,7 +3664,7 @@ export default function App() {
               let ultimo = r.attivo;
               lista.forEach((s, i) => {
                 const id = `pg-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 6)}`;
-                personaggi[id] = normalizeImported(s);
+                personaggi[id] = normalizeImported(forzaVersione(s));
                 ultimo = id;
               });
               return { attivo: ultimo, personaggi };
@@ -3662,7 +3673,7 @@ export default function App() {
             continue;
           }
         }
-        nuovoPersonaggio(normalizeImported(dati));
+        nuovoPersonaggio(normalizeImported(forzaVersione(dati)));
         setMostraMenu(false);
       } catch {
         setErroreImport(`File JSON non valido: ${file.name} — usa un file esportato da Tavolo dei Dadi.`);
@@ -3678,6 +3689,9 @@ export default function App() {
     const files = Array.from(evento.target.files || []);
     evento.target.value = '';
     if (!files.length) return;
+    setImportPending({ files, tipo: 'pdf' });
+    setMostraSceltaVersione(true);
+    return;
     // Endpoint IA: prova prima quello configurato a mano, poi l'URL dell'archivio (stesso Worker), poi /api locale
     const endpoint = (transcribeUrl || '').trim() || (typeof URL_ARCHIVIO_PG !== 'undefined' && URL_ARCHIVIO_PG ? URL_ARCHIVIO_PG : '') || (typeof URL_STANZE !== 'undefined' && URL_STANZE ? URL_STANZE : '') || '/api/transcribe';
     setErroreImport('');
@@ -4667,6 +4681,32 @@ export default function App() {
 
 
             <button style={{ ...styles.button, width: '100%' }} onClick={() => setMostraCloud(false)}>{t('modal.chiudi')}</button>
+          </div>
+        </div>
+      )}
+
+      {mostraSceltaVersione && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1003, padding: 16,
+            background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) { setMostraSceltaVersione(false); setImportPending(null); } }}
+        >
+          <div style={{ ...styles.panel, maxWidth: 420, width: '100%' }}>
+            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 8 }}>📥 Importa personaggio</h1>
+            <p style={{ ...styles.detail, textAlign: 'center', marginBottom: 16, lineHeight: 1.5 }}>
+              Hai selezionato {importPending?.files?.length || 0} file. Scegli per quale edizione importarlo:
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+              <button style={{ ...styles.button, padding: '14px 10px', borderColor: C.gold, color: C.goldDark, fontWeight: 700 }} onClick={() => eseguiImportConVersione('2024')}>
+                🐉<br />D&D 5.5<br /><span style={{ fontSize: 11, fontWeight: 400 }}>(2024)</span>
+              </button>
+              <button style={{ ...styles.button, padding: '14px 10px' }} onClick={() => eseguiImportConVersione('2014')}>
+                📜<br />D&D 5e<br /><span style={{ fontSize: 11, fontWeight: 400 }}>(2014)</span>
+              </button>
+            </div>
+            <button style={{ ...styles.button, width: '100%' }} onClick={() => { setMostraSceltaVersione(false); setImportPending(null); }}>{t('modal.annulla')}</button>
           </div>
         </div>
       )}
