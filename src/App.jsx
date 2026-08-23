@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.22';
+const APP_VERSION = '3.9.23';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3669,18 +3669,33 @@ export default function App() {
             setRoster((r) => {
               const personaggi = { ...r.personaggi };
               let ultimo = r.attivo;
+              const nomiEsistenti = new Set(Object.values(personaggi).map((p) => `${String(p.nome||'').toLowerCase().trim()}|${String(p.classe||'').toLowerCase().trim()}|${Number(p.livello)||0}`));
+              let nuovi = 0, duplicati = 0;
               lista.forEach((s, i) => {
+                const norm = normalizeImported(forzaVersione(s));
+                const chiave = `${String(norm.nome||'').toLowerCase().trim()}|${String(norm.classe||'').toLowerCase().trim()}|${Number(norm.livello)||0}`;
+                if (nomiEsistenti.has(chiave)) { duplicati++; return; }
                 const id = `pg-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 6)}`;
-                personaggi[id] = normalizeImported(forzaVersione(s));
+                personaggi[id] = norm;
+                nomiEsistenti.add(chiave);
                 ultimo = id;
+                nuovi++;
               });
+              if (duplicati) setErroreImport(`Import: ${nuovi} nuovi, ${duplicati} già esistenti ignorati.`);
               return { attivo: ultimo, personaggi };
             });
             setMostraMenu(false);
             continue;
           }
         }
-        nuovoPersonaggio(normalizeImported(forzaVersione(dati)));
+        const norm = normalizeImported(forzaVersione(dati));
+        const chiave = `${String(norm.nome||'').toLowerCase().trim()}|${String(norm.classe||'').toLowerCase().trim()}|${Number(norm.livello)||0}`;
+        const esiste = Object.values(roster.personaggi || {}).some((p) => `${String(p.nome||'').toLowerCase().trim()}|${String(p.classe||'').toLowerCase().trim()}|${Number(p.livello)||0}` === chiave);
+        if (esiste) {
+          setErroreImport(`PG "${norm.nome}" Liv.${norm.livello} già esistente: import ignorato per evitare duplicato.`);
+          continue;
+        }
+        nuovoPersonaggio(norm);
         setMostraMenu(false);
       } catch {
         setErroreImport(`File JSON non valido: ${file.name} — usa un file esportato da Tavolo dei Dadi.`);
@@ -4600,7 +4615,7 @@ export default function App() {
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
               <div style={{ ...styles.detail, marginBottom: 8 }}>🛟 Backup</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
-                <button style={{ ...styles.button, width: '100%', borderColor: C.gold, color: C.goldDark }} onClick={esportaBackupCompleto} title="TUTTI i PG">💾 Tutti</button>
+                <button style={{ ...styles.button, width: '100%' }} onClick={esportaBackupCompleto} title="TUTTI i PG">💾 Tutti</button>
                 <button style={{ ...styles.button, width: '100%' }} onClick={() => jsonRef.current?.click()} title="Ripristina">📂 Ripristina</button>
                 {leggiSnapshots().length > 0 && (
                   <button style={{ ...styles.button, width: '100%', gridColumn: '1 / -1' }} onClick={() => setMostraRipristino(true)}>🕓 Versioni</button>
@@ -4609,9 +4624,9 @@ export default function App() {
                   <button
                     style={{ ...styles.button, width: '100%', gridColumn: '1 / -1' }}
                     onClick={() => { setMostraArchivioDm(true); }}
-                    title="Solo per il DM: elenco delle schede create dagli utenti (serve la chiave)"
+                    title="Archivio delle schede (serve chiave DM)"
                   >
-                    🗂 Archivio DM
+                    🗂 Archivio
                   </button>
                 )}
               </div>

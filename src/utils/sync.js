@@ -61,6 +61,10 @@ export async function caricaSync(baseUrl, codice, fetchImpl = fetch) {
 
 /** Messaggio utente in italiano per i codici di errore sopra. */
 export function messaggioErroreSync(codice) {
+  const raw = String(codice || '');
+  if (raw.includes('Failed to fetch') || raw.includes('NetworkError') || raw.includes('TypeError')) {
+    return 'Connessione al Worker fallita (Failed to fetch): verifica di essere online e che il Worker https://tavolo-dei-dadi-transcribe.stremioflixmanager.workers.dev sia raggiungibile, poi riprova.';
+  }
   switch (codice) {
     case 'SYNC_NOT_FOUND': return 'Nessun roster salvato con questo codice: controlla di averlo scritto giusto, oppure creane uno nuovo.';
     case 'SYNC_TOO_LARGE': return 'Il roster è troppo grande per la sincronizzazione (limite 4 MB, immagini comprese).';
