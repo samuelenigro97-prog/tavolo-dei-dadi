@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.46',
+    voci: {
+      it: [
+        'Inventario Zaino vs Equipaggiato: aggiunti filtri rapidi di visualizzazione (📦 Tutti, 🛡️ Indossati, 🎒 Nello Zaino) e conteggio dettagliato del peso indossato rispetto a quello stipato nello zaino.',
+      ],
+      en: [
+        'Inventory Backpack vs Equipped: quick view filters (📦 All, 🛡️ Equipped, 🎒 In Backpack) and detailed weight breakdown for worn gear vs items stowed in backpack.',
+      ],
+    },
+  },
+  {
     versione: '3.9.45',
     voci: {
       it: [

@@ -1703,7 +1703,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.45';
+const APP_VERSION = '3.9.46';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2532,6 +2532,7 @@ export default function App() {
   const [filtroDiario, setFiltroDiario] = useState('');
   const [vociDiarioChiuse, setVociDiarioChiuse] = useState({});
   const [filtroInventario, setFiltroInventario] = useState('');
+  const [filtroVistaInventario, setFiltroVistaInventario] = useState('tutti'); // 'tutti' | 'equip' | 'zaino'
   const [effettoInventarioAperto, setEffettoInventarioAperto] = useState(null);
   const [fontePopover, setFontePopover] = useState(null); // { tipo: 'ts'|'car', key, top, left } menu "da cosa deriva il bonus" aperto
   useEffect(() => {
@@ -9185,6 +9186,12 @@ export default function App() {
                   ? inv.filter((o) => o.dentroBorsa).reduce((s, o) => s + (o.qta || 1) * (o.peso || 0), 0)
                   : 0;
                 const pesoTot = pesoInv + pesoArmi + pesoArm + pesoMonete - pesoDentroBorsa;
+                const pesoEquipItems = inv.filter((o) => {
+                  const isWeapon = ARMI_5E.some((w) => w.nome === o.nome) || attacchi.some((a) => a.nome === o.nome);
+                  return isWeapon ? attacchi.some((a) => a.nome === o.nome) : !!o.equip;
+                }).reduce((s, o) => s + (o.qta || 1) * (o.peso || 0), 0);
+                const pesoEquipTot = pesoEquipItems + pesoArmi + pesoArm;
+                const pesoZainoTot = Math.max(0, pesoTot - pesoEquipTot);
                 const soglia1 = forza * 2.5 * moltiTaglia; // ingombrato
                 const soglia2 = forza * 5 * moltiTaglia;   // gravemente ingombrato
                 const spingiTrascina = capFisica * 2;
@@ -9290,25 +9297,79 @@ export default function App() {
                         <span style={{ fontWeight: 700 }}>⚖️ {t('inv.ingombro')}: <span style={{ color: colore }}>{pesoTot.toFixed(1)} / {cap.toFixed(0)} kg</span></span>
                         {stato !== 'ok' && <span style={{ color: colore, fontWeight: 700 }}>{t('inv.stato_' + stato)}</span>}
                       </div>
-                      <div style={{ ...styles.detail, marginTop: 2, fontSize: 10 }}>
-                        Taglia {scheda.taglia || 'Media'} ×{moltiTaglia} · Spingi/trascina/solleva fino a {spingiTrascina.toFixed(0)} kg
+                      <div style={{ ...styles.detail, marginTop: 2, fontSize: 10, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+                        <span>Taglia {scheda.taglia || 'Media'} ×{moltiTaglia} · Spingi/trascina/solleva {spingiTrascina.toFixed(0)} kg</span>
+                        <span>🛡️ Indossato: <strong>{pesoEquipTot.toFixed(1)} kg</strong> · 🎒 Zaino: <strong>{pesoZainoTot.toFixed(1)} kg</strong></span>
                       </div>
                       <div style={{ height: 6, borderRadius: 3, background: C.border, overflow: 'hidden', marginTop: 3 }} title={`${t('inv.soglie')}: ${(soglia1).toFixed(0)} / ${(soglia2).toFixed(0)} / ${cap.toFixed(0)} kg`}>
                         <div style={{ width: `${perc}%`, height: '100%', background: colore, transition: 'width 0.25s ease' }} />
                       </div>
                     </div>
-                    {/* Barra di ricerca e pulizia esauriti */}
+                    {/* Barra di ricerca, filtri vista e pulizia esauriti */}
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10, flexWrap: 'wrap' }}>
                       <input
                         type="text"
                         value={filtroInventario}
                         onChange={(e) => setFiltroInventario(e.target.value)}
                         placeholder="🔍 Cerca nell'inventario..."
-                        style={{ ...styles.inlineInput, flex: 1, minWidth: 200, padding: '4px 8px', fontSize: 13 }}
+                        style={{ ...styles.inlineInput, flex: 1, minWidth: 160, padding: '4px 8px', fontSize: 13 }}
                       />
                       {filtroInventario && (
                         <button style={styles.buttonMini} onClick={() => setFiltroInventario('')}>✕</button>
                       )}
+                      
+                      {/* Pillole Filtro Zaino vs Equipaggiato */}
+                      <div style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }}>
+                        <button
+                          type="button"
+                          onClick={() => setFiltroVistaInventario('tutti')}
+                          style={{
+                            ...styles.buttonMini,
+                            fontSize: 11,
+                            padding: '3px 8px',
+                            borderRadius: 12,
+                            borderColor: filtroVistaInventario === 'tutti' ? C.goldDark : C.border,
+                            background: filtroVistaInventario === 'tutti' ? 'rgba(200,140,20,0.18)' : 'transparent',
+                            color: filtroVistaInventario === 'tutti' ? C.goldDark : C.inkDim,
+                            fontWeight: filtroVistaInventario === 'tutti' ? 700 : 500,
+                          }}
+                        >
+                          📦 {lingua === 'en' ? 'All' : 'Tutti'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFiltroVistaInventario('equip')}
+                          style={{
+                            ...styles.buttonMini,
+                            fontSize: 11,
+                            padding: '3px 8px',
+                            borderRadius: 12,
+                            borderColor: filtroVistaInventario === 'equip' ? '#2e9d4d' : C.border,
+                            background: filtroVistaInventario === 'equip' ? 'rgba(46,157,77,0.18)' : 'transparent',
+                            color: filtroVistaInventario === 'equip' ? '#2e9d4d' : C.inkDim,
+                            fontWeight: filtroVistaInventario === 'equip' ? 700 : 500,
+                          }}
+                        >
+                          🛡️ {lingua === 'en' ? 'Equipped' : 'Indossati'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFiltroVistaInventario('zaino')}
+                          style={{
+                            ...styles.buttonMini,
+                            fontSize: 11,
+                            padding: '3px 8px',
+                            borderRadius: 12,
+                            borderColor: filtroVistaInventario === 'zaino' ? '#1890ff' : C.border,
+                            background: filtroVistaInventario === 'zaino' ? 'rgba(24,144,255,0.18)' : 'transparent',
+                            color: filtroVistaInventario === 'zaino' ? '#1890ff' : C.inkDim,
+                            fontWeight: filtroVistaInventario === 'zaino' ? 700 : 500,
+                          }}
+                        >
+                          🎒 {lingua === 'en' ? 'Backpack' : 'Nello Zaino'}
+                        </button>
+                      </div>
+
                       <button
                         style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, fontSize: 11 }}
                         title="Rimuovi automaticamente dal tuo inventario tutti gli oggetti con quantità pari a 0"
@@ -9334,7 +9395,15 @@ export default function App() {
                             <th style={styles.th} />
                           </tr></thead>
                           <tbody>
-                            {inv.filter((o) => !filtroInventario || (o.nome || '').toLowerCase().includes(filtroInventario.trim().toLowerCase())).sort((a, b) => String(a.nome || '').localeCompare(String(b.nome || ''), 'it', { sensitivity: 'base' })).map((o) => {
+                            {inv.filter((o) => {
+                              const matchTesto = !filtroInventario || (o.nome || '').toLowerCase().includes(filtroInventario.trim().toLowerCase());
+                              if (!matchTesto) return false;
+                              const isWeapon = ARMI_5E.some((w) => w.nome === o.nome) || attacchi.some((a) => a.nome === o.nome);
+                              const isEquip = isWeapon ? attacchi.some((a) => a.nome === o.nome) : !!o.equip;
+                              if (filtroVistaInventario === 'equip' && !isEquip) return false;
+                              if (filtroVistaInventario === 'zaino' && isEquip) return false;
+                              return true;
+                            }).sort((a, b) => String(a.nome || '').localeCompare(String(b.nome || ''), 'it', { sensitivity: 'base' })).map((o) => {
                               const isWeapon = ARMI_5E.some((w) => w.nome === o.nome) || attacchi.some((a) => a.nome === o.nome);
                               const isEquip = isWeapon ? attacchi.some((a) => a.nome === o.nome) : !!o.equip;
                               const isSintonizzato = indiceSintonia(o.nome) >= 0;
