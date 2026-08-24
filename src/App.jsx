@@ -76,6 +76,91 @@ function IconaMonetaOro({ size = 20 }) {
   );
 }
 
+/** Selettore compatto a tendina per liste (armi, strumenti, lingue): niente cerchietti o blocchi pesanti */
+function CampoMultiTendina({ label, value, opzioni, onChange, placeholder, formattaVoce }) {
+  const lista = (value || '').split(/[,\n]/).map((s) => s.trim()).filter(Boolean);
+  const etichetta = (v) => (formattaVoce ? formattaVoce(v) : traduciDato(v));
+
+  const aggiungi = (v) => {
+    if (!v) return;
+    const norm = v.trim();
+    if (lista.some((x) => x.toLowerCase() === norm.toLowerCase())) return;
+    onChange([...lista, norm].join(', '));
+  };
+
+  const rimuovi = (idx) => {
+    onChange(lista.filter((_, i) => i !== idx).join(', '));
+  };
+
+  return (
+    <div style={{ marginBottom: 8 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3, gap: 6 }}>
+        <span style={{ ...styles.detail, fontSize: 11, fontWeight: 700, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+          {label}
+        </span>
+        <select
+          value=""
+          onChange={(e) => aggiungi(e.target.value)}
+          style={{ ...styles.inlineInput, fontSize: 11, padding: '1px 5px', height: 21, maxWidth: 140, cursor: 'pointer' }}
+          title={`Aggiungi ${label.toLowerCase()}`}
+        >
+          <option value="">＋ {t('common.aggiungi')}…</option>
+          {[...opzioni].sort((a, b) => etichetta(a).localeCompare(etichetta(b), 'it')).map((o) => {
+            const esiste = lista.some((x) => x.toLowerCase() === o.toLowerCase());
+            return (
+              <option key={o} value={o} disabled={esiste}>
+                {esiste ? '✓ ' : ''}{etichetta(o)}
+              </option>
+            );
+          })}
+        </select>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', minHeight: 20 }}>
+        {lista.length === 0 ? (
+          <span style={{ ...styles.detail, fontSize: 11, opacity: 0.6, fontStyle: 'italic' }}>{placeholder || 'Nessuna'}</span>
+        ) : (
+          lista.map((item, idx) => (
+            <span
+              key={idx}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+                background: 'rgba(0,0,0,0.04)',
+                border: `1px solid ${C.border}`,
+                borderRadius: 4,
+                padding: '1px 6px',
+                fontSize: 11,
+                color: C.ink,
+                lineHeight: 1.4,
+              }}
+            >
+              <span>{etichetta(item)}</span>
+              <button
+                type="button"
+                onClick={() => rimuovi(idx)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: C.red,
+                  cursor: 'pointer',
+                  padding: 0,
+                  fontSize: 12,
+                  lineHeight: 1,
+                  opacity: 0.8,
+                }}
+                title={`Rimuovi ${item}`}
+              >
+                ✕
+              </button>
+            </span>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
 
 // Colore identità per ogni classe (variante chiara e scura per restare leggibile).
 // `match` = sottostringhe riconosciute nel campo classe (italiano + inglese).
@@ -7379,64 +7464,79 @@ export default function App() {
           {/* Addestramento: riempie lo spazio vuoto della colonna destra (righe Intelligenza→Carisma) */}
           <div className="profilo-extra">
             <Sezione titolo={t("sez.addestramento")} {...apertoProps('addestramento')}>
-              <div style={{ marginBottom: 10 }}>
-                <div style={{ ...styles.detail, marginBottom: 4 }}>{t("train.armature")}</div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+              {/* Armature con pulsanti a pillola */}
+              <div style={{ marginBottom: 8 }}>
+                <div style={{ ...styles.detail, fontSize: 11, fontWeight: 700, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
+                  {t("train.armature")}
+                </div>
+                <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
                   {[
-                    ['leggera', 'leggera'],
-                    ['media', 'media'],
-                    ['pesante', 'pesante'],
-                    ['scudi', 'scudi'],
-                  ].map(([key, label]) => (
-                    <span
-                      key={key}
-                      className="tirabile"
-                      style={{ ...styles.detail, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}
-                      onClick={() =>
-                        aggiorna({
-                          addestramento: {
-                            ...scheda.addestramento,
-                            armature: {
-                              ...scheda.addestramento.armature,
-                              [key]: !scheda.addestramento.armature[key],
+                    ['leggera', 'Leggera'],
+                    ['media', 'Media'],
+                    ['pesante', 'Pesante'],
+                    ['scudi', 'Scudi'],
+                  ].map(([key, label]) => {
+                    const attiva = !!scheda.addestramento?.armature?.[key];
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() =>
+                          aggiorna({
+                            addestramento: {
+                              ...scheda.addestramento,
+                              armature: {
+                                ...scheda.addestramento?.armature,
+                                [key]: !attiva,
+                              },
                             },
-                          },
-                        })
-                      }
-                    >
-                      <span style={styles.pip(scheda.addestramento.armature[key], C.goldDark)} /> {label}
-                    </span>
-                  ))}
+                          })
+                        }
+                        style={{
+                          ...styles.buttonMini,
+                          fontSize: 11,
+                          padding: '2px 8px',
+                          background: attiva ? 'rgba(218, 165, 32, 0.15)' : 'transparent',
+                          borderColor: attiva ? C.goldDark : C.border,
+                          color: attiva ? C.goldDark : C.inkDim,
+                          fontWeight: attiva ? 700 : 400,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {attiva ? '✓ ' : ''}{label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-              <div style={{ marginBottom: 10 }}>
-                <div style={{ ...styles.detail, marginBottom: 4 }}>{t("train.armi")}</div>
-                <CampoConTendina
-                  value={scheda.addestramento.armi}
-                  opzioni={COMP_ARMI_5E}
-                  formattaVoce={inizialeMaiuscola}
-                  onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, armi: v.split(',').map(inizialeMaiuscola).join(', ') } })}
-                  title={t("train.armi_ph")}
-                />
-              </div>
-              <div>
-                <div style={{ ...styles.detail, marginBottom: 4 }}>{t("train.strumenti")}</div>
-                <ListaQuadratini
-                  value={scheda.addestramento.strumenti}
-                  opzioni={STRUMENTI_5E}
-                  placeholder={t("train.strumenti_ph")}
-                  onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, strumenti: v } })}
-                />
-              </div>
-              <div style={{ marginTop: 10 }}>
-                <div style={{ ...styles.detail, marginBottom: 4 }}>{t("equip.lingue")}</div>
-                <CampoConTendina
-                  value={scheda.lingue}
-                  opzioni={LINGUE_5E}
-                  onChange={(v) => aggiorna({ lingue: v })}
-                  title={t("equip.lingue_tooltip")}
-                />
-              </div>
+
+              {/* Armi con menu a tendina */}
+              <CampoMultiTendina
+                label={t("train.armi")}
+                value={scheda.addestramento?.armi}
+                opzioni={COMP_ARMI_5E}
+                placeholder={t("train.armi_ph")}
+                formattaVoce={inizialeMaiuscola}
+                onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, armi: v } })}
+              />
+
+              {/* Strumenti con menu a tendina */}
+              <CampoMultiTendina
+                label={t("train.strumenti")}
+                value={scheda.addestramento?.strumenti}
+                opzioni={STRUMENTI_5E}
+                placeholder={t("train.strumenti_ph")}
+                onChange={(v) => aggiorna({ addestramento: { ...scheda.addestramento, strumenti: v } })}
+              />
+
+              {/* Lingue con menu a tendina */}
+              <CampoMultiTendina
+                label={t("equip.lingue")}
+                value={scheda.lingue}
+                opzioni={LINGUE_5E}
+                placeholder={t("equip.lingue_tooltip")}
+                onChange={(v) => aggiorna({ lingue: v })}
+              />
             </Sezione>
             {/* Risorse di classe: sotto l'Addestramento, riempie il resto dello spazio */}
             <Sezione titolo={t("sez.risorse")} {...apertoProps('risorse')}>
