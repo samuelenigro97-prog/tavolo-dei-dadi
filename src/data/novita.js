@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.54',
+    voci: {
+      it: [
+        'Nuovo Design Sezione Diario di Sessione: interfaccia completamente ridisegnata con schede cronaca eleganti, testata moderna, tag rapidi D&D (👤 PNG, 📜 Quest, 🗺️ Luoghi, 💰 Bottino, ⚔️ Scontri) e anteprima rapida ad apertura fluida.',
+      ],
+      en: [
+        'New Session Journal Design: completely revamped UI featuring elegant chronicle cards, modern header, rapid D&D tags (👤 NPC, 📜 Quest, 🗺️ Locations, 💰 Loot, ⚔️ Combats) and smooth expanding preview.',
+      ],
+    },
+  },
+  {
     versione: '3.9.53',
     voci: {
       it: [

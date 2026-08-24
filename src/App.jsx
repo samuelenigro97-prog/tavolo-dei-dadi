@@ -1704,7 +1704,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.53';
+const APP_VERSION = '3.9.54';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -9958,12 +9958,13 @@ export default function App() {
                 ];
 
                 return (
-                  <>
-                    <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                  <div>
+                    {/* Toolbar superiore del Diario */}
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', justifyContent: 'space-between', borderBottom: `1px solid ${C.border}`, paddingBottom: 10 }}>
                       <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
                         <button
                           className="no-stampa"
-                          style={{ ...styles.buttonMini, borderColor: C.goldDark, color: C.goldDark, fontWeight: 700, padding: '4px 10px' }}
+                          style={{ ...styles.buttonPrimary, padding: '5px 12px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}
                           onClick={() => {
                             const newId = `d-${Date.now()}`;
                             aggiorna({
@@ -9972,7 +9973,7 @@ export default function App() {
                             setVociDiarioChiuse((prev) => ({ ...prev, [newId]: false }));
                           }}
                         >
-                          ＋ {lingua === 'en' ? 'New Session' : 'Nuova Sessione'}
+                          <span>✍️</span> <strong>{lingua === 'en' ? 'New Chronicle' : 'Nuova Cronaca'}</strong>
                         </button>
                         {diario.length > 0 && (
                           <>
@@ -9982,7 +9983,7 @@ export default function App() {
                               onClick={toggleTutteVoci}
                               title="Espandi o comprimi tutte le sessioni"
                             >
-                              {diario.every((v) => vociDiarioChiuse[v.id]) ? '⇕ Espandi tutte' : '⇕ Comprimi tutte'}
+                              {diario.every((v) => vociDiarioChiuse[v.id]) ? '📂 Espandi tutte' : '📁 Comprimi tutte'}
                             </button>
                             <button
                               className="no-stampa"
@@ -9990,15 +9991,15 @@ export default function App() {
                               onClick={copiaDiario}
                               title="Copia l'intero diario negli appunti"
                             >
-                              📋 {lingua === 'en' ? 'Copy all' : 'Copia tutto'}
+                              📋 {lingua === 'en' ? 'Copy all' : 'Copia'}
                             </button>
                             <button
                               className="no-stampa"
-                              style={{ ...styles.buttonMini, fontSize: 11, padding: '4px 8px' }}
+                              style={{ ...styles.buttonMini, fontSize: 11, padding: '4px 8px', color: C.goldDark, borderColor: C.goldDark }}
                               onClick={scaricaDiario}
                               title="Scarica il diario come file Markdown (.md)"
                             >
-                              📥 {lingua === 'en' ? 'Download .md' : 'Scarica .md'}
+                              📥 .md
                             </button>
                           </>
                         )}
@@ -10008,8 +10009,8 @@ export default function App() {
                           <input
                             value={filtroDiario}
                             onChange={(e) => setFiltroDiario(e.target.value)}
-                            placeholder={lingua === 'en' ? '🔍 Search sessions...' : '🔍 Cerca nelle sessioni...'}
-                            style={{ ...styles.inlineInput, fontSize: 12, padding: '4px 8px', width: 170 }}
+                            placeholder={lingua === 'en' ? '🔍 Filter notes...' : '🔍 Cerca nelle cronache...'}
+                            style={{ ...styles.inlineInput, fontSize: 11.5, padding: '4px 22px 4px 8px', width: 160, borderRadius: 6 }}
                           />
                           {filtroDiario && (
                             <button
@@ -10023,154 +10024,186 @@ export default function App() {
                     </div>
 
                     {diario.length === 0 && (
-                      <div style={{ ...styles.detail, fontSize: 12, fontStyle: 'italic', textAlign: 'center', padding: '16px 0' }}>
-                        📖 {lingua === 'en' ? 'The journal is empty. Click on "New Session" to start chronicling your adventures!' : 'Il diario è vuoto. Clicca su "Nuova Sessione" per iniziare a prendere appunti sulle tue avventure!'}
+                      <div style={{ textAlign: 'center', padding: '24px 16px', background: 'rgba(0,0,0,0.02)', borderRadius: 10, border: `1px dashed ${C.border}`, margin: '8px 0' }}>
+                        <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.8 }}>📜</div>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: C.ink, marginBottom: 4 }}>
+                          {lingua === 'en' ? 'Your Adventurer’s Journal is Empty' : 'Il Diario del tuo Avventuriero è Vuoto'}
+                        </div>
+                        <div style={{ ...styles.detail, fontSize: 12, maxWidth: 360, margin: '0 auto 12px' }}>
+                          {lingua === 'en'
+                            ? 'Keep track of encounters, loot, NPC secrets, quests and travel notes during each gaming session.'
+                            : 'Traccia incontri, bottini ottenuti, segreti dei PNG, missioni e luoghi esplorati durante ogni sessione al tavolo.'}
+                        </div>
+                        <button
+                          style={{ ...styles.buttonPrimary, padding: '6px 14px', fontSize: 12 }}
+                          onClick={() => {
+                            const newId = `d-${Date.now()}`;
+                            aggiorna({ diario: [{ id: newId, data: oggi, titolo: '', testo: '' }] });
+                          }}
+                        >
+                          ✍️ {lingua === 'en' ? 'Start First Session' : 'Inizia la Prima Sessione'}
+                        </button>
                       </div>
                     )}
 
                     {qDiario && diarioFiltrato.length === 0 && (
-                      <div style={{ ...styles.detail, fontSize: 12, fontStyle: 'italic', textAlign: 'center', padding: '10px 0' }}>
-                        {lingua === 'en' ? `No sessions match "${filtroDiario}".` : `Nessuna sessione corrisponde alla ricerca "${filtroDiario}".`}
+                      <div style={{ ...styles.detail, fontSize: 12, fontStyle: 'italic', textAlign: 'center', padding: '12px 0' }}>
+                        {lingua === 'en' ? `No notes match "${filtroDiario}".` : `Nessuna nota corrisponde a "${filtroDiario}".`}
                       </div>
                     )}
 
-                    {diarioFiltrato.map((v) => {
-                      const chiusa = Boolean(vociDiarioChiuse[v.id]);
-                      const numSessione = diario.length - diario.indexOf(v);
-                      return (
-                        <div
-                          key={v.id}
-                          style={{
-                            border: `1px solid ${chiusa ? C.border : C.goldDark}`,
-                            borderRadius: 8,
-                            padding: '8px 10px',
-                            marginBottom: 8,
-                            background: C.panelLight,
-                            boxShadow: chiusa ? '0 1px 2px rgba(0,0,0,0.04)' : '0 2px 8px rgba(0,0,0,0.12)',
-                            transition: 'border-color 0.15s ease',
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: chiusa ? 0 : 8, flexWrap: 'wrap' }}>
-                            <button
-                              type="button"
-                              onClick={() => setVociDiarioChiuse((prev) => ({ ...prev, [v.id]: !prev[v.id] }))}
-                              style={{ background: 'none', border: 'none', color: C.goldDark, fontSize: 14, cursor: 'pointer', padding: 0, fontWeight: 800 }}
-                              title={chiusa ? 'Espandi sessione' : 'Riduci sessione'}
-                            >
-                              {chiusa ? '▸' : '▾'}
-                            </button>
-                            <span
-                              style={{
-                                fontSize: 11,
-                                fontWeight: 700,
-                                color: C.goldDark,
-                                background: 'rgba(218, 165, 32, 0.12)',
-                                border: `1px solid ${C.goldDark}`,
-                                borderRadius: 4,
-                                padding: '1px 5px',
-                              }}
-                            >
-                              #{numSessione}
-                            </span>
-                            <input
-                              type="date"
-                              value={v.data || ''}
-                              onChange={(e) => modificaVoce(v.id, { data: e.target.value })}
-                              style={{ ...styles.inlineInput, padding: '2px 5px', fontSize: 11, width: 120 }}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => modificaVoce(v.id, { data: oggi })}
-                              style={{ ...styles.buttonMini, fontSize: 10, padding: '1px 5px' }}
-                              title="Imposta data odierna"
-                            >
-                              {lingua === 'en' ? 'Today' : 'Oggi'}
-                            </button>
-                            <input
-                              value={v.titolo || ''}
-                              placeholder={t('diario.titolo_ph')}
-                              onChange={(e) => modificaVoce(v.id, { titolo: e.target.value })}
-                              style={{ ...styles.inlineInput, flex: '1 1 180px', minWidth: 120, padding: '2px 6px', fontSize: 13, fontWeight: 700, color: C.ink }}
-                            />
-                            <button
-                              type="button"
-                              className="no-stampa"
-                              style={{ ...styles.buttonMini, padding: '0 6px', fontSize: 11, flexShrink: 0 }}
-                              title="Copia testo di questa sessione"
-                              onClick={() => copiaVoce(v)}
-                            >
-                              📋
-                            </button>
-                            <button
-                              className="no-stampa"
-                              style={{ ...styles.buttonMini, padding: '0 6px', color: C.red, flexShrink: 0 }}
-                              title={t('diario.elimina')}
-                              onClick={() => setConferma({
-                                titolo: t('sez.diario'),
-                                testo: t('diario.elimina_conferma'),
-                                onConferma: () => aggiorna({ diario: diario.filter((x) => x.id !== v.id) }),
-                              })}
-                            >
-                              ✕
-                            </button>
-                          </div>
-
-                          {chiusa ? (
+                    {/* Lista Cronache / Sessioni */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {diarioFiltrato.map((v) => {
+                        const chiusa = Boolean(vociDiarioChiuse[v.id]);
+                        const numSessione = diario.length - diario.indexOf(v);
+                        return (
+                          <div
+                            key={v.id}
+                            style={{
+                              border: `1px solid ${chiusa ? C.border : C.goldDark}`,
+                              borderRadius: 10,
+                              background: C.panel,
+                              boxShadow: chiusa ? '0 1px 3px rgba(0,0,0,0.05)' : '0 4px 14px rgba(0,0,0,0.1)',
+                              overflow: 'hidden',
+                              transition: 'all 0.15s ease',
+                            }}
+                          >
+                            {/* Header Cronaca */}
                             <div
-                              onClick={() => setVociDiarioChiuse((prev) => ({ ...prev, [v.id]: false }))}
                               style={{
-                                fontSize: 12,
-                                color: C.inkDim,
-                                fontStyle: 'italic',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 8,
+                                padding: '8px 10px',
+                                background: chiusa ? 'transparent' : 'rgba(200,140,20,0.06)',
+                                borderBottom: chiusa ? 'none' : `1px solid ${C.border}`,
                                 cursor: 'pointer',
-                                paddingLeft: 22,
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
                               }}
-                              title="Clicca per aprire"
+                              onClick={() => setVociDiarioChiuse((prev) => ({ ...prev, [v.id]: !prev[v.id] }))}
                             >
-                              {v.testo ? v.testo.slice(0, 120) + (v.testo.length > 120 ? '…' : '') : (lingua === 'en' ? 'No notes.' : 'Nessun appunto.')}
-                            </div>
-                          ) : (
-                            <>
-                              {/* Barra Tag Rapidi D&D */}
-                              <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginBottom: 6, flexWrap: 'wrap', paddingLeft: 2 }}>
-                                <span style={{ fontSize: 10, color: C.inkDim, fontWeight: 600, marginRight: 2 }}>
-                                  {lingua === 'en' ? 'Insert:' : 'Inserisci:'}
-                                </span>
-                                {TAG_RAPIDI.map((tag) => (
-                                  <button
-                                    key={tag.label}
-                                    type="button"
-                                    onClick={() => inserisciTag(v, tag.label)}
-                                    style={{
-                                      ...styles.buttonMini,
-                                      fontSize: 10,
-                                      padding: '1px 6px',
-                                      borderRadius: 12,
-                                      background: 'rgba(200, 140, 20, 0.08)',
-                                      border: `1px solid ${C.border}`,
-                                      color: C.ink,
-                                      cursor: 'pointer',
-                                    }}
-                                    title={`Aggiungi ${tag.label} negli appunti`}
-                                  >
-                                    {tag.icona} {tag.label}
-                                  </button>
-                                ))}
+                              <span style={{ color: C.goldDark, fontSize: 13, fontWeight: 900, userSelect: 'none' }}>
+                                {chiusa ? '▸' : '▾'}
+                              </span>
+
+                              <span
+                                style={{
+                                  fontSize: 11,
+                                  fontWeight: 800,
+                                  color: C.goldDark,
+                                  background: 'rgba(218, 165, 32, 0.15)',
+                                  border: `1px solid ${C.goldDark}`,
+                                  borderRadius: 5,
+                                  padding: '1px 6px',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                #{numSessione}
+                              </span>
+
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 0 }} onClick={(e) => e.stopPropagation()}>
+                                <input
+                                  type="date"
+                                  value={v.data || ''}
+                                  onChange={(e) => modificaVoce(v.id, { data: e.target.value })}
+                                  style={{ ...styles.inlineInput, padding: '2px 4px', fontSize: 11, width: 110, borderRadius: 4 }}
+                                />
+                                <input
+                                  value={v.titolo || ''}
+                                  placeholder={t('diario.titolo_ph')}
+                                  onChange={(e) => modificaVoce(v.id, { titolo: e.target.value })}
+                                  style={{ ...styles.inlineInput, flex: 1, minWidth: 100, padding: '3px 6px', fontSize: 13, fontWeight: 700, color: C.ink, borderRadius: 4 }}
+                                />
                               </div>
-                              <AreaTesto
-                                value={v.testo || ''}
-                                placeholder={t('diario.testo_ph')}
-                                onChange={(nuovo) => modificaVoce(v.id, { testo: nuovo })}
-                              />
-                            </>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </>
+
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }} onClick={(e) => e.stopPropagation()}>
+                                <button
+                                  type="button"
+                                  className="no-stampa"
+                                  style={{ ...styles.buttonMini, padding: '2px 6px', fontSize: 11 }}
+                                  title="Copia testo di questa sessione"
+                                  onClick={() => copiaVoce(v)}
+                                >
+                                  📋
+                                </button>
+                                <button
+                                  type="button"
+                                  className="no-stampa"
+                                  style={{ ...styles.buttonMini, padding: '2px 6px', color: C.red, borderColor: C.red }}
+                                  title={t('diario.elimina')}
+                                  onClick={() => setConferma({
+                                    titolo: t('sez.diario'),
+                                    testo: t('diario.elimina_conferma'),
+                                    onConferma: () => aggiorna({ diario: diario.filter((x) => x.id !== v.id) }),
+                                  })}
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Anteprima compressa */}
+                            {chiusa ? (
+                              <div
+                                onClick={() => setVociDiarioChiuse((prev) => ({ ...prev, [v.id]: false }))}
+                                style={{
+                                  fontSize: 12,
+                                  color: C.inkDim,
+                                  fontStyle: 'italic',
+                                  cursor: 'pointer',
+                                  padding: '4px 10px 8px 30px',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                {v.testo ? v.testo.slice(0, 140) + (v.testo.length > 140 ? '…' : '') : (lingua === 'en' ? 'No notes recorded.' : 'Nessun appunto registrato.')}
+                              </div>
+                            ) : (
+                              <div style={{ padding: '10px 10px 8px' }}>
+                                {/* Toolbar inserimento rapido Tag D&D */}
+                                <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginBottom: 8, flexWrap: 'wrap' }}>
+                                  <span style={{ fontSize: 10, color: C.inkDim, fontWeight: 700, textTransform: 'uppercase', marginRight: 2 }}>
+                                    {lingua === 'en' ? 'Quick Tag:' : 'Tag Rapidi:'}
+                                  </span>
+                                  {TAG_RAPIDI.map((tag) => (
+                                    <button
+                                      key={tag.label}
+                                      type="button"
+                                      onClick={() => inserisciTag(v, tag.label)}
+                                      style={{
+                                        ...styles.buttonMini,
+                                        fontSize: 11,
+                                        padding: '2px 7px',
+                                        borderRadius: 14,
+                                        background: C.panelLight,
+                                        border: `1px solid ${C.border}`,
+                                        color: C.ink,
+                                        cursor: 'pointer',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: 3,
+                                      }}
+                                      title={`Aggiungi riga ${tag.label}`}
+                                    >
+                                      <span>{tag.icona}</span> <span>{tag.label}</span>
+                                    </button>
+                                  ))}
+                                </div>
+
+                                <AreaTesto
+                                  value={v.testo || ''}
+                                  placeholder={t('diario.testo_ph')}
+                                  onChange={(nuovo) => modificaVoce(v.id, { testo: nuovo })}
+                                  style={{ minHeight: 110, fontSize: 13, lineHeight: 1.5 }}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 );
               })()}
             </Sezione>
