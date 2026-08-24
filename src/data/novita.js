@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.53',
+    voci: {
+      it: [
+        'Indicatore Cloud con Spunta e Avviso: il pulsante Cloud mostra ora una spunta verde (✓) quando la sincronizzazione automatica è attiva e un avviso (⚠️) se i dati sono salvati solo localmente.',
+      ],
+      en: [
+        'Cloud Indicator with Checkmark and Warning: the Cloud button now shows a green checkmark (✓) when auto-sync is active and a warning (⚠️) if data is only stored locally.',
+      ],
+    },
+  },
+  {
     versione: '3.9.52',
     voci: {
       it: [
