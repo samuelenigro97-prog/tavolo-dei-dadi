@@ -5,6 +5,19 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.35',
+    voci: {
+      it: [
+        'Sezione Competenze: aggiunto menù Categorie Armi (Semplici, Guerra, Entrambe) e catalogo completo delle singole armi con evidenziazione in nero scuro per le competenze possedute.',
+        'Menù a tendina interattivi per Armature, Categorie Armi, Armi, Strumenti e Lingue: tutte le opzioni sono visibili con spunta ✓ e colore nero intenso solo per le competenze possedute.',
+      ],
+      en: [
+        'Proficiencies section: added Weapon Categories dropdown (Simple, Martial, Both) and complete weapon catalog with dark bold highlight for owned proficiencies.',
+        'Interactive dropdowns for Armor, Weapon Categories, Weapons, Tools, and Languages: all options visible with checkmark ✓ and deep dark black only for owned proficiencies.',
+      ],
+    },
+  },
+  {
     versione: '3.9.34',
     voci: {
       it: [

@@ -89,120 +89,280 @@ const LISTA_ARMI_GUERRA_DETTAGLIO = [
   'Spada lunga', 'Spadone', 'Stocco', 'Tridente'
 ];
 
-/** Menù a tendina compatto di sola consultazione (mostra i valori solo all'apertura del menù, nessun tag esterno) */
-function TendinaConsultazione({ label, value, placeholder, formattaVoce, espandiArmi = false }) {
-  let lista = (value || '').split(/[,\n]/).map((s) => s.trim()).filter(Boolean);
-  const etichetta = (v) => (formattaVoce ? formattaVoce(v) : traduciDato(v));
-
-  // Se è la tendina armi ed include "Armi semplici" o "Armi da guerra", specifichiamo tutte le singole armi
-  if (espandiArmi) {
-    const haSemplici = lista.some((x) => /armi\s*semplici|simple\s*weapons/i.test(x));
-    const haGuerra = lista.some((x) => /armi\s*da\s*guerra|martial\s*weapons/i.test(x));
-    const altre = lista.filter((x) => !/armi\s*semplici|simple\s*weapons|armi\s*da\s*guerra|martial\s*weapons/i.test(x));
-
-    const armiEspansi = [];
-    if (haSemplici) armiEspansi.push(...LISTA_ARMI_SEMPLICI_DETTAGLIO);
-    if (haGuerra) armiEspansi.push(...LISTA_ARMI_GUERRA_DETTAGLIO);
-    armiEspansi.push(...altre);
-    lista = [...new Set(armiEspansi)];
-  }
-
-  const voci = [...new Set(lista.map(etichetta))].sort((a, b) => a.localeCompare(b, 'it'));
-
-  // Anteprima nel selettore chiuso: pulita, senza trattini né triangolini doppi
-  let anteprima = placeholder || 'Nessuna';
-  if (voci.length === 1) {
-    anteprima = voci[0];
-  } else if (voci.length > 1) {
-    anteprima = espandiArmi
-      ? (value || '').toLowerCase().includes('semplici') ? 'Armi semplici' : voci[0]
-      : voci[0]; // Mostra solo la prima voce; all'apertura si vedono tutte
-  }
+/** Menù a tendina custom per le competenze: evidenzia in nero scuro e con spunta le voci possedute, mostra le altre in chiaro */
+function TendinaCompetenzaCustom({ label, anteprima, voci, onToggle }) {
+  const [aperto, setAperto] = useState(false);
 
   return (
-    <div style={{ marginBottom: 6 }}>
+    <div style={{ marginBottom: 4, position: 'relative' }}>
       <div className="campo-modulo-label" style={{ ...styles.moduloLabel, marginBottom: 2, fontSize: 10, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5 }}>
         {label}
       </div>
-      <div style={{ ...styles.moduloCampo, height: 28, padding: '0 6px' }}>
-        <select
-          value=""
-          onChange={() => {}}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: voci.length ? C.ink : C.inkDim,
-            fontFamily: 'inherit',
-            fontSize: 12,
-            width: '100%',
-            outline: 'none',
-            cursor: 'pointer',
-            textOverflow: 'ellipsis',
-          }}
-          title={voci.length > 0 ? `${label}: ${voci.join(', ')}` : (placeholder || 'Nessuna')}
-        >
-          <option value="" style={{ background: C.panel }}>
-            {anteprima}
-          </option>
-          {voci.map((v, i) => (
-            <option key={i} value={v} disabled style={{ background: C.panel, color: C.ink }}>
-              ✓ {v}
-            </option>
-          ))}
-        </select>
-      </div>
+      <button
+        type="button"
+        onClick={() => setAperto((v) => !v)}
+        style={{
+          ...styles.moduloCampo,
+          height: 25,
+          padding: '0 8px',
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          background: 'transparent',
+          border: `1px solid ${C.border}`,
+          borderRadius: 6,
+          cursor: 'pointer',
+          textAlign: 'left',
+          color: C.ink,
+        }}
+        title={`${label}: ${anteprima}`}
+      >
+        <span style={{ fontSize: 11, color: C.ink, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, marginRight: 6 }}>
+          {anteprima}
+        </span>
+        <span style={{ fontSize: 8, color: C.inkDim, flexShrink: 0 }}>{aperto ? '▲' : '▼'}</span>
+      </button>
+
+      {aperto && (
+        <>
+          {/* Backdrop trasparente per chiudere al click esterno */}
+          <div
+            onClick={() => setAperto(false)}
+            style={{ position: 'fixed', inset: 0, zIndex: 1200, background: 'transparent' }}
+          />
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'absolute',
+              top: 'calc(100% + 2px)',
+              left: 0,
+              right: 0,
+              minWidth: 200,
+              maxWidth: '90vw',
+              maxHeight: 220,
+              overflowY: 'auto',
+              background: C.panel,
+              border: `1px solid ${C.gold}`,
+              borderRadius: 8,
+              boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+              padding: '6px 4px',
+              zIndex: 1201,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '2px 6px 6px', borderBottom: `1px solid ${C.border}`, marginBottom: 4 }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</span>
+              <button
+                type="button"
+                onClick={() => setAperto(false)}
+                style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 10 }}
+              >✕</button>
+            </div>
+            {voci.map((v, i) => (
+              <div
+                key={v.id || i}
+                onClick={() => {
+                  if (onToggle) onToggle(v.id);
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '4px 8px',
+                  borderRadius: 4,
+                  cursor: onToggle ? 'pointer' : 'default',
+                  background: v.attivo ? 'rgba(200, 140, 20, 0.16)' : 'transparent',
+                  marginBottom: 2,
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={(e) => {
+                  if (!v.attivo) e.currentTarget.style.background = 'rgba(0,0,0,0.04)';
+                }}
+                onMouseLeave={(e) => {
+                  if (!v.attivo) e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                <span style={{ fontSize: 11, color: v.attivo ? C.goldDark : C.inkDim, fontWeight: 700, width: 14, textAlign: 'center' }}>
+                  {v.attivo ? '✓' : '○'}
+                </span>
+                <span
+                  style={{
+                    fontSize: 11,
+                    color: v.attivo ? '#111111' : C.inkDim,
+                    fontWeight: v.attivo ? 700 : 400,
+                    flex: 1,
+                  }}
+                >
+                  {v.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
-function TendinaArmature({ armature }) {
+function TendinaArmature({ armature, onModifica }) {
   const arm = armature || {};
   const tipi = [
-    { key: 'leggera', label: 'Armatura Leggera' },
-    { key: 'media', label: 'Armatura Media' },
-    { key: 'pesante', label: 'Armatura Pesante' },
-    { key: 'scudi', label: 'Scudi' },
+    { id: 'leggera', label: 'Armatura Leggera' },
+    { id: 'media', label: 'Armatura Media' },
+    { id: 'pesante', label: 'Armatura Pesante' },
+    { id: 'scudi', label: 'Scudi' },
   ];
-  const attive = tipi.filter((t) => !!arm[t.key]);
+  const attive = tipi.filter((t) => !!arm[t.id]);
   const anteprima = attive.length === 0
     ? 'Nessuna armatura'
     : attive.length === 4
       ? 'Tutte (Leggere, Medie, Pesanti, Scudi)'
       : attive.map((t) => t.label.replace('Armatura ', '')).join(', ');
 
+  const voci = tipi.map((t) => ({
+    id: t.id,
+    label: t.label,
+    attivo: !!arm[t.id],
+  }));
+
   return (
-    <div style={{ marginBottom: 6 }}>
-      <div className="campo-modulo-label" style={{ ...styles.moduloLabel, marginBottom: 2, fontSize: 10, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-        {t("train.armature")}
-      </div>
-      <div style={{ ...styles.moduloCampo, height: 28, padding: '0 6px' }}>
-        <select
-          value=""
-          onChange={() => {}}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: attive.length ? C.ink : C.inkDim,
-            fontFamily: 'inherit',
-            fontSize: 12,
-            width: '100%',
-            outline: 'none',
-            cursor: 'pointer',
-            textOverflow: 'ellipsis',
-          }}
-          title={`Armature: ${anteprima}`}
-        >
-          <option value="" style={{ background: C.panel }}>
-            {anteprima}
-          </option>
-          {tipi.map((t) => (
-            <option key={t.key} value={t.key} disabled style={{ background: C.panel, color: arm[t.key] ? C.goldDark : C.inkDim }}>
-              {arm[t.key] ? '✓ ' : '✕ '}{t.label}
-            </option>
-          ))}
-        </select>
-      </div>
-    </div>
+    <TendinaCompetenzaCustom
+      label={t("train.armature")}
+      anteprima={anteprima}
+      voci={voci}
+      onToggle={(id) => {
+        if (onModifica) onModifica({ [id]: !arm[id] });
+      }}
+    />
+  );
+}
+
+function TendinaCategorieArmi({ valoreArmi, onImpostaCategoria }) {
+  const raw = (valoreArmi || '').toLowerCase();
+  const haSemplici = /armi\s*semplici|simple\s*weapons/i.test(raw);
+  const haGuerra = /armi\s*da\s*guerra|martial\s*weapons/i.test(raw);
+  const haEntrambe = haSemplici && haGuerra;
+
+  let anteprima = 'Nessuna categoria';
+  if (haEntrambe) anteprima = 'Armi semplici e da guerra';
+  else if (haSemplici) anteprima = 'Armi semplici';
+  else if (haGuerra) anteprima = 'Armi da guerra';
+
+  const opzioni = [
+    { id: 'entrambe', label: 'Armi semplici e da guerra', attivo: haEntrambe },
+    { id: 'semplici', label: 'Armi semplici', attivo: haSemplici && !haGuerra },
+    { id: 'guerra', label: 'Armi da guerra', attivo: haGuerra && !haSemplici },
+    { id: 'nessuna', label: 'Nessuna categoria (armi singole)', attivo: !haSemplici && !haGuerra },
+  ];
+
+  return (
+    <TendinaCompetenzaCustom
+      label="CATEGORIE ARMI"
+      anteprima={anteprima}
+      voci={opzioni}
+      onToggle={(id) => {
+        if (onImpostaCategoria) onImpostaCategoria(id);
+      }}
+    />
+  );
+}
+
+function TendinaArmiSpecifiche({ valoreArmi, onToggleArmaSingola }) {
+  const raw = (valoreArmi || '').toLowerCase();
+  const haSemplici = /armi\s*semplici|simple\s*weapons/i.test(raw);
+  const haGuerra = /armi\s*da\s*guerra|martial\s*weapons/i.test(raw);
+
+  const singole = (valoreArmi || '')
+    .split(/[,\n]/)
+    .map((s) => s.trim())
+    .filter((s) => Boolean(s) && !/armi\s*semplici|simple\s*weapons|armi\s*da\s*guerra|martial\s*weapons/i.test(s));
+
+  const voci = ARMI_5E.map((a) => {
+    const isSemplice = LISTA_ARMI_SEMPLICI_DETTAGLIO.some((s) => s.toLowerCase() === a.nome.toLowerCase());
+    const isGuerra = LISTA_ARMI_GUERRA_DETTAGLIO.some((g) => g.toLowerCase() === a.nome.toLowerCase());
+    const attiva = (haSemplici && isSemplice) || (haGuerra && isGuerra) || singole.some((s) => s.toLowerCase() === a.nome.toLowerCase());
+    return {
+      id: a.nome,
+      label: a.nome,
+      attivo: attiva,
+    };
+  });
+
+  const competenti = voci.filter((v) => v.attivo);
+  let anteprima = 'Nessuna arma';
+  if (haSemplici && haGuerra) anteprima = 'Tutte le armi (Semplici e da guerra)';
+  else if (haSemplici) anteprima = 'Tutte le armi semplici';
+  else if (haGuerra) anteprima = 'Tutte le armi da guerra';
+  else if (competenti.length === 1) anteprima = competenti[0].label;
+  else if (competenti.length > 1) anteprima = `${competenti[0].label} (+${competenti.length - 1})`;
+
+  return (
+    <TendinaCompetenzaCustom
+      label={t("train.armi")}
+      anteprima={anteprima}
+      voci={voci}
+      onToggle={(nomeArma) => {
+        if (onToggleArmaSingola) onToggleArmaSingola(nomeArma);
+      }}
+    />
+  );
+}
+
+function TendinaStrumenti({ valoreStrumenti, onToggleStrumento }) {
+  const listaAttuale = (valoreStrumenti || '').split(/[,\n]/).map((s) => s.trim()).filter(Boolean);
+  const tuttiStrumenti = [...new Set([...STRUMENTI_5E, ...listaAttuale])].sort((a, b) => a.localeCompare(b, 'it'));
+
+  const voci = tuttiStrumenti.map((s) => ({
+    id: s,
+    label: s,
+    attivo: listaAttuale.some((x) => x.toLowerCase() === s.toLowerCase()),
+  }));
+
+  const attivi = voci.filter((v) => v.attivo);
+  const anteprima = attivi.length === 0
+    ? 'Nessuno strumento'
+    : attivi.length === 1
+      ? attivi[0].label
+      : `${attivi[0].label} (+${attivi.length - 1})`;
+
+  return (
+    <TendinaCompetenzaCustom
+      label={t("train.strumenti")}
+      anteprima={anteprima}
+      voci={voci}
+      onToggle={(nomeStrumento) => {
+        if (onToggleStrumento) onToggleStrumento(nomeStrumento);
+      }}
+    />
+  );
+}
+
+function TendinaLingue({ valoreLingue, onToggleLingua }) {
+  const listaAttuale = (valoreLingue || '').split(/[,\n]/).map((s) => s.trim()).filter(Boolean);
+  const tutteLingue = [...new Set([...LINGUE_5E, ...listaAttuale])].sort((a, b) => a.localeCompare(b, 'it'));
+
+  const voci = tutteLingue.map((l) => ({
+    id: l,
+    label: l,
+    attivo: listaAttuale.some((x) => x.toLowerCase() === l.toLowerCase()),
+  }));
+
+  const attive = voci.filter((v) => v.attivo);
+  const anteprima = attive.length === 0
+    ? 'Nessuna lingua'
+    : attive.length === 1
+      ? attive[0].label
+      : `${attive[0].label} (+${attive.length - 1})`;
+
+  return (
+    <TendinaCompetenzaCustom
+      label={t("equip.lingue")}
+      anteprima={anteprima}
+      voci={voci}
+      onToggle={(nomeLingua) => {
+        if (onToggleLingua) onToggleLingua(nomeLingua);
+      }}
+    />
   );
 }
 
@@ -871,7 +1031,7 @@ import { spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spieg
 import { INCANTESIMI_DB, datiIncantesimo } from './data/incantesimi.js';
 
 const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(INCANTESIMI_DB)])).sort((a, b) => a.localeCompare(b, 'it'));
-import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E } from './data/dati5e.js';
+import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
 import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni } from './rules/regole.js';
@@ -1342,17 +1502,6 @@ const EQUIP_5E = [
   'Kit da erborista', 'Pozione di guarigione',
 ];
 
-// Strumenti e dotazioni con competenza (5e).
-const STRUMENTI_5E = [
-  'Arnesi da scasso', 'Borsa da erborista', 'Strumenti da avvelenatore', 'Kit da travestimento',
-  'Kit da falsario', 'Strumenti da calligrafo', 'Attrezzi da fabbro', 'Attrezzi da birraio',
-  'Attrezzi da carpentiere', 'Attrezzi da cartografo', 'Attrezzi da calzolaio', 'Attrezzi da cuoco',
-  'Attrezzi da vetraio', 'Attrezzi da gioielliere', 'Attrezzi da vasaio', 'Attrezzi da conciatore',
-  'Attrezzi da intagliatore', 'Attrezzi da tessitore', 'Attrezzi da ceramista', 'Attrezzi da muratore',
-  'Attrezzi da pittore', 'Attrezzi da fabbro d’armi', 'Strumenti da navigatore', 'Set da gioco',
-  'Carte da gioco', 'Dadi', 'Strumento musicale', 'Cornamusa', 'Tamburo', 'Flauto', 'Liuto',
-  'Lira', 'Corno', 'Zufolo', 'Veicoli (terrestri)', 'Veicoli (acquatici)',
-];
 
 // Suggerimenti per le competenze nelle armi (categorie + armi specifiche).
 const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w.nome)];
@@ -1365,7 +1514,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.34';
+const APP_VERSION = '3.9.35';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7468,29 +7617,90 @@ export default function App() {
           <div className="profilo-extra">
             <Sezione titolo={t("sez.addestramento")} {...apertoProps('addestramento')}>
               {/* Armature */}
-              <TendinaArmature armature={scheda.addestramento?.armature} />
+              <TendinaArmature
+                armature={scheda.addestramento?.armature}
+                onModifica={(patch) =>
+                  aggiorna({
+                    addestramento: {
+                      ...scheda.addestramento,
+                      armature: { ...scheda.addestramento?.armature, ...patch },
+                    },
+                  })
+                }
+              />
 
-              {/* Armi */}
-              <TendinaConsultazione
-                label={t("train.armi")}
-                value={scheda.addestramento?.armi}
-                placeholder={t("train.armi_ph")}
-                formattaVoce={inizialeMaiuscola}
-                espandiArmi={true}
+              {/* Categorie Armi (Semplici, Guerra o Entrambe) */}
+              <TendinaCategorieArmi
+                valoreArmi={scheda.addestramento?.armi}
+                onImpostaCategoria={(id) => {
+                  const raw = (scheda.addestramento?.armi || '');
+                  const singole = raw.split(/[,\n]/).map((s) => s.trim()).filter((s) => Boolean(s) && !/armi\s*semplici|simple\s*weapons|armi\s*da\s*guerra|martial\s*weapons/i.test(s));
+                  let nuovoValore = '';
+                  if (id === 'entrambe') {
+                    nuovoValore = ['Armi semplici e da guerra', ...singole].join(', ');
+                  } else if (id === 'semplici') {
+                    nuovoValore = ['Armi semplici', ...singole].join(', ');
+                  } else if (id === 'guerra') {
+                    nuovoValore = ['Armi da guerra', ...singole].join(', ');
+                  } else {
+                    nuovoValore = singole.join(', ');
+                  }
+                  aggiorna({ addestramento: { ...scheda.addestramento, armi: nuovoValore } });
+                }}
+              />
+
+              {/* Armi Specifiche */}
+              <TendinaArmiSpecifiche
+                valoreArmi={scheda.addestramento?.armi}
+                onToggleArmaSingola={(nomeArma) => {
+                  const raw = (scheda.addestramento?.armi || '');
+                  const haSemplici = /armi\s*semplici|simple\s*weapons/i.test(raw);
+                  const haGuerra = /armi\s*da\s*guerra|martial\s*weapons/i.test(raw);
+
+                  let singole = raw.split(/[,\n]/).map((s) => s.trim()).filter((s) => Boolean(s) && !/armi\s*semplici|simple\s*weapons|armi\s*da\s*guerra|martial\s*weapons/i.test(s));
+                  const haGiaSingola = singole.some((s) => s.toLowerCase() === nomeArma.toLowerCase());
+
+                  if (haGiaSingola) {
+                    singole = singole.filter((s) => s.toLowerCase() !== nomeArma.toLowerCase());
+                  } else {
+                    singole.push(nomeArma);
+                  }
+
+                  const categorie = [];
+                  if (haSemplici && haGuerra) categorie.push('Armi semplici e da guerra');
+                  else if (haSemplici) categorie.push('Armi semplici');
+                  else if (haGuerra) categorie.push('Armi da guerra');
+
+                  aggiorna({ addestramento: { ...scheda.addestramento, armi: [...categorie, ...singole].join(', ') } });
+                }}
               />
 
               {/* Strumenti */}
-              <TendinaConsultazione
-                label={t("train.strumenti")}
-                value={scheda.addestramento?.strumenti}
-                placeholder={t("train.strumenti_ph")}
+              <TendinaStrumenti
+                valoreStrumenti={scheda.addestramento?.strumenti}
+                onToggleStrumento={(nomeStrumento) => {
+                  let lista = (scheda.addestramento?.strumenti || '').split(/[,\n]/).map((s) => s.trim()).filter(Boolean);
+                  if (lista.some((s) => s.toLowerCase() === nomeStrumento.toLowerCase())) {
+                    lista = lista.filter((s) => s.toLowerCase() !== nomeStrumento.toLowerCase());
+                  } else {
+                    lista.push(nomeStrumento);
+                  }
+                  aggiorna({ addestramento: { ...scheda.addestramento, strumenti: lista.join(', ') } });
+                }}
               />
 
               {/* Lingue */}
-              <TendinaConsultazione
-                label={t("equip.lingue")}
-                value={scheda.lingue}
-                placeholder={t("equip.lingue_tooltip")}
+              <TendinaLingue
+                valoreLingue={scheda.lingue}
+                onToggleLingua={(nomeLingua) => {
+                  let lista = (scheda.lingue || '').split(/[,\n]/).map((s) => s.trim()).filter(Boolean);
+                  if (lista.some((s) => s.toLowerCase() === nomeLingua.toLowerCase())) {
+                    lista = lista.filter((s) => s.toLowerCase() !== nomeLingua.toLowerCase());
+                  } else {
+                    lista.push(nomeLingua);
+                  }
+                  aggiorna({ lingue: lista.join(', ') });
+                }}
               />
             </Sezione>
             {/* Risorse di classe: sotto l'Addestramento, riempie il resto dello spazio */}

@@ -180,9 +180,19 @@ export const PESI_OGGETTI = {
 export const NOMI_OGGETTI = Object.keys(PESI_OGGETTI).sort((a, b) => a.localeCompare(b, 'it'));
 export const PESO_ARMATURA_TIPO = { leggera: 5, media: 9, pesante: 25 };
 export const LINGUE_5E = [
-  'Abissale', 'Celestiale', 'Comune', 'Draconico', 'Elfico',
-  'Gigante', 'Gnomesco', 'Goblin', 'Halfling', 'Infernale',
+  'Abissale', 'Celestiale', 'Comune', 'Draconico', 'Druidico', 'Elfico',
+  'Gergo dei ladri', 'Gigante', 'Gnomesco', 'Goblin', 'Halfling', 'Infernale',
   'Nanico', 'Orchesco', 'Primordiale', 'Silvano', 'Sottocomune'
+];
+export const STRUMENTI_5E = [
+  'Arnesi da scasso', 'Borsa da erborista', 'Strumenti da avvelenatore', 'Kit da travestimento',
+  'Kit da falsario', 'Strumenti da calligrafo', 'Attrezzi da fabbro', 'Attrezzi da birraio',
+  'Attrezzi da carpentiere', 'Attrezzi da cartografo', 'Attrezzi da calzolaio', 'Attrezzi da cuoco',
+  'Attrezzi da vetraio', 'Attrezzi da gioielliere', 'Attrezzi da vasaio', 'Attrezzi da conciatore',
+  'Attrezzi da intagliatore', 'Attrezzi da tessitore', 'Attrezzi da ceramista', 'Attrezzi da muratore',
+  'Attrezzi da pittore', 'Attrezzi da fabbro d’armi', 'Strumenti da navigatore', 'Set da gioco',
+  'Carte da gioco', 'Dadi', 'Strumento musicale', 'Cornamusa', 'Tamburo', 'Flauto', 'Liuto',
+  'Lira', 'Corno', 'Zufolo', 'Veicoli (terrestri)', 'Veicoli (acquatici)',
 ];
 export const ARMI_5E = [
   // Semplici da mischia
