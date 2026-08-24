@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.59',
+    voci: {
+      it: [
+        'Robustezza Avvio senza Personaggi: protette tutte le derivazioni di stato (incantesimi, abilità, caratteristiche) per consentire un rendering fluido della schermata iniziale anche con archivio locale azzerato.',
+      ],
+      en: [
+        'Storage-Safe Startup: protected all derived state calculations (spells, skills, attributes) to ensure smooth rendering on clean browsers with no local characters.',
+      ],
+    },
+  },
+  {
     versione: '3.9.58',
     voci: {
       it: [

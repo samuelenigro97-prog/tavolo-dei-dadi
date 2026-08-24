@@ -1704,7 +1704,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.58';
+const APP_VERSION = '3.9.59';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3116,17 +3116,18 @@ export default function App() {
   // Corregge definitivamente anche le schede create/importate prima
   // dell'automatismo, senza ritardare i calcoli del render corrente.
   useEffect(() => {
+    if (!scheda) return;
     const automatica = caratteristicaIncantatorePerClasse(scheda.classe, scheda.sottoclasse);
     if (automatica && scheda.incantatore?.caratteristica !== automatica) {
       aggiorna({ incantatore: { ...scheda.incantatore, caratteristica: automatica } });
     }
-  }, [scheda.classe, scheda.sottoclasse, scheda.incantatore?.caratteristica]);
+  }, [scheda?.classe, scheda?.sottoclasse, scheda?.incantatore?.caratteristica]);
 
   // --- Archivio DM: deposita una copia della scheda attiva ---
   // Parte ~10 secondi dopo l'ultima modifica (così non si scrive a ogni tasto)
   // e solo se la scheda ha un nome vero. Le immagini non vengono inviate.
   useEffect(() => {
-    if (!URL_ARCHIVIO_PG) return;
+    if (!URL_ARCHIVIO_PG || !scheda) return;
     const nome = String(scheda?.nome || '').trim();
     if (!nome || nome === 'Nuovo personaggio') return;
     const timer = setTimeout(() => {
@@ -3143,7 +3144,7 @@ export default function App() {
   // --- Mappa della campagna, legata al PG ---
   // Immagine e segnalino sono salvati NELLA scheda, così la mappa resta col
   // personaggio a cui la carichi (e segue export/cloud).
-  const mappaCampagna = scheda.mappaCampagna || '';
+  const mappaCampagna = scheda?.mappaCampagna || '';
   const setMappaCampagna = (v) => {
     aggiorna({ mappaCampagna: v || '' });
     if (!v) rimuoviImmaginePersonaggio(roster.attivo, 'mappaCampagna').catch(() => {});
@@ -4751,10 +4752,10 @@ export default function App() {
   const critico = tiro?.naturale === 20;
   const fallimento = tiro?.naturale === 1;
   const dannoAttaccoValido = tiro?.attacco && parseEspressioneDado(tiro.attacco.danno || '');
-  const percezionePassiva = 10 + bonusAbilita(scheda, 'percezione');
-  const indagarePassivo = 10 + bonusAbilita(scheda, 'indagare');
-  const intuizionePassiva = 10 + bonusAbilita(scheda, 'intuizione');
-  const modIncantatore = caratteristicaIncantatore
+  const percezionePassiva = 10 + (scheda ? bonusAbilita(scheda, 'percezione') : 0);
+  const indagarePassivo = 10 + (scheda ? bonusAbilita(scheda, 'indagare') : 0);
+  const intuizionePassiva = 10 + (scheda ? bonusAbilita(scheda, 'intuizione') : 0);
+  const modIncantatore = (scheda && caratteristicaIncantatore)
     ? modificatore(punteggioCaratteristica(scheda, caratteristicaIncantatore))
     : null;
 
@@ -4762,32 +4763,33 @@ export default function App() {
   // massimo per la tua classe/livello, i pulsanti "Aggiungi" si bloccano.
   // Gli incantesimi BONUS (da razza/sottoclasse/talento) non contano verso il
   // limite: sono aggiunti "forzatamente" e marcati a parte.
-  const nTrucchetti = scheda.incantesimiLista.filter((s) => s.livello === 0 && !s.bonus).length;
-  const nIncantesimi = scheda.incantesimiLista.filter((s) => s.livello > 0 && !s.bonus).length;
-  const nBonus = scheda.incantesimiLista.filter((s) => s.bonus).length;
+  const incLista = Array.isArray(scheda?.incantesimiLista) ? scheda.incantesimiLista : [];
+  const nTrucchetti = incLista.filter((s) => s.livello === 0 && !s.bonus).length;
+  const nIncantesimi = incLista.filter((s) => s.livello > 0 && !s.bonus).length;
+  const nBonus = incLista.filter((s) => s.bonus).length;
   // Incantatori che PREPARANO (Mago, Chierico, Druido, Paladino): il "libro/lista"
   // dei conosciuti è illimitato, ma ogni giorno se ne preparano fino a un massimo.
   // Gli altri (Stregone, Bardo, Warlock, Ranger) CONOSCONO un numero fisso, sempre
   // pronto: nessuna preparazione separata.
-  const classePreparata = classePreparaIncantesimi(scheda.classe);
-  const maxLivelloPreparabile = Math.max(0, ...Object.entries(scheda.slotIncantesimo || {})
+  const classePreparata = Boolean(scheda && classePreparaIncantesimi(scheda.classe));
+  const maxLivelloPreparabile = Math.max(0, ...Object.entries(scheda?.slotIncantesimo || {})
     .filter(([, slot]) => Number(slot?.totale) > 0)
     .map(([livello]) => Number(livello) || 0));
-  const chiaviIncantesimiSalvati = new Set(scheda.incantesimiLista
+  const chiaviIncantesimiSalvati = new Set(incLista
     .filter((s) => s.livello >= 1)
     .map((s) => `${s.livello}:${String(s.nome || '').toLocaleLowerCase('it')}`));
   const incantesimiVisualizzati = classePreparata
     ? [
-        ...scheda.incantesimiLista,
-        ...catalogoIncantesimiPreparabili(scheda.classe)
+        ...incLista,
+        ...catalogoIncantesimiPreparabili(scheda?.classe)
           .filter((s) => s.livello <= maxLivelloPreparabile && !chiaviIncantesimiSalvati.has(`${s.livello}:${s.nome.toLocaleLowerCase('it')}`))
           .map((s) => ({ ...s, id: `catalogo-${s.livello}-${s.nome}`, catalogo: true, preparato: false })),
       ]
-    : scheda.incantesimiLista;
-  const nPreparati = scheda.incantesimiLista.filter((s) => s.livello > 0 && !s.bonus && s.preparato !== false).length;
+    : incLista;
+  const nPreparati = incLista.filter((s) => s.livello > 0 && !s.bonus && s.preparato !== false).length;
   // base = override manuale (>0) oppure automatico da classe/livello/versione
-  const baseTrucchetti = (scheda.maxTrucchetti > 0) ? scheda.maxTrucchetti : trucchettiMax(scheda.classe, scheda.livello, scheda.sottoclasse);
-  const baseIncantesimi = (scheda.maxIncantesimi > 0) ? scheda.maxIncantesimi : incantesimiMaxAuto(scheda, versione);
+  const baseTrucchetti = (scheda?.maxTrucchetti > 0) ? scheda.maxTrucchetti : (scheda ? trucchettiMax(scheda.classe, scheda.livello, scheda.sottoclasse) : null);
+  const baseIncantesimi = (scheda?.maxIncantesimi > 0) ? scheda.maxIncantesimi : (scheda ? incantesimiMaxAuto(scheda, versione) : null);
   const trucchettiPieno = baseTrucchetti != null && nTrucchetti >= baseTrucchetti;
   // Blocco AGGIUNTA: per chi prepara il libro è illimitato (mai pieno); per chi
   // conosce, pieno al cap dei conosciuti.
