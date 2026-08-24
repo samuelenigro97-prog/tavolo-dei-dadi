@@ -5,6 +5,27 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.29',
+    voci: {
+      it: [
+        'Addestramento compatto: solo menù a tendina di consultazione (armi, strumenti, lingue, armature) senza ingombri.',
+        'Azioni PG su mobile: gli 8 pulsanti ora sono distribuiti a tutta larghezza in una singola riga uniforme.',
+        'Tiri D20 su mobile: griglia simmetrica a 4 colonne per Normale, Vantaggio, Svantaggio e Cronologia.',
+        'Incantesimi: livelli collassabili singolarmente e tasto globale "⇕ Riduci/Espandi livelli".',
+        'Diario di Avventura: ricerca in tempo reale, sessioni comprimibili con anteprima, tag #sessione, data "Oggi" e copia.',
+        'Header mobile: i 7 pulsanti in alto si dispongono perfettamente su 1 singola riga.',
+      ],
+      en: [
+        'Proficiencies: compact read-only dropdowns for armors, weapons, tools, and languages.',
+        'Character actions on mobile: 8 action buttons evenly distributed on 1 full-width row.',
+        'D20 roll buttons on mobile: balanced 4-column grid for Normal, Advantage, Disadvantage, and History.',
+        'Spells: collapsible spell levels and global "⇕ Collapse/Expand all levels" toggle.',
+        'Adventure Journal: instant search filter, collapsible entries with preview, #tags, "Today" button, and copy.',
+        'Mobile header: all 7 top action buttons fit cleanly on a single row.',
+      ],
+    },
+  },
+  {
     versione: '3.9.22',
     voci: {
       it: [
