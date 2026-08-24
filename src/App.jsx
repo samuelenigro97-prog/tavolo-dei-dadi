@@ -6060,9 +6060,8 @@ export default function App() {
               );
             })()}
 
-            {/* Novità: cosa è cambiato nelle ultime versioni, in breve. */}
-            <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 8 }}>
-              <div style={{ ...styles.detail, fontWeight: 700, marginBottom: 6 }}>✨ Novità</div>
+            {/* Registro versioni e notifiche */}
+            <div style={{ borderTop: (avvisoBackup || controlliAttivi.length > 0) ? `1px solid ${C.border}` : 'none', paddingTop: (avvisoBackup || controlliAttivi.length > 0) ? 8 : 0 }}>
               {novitaRecenti(3).map((n) => (
                 <div key={n.versione} style={{ marginBottom: 8 }}>
                   <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark }}>
