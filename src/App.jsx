@@ -1334,7 +1334,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.29';
+const APP_VERSION = '3.9.30';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -6259,13 +6259,6 @@ export default function App() {
               onClick={() => setMostraPannelloAudio(false)}
             >✕</button>
           </div>
-          <button
-            style={{ ...styles.btnMini, width: '100%', padding: '7px 10px', borderColor: C.goldDark, color: C.ink, background: C.panelLight }}
-            title={t('luogo.giorno_notte_tip')}
-            onClick={() => setTema(notteAttiva ? 'chiaro' : 'scuro')}
-          >
-            {notteAttiva ? '☀️ Passa al giorno' : '🌙 Passa alla notte'}
-          </button>
           {/* Volume del sottofondo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 14, color: C.inkDim }}>🔊</span>
@@ -6350,37 +6343,6 @@ export default function App() {
                 </button>
               );
             })}
-          </div>
-
-          {/* Audio personalizzato (facoltativo): sovrascrive il sottofondo con un MP3/stream */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <button
-              onClick={() => {
-                const prossimo = ambienteAudio === 'custom' ? 'spento' : 'custom';
-                sbloccaAudio();
-                if (!mutoAudio) {
-                  audioAvviatoDaGestoRef.current = prossimo !== ambienteAudio;
-                  avviaAmbiente(prossimo, volumeAudio * (notteAttiva ? 0.6 : 1), urlCustomAudio, notteAttiva);
-                }
-                setAmbienteAudio(prossimo);
-              }}
-              title="Usa un file/stream audio da URL al posto del sottofondo generato"
-              style={{
-                ...styles.btnMini,
-                border: `1px solid ${ambienteAudio === 'custom' ? C.gold : C.border}`,
-                background: ambienteAudio === 'custom' ? C.gold : C.panel,
-                color: ambienteAudio === 'custom' ? '#fff' : C.ink
-              }}
-            >🔗 Audio personalizzato</button>
-            {ambienteAudio === 'custom' && (
-              <input
-                type="text"
-                placeholder="https://esempio.com/suono-dungeon.mp3"
-                value={urlCustomAudio}
-                onChange={(e) => setUrlCustomAudio(e.target.value)}
-                style={{ flex: 1, minWidth: 200, padding: '6px 10px', borderRadius: 4, border: `1px solid ${C.border}`, background: C.panel, color: C.ink }}
-              />
-            )}
           </div>
 
           <div style={{ fontSize: 10, color: C.inkDim, opacity: 0.8, textAlign: 'center' }}>

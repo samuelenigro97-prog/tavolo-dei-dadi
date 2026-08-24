@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.30',
+    voci: {
+      it: [
+        'Ambientazione: rimossi i pulsanti ridondanti "Passa alla notte" e "Audio personalizzato" per un menù più rapido e compatto.',
+      ],
+      en: [
+        'Atmosphere panel: removed redundant "Switch to night" and "Custom audio" buttons for a cleaner, faster menu.',
+      ],
+    },
+  },
+  {
     versione: '3.9.29',
     voci: {
       it: [
