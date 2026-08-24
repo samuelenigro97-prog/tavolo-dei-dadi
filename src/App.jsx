@@ -77,7 +77,7 @@ function IconaMonetaOro({ size = 20 }) {
 }
 
 const LISTA_ARMI_SEMPLICI_DETTAGLIO = [
-  'Arco corto', 'Ascia (Handaxe)', 'Balestra leggera', 'Bastone ferrato',
+  'Arco corto', 'Ascia', 'Balestra leggera', 'Bastone ferrato',
   'Clava', 'Dardo', 'Falcetto', 'Fionda', 'Giavellotto', 'Grande clava',
   'Lancia', 'Martello leggero', 'Mazza', 'Pugnale'
 ];
@@ -1505,7 +1505,7 @@ function eScudo(nome) {
   return /scudo|shield/i.test(String(nome || ''));
 }
 const KIT_CLASSE = {
-  barbaro:  { armi: ['Ascia bipenne'], equip: ['Ascia (Handaxe) ×4', 'Dotazione da esploratore'], denari: 15, armatura: ARM_NESSUNA, scudo: false, strumenti: '' },
+  barbaro:  { armi: ['Ascia bipenne'], equip: ['Ascia ×4', 'Dotazione da esploratore'], denari: 15, armatura: ARM_NESSUNA, scudo: false, strumenti: '' },
   bardo:    { armi: ['Stocco'], equip: ['Armatura di cuoio', 'Pugnale', 'Strumento musicale', 'Dotazione da intrattenitore'], denari: 19, armatura: ARM_CUOIO, scudo: false, strumenti: 'Strumenti musicali (3 a scelta)' },
   chierico: { armi: ['Mazza'], equip: ['Armatura a scaglie', 'Scudo', 'Balestra leggera + 20 dardi', 'Simbolo sacro', 'Dotazione da sacerdote'], denari: 7, armatura: ARM_SCAGLIE, scudo: true, strumenti: '' },
   druido:   { armi: ['Scimitarra'], equip: ['Armatura di cuoio', 'Scudo (legno)', 'Focus druidico', 'Borsa da erborista', 'Dotazione da esploratore'], denari: 9, armatura: ARM_CUOIO, scudo: true, strumenti: 'Borsa da erborista' },
@@ -1671,7 +1671,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.39';
+const APP_VERSION = '3.9.40';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).

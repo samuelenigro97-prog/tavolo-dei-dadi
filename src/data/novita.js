@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.40',
+    voci: {
+      it: [
+        'Nomi puliti in italiano: rimossi i termini inglesi tra parentesi da armi (es. "Ascia" anziché "Ascia (Handaxe)"), reazioni e azioni bonus.',
+      ],
+      en: [
+        'Clean naming: removed parenthetical English terms from Italian weapon names, reactions, and bonus actions.',
+      ],
+    },
+  },
+  {
     versione: '3.9.39',
     voci: {
       it: [
