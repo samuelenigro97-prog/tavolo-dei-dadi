@@ -1,51 +1,28 @@
 # Continua qui — stato reale di Tavolo dei Dadi
 
-Aggiornato il **20 agosto 2026**. Ultima versione pubblicata e verificata online: **v3.5.2**.
+Aggiornato il **25 agosto 2026**. Ultima versione pubblicata e verificata online: **v3.9.49**.
 App: https://samuelenigro97-prog.github.io/tavolo-dei-dadi/
 
 > Si lavora anche con altre IA sul repository. Prima di modificare o pubblicare:
 > controllare branch, modifiche locali e ultimo `main`; non sovrascrivere lavoro
 > non proprio e non far modificare `src/App.jsx` contemporaneamente.
->
-> **Nota su questo ambiente sandbox**: il container di questa sessione ha
-> ripristinato il working tree a uno snapshot vecchio **tre volte** (l'ultima
-> fino alla v2.88.0),
-> cancellando tutto il lavoro non ancora
-> committato. Se ti succede: `git status --short` (per non perdere lavoro vero),
-> poi `git fetch origin main -q && git checkout -B claude/profilo-grid-alignment-9wda3o origin/main -q`,
-> quindi ricostruisci. **Committa e pusha appena hai qualcosa di coerente che
-> passa i test**, non aspettare la fine dell'intera funzione: qui il `git push`
-> diretto su questo branch ha anche restituito un 403 sporadico (non un vero
-> conflitto) risolto ripetendo il push — se ricapita, riprova un paio di volte
-> prima di sospettare un problema di permessi reale.
 
-## Stato attuale: v3.5.2 su `main`
+## Stato attuale: v3.9.49 su `main`
 
-La sincronizzazione tramite codice è **pubblicata** (PR #62), insieme a tutto
-quello che segue. Nessuna funzione è rimasta a metà.
+Tutti i rilasci recenti sono committati e sincronizzati direttamente su `main`.
 
-> ⚠️ **Una cosa dipende ancora dall'utente**: il Worker su Cloudflare va
-> **ripubblicato a mano dalla dashboard** perché la rotta `/sync` funzioni in
-> produzione. Il codice è in `worker/transcribe-worker.js`, ma il Worker
-> deployato non si aggiorna da solo col merge della PR. Finché non lo fa, la
-> sincronizzazione tramite codice non funziona sul sito reale (tutto il resto sì).
-
-### Pubblicato in questa tornata
+### Pubblicato nelle ultime tornate
 
 | Versione | Cosa |
 |---|---|
-| v2.100.0 | Sincronizzazione tra dispositivi tramite **codice a 10 caratteri**, senza token GitHub (rotta Worker `/sync`, `src/utils/sync.js`, 10 test) |
-| v2.100.0 | **Fix**: il salvataggio cloud non sovrascrive più alla cieca quando non riesce a verificare lo stato remoto — era il motivo per cui un ritratto caricato da un altro dispositivo poteva sparire |
-| v2.100.0 | **Fix**: popover "Bonus dato da" con sfondo opaco (sembrava trasparente perché usava lo stesso colore del riquadro sotto) |
-| v2.100.0 | **Fix**: in tema chiaro lo sfondo non si tinge più del colore di classe (slavato con le tinte calde: Stregone, Barbaro) |
-| v3.0.0 | **Archivio DM raggruppato**: un personaggio per riga invece di una copia per dispositivo/re-import, con "▼ mostra N copie precedenti". Nessuna cancellazione |
-| v3.1.0 | **Stampa / Salva PDF** della scheda (`@media print`, pulsante nel Menu) |
-| v3.2.0 | **Fix serio**: il riposo *ricarica* le risorse di classe invece di azzerarle (Ira, Punti Stregoneria, Ki restavano a 0 dopo un riposo lungo) |
-| v3.3.0 | **Fonte di Magia**: conversione slot ↔ Punti Stregoneria per lo Stregone |
-| v3.4.0 | **Diario di sessione** per personaggio, voci datate |
-| v3.5.0 | **Effetti meccanici delle condizioni**, con riepilogo di cosa comportano sommate |
-| v3.5.1 | **Fix**: la nuvoletta "Bonus dato da" era invisibile sul tema scuro (contrasto 1.02) e poteva sbordare su schermo stretto |
-| v3.5.2 | **Fix**: la stessa nuvoletta veniva *tagliata* dal riquadro della caratteristica (`overflow: hidden`); ora è montata su `document.body` con `createPortal` |
+| v3.9.49 | **Condivisione Stanza con QR Code**: generazione immediata di QR Code inquadrabile con la fotocamera per entrare nella stanza senza digitare |
+| v3.9.48 | **Spawn Rapido Mostri nel Combat Tracker**: menu rapido per aggiungere creature e mostri dal bestiario con CA, PF e iniziativa già calcolati |
+| v3.9.47 | **Forma Selvatica & Bestiario Druido**: sezione dedicata per Druidi (dal 2° liv) con catalogo bestie filtrato per GS/sottoclasse, statblock completo e tasto Trasformati (PF temp) |
+| v3.9.46 | **Inventario Zaino vs Equipaggiato**: filtri rapidi `📦 Tutti`, `🛡️ Indossati`, `🎒 Nello Zaino` e conteggio dettagliato dei pesi |
+| v3.9.45 | **Mobile Card View Combattimento**: tabelle Azioni, Bonus e Reazioni trasformate in card responsive touch su schermi smartphone |
+| v3.9.44 | **Filtri Grimorio Combattimento**: filtri rapidi a pillola (`🎯 Tutti`, `⭐ Preparati`, `⚡ Azione`, `⏳ Bonus`, `🛡️ Reazione`, `🧠 Conc.`, `📜 Rituali`) e rimozione definitiva banner persistenti |
+| v3.9.42 | **Automazione Riposo Breve/Lungo & Badge Condizioni**: gestione guidata dadi vita, ricariche risorse, badge colorati condizioni con tooltip regole |
+| v3.9.41 | **Diario di Sessione Potenziato**: tag D&D (`👤 PNG`, `📜 Quest`, `🗺️ Luoghi`, `💰 Bottino`, `⚔️ Scontri`), esportazione Markdown `.md` |
 
 Da 127 a **145 test** automatici, tutti verdi.
 
