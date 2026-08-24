@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.43',
+    voci: {
+      it: [
+        'Miglioramento notifiche: aggiunto pulsante di chiusura ✕ sia al banner di aggiornamento versione che all\'avviso di persistenza; rimosso l\'allarme falso positivo di persistenza immagini su browser restrittivi.',
+      ],
+      en: [
+        'Banner improvements: added dismiss ✕ button to both version update and storage warning banners; removed false-positive image persistence error in restrictive browser environments.',
+      ],
+    },
+  },
+  {
     versione: '3.9.42',
     voci: {
       it: [

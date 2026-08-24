@@ -1703,7 +1703,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.42';
+const APP_VERSION = '3.9.43';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2465,6 +2465,7 @@ export default function App() {
 
   const [roster, setRoster] = useState(loadState);
   const [erroreSalvataggio, setErroreSalvataggio] = useState('');
+  const [chiusoBannerAggiornamento, setChiusoBannerAggiornamento] = useState(false);
   useEffect(() => {
     let attivo = true;
     caricaImmaginiRoster(roster).then((conImmagini) => {
@@ -3038,8 +3039,9 @@ export default function App() {
 
   useEffect(() => {
     const esito = saveState(roster);
-    salvaImmaginiRoster(roster).catch(() => {
-      setErroreSalvataggio('Il browser non ha consentito il salvataggio permanente delle immagini. Esporta un backup prima di chiudere.');
+    salvaImmaginiRoster(roster).catch((err) => {
+      // Ignora silenziosamente su browser o modalità anonima con restrizioni IndexedDB
+      console.warn('Salvataggio permanente immagini non disponibile:', err);
     });
     setErroreSalvataggio(esito.ok
       ? ''
@@ -4813,20 +4815,21 @@ export default function App() {
         <div className="no-stampa" style={{ position: 'sticky', top: 0, zIndex: 10000, padding: '10px 14px', background: '#8b1e1e', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap', boxShadow: '0 3px 12px rgba(0,0,0,0.35)', fontSize: 13, fontWeight: 700 }}>
           <span>⚠️ {erroreSalvataggio}</span>
           <button style={{ ...styles.buttonMini, background: '#fff', color: '#8b1e1e', borderColor: '#fff' }} onClick={esportaJson}>⬇️ Esporta JSON</button>
+          <button type="button" onClick={() => setErroreSalvataggio('')} style={{ background: 'transparent', border: 0, color: '#fff', fontSize: 16, cursor: 'pointer', marginLeft: 8, opacity: 0.8 }} title="Chiudi avviso">✕</button>
         </div>
       )}
 
-      {nuovaVersione && (
+      {nuovaVersione && !chiusoBannerAggiornamento && (
         <div className="no-stampa" style={{
           background: 'linear-gradient(90deg, #1b4d3e, #2a7a62)',
           color: '#fff',
-          padding: '10px 16px',
+          padding: '8px 14px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: 12,
+          gap: 10,
           fontWeight: 'bold',
-          fontSize: 14,
+          fontSize: 13,
           boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
           zIndex: 9999,
           position: 'sticky',
@@ -4834,22 +4837,41 @@ export default function App() {
           borderBottom: '2px solid #f0cb44'
         }}>
           <span>🚀 È disponibile una nuova versione del Tavolo dei Dadi (attuale: {APP_VERSION})!</span>
-          <button
-            style={{
-              background: '#f0cb44',
-              color: '#000',
-              border: 'none',
-              padding: '6px 14px',
-              borderRadius: 6,
-              fontWeight: 800,
-              cursor: 'pointer',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-            }}
-            onClick={forzaAggiornamento}
-            disabled={aggiornando}
-          >
-            {aggiornando ? '🔄 Aggiornamento...' : '🔄 Aggiorna Ora'}
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <button
+              style={{
+                background: '#f0cb44',
+                color: '#000',
+                border: 'none',
+                padding: '5px 12px',
+                borderRadius: 6,
+                fontWeight: 800,
+                fontSize: 12,
+                cursor: 'pointer',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+              }}
+              onClick={forzaAggiornamento}
+              disabled={aggiornando}
+            >
+              {aggiornando ? '🔄 Aggiornamento...' : '🔄 Aggiorna Ora'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setChiusoBannerAggiornamento(true)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#fff',
+                fontSize: 16,
+                cursor: 'pointer',
+                opacity: 0.8,
+                padding: '2px 6px',
+              }}
+              title="Nascondi notifica"
+            >
+              ✕
+            </button>
+          </div>
         </div>
       )}
 
