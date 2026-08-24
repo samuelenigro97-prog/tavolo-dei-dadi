@@ -482,25 +482,53 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   border-radius: 7px; background: var(--c-panel-light); color: var(--c-title);
   font: 700 12px Georgia, serif; letter-spacing: 1px; text-align: left; cursor: pointer;
 }
-/* Addestramento + Risorse riempiono lo spazio vuoto sotto il ritratto (colonna
-   destra, righe 3-5 = Intelligenza→Carisma). align-self:start → restano in alto e
-   non forzano l'altezza delle righe (così le caratteristiche restano allineate). */
-.profilo-extra { grid-column: 3; grid-row: 3 / -1; align-self: stretch; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
-/* Ritratto ridotto: Addestramento/Risorse salgono e usano tutta la colonna,
-   altrimenti resterebbe un buco (le righe le detta la colonna caratteristiche). */
+/* Competenze + Risorse riempiono lo spazio vuoto sotto il ritratto (colonna
+   destra, righe 3-5 = Intelligenza→Carisma).
+   Competenze è agganciata alla riga 3 (allineata simmetricamente a Riposo e Sfinimento).
+   Risorse è agganciata alle righe 4-5 (allineata simmetricamente da Percezione Passiva a Ispirazione). */
+.profilo-extra {
+  grid-column: 3;
+  grid-row: 3 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: subgrid;
+  align-self: stretch;
+  min-width: 0;
+  row-gap: 10px;
+}
+/* Ritratto ridotto: Competenze/Risorse salgono e usano tutta la colonna. */
 .profilo-griglia.senza-ritratto .profilo-ritratto { grid-row: 1 / 2; align-self: start; }
 .profilo-griglia.senza-ritratto .profilo-extra {
   grid-row: 1 / -1;
-  /* La barretta per riaprire il ritratto resta sopra; il resto della colonna
-     parte subito sotto, senza lasciare vuota l'intera prima riga. */
   padding-top: 36px;
 }
 .profilo-extra > .sezione { margin-bottom: 0 !important; }
-/* Le sezioni mantengono l'altezza del contenuto: Risorse non si allunga più
-   artificialmente lasciando un grande spazio vuoto sotto i contatori. */
-.profilo-extra > .sezione { flex: 0 0 auto; }
-/* colonna stretta (~210px): titolo sezione più piccolo e meno spaziato, così
-   "ADDESTRAMENTO" entra in una riga sola (prima "nto" andava a capo). */
+.profilo-extra > .sezione:first-child {
+  grid-row: 1 / 2;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+.profilo-extra > .sezione:first-child > div:last-child {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-top: 6px !important;
+}
+.profilo-extra > .sezione:last-child {
+  grid-row: 2 / 4;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+.profilo-extra > .sezione:last-child > div:last-child {
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+/* colonna stretta (~210px): titolo sezione più piccolo e meno spaziato */
 .profilo-extra .sezione > summary { font-size: 11px !important; letter-spacing: 0.7px !important; white-space: nowrap !important; overflow: hidden; text-overflow: ellipsis; }
 .profilo-caratteristiche > .blocco-car { margin-bottom: 0 !important; }
 /* Destrezza + Costituzione impilate in un'unica riga condivisa (i Punti Ferita) */
@@ -525,7 +553,8 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .profilo-main { order: 1; display: flex; flex-direction: column; gap: 10px; width: 100%; }
   .profilo-caratteristiche { order: 2; display: flex; flex-direction: column; gap: 8px; width: 100%; }
   .profilo-ritratto { order: 3; width: 100%; }
-  .profilo-extra { order: 4; width: 100%; }
+  .profilo-extra { order: 4; width: 100%; display: flex; flex-direction: column; gap: 8px; }
+  .profilo-extra > .sezione:first-child, .profilo-extra > .sezione:last-child { grid-row: auto; height: auto; }
   .profilo-griglia.senza-ritratto .profilo-extra { padding-top: 0; }
   .profilo-caratteristiche > *, .car-coppia, .car-coppia > * { width: 100%; box-sizing: border-box; }
   .ritratto-box { min-height: 300px; }

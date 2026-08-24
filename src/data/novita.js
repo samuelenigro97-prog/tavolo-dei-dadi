@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.34',
+    voci: {
+      it: [
+        'Layout e simmetria: Competenze allineata perfettamente a Riposo e Sfinimento (riga 3); Risorse di classe allineata da Percezione Passiva a Ispirazione (righe 4-5).',
+      ],
+      en: [
+        'Layout symmetry: Proficiencies perfectly aligned with Rest & Exhaustion (row 3); Class Resources aligned from Passive Perception to Inspiration (rows 4-5).',
+      ],
+    },
+  },
+  {
     versione: '3.9.33',
     voci: {
       it: [
