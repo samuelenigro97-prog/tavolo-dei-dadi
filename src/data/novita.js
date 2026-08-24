@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.36',
+    voci: {
+      it: [
+        'Pannello Notifiche: dicitura della versione in uso aggiornata a "Versione Attuale".',
+      ],
+      en: [
+        'Notifications panel: active version label updated to "Current Version".',
+      ],
+    },
+  },
+  {
     versione: '3.9.35',
     voci: {
       it: [

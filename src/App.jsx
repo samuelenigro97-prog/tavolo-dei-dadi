@@ -1514,7 +1514,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.35';
+const APP_VERSION = '3.9.36';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -6214,7 +6214,7 @@ export default function App() {
               {novitaRecenti(3).map((n) => (
                 <div key={n.versione} style={{ marginBottom: 8 }}>
                   <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark }}>
-                    v{n.versione}{n.versione === APP_VERSION ? ' · questa versione' : ''}
+                    v{n.versione}{n.versione === APP_VERSION ? (lingua === 'en' ? ' · Current Version' : ' · Versione Attuale') : ''}
                   </div>
                   <ul style={{ margin: '3px 0 0', paddingLeft: 18 }}>
                     {(lingua === 'en' ? n.voci.en : n.voci.it).map((v, i) => (
