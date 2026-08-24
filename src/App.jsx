@@ -1704,7 +1704,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.49';
+const APP_VERSION = '3.9.50';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3564,8 +3564,21 @@ export default function App() {
     });
   }
 
-  const modCombat = (id, patch) =>
-    setCombat((c) => ({ ...c, combattenti: c.combattenti.map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
+  function modCombat(id, patch) {
+    setCombat((c) => {
+      const cb = c.combattenti.find((x) => x.id === id);
+      if (cb && cb.tipo === 'pg' && cb.nome === scheda.nome) {
+        // Sincronizza verso la scheda del PG attivo
+        const sPatch = {};
+        if ('pfAttuali' in patch) sPatch.pfAttuali = patch.pfAttuali;
+        if ('pfTemp' in patch) sPatch.pfTemp = patch.pfTemp;
+        if ('tsMorte' in patch) sPatch.tsMorte = patch.tsMorte;
+        if ('ca' in patch && scheda.armatura?.tipo === 'manuale') sPatch.ca = patch.ca;
+        if (Object.keys(sPatch).length > 0) aggiorna(sPatch);
+      }
+      return { ...c, combattenti: c.combattenti.map((x) => (x.id === id ? { ...x, ...patch } : x)) };
+    });
+  }
 
   /** Applica danni (segno negativo) o cure (positivo) a un combattente, gestendo i PF temporanei. */
   function dannoCura(id, delta) {

@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.50',
+    voci: {
+      it: [
+        'Sincronizzazione Tiri Salvezza contro Morte e PF: le modifiche a PF, PF temporanei e successi/fallimenti contro morte effettuate nel Combat Tracker si riflettono all\'istante in tempo reale sulla scheda del personaggio attivo.',
+      ],
+      en: [
+        'Death Saves & HP Real-Time Sync: changes to HP, temp HP, and death save successes/failures inside the Combat Tracker now immediately reflect on the active character sheet.',
+      ],
+    },
+  },
+  {
     versione: '3.9.49',
     voci: {
       it: [
