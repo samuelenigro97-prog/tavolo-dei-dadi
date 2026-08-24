@@ -1365,7 +1365,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.31';
+const APP_VERSION = '3.9.32';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -4200,7 +4200,9 @@ export default function App() {
       segnaBackupFatto();
       setSyncCodiceStatus({ text: `✅ Sincronizzato · ${orario}`, type: 'success' });
     } catch (err) {
-      setSyncCodiceStatus({ text: messaggioErroreSync(err.message), type: 'error' });
+      if (!silenzioso) {
+        setSyncCodiceStatus({ text: messaggioErroreSync(err.message), type: 'error' });
+      }
     } finally {
       syncCodiceInCorsoRef.current = false;
       if (syncCodicePendenteRef.current) {
@@ -4827,7 +4829,7 @@ export default function App() {
               <button style={{ ...styles.button, width: '100%', opacity: passiUndo ? 1 : 0.45 }} disabled={!passiUndo} onClick={() => { annullaModifica(); setMostraMenu(false); }} title={passiUndo ? t('undo.tooltip', { n: passiUndo }) : t('undo.vuoto')}>↩︎ {t('undo.annulla')}</button>
               <button style={{ ...styles.button, width: '100%' }} onClick={() => jsonRef.current?.click()} title={t('tip.importa')}>📂 Importa</button>
               <button style={{ ...styles.button, width: '100%' }} onClick={() => { esportaJson(); setMostraMenu(false); }} title={t('tip.esporta')}>💾 Esporta</button>
-              <button style={{ ...styles.button, width: '100%' }} onClick={() => { setMostraMenu(false); setTimeout(() => apriAvvisi(), 50); }} title={nAvvisi > 0 ? `${nAvvisi} avvisi` : 'Avvisi e novità'}>🔔 Avvisi{daNotificare ? ` (${nAvvisi > 0 ? nAvvisi : '!'})` : ''}</button>
+              <button style={{ ...styles.button, width: '100%' }} onClick={() => { setMostraMenu(false); setTimeout(() => apriAvvisi(), 50); }} title={nAvvisi > 0 ? `${nAvvisi} notifiche` : 'Notifiche'}>🔔 Notifiche{daNotificare ? ` (${nAvvisi > 0 ? nAvvisi : '!'})` : ''}</button>
               <button style={{ ...styles.button, width: '100%' }} onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))} title={t('tooltip.lingua')}>{lingua === 'it' ? '🇮🇹 Lingua' : '🇬🇧 Lingua'}</button>
             </div>
 
@@ -5915,7 +5917,7 @@ export default function App() {
           <button
             style={{ ...styles.modeButton(mostraCloud), color: C.goldDark, borderColor: C.goldDark }}
             title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato (auto-salvataggio spento)') : (codiceSync && autoSyncCodice ? `Sincronizzato con codice${ultimoSyncCodice ? ` · ultimo ${ultimoSyncCodice}` : ''}` : 'Sincronizza i tuoi personaggi sul Cloud')}
-            onClick={() => { setCloudStatus({ text: '', type: '' }); setMostraCloud(true); }}
+            onClick={() => { setCloudStatus({ text: '', type: '' }); setSyncCodiceStatus({ text: '', type: '' }); setMostraCloud(true); }}
           >
             ☁️ <span className="header-label">Cloud</span>{sincronizzando ? ' …' : ((githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice)
               ? <span aria-label="Sincronizzazione automatica attiva" style={{ color: '#2e9d4d', fontWeight: 900 }}>✓</span>
@@ -5948,15 +5950,15 @@ export default function App() {
             ref={avvisiBtnRef}
             style={styles.modeButton(mostraAvvisi)}
             title={nAvvisi > 0
-              ? `${nAvvisi} ${nAvvisi === 1 ? 'avviso' : 'avvisi'} da vedere`
-              : (novitaNonLette ? 'Novità di questa versione' : 'Avvisi e novità')}
+              ? `${nAvvisi} ${nAvvisi === 1 ? 'notifica' : 'notifiche'} da vedere`
+              : (novitaNonLette ? 'Novità di questa versione' : 'Notifiche')}
             onClick={apriAvvisi}
           >
-            🔔 <span className="header-label">Avvisi</span>
+            🔔 <span className="header-label">Notifiche</span>
             {daNotificare && (
               <span
                 className="avvisi-pallino"
-                aria-label={nAvvisi > 0 ? `${nAvvisi} avvisi` : 'novità non lette'}
+                aria-label={nAvvisi > 0 ? `${nAvvisi} notifiche` : 'novità non lette'}
               >{nAvvisi > 0 ? nAvvisi : '!'}</span>
             )}
           </button>
@@ -5984,10 +5986,8 @@ export default function App() {
         </div>
       )}
 
-      {/* Pannello Avvisi: promemoria (backup, controlli scheda) e novità di
-          versione. Prima erano due riquadri a tutta larghezza sempre aperti in
-          cima alla pagina; qui stanno in una tendina come quella del Luogo, e
-          il pulsante 🔔 avvisa con un puntino quando c'è qualcosa da vedere. */}
+      {/* Pannello Notifiche: promemoria (backup, controlli scheda) e novità di
+          versione. */}
       {mostraAvvisi && (
         <div onClick={() => setMostraAvvisi(false)} style={{ position: 'fixed', inset: 0, zIndex: 1400, background: 'transparent' }}>
           <div
@@ -6001,15 +6001,9 @@ export default function App() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <strong style={{ color: C.goldDark, fontSize: 15, marginRight: 'auto' }}>🔔 Avvisi e novità</strong>
+              <strong style={{ color: C.goldDark, fontSize: 15, marginRight: 'auto' }}>🔔 Notifiche</strong>
               <button style={{ ...styles.buttonMini, padding: '2px 7px' }} onClick={() => setMostraAvvisi(false)}>✕</button>
             </div>
-
-            {nAvvisi === 0 && (
-              <div style={{ ...styles.detail, fontSize: 12, marginBottom: 10 }}>
-                ✅ Nessun avviso: è tutto a posto.
-              </div>
-            )}
 
             {avvisoBackup && (
               <div style={{ border: `1px solid ${C.gold}`, borderRadius: 8, padding: '8px 10px', marginBottom: 8, background: 'color-mix(in srgb, var(--c-panel) 88%, #c88c14)' }}>
