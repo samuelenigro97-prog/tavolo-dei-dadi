@@ -1703,7 +1703,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.43';
+const APP_VERSION = '3.9.44';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2524,6 +2524,9 @@ export default function App() {
   const [filtroScuolaInc, setFiltroScuolaInc] = useState('');
   const [filtroClasseInc, setFiltroClasseInc] = useState('');
   const [soloRitualiInc, setSoloRitualiInc] = useState(false);
+  const [soloPreparatiInc, setSoloPreparatiInc] = useState(false);
+  const [soloConcInc, setSoloConcInc] = useState(false);
+  const [filtroTempoInc, setFiltroTempoInc] = useState(''); // '' | 'azione' | 'bonus' | 'reazione'
   const [listaMagicaMinimizzata, setListaMagicaMinimizzata] = useState(false);
   const [livelliIncChiusi, setLivelliIncChiusi] = useState({});
   const [filtroDiario, setFiltroDiario] = useState('');
@@ -4811,69 +4814,9 @@ export default function App() {
     <div className="app-shell" style={styles.app}>
       <style>{GLOBAL_CSS}</style>
 
-      {erroreSalvataggio && (
-        <div className="no-stampa" style={{ position: 'sticky', top: 0, zIndex: 10000, padding: '10px 14px', background: '#8b1e1e', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap', boxShadow: '0 3px 12px rgba(0,0,0,0.35)', fontSize: 13, fontWeight: 700 }}>
-          <span>⚠️ {erroreSalvataggio}</span>
-          <button style={{ ...styles.buttonMini, background: '#fff', color: '#8b1e1e', borderColor: '#fff' }} onClick={esportaJson}>⬇️ Esporta JSON</button>
-          <button type="button" onClick={() => setErroreSalvataggio('')} style={{ background: 'transparent', border: 0, color: '#fff', fontSize: 16, cursor: 'pointer', marginLeft: 8, opacity: 0.8 }} title="Chiudi avviso">✕</button>
-        </div>
-      )}
 
-      {nuovaVersione && !chiusoBannerAggiornamento && (
-        <div className="no-stampa" style={{
-          background: 'linear-gradient(90deg, #1b4d3e, #2a7a62)',
-          color: '#fff',
-          padding: '8px 14px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 10,
-          fontWeight: 'bold',
-          fontSize: 13,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-          zIndex: 9999,
-          position: 'sticky',
-          top: 0,
-          borderBottom: '2px solid #f0cb44'
-        }}>
-          <span>🚀 È disponibile una nuova versione del Tavolo dei Dadi (attuale: {APP_VERSION})!</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-            <button
-              style={{
-                background: '#f0cb44',
-                color: '#000',
-                border: 'none',
-                padding: '5px 12px',
-                borderRadius: 6,
-                fontWeight: 800,
-                fontSize: 12,
-                cursor: 'pointer',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-              }}
-              onClick={forzaAggiornamento}
-              disabled={aggiornando}
-            >
-              {aggiornando ? '🔄 Aggiornamento...' : '🔄 Aggiorna Ora'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setChiusoBannerAggiornamento(true)}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: '#fff',
-                fontSize: 16,
-                cursor: 'pointer',
-                opacity: 0.8,
-                padding: '2px 6px',
-              }}
-              title="Nascondi notifica"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
+
+
 
       {info && (
         <div
@@ -8644,9 +8587,139 @@ export default function App() {
                     <option value="">{t('spell.tutte_classi')}</option>
                     {[...new Set(incantesimiVisualizzati.flatMap((s) => s.classi || datiIncantesimo(s.nome)?.classi || []))].sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((classe) => <option key={classe} value={classe}>{traduciDato(classe)}</option>)}
                   </select>
-                  <button type="button" onClick={() => setSoloRitualiInc((v) => !v)} title={t('spell.solo_rituali')}
-                    style={{ ...styles.buttonMini, padding: '6px 8px', fontSize: 12, borderColor: soloRitualiInc ? C.goldDark : C.border, color: soloRitualiInc ? C.goldDark : C.inkDim, fontWeight: soloRitualiInc ? 700 : 400 }}>
-                    ◯ {t('spell.rituali')}
+                  {filtroIncantesimo && (
+                    <button type="button" onClick={() => setFiltroIncantesimo('')} style={{ ...styles.buttonMini, padding: '6px 8px' }}>✕</button>
+                  )}
+                </div>
+
+                {/* Barra Filtri Rapidi di Combattimento (Pills) */}
+                <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center', marginTop: 2 }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSoloPreparatiInc(false);
+                      setSoloConcInc(false);
+                      setSoloRitualiInc(false);
+                      setFiltroTempoInc('');
+                      setFiltroLivelloInc('');
+                      setFiltroScuolaInc('');
+                      setFiltroClasseInc('');
+                      setFiltroIncantesimo('');
+                    }}
+                    style={{
+                      ...styles.buttonMini,
+                      fontSize: 11,
+                      padding: '3px 8px',
+                      borderRadius: 14,
+                      borderColor: (!filtroIncantesimo && !filtroLivelloInc && !filtroScuolaInc && !filtroClasseInc && !soloRitualiInc && !soloPreparatiInc && !soloConcInc && !filtroTempoInc) ? C.goldDark : C.border,
+                      background: (!filtroIncantesimo && !filtroLivelloInc && !filtroScuolaInc && !filtroClasseInc && !soloRitualiInc && !soloPreparatiInc && !soloConcInc && !filtroTempoInc) ? 'rgba(200,140,20,0.18)' : 'transparent',
+                      color: (!filtroIncantesimo && !filtroLivelloInc && !filtroScuolaInc && !filtroClasseInc && !soloRitualiInc && !soloPreparatiInc && !soloConcInc && !filtroTempoInc) ? C.goldDark : C.inkDim,
+                      fontWeight: (!filtroIncantesimo && !filtroLivelloInc && !filtroScuolaInc && !filtroClasseInc && !soloRitualiInc && !soloPreparatiInc && !soloConcInc && !filtroTempoInc) ? 700 : 500,
+                    }}
+                  >
+                    🎯 {lingua === 'en' ? 'All' : 'Tutti'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSoloPreparatiInc((v) => !v)}
+                    style={{
+                      ...styles.buttonMini,
+                      fontSize: 11,
+                      padding: '3px 8px',
+                      borderRadius: 14,
+                      borderColor: soloPreparatiInc ? C.goldDark : C.border,
+                      background: soloPreparatiInc ? 'rgba(200,140,20,0.22)' : 'transparent',
+                      color: soloPreparatiInc ? C.goldDark : C.ink,
+                      fontWeight: soloPreparatiInc ? 700 : 500,
+                    }}
+                  >
+                    ⭐ {lingua === 'en' ? 'Prepared only' : 'Solo Preparati'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setFiltroTempoInc((v) => (v === 'azione' ? '' : 'azione'))}
+                    style={{
+                      ...styles.buttonMini,
+                      fontSize: 11,
+                      padding: '3px 8px',
+                      borderRadius: 14,
+                      borderColor: filtroTempoInc === 'azione' ? '#2e9d4d' : C.border,
+                      background: filtroTempoInc === 'azione' ? 'rgba(46,157,77,0.2)' : 'transparent',
+                      color: filtroTempoInc === 'azione' ? '#2e9d4d' : C.ink,
+                      fontWeight: filtroTempoInc === 'azione' ? 700 : 500,
+                    }}
+                  >
+                    ⚡ {lingua === 'en' ? 'Action' : 'Azione'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setFiltroTempoInc((v) => (v === 'bonus' ? '' : 'bonus'))}
+                    style={{
+                      ...styles.buttonMini,
+                      fontSize: 11,
+                      padding: '3px 8px',
+                      borderRadius: 14,
+                      borderColor: filtroTempoInc === 'bonus' ? '#d48806' : C.border,
+                      background: filtroTempoInc === 'bonus' ? 'rgba(212,136,6,0.2)' : 'transparent',
+                      color: filtroTempoInc === 'bonus' ? '#d48806' : C.ink,
+                      fontWeight: filtroTempoInc === 'bonus' ? 700 : 500,
+                    }}
+                  >
+                    ⏳ {lingua === 'en' ? 'Bonus Action' : 'Azione Bonus'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setFiltroTempoInc((v) => (v === 'reazione' ? '' : 'reazione'))}
+                    style={{
+                      ...styles.buttonMini,
+                      fontSize: 11,
+                      padding: '3px 8px',
+                      borderRadius: 14,
+                      borderColor: filtroTempoInc === 'reazione' ? '#1890ff' : C.border,
+                      background: filtroTempoInc === 'reazione' ? 'rgba(24,144,255,0.2)' : 'transparent',
+                      color: filtroTempoInc === 'reazione' ? '#1890ff' : C.ink,
+                      fontWeight: filtroTempoInc === 'reazione' ? 700 : 500,
+                    }}
+                  >
+                    🛡️ {lingua === 'en' ? 'Reaction' : 'Reazione'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSoloConcInc((v) => !v)}
+                    style={{
+                      ...styles.buttonMini,
+                      fontSize: 11,
+                      padding: '3px 8px',
+                      borderRadius: 14,
+                      borderColor: soloConcInc ? '#9e4be6' : C.border,
+                      background: soloConcInc ? 'rgba(158,75,230,0.2)' : 'transparent',
+                      color: soloConcInc ? '#9e4be6' : C.ink,
+                      fontWeight: soloConcInc ? 700 : 500,
+                    }}
+                  >
+                    🧠 {lingua === 'en' ? 'Concentration' : 'Concentrazione'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSoloRitualiInc((v) => !v)}
+                    style={{
+                      ...styles.buttonMini,
+                      fontSize: 11,
+                      padding: '3px 8px',
+                      borderRadius: 14,
+                      borderColor: soloRitualiInc ? C.goldDark : C.border,
+                      background: soloRitualiInc ? 'rgba(200,140,20,0.18)' : 'transparent',
+                      color: soloRitualiInc ? C.goldDark : C.ink,
+                      fontWeight: soloRitualiInc ? 700 : 500,
+                    }}
+                  >
+                    📜 {lingua === 'en' ? 'Rituals' : 'Rituali'}
                   </button>
                 </div>
               </div>
@@ -8654,14 +8727,27 @@ export default function App() {
                 {(() => {
                 const bannerStyle = { ...styles.panelTitle, fontSize: 15, marginTop: 14, marginBottom: 8, borderBottom: `2px solid ${C.border}`, paddingBottom: 4 };
                 const q = filtroIncantesimo.trim().toLowerCase();
-                const filtriAttivi = Boolean(q || filtroLivelloInc || filtroScuolaInc || filtroClasseInc || soloRitualiInc);
+                const filtriAttivi = Boolean(q || filtroLivelloInc || filtroScuolaInc || filtroClasseInc || soloRitualiInc || soloPreparatiInc || soloConcInc || filtroTempoInc);
                 const match = (s) => {
                   const d = datiIncantesimo(s.nome) || {};
-                  return (!q || (s.nome || '').toLowerCase().includes(q))
-                    && (!filtroLivelloInc || Number(s.livello) === Number(filtroLivelloInc))
-                    && (!filtroScuolaInc || (s.scuola || d.scuola || '') === filtroScuolaInc)
-                    && (!filtroClasseInc || (d.classi || []).includes(filtroClasseInc))
-                    && (!soloRitualiInc || d.rituale === true);
+                  const tStr = (s.tempo || d.tempo || '').toLowerCase();
+                  const isAzione = (tStr.includes('az') || tStr.includes('action')) && !tStr.includes('bonus');
+                  const isBonus = tStr.includes('bonus') || tStr.includes('bon');
+                  const isReazione = tStr.includes('reaz') || tStr.includes('rea') || tStr.includes('react');
+                  const isConc = s.conc === true || d.conc === true || (s.note || '').toLowerCase().includes('conc') || (d.note || '').toLowerCase().includes('conc');
+                  const isPrep = Number(s.livello) === 0 || s.preparato !== false || Boolean(s.bonus);
+
+                  if (q && !(s.nome || '').toLowerCase().includes(q)) return false;
+                  if (filtroLivelloInc && Number(s.livello) !== Number(filtroLivelloInc)) return false;
+                  if (filtroScuolaInc && (s.scuola || d.scuola || '') !== filtroScuolaInc) return false;
+                  if (filtroClasseInc && !(d.classi || []).includes(filtroClasseInc)) return false;
+                  if (soloRitualiInc && !(s.rituale === true || d.rituale === true)) return false;
+                  if (soloPreparatiInc && !isPrep) return false;
+                  if (soloConcInc && !isConc) return false;
+                  if (filtroTempoInc === 'azione' && !isAzione) return false;
+                  if (filtroTempoInc === 'bonus' && !isBonus) return false;
+                  if (filtroTempoInc === 'reazione' && !isReazione) return false;
+                  return true;
                 };
                 const maxSpellLiv = Math.max(0, ...incantesimiVisualizzati.map(s => s.livello || 0));
                 const maxSlotLiv = Math.max(0, ...Object.entries(scheda.slotIncantesimo || {}).filter(([_, v]) => v.totale > 0).map(([k]) => parseInt(k, 10)));

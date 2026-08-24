@@ -5,6 +5,19 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.44',
+    voci: {
+      it: [
+        'Filtri Rapidi Grimorio: aggiunte pillole di filtro rapido per incantesimi in combattimento (🎯 Tutti, ⭐ Solo Preparati, ⚡ Azione, ⏳ Azione Bonus, 🛡️ Reazione, 🧠 Concentrazione, 📜 Rituali).',
+        'Interfaccia pulita: rimossi i banner persistenti di aggiornamento e archiviazione.',
+      ],
+      en: [
+        'Spellbook Fast Combat Filters: quick filter pill buttons for combat spells (🎯 All, ⭐ Prepared, ⚡ Action, ⏳ Bonus Action, 🛡️ Reaction, 🧠 Concentration, 📜 Rituals).',
+        'Clean UI: removed sticky update and storage banners.',
+      ],
+    },
+  },
+  {
     versione: '3.9.43',
     voci: {
       it: [
