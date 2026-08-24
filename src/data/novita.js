@@ -5,6 +5,21 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.31',
+    voci: {
+      it: [
+        'Addestramento: rimossi trattini e frecce doppie, diciture pulite ed essenziali.',
+        'Armi: aprendo il menù a tendina vengono dettagliate tutte le singole armi semplici o da guerra.',
+        'Lingue: da chiusa la tendina mostra solo la lingua principale senza conteggi o testi ridondanti.',
+      ],
+      en: [
+        'Proficiencies: removed dashes and double arrows, clean and essential look.',
+        'Weapons: opening the dropdown lists all individual simple or martial weapons.',
+        'Languages: closed dropdown shows only the primary language without extra voice counts.',
+      ],
+    },
+  },
+  {
     versione: '3.9.30',
     voci: {
       it: [

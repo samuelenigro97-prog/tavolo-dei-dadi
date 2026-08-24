@@ -76,17 +76,48 @@ function IconaMonetaOro({ size = 20 }) {
   );
 }
 
+const LISTA_ARMI_SEMPLICI_DETTAGLIO = [
+  'Arco corto', 'Ascia (Handaxe)', 'Balestra leggera', 'Bastone ferrato',
+  'Clava', 'Dardo', 'Falcetto', 'Fionda', 'Giavellotto', 'Grande clava',
+  'Lancia', 'Martello leggero', 'Mazza', 'Pugnale'
+];
+
+const LISTA_ARMI_GUERRA_DETTAGLIO = [
+  'Alabarda', 'Arco lungo', 'Ascia bipenne', 'Ascia da battaglia', 'Balestra a mano',
+  'Balestra pesante', 'Falcione', 'Frusta', 'Martello da guerra', 'Mazzafrusto',
+  'Mazza chiodata', 'Picca', 'Piccone da guerra', 'Scimitarra', 'Spada corta',
+  'Spada lunga', 'Spadone', 'Stocco', 'Tridente'
+];
+
 /** Menù a tendina compatto di sola consultazione (mostra i valori solo all'apertura del menù, nessun tag esterno) */
-function TendinaConsultazione({ label, value, placeholder, formattaVoce }) {
-  const lista = (value || '').split(/[,\n]/).map((s) => s.trim()).filter(Boolean);
+function TendinaConsultazione({ label, value, placeholder, formattaVoce, espandiArmi = false }) {
+  let lista = (value || '').split(/[,\n]/).map((s) => s.trim()).filter(Boolean);
   const etichetta = (v) => (formattaVoce ? formattaVoce(v) : traduciDato(v));
+
+  // Se è la tendina armi ed include "Armi semplici" o "Armi da guerra", specifichiamo tutte le singole armi
+  if (espandiArmi) {
+    const haSemplici = lista.some((x) => /armi\s*semplici|simple\s*weapons/i.test(x));
+    const haGuerra = lista.some((x) => /armi\s*da\s*guerra|martial\s*weapons/i.test(x));
+    const altre = lista.filter((x) => !/armi\s*semplici|simple\s*weapons|armi\s*da\s*guerra|martial\s*weapons/i.test(x));
+
+    const armiEspansi = [];
+    if (haSemplici) armiEspansi.push(...LISTA_ARMI_SEMPLICI_DETTAGLIO);
+    if (haGuerra) armiEspansi.push(...LISTA_ARMI_GUERRA_DETTAGLIO);
+    armiEspansi.push(...altre);
+    lista = [...new Set(armiEspansi)];
+  }
+
   const voci = [...new Set(lista.map(etichetta))].sort((a, b) => a.localeCompare(b, 'it'));
 
-  const anteprima = voci.length === 0
-    ? (placeholder || 'Nessuna')
-    : voci.length <= 2
-      ? voci.join(', ')
-      : `${voci.length} voci (${voci.slice(0, 2).join(', ')}…)`;
+  // Anteprima nel selettore chiuso: pulita, senza trattini né triangolini doppi
+  let anteprima = placeholder || 'Nessuna';
+  if (voci.length === 1) {
+    anteprima = voci[0];
+  } else if (voci.length > 1) {
+    anteprima = espandiArmi
+      ? (value || '').toLowerCase().includes('semplici') ? 'Armi semplici' : voci[0]
+      : voci[0]; // Mostra solo la prima voce; all'apertura si vedono tutte
+  }
 
   return (
     <div style={{ marginBottom: 6 }}>
@@ -108,10 +139,10 @@ function TendinaConsultazione({ label, value, placeholder, formattaVoce }) {
             cursor: 'pointer',
             textOverflow: 'ellipsis',
           }}
-          title={voci.length > 0 ? `${label}: ${voci.join(', ')}` : placeholder}
+          title={voci.length > 0 ? `${label}: ${voci.join(', ')}` : (placeholder || 'Nessuna')}
         >
           <option value="" style={{ background: C.panel }}>
-            {voci.length === 0 ? `— ${placeholder || 'Nessuna'} —` : `▾ ${anteprima}`}
+            {anteprima}
           </option>
           {voci.map((v, i) => (
             <option key={i} value={v} disabled style={{ background: C.panel, color: C.ink }}>
@@ -134,7 +165,7 @@ function TendinaArmature({ armature }) {
   ];
   const attive = tipi.filter((t) => !!arm[t.key]);
   const anteprima = attive.length === 0
-    ? 'Nessuna'
+    ? 'Nessuna armatura'
     : attive.length === 4
       ? 'Tutte (Leggere, Medie, Pesanti, Scudi)'
       : attive.map((t) => t.label.replace('Armatura ', '')).join(', ');
@@ -162,7 +193,7 @@ function TendinaArmature({ armature }) {
           title={`Armature: ${anteprima}`}
         >
           <option value="" style={{ background: C.panel }}>
-            {attive.length === 0 ? '— Nessuna armatura —' : `▾ ${anteprima}`}
+            {anteprima}
           </option>
           {tipi.map((t) => (
             <option key={t.key} value={t.key} disabled style={{ background: C.panel, color: arm[t.key] ? C.goldDark : C.inkDim }}>
@@ -1334,7 +1365,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.30';
+const APP_VERSION = '3.9.31';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7452,6 +7483,7 @@ export default function App() {
                 value={scheda.addestramento?.armi}
                 placeholder={t("train.armi_ph")}
                 formattaVoce={inizialeMaiuscola}
+                espandiArmi={true}
               />
 
               {/* Strumenti */}
