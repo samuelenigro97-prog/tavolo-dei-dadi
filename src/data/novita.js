@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.48',
+    voci: {
+      it: [
+        'Generazione Rapida Mostri nel Combat Tracker: aggiunta la possibilità di inserire all\'istante creature e mostri dal bestiario (es. Lupi, Orsi, Coccodrilli, Ragnatele giganti) con CA, PF e iniziativa già calcolati per round di combattimento immediati.',
+      ],
+      en: [
+        'Quick Monster Spawn in Combat Tracker: instantly add beasts and monsters from the bestiary (e.g. Wolves, Bears, Giant Spiders) with pre-calculated AC, HP, and initiative for rapid battle setup.',
+      ],
+    },
+  },
+  {
     versione: '3.9.47',
     voci: {
       it: [

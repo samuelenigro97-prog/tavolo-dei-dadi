@@ -1704,7 +1704,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.47';
+const APP_VERSION = '3.9.48';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -10194,6 +10194,34 @@ export default function App() {
               <button style={styles.buttonMini} onClick={aggiungiPgAlCombat} title={t('ct.aggiungi_pg')}>➕ {t('ct.pg')}</button>
               <button style={styles.buttonMini} onClick={() => aggiungiCombattente('alleato')}>➕ {t('ct.alleato')}</button>
               <button style={styles.buttonMini} onClick={() => aggiungiCombattente('nemico')}>➕ {t('ct.nemico')}</button>
+              <select
+                value=""
+                onChange={(e) => {
+                  const nome = e.target.value;
+                  if (!nome) return;
+                  const b = BESTIE.find((x) => x.nome === nome);
+                  if (b) {
+                    const initRoll = tiraDado(20) + Math.floor(((b.car?.destrezza || 10) - 10) / 2);
+                    aggiungiCombattente('nemico', {
+                      nome: b.nome,
+                      pfMax: b.pf,
+                      pfAttuali: b.pf,
+                      ca: b.ca,
+                      iniziativa: initRoll,
+                    });
+                  }
+                  e.target.value = '';
+                }}
+                style={{ ...styles.inlineInput, fontSize: 11, padding: '3px 6px', maxWidth: 120, height: 26 }}
+                title="Aggiungi una creatura o mostro dal bestiario al combattimento"
+              >
+                <option value="">🐾 + Mostro...</option>
+                {BESTIE.map((b) => (
+                  <option key={b.nome} value={b.nome}>
+                    {b.nome} (GS {b.gs})
+                  </option>
+                ))}
+              </select>
               <button style={styles.buttonMini} onClick={() => setCombat((c) => ({ ...c, aperto: false }))} title={t('ct.minimizza')}>▁</button>
               <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }} onClick={() => { if (window.confirm(t('ct.fine_conferma'))) setCombat({ attivo: false, aperto: true, round: 1, turno: 0, combattenti: [] }); }} title={t('ct.fine')}>✕</button>
             </div>
