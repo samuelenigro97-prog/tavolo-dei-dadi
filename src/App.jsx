@@ -4619,8 +4619,8 @@ export default function App() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8, marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
               <button style={{ ...styles.button, width: '100%' }} onClick={() => { setMostraMenu(false); setTimeout(() => { setCloudStatus({ text: '', type: '' }); setMostraCloud(true); }, 50); }} title={t('tooltip.cloud_off')}>☁️ Cloud</button>
               <button style={{ ...styles.button, width: '100%', opacity: passiUndo ? 1 : 0.45 }} disabled={!passiUndo} onClick={() => { annullaModifica(); setMostraMenu(false); }} title={passiUndo ? t('undo.tooltip', { n: passiUndo }) : t('undo.vuoto')}>↩︎ {t('undo.annulla')}</button>
-              <button style={{ ...styles.button, width: '100%' }} onClick={() => { esportaJson(); setMostraMenu(false); }} title={t('tip.esporta')}>💾 Esporta</button>
               <button style={{ ...styles.button, width: '100%' }} onClick={() => jsonRef.current?.click()} title={t('tip.importa')}>📂 Importa</button>
+              <button style={{ ...styles.button, width: '100%' }} onClick={() => { esportaJson(); setMostraMenu(false); }} title={t('tip.esporta')}>💾 Esporta</button>
               <button style={{ ...styles.button, width: '100%' }} onClick={() => { setMostraMenu(false); setTimeout(() => apriAvvisi(), 50); }} title={nAvvisi > 0 ? `${nAvvisi} avvisi` : 'Avvisi e novità'}>🔔 Avvisi{daNotificare ? ` (${nAvvisi > 0 ? nAvvisi : '!'})` : ''}</button>
               <button style={{ ...styles.button, width: '100%' }} onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))} title={t('tooltip.lingua')}>{lingua === 'it' ? '🇮🇹 Lingua' : '🇬🇧 Lingua'}</button>
             </div>
@@ -4628,8 +4628,8 @@ export default function App() {
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
               <div style={{ ...styles.detail, marginBottom: 8 }}>🛟 Backup</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
-                <button style={{ ...styles.button, width: '100%' }} onClick={esportaBackupCompleto} title="Esporta tutti i PG in file separati">💾 Esporta tutto</button>
                 <button style={{ ...styles.button, width: '100%' }} onClick={() => jsonRef.current?.click()} title="Ripristina">📂 Ripristina</button>
+                <button style={{ ...styles.button, width: '100%' }} onClick={esportaBackupCompleto} title="Esporta tutti i PG in file separati">💾 Esporta tutto</button>
                 {leggiSnapshots().length > 0 && (
                   <button style={{ ...styles.button, width: '100%' }} onClick={() => setMostraRipristino(true)}>🕓 Versioni</button>
                 )}
@@ -5726,17 +5726,17 @@ export default function App() {
           <input ref={jsonRef} type="file" accept="application/json,.json,application/pdf,image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif,.pdf" multiple style={{ display: 'none' }} onChange={importaJson} />
           <button
             style={styles.modeButton(false)}
-            title={t('tip.esporta')}
-            onClick={esportaJson}
-          >
-            💾 <span className="header-label">Esporta</span>
-          </button>
-          <button
-            style={styles.modeButton(false)}
             title="Importa JSON, PDF o JPG/PNG (IA) — il Finder ora mostra anche le immagini"
             onClick={() => jsonRef.current?.click()}
           >
             📂 <span className="header-label">Importa</span>
+          </button>
+          <button
+            style={styles.modeButton(false)}
+            title={t('tip.esporta')}
+            onClick={esportaJson}
+          >
+            💾 <span className="header-label">Esporta</span>
           </button>
           <button
             ref={avvisiBtnRef}
@@ -5763,6 +5763,24 @@ export default function App() {
             onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
           >
             {lingua === 'it' ? '🇮🇹' : '🇬🇧'} <span className="header-label">Lingua</span>
+          </button>
+        </div>
+
+        <div className="app-header-group">
+          <button
+            ref={ambientazioneBtnRef}
+            style={styles.modeButton(false)}
+            title={t('luogo.tooltip')}
+            onClick={() => { sbloccaAudio(); if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}
+          >
+            {iconaAmbientazione(presetColori)} <span className="header-label">{t('luogo.titolo')}</span>
+          </button>
+          <button
+            style={{ ...styles.modeButton(false), padding: '4px 8px' }}
+            title={t('tooltip.tema')}
+            onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}
+          >
+            {tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'} <span className="header-label">{tema === 'auto' ? 'Auto' : tema === 'chiaro' ? 'Giorno' : 'Notte'}</span>
           </button>
         </div>
 
@@ -6513,7 +6531,6 @@ export default function App() {
             <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' }); setMostraCrea(true); }} title={t('tip.nuovo_pg')}>＋</button>
             <button style={{ ...styles.buttonMini, borderColor: C.red, color: C.red }} onClick={eliminaPersonaggio} title={t('tip.elimina_pg')}>🗑</button>
             <span style={{ width: 1, height: 18, background: C.border, margin: '0 2px', flexShrink: 0, opacity: 0.6 }} aria-hidden />
-            <button ref={ambientazioneBtnRef} style={styles.buttonMini} title={t('luogo.tooltip')} onClick={() => { sbloccaAudio(); if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
             <button style={styles.buttonMini} onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())} title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}>🗺️</button>
             <button style={styles.buttonMini} onClick={() => {
               if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));

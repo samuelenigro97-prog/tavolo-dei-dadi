@@ -511,6 +511,7 @@ export default {
             ultimoErrore = msg;
             const isAgree = msg.includes('5016') || msg.toLowerCase().includes('agree');
             const isMissing = msg.includes('5007') || msg.includes('No such model') || msg.includes('not found');
+            const isUnsupportedImage = msg.toLowerCase().includes('image') && (msg.toLowerCase().includes('support') || msg.toLowerCase().includes('format') || msg.toLowerCase().includes('input') || msg.toLowerCase().includes('unsupported'));
             // Auto-agree per Llama 3.2: una tantum per account, poi riprova lo stesso payload
             if (isAgree && modello.includes('llama-3.2')) {
               try { await env.AI.run(modello, { prompt: 'agree' }); } catch {}
@@ -533,11 +534,11 @@ export default {
               // se anche il retry fallisce, passa al prossimo modello
               break;
             }
-            // errore payload-formato: prova il prossimo payload dello stesso modello
-            if (!isMissing && !isAgree && tentativiPayload.indexOf(payload) < tentativiPayload.length - 1) {
+            // errore payload-formato O immagine non supportata: prova il prossimo payload dello stesso modello
+            if ((!isMissing && !isAgree && !isUnsupportedImage) && tentativiPayload.indexOf(payload) < tentativiPayload.length - 1) {
               continue;
             }
-            // modello mancante o errore definitivo per questo modello → passa al prossimo modello
+            // modello mancante, immagine non supportata, o errore definitivo per questo modello → passa al prossimo modello
             break;
           }
         }
