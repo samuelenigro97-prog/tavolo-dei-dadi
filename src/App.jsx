@@ -1704,7 +1704,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.48';
+const APP_VERSION = '3.9.49';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -6725,6 +6725,19 @@ export default function App() {
               <div style={{ marginTop: 12, padding: 12, textAlign: 'center', background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8 }}>
                 <div style={styles.detail}>{t('stanze.codice')}</div>
                 <div style={{ color: C.goldDark, fontSize: 28, fontWeight: 800, letterSpacing: 3, fontFamily: 'monospace', margin: '4px 0' }}>{formattaCodiceStanza(stanzaUi.creato)}</div>
+                
+                {/* QR Code generato al volo tramite API standard priva di tracking */}
+                <div style={{ margin: '10px auto 6px', display: 'inline-block', padding: 6, background: '#fff', borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(`${window.location.origin}${window.location.pathname}?stanza=${stanzaUi.creato}`)}`}
+                    alt={`QR Code Stanza ${stanzaUi.creato}`}
+                    width={140}
+                    height={140}
+                    style={{ display: 'block' }}
+                  />
+                </div>
+                <div style={{ ...styles.detail, fontSize: 11, color: C.inkDim, marginBottom: 8 }}>📱 Inquadra con la fotocamera per aprire al volo</div>
+
                 <button style={styles.buttonMini} onClick={() => navigator.clipboard?.writeText(formattaCodiceStanza(stanzaUi.creato))}>📋 {t('stanze.copia')}</button>
                 <div style={{ ...styles.detail, fontSize: 11, marginTop: 6 }}>{t('stanze.scade')}</div>
               </div>

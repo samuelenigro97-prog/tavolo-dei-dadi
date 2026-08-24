@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.49',
+    voci: {
+      it: [
+        'Condivisione con QR Code: nella finestra Stanza per la condivisione tra giocatori compare ora un QR Code inquadrabile con la fotocamera dello smartphone per entrare e caricare il personaggio al volo senza digitare.',
+      ],
+      en: [
+        'QR Code Room Sharing: the temporary Room share window now displays a scannable QR Code to instantly join and import character sheets on mobile without typing.',
+      ],
+    },
+  },
+  {
     versione: '3.9.48',
     voci: {
       it: [
