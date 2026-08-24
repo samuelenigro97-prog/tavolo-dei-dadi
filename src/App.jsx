@@ -4057,8 +4057,63 @@ export default function App() {
   async function caricaDaCodiceSyncPer(codice) {
     const { roster: rosterRicevuto, updatedAt } = await caricaSync(URL_STANZE, codice);
     const caricato = { attivo: rosterRicevuto.attivo, personaggi: {} };
-    for (const id in (rosterRicevuto.personaggi || {})) caricato.personaggi[id] = normalizeImported(rosterRicevuto.personaggi[id]);
+    // NON normalizzare: i dati dal cloud sono già corretti
+    for (const id in (rosterRicevuto.personaggi || {})) caricato.personaggi[id] = rosterRicevuto.personaggi[id];
     if (!caricato.attivo || !caricato.personaggi[caricato.attivo]) caricato.attivo = Object.keys(caricato.personaggi)[0] || '';
+    // Assicura campi obbligatori per compatibilità
+    for (const id in caricato.personaggi) {
+      const pg = caricato.personaggi[id];
+      if (!pg.versione) pg.versione = '2024';
+      if (!pg.caratteristiche) pg.caratteristiche = { forza: 10, destrezza: 10, costituzione: 10, intelligenza: 10, saggezza: 10, carisma: 10 };
+      if (!pg.abilita) pg.abilita = {};
+      if (!pg.tiriSalvezza) pg.tiriSalvezza = { forza: false, destrezza: false, costituzione: false, intelligenza: false, saggezza: false, carisma: false };
+      if (!pg.armatura) pg.armatura = { nome: '', tipo: 'nessuna', base: 10, scudo: false, bonus: 0 };
+      if (!pg.slotIncantesimo) pg.slotIncantesimo = { 1: { totale: 0, spesi: 0 }, 2: { totale: 0, spesi: 0 }, 3: { totale: 0, spesi: 0 }, 4: { totale: 0, spesi: 0 }, 5: { totale: 0, spesi: 0 }, 6: { totale: 0, spesi: 0 }, 7: { totale: 0, spesi: 0 }, 8: { totale: 0, spesi: 0 }, 9: { totale: 0, spesi: 0 } };
+      if (!pg.incantesimiLista) pg.incantesimiLista = [];
+      if (!pg.privilegi) pg.privilegi = '';
+      if (!pg.privilegiSottoclasse) pg.privilegiSottoclasse = '';
+      if (!pg.trattiSpecie) pg.trattiSpecie = '';
+      if (!pg.talenti) pg.talenti = '';
+      if (!pg.metamagie) pg.metamagie = '';
+      if (!pg.equipaggiamento) pg.equipaggiamento = '';
+      if (!pg.inventario) pg.inventario = [];
+      if (!pg.sintonia) pg.sintonia = '';
+      if (!pg.lingue) pg.lingue = '';
+      if (!pg.aspetto) pg.aspetto = '';
+      if (!pg.trattiCaratteriali) pg.trattiCaratteriali = '';
+      if (!pg.diario) pg.diario = [];
+      if (!pg.note) pg.note = '';
+      if (!pg.resistenze) pg.resistenze = '';
+      if (!pg.sensi) pg.sensi = '';
+      if (!pg.sfinimento) pg.sfinimento = 0;
+      if (!pg.concentrazione) pg.concentrazione = '';
+      if (!pg.risorse) pg.risorse = [];
+      if (!pg.addestramento) pg.addestramento = { armature: { leggera: false, media: false, pesante: false, scudi: false }, armi: '', strumenti: '' };
+      if (!pg.denari) pg.denari = { mr: 0, ma: 0, me: 0, mo: 0, mp: 0 };
+      if (!pg.tsMorte) pg.tsMorte = { successi: 0, fallimenti: 0 };
+      if (!pg.pfTemp) pg.pfTemp = 0;
+      if (!pg.pfAttuali) pg.pfAttuali = pg.pfMax || 0;
+      if (!pg.dadiVita) pg.dadiVita = '1d8';
+      if (!pg.dadiVitaSpesi) pg.dadiVitaSpesi = 0;
+      if (!pg.velocita) pg.velocita = 30;
+      if (!pg.taglia) pg.taglia = 'Media';
+      if (!pg.bonusCompetenza) pg.bonusCompetenza = 2;
+      if (!pg.ispirazione) pg.ispirazione = false;
+      if (!pg.condizioni) pg.condizioni = [];
+      if (!pg.attacchi) pg.attacchi = [];
+      if (!pg.incantatore) pg.incantatore = { caratteristica: '' };
+      if (!pg.incantesimiLista) pg.incantesimiLista = [];
+      if (!pg.maxTrucchetti) pg.maxTrucchetti = 0;
+      if (!pg.maxIncantesimi) pg.maxIncantesimi = 0;
+      if (!pg.risorse) pg.risorse = [];
+      if (!pg.addestramento) pg.addestramento = { armature: { leggera: false, media: false, pesante: false, scudi: false }, armi: '', strumenti: '' };
+      if (!pg.denari) pg.denari = { mr: 0, ma: 0, me: 0, mo: 0, mp: 0 };
+      if (!pg.sfinimento) pg.sfinimento = 0;
+      if (!pg.concentrazione) pg.concentrazione = '';
+      if (!pg.risorse) pg.risorse = [];
+      if (!pg.addestramento) pg.addestramento = { armature: { leggera: false, media: false, pesante: false, scudi: false }, armi: '', strumenti: '' };
+      if (!pg.denari) pg.denari = { mr: 0, ma: 0, me: 0, mo: 0, mp: 0 };
+    }
     const conImmaginiLocali = await caricaImmaginiRoster(caricato).catch(() => caricato);
     const merged = (() => {
       const base = rosterSyncRef.current || { attivo: '', personaggi: {} };
