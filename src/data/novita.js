@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.57',
+    voci: {
+      it: [
+        'Indicatore Cloud con Allerta Rosso: quando i dati non sono sincronizzati sul Cloud o sono salvati solo localmente, il pulsante Cloud mostra il punto esclamativo rosso (❗).',
+      ],
+      en: [
+        'Red Cloud Alert Indicator: when data is unsynced or only stored locally, the Cloud button displays a red exclamation mark (❗).',
+      ],
+    },
+  },
+  {
     versione: '3.9.56',
     voci: {
       it: [
