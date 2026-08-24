@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.45',
+    voci: {
+      it: [
+        'Mobile Card View per Attacchi & Combattimento: su smartphone le tabelle di Azioni, Azioni Bonus e Reazioni diventano schede responsive touch-friendly con tiri dado immediati senza scorrimenti orizzontali.',
+      ],
+      en: [
+        'Mobile Card View for Attacks & Combat: on mobile screens, Action, Bonus Action, and Reaction tables transform into touch-friendly cards with instant dice rolls and zero horizontal scroll.',
+      ],
+    },
+  },
+  {
     versione: '3.9.44',
     voci: {
       it: [

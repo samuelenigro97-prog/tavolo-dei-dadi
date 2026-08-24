@@ -1703,7 +1703,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.44';
+const APP_VERSION = '3.9.45';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -8247,9 +8247,9 @@ export default function App() {
                               // Incantesimo senza focus equipaggiato: tiri disabilitati.
                               const castBloccato = a.isSpell && bloccaSpell;
                               return (
-                                <tr key={a.id}>
-                                  <td style={styles.td}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <tr key={a.id} className="attacchi-riga">
+                                  <td style={styles.td} className="attacchi-nome">
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, width: '100%' }}>
                                       {a.isSpell ? (
                                         <span style={{ fontSize: 16, cursor: 'help', display: 'inline-block', width: 22, textAlign: 'center' }} title="Incantesimo offensivo (integrato automaticamente)">✨</span>
                                       ) : (
@@ -8314,7 +8314,7 @@ export default function App() {
                                       />
                                     </div>
                                   </td>
-                                  <td style={styles.td}>
+                                  <td style={styles.td} className="attacchi-bonus" data-label={t('combat.col_bonus')}>
                                     {a.isTS ? (
                                       <span style={{ ...styles.badge, background: 'rgba(201,162,39,0.15)', color: C.goldDark, border: `1px solid ${C.goldDark}`, padding: '2px 6px', fontWeight: 700 }} title="Tiro salvezza richiesto">
                                         CD {a.cd}
@@ -8336,27 +8336,29 @@ export default function App() {
                                       </div>
                                     )}
                                   </td>
-                                  <td style={{ ...styles.td, color: dannoValido ? undefined : C.red }}>
-                                    {parseEspressioneDado(a.danno) && (
-                                      <button
-                                        style={{ ...styles.buttonMini, padding: '1px 6px', marginRight: 4, opacity: castBloccato ? 0.4 : 1, cursor: castBloccato ? 'not-allowed' : 'pointer' }}
-                                        title={castBloccato ? 'Equipaggia un focus per lanciare questo incantesimo' : `Tira i danni (${a.danno})`}
-                                        disabled={castBloccato}
-                                        onClick={() => { if (!castBloccato) tiraDanniPerAttacco(a, false); }}
-                                      >🎲</button>
-                                    )}
-                                    <Editable
-                                      value={a.danno}
-                                      width={70}
-                                      onChange={(v) => aggiornaAttacco({ danno: v })}
-                                      title={t('tip.click_mod_danni')}
-                                    />{' '}
-                                    <Editable value={a.tipoDanno} width={90} onChange={(v) => aggiornaAttacco({ tipoDanno: v })} />
+                                  <td style={{ ...styles.td, color: dannoValido ? undefined : C.red }} className="attacchi-danno" data-label={t('combat.col_danno')}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                                      {parseEspressioneDado(a.danno) && (
+                                        <button
+                                          style={{ ...styles.buttonMini, padding: '1px 6px', opacity: castBloccato ? 0.4 : 1, cursor: castBloccato ? 'not-allowed' : 'pointer' }}
+                                          title={castBloccato ? 'Equipaggia un focus per lanciare questo incantesimo' : `Tira i danni (${a.danno})`}
+                                          disabled={castBloccato}
+                                          onClick={() => { if (!castBloccato) tiraDanniPerAttacco(a, false); }}
+                                        >🎲</button>
+                                      )}
+                                      <Editable
+                                        value={a.danno}
+                                        width={65}
+                                        onChange={(v) => aggiornaAttacco({ danno: v })}
+                                        title={t('tip.click_mod_danni')}
+                                      />
+                                      <Editable value={a.tipoDanno} width={75} onChange={(v) => aggiornaAttacco({ tipoDanno: v })} />
+                                    </div>
                                   </td>
-                                  <td style={styles.td}>
+                                  <td style={styles.td} className="attacchi-note" data-label={t('combat.col_note')}>
                                     <Editable value={a.note} width={130} onChange={(v) => aggiornaAttacco({ note: v })} />
                                   </td>
-                                  <td className="col-azioni" style={{ ...styles.td, textAlign: 'right' }}>
+                                  <td className="col-azioni attacchi-azioni" style={{ ...styles.td, textAlign: 'right' }}>
                                     <button
                                       style={styles.buttonDanger}
                                       title={a.isSpell ? "Nascondi questo incantesimo dalla sezione Armi e attacchi" : "Elimina attacco"}

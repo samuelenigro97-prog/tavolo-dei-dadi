@@ -782,14 +782,63 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .spell-table td:first-child button { white-space: normal !important; overflow-wrap: anywhere; }
   /* monete: su telefono 5 colonne sarebbero illeggibili, si passa a 3 */
   .griglia-monete { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
-  /* tabella attacchi: celle più compatte e colonna azioni ancorata a destra,
-     così la × per eliminare resta cliccabile senza scorrere lo schermo */
-  .attacchi-table { font-size: 12px; }
-  .attacchi-table th, .attacchi-table td { padding: 5px 4px !important; }
-  .attacchi-table .col-azioni {
-    position: sticky; right: 0;
-    background: var(--c-panel);
-    box-shadow: -6px 0 6px -5px rgba(0,0,0,0.35);
+  /* tabella attacchi: su mobile ogni arma/azione diventa una scheda comoda con i pulsanti dado ben visibili */
+  .attacchi-table, .attacchi-table tbody { display: block; width: 100%; }
+  .attacchi-table thead { display: none; }
+  .attacchi-table .attacchi-riga {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 6px 10px;
+    margin: 0 0 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--c-border);
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--c-panel-light) 88%, transparent);
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+  .attacchi-table .attacchi-riga > td {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    padding: 2px 0 !important;
+    border: 0 !important;
+  }
+  .attacchi-table .attacchi-riga > .attacchi-nome {
+    grid-column: 1;
+    grid-row: 1;
+    font-weight: 700;
+  }
+  .attacchi-table .attacchi-riga > .attacchi-azioni {
+    grid-column: 2;
+    grid-row: 1;
+    justify-content: flex-end;
+  }
+  .attacchi-table .attacchi-riga > .attacchi-bonus {
+    grid-column: 1;
+    grid-row: 2;
+    justify-content: flex-start;
+  }
+  .attacchi-table .attacchi-riga > .attacchi-danno {
+    grid-column: 2;
+    grid-row: 2;
+    justify-content: flex-start;
+  }
+  .attacchi-table .attacchi-riga > .attacchi-note {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    width: 100%;
+    padding-top: 4px !important;
+    border-top: 1px dashed var(--c-border) !important;
+  }
+  .attacchi-table .attacchi-riga > td:not(.attacchi-nome):not(.attacchi-azioni)::before {
+    content: attr(data-label);
+    margin-right: 6px;
+    color: var(--c-ink-dim);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .4px;
   }
   /* Inventario: sul telefono ogni oggetto diventa una scheda leggibile. Non si
      perde alcuna colonna e non serve trascinare lateralmente la tabella. */
