@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.58',
+    voci: {
+      it: [
+        'Risoluzione Schermata Bianca all\'Avvio: corretto un controllo sullo stato del personaggio attivo che causava schermata bianca quando il browser non aveva ancora personaggi salvati in memoria.',
+      ],
+      en: [
+        'Fix White Screen on Launch: resolved a state check error that caused a blank screen when the browser had no characters saved in storage yet.',
+      ],
+    },
+  },
+  {
     versione: '3.9.57',
     voci: {
       it: [
