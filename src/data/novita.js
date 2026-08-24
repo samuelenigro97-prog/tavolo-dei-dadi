@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.41',
+    voci: {
+      it: [
+        'Sezione Diario potenziata: barra di tag rapidi D&D (👤 PNG, 📜 Obiettivo, 🗺️ Luogo, 💰 Bottino, ⚔️ Scontro, 💡 Indizio), pulsante per esportare e scaricare il diario in formato Markdown (.md), ricerca istantanea migliorata e grafica a schede evidenziate.',
+      ],
+      en: [
+        'Upgraded Session Journal: quick D&D tag toolbar (👤 NPC, 📜 Quest, 🗺️ Location, 💰 Loot, ⚔️ Combat, 💡 Clue), export & download journal as Markdown (.md), enhanced search bar, and highlighted session card design.',
+      ],
+    },
+  },
+  {
     versione: '3.9.40',
     voci: {
       it: [

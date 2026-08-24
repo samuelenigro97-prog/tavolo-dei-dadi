@@ -238,7 +238,28 @@ considerarli definitivamente chiusi:
 Un difetto osservato durante la verifica torna nella roadmap aperta con passaggi
 riproducibili; non va riaperto soltanto per prudenza.
 
-## Roadmap realmente aperta
+### Roadmap Prioritaria Approvata
+
+1. **Miglioramento Sezione Diario di Sessione** (IN CORSO):
+   - Grafica a pergamena/card moderna con evidenziazione data e numero sessione.
+   - Tag/Categorie rapide per le note di sessione (es. 👤 PNG incontrati, 🗺️ Luoghi esplorati, 📜 Quest / Obiettivi, 💰 Bottino / Ricompense, ⚔️ Combattimenti).
+   - Inserimento rapido di timestamp e formattazione punti elenco.
+   - Esportazione singola sessione o intero diario formattata in Markdown/Testo.
+
+2. **Quality of Life — Tavolo da Gioco**:
+   - **Automazione Riposo Breve e Lungo**: gestione guidata con spesa dadi vita, recupero automatico delle risorse con ricarica breve/lunga e ripristino PF/slot.
+   - **Indicatore Visivo Sincronizzazione DM**: badge di stato nell'header (🟢 In tempo reale / 🟠 Locale) per dare certezza che i dati siano sincronizzati.
+   - **Badge Luminosi per le Condizioni di Stato**: icone colorate sotto il nome del PG con tooltip immediato degli effetti meccanici (Vantaggio/Svantaggio).
+
+3. **Incantesimi — Filtri Rapidi di Combattimento**:
+   - Filtro rapido in cima: `[Tutti] [Solo Preparati] [Solo Rituali] [Per Tempo: Azione / Bonus / Reazione]`.
+   - Riduce drasticamente lo scroll durante il proprio turno.
+
+4. **Combattimento — Ottimizzazione Mobile (Azioni / Bonus / Reazioni)**:
+   - Vista a schede compatte (Card) su schermi stretti per evitare tabelle compresse o scroll orizzontale.
+
+5. **Inventario & Equipaggiamento — Zaino vs Equipaggiato**:
+   - Distinzione tra oggetti indossati/impugnati (attivi per CA e bonus) e oggetti stipati nello zaino.
 
 ### Scheda di Vaelion
 

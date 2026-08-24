@@ -1671,7 +1671,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.40';
+const APP_VERSION = '3.9.41';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -9245,13 +9245,36 @@ export default function App() {
                 const copiaDiario = () => {
                   const testo = diario.map((v, i) => `=== Sessione ${diario.length - i}: ${v.titolo || 'Senza titolo'} (${v.data || 'Nessuna data'}) ===\n\n${v.testo || ''}\n`).join('\n---\n\n');
                   navigator.clipboard?.writeText(testo);
-                  alert('Diario copiato negli appunti!');
+                  alert(lingua === 'en' ? 'Journal copied to clipboard!' : 'Diario copiato negli appunti!');
                 };
 
                 const copiaVoce = (v) => {
                   const testo = `Sessione: ${v.titolo || 'Senza titolo'} (${v.data || 'Nessuna data'})\n\n${v.testo || ''}`;
                   navigator.clipboard?.writeText(testo);
-                  alert('Sessione copiata negli appunti!');
+                  alert(lingua === 'en' ? 'Session copied to clipboard!' : 'Sessione copiata negli appunti!');
+                };
+
+                const scaricaDiario = () => {
+                  const nomePG = (scheda.info?.nome || 'Personaggio').replace(/[^a-zA-Z0-9_-]/g, '_');
+                  const righe = diario.map((v, i) => {
+                    const num = diario.length - i;
+                    return `# Sessione ${num}: ${v.titolo || 'Senza titolo'} (${v.data || 'Nessuna data'})\n\n${v.testo || ''}\n`;
+                  }).join('\n---\n\n');
+                  const contenuto = `# Diario di Viaggio — ${scheda.info?.nome || 'Personaggio'}\n\n${righe}`;
+                  const blob = new Blob([contenuto], { type: 'text/markdown;charset=utf-8' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `Diario_${nomePG}.md`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                };
+
+                const inserisciTag = (v, tagTesto) => {
+                  const vecchio = v.testo || '';
+                  const separatore = vecchio.length > 0 && !vecchio.endsWith('\n') ? '\n' : '';
+                  const nuovo = `${vecchio}${separatore}• ${tagTesto}: `;
+                  modificaVoce(v.id, { testo: nuovo });
                 };
 
                 const toggleTutteVoci = () => {
@@ -9263,6 +9286,15 @@ export default function App() {
                     setVociDiarioChiuse(obj);
                   }
                 };
+
+                const TAG_RAPIDI = [
+                  { icona: '👤', label: 'PNG' },
+                  { icona: '📜', label: lingua === 'en' ? 'Quest' : 'Obiettivo' },
+                  { icona: '🗺️', label: lingua === 'en' ? 'Location' : 'Luogo' },
+                  { icona: '💰', label: lingua === 'en' ? 'Loot' : 'Bottino' },
+                  { icona: '⚔️', label: lingua === 'en' ? 'Combat' : 'Scontro' },
+                  { icona: '💡', label: lingua === 'en' ? 'Clue' : 'Indizio' },
+                ];
 
                 return (
                   <>
@@ -9279,7 +9311,7 @@ export default function App() {
                             setVociDiarioChiuse((prev) => ({ ...prev, [newId]: false }));
                           }}
                         >
-                          ＋ Nuova Sessione
+                          ＋ {lingua === 'en' ? 'New Session' : 'Nuova Sessione'}
                         </button>
                         {diario.length > 0 && (
                           <>
@@ -9297,30 +9329,47 @@ export default function App() {
                               onClick={copiaDiario}
                               title="Copia l'intero diario negli appunti"
                             >
-                              📋 Copia diario
+                              📋 {lingua === 'en' ? 'Copy all' : 'Copia tutto'}
+                            </button>
+                            <button
+                              className="no-stampa"
+                              style={{ ...styles.buttonMini, fontSize: 11, padding: '4px 8px' }}
+                              onClick={scaricaDiario}
+                              title="Scarica il diario come file Markdown (.md)"
+                            >
+                              📥 {lingua === 'en' ? 'Download .md' : 'Scarica .md'}
                             </button>
                           </>
                         )}
                       </div>
                       {diario.length > 1 && (
-                        <input
-                          value={filtroDiario}
-                          onChange={(e) => setFiltroDiario(e.target.value)}
-                          placeholder="🔍 Cerca nelle sessioni..."
-                          style={{ ...styles.inlineInput, fontSize: 12, padding: '4px 8px', width: 160 }}
-                        />
+                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                          <input
+                            value={filtroDiario}
+                            onChange={(e) => setFiltroDiario(e.target.value)}
+                            placeholder={lingua === 'en' ? '🔍 Search sessions...' : '🔍 Cerca nelle sessioni...'}
+                            style={{ ...styles.inlineInput, fontSize: 12, padding: '4px 8px', width: 170 }}
+                          />
+                          {filtroDiario && (
+                            <button
+                              type="button"
+                              onClick={() => setFiltroDiario('')}
+                              style={{ position: 'absolute', right: 4, background: 'transparent', border: 0, color: C.inkDim, fontSize: 10, cursor: 'pointer', padding: 2 }}
+                            >✕</button>
+                          )}
+                        </div>
                       )}
                     </div>
 
                     {diario.length === 0 && (
                       <div style={{ ...styles.detail, fontSize: 12, fontStyle: 'italic', textAlign: 'center', padding: '16px 0' }}>
-                        📖 Il diario è vuoto. Clicca su "Nuova Sessione" per iniziare a prendere appunti sulle tue avventure!
+                        📖 {lingua === 'en' ? 'The journal is empty. Click on "New Session" to start chronicling your adventures!' : 'Il diario è vuoto. Clicca su "Nuova Sessione" per iniziare a prendere appunti sulle tue avventure!'}
                       </div>
                     )}
 
                     {qDiario && diarioFiltrato.length === 0 && (
                       <div style={{ ...styles.detail, fontSize: 12, fontStyle: 'italic', textAlign: 'center', padding: '10px 0' }}>
-                        Nessuna sessione corrisponde alla ricerca "{filtroDiario}".
+                        {lingua === 'en' ? `No sessions match "${filtroDiario}".` : `Nessuna sessione corrisponde alla ricerca "${filtroDiario}".`}
                       </div>
                     )}
 
@@ -9331,15 +9380,16 @@ export default function App() {
                         <div
                           key={v.id}
                           style={{
-                            border: `1px solid ${C.border}`,
+                            border: `1px solid ${chiusa ? C.border : C.goldDark}`,
                             borderRadius: 8,
                             padding: '8px 10px',
                             marginBottom: 8,
                             background: C.panelLight,
-                            boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                            boxShadow: chiusa ? '0 1px 2px rgba(0,0,0,0.04)' : '0 2px 8px rgba(0,0,0,0.12)',
+                            transition: 'border-color 0.15s ease',
                           }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: chiusa ? 0 : 6, flexWrap: 'wrap' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: chiusa ? 0 : 8, flexWrap: 'wrap' }}>
                             <button
                               type="button"
                               onClick={() => setVociDiarioChiuse((prev) => ({ ...prev, [v.id]: !prev[v.id] }))}
@@ -9373,13 +9423,13 @@ export default function App() {
                               style={{ ...styles.buttonMini, fontSize: 10, padding: '1px 5px' }}
                               title="Imposta data odierna"
                             >
-                              Oggi
+                              {lingua === 'en' ? 'Today' : 'Oggi'}
                             </button>
                             <input
                               value={v.titolo || ''}
                               placeholder={t('diario.titolo_ph')}
                               onChange={(e) => modificaVoce(v.id, { titolo: e.target.value })}
-                              style={{ ...styles.inlineInput, flex: '1 1 180px', minWidth: 120, padding: '2px 6px', fontSize: 13, fontWeight: 700 }}
+                              style={{ ...styles.inlineInput, flex: '1 1 180px', minWidth: 120, padding: '2px 6px', fontSize: 13, fontWeight: 700, color: C.ink }}
                             />
                             <button
                               type="button"
@@ -9419,14 +9469,42 @@ export default function App() {
                               }}
                               title="Clicca per aprire"
                             >
-                              {v.testo ? v.testo.slice(0, 100) + (v.testo.length > 100 ? '…' : '') : 'Nessun appunto.'}
+                              {v.testo ? v.testo.slice(0, 120) + (v.testo.length > 120 ? '…' : '') : (lingua === 'en' ? 'No notes.' : 'Nessun appunto.')}
                             </div>
                           ) : (
-                            <AreaTesto
-                              value={v.testo || ''}
-                              placeholder={t('diario.testo_ph')}
-                              onChange={(nuovo) => modificaVoce(v.id, { testo: nuovo })}
-                            />
+                            <>
+                              {/* Barra Tag Rapidi D&D */}
+                              <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginBottom: 6, flexWrap: 'wrap', paddingLeft: 2 }}>
+                                <span style={{ fontSize: 10, color: C.inkDim, fontWeight: 600, marginRight: 2 }}>
+                                  {lingua === 'en' ? 'Insert:' : 'Inserisci:'}
+                                </span>
+                                {TAG_RAPIDI.map((tag) => (
+                                  <button
+                                    key={tag.label}
+                                    type="button"
+                                    onClick={() => inserisciTag(v, tag.label)}
+                                    style={{
+                                      ...styles.buttonMini,
+                                      fontSize: 10,
+                                      padding: '1px 6px',
+                                      borderRadius: 12,
+                                      background: 'rgba(200, 140, 20, 0.08)',
+                                      border: `1px solid ${C.border}`,
+                                      color: C.ink,
+                                      cursor: 'pointer',
+                                    }}
+                                    title={`Aggiungi ${tag.label} negli appunti`}
+                                  >
+                                    {tag.icona} {tag.label}
+                                  </button>
+                                ))}
+                              </div>
+                              <AreaTesto
+                                value={v.testo || ''}
+                                placeholder={t('diario.testo_ph')}
+                                onChange={(nuovo) => modificaVoce(v.id, { testo: nuovo })}
+                              />
+                            </>
                           )}
                         </div>
                       );
