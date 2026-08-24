@@ -52,7 +52,7 @@ const SFONDO_CARATTERISTICA = {
 function SfondoVit({ children }) {
   return (
     <span aria-hidden style={{
-      position: 'absolute', right: -4, bottom: -12, fontSize: 54, opacity: 0.06,
+      position: 'absolute', right: -2, bottom: -8, fontSize: 52, opacity: 0.12,
       pointerEvents: 'none', lineHeight: 1, userSelect: 'none',
       transform: 'rotate(-8deg)', filter: 'grayscale(20%)',
     }}>{children}</span>
@@ -6713,64 +6713,23 @@ export default function App() {
                     title={t('profilo.background_bloccato')}
                   />
                 </CampoModulo>
-                <CampoModulo label={t("profilo.classe")} boxClassName={(scheda.multiclasse || []).some((m) => m.classe) ? 'classe-multi' : undefined}>
+                <CampoModulo label={t("profilo.classe")}>
                   <CampoBloccato
-                    valore={[traduciDato(scheda.classe), ...(scheda.multiclasse || []).filter((m) => m.classe).map((m) => traduciDato(m.classe))].filter(Boolean).join(' + ') || t('profilo.nessuna')}
+                    valore={traduciDato(scheda.classe) || t('profilo.nessuna')}
                     title={t('profilo.classe_bloccata')}
                   />
                 </CampoModulo>
-                <CampoModulo label={t("profilo.sottoclasse")} boxClassName={(scheda.multiclasse || []).some((m) => m.classe) ? 'sottoclasse-multi' : undefined}>
-                  {(() => {
-                    // Con più classi (multiclasse) ogni riga porta anche il nome
-                    // della classe: senza, un valore bloccato senza bordo (es.
-                    // "Guerriero dell'Ombra" o "Dal 3° livello") si confonde con
-                    // il campo Background appena sopra, che non ha alcun confine
-                    // visivo evidente.
-                    const multi = (scheda.multiclasse || []).some((m) => m.classe);
-                    const riga = (etichetta, contenuto) => multi ? (
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                        <span style={{ ...styles.detail, fontWeight: 700, flexShrink: 0, minWidth: 54 }}>{traduciDato(etichetta)}</span>
-                        <div style={{ minWidth: 0, flex: 1 }}>{contenuto}</div>
-                      </div>
-                    ) : contenuto;
-                    return (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: multi ? 6 : 4 }}>
-                        {/* Sottoclasse della classe principale */}
-                        {riga(scheda.classe, campoSottoclasse(scheda.classe, scheda.livello, scheda.sottoclasse, (v) => {
-                          const patch = { sottoclasse: v };
-                          // Riempi in automatico i privilegi di sottoclasse fino al
-                          // livello attuale (se abbiamo i dati per questa sottoclasse).
-                          const auto = privilegiSottoclasseFinoA(v, scheda.livello || 1);
-                          if (auto) patch.privilegiSottoclasse = auto;
-                          // Cavaliere Mistico/Mistificatore Arcano: scegliendo la
-                          // sottoclasse compaiono gli slot incantesimo del "terzo
-                          // incantatore", altrimenti resterebbero a zero finché non
-                          // si passa dalla creazione guidata o da un level up. Solo
-                          // per queste due sottoclassi: non deve mai toccare gli slot
-                          // (e gli "spesi" già segnati) di una classe già incantatrice.
-                          if (sottoclasseTerzoIncantatore(scheda.classe, v)) {
-                            const slot = slotDaClasseLivello(scheda.classe, scheda.livello, v);
-                            if (slot) patch.slotIncantesimo = slot;
-                          }
-                          aggiorna(patch);
-                        }))}
-                        {/* Sottoclassi delle classi del multiclasse */}
-                        {(scheda.multiclasse || []).map((m, idx) => (m.classe ? (
-                          <div key={idx}>
-                            {riga(m.classe, campoSottoclasse(m.classe, m.livello, m.sottoclasse, (v) => {
-                              const multiNuovo = (scheda.multiclasse || []).map((x, i) => (i === idx ? { ...x, sottoclasse: v } : x));
-                              const patch = { multiclasse: multiNuovo };
-                              if (sottoclasseTerzoIncantatore(m.classe, v)) {
-                                const slot = slotDaClasseLivello(m.classe, m.livello, v);
-                                if (slot) patch.slotIncantesimo = slot;
-                              }
-                              aggiorna(patch);
-                            }))}
-                          </div>
-                        ) : null))}
-                      </div>
-                    );
-                  })()}
+                <CampoModulo label={t("profilo.sottoclasse")}>
+                  {campoSottoclasse(scheda.classe, scheda.livello, scheda.sottoclasse, (v) => {
+                    const patch = { sottoclasse: v };
+                    const auto = privilegiSottoclasseFinoA(v, scheda.livello || 1);
+                    if (auto) patch.privilegiSottoclasse = auto;
+                    if (sottoclasseTerzoIncantatore(scheda.classe, v)) {
+                      const slot = slotDaClasseLivello(scheda.classe, scheda.livello, v);
+                      if (slot) patch.slotIncantesimo = slot;
+                    }
+                    aggiorna(patch);
+                  })}
                 </CampoModulo>
                 <CampoModulo label={t("profilo.pe")}>
                   <Editable
@@ -6792,26 +6751,59 @@ export default function App() {
               return null;
             }
             const livTot = (scheda.livello || 1) + mc.reduce((a, m) => a + (m.livello || 0), 0);
-            const setMc = (arr) => aggiorna({ multiclasse: arr });
+            const setMc = (arr) => {
+              const dadiVita = calcolaFormulaDadiVita(scheda.classe, scheda.livello, arr);
+              aggiorna({ multiclasse: arr, dadiVita });
+            };
             return (
               <div style={{ ...styles.panel, padding: '8px 10px', margin: '2px 0 8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                   <span style={{ ...styles.detail, fontWeight: 700 }}>⚔️ {t('mc.titolo')}</span>
-                  <span style={{ ...styles.detail }}>{t('mc.liv_totale')}: <strong>{livTot}</strong> ({traduciDato(scheda.classe) || '—'} {scheda.livello || 1}{mc.map((m) => ` / ${traduciDato(m.classe) || '—'} ${m.livello}`).join('')})</span>
+                  <span style={{ ...styles.detail }}>
+                    {t('mc.liv_totale')}: <strong>{livTot}</strong> ({traduciDato(scheda.classe) || '—'} {scheda.livello || 1}{scheda.sottoclasse ? ` (${traduciDato(scheda.sottoclasse)})` : ''}{mc.map((m) => ` / ${traduciDato(m.classe) || '—'} ${m.livello || 1}${m.sottoclasse ? ` (${traduciDato(m.sottoclasse)})` : ''}`).join('')})
+                  </span>
                 </div>
                 {mc.map((m, i) => (
                   <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 6, flexWrap: 'wrap' }}>
-                    <select value={m.classe} onChange={(e) => setMc(mc.map((x, j) => (j === i ? { ...x, classe: e.target.value } : x)))} style={{ ...styles.inlineInput, padding: '4px 6px', flex: 1, minWidth: 120 }}>
+                    <select
+                      value={m.classe}
+                      onChange={(e) => {
+                        const nuovaClasse = e.target.value;
+                        setMc(mc.map((x, j) => (j === i ? { ...x, classe: nuovaClasse, sottoclasse: '' } : x)));
+                      }}
+                      style={{ ...styles.inlineInput, padding: '4px 6px', flex: 1, minWidth: 120 }}
+                    >
                       <option value="">{t('crea.scegli')}</option>
                       {[...NOMI_CLASSI].sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((n) => <option key={n} value={n}>{traduciDato(n)}</option>)}
                     </select>
                     <span style={{ ...styles.detail }}>{t('mc.liv')}</span>
                     <Editable value={m.livello} tipo="numero" width={28} onChange={(v) => setMc(mc.map((x, j) => (j === i ? { ...x, livello: Math.max(1, v) } : x)))} />
+                    {m.classe && (
+                      <select
+                        value={m.sottoclasse || ''}
+                        onChange={(e) => {
+                          const sub = e.target.value;
+                          const multiNuovo = mc.map((x, j) => (j === i ? { ...x, sottoclasse: sub } : x));
+                          const patch = { multiclasse: multiNuovo };
+                          if (sottoclasseTerzoIncantatore(m.classe, sub)) {
+                            const slot = slotDaClasseLivello(m.classe, m.livello, sub);
+                            if (slot) patch.slotIncantesimo = slot;
+                          }
+                          aggiorna(patch);
+                        }}
+                        style={{ ...styles.inlineInput, padding: '4px 6px', flex: 1, minWidth: 130 }}
+                      >
+                        <option value="">{t('profilo.sottoclasse')}: {t('crea.scegli')}</option>
+                        {sottoclassiPerClasse(m.classe).map((sc) => (
+                          <option key={sc} value={sc}>{traduciDato(sc)}</option>
+                        ))}
+                      </select>
+                    )}
                     <button style={{ ...styles.buttonMini, color: C.red }} title={t('modal.elimina')} onClick={() => setMc(mc.filter((_, j) => j !== i))}>🗑</button>
                   </div>
                 ))}
                 <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
-                  <button style={{ ...styles.buttonMini }} onClick={() => setMc([...mc, { classe: '', livello: 1 }])}>➕ {t('mc.aggiungi')}</button>
+                  <button style={{ ...styles.buttonMini }} onClick={() => setMc([...mc, { classe: '', livello: 1, sottoclasse: '' }])}>➕ {t('mc.aggiungi')}</button>
                   <button style={{ ...styles.button, fontSize: 12, padding: '5px 12px' }} title={t('mc.applica_tip')} onClick={() => {
                     const classi = [{ classe: scheda.classe, livello: scheda.livello || 1 }, ...mc.filter((m) => m.classe)];
                     const slot = slotMulticlasse(classi);
@@ -6832,7 +6824,7 @@ export default function App() {
 
               {/* Riga 2 — Punti Ferita (allineata a Destrezza + Costituzione) */}
               <div className="pm-pf">
-                <div style={{ ...styles.vitalBox, gridColumn: 'span 4', padding: '32px 14px 12px' }}>
+                <div style={{ ...styles.vitalBox, gridColumn: 'span 4', padding: '14px 14px 12px' }}>
                   <SfondoVit>🩸</SfondoVit>
                   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
                     <div style={{ ...styles.vitalLabel, margin: 0, fontSize: 13 }}>❤️ {t("vital.pf")}</div>
@@ -6848,7 +6840,7 @@ export default function App() {
                     const percTemp = Math.max(0, Math.min(100, (temp / max) * 100));
                     const coloreNormale = (att / Math.max(1, maxPf)) > 0.5 ? 'linear-gradient(90deg, #2e7d32, #4caf50)' : (att / Math.max(1, maxPf)) > 0.25 ? 'linear-gradient(90deg, #f57f17, #ffb300)' : 'linear-gradient(90deg, #c62828, #e53935)';
                     return (
-                      <div style={{ position: 'relative', height: 30, borderRadius: 15, background: 'rgba(0,0,0,0.7)', border: `2px solid ${C.goldDark}`, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.3)', overflow: 'hidden', marginBottom: 6, display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''} — click per modificare`}>
+                      <div style={{ position: 'relative', width: '100%', height: 28, borderRadius: 14, background: 'rgba(0,0,0,0.7)', border: `2px solid ${C.goldDark}`, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.3)', overflow: 'hidden', marginBottom: 8, display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
                         <div style={{ width: `${percNormale}%`, height: '100%', background: coloreNormale, transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: '0 0 10px rgba(76,175,80,0.5)', position: 'relative' }}>
                           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)' }} />
                         </div>
@@ -6858,7 +6850,7 @@ export default function App() {
                           </div>
                         )}
                         {/* Overlay cliccabile per modificare PF attuali */}
-                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, textShadow: '0 1px 3px rgba(0,0,0,0.9)', letterSpacing: 0.5, gap: 3 }}>
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, textShadow: '0 1px 3px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.8)', letterSpacing: 0.5, gap: 4 }}>
                           <span style={{ color: '#fff', cursor: 'pointer' }}>
                             <Editable value={scheda.pfAttuali} tipo="numero" onChange={(v) => {
                               const danno = scheda.pfAttuali - v;
@@ -6868,7 +6860,7 @@ export default function App() {
                               }
                             }} width={38} style={{ color: '#fff', fontWeight: 800, fontSize: 14, textShadow: '0 1px 3px rgba(0,0,0,0.9)', background: 'transparent', border: 'none' }} />
                           </span>
-                          <span style={{ color: 'rgba(255,255,255,0.8)', fontWeight: 600, fontSize: 13 }}>/ {maxPf}</span>
+                          <span style={{ color: '#fff' }}>/ {maxPf}</span>
                         </div>
                       </div>
                     );
@@ -6876,8 +6868,13 @@ export default function App() {
 
                   {/* PF Temporanei — centrati sotto la barra */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 8 }}>
-                    <span style={{ fontSize: 11, color: C.inkDim }}>🛡️ {t("vital.temporanei")}</span>
-                    <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={32} style={{ fontSize: 13, fontWeight: 'bold', color: '#42a5f5' }} />
+                    <span
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#42a5f5', background: 'rgba(66,165,245,0.12)', border: '1px solid rgba(66,165,245,0.45)', borderRadius: 12, padding: '2px 10px' }}
+                      title={t('vital.temporanei')}
+                    >
+                      🛡️ <span style={{ fontSize: 10, color: C.inkDim, letterSpacing: 0.4, textTransform: 'uppercase' }}>{t("vital.temporanei")}</span>
+                      <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={28} style={{ fontSize: 13, fontWeight: 'bold', color: '#42a5f5' }} />
+                    </span>
                   </div>
 
                   <div style={{ display: 'flex', gap: 6, marginBottom: 6, justifyContent: 'center' }}>
@@ -6990,7 +6987,7 @@ export default function App() {
               )}
             </div>
             <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
-              <SfondoVit>🌙</SfondoVit>
+              <SfondoVit>☕</SfondoVit>
               <div style={styles.vitalLabel}>{t("vital.riposo")}</div>
                   <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
                     <button style={{ ...styles.buttonMini, fontSize: 11 }} onClick={() => riposoBreve()} title={t('vital.riposo_breve_tip')}>☕ {t("vital.breve")}</button>
