@@ -89,9 +89,103 @@ const LISTA_ARMI_GUERRA_DETTAGLIO = [
   'Spada lunga', 'Spadone', 'Stocco', 'Tridente'
 ];
 
-/** Menù a tendina custom per le competenze: evidenzia in nero scuro e con spunta le voci possedute, mostra le altre in chiaro */
-function TendinaCompetenzaCustom({ label, anteprima, voci, onToggle }) {
+/** Menù a tendina custom per le competenze: grafica con testata oro, gruppi tematici, ricerca rapida, contrasto nitido e supporto aggiunta personalizzata */
+function TendinaCompetenzaCustom({
+  label,
+  anteprima,
+  voci,
+  gruppi,
+  onToggle,
+  onAggiungiCustom,
+  mostraRicerca = false,
+}) {
   const [aperto, setAperto] = useState(false);
+  const [cerca, setCerca] = useState('');
+  const [nuovaVoce, setNuovaVoce] = useState('');
+
+  const query = cerca.trim().toLowerCase();
+
+  function renderItem(v, i) {
+    return (
+      <div
+        key={v.id || i}
+        onClick={() => {
+          if (onToggle) onToggle(v.id);
+        }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          padding: '5px 8px',
+          borderRadius: 5,
+          cursor: onToggle ? 'pointer' : 'default',
+          background: v.attivo ? 'rgba(200, 140, 20, 0.24)' : 'transparent',
+          border: v.attivo ? `1px solid ${C.goldDark}` : '1px solid transparent',
+          marginBottom: 3,
+          transition: 'all 0.12s ease',
+        }}
+        onMouseEnter={(e) => {
+          if (!v.attivo) {
+            e.currentTarget.style.background = 'rgba(200, 140, 20, 0.08)';
+            e.currentTarget.style.borderColor = 'rgba(200, 140, 20, 0.25)';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!v.attivo) {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.borderColor = 'transparent';
+          }
+        }}
+      >
+        <span style={{ fontSize: 11, color: v.attivo ? C.goldDark : C.inkDim, fontWeight: 800, width: 14, textAlign: 'center', flexShrink: 0 }}>
+          {v.attivo ? '✓' : '○'}
+        </span>
+        <span
+          style={{
+            fontSize: 11.5,
+            color: v.attivo ? C.ink : C.inkDim,
+            fontWeight: v.attivo ? 700 : 400,
+            flex: 1,
+          }}
+        >
+          {v.label}
+        </span>
+      </div>
+    );
+  }
+
+  let elementiRender = null;
+
+  if (gruppi && gruppi.length > 0) {
+    const gruppiFiltrati = gruppi.map((g) => ({
+      titolo: g.titolo,
+      voci: (g.voci || []).filter((v) => !query || v.label.toLowerCase().includes(query)),
+    })).filter((g) => g.voci.length > 0);
+
+    elementiRender = gruppiFiltrati.length === 0 ? (
+      <div style={{ padding: '12px 8px', textAlign: 'center', fontSize: 11, color: C.inkDim }}>
+        Nessun risultato per "{cerca}"
+      </div>
+    ) : (
+      gruppiFiltrati.map((g, gIdx) => (
+        <div key={g.titolo || gIdx} style={{ marginBottom: 6 }}>
+          <div style={{ fontSize: 9.5, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.6, padding: '4px 6px 2px', borderTop: gIdx > 0 ? `1px dashed ${C.border}` : 'none', marginTop: gIdx > 0 ? 4 : 0 }}>
+            {g.titolo}
+          </div>
+          {g.voci.map((v, i) => renderItem(v, i))}
+        </div>
+      ))
+    );
+  } else {
+    const vociFiltrate = (voci || []).filter((v) => !query || v.label.toLowerCase().includes(query));
+    elementiRender = vociFiltrate.length === 0 ? (
+      <div style={{ padding: '12px 8px', textAlign: 'center', fontSize: 11, color: C.inkDim }}>
+        Nessun risultato per "{cerca}"
+      </div>
+    ) : (
+      vociFiltrate.map((v, i) => renderItem(v, i))
+    );
+  }
 
   return (
     <div style={{ marginBottom: 4, position: 'relative' }}>
@@ -135,68 +229,96 @@ function TendinaCompetenzaCustom({ label, anteprima, voci, onToggle }) {
             onClick={(e) => e.stopPropagation()}
             style={{
               position: 'absolute',
-              top: 'calc(100% + 2px)',
+              top: 'calc(100% + 3px)',
               left: 0,
               right: 0,
-              minWidth: 200,
-              maxWidth: '90vw',
-              maxHeight: 220,
-              overflowY: 'auto',
+              minWidth: 220,
+              maxWidth: '92vw',
+              maxHeight: 270,
+              display: 'flex',
+              flexDirection: 'column',
               background: C.panel,
-              border: `1px solid ${C.gold}`,
+              border: `1px solid ${C.goldDark}`,
               borderRadius: 8,
-              boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-              padding: '6px 4px',
+              boxShadow: '0 12px 30px rgba(0,0,0,0.5)',
               zIndex: 1201,
+              overflow: 'hidden',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '2px 6px 6px', borderBottom: `1px solid ${C.border}`, marginBottom: 4 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</span>
+            {/* Header oro */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 8px', borderBottom: `1px solid ${C.border}`, background: 'rgba(200,140,20,0.08)' }}>
+              <span style={{ fontSize: 10.5, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.8 }}>{label}</span>
               <button
                 type="button"
                 onClick={() => setAperto(false)}
-                style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 10 }}
+                style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 10, lineHeight: 1, width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >✕</button>
             </div>
-            {voci.map((v, i) => (
-              <div
-                key={v.id || i}
-                onClick={() => {
-                  if (onToggle) onToggle(v.id);
-                }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '4px 8px',
-                  borderRadius: 4,
-                  cursor: onToggle ? 'pointer' : 'default',
-                  background: v.attivo ? 'rgba(200, 140, 20, 0.16)' : 'transparent',
-                  marginBottom: 2,
-                  transition: 'background 0.15s',
-                }}
-                onMouseEnter={(e) => {
-                  if (!v.attivo) e.currentTarget.style.background = 'rgba(0,0,0,0.04)';
-                }}
-                onMouseLeave={(e) => {
-                  if (!v.attivo) e.currentTarget.style.background = 'transparent';
-                }}
-              >
-                <span style={{ fontSize: 11, color: v.attivo ? C.goldDark : C.inkDim, fontWeight: 700, width: 14, textAlign: 'center' }}>
-                  {v.attivo ? '✓' : '○'}
-                </span>
-                <span
-                  style={{
-                    fontSize: 11,
-                    color: v.attivo ? '#111111' : C.inkDim,
-                    fontWeight: v.attivo ? 700 : 400,
-                    flex: 1,
-                  }}
-                >
-                  {v.label}
-                </span>
+
+            {/* Barra di ricerca opzionale */}
+            {mostraRicerca && (
+              <div style={{ padding: '6px 8px', borderBottom: `1px solid ${C.border}`, background: 'rgba(0,0,0,0.02)' }}>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    value={cerca}
+                    onChange={(e) => setCerca(e.target.value)}
+                    placeholder="🔍 Cerca..."
+                    autoFocus
+                    style={{
+                      ...styles.inlineInput,
+                      width: '100%',
+                      padding: '4px 22px 4px 8px',
+                      fontSize: 11,
+                      borderRadius: 5,
+                      border: `1px solid ${C.border}`,
+                      color: C.ink,
+                    }}
+                  />
+                  {cerca && (
+                    <button
+                      type="button"
+                      onClick={() => setCerca('')}
+                      style={{ position: 'absolute', right: 4, background: 'transparent', border: 0, color: C.inkDim, fontSize: 10, cursor: 'pointer', padding: 2 }}
+                    >✕</button>
+                  )}
+                </div>
               </div>
-            ))}
+            )}
+
+            {/* Lista con scroll */}
+            <div style={{ overflowY: 'auto', flex: 1, padding: '6px 6px' }}>
+              {elementiRender}
+            </div>
+
+            {/* Aggiunta personalizzata */}
+            {onAggiungiCustom && (
+              <div style={{ padding: '6px 8px', borderTop: `1px solid ${C.border}`, display: 'flex', gap: 4, background: 'rgba(200,140,20,0.04)' }}>
+                <input
+                  type="text"
+                  value={nuovaVoce}
+                  onChange={(e) => setNuovaVoce(e.target.value)}
+                  placeholder="+ Altro personalizzato..."
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && nuovaVoce.trim()) {
+                      onAggiungiCustom(nuovaVoce.trim());
+                      setNuovaVoce('');
+                    }
+                  }}
+                  style={{ ...styles.inlineInput, flex: 1, padding: '3px 6px', fontSize: 11, borderRadius: 4, border: `1px solid ${C.border}`, color: C.ink }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (nuovaVoce.trim()) {
+                      onAggiungiCustom(nuovaVoce.trim());
+                      setNuovaVoce('');
+                    }
+                  }}
+                  style={{ ...styles.buttonMini, padding: '2px 8px', fontSize: 11, fontWeight: 700, color: C.goldDark }}
+                >+</button>
+              </div>
+            )}
           </div>
         </>
       )}
@@ -277,18 +399,24 @@ function TendinaArmiSpecifiche({ valoreArmi, onToggleArmaSingola }) {
     .map((s) => s.trim())
     .filter((s) => Boolean(s) && !/armi\s*semplici|simple\s*weapons|armi\s*da\s*guerra|martial\s*weapons/i.test(s));
 
-  const voci = ARMI_5E.map((a) => {
-    const isSemplice = LISTA_ARMI_SEMPLICI_DETTAGLIO.some((s) => s.toLowerCase() === a.nome.toLowerCase());
-    const isGuerra = LISTA_ARMI_GUERRA_DETTAGLIO.some((g) => g.toLowerCase() === a.nome.toLowerCase());
-    const attiva = (haSemplici && isSemplice) || (haGuerra && isGuerra) || singole.some((s) => s.toLowerCase() === a.nome.toLowerCase());
-    return {
-      id: a.nome,
-      label: a.nome,
-      attivo: attiva,
-    };
-  });
+  const isArmaAttiva = (nomeArma) => {
+    const isSemplice = LISTA_ARMI_SEMPLICI_DETTAGLIO.some((s) => s.toLowerCase() === nomeArma.toLowerCase());
+    const isGuerra = LISTA_ARMI_GUERRA_DETTAGLIO.some((g) => g.toLowerCase() === nomeArma.toLowerCase());
+    return (haSemplici && isSemplice) || (haGuerra && isGuerra) || singole.some((s) => s.toLowerCase() === nomeArma.toLowerCase());
+  };
 
-  const competenti = voci.filter((v) => v.attivo);
+  const gruppi = GRUPPI_ARMI_5E.map((g) => ({
+    titolo: g.titolo,
+    voci: g.voci.map((nome) => ({
+      id: nome,
+      label: nome,
+      attivo: isArmaAttiva(nome),
+    })),
+  }));
+
+  const tutteVoci = gruppi.flatMap((g) => g.voci);
+  const competenti = tutteVoci.filter((v) => v.attivo);
+
   let anteprima = 'Nessuna arma';
   if (haSemplici && haGuerra) anteprima = 'Tutte le armi (Semplici e da guerra)';
   else if (haSemplici) anteprima = 'Tutte le armi semplici';
@@ -300,7 +428,8 @@ function TendinaArmiSpecifiche({ valoreArmi, onToggleArmaSingola }) {
     <TendinaCompetenzaCustom
       label={t("train.armi")}
       anteprima={anteprima}
-      voci={voci}
+      gruppi={gruppi}
+      mostraRicerca={true}
       onToggle={(nomeArma) => {
         if (onToggleArmaSingola) onToggleArmaSingola(nomeArma);
       }}
@@ -310,28 +439,50 @@ function TendinaArmiSpecifiche({ valoreArmi, onToggleArmaSingola }) {
 
 function TendinaStrumenti({ valoreStrumenti, onToggleStrumento }) {
   const listaAttuale = (valoreStrumenti || '').split(/[,\n]/).map((s) => s.trim()).filter(Boolean);
-  const tuttiStrumenti = [...new Set([...STRUMENTI_5E, ...listaAttuale])].sort((a, b) => a.localeCompare(b, 'it'));
 
-  const voci = tuttiStrumenti.map((s) => ({
-    id: s,
-    label: s,
-    attivo: listaAttuale.some((x) => x.toLowerCase() === s.toLowerCase()),
+  const isStrumentoAttivo = (nome) => listaAttuale.some((x) => x.toLowerCase() === nome.toLowerCase());
+
+  const standardInGruppi = new Set(GRUPPI_STRUMENTI_5E.flatMap((g) => g.voci.map((x) => x.toLowerCase())));
+  const customItems = listaAttuale.filter((x) => !standardInGruppi.has(x.toLowerCase()));
+
+  const gruppi = GRUPPI_STRUMENTI_5E.map((g) => ({
+    titolo: g.titolo,
+    voci: g.voci.map((nome) => ({
+      id: nome,
+      label: nome,
+      attivo: isStrumentoAttivo(nome),
+    })),
   }));
 
-  const attivi = voci.filter((v) => v.attivo);
+  if (customItems.length > 0) {
+    gruppi.push({
+      titolo: '✨ Personalizzati',
+      voci: customItems.map((nome) => ({
+        id: nome,
+        label: nome,
+        attivo: true,
+      })),
+    });
+  }
+
+  const attivi = listaAttuale;
   const anteprima = attivi.length === 0
     ? 'Nessuno strumento'
     : attivi.length === 1
-      ? attivi[0].label
-      : `${attivi[0].label} (+${attivi.length - 1})`;
+      ? attivi[0]
+      : `${attivi[0]} (+${attivi.length - 1})`;
 
   return (
     <TendinaCompetenzaCustom
       label={t("train.strumenti")}
       anteprima={anteprima}
-      voci={voci}
+      gruppi={gruppi}
+      mostraRicerca={true}
       onToggle={(nomeStrumento) => {
         if (onToggleStrumento) onToggleStrumento(nomeStrumento);
+      }}
+      onAggiungiCustom={(nomeNuovo) => {
+        if (onToggleStrumento) onToggleStrumento(nomeNuovo);
       }}
     />
   );
@@ -339,28 +490,50 @@ function TendinaStrumenti({ valoreStrumenti, onToggleStrumento }) {
 
 function TendinaLingue({ valoreLingue, onToggleLingua }) {
   const listaAttuale = (valoreLingue || '').split(/[,\n]/).map((s) => s.trim()).filter(Boolean);
-  const tutteLingue = [...new Set([...LINGUE_5E, ...listaAttuale])].sort((a, b) => a.localeCompare(b, 'it'));
 
-  const voci = tutteLingue.map((l) => ({
-    id: l,
-    label: l,
-    attivo: listaAttuale.some((x) => x.toLowerCase() === l.toLowerCase()),
+  const isLinguaAttiva = (nome) => listaAttuale.some((x) => x.toLowerCase() === nome.toLowerCase());
+
+  const standardInGruppi = new Set(GRUPPI_LINGUE_5E.flatMap((g) => g.voci.map((x) => x.toLowerCase())));
+  const customItems = listaAttuale.filter((x) => !standardInGruppi.has(x.toLowerCase()));
+
+  const gruppi = GRUPPI_LINGUE_5E.map((g) => ({
+    titolo: g.titolo,
+    voci: g.voci.map((nome) => ({
+      id: nome,
+      label: nome,
+      attivo: isLinguaAttiva(nome),
+    })),
   }));
 
-  const attive = voci.filter((v) => v.attivo);
+  if (customItems.length > 0) {
+    gruppi.push({
+      titolo: '✨ Personalizzate',
+      voci: customItems.map((nome) => ({
+        id: nome,
+        label: nome,
+        attivo: true,
+      })),
+    });
+  }
+
+  const attive = listaAttuale;
   const anteprima = attive.length === 0
     ? 'Nessuna lingua'
     : attive.length === 1
-      ? attive[0].label
-      : `${attive[0].label} (+${attive.length - 1})`;
+      ? attive[0]
+      : `${attive[0]} (+${attive.length - 1})`;
 
   return (
     <TendinaCompetenzaCustom
       label={t("equip.lingue")}
       anteprima={anteprima}
-      voci={voci}
+      gruppi={gruppi}
+      mostraRicerca={true}
       onToggle={(nomeLingua) => {
         if (onToggleLingua) onToggleLingua(nomeLingua);
+      }}
+      onAggiungiCustom={(nomeNuovo) => {
+        if (onToggleLingua) onToggleLingua(nomeNuovo);
       }}
     />
   );
@@ -1031,7 +1204,7 @@ import { spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spieg
 import { INCANTESIMI_DB, datiIncantesimo } from './data/incantesimi.js';
 
 const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(INCANTESIMI_DB)])).sort((a, b) => a.localeCompare(b, 'it'));
-import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E } from './data/dati5e.js';
+import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
 import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni } from './rules/regole.js';
@@ -1514,7 +1687,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.37';
+const APP_VERSION = '3.9.38';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).

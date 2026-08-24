@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.38',
+    voci: {
+      it: [
+        'Sezione Competenze potenziata: grafica con testata oro e contrasto nitido (sia in tema scuro che chiaro), suddivisione in gruppi tematici (armi semplici/guerra, strumenti musicali/artigianali, lingue standard/esotiche), barra di ricerca rapida 🔍 e possibilità di aggiungere voci personalizzate.',
+      ],
+      en: [
+        'Upgraded Proficiencies section: gold header design with crisp contrast (dark and light themes), thematic groupings (simple/martial weapons, musical/artisan tools, standard/exotic languages), quick search bar 🔍, and custom entries support.',
+      ],
+    },
+  },
+  {
     versione: '3.9.37',
     voci: {
       it: [

@@ -194,6 +194,65 @@ export const STRUMENTI_5E = [
   'Carte da gioco', 'Dadi', 'Strumento musicale', 'Cornamusa', 'Tamburo', 'Flauto', 'Liuto',
   'Lira', 'Corno', 'Zufolo', 'Veicoli (terrestri)', 'Veicoli (acquatici)',
 ];
+
+export const GRUPPI_ARMI_5E = [
+  {
+    titolo: '🗡️ Semplici da mischia',
+    voci: ['Ascia (Handaxe)', 'Bastone ferrato', 'Clava', 'Falcetto', 'Giavellotto', 'Grande clava', 'Lancia', 'Martello leggero', 'Mazza', 'Pugnale'],
+  },
+  {
+    titolo: '🏹 Semplici a distanza',
+    voci: ['Arco corto', 'Balestra leggera', 'Dardo', 'Fionda'],
+  },
+  {
+    titolo: '⚔️ Da guerra da mischia',
+    voci: ['Alabarda', 'Ascia bipenne', 'Ascia da battaglia', 'Falcione', 'Frusta', 'Martello da guerra', 'Mazza chiodata', 'Mazzafrusto', 'Picca', 'Piccone da guerra', 'Scimitarra', 'Spada corta', 'Spada lunga', 'Spadone', 'Stocco', 'Tridente'],
+  },
+  {
+    titolo: '🎯 Da guerra a distanza',
+    voci: ['Arco lungo', 'Balestra a mano', 'Balestra pesante'],
+  },
+];
+
+export const GRUPPI_STRUMENTI_5E = [
+  {
+    titolo: '🗝️ Speciali & Furtività',
+    voci: ['Arnesi da scasso', 'Borsa da erborista', 'Kit da falsario', 'Kit da travestimento', 'Strumenti da avvelenatore', 'Strumenti da navigatore'],
+  },
+  {
+    titolo: '🪕 Strumenti Musicali',
+    voci: ['Cornamusa', 'Corno', 'Flauto', 'Lira', 'Liuto', 'Tamburo', 'Zufolo', 'Strumento musicale'],
+  },
+  {
+    titolo: '🔧 Attrezzi Artigianali',
+    voci: [
+      'Attrezzi da fabbro', 'Attrezzi da fabbro d’armi', 'Attrezzi da alchimista', 'Attrezzi da falegname',
+      'Attrezzi da carpentiere', 'Attrezzi da cuoco', 'Attrezzi da conciatore', 'Attrezzi da calzolaio',
+      'Attrezzi da muratore', 'Attrezzi da birraio', 'Attrezzi da cartografo', 'Attrezzi da ceramista',
+      'Attrezzi da intagliatore', 'Attrezzi da gioielliere', 'Attrezzi da pittore', 'Attrezzi da vetraio',
+      'Attrezzi da tessitore', 'Attrezzi da vasaio', 'Strumenti da calligrafo'
+    ],
+  },
+  {
+    titolo: '🎲 Set da Gioco & Veicoli',
+    voci: ['Carte da gioco', 'Dadi', 'Set da gioco', 'Veicoli (terrestri)', 'Veicoli (acquatici)'],
+  },
+];
+
+export const GRUPPI_LINGUE_5E = [
+  {
+    titolo: '📜 Lingue Standard',
+    voci: ['Comune', 'Elfico', 'Gigante', 'Gnomesco', 'Goblin', 'Halfling', 'Nanico', 'Orchesco'],
+  },
+  {
+    titolo: '🔮 Lingue Esotiche',
+    voci: ['Abissale', 'Celestiale', 'Draconico', 'Infernale', 'Primordiale', 'Silvano', 'Sottocomune'],
+  },
+  {
+    titolo: '🤫 Linguaggi Segreti',
+    voci: ['Druidico', 'Gergo dei ladri'],
+  },
+];
 export const ARMI_5E = [
   // Semplici da mischia
   { nome: 'Ascia (Handaxe)', danno: '1d6', tipo: 'Tagliente', note: 'Leggera, Lancio (6/18 m)', maestria: 'Tormentare (Vex)' },
