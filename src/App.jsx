@@ -2141,6 +2141,9 @@ export default function App() {
   const [filtroClasseInc, setFiltroClasseInc] = useState('');
   const [soloRitualiInc, setSoloRitualiInc] = useState(false);
   const [listaMagicaMinimizzata, setListaMagicaMinimizzata] = useState(false);
+  const [livelliIncChiusi, setLivelliIncChiusi] = useState({});
+  const [filtroDiario, setFiltroDiario] = useState('');
+  const [vociDiarioChiuse, setVociDiarioChiuse] = useState({});
   const [filtroInventario, setFiltroInventario] = useState('');
   const [effettoInventarioAperto, setEffettoInventarioAperto] = useState(null);
   const [fontePopover, setFontePopover] = useState(null); // { tipo: 'ts'|'car', key, top, left } menu "da cosa deriva il bonus" aperto
@@ -7954,19 +7957,36 @@ export default function App() {
 
               {/* Gli slot sono ora mostrati all'interno di ciascun livello nella lista. */}
 
-              {/* Conteggi (compatti) + ricerca. L'aggiunta è un tastino piccolo
-                  sotto la lista di ogni livello (vedi più in basso). */}
+              {/* Conteggi (compatti) + ricerca + collasso livelli */}
               <div style={{ marginTop: 14, marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
                   <span style={{ ...styles.detail, fontSize: 11, opacity: 0.75 }}>{t('spell.tocca_nome')}</span>
-                  <button
-                    type="button"
-                    onClick={() => setListaMagicaMinimizzata((v) => !v)}
-                    title={listaMagicaMinimizzata ? t('spell.espandi_lista_tip') : t('spell.minimizza_lista_tip')}
-                    style={{ ...styles.buttonMini, padding: '2px 8px', fontSize: 11 }}
-                  >
-                    {listaMagicaMinimizzata ? `▸ ${t('spell.espandi_lista')}` : `▾ ${t('spell.minimizza_lista')}`}
-                  </button>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const allClosed = Array.from({ length: 10 }, (_, i) => i).every((l) => livelliIncChiusi[l]);
+                        if (allClosed) setLivelliIncChiusi({});
+                        else {
+                          const obj = {};
+                          for (let i = 0; i <= 9; i++) obj[i] = true;
+                          setLivelliIncChiusi(obj);
+                        }
+                      }}
+                      title="Comprimi o espandi tutti i livelli di incantesimo"
+                      style={{ ...styles.buttonMini, padding: '2px 8px', fontSize: 11 }}
+                    >
+                      {Array.from({ length: 10 }, (_, i) => i).every((l) => livelliIncChiusi[l]) ? '⇕ Espandi livelli' : '⇕ Riduci livelli'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setListaMagicaMinimizzata((v) => !v)}
+                      title={listaMagicaMinimizzata ? t('spell.espandi_lista_tip') : t('spell.minimizza_lista_tip')}
+                      style={{ ...styles.buttonMini, padding: '2px 8px', fontSize: 11 }}
+                    >
+                      {listaMagicaMinimizzata ? `▸ ${t('spell.espandi_lista')}` : `▾ ${t('spell.minimizza_lista')}`}
+                    </button>
+                  </div>
                 </div>
                 <div className="spell-filters" style={{ display: 'grid', gridTemplateColumns: 'minmax(150px, 2fr) repeat(3, minmax(105px, 1fr)) auto', gap: 6, alignItems: 'center' }}>
                   <input
@@ -8063,125 +8083,154 @@ export default function App() {
                     .filter((s) => s.livello === liv && match(s))
                     .sort((a, b) => Number(b.preparato !== false) - Number(a.preparato !== false) || String(a.nome || '').localeCompare(String(b.nome || ''), lingua));
                   if (filtriAttivi && spells.length === 0) return null;
-                  const countLiv = scheda.incantesimiLista.filter((x) => x.livello === liv).length;
+                  const countLiv = spells.length;
+                  const chiuso = Boolean(livelliIncChiusi[liv]);
+                  const numPrep = spells.filter((s) => s.preparato !== false).length;
+                  const slot = liv >= 1 ? (scheda.slotIncantesimo?.[liv] || { totale: 0, spesi: 0 }) : null;
+                  const aggiornaSlot = (patch) => aggiorna({ slotIncantesimo: { ...scheda.slotIncantesimo, [liv]: { ...slot, ...patch } } });
+
                   return (
-                    <div key={liv} style={{ marginBottom: 10 }}>
-                      {liv > 0 && (
-                        <h4 style={{ fontSize: 11, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.3, borderBottom: `1px solid ${C.border}`, paddingBottom: 1, marginBottom: 4, display: 'flex', justifyContent: 'space-between', gap: 6 }}>
-                          <span>{t('spell.n_livello', { n: liv })}</span>
-                        </h4>
-                      )}
-                      {liv >= 1 && (() => {
-                        const slot = scheda.slotIncantesimo[liv] || { totale: 0, spesi: 0 };
-                        const aggiornaSlot = (patch) => aggiorna({ slotIncantesimo: { ...scheda.slotIncantesimo, [liv]: { ...slot, ...patch } } });
-                        return (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, opacity: slot.totale > 0 ? 1 : 0.6 }}>
-                            <span style={{ fontSize: 12, color: C.inkDim, fontWeight: 500 }}>{t('spell.slot')}:</span>
-                            <Editable value={slot.totale} tipo="numero" width={26} onChange={(v) => aggiornaSlot({ totale: Math.max(0, Math.min(9, v)), spesi: Math.min(slot.spesi, Math.max(0, v)) })} title={t('tip.slot_totali')} />
-                            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
-                              {Array.from({ length: slot.totale }, (_, i) => i + 1).map((i) => (
-                                <span key={i} style={styles.pip(slot.spesi >= i, COLORE_DADO[6])} title={`Spesi: ${slot.spesi}/${slot.totale} (click per segnare)`} onClick={() => aggiornaSlot({ spesi: slot.spesi >= i ? i - 1 : i })} />
-                              ))}
-                            </div>
-                            {/(warlock|patto)/i.test(scheda.classe || '') && (
-                              <span style={{ fontSize: 11, color: C.goldDark, fontWeight: 700, marginLeft: 'auto' }} title={t('spell.pact_tip')}>🌙 {t('spell.pact')}</span>
-                            )}
-                          </div>
-                        );
-                      })()}
-                      {spells.length > 0 && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                          {spells.map((s) => {
-                            const eff = spiegaIncantesimo(s.nome);
-                            const dbInc = datiIncantesimo(s.nome) || {};
-                            const det = dettagliIncantesimo(s.nome) || {};
-                            const tp = s.tempo || dbInc.tempo || det.tempo || '1 Az.';
-                            const tempoLabel = /reaz/i.test(tp) ? t('spell.tempo_reazione')
-                              : /bonus/i.test(tp) ? t('spell.tempo_bonus')
-                              : /^(az|1 az|azione)/i.test(tp) ? t('spell.tempo_azione')
-                              : tp;
-                            const gittata = s.gittata || dbInc.gittata || det.gittata || 'Personale';
-                            const scuola = s.scuola || dbInc.scuola || det.scuola || '';
-                            const area = s.area || dbInc.area || det.area || '';
-                            const danno = s.danno || dbInc.danno || det.danno || '';
-                            const tipoDanno = s.tipoDanno || dbInc.tipoDanno || det.tipoDanno || '';
-                            const note = s.note || det.note || '';
-                            const chip = (icona, etichetta, testo) => (
-                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, color: C.inkDim, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 4, padding: '1px 6px', flexShrink: 0, whiteSpace: 'nowrap' }}>
-                                <span aria-hidden style={{ opacity: 0.75 }}>{icona}</span>
-                                <span style={{ opacity: 0.7 }}>{etichetta}:</span> <span style={{ color: C.ink }}>{testo}</span>
-                              </span>
-                            );
-                            return (
-                              <div key={s.id} style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 8px', background: C.panelLight, opacity: (classePreparata && s.livello >= 1 && s.preparato === false) ? 0.5 : 1 }}>
-                                {/* Nome + info (chip) + pulsanti su UNA sola riga: i dettagli
-                                    stanno in una fascia a scorrimento orizzontale, così NON
-                                    vanno mai a capo su due/tre righe. */}
-                                <div className="spell-row" style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: 4 }}>
-                                  <button
-                                    style={{ background: 'transparent', border: 'none', color: C.ink, fontWeight: 700, cursor: 'pointer', textAlign: 'left', padding: 0, fontSize: 14, lineHeight: 1.2, textDecoration: 'underline dotted', textUnderlineOffset: 3, whiteSpace: 'nowrap', flexShrink: 0 }}
-                                    title={t('tip.cosa_fa_inc')}
-                                    onClick={() => setInfo({ titolo: `${s.nome || 'Incantesimo'}${s.livello === 0 ? ' · Trucchetto' : ` · ${s.livello}° livello`}`, testo: eff || 'Nessuna descrizione disponibile per questo incantesimo. Aprilo con ✎ per aggiungere delle note.' })}
-                                  >
-                                    {s.nome || t('menu.senza_nome')}
-                                  </button>
-                                  {s.bonus && (
-                                    <span
-                                      title={t('spell.bonus_badge_tooltip')}
-                                      style={{ fontSize: 10, fontWeight: 700, color: C.goldDark, border: `1px solid ${C.goldDark}`, borderRadius: 6, padding: '0 4px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}
-                                      onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, bonus: false } : x)) })}
-                                    >✦ {t('spell.bonus_badge')}</span>
-                                  )}
-                                  {/* Fascia dettagli: una sola riga, scorre in orizzontale se serve. */}
-                                  <div className="spell-chips" style={{ display: 'flex', flexWrap: 'nowrap', gap: 4, alignItems: 'center', overflowX: 'auto', flex: '1 1 auto', minWidth: 0 }}>
-                                    {chip('⏱', t('spell.chip_tempo'), tempoLabel)}
-                                    {chip('🎯', t('spell.chip_gittata'), gittata)}
-                                    {scuola && chip('🔮', 'Scuola', traduciDato(scuola))}
-                                    {area && chip('📐', 'Area', area)}
-                                    {/* Danno solo testuale (non tirabile): resta un chip informativo.
-                                        Quando è un'espressione di dado valida, il tiro dei danni va
-                                        nella riga azioni qui sotto, DOPO il tiro per colpire. */}
-                                    {(danno || tipoDanno) && !parseEspressioneDado(danno) && (
-                                      chip('💥', 'Danno', [danno, tipoDanno].filter(Boolean).join(' '))
-                                    )}
-                                    {note && chip('📝', t('spell.chip_note'), note)}
-                                  </div>
-                                  {/* Tiri (solo per incantesimi con danno): sulla STESSA riga, mai a capo. */}
-                                  {parseEspressioneDado(danno) && (
-                                    <div className="spell-rolls" style={{ display: 'flex', gap: 4, flexShrink: 0, alignItems: 'center' }}>
-                                      <button
-                                        style={{ ...styles.buttonMini, fontSize: 12, padding: '3px 8px', fontWeight: 600, borderColor: C.goldDark, color: C.goldDark, whiteSpace: 'nowrap' }}
-                                        title={`${t('spell.tira_attacco')} — ${t('spell.colpire')}`}
-                                        onClick={() => lanciaD20(`${t('spell.attacco_inc')}: ${s.nome}`, scheda.bonusCompetenza + (modIncantatore || 0), { attacco: { nome: s.nome, danno, tipoDanno, isSpell: true }, magia: true, suono: 'tiro' })}
-                                      >🎯 {conSegno(scheda.bonusCompetenza + (modIncantatore || 0))}</button>
-                                      <button
-                                        className="tirabile"
-                                        style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, fontWeight: 600, color: C.red, background: C.bg, border: `1px solid ${C.red}`, borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}
-                                        title={t('spell.tira_danni_diretti')}
-                                        onClick={() => lanciaDanniDiretti(`${s.nome}${tipoDanno ? ` · ${tipoDanno}` : ''}`, danno, true)}
-                                      ><span aria-hidden>💥</span><span>{[danno, tipoDanno].filter(Boolean).join(' ')}</span><span aria-hidden style={{ opacity: 0.65 }}>🎲</span></button>
-                                    </div>
-                                  )}
-                                  {/* Pulsanti azione: restano sulla stessa riga, a destra. */}
-                                  <div className="spell-actions" style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                                    {classePreparata && s.livello >= 1 && (
-                                      <button
-                                        style={{ ...styles.buttonMini, color: s.preparato !== false ? C.goldDark : C.inkDim, borderColor: s.preparato !== false ? C.goldDark : C.border }}
-                                        title={s.preparato === false && preparatiPieni && !s.bonus ? t('spell.max_tooltip') : (s.preparato !== false ? t('spell.preparato_si') : t('spell.preparato_no'))}
-                                        disabled={s.preparato === false && preparatiPieni && !s.bonus}
-                                        onClick={() => cambiaPreparazione(s)}
-                                      >{s.preparato !== false ? '⭐' : '☆'}</button>
-                                    )}
-                                    {!s.catalogo && <button style={styles.buttonMini} title={t('tip.modifica')} onClick={() => setDettaglioInc(s.id)}>✎</button>}
-                                    {!s.catalogo && <button style={{ ...styles.buttonMini, color: C.red }} title={t('tip.elimina_inc')} onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })}>🗑</button>}
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
+                    <div key={liv} style={{ marginBottom: 8, border: `1px solid ${C.border}`, borderRadius: 8, padding: 8, background: 'rgba(0,0,0,0.015)' }}>
+                      {/* Intestazione livello collassabile */}
+                      <div
+                        onClick={() => setLivelliIncChiusi((prev) => ({ ...prev, [liv]: !prev[liv] }))}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          cursor: 'pointer', userSelect: 'none', padding: '2px 4px',
+                          borderBottom: chiuso ? 'none' : `1px solid ${C.border}`,
+                          paddingBottom: chiuso ? 2 : 6, marginBottom: chiuso ? 0 : 8,
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                          <span style={{ color: C.goldDark, fontSize: 13, fontWeight: 800 }}>{chiuso ? '▸' : '▾'}</span>
+                          <span style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: C.ink }}>
+                            {liv === 0 ? t('spell.trucchetti') : t('spell.n_livello', { n: liv })}
+                          </span>
+                          {liv >= 1 && slot && slot.totale > 0 && (
+                            <span style={{ fontSize: 11, color: C.inkDim, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 4, padding: '1px 5px' }}>
+                              Slot: {slot.totale - slot.spesi}/{slot.totale}
+                            </span>
+                          )}
                         </div>
+                        <div style={{ fontSize: 11, color: C.inkDim, display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span>{countLiv} {countLiv === 1 ? 'incantesimo' : 'incantesimi'}</span>
+                          {classePreparata && liv >= 1 && (
+                            <span style={{ color: numPrep > 0 ? C.goldDark : C.inkDim, fontWeight: 600 }}>({numPrep} prep.)</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {!chiuso && (
+                        <>
+                          {liv >= 1 && slot && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, opacity: slot.totale > 0 ? 1 : 0.6 }}>
+                              <span style={{ fontSize: 12, color: C.inkDim, fontWeight: 500 }}>{t('spell.slot')}:</span>
+                              <Editable value={slot.totale} tipo="numero" width={26} onChange={(v) => aggiornaSlot({ totale: Math.max(0, Math.min(9, v)), spesi: Math.min(slot.spesi, Math.max(0, v)) })} title={t('tip.slot_totali')} />
+                              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
+                                {Array.from({ length: slot.totale }, (_, i) => i + 1).map((i) => (
+                                  <span key={i} style={styles.pip(slot.spesi >= i, COLORE_DADO[6])} title={`Spesi: ${slot.spesi}/${slot.totale} (click per segnare)`} onClick={() => aggiornaSlot({ spesi: slot.spesi >= i ? i - 1 : i })} />
+                                ))}
+                              </div>
+                              {/(warlock|patto)/i.test(scheda.classe || '') && (
+                                <span style={{ fontSize: 11, color: C.goldDark, fontWeight: 700, marginLeft: 'auto' }} title={t('spell.pact_tip')}>🌙 {t('spell.pact')}</span>
+                              )}
+                            </div>
+                          )}
+
+                          {spells.length > 0 && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                              {spells.map((s) => {
+                                const eff = spiegaIncantesimo(s.nome);
+                                const dbInc = datiIncantesimo(s.nome) || {};
+                                const det = dettagliIncantesimo(s.nome) || {};
+                                const tp = s.tempo || dbInc.tempo || det.tempo || '1 Az.';
+                                const tempoLabel = /reaz/i.test(tp) ? t('spell.tempo_reazione')
+                                  : /bonus/i.test(tp) ? t('spell.tempo_bonus')
+                                  : /^(az|1 az|azione)/i.test(tp) ? t('spell.tempo_azione')
+                                  : tp;
+                                const gittata = s.gittata || dbInc.gittata || det.gittata || 'Personale';
+                                const scuola = s.scuola || dbInc.scuola || det.scuola || '';
+                                const area = s.area || dbInc.area || det.area || '';
+                                const danno = s.danno || dbInc.danno || det.danno || '';
+                                const tipoDanno = s.tipoDanno || dbInc.tipoDanno || det.tipoDanno || '';
+                                const note = s.note || det.note || '';
+                                const chip = (icona, etichetta, testo) => (
+                                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, color: C.inkDim, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 4, padding: '1px 6px', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                                    <span aria-hidden style={{ opacity: 0.75 }}>{icona}</span>
+                                    <span style={{ opacity: 0.7 }}>{etichetta}:</span> <span style={{ color: C.ink }}>{testo}</span>
+                                  </span>
+                                );
+                                return (
+                                  <div key={s.id} style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 8px', background: C.panelLight, opacity: (classePreparata && s.livello >= 1 && s.preparato === false) ? 0.5 : 1 }}>
+                                    <div className="spell-row" style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: 4 }}>
+                                      <button
+                                        style={{ background: 'transparent', border: 'none', color: C.ink, fontWeight: 700, cursor: 'pointer', textAlign: 'left', padding: 0, fontSize: 14, lineHeight: 1.2, textDecoration: 'underline dotted', textUnderlineOffset: 3, whiteSpace: 'nowrap', flexShrink: 0 }}
+                                        title={t('tip.cosa_fa_inc')}
+                                        onClick={() => setInfo({ titolo: `${s.nome || 'Incantesimo'}${s.livello === 0 ? ' · Trucchetto' : ` · ${s.livello}° livello`}`, testo: eff || 'Nessuna descrizione disponibile per questo incantesimo. Aprilo con ✎ per aggiungere delle note.' })}
+                                      >
+                                        {s.nome || t('menu.senza_nome')}
+                                      </button>
+                                      {s.bonus && (
+                                        <span
+                                          title={t('spell.bonus_badge_tooltip')}
+                                          style={{ fontSize: 10, fontWeight: 700, color: C.goldDark, border: `1px solid ${C.goldDark}`, borderRadius: 6, padding: '0 4px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}
+                                          onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, bonus: false } : x)) })}
+                                        >✦ {t('spell.bonus_badge')}</span>
+                                      )}
+                                      <div className="spell-chips" style={{ display: 'flex', flexWrap: 'nowrap', gap: 4, alignItems: 'center', overflowX: 'auto', flex: '1 1 auto', minWidth: 0 }}>
+                                        {chip('⏱', t('spell.chip_tempo'), tempoLabel)}
+                                        {chip('🎯', t('spell.chip_gittata'), gittata)}
+                                        {scuola && chip('🔮', 'Scuola', traduciDato(scuola))}
+                                        {area && chip('📐', 'Area', area)}
+                                        {(danno || tipoDanno) && !parseEspressioneDado(danno) && (
+                                          chip('💥', 'Danno', [danno, tipoDanno].filter(Boolean).join(' '))
+                                        )}
+                                        {note && chip('📝', t('spell.chip_note'), note)}
+                                      </div>
+                                      {parseEspressioneDado(danno) && (
+                                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                                          {modIncantatore !== null && (
+                                            <button
+                                              className="tirabile"
+                                              style={{ ...styles.buttonMini, padding: '2px 6px', fontSize: 11, fontWeight: 700, color: C.goldDark, borderColor: C.goldDark, display: 'inline-flex', alignItems: 'center', gap: 2 }}
+                                              title={t('spell.tira_attacco')}
+                                              onClick={() => lanciaD20(`${t('spell.attacco_inc')}: ${s.nome}`, scheda.bonusCompetenza + modIncantatore, { magia: true })}
+                                            >
+                                              🎯 {conSegno(scheda.bonusCompetenza + modIncantatore)}
+                                            </button>
+                                          )}
+                                          <button
+                                            className="tirabile"
+                                            style={{ ...styles.buttonMini, padding: '2px 6px', fontSize: 11, fontWeight: 700, color: C.red, borderColor: C.red, display: 'inline-flex', alignItems: 'center', gap: 2 }}
+                                            title={t('tip.tira_danno_inc')}
+                                            onClick={() => lanciaDanno(s.nome, danno, tipoDanno)}
+                                          >
+                                            💥 {danno}{tipoDanno ? ` ${tipoDanno}` : ''}
+                                            <span aria-hidden style={{ fontSize: 9, opacity: 0.6 }}>🎲</span>
+                                          </button>
+                                        </div>
+                                      )}
+                                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 2, flexShrink: 0, marginLeft: 'auto' }}>
+                                        {classePreparata && s.livello >= 1 && (
+                                          <button
+                                            style={{ ...styles.buttonMini, color: s.preparato !== false ? C.goldDark : C.inkDim, borderColor: s.preparato !== false ? C.goldDark : C.border }}
+                                            title={s.preparato === false && preparatiPieni && !s.bonus ? t('spell.max_tooltip') : (s.preparato !== false ? t('spell.preparato_si') : t('spell.preparato_no'))}
+                                            disabled={s.preparato === false && preparatiPieni && !s.bonus}
+                                            onClick={() => cambiaPreparazione(s)}
+                                          >{s.preparato !== false ? '⭐' : '☆'}</button>
+                                        )}
+                                        {!s.catalogo && <button style={styles.buttonMini} title={t('tip.modifica')} onClick={() => setDettaglioInc(s.id)}>✎</button>}
+                                        {!s.catalogo && <button style={{ ...styles.buttonMini, color: C.red }} title={t('tip.elimina_inc')} onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })}>🗑</button>}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                          {!filtriAttivi && AddControl(liv)}
+                        </>
                       )}
-                      {!filtriAttivi && AddControl(liv)}
                     </div>
                   );
                 };
@@ -8794,53 +8843,200 @@ export default function App() {
                 const modificaVoce = (id, patch) =>
                   aggiorna({ diario: diario.map((v) => (v.id === id ? { ...v, ...patch } : v)) });
                 const oggi = new Date().toISOString().slice(0, 10);
+                const qDiario = filtroDiario.trim().toLowerCase();
+                const diarioFiltrato = qDiario
+                  ? diario.filter((v) => (v.titolo || '').toLowerCase().includes(qDiario) || (v.testo || '').toLowerCase().includes(qDiario) || (v.data || '').includes(qDiario))
+                  : diario;
+
+                const copiaDiario = () => {
+                  const testo = diario.map((v, i) => `=== Sessione ${diario.length - i}: ${v.titolo || 'Senza titolo'} (${v.data || 'Nessuna data'}) ===\n\n${v.testo || ''}\n`).join('\n---\n\n');
+                  navigator.clipboard?.writeText(testo);
+                  alert('Diario copiato negli appunti!');
+                };
+
+                const copiaVoce = (v) => {
+                  const testo = `Sessione: ${v.titolo || 'Senza titolo'} (${v.data || 'Nessuna data'})\n\n${v.testo || ''}`;
+                  navigator.clipboard?.writeText(testo);
+                  alert('Sessione copiata negli appunti!');
+                };
+
+                const toggleTutteVoci = () => {
+                  const allClosed = diario.every((v) => vociDiarioChiuse[v.id]);
+                  if (allClosed) setVociDiarioChiuse({});
+                  else {
+                    const obj = {};
+                    diario.forEach((v) => { obj[v.id] = true; });
+                    setVociDiarioChiuse(obj);
+                  }
+                };
+
                 return (
                   <>
-                    <button
-                      className="no-stampa"
-                      style={{ ...styles.buttonMini, borderColor: C.goldDark, color: C.goldDark, marginBottom: 10 }}
-                      onClick={() => aggiorna({
-                        diario: [{ id: `d-${Date.now()}`, data: oggi, titolo: '', testo: '' }, ...diario],
-                      })}
-                    >＋ {t('diario.aggiungi')}</button>
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                        <button
+                          className="no-stampa"
+                          style={{ ...styles.buttonMini, borderColor: C.goldDark, color: C.goldDark, fontWeight: 700, padding: '4px 10px' }}
+                          onClick={() => {
+                            const newId = `d-${Date.now()}`;
+                            aggiorna({
+                              diario: [{ id: newId, data: oggi, titolo: '', testo: '' }, ...diario],
+                            });
+                            setVociDiarioChiuse((prev) => ({ ...prev, [newId]: false }));
+                          }}
+                        >
+                          ＋ Nuova Sessione
+                        </button>
+                        {diario.length > 0 && (
+                          <>
+                            <button
+                              className="no-stampa"
+                              style={{ ...styles.buttonMini, fontSize: 11, padding: '4px 8px' }}
+                              onClick={toggleTutteVoci}
+                              title="Espandi o comprimi tutte le sessioni"
+                            >
+                              {diario.every((v) => vociDiarioChiuse[v.id]) ? '⇕ Espandi tutte' : '⇕ Comprimi tutte'}
+                            </button>
+                            <button
+                              className="no-stampa"
+                              style={{ ...styles.buttonMini, fontSize: 11, padding: '4px 8px' }}
+                              onClick={copiaDiario}
+                              title="Copia l'intero diario negli appunti"
+                            >
+                              📋 Copia diario
+                            </button>
+                          </>
+                        )}
+                      </div>
+                      {diario.length > 1 && (
+                        <input
+                          value={filtroDiario}
+                          onChange={(e) => setFiltroDiario(e.target.value)}
+                          placeholder="🔍 Cerca nelle sessioni..."
+                          style={{ ...styles.inlineInput, fontSize: 12, padding: '4px 8px', width: 160 }}
+                        />
+                      )}
+                    </div>
 
                     {diario.length === 0 && (
-                      <div style={{ ...styles.detail, fontSize: 12 }}>{t('diario.vuoto')}</div>
+                      <div style={{ ...styles.detail, fontSize: 12, fontStyle: 'italic', textAlign: 'center', padding: '16px 0' }}>
+                        📖 Il diario è vuoto. Clicca su "Nuova Sessione" per iniziare a prendere appunti sulle tue avventure!
+                      </div>
                     )}
 
-                    {diario.map((v) => (
-                      <div key={v.id} style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', marginBottom: 8 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
-                          <input
-                            type="date"
-                            value={v.data || ''}
-                            onChange={(e) => modificaVoce(v.id, { data: e.target.value })}
-                            style={{ ...styles.inlineInput, padding: '3px 6px', fontSize: 12, width: 140 }}
-                          />
-                          <input
-                            value={v.titolo || ''}
-                            placeholder={t('diario.titolo_ph')}
-                            onChange={(e) => modificaVoce(v.id, { titolo: e.target.value })}
-                            style={{ ...styles.inlineInput, flex: '1 1 200px', minWidth: 140, padding: '3px 6px', fontSize: 13, fontWeight: 700 }}
-                          />
-                          <button
-                            className="no-stampa"
-                            style={{ ...styles.buttonMini, padding: '0 7px', color: C.red, flexShrink: 0 }}
-                            title={t('diario.elimina')}
-                            onClick={() => setConferma({
-                              titolo: t('sez.diario'),
-                              testo: t('diario.elimina_conferma'),
-                              onConferma: () => aggiorna({ diario: diario.filter((x) => x.id !== v.id) }),
-                            })}
-                          >✕</button>
-                        </div>
-                        <AreaTesto
-                          value={v.testo || ''}
-                          placeholder={t('diario.testo_ph')}
-                          onChange={(nuovo) => modificaVoce(v.id, { testo: nuovo })}
-                        />
+                    {qDiario && diarioFiltrato.length === 0 && (
+                      <div style={{ ...styles.detail, fontSize: 12, fontStyle: 'italic', textAlign: 'center', padding: '10px 0' }}>
+                        Nessuna sessione corrisponde alla ricerca "{filtroDiario}".
                       </div>
-                    ))}
+                    )}
+
+                    {diarioFiltrato.map((v) => {
+                      const chiusa = Boolean(vociDiarioChiuse[v.id]);
+                      const numSessione = diario.length - diario.indexOf(v);
+                      return (
+                        <div
+                          key={v.id}
+                          style={{
+                            border: `1px solid ${C.border}`,
+                            borderRadius: 8,
+                            padding: '8px 10px',
+                            marginBottom: 8,
+                            background: C.panelLight,
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: chiusa ? 0 : 6, flexWrap: 'wrap' }}>
+                            <button
+                              type="button"
+                              onClick={() => setVociDiarioChiuse((prev) => ({ ...prev, [v.id]: !prev[v.id] }))}
+                              style={{ background: 'none', border: 'none', color: C.goldDark, fontSize: 14, cursor: 'pointer', padding: 0, fontWeight: 800 }}
+                              title={chiusa ? 'Espandi sessione' : 'Riduci sessione'}
+                            >
+                              {chiusa ? '▸' : '▾'}
+                            </button>
+                            <span
+                              style={{
+                                fontSize: 11,
+                                fontWeight: 700,
+                                color: C.goldDark,
+                                background: 'rgba(218, 165, 32, 0.12)',
+                                border: `1px solid ${C.goldDark}`,
+                                borderRadius: 4,
+                                padding: '1px 5px',
+                              }}
+                            >
+                              #{numSessione}
+                            </span>
+                            <input
+                              type="date"
+                              value={v.data || ''}
+                              onChange={(e) => modificaVoce(v.id, { data: e.target.value })}
+                              style={{ ...styles.inlineInput, padding: '2px 5px', fontSize: 11, width: 120 }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => modificaVoce(v.id, { data: oggi })}
+                              style={{ ...styles.buttonMini, fontSize: 10, padding: '1px 5px' }}
+                              title="Imposta data odierna"
+                            >
+                              Oggi
+                            </button>
+                            <input
+                              value={v.titolo || ''}
+                              placeholder={t('diario.titolo_ph')}
+                              onChange={(e) => modificaVoce(v.id, { titolo: e.target.value })}
+                              style={{ ...styles.inlineInput, flex: '1 1 180px', minWidth: 120, padding: '2px 6px', fontSize: 13, fontWeight: 700 }}
+                            />
+                            <button
+                              type="button"
+                              className="no-stampa"
+                              style={{ ...styles.buttonMini, padding: '0 6px', fontSize: 11, flexShrink: 0 }}
+                              title="Copia testo di questa sessione"
+                              onClick={() => copiaVoce(v)}
+                            >
+                              📋
+                            </button>
+                            <button
+                              className="no-stampa"
+                              style={{ ...styles.buttonMini, padding: '0 6px', color: C.red, flexShrink: 0 }}
+                              title={t('diario.elimina')}
+                              onClick={() => setConferma({
+                                titolo: t('sez.diario'),
+                                testo: t('diario.elimina_conferma'),
+                                onConferma: () => aggiorna({ diario: diario.filter((x) => x.id !== v.id) }),
+                              })}
+                            >
+                              ✕
+                            </button>
+                          </div>
+
+                          {chiusa ? (
+                            <div
+                              onClick={() => setVociDiarioChiuse((prev) => ({ ...prev, [v.id]: false }))}
+                              style={{
+                                fontSize: 12,
+                                color: C.inkDim,
+                                fontStyle: 'italic',
+                                cursor: 'pointer',
+                                paddingLeft: 22,
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }}
+                              title="Clicca per aprire"
+                            >
+                              {v.testo ? v.testo.slice(0, 100) + (v.testo.length > 100 ? '…' : '') : 'Nessun appunto.'}
+                            </div>
+                          ) : (
+                            <AreaTesto
+                              value={v.testo || ''}
+                              placeholder={t('diario.testo_ph')}
+                              onChange={(nuovo) => modificaVoce(v.id, { testo: nuovo })}
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
                   </>
                 );
               })()}
