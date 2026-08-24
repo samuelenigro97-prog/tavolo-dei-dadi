@@ -3778,6 +3778,27 @@ export default function App() {
 
   // --- Cloud Sync (GitHub Gist) ---
 
+  async function leggiContenutoFileGist(file, token) {
+    if (!file) return null;
+    if (!file.truncated && file.content) {
+      try { return JSON.parse(file.content); } catch {}
+    }
+    if (file.raw_url) {
+      try {
+        const headers = token ? { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3.raw' } : {};
+        const res = await fetch(file.raw_url, { headers });
+        if (res.ok) {
+          const text = await res.text();
+          return JSON.parse(text);
+        }
+      } catch {}
+    }
+    if (file.content) {
+      try { return JSON.parse(file.content); } catch {}
+    }
+    return null;
+  }
+
   async function salvaSuCloud(silenzioso = false) {
     if (!tokenSyncRef.current) {
       if (!silenzioso) setCloudStatus({ text: 'Inserisci il GitHub Token per salvare.', type: 'error' });
@@ -3818,8 +3839,10 @@ export default function App() {
         const outAttuale = await resAttuale.json();
         const fileAttuale = outAttuale.files?.['roster_tavolo_dei_dadi.json'];
         if (fileAttuale) {
-          const parsedAttuale = JSON.parse(fileAttuale.content);
-          rosterDaInviare = preservaImmaginiSeMancanti(rosterCloud, parsedAttuale);
+          const parsedAttuale = await leggiContenutoFileGist(fileAttuale, tokenSyncRef.current);
+          if (parsedAttuale) {
+            rosterDaInviare = preservaImmaginiSeMancanti(rosterCloud, parsedAttuale);
+          }
         }
       }
       const dati = JSON.stringify({ ...rosterDaInviare, _updatedAt: quando }, null, 2);
@@ -3873,9 +3896,10 @@ export default function App() {
     });
     if (!res.ok) throw new Error('Errore caricamento. Token o ID non validi.');
     const out = await res.json();
-    const file = out.files['roster_tavolo_dei_dadi.json'];
+    const file = out.files?.['roster_tavolo_dei_dadi.json'];
     if (!file) throw new Error('Il file "roster_tavolo_dei_dadi.json" non è presente nel Gist.');
-    const parsed = JSON.parse(file.content);
+    const parsed = await leggiContenutoFileGist(file, tokenUsato);
+    if (!parsed || !parsed.personaggi) throw new Error('Contenuto del backup GitHub non valido o danneggiato.');
     const loadedRoster = { attivo: parsed.attivo, personaggi: {} };
     for (const pid in parsed.personaggi) loadedRoster.personaggi[pid] = normalizeImported(parsed.personaggi[pid]);
     if (!loadedRoster.attivo || !loadedRoster.personaggi[loadedRoster.attivo]) {
@@ -3965,7 +3989,8 @@ export default function App() {
         const out = await res.json();
         const file = out.files?.['roster_tavolo_dei_dadi.json'];
         if (!file) return;
-        const parsed = JSON.parse(file.content);
+        const parsed = await leggiContenutoFileGist(file, githubToken);
+        if (!parsed || !parsed.personaggi) return;
         const cloudTs = Number(parsed._updatedAt) || 0;
         const localTs = Number(localStorage.getItem('scheda-interattiva:sync-ts')) || 0;
         if (cloudTs <= localTs) return; // il locale è già aggiornato quanto il cloud
@@ -6690,10 +6715,7 @@ export default function App() {
                 </CampoModulo>
                 <CampoModulo label={t("profilo.classe")} boxClassName={(scheda.multiclasse || []).some((m) => m.classe) ? 'classe-multi' : undefined}>
                   <CampoBloccato
-                    valore={[
-                      ...(scheda.classe ? [{ nome: scheda.classe, livello: scheda.livello || 1, sottoclasse: scheda.sottoclasse }] : []),
-                      ...(scheda.multiclasse || []).filter((m) => m.classe).map((m) => ({ nome: m.classe, livello: m.livello || 1, sottoclasse: m.sottoclasse })),
-                    ].map((c) => `${traduciDato(c.nome)} ${c.livello}${c.sottoclasse ? ` (${traduciDato(c.sottoclasse)})` : ''}`).join(' / ') || t('profilo.nessuna')}
+                    valore={[traduciDato(scheda.classe), ...(scheda.multiclasse || []).filter((m) => m.classe).map((m) => traduciDato(m.classe))].filter(Boolean).join(' + ') || t('profilo.nessuna')}
                     title={t('profilo.classe_bloccata')}
                   />
                 </CampoModulo>
@@ -6711,7 +6733,7 @@ export default function App() {
                         <div style={{ minWidth: 0, flex: 1 }}>{contenuto}</div>
                       </div>
                     ) : contenuto;
-                    const contenuto = (
+                    return (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: multi ? 6 : 4 }}>
                         {/* Sottoclasse della classe principale */}
                         {riga(scheda.classe, campoSottoclasse(scheda.classe, scheda.livello, scheda.sottoclasse, (v) => {
@@ -6732,30 +6754,21 @@ export default function App() {
                           }
                           aggiorna(patch);
                         }))}
-                        {/* Una sottoclasse per ogni classe del multiclasse */}
-                        {(scheda.multiclasse || []).map((m, i) => (m.classe ? (
-                          <div key={i}>
-                            {riga(m.classe, campoSottoclasse(m.classe, m.livello, m.sottoclasse, (v) =>
-                              aggiorna({ multiclasse: (scheda.multiclasse || []).map((x, j) => (j === i ? { ...x, sottoclasse: v } : x)) })
-                            ))}
+                        {/* Sottoclassi delle classi del multiclasse */}
+                        {(scheda.multiclasse || []).map((m, idx) => (m.classe ? (
+                          <div key={idx}>
+                            {riga(m.classe, campoSottoclasse(m.classe, m.livello, m.sottoclasse, (v) => {
+                              const multiNuovo = (scheda.multiclasse || []).map((x, i) => (i === idx ? { ...x, sottoclasse: v } : x));
+                              const patch = { multiclasse: multiNuovo };
+                              if (sottoclasseTerzoIncantatore(m.classe, v)) {
+                                const slot = slotDaClasseLivello(m.classe, m.livello, v);
+                                if (slot) patch.slotIncantesimo = slot;
+                              }
+                              aggiorna(patch);
+                            }))}
                           </div>
                         ) : null))}
                       </div>
-                    );
-                    // Con il multiclasse le righe multiple occupano troppo: le
-                    // chiudiamo in un <details> con riepilogo compatto in chiusura.
-                    if (!multi) return contenuto;
-                    const riepilogo = [
-                      scheda.sottoclasse || `${traduciDato(scheda.classe)}: —`,
-                      ...(scheda.multiclasse || []).filter((m) => m.classe).map((m) => m.sottoclasse || `${traduciDato(m.classe)}: —`),
-                    ].join(' · ');
-                    return (
-                      <details>
-                        <summary style={{ cursor: 'pointer', fontSize: 12, color: C.inkDim, userSelect: 'none' }} title="Click per mostrare/nascondere le sottoclassi">
-                          {riepilogo} <span style={{ opacity: 0.6 }}>▾</span>
-                        </summary>
-                        <div style={{ marginTop: 6 }}>{contenuto}</div>
-                      </details>
                     );
                   })()}
                 </CampoModulo>

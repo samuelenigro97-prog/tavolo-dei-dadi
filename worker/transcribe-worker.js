@@ -103,8 +103,8 @@ Regole:
 function cors(origin) {
   return {
     'Access-Control-Allow-Origin': origin || '*',
-    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-dm-key',
   };
 }
 
@@ -394,10 +394,13 @@ async function gestisciArchivio(request, env, headers, percorso) {
 
 export default {
   async fetch(request, env) {
-    const origin = env.ALLOW_ORIGIN || '*';
-    const headers = { ...cors(origin), 'Content-Type': 'application/json' };
+    const reqOrigin = request.headers.get('Origin') || '';
+    const configuredOrigin = env.ALLOW_ORIGIN || '*';
+    const allowOrigin = configuredOrigin === '*' || !reqOrigin ? configuredOrigin : (reqOrigin === configuredOrigin || reqOrigin.startsWith('http://localhost') || reqOrigin.startsWith('http://127.0.0.1') ? reqOrigin : configuredOrigin);
+    const corsHeaders = cors(allowOrigin);
+    const headers = { ...corsHeaders, 'Content-Type': 'application/json' };
 
-    if (request.method === 'OPTIONS') return new Response(null, { headers: cors(origin) });
+    if (request.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
     // Rotte KV (tutto il resto resta la trascrizione PDF).
     const percorso = new URL(request.url).pathname.replace(/\/+$/, '') || '/';
