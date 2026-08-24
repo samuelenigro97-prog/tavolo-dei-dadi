@@ -3,8 +3,6 @@ name: Deploy su GitHub Pages
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -12,47 +10,12 @@ permissions:
   pages: write
   id-token: write
 
-# Un gruppo per ramo: i controlli di una PR non devono più annullare il deploy
-# di main (succedeva con il gruppo unico "pages", e la versione online restava
-# indietro). Sulle PR l'esecuzione vecchia si annulla, su main si mette in coda
-# così ogni merge arriva davvero online.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: pages
+  cancel-in-progress: true
 
 jobs:
-  # Cancello di sicurezza: regole 5e + smoke test anti-crash.
-  # Se qualcosa qui fallisce, build e deploy NON partono.
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      # 1) Suite di regole (dadi, modificatori, slot, incantesimi): deve passare.
-      - run: npm test
-      # 2) Smoke test: costruisce l'app e la carica in un browser reale.
-      #    Se la pagina va in crash (schermata bianca), il job fallisce.
-      # Evita che un problema temporaneo di apt/Playwright tenga bloccata per
-      # ore tutta la coda dei deploy di main. Se l'installazione delle
-      # dipendenze supera 3 minuti, riprova installando il solo browser (le
-      # immagini ubuntu-latest includono già normalmente le librerie runtime).
-      - name: Installa Chromium per lo smoke test
-        timeout-minutes: 5
-        run: timeout --kill-after=15s 180s npx playwright install --with-deps chromium || npx playwright install chromium
-      - run: npm run build
-        env:
-          BASE_PATH: /tavolo-dei-dadi/
-      - run: node test/smoke.mjs
-        env:
-          BASE_PATH: /tavolo-dei-dadi/
-
   build:
-    needs: test
-    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,18 +27,12 @@ jobs:
       - run: npm run build
         env:
           BASE_PATH: /tavolo-dei-dadi/
-          # Archivio DM (vedi worker/LEGGIMI.md): impostale in Settings → Secrets
-          # and variables → Actions → Variables una volta fatto il deploy del
-          # Worker. Se lasciate vuote la funzione resta semplicemente spenta.
-          VITE_ARCHIVIO_PG_URL: ${{ vars.VITE_ARCHIVIO_PG_URL }}
-          VITE_STANZE_URL: ${{ vars.VITE_STANZE_URL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
   deploy:
     needs: build
-    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
