@@ -803,6 +803,37 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .selettore-personaggio { width: 100%; }
 }
 @media (max-width: 560px) {
+  .selettore-personaggio {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+  .selettore-personaggio > div:first-of-type {
+    width: 100% !important;
+    flex: 1 1 100% !important;
+  }
+  .selettore-personaggio-azioni {
+    display: flex !important;
+    width: 100% !important;
+    justify-content: space-between !important;
+    gap: 4px !important;
+    align-items: stretch !important;
+    flex-wrap: nowrap !important;
+  }
+  .selettore-personaggio-azioni button {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    padding: 6px 0 !important;
+    font-size: 15px !important;
+    height: 34px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .selettore-divisore {
+    display: none !important;
+  }
   .anagrafica > div:last-child > div:last-child { grid-template-columns: repeat(2, 1fr) !important; }
   /* su telefono i riquadri anagrafica e vitali passano a 2 colonne (leggibili,
      niente 5 colonne schiacciate); le altezze non sono più forzate uguali */
