@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.61',
+    voci: {
+      it: [
+        'Risoluzione Schermata Bianca: corretto un errore nella valutazione della soglia d\'ingombro che bloccava il caricamento della scheda su dispositivi con personaggi esistenti.',
+      ],
+      en: [
+        'White Screen Fix: fixed an encumbrance threshold reference error that caused sheet crashes on existing character loads.',
+      ],
+    },
+  },
+  {
     versione: '3.9.60',
     voci: {
       it: [
