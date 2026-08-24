@@ -11,7 +11,7 @@ import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusC
 import { FLYORA_JSON, ESEMPIO_GNOMO } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from './data/condizioni.js';
-import { BESTIE, bestieDisponibili, limitiFormaSelvatica } from './data/bestiario.js';
+import { BESTIE, FAMIGLI, EVOCAZIONI, bestieDisponibili, limitiFormaSelvatica } from './data/bestiario.js';
 import { novitaRecenti, ultimaVersioneNovita } from './data/novita.js';
 import { codificaScheda, decodificaScheda, preparaPerCondivisione, costruisciLink, payloadDaUrl, LIMITE_PAYLOAD } from './utils/condivisione.js';
 import { creaStanza, apriStanza, normalizzaCodiceStanza, formattaCodiceStanza, DURATA_STANZA_ORE } from './utils/stanze.js';
@@ -1704,7 +1704,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.51';
+const APP_VERSION = '3.9.52';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -9313,6 +9313,51 @@ export default function App() {
                     </div>
                   );
                 })()}
+              </Sezione>
+            )}
+
+            {/* Famigli & Creature Evocate (per Mago, Warlock, Chierico, Druido, Bardo o personaggi con incantesimi) */}
+            {Boolean(
+              /(mago|wizard|warlock|chierico|cleric|druido|druid|bardo|bard|stregone|sorcerer)/i.test(scheda.classe || '') ||
+              (scheda.incantesimiLista || []).some((s) => /famiglio|evoca|spiriti|spirit|elementale/i.test(s.nome || ''))
+            ) && (
+              <Sezione titolo={lingua === 'en' ? '🦉 Familiars & Summons' : '🦉 Famigli & Evocazioni'} style={{ order: ordineSezioni.indexOf('incantesimi') }} {...apertoProps('famigliEvocazioni', false)}>
+                <div>
+                  <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8 }}>
+                    {lingua === 'en' ? 'Statblocks for common familiars and summoned spiritual creatures:' : 'Statblock rapidi per famigli (Trova Famiglio / Patto della Catena) ed evocazioni spirituali:'}
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 }}>
+                    {[...FAMIGLI, ...EVOCAZIONI].map((c) => (
+                      <div
+                        key={c.nome}
+                        onClick={() => setBestiaDettaglio(c)}
+                        style={{
+                          background: C.panelLight,
+                          border: `1px solid ${C.border}`,
+                          borderRadius: 8,
+                          padding: '8px 10px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 3,
+                          transition: 'transform 0.15s ease, border-color 0.15s ease',
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.goldDark; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.transform = 'none'; }}
+                      >
+                        <div style={{ fontWeight: 700, fontSize: 12.5, color: C.ink, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span>{lingua === 'en' ? c.nomeEn : c.nome}</span>
+                        </div>
+                        <div style={{ fontSize: 11, color: C.inkDim }}>
+                          🛡️ CA {c.ca} · ❤️ {c.pf} PF
+                        </div>
+                        <div style={{ fontSize: 10, color: C.goldDark, opacity: 0.9 }}>
+                          {c.tipo || c.taglia}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </Sezione>
             )}
 

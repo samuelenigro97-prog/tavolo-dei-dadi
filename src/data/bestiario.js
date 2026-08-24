@@ -181,6 +181,116 @@ export const BESTIE = [
   },
 ];
 
+/** Famigli comuni (Trova Famiglio / Patto della Catena). */
+export const FAMIGLI = [
+  {
+    nome: 'Gufo (Famiglio)', nomeEn: 'Owl (Familiar)', tipo: 'Celestiale / Fatato / Immondo',
+    taglia: 'Minuscola', ca: 11, pf: 1, pfFormula: '1d4 − 1',
+    velocita: { terra: 1.5, volo: 18 },
+    car: { forza: 3, destrezza: 13, costituzione: 8, intelligenza: 2, saggezza: 12, carisma: 7 },
+    abilita: 'Percezione +3, Furtività +3',
+    sensi: 'Scurovisione 36 m · Percezione passiva 13',
+    tratti: [
+      'Volo radente: non provoca attacchi di opportunità quando vola fuori dalla portata.',
+      'Udito e vista acuti: vantaggio alle prove di Percezione su udito e vista.',
+      'Collegamento telepatico: comunica telepaticamente col padrone entro 30 m e può trasmettere incantesimi a contatto.',
+    ],
+    azioni: ['Aiuto: conferisce vantaggio al prossimo tiro per colpire di un alleato.'],
+    note: 'Il famiglio classico più versatile per esplorazione e aiuto in combattimento.',
+  },
+  {
+    nome: 'Pseudodrago (Famiglio)', nomeEn: 'Pseudodragon (Familiar)', tipo: 'Drago (Patto della Catena)',
+    taglia: 'Minuscola', ca: 13, pf: 7, pfFormula: '2d4 + 2',
+    velocita: { terra: 4.5, volo: 18 },
+    car: { forza: 6, destrezza: 15, costituzione: 13, intelligenza: 10, saggezza: 12, carisma: 10 },
+    abilita: 'Percezione +3, Furtività +4',
+    sensi: 'Vista cieca 3 m · Scurovisione 18 m · Percezione passiva 13',
+    tratti: [
+      'Resistenza alla magia: vantaggio ai tiri salvezza contro incantesimi ed effetti magici.',
+      'Sensi acuti: vantaggio alle prove di Percezione su vista, udito e olfatto.',
+      'Telepatia: comunica telepaticamente con qualsiasi creatura entro 30 m che parli una lingua.',
+    ],
+    azioni: [
+      'Morso: +4 al tiro per colpire, 1d4+2 danni perforanti.',
+      'Pungiglione: +4 al tiro per colpire, 1d4+2 danni perforanti + TS Costituzione (CD 11) o avvelenato per 1 ora (se fallisce di 5+, cade privo di sensi).',
+    ],
+    note: 'Famiglio avanzato del Patto della Catena (Warlock).',
+  },
+  {
+    nome: 'Imp (Famiglio)', nomeEn: 'Imp (Familiar)', tipo: 'Immondo (Diavolo)',
+    taglia: 'Minuscola', ca: 13, pf: 10, pfFormula: '3d4 + 3',
+    velocita: { terra: 6, volo: 12 },
+    car: { forza: 6, destrezza: 17, costituzione: 13, intelligenza: 11, saggezza: 12, carisma: 14 },
+    abilita: 'Inganno +4, Intuizione +3, Furtività +5',
+    sensi: 'Vista del diavolo 36 m (vede anche nel buio magico) · Percezione passiva 11',
+    tratti: [
+      'Resistenza alla magia: vantaggio ai tiri salvezza contro la magia.',
+      'Resistenze: freddo, danni contundenti/perforanti/taglienti da armi non argentate; Immunità al fuoco e veleno.',
+      'Forma mutevole: può trasformarsi come azione in un topo, corvo o ragno.',
+    ],
+    azioni: [
+      'Pungiglione: +5 al tiro per colpire, 1d4+3 danni perforanti + 3d6 danni da veleno (TS Costituzione CD 11 dimezza).',
+      'Invisibilità: diventa invisibile finché non attacca o si concentra.',
+    ],
+    note: 'Famiglio diabolico estremamente resistente e invisibile a comando.',
+  },
+  {
+    nome: 'Folletto Quasit (Famiglio)', nomeEn: 'Quasit (Familiar)', tipo: 'Immondo (Demone)',
+    taglia: 'Minuscola', ca: 13, pf: 7, pfFormula: '3d4',
+    velocita: { terra: 12 },
+    car: { forza: 5, destrezza: 17, costituzione: 10, intelligenza: 7, saggezza: 10, carisma: 10 },
+    abilita: 'Furtività +5',
+    sensi: 'Scurovisione 36 m · Percezione passiva 10',
+    tratti: [
+      'Resistenza alla magia: vantaggio ai tiri salvezza contro incantesimi.',
+      'Resistenze: freddo, fuoco, fulmine; immunità al veleno.',
+      'Forma mutevole: può trasformarsi in pipistrello, millepiedi o rospo.',
+    ],
+    azioni: [
+      'Artigli: +4 al tiro per colpire, 1d4+3 danni taglienti + TS Costituzione (CD 10) o 2d4 danni da veleno e avvelenato per 1 minuto.',
+      'Spavento (1/Giorno): creatura entro 6 m deve superare TS Saggezza (CD 10) o essere spaventata per 1 minuto.',
+      'Invisibilità: diventa invisibile a volontà.',
+    ],
+    note: 'Famiglio caotico con spavento magico e invisibilità.',
+  },
+];
+
+/** Evocazioni & Creature Spiritiche comuni (Evoca Elementale, Destriero Fantomatico, Guardiano Spirituale...). */
+export const EVOCAZIONI = [
+  {
+    nome: 'Elementale del Fuoco', nomeEn: 'Fire Elemental', tipo: 'Elementale (Evocazione)',
+    taglia: 'Grande', ca: 13, pf: 102, pfFormula: '12d10 + 36',
+    velocita: { terra: 15 },
+    car: { forza: 10, destrezza: 17, costituzione: 16, intelligenza: 6, saggezza: 10, carisma: 7 },
+    abilita: '—',
+    sensi: 'Scurovisione 18 m · Percezione passiva 10',
+    tratti: [
+      'Forma di fuoco: può muoversi attraverso uno spazio stretto fino a 2,5 cm. Entrare nello spazio di una creatura le infligge 1d10 danni da fuoco.',
+      'Illuminazione: emette luce intensa per 9 m e fioca per altri 9 m.',
+      'Suscettibilità all’acqua: per ogni 1,5 m percorsi in acqua subisce 1 danno da freddo.',
+    ],
+    azioni: [
+      'Attacco multiplo: due attacchi di tocco.',
+      'Tocco: +6 al tiro per colpire, 2d6+3 danni da fuoco; il bersaglio prende fuoco (1d10 a inizio turno finché non spende un’azione per spegnersi).',
+    ],
+    note: 'Evocato con l’incantesimo Evoca Elementale (5° livello).',
+  },
+  {
+    nome: 'Spirito Guardiano Celato', nomeEn: 'Spirit Guardian', tipo: 'Celestiale / Fatato / Immondo',
+    taglia: 'Media', ca: 15, pf: 40, pfFormula: '—',
+    velocita: { terra: 9, volo: 9 },
+    car: { forza: 16, destrezza: 14, costituzione: 14, intelligenza: 10, saggezza: 14, carisma: 10 },
+    abilita: 'Percezione +5',
+    sensi: 'Scurovisione 18 m · Percezione passiva 15',
+    tratti: [
+      'Aura spirituale: dimezza la velocità dei nemici entro 4,5 m.',
+      'Danno radioso/necrotico: quando un nemico entra nell’area per la prima volta subisce 3d8 danni (TS Saggezza dimezza).',
+    ],
+    azioni: ['Colpo Spirituale: +6 al tiro per colpire, 2d8+3 danni radiosi o necrotici.'],
+    note: 'Invocato tramite Spiriti Guardiani (Chierico 3° livello).',
+  },
+];
+
 /**
  * Limiti della Forma Selvatica (regole 2014). Il Druido "standard" segue la
  * tabella Forme Bestiali; il Circolo della Luna ignora la colonna del grado di

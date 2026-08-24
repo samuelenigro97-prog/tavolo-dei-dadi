@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.52',
+    voci: {
+      it: [
+        'Famigli & Creature Evocate: aggiunta sezione dedicata con statblock completi per famigli (Gufo, Pseudodrago, Imp, Quasit) ed evocazioni magiche (Elementale del Fuoco, Spirito Guardiano), consultabili con un tocco.',
+      ],
+      en: [
+        'Familiars & Summons: added dedicated section with full statblocks for familiars (Owl, Pseudodragon, Imp, Quasit) and magical summons (Fire Elemental, Spirit Guardian), accessible with one tap.',
+      ],
+    },
+  },
+  {
     versione: '3.9.51',
     voci: {
       it: [
