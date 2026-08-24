@@ -11,6 +11,7 @@ import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusC
 import { FLYORA_JSON, ESEMPIO_GNOMO } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from './data/condizioni.js';
+import { BESTIE, bestieDisponibili, limitiFormaSelvatica } from './data/bestiario.js';
 import { novitaRecenti, ultimaVersioneNovita } from './data/novita.js';
 import { codificaScheda, decodificaScheda, preparaPerCondivisione, costruisciLink, payloadDaUrl, LIMITE_PAYLOAD } from './utils/condivisione.js';
 import { creaStanza, apriStanza, normalizzaCodiceStanza, formattaCodiceStanza, DURATA_STANZA_ORE } from './utils/stanze.js';
@@ -1703,7 +1704,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.46';
+const APP_VERSION = '3.9.47';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2534,6 +2535,7 @@ export default function App() {
   const [filtroInventario, setFiltroInventario] = useState('');
   const [filtroVistaInventario, setFiltroVistaInventario] = useState('tutti'); // 'tutti' | 'equip' | 'zaino'
   const [effettoInventarioAperto, setEffettoInventarioAperto] = useState(null);
+  const [bestiaDettaglio, setBestiaDettaglio] = useState(null); // bestia aperta in modale statblock
   const [fontePopover, setFontePopover] = useState(null); // { tipo: 'ts'|'car', key, top, left } menu "da cosa deriva il bonus" aperto
   useEffect(() => {
     if (!fontePopover) return;
@@ -4840,6 +4842,125 @@ export default function App() {
                   .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
               }} 
             />
+          </div>
+        </div>
+      )}
+
+      {/* Modal Statblock Bestia Forma Selvatica */}
+      {bestiaDettaglio && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 3150, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.65)' }}
+          onClick={() => setBestiaDettaglio(null)}
+        >
+          <div
+            style={{
+              ...styles.panel,
+              maxWidth: 460,
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              position: 'relative',
+              boxShadow: '0 10px 35px rgba(0,0,0,0.5)',
+              border: `2px solid ${C.goldDark}`,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: `2px solid ${C.border}`, paddingBottom: 8, marginBottom: 10 }}>
+              <div>
+                <h2 style={{ fontSize: 18, margin: 0, color: C.goldDark, fontWeight: 800 }}>
+                  🐾 {lingua === 'en' ? bestiaDettaglio.nomeEn : bestiaDettaglio.nome}
+                </h2>
+                <div style={{ fontSize: 12, color: C.inkDim, fontStyle: 'italic' }}>
+                  {bestiaDettaglio.taglia} bestia · GS {bestiaDettaglio.gs} ({bestiaDettaglio.gsNum * 200 || 10} PE)
+                </div>
+              </div>
+              <button style={styles.buttonMini} onClick={() => setBestiaDettaglio(null)} title={t('tip.chiudi')}>✕</button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 12, textAlign: 'center' }}>
+              <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
+                <div style={{ fontSize: 10, color: C.inkDim, textTransform: 'uppercase', fontWeight: 700 }}>Classe Armatura</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>🛡️ {bestiaDettaglio.ca}</div>
+              </div>
+              <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
+                <div style={{ fontSize: 10, color: C.inkDim, textTransform: 'uppercase', fontWeight: 700 }}>Punti Ferita</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>❤️ {bestiaDettaglio.pf} <span style={{ fontSize: 11, fontWeight: 'normal', color: C.inkDim }}>({bestiaDettaglio.pfFormula})</span></div>
+              </div>
+              <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
+                <div style={{ fontSize: 10, color: C.inkDim, textTransform: 'uppercase', fontWeight: 700 }}>Velocità</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginTop: 2 }}>
+                  {bestiaDettaglio.velocita.terra}m{bestiaDettaglio.velocita.nuoto ? ` · 🏊${bestiaDettaglio.velocita.nuoto}m` : ''}{bestiaDettaglio.velocita.volo ? ` · 🦅${bestiaDettaglio.velocita.volo}m` : ''}{bestiaDettaglio.velocita.scalata ? ` · 🧗${bestiaDettaglio.velocita.scalata}m` : ''}
+                </div>
+              </div>
+            </div>
+
+            {/* Caratteristiche Bestia */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 4, background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '6px 4px', marginBottom: 12, textAlign: 'center' }}>
+              {['forza', 'destrezza', 'costituzione', 'intelligenza', 'saggezza', 'carisma'].map((k) => {
+                const val = bestiaDettaglio.car[k] || 10;
+                const mod = Math.floor((val - 10) / 2);
+                return (
+                  <div key={k}>
+                    <div style={{ fontSize: 9, textTransform: 'uppercase', fontWeight: 700, color: C.inkDim }}>{k.slice(0, 3)}</div>
+                    <div style={{ fontSize: 13, fontWeight: 800 }}>{val}</div>
+                    <div style={{ fontSize: 11, color: C.goldDark, fontWeight: 700 }}>{conSegno(mod)}</div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Abilità e Sensi */}
+            <div style={{ fontSize: 12, marginBottom: 8 }}>
+              {bestiaDettaglio.abilita && bestiaDettaglio.abilita !== '—' && (
+                <div style={{ marginBottom: 4 }}><strong>Abilità:</strong> {bestiaDettaglio.abilita}</div>
+              )}
+              {bestiaDettaglio.sensi && (
+                <div><strong>Sensi:</strong> {bestiaDettaglio.sensi}</div>
+              )}
+            </div>
+
+            {/* Tratti Speciali */}
+            {bestiaDettaglio.tratti && bestiaDettaglio.tratti.length > 0 && (
+              <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 8, marginTop: 8, marginBottom: 8 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: C.inkDim, marginBottom: 4 }}>Tratti Speciali</div>
+                {bestiaDettaglio.tratti.map((t, idx) => (
+                  <div key={idx} style={{ fontSize: 12, lineHeight: 1.4, marginBottom: 4 }}>• {t}</div>
+                ))}
+              </div>
+            )}
+
+            {/* Azioni e Attacchi */}
+            {bestiaDettaglio.azioni && bestiaDettaglio.azioni.length > 0 && (
+              <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 8, marginTop: 8 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: C.goldDark, marginBottom: 4 }}>Azioni & Attacchi</div>
+                {bestiaDettaglio.azioni.map((az, idx) => (
+                  <div key={idx} style={{ fontSize: 12, lineHeight: 1.4, marginBottom: 4, background: 'rgba(0,0,0,0.03)', padding: '4px 6px', borderRadius: 4 }}>
+                    ⚔️ <strong>{az}</strong>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {bestiaDettaglio.note && (
+              <div style={{ fontSize: 11, fontStyle: 'italic', color: C.inkDim, marginTop: 8, borderTop: `1px dashed ${C.border}`, paddingTop: 6 }}>
+                💡 {bestiaDettaglio.note}
+              </div>
+            )}
+
+            <div style={{ marginTop: 14, display: 'flex', gap: 8 }}>
+              <button
+                style={{ ...styles.button, flex: 1, fontWeight: 700, borderColor: C.goldDark, color: C.goldDark }}
+                onClick={() => {
+                  aggiorna({
+                    pfTemp: Math.max(scheda.pfTemp || 0, bestiaDettaglio.pf),
+                    note: [scheda.note, `Forma Selvatica attiva: ${bestiaDettaglio.nome} (CA ${bestiaDettaglio.ca}, ${bestiaDettaglio.pf} PF temp)`].filter(Boolean).join('\n')
+                  });
+                  setBestiaDettaglio(null);
+                }}
+              >
+                🐾 Trasformati ({bestiaDettaglio.pf} PF Temp)
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -9095,6 +9216,60 @@ export default function App() {
                   setInfo={setInfo}
                   title={t('tip.metamagia_attive')}
                 />
+              </Sezione>
+            )}
+
+            {/* Forma Selvatica (solo Druido dal 2° livello): subito sotto la Magia */}
+            {/(druido|druid)/i.test(scheda.classe || '') && (Number(scheda.livello) || 1) >= 2 && (
+              <Sezione titolo={lingua === 'en' ? '🐾 Wild Shape Bestiary' : '🐾 Forma Selvatica & Bestiario'} style={{ order: ordineSezioni.indexOf('incantesimi') }} {...apertoProps('formaSelvatica', true)}>
+                {(() => {
+                  const disp = bestieDisponibili(scheda.livello, scheda.sottoclasse);
+                  const lim = limitiFormaSelvatica(scheda.livello, scheda.sottoclasse);
+                  return (
+                    <div>
+                      <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+                        <span>
+                          Grado di Sfida Max: <strong>GS {lim?.gsMax === 0.25 ? '1/4' : lim?.gsMax === 0.5 ? '1/2' : lim?.gsMax || '1/4'}</strong>
+                          {lim?.nuoto && ' · 🏊 Nuoto'}
+                          {lim?.volo && ' · 🦅 Volo'}
+                        </span>
+                        <span style={{ opacity: 0.8 }}>{disp.length} bestie utilizzabili</span>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: 8 }}>
+                        {disp.map((b) => (
+                          <div
+                            key={b.nome}
+                            onClick={() => setBestiaDettaglio(b)}
+                            style={{
+                              background: C.panelLight,
+                              border: `1px solid ${C.border}`,
+                              borderRadius: 8,
+                              padding: '8px 10px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 3,
+                              transition: 'transform 0.15s ease, border-color 0.15s ease',
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.goldDark; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.transform = 'none'; }}
+                          >
+                            <div style={{ fontWeight: 700, fontSize: 13, color: C.ink, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span>{lingua === 'en' ? b.nomeEn : b.nome}</span>
+                              <span style={{ fontSize: 10, color: C.goldDark, background: 'rgba(200,140,20,0.15)', padding: '1px 5px', borderRadius: 10 }}>GS {b.gs}</span>
+                            </div>
+                            <div style={{ fontSize: 11, color: C.inkDim }}>
+                              🛡️ CA {b.ca} · ❤️ {b.pf} PF
+                            </div>
+                            <div style={{ fontSize: 10, color: C.inkDim, opacity: 0.85 }}>
+                              {b.taglia} · {b.velocita.volo ? `🦅 ${b.velocita.volo}m` : b.velocita.nuoto ? `🏊 ${b.velocita.nuoto}m` : `🐾 ${b.velocita.terra}m`}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
               </Sezione>
             )}
 

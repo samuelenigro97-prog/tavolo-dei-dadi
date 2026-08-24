@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.47',
+    voci: {
+      it: [
+        'Forma Selvatica & Bestiario Druido: sezione dedicata per Druidi (dal 2° livello) con catalogo interattivo di tutte le forme bestiali disponibili in base a livello e sottoclasse, statblock completo (CA, PF, caratteristiche, velocità, tratti e attacchi) e trasformazione con PF temporanei.',
+      ],
+      en: [
+        'Wild Shape & Druid Bestiary: dedicated section for Druids (level 2+) with interactive beast catalogue filtered by level and subclass, full statblock display (AC, HP, abilities, speed, traits, attacks), and one-click transform with temporary HP.',
+      ],
+    },
+  },
+  {
     versione: '3.9.46',
     voci: {
       it: [
