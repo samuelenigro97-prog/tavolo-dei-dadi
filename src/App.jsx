@@ -5951,14 +5951,14 @@ export default function App() {
             style={styles.modeButton(mostraAvvisi)}
             title={nAvvisi > 0
               ? `${nAvvisi} ${nAvvisi === 1 ? 'notifica' : 'notifiche'} da vedere`
-              : (novitaNonLette ? 'Novità di questa versione' : 'Notifiche')}
+              : 'Notifiche'}
             onClick={apriAvvisi}
           >
             🔔 <span className="header-label">Notifiche</span>
             {daNotificare && (
               <span
                 className="avvisi-pallino"
-                aria-label={nAvvisi > 0 ? `${nAvvisi} notifiche` : 'novità non lette'}
+                aria-label={nAvvisi > 0 ? `${nAvvisi} notifiche` : 'nuove notifiche'}
               >{nAvvisi > 0 ? nAvvisi : '!'}</span>
             )}
           </button>
