@@ -1,0 +1,271 @@
+{
+  "versione": "2024",
+  "nome": "Vaelion (Val) Leafwhisper",
+  "classe": "Druido",
+  "sottoclasse": "Circolo della Luna",
+  "livello": 10,
+  "background": "Eremita",
+  "specie": "Elfo dei Boschi",
+  "taglia": "Media",
+  "allineamento": "Neutrale",
+  "pe": 0,
+  "pfMax": 64,
+  "pfAttuali": 64,
+  "pfTemp": 0,
+  "dadiVita": "10d8",
+  "dadiVitaSpesi": 0,
+  "ca": 19,
+  "velocita": 10.5,
+  "ispirazione": false,
+  "sfinimento": 0,
+  "armatura": {
+    "tipo": "media",
+    "base": 14,
+    "scudo": true,
+    "bonus": 1
+  },
+  "caratteristiche": {
+    "forza": 4,
+    "destrezza": 15,
+    "costituzione": 14,
+    "intelligenza": 10,
+    "saggezza": 20,
+    "carisma": 12
+  },
+  "tiriSalvezza": {
+    "forza": false,
+    "destrezza": false,
+    "costituzione": false,
+    "intelligenza": true,
+    "saggezza": true,
+    "carisma": false
+  },
+  "abilita": {
+    "acrobazia": false,
+    "addestrareAnimali": true,
+    "arcano": true,
+    "atletica": false,
+    "furtivita": false,
+    "indagare": false,
+    "inganno": false,
+    "intimidire": false,
+    "intrattenere": false,
+    "intuizione": true,
+    "medicina": true,
+    "natura": true,
+    "percezione": true,
+    "persuasione": false,
+    "rapiditaDiMano": false,
+    "religione": false,
+    "sopravvivenza": true,
+    "storia": false
+  },
+  "maestrie": {},
+  "armi": [
+    {
+      "id": "v-a1",
+      "nome": "Randello",
+      "caratteristica": "saggezza",
+      "competenza": true,
+      "danno": "1d8+5",
+      "tipoDanno": "Contundente",
+      "bonusAttacco": 0,
+      "bonusDanno": 0,
+      "note": "Incantato con Randello Incantato (Shillelagh)"
+    },
+    {
+      "id": "v-a2",
+      "nome": "Frusta di Spine",
+      "caratteristica": "saggezza",
+      "competenza": true,
+      "danno": "2d6",
+      "tipoDanno": "Perforante",
+      "bonusAttacco": 0,
+      "bonusDanno": 0,
+      "note": "Trascina 3m, gittata 9m"
+    },
+    {
+      "id": "v-a3",
+      "nome": "Morsa del Gelo",
+      "caratteristica": "saggezza",
+      "competenza": true,
+      "danno": "2d6",
+      "tipoDanno": "Freddo",
+      "bonusAttacco": 0,
+      "bonusDanno": 0,
+      "note": "Svantaggio prox attacco, gittata 18m"
+    }
+  ],
+  "incantatore": {
+    "caratteristica": "saggezza",
+    "cdExtra": 0,
+    "attaccoExtra": 0
+  },
+  "slotIncantesimi": {
+    "1": { "totale": 4, "spesi": 0 },
+    "2": { "totale": 3, "spesi": 0 },
+    "3": { "totale": 3, "spesi": 0 },
+    "4": { "totale": 3, "spesi": 0 },
+    "5": { "totale": 2, "spesi": 0 },
+    "6": { "totale": 0, "spesi": 0 },
+    "7": { "totale": 0, "spesi": 0 },
+    "8": { "totale": 0, "spesi": 0 },
+    "9": { "totale": 0, "spesi": 0 }
+  },
+  "incantesimiLista": [
+    { "id": "vi-01", "nome": "Frusta di Spine", "livello": 0, "preparato": true },
+    { "id": "vi-02", "nome": "Guida", "livello": 0, "preparato": true },
+    { "id": "vi-03", "nome": "Morsa del Gelo", "livello": 0, "preparato": true },
+    { "id": "vi-04", "nome": "Randello Incantato", "livello": 0, "preparato": true },
+    { "id": "vi-11", "nome": "Assorbire Elementi", "livello": 1, "preparato": true, "tempo": "Reazione" },
+    { "id": "vi-12", "nome": "Cura Ferite", "livello": 1, "preparato": true },
+    { "id": "vi-13", "nome": "Intralciare", "livello": 1, "preparato": true, "conc": true },
+    { "id": "vi-14", "nome": "Parola Guaritrice", "livello": 1, "preparato": true, "tempo": "Azione Bonus" },
+    { "id": "vi-21", "nome": "Protezione dai Veleni", "livello": 2, "preparato": true },
+    { "id": "vi-22", "nome": "Vincolo della Terra", "livello": 2, "preparato": true, "conc": true },
+    { "id": "vi-31", "nome": "Camminare sull'Acqua", "livello": 3, "preparato": true, "rituale": true },
+    { "id": "vi-32", "nome": "Crescita Vegetale", "livello": 3, "preparato": true },
+    { "id": "vi-33", "nome": "Dissolvi Magie", "livello": 3, "preparato": true },
+    { "id": "vi-34", "nome": "Evoca Animali", "livello": 3, "preparato": true, "conc": true },
+    { "id": "vi-35", "nome": "Respirare sott'Acqua", "livello": 3, "preparato": true, "rituale": true },
+    { "id": "vi-41", "nome": "Inaridire", "livello": 4, "preparato": true },
+    { "id": "vi-42", "nome": "Metamorfosi", "livello": 4, "preparato": true, "conc": true },
+    { "id": "vi-51", "nome": "Cura Ferite di Massa", "livello": 5, "preparato": true },
+    { "id": "vi-52", "nome": "Evoca Elementale", "livello": 5, "preparato": true, "conc": true }
+  ],
+  "sintonia": [
+    "Mantello della Protezione",
+    "Perla del Potere",
+    "Guanti della Forza Orchesca"
+  ],
+  "inventario": [
+    {
+      "id": "v-inv-01",
+      "nome": "Corazza a Piastre in Legnoferro (CA 14)",
+      "qta": 1,
+      "peso": 20,
+      "equip": true,
+      "categoria": "Armatura"
+    },
+    {
+      "id": "v-inv-02",
+      "nome": "Scudo in Legno",
+      "qta": 1,
+      "peso": 3,
+      "equip": true,
+      "categoria": "Scudo"
+    },
+    {
+      "id": "v-inv-03",
+      "nome": "Mantello della Protezione",
+      "qta": 1,
+      "peso": 1.5,
+      "equip": true,
+      "categoria": "Oggetto Magico",
+      "descrizione": "+1 alla CA e +1 a tutti i Tiri Salvezza (in sintonia)"
+    },
+    {
+      "id": "v-inv-04",
+      "nome": "Perla del Potere",
+      "qta": 1,
+      "peso": 0.1,
+      "equip": true,
+      "categoria": "Oggetto Magico",
+      "utilizziMax": 1,
+      "utilizziAttuali": 1,
+      "resetUtilizzi": "lungo",
+      "descrizione": "Come azione permette di recuperare 1 slot incantesimo speso fino al 3° livello (1 volta al giorno, ricarica all'alba/riposo lungo)."
+    },
+    {
+      "id": "v-inv-05",
+      "nome": "Guanti della Forza Orchesca",
+      "qta": 1,
+      "peso": 1,
+      "equip": true,
+      "categoria": "Oggetto Magico",
+      "descrizione": "Imposta la Forza del portatore a 19 (+4) se inferiore (in sintonia)."
+    },
+    {
+      "id": "v-inv-06",
+      "nome": "Borsa da Erborista",
+      "qta": 1,
+      "peso": 1.5,
+      "equip": false,
+      "categoria": "Strumenti"
+    },
+    {
+      "id": "v-inv-07",
+      "nome": "Borsa Conservante",
+      "qta": 1,
+      "peso": 6.8,
+      "equip": true,
+      "categoria": "Oggetto Magico",
+      "descrizione": "Contiene fino a 250 kg senza gravare sull'ingombro del personaggio."
+    },
+    {
+      "id": "v-inv-08",
+      "nome": "Pozione di Guarigione (2d4+2)",
+      "qta": 2,
+      "peso": 0.5,
+      "equip": false,
+      "dentroBorsa": true,
+      "categoria": "Consumabile",
+      "utilizziMax": 2,
+      "utilizziAttuali": 2,
+      "resetUtilizzi": "manuale"
+    },
+    {
+      "id": "v-inv-09",
+      "nome": "Pozione di Resistenza al Freddo",
+      "qta": 2,
+      "peso": 0.5,
+      "equip": false,
+      "dentroBorsa": true,
+      "categoria": "Consumabile"
+    },
+    {
+      "id": "v-inv-10",
+      "nome": "Pozione di Respirare sott'Acqua",
+      "qta": 2,
+      "peso": 0.5,
+      "equip": false,
+      "dentroBorsa": true,
+      "categoria": "Consumabile"
+    },
+    {
+      "id": "v-inv-11",
+      "nome": "Pozione Antitossina",
+      "qta": 1,
+      "peso": 0.5,
+      "equip": false,
+      "dentroBorsa": true,
+      "categoria": "Consumabile"
+    },
+    {
+      "id": "v-inv-12",
+      "nome": "Unguento di Resistenza al Veleno",
+      "qta": 1,
+      "peso": 0.5,
+      "equip": false,
+      "dentroBorsa": true,
+      "categoria": "Consumabile"
+    },
+    {
+      "id": "v-inv-13",
+      "nome": "Sonaglio di zucca essiccata con bacche di agrifoglio",
+      "qta": 1,
+      "peso": 0.2,
+      "equip": false,
+      "categoria": "Trastullo",
+      "descrizione": "Oggetto prezioso e focus druidico legato alla sua infanzia tra le Montagne Rauvin."
+    }
+  ],
+  "risorse": [
+    { "id": "auto-forma-selvatica", "nome": "Forma Selvatica", "attuali": 4, "max": 4, "reset": "breve" },
+    { "id": "auto-totem-spirituale", "nome": "Totem Spirituale (Aura)", "attuali": 1, "max": 1, "reset": "breve" },
+    { "id": "r-perla-potere", "nome": "Perla del Potere (Recupero Slot Liv.3)", "attuali": 1, "max": 1, "reset": "lungo" }
+  ],
+  "monete": { "mr": 0, "ma": 0, "me": 0, "mo": 250, "mp": 0 },
+  "tratti": "Retaggio Fatato: Vantaggio ai TS contro l'essere affascinato. La magia non può addormentarti.\nMaschera della Selva: Puoi tentare di nasconderti anche quando sei parzialmente oscurato da fenomeni naturali.\nScurovisione 18m\nForma Selvatica (Azione Bonus / Azione): Grado Sfida max 3.\nTotale comunione con gli spiriti della foresta.\nPrivilegio Background (Scoperta): Conoscenza di un'importante verità cosmica o segreto del mondo.",
+  "note": "STORIA & DETTAGLI:\nNato tra le Montagne Rauvin, membro degli Arpisti. Mentore: Un orso mannaro che gli ha insegnato il rispetto per tutte le creature viventi.\nAspetto Guida: Il fiume inarrestabile gli ricorda il ciclo eterno della natura."
+}

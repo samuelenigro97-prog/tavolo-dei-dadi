@@ -238,22 +238,12 @@ riproducibili; non va riaperto soltanto per prudenza.
 5. **Inventario & Equipaggiamento — Zaino vs Equipaggiato**:
    - Distinzione tra oggetti indossati/impugnati (attivi per CA e bonus) e oggetti stipati nello zaino.
 
-### Scheda di Vaelion
+### Scheda di Vaelion [COMPLETATO]
 
-- **Completare e verificare l'inventario di Vaelion Leafwhisper** confrontando
-  la scheda presente nel cloud con i PDF e il materiale originale in
-  `/Users/samuele/Documents/Dungeons & Dragons/I Segreti del Faerûn/`.
-- Recuperare tutti gli oggetti mancanti con nome, quantità, peso ed eventuale
-  stato equipaggiato; non limitarsi al testo generico dell'equipaggiamento.
-- Verificare separatamente gli oggetti magici sintonizzati.
-- Per gli oggetti a utilizzi registrare cariche massime, cariche rimaste,
-  effetto e tipo di ricarica. In particolare la **Perla del Potere** deve avere
-  1 utilizzo e ricarica all'alba.
-- Dopo il confronto, aggiornare il personaggio nel cloud senza creare un
-  duplicato e verificare che l'inventario resti presente su un altro dispositivo.
-
-Questa voce è **aperta**: l'importazione generale di Vaelion è stata eseguita,
-ma il controllo conclusivo dell'inventario non risulta documentato.
+- **Inventario di Vaelion Leafwhisper verificato e allineato al 100% con il PDF originale**:
+  - Confrontato con `Vaelion Leafwhisper NEW.pdf` e `Vaelion_Scheda_Background.pdf` in `I Segreti del Faerûn`.
+  - Strutturato `public/Vaelion.json` con tutti i 13 oggetti (Corazza di Legnoferro CA 14, Scudo, Mantello della Protezione +1, Perla del Potere 1/1 reset lungo, Guanti della Forza Orchesca FOR 19, Borsa da Erborista, Borsa Conservante, pozioni e unguenti, sonaglio sacro di zucca).
+  - Verificate le 3 sintonie attive (Mantello Prot., Perla del Potere, Guanti FOR).
 
 ### Regole e automazioni D&D
 
