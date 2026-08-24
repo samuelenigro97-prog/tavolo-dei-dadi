@@ -4117,17 +4117,7 @@ export default function App() {
     const conImmaginiLocali = await caricaImmaginiRoster(caricato).catch(() => caricato);
     const merged = (() => {
       const base = rosterSyncRef.current || { attivo: '', personaggi: {} };
-      // Se il server ha meno PG del locale e il timestamp non è più recente, non cancellare i locali
-      const countServer = Object.keys(conImmaginiLocali.personaggi || {}).length;
-      const countLocal = Object.keys(base.personaggi || {}).length;
-      const tsLocal = Number(localStorage.getItem('scheda-interattiva:sync-codice-ts')) || 0;
-      if (countServer < countLocal && Number(updatedAt) <= tsLocal) {
-        // Merge: tieni i locali non presenti sul server
-        const personaggi = { ...base.personaggi };
-        for (const [id, pg] of Object.entries(conImmaginiLocali.personaggi)) personaggi[id] = pg;
-        return { attivo: conImmaginiLocali.attivo || base.attivo, personaggi };
-      }
-      // Altrimenti merge comunque non distruttivo: unisci
+      // Merge SEMPRE non distruttivo: unisci server + locale, server vince per conflitti (stesso ID)
       const personaggi = { ...(base.personaggi || {}) };
       for (const [id, pg] of Object.entries(conImmaginiLocali.personaggi)) personaggi[id] = pg;
       // preserva immagini locali per i PG che arrivano senza
@@ -4136,7 +4126,10 @@ export default function App() {
         if (cur?.ritratto && !pg.ritratto) pg.ritratto = cur.ritratto;
         if (cur?.mappaCampagna && !pg.mappaCampagna) pg.mappaCampagna = cur.mappaCampagna;
       }
-      return { attivo: conImmaginiLocali.attivo || base.attivo, personaggi };
+      // Mantieni l'attivo se esiste nel merged, altrimenti usa quello del server o il primo disponibile
+      let attivo = caricato.attivo || base.attivo || Object.keys(personaggi)[0] || '';
+      if (attivo && !personaggi[attivo]) attivo = Object.keys(personaggi)[0] || '';
+      return { attivo, personaggi };
     })();
     setRoster(merged);
     if (updatedAt) localStorage.setItem('scheda-interattiva:sync-codice-ts', String(updatedAt));
@@ -6696,45 +6689,13 @@ export default function App() {
                   />
                 </CampoModulo>
                 <CampoModulo label={t("profilo.classe")} boxClassName={(scheda.multiclasse || []).some((m) => m.classe) ? 'classe-multi' : undefined}>
-                  {(() => {
-                    const classi = [
+                  <CampoBloccato
+                    valore={[
                       ...(scheda.classe ? [{ nome: scheda.classe, livello: scheda.livello || 1, sottoclasse: scheda.sottoclasse }] : []),
                       ...(scheda.multiclasse || []).filter((m) => m.classe).map((m) => ({ nome: m.classe, livello: m.livello || 1, sottoclasse: m.sottoclasse })),
-                    ];
-                    if (classi.length <= 1) {
-                      return (
-                        <CampoBloccato
-                          valore={classi.map((c) => `${traduciDato(c.nome)} ${c.livello}${c.sottoclasse ? ` (${traduciDato(c.sottoclasse)})` : ''}`).join(' / ') || t('profilo.nessuna')}
-                          title={t('profilo.classe_bloccata')}
-                        />
-                      );
-                    }
-                    const [aperto, setAperto] = useState(false);
-                    return (
-                      <details open={aperto} onToggle={() => setAperto(!aperto)}>
-                        <summary style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '2px 0' }}>
-                          <span>{traduciDato(scheda.classe)} {scheda.livello || 1}{scheda.sottoclasse ? ` (${traduciDato(scheda.sottoclasse)})` : ''}</span>
-                          <span style={{ fontSize: 11, opacity: 0.6 }}>{aperto ? '▲' : '▼'}</span>
-                        </summary>
-                        <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                          {[
-                            ...(scheda.classe ? [{ nome: scheda.classe, livello: scheda.livello || 1, sottoclasse: scheda.sottoclasse, main: true }] : []),
-                            ...(scheda.multiclasse || []).filter((m) => m.classe).map((m) => ({ nome: m.classe, livello: m.livello || 1, sottoclasse: m.sottoclasse, main: false })),
-                          ].map((c, i) => (
-                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', borderBottom: i < classi.length - 1 ? `1px solid ${C.border}` : 'none' }}>
-                              <span style={{ fontWeight: 600, minWidth: 80 }}>{traduciDato(c.nome)} {c.livello}</span>
-                              <CampoModulo label="" style={{ flex: 1 }}>
-                                <CampoBloccato
-                                  valore={c.sottoclasse ? traduciDato(c.sottoclasse) : t('profilo.nessuna')}
-                                  title={t('profilo.sottoclasse_bloccata')}
-                                />
-                              </CampoModulo>
-                            </div>
-                          ))}
-                        </div>
-                      </details>
-                    );
-                  })()}
+                    ].map((c) => `${traduciDato(c.nome)} ${c.livello}${c.sottoclasse ? ` (${traduciDato(c.sottoclasse)})` : ''}`).join(' / ') || t('profilo.nessuna')}
+                    title={t('profilo.classe_bloccata')}
+                  />
                 </CampoModulo>
                 <CampoModulo label={t("profilo.sottoclasse")} boxClassName={(scheda.multiclasse || []).some((m) => m.classe) ? 'sottoclasse-multi' : undefined}>
                   {(() => {
