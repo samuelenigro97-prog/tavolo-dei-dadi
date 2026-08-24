@@ -1235,7 +1235,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.26';
+const APP_VERSION = '3.9.27';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -6641,10 +6641,45 @@ export default function App() {
                   />
                 </CampoModulo>
                 <CampoModulo label={t("profilo.classe")} boxClassName={(scheda.multiclasse || []).some((m) => m.classe) ? 'classe-multi' : undefined}>
-                  <CampoBloccato
-                    valore={[traduciDato(scheda.classe), ...(scheda.multiclasse || []).filter((m) => m.classe).map((m) => traduciDato(m.classe))].filter(Boolean).join(' + ') || t('profilo.nessuna')}
-                    title={t('profilo.classe_bloccata')}
-                  />
+                  {(() => {
+                    const classi = [
+                      ...(scheda.classe ? [{ nome: scheda.classe, livello: scheda.livello || 1, sottoclasse: scheda.sottoclasse }] : []),
+                      ...(scheda.multiclasse || []).filter((m) => m.classe).map((m) => ({ nome: m.classe, livello: m.livello || 1, sottoclasse: m.sottoclasse })),
+                    ];
+                    if (classi.length <= 1) {
+                      return (
+                        <CampoBloccato
+                          valore={classi.map((c) => `${traduciDato(c.nome)} ${c.livello}${c.sottoclasse ? ` (${traduciDato(c.sottoclasse)})` : ''}`).join(' / ') || t('profilo.nessuna')}
+                          title={t('profilo.classe_bloccata')}
+                        />
+                      );
+                    }
+                    const [aperto, setAperto] = useState(false);
+                    return (
+                      <details open={aperto} onToggle={() => setAperto(!aperto)}>
+                        <summary style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '2px 0' }}>
+                          <span>{traduciDato(scheda.classe)} {scheda.livello || 1}{scheda.sottoclasse ? ` (${traduciDato(scheda.sottoclasse)})` : ''}</span>
+                          <span style={{ fontSize: 11, opacity: 0.6 }}>{aperto ? '▲' : '▼'}</span>
+                        </summary>
+                        <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          {[
+                            ...(scheda.classe ? [{ nome: scheda.classe, livello: scheda.livello || 1, sottoclasse: scheda.sottoclasse, main: true }] : []),
+                            ...(scheda.multiclasse || []).filter((m) => m.classe).map((m) => ({ nome: m.classe, livello: m.livello || 1, sottoclasse: m.sottoclasse, main: false })),
+                          ].map((c, i) => (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', borderBottom: i < classi.length - 1 ? `1px solid ${C.border}` : 'none' }}>
+                              <span style={{ fontWeight: 600, minWidth: 80 }}>{traduciDato(c.nome)} {c.livello}</span>
+                              <CampoModulo label="" style={{ flex: 1 }}>
+                                <CampoBloccato
+                                  valore={c.sottoclasse ? traduciDato(c.sottoclasse) : t('profilo.nessuna')}
+                                  title={t('profilo.sottoclasse_bloccata')}
+                                />
+                              </CampoModulo>
+                            </div>
+                          ))}
+                        </div>
+                      </details>
+                    );
+                  })()}
                 </CampoModulo>
                 <CampoModulo label={t("profilo.sottoclasse")} boxClassName={(scheda.multiclasse || []).some((m) => m.classe) ? 'sottoclasse-multi' : undefined}>
                   {(() => {
@@ -7900,9 +7935,9 @@ export default function App() {
                   if (filtriAttivi && spells.length === 0) return null;
                   const countLiv = scheda.incantesimiLista.filter((x) => x.livello === liv).length;
                   return (
-                    <div key={liv} style={{ marginBottom: 14 }}>
+                    <div key={liv} style={{ marginBottom: 10 }}>
                       {liv > 0 && (
-                        <h4 style={{ fontSize: 12, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5, borderBottom: `1px solid ${C.border}`, paddingBottom: 2, marginBottom: 6, display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                        <h4 style={{ fontSize: 11, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.3, borderBottom: `1px solid ${C.border}`, paddingBottom: 1, marginBottom: 4, display: 'flex', justifyContent: 'space-between', gap: 6 }}>
                           <span>{t('spell.n_livello', { n: liv })}</span>
                         </h4>
                       )}
@@ -7925,7 +7960,7 @@ export default function App() {
                         );
                       })()}
                       {spells.length > 0 && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                           {spells.map((s) => {
                             const eff = spiegaIncantesimo(s.nome);
                             const dbInc = datiIncantesimo(s.nome) || {};
@@ -7942,17 +7977,17 @@ export default function App() {
                             const tipoDanno = s.tipoDanno || dbInc.tipoDanno || det.tipoDanno || '';
                             const note = s.note || det.note || '';
                             const chip = (icona, etichetta, testo) => (
-                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: C.inkDim, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 6, padding: '2px 8px', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, color: C.inkDim, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 4, padding: '1px 6px', flexShrink: 0, whiteSpace: 'nowrap' }}>
                                 <span aria-hidden style={{ opacity: 0.75 }}>{icona}</span>
                                 <span style={{ opacity: 0.7 }}>{etichetta}:</span> <span style={{ color: C.ink }}>{testo}</span>
                               </span>
                             );
                             return (
-                              <div key={s.id} style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '5px 10px', background: C.panelLight, opacity: (classePreparata && s.livello >= 1 && s.preparato === false) ? 0.5 : 1 }}>
+                              <div key={s.id} style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 8px', background: C.panelLight, opacity: (classePreparata && s.livello >= 1 && s.preparato === false) ? 0.5 : 1 }}>
                                 {/* Nome + info (chip) + pulsanti su UNA sola riga: i dettagli
                                     stanno in una fascia a scorrimento orizzontale, così NON
                                     vanno mai a capo su due/tre righe. */}
-                                <div className="spell-row" style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: 6 }}>
+                                <div className="spell-row" style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: 4 }}>
                                   <button
                                     style={{ background: 'transparent', border: 'none', color: C.ink, fontWeight: 700, cursor: 'pointer', textAlign: 'left', padding: 0, fontSize: 14, lineHeight: 1.2, textDecoration: 'underline dotted', textUnderlineOffset: 3, whiteSpace: 'nowrap', flexShrink: 0 }}
                                     title={t('tip.cosa_fa_inc')}
@@ -7968,7 +8003,7 @@ export default function App() {
                                     >✦ {t('spell.bonus_badge')}</span>
                                   )}
                                   {/* Fascia dettagli: una sola riga, scorre in orizzontale se serve. */}
-                                  <div className="spell-chips" style={{ display: 'flex', flexWrap: 'nowrap', gap: 6, alignItems: 'center', overflowX: 'auto', flex: '1 1 auto', minWidth: 0 }}>
+                                  <div className="spell-chips" style={{ display: 'flex', flexWrap: 'nowrap', gap: 4, alignItems: 'center', overflowX: 'auto', flex: '1 1 auto', minWidth: 0 }}>
                                     {chip('⏱', t('spell.chip_tempo'), tempoLabel)}
                                     {chip('🎯', t('spell.chip_gittata'), gittata)}
                                     {scuola && chip('🔮', 'Scuola', traduciDato(scuola))}
