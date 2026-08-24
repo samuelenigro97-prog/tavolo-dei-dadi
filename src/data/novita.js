@@ -5,6 +5,19 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.62',
+    voci: {
+      it: [
+        'Dicitura "Nessuna armatura" nella CA: uniformata la voce di selezione della Classe Armatura in conformità con la sezione Competenze.',
+        'Pulizia Automatica Risorse Duplicate: unificate automaticamente le voci storiche (es. Punti Stregoneria Metamagia) nella risorsa ufficiale di classe.',
+      ],
+      en: [
+        '“No Armor” AC Label: standardized the Armor Class selection label to match the Proficiencies section.',
+        'Automatic Resource Deduplication: automatically merged legacy duplicate entries (e.g. Sorcery Points Metamagic) into official class resources.',
+      ],
+    },
+  },
+  {
     versione: '3.9.61',
     voci: {
       it: [

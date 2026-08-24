@@ -447,7 +447,7 @@ export const DIZIONARIO = {
     'common.altro': 'Altro…',
     'common.aggiungi_lista': 'Aggiungi dalla lista',
     'armor.manuale': 'CA Manuale',
-    'armor.nessuna': 'Senza armatura',
+    'armor.nessuna': 'Nessuna armatura',
     'armor.leggera': 'Leggera (+DES)',
     'armor.media': 'Media (+DES max 2)',
     'armor.pesante': 'Pesante (fissa)',

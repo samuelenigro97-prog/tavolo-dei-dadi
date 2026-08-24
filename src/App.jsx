@@ -1431,7 +1431,7 @@ function inizialeMaiuscola(v) {
 
 const TIPI_ARMATURA = [
   { key: 'manuale', label: 'CA Manuale' },
-  { key: 'nessuna', label: 'Senza armatura' },
+  { key: 'nessuna', label: 'Nessuna armatura' },
   { key: 'leggera', label: 'Leggera (+DES)' },
   { key: 'media', label: 'Media (+DES max 2)' },
   { key: 'pesante', label: 'Pesante (fissa)' },
@@ -1615,23 +1615,43 @@ function sincronizzaRisorseClasse(scheda, versione = '2024') {
   if (!automatiche.length) return correnti;
 
   let cambiate = false;
-  const risultato = [...correnti];
+  let risultato = [...correnti];
+
   for (const auto of automatiche) {
-    const indice = risultato.findIndex((r) =>
-      r?.id === auto.id || String(r?.nome || '').toLocaleLowerCase('it') === auto.nome.toLocaleLowerCase('it')
-    );
-    if (indice < 0) {
+    // Riconosce corrispondenza esatta per id, nome oppure alias storici (es. "Punti Stregoneria (Metamagia)" -> "Punti Stregoneria")
+    const matchAlias = (nome) => {
+      const n = String(nome || '').toLocaleLowerCase('it').trim();
+      const a = auto.nome.toLocaleLowerCase('it').trim();
+      return n === a || n.startsWith(a) || a.startsWith(n);
+    };
+
+    const indici = [];
+    risultato.forEach((r, idx) => {
+      if (r?.id === auto.id || matchAlias(r?.nome)) indici.push(idx);
+    });
+
+    if (indici.length === 0) {
       risultato.push(auto);
       cambiate = true;
       continue;
     }
-    const corrente = risultato[indice];
+
+    const primoIndice = indici[0];
+    const corrente = risultato[primoIndice];
     const vecchioMax = Math.max(0, Number(corrente.max) || 0);
     const vecchiAttuali = Math.max(0, Math.min(vecchioMax, Number(corrente.attuali) || 0));
     const usati = Math.max(0, vecchioMax - vecchiAttuali);
     const attuali = Math.max(0, auto.max - usati);
+
     if (corrente.max !== auto.max || corrente.reset !== auto.reset || corrente.id !== auto.id || corrente.nome !== auto.nome || corrente.attuali !== attuali) {
-      risultato[indice] = { ...corrente, ...auto, attuali };
+      risultato[primoIndice] = { ...corrente, ...auto, attuali };
+      cambiate = true;
+    }
+
+    // Se erano presenti doppioni storici con nomi simili (es. Punti Stregoneria (Metamagia)), rimuovili
+    if (indici.length > 1) {
+      const daRimuovere = new Set(indici.slice(1));
+      risultato = risultato.filter((_, idx) => !daRimuovere.has(idx));
       cambiate = true;
     }
   }
@@ -1704,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.61';
+const APP_VERSION = '3.9.62';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
