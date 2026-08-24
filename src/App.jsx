@@ -1221,6 +1221,38 @@ function renderSpiegazioni(testo, lookup, setInfo) {
   );
 }
 
+const ICONE_CONDIZIONI = {
+  Accecato: '👁️',
+  Affascinato: '💖',
+  Assordato: '🔇',
+  Avvelenato: '🧪',
+  Incapacitato: '🛑',
+  Invisibile: '👻',
+  Paralizzato: '⚡',
+  Pietrificato: '🗿',
+  PrivoDiSensi: '💤',
+  Prono: '🛌',
+  Spaventato: '😱',
+  Stordito: '💫',
+  Trattenuto: '🕸️',
+};
+
+const COLORI_CONDIZIONI = {
+  Accecato: { bg: 'rgba(235, 180, 20, 0.22)', border: '#dcb84f', text: C.ink },
+  Affascinato: { bg: 'rgba(235, 80, 180, 0.22)', border: '#e85da8', text: C.ink },
+  Assordato: { bg: 'rgba(150, 150, 150, 0.22)', border: '#a0a0a0', text: C.ink },
+  Avvelenato: { bg: 'rgba(40, 180, 70, 0.22)', border: '#2e9d4d', text: C.ink },
+  Incapacitato: { bg: 'rgba(220, 50, 50, 0.25)', border: '#d94b4b', text: C.ink },
+  Invisibile: { bg: 'rgba(100, 160, 240, 0.22)', border: '#5da8e8', text: C.ink },
+  Paralizzato: { bg: 'rgba(230, 40, 40, 0.28)', border: '#e62828', text: C.ink },
+  Pietrificato: { bg: 'rgba(130, 130, 130, 0.25)', border: '#888888', text: C.ink },
+  PrivoDiSensi: { bg: 'rgba(40, 40, 40, 0.45)', border: '#666666', text: C.ink },
+  Prono: { bg: 'rgba(180, 120, 50, 0.22)', border: '#b87830', text: C.ink },
+  Spaventato: { bg: 'rgba(160, 60, 220, 0.22)', border: '#9e4be6', text: C.ink },
+  Stordito: { bg: 'rgba(240, 140, 20, 0.25)', border: '#f08c14', text: C.ink },
+  Trattenuto: { bg: 'rgba(180, 80, 40, 0.22)', border: '#c05a28', text: C.ink },
+};
+
 // `abbr` è la sigla ufficiale 5e: entra nei riquadri stretti senza troncarsi
 // (il nome per esteso resta nel tooltip).
 const DENARI = [
@@ -1671,7 +1703,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.41';
+const APP_VERSION = '3.9.42';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2792,6 +2824,7 @@ export default function App() {
   const [checkConc, setCheckConc] = useState(null); // TS concentrazione automatico: { danno, cd, spell, esito }
   const [dettaglioInc, setDettaglioInc] = useState(null); // id incantesimo aperto nel sottomenu
   const [conferma, setConferma] = useState(null); // { titolo, testo, onConferma } per la conferma in-app
+  const [modalRiposo, setModalRiposo] = useState(null); // 'breve' | 'lungo' | null
   const [levelUpBozza, setLevelUpBozza] = useState({ metodo: 'media', hpLanciato: 0 });
   const ordineRef = useRef(ordineSezioni);
   ordineRef.current = ordineSezioni;
@@ -3800,15 +3833,11 @@ export default function App() {
    * Riposo lungo 5e: PF al massimo, slot recuperati, metà dei dadi vita,
    * risorse (breve e lungo) ricaricate, uno sfinimento in meno.
    */
-  function riposoLungo() {
-    if (!window.confirm(t('rest.lungo_conferma'))) return;
+  function riposoLungoEsegui() {
     setScheda((s) => {
       const slot = Object.fromEntries(
         Object.entries(s.slotIncantesimo).map(([liv, v]) => [liv, { ...v, spesi: 0 }])
       );
-      // Il totale recuperabile è condiviso fra tutte le classi (metà del livello
-      // totale DI TUTTE LE CLASSI, non solo la principale, arrotondato per
-      // difetto): si applica prima al gruppo più speso.
       const livelloTotalePerRiposo = (s.livello || 1) + (Array.isArray(s.multiclasse) ? s.multiclasse.reduce((a, m) => a + (m?.livello || 0), 0) : 0);
       let recuperoDadi = Math.max(1, Math.floor(livelloTotalePerRiposo / 2));
       const gruppi = gruppiDadoVita(s.dadiVita);
@@ -3836,18 +3865,12 @@ export default function App() {
     registra({ etichetta: `🌙 ${t('vital.riposo_lungo_tooltip')}`, tipo: 'riposo', dettaglio: t('rest.lungo_fatto') });
   }
 
-  /** Riposo breve: ricarica le risorse "brevi" e spende un dado vita per curarti.
-   *  Pact Magic: il Warlock recupera anche gli slot incantesimo col riposo breve. */
+  function riposoLungo() {
+    setModalRiposo('lungo');
+  }
+
   function riposoBreve() {
-    if (!window.confirm(t('rest.breve_conferma'))) return;
-    const isWarlock = /warlock|patto/i.test(scheda.classe || '');
-    setScheda((s) => ({
-      ...s,
-      risorse: risorseDopoRiposo(s.risorse, 'breve'),
-      ...(isWarlock ? { slotIncantesimo: Object.fromEntries(Object.entries(s.slotIncantesimo).map(([liv, v]) => [liv, { ...v, spesi: 0 }])) } : {}),
-    }));
-    registra({ etichetta: `🔥 ${t('vital.riposo_breve_tooltip')}`, tipo: 'riposo', dettaglio: isWarlock ? t('rest.breve_fatto_warlock') : t('rest.breve_fatto') });
-    tiraDadoVita();
+    setModalRiposo('breve');
   }
 
   /** Tiro libero di un singolo dado (il d20 passa dal tiro animato). */
@@ -4867,6 +4890,182 @@ export default function App() {
               <button style={{ ...styles.button, flex: 1 }} onClick={() => setConferma(null)}>{t('modal.annulla')}</button>
               <button style={{ ...styles.buttonDanger, flex: 1 }} onClick={() => { const f = conferma.onConferma; setConferma(null); if (f) f(); }}>🗑 {t('modal.elimina')}</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Interattivo per Riposo Breve e Lungo */}
+      {modalRiposo && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 3200,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 16,
+            background: 'rgba(0,0,0,0.65)',
+            backdropFilter: 'blur(3px)',
+          }}
+          onClick={() => setModalRiposo(null)}
+        >
+          <div
+            style={{
+              ...styles.panel,
+              maxWidth: 420,
+              width: '100%',
+              boxShadow: '0 12px 35px rgba(0,0,0,0.5)',
+              border: `1px solid ${C.goldDark}`,
+              padding: 16,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {modalRiposo === 'breve' ? (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, borderBottom: `1px solid ${C.border}`, paddingBottom: 6 }}>
+                  <strong style={{ color: C.goldDark, fontSize: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    ☕ {lingua === 'en' ? 'Short Rest (1 Hour)' : 'Riposo Breve (1 Ora)'}
+                  </strong>
+                  <button style={styles.buttonMini} onClick={() => setModalRiposo(null)}>✕</button>
+                </div>
+
+                <div style={{ fontSize: 12, color: C.ink, marginBottom: 12, lineHeight: 1.5 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, background: 'rgba(200,140,20,0.08)', padding: '6px 10px', borderRadius: 6 }}>
+                    <span>{lingua === 'en' ? 'Hit Points:' : 'Punti Ferita:'}</span>
+                    <strong>{scheda.pfAttuali} / {scheda.pfMax} PF</strong>
+                  </div>
+
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 4 }}>
+                      🎲 {lingua === 'en' ? 'Spend Hit Dice to Heal:' : 'Spendi Dadi Vita per Curarti:'}
+                    </div>
+                    {(() => {
+                      const gruppi = gruppiDadoVita(scheda.dadiVita);
+                      const spesiMap = dadiVitaSpesiNormalizzati(scheda);
+                      const conMod = modificatore(punteggioCaratteristica(scheda, 'costituzione'));
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {gruppi.map((g) => {
+                            const rimasti = g.totale - (spesiMap[g.facce] || 0);
+                            return (
+                              <div key={g.facce} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: C.panelLight, padding: '5px 8px', borderRadius: 6, border: `1px solid ${C.border}` }}>
+                                <span style={{ fontSize: 11.5, fontWeight: 600 }}>
+                                  d{g.facce}: <strong style={{ color: rimasti > 0 ? C.ink : C.red }}>{rimasti}</strong> / {g.totale} {lingua === 'en' ? 'left' : 'rimasti'}
+                                </span>
+                                <button
+                                  type="button"
+                                  disabled={rimasti <= 0 || scheda.pfAttuali >= scheda.pfMax}
+                                  onClick={() => tiraDadoVita(g.facce)}
+                                  style={{
+                                    ...styles.buttonMini,
+                                    fontSize: 11,
+                                    fontWeight: 700,
+                                    borderColor: rimasti > 0 ? C.goldDark : C.border,
+                                    color: rimasti > 0 ? C.goldDark : C.inkDim,
+                                    cursor: rimasti > 0 ? 'pointer' : 'not-allowed',
+                                    opacity: rimasti > 0 ? 1 : 0.4,
+                                    padding: '3px 8px',
+                                  }}
+                                >
+                                  🎲 {lingua === 'en' ? `Roll 1d${g.facce} (${conSegno(conMod)})` : `Tira 1d${g.facce} (${conSegno(conMod)})`}
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  <div style={{ fontSize: 11, color: C.inkDim, borderTop: `1px dashed ${C.border}`, paddingTop: 6, marginBottom: 12 }}>
+                    ⚡ <strong>{lingua === 'en' ? 'Short rest auto-recharge:' : 'Ricarica automatica riposo breve:'}</strong>
+                    <div style={{ fontSize: 10.5, marginTop: 2 }}>
+                      {(() => {
+                        const risorseBrevi = (scheda.risorse || []).filter((r) => r.ricarica === 'breve');
+                        const isWarlock = /warlock|patto/i.test(scheda.classe || '');
+                        const elenco = [
+                          ...risorseBrevi.map((r) => r.nome),
+                          ...(isWarlock ? [lingua === 'en' ? 'Pact Magic Slots' : 'Slot del Patto (Warlock)'] : []),
+                        ];
+                        return elenco.length > 0 ? elenco.join(', ') : (lingua === 'en' ? 'No short-rest class features.' : 'Nessuna risorsa con ricarica breve.');
+                      })()}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    style={{ ...styles.button, flex: 1 }}
+                    onClick={() => setModalRiposo(null)}
+                  >
+                    {lingua === 'en' ? 'Cancel' : 'Annulla'}
+                  </button>
+                  <button
+                    style={{ ...styles.buttonMini, flex: 1.5, background: 'rgba(200,140,20,0.2)', borderColor: C.goldDark, color: C.goldDark, fontWeight: 700, fontSize: 12, padding: '6px 12px' }}
+                    onClick={() => {
+                      const isWarlock = /warlock|patto/i.test(scheda.classe || '');
+                      setScheda((s) => ({
+                        ...s,
+                        risorse: risorseDopoRiposo(s.risorse, 'breve'),
+                        ...(isWarlock ? { slotIncantesimo: Object.fromEntries(Object.entries(s.slotIncantesimo).map(([liv, v]) => [liv, { ...v, spesi: 0 }])) } : {}),
+                      }));
+                      registra({ etichetta: `🔥 ${t('vital.riposo_breve_tooltip')}`, tipo: 'riposo', dettaglio: isWarlock ? t('rest.breve_fatto_warlock') : t('rest.breve_fatto') });
+                      setModalRiposo(null);
+                    }}
+                  >
+                    ☕ {lingua === 'en' ? 'Complete Short Rest' : 'Conferma Riposo Breve'}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, borderBottom: `1px solid ${C.border}`, paddingBottom: 6 }}>
+                  <strong style={{ color: C.goldDark, fontSize: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    🌙 {lingua === 'en' ? 'Long Rest (8 Hours)' : 'Riposo Lungo (8 Ore)'}
+                  </strong>
+                  <button style={styles.buttonMini} onClick={() => setModalRiposo(null)}>✕</button>
+                </div>
+
+                <div style={{ fontSize: 12, color: C.ink, marginBottom: 14, lineHeight: 1.5 }}>
+                  <div style={{ marginBottom: 8 }}>
+                    {lingua === 'en' ? 'A Long Rest restores your adventurer completely:' : 'Il Riposo Lungo ripristina completamente il tuo avventuriero:'}
+                  </div>
+                  <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11.5 }}>
+                    <li>❤️ <strong>{lingua === 'en' ? 'Hit Points:' : 'Punti Ferita:'}</strong> {lingua === 'en' ? `healed to maximum (${scheda.pfMax} HP)` : `ripristinati al massimo (${scheda.pfMax} PF)`}</li>
+                    <li>🔮 <strong>{lingua === 'en' ? 'Spell Slots:' : 'Slot Incantesimo:'}</strong> {lingua === 'en' ? 'all spent slots fully restored' : 'tutti gli slot spesi tornano disponibili'}</li>
+                    <li>🎲 <strong>{lingua === 'en' ? 'Hit Dice:' : 'Dadi Vita:'}</strong> {(() => {
+                      const livTot = (scheda.livello || 1) + (Array.isArray(scheda.multiclasse) ? scheda.multiclasse.reduce((a, m) => a + (m?.livello || 0), 0) : 0);
+                      const rec = Math.max(1, Math.floor(livTot / 2));
+                      return lingua === 'en' ? `recover ${rec} spent Hit Dice` : `recuperi ${rec} Dadi Vita spesi`;
+                    })()}</li>
+                    <li>⚡ <strong>{lingua === 'en' ? 'Class Features:' : 'Risorse di Classe:'}</strong> {lingua === 'en' ? 'all Short and Long recharge features reset' : 'tutte le risorse ricaricate al 100%'}</li>
+                    {scheda.sfinimento > 0 && (
+                      <li>😮‍💨 <strong>{lingua === 'en' ? 'Exhaustion:' : 'Sfinimento:'}</strong> {lingua === 'en' ? `reduced by 1 (from ${scheda.sfinimento} to ${scheda.sfinimento - 1})` : `ridotto di 1 livello (da ${scheda.sfinimento} a ${scheda.sfinimento - 1})`}</li>
+                    )}
+                    <li>🧹 <strong>{lingua === 'en' ? 'Death Saves & Temp HP:' : 'Tiri Salvezza Morte & PF Temp:'}</strong> {lingua === 'en' ? 'reset to 0' : 'azzerati'}</li>
+                  </ul>
+                </div>
+
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    style={{ ...styles.button, flex: 1 }}
+                    onClick={() => setModalRiposo(null)}
+                  >
+                    {lingua === 'en' ? 'Cancel' : 'Annulla'}
+                  </button>
+                  <button
+                    style={{ ...styles.buttonMini, flex: 1.5, background: 'rgba(200,140,20,0.25)', borderColor: C.goldDark, color: C.goldDark, fontWeight: 700, fontSize: 12, padding: '6px 12px' }}
+                    onClick={() => {
+                      riposoLungoEsegui();
+                      setModalRiposo(null);
+                    }}
+                  >
+                    🌙 {lingua === 'en' ? 'Execute Long Rest' : 'Esegui Riposo Lungo'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -6225,9 +6424,14 @@ export default function App() {
             title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato (auto-salvataggio spento)') : (codiceSync && autoSyncCodice ? `Sincronizzato con codice${ultimoSyncCodice ? ` · ultimo ${ultimoSyncCodice}` : ''}` : 'Sincronizza i tuoi personaggi sul Cloud')}
             onClick={() => { setCloudStatus({ text: '', type: '' }); setSyncCodiceStatus({ text: '', type: '' }); setMostraCloud(true); }}
           >
-            ☁️ <span className="header-label">Cloud</span>{sincronizzando ? ' …' : ((githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice)
-              ? <span aria-label="Sincronizzazione automatica attiva" style={{ color: '#2e9d4d', fontWeight: 900 }}>✓</span>
-              : '')}
+            ☁️ <span className="header-label">Cloud</span>
+            {sincronizzando ? (
+              <span style={{ fontSize: 10, marginLeft: 2 }}>🔄</span>
+            ) : (githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice) ? (
+              <span aria-label="Sincronizzazione automatica attiva" style={{ color: '#2e9d4d', fontWeight: 900, marginLeft: 2 }}>🟢</span>
+            ) : (
+              <span style={{ color: '#b87830', fontSize: 10, marginLeft: 2 }} title="Salvataggio locale">🟠</span>
+            )}
           </button>
           <button
             style={{ ...styles.modeButton(false), opacity: passiUndo ? 1 : 0.4, cursor: passiUndo ? 'pointer' : 'default' }}
@@ -7514,20 +7718,35 @@ export default function App() {
                 {scheda.condizioni.map((c) => {
                   const eff = EFFETTI_CONDIZIONI[c];
                   const testoEff = eff ? (lingua === 'en' ? eff.en : eff.it) : '';
+                  const col = COLORI_CONDIZIONI[c] || { bg: 'rgba(200,140,20,0.18)', border: C.goldDark, text: C.ink };
+                  const ico = ICONE_CONDIZIONI[c] || '⚠️';
                   return (
-                    <span key={c} style={{ ...styles.modeButton(true), fontSize: 9, padding: '1px 3px', margin: 0, lineHeight: 1.4, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-                      {/* Il nome apre gli effetti, la ✕ toglie la condizione:
-                          prima l'intera etichetta cancellava, quindi non c'era
-                          modo di leggere cosa comportasse. */}
+                    <span
+                      key={c}
+                      style={{
+                        background: col.bg,
+                        border: `1px solid ${col.border}`,
+                        borderRadius: 6,
+                        padding: '2px 5px',
+                        margin: '1px 2px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                      }}
+                    >
                       <button
                         type="button"
-                        style={{ background: 'none', border: 0, padding: 0, font: 'inherit', color: 'inherit', cursor: eff ? 'help' : 'default' }}
+                        style={{ background: 'none', border: 0, padding: 0, font: 'inherit', color: col.text, cursor: eff ? 'help' : 'default', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 3 }}
                         title={testoEff || c}
-                        onClick={() => eff && setInfo({ titolo: `⚠️ ${traduciDato(c)}`, testo: testoEff })}
-                      >{c}</button>
+                        onClick={() => eff && setInfo({ titolo: `${ico} ${traduciDato(c)}`, testo: testoEff })}
+                      >
+                        <span>{ico}</span>
+                        <span>{traduciDato(c)}</span>
+                      </button>
                       <button
                         type="button"
-                        style={{ background: 'none', border: 0, padding: 0, font: 'inherit', color: 'inherit', cursor: 'pointer', opacity: 0.75 }}
+                        style={{ background: 'none', border: 0, padding: '0 2px', font: 'inherit', color: C.inkDim, cursor: 'pointer', opacity: 0.8, fontSize: 10 }}
                         title={t('tip.click_rimuovi')}
                         onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
                       >✕</button>
@@ -7537,12 +7756,12 @@ export default function App() {
                 <select
                   value=""
                   onChange={(e) => { if (e.target.value) aggiorna({ condizioni: [...scheda.condizioni, e.target.value] }); }}
-                  style={{ ...styles.inlineInput, fontSize: 10, padding: '1px 2px', height: 18 }}
+                  style={{ ...styles.inlineInput, fontSize: 10, padding: '1px 4px', height: 20, borderRadius: 5 }}
                   title={t('tip.aggiungi_condizione')}
                 >
-                  <option value="">＋ aggiungi</option>
+                  <option value="">＋ {lingua === 'en' ? 'add' : 'aggiungi'}</option>
                   {CONDIZIONI_5E.filter((c) => !scheda.condizioni.includes(c)).sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                    <option key={c} value={c}>{ICONE_CONDIZIONI[c] || '⚠️'} {traduciDato(c)}</option>
                   ))}
                 </select>
               </div>

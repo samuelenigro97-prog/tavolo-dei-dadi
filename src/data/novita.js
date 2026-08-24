@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.42',
+    voci: {
+      it: [
+        'Quality of Life: Modale interattiva per Riposo Breve (spesa Dadi Vita con tiro e ricarica risorse) e Riposo Lungo completo, badge colorati e luminosi per le Condizioni di stato con spiegazione effetti, e indicatore di sincronizzazione Cloud in tempo reale (🟢/🟠/🔄).',
+      ],
+      en: [
+        'Quality of Life: Interactive Rest dialogs for Short Rest (spend Hit Dice with animated roll & recharge) and Long Rest, vibrant status condition badges with detailed effect tooltips, and real-time Cloud sync status indicator (🟢/🟠/🔄).',
+      ],
+    },
+  },
+  {
     versione: '3.9.41',
     voci: {
       it: [
