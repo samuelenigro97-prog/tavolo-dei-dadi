@@ -691,10 +691,10 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
      su una propria riga a piena larghezza, centrata e ordinata */
   .app-header { display: flex; flex-direction: column; align-items: stretch; }
   .app-header-title { grid-column: auto; justify-self: auto; order: -1; margin-bottom: 6px !important; }
-  /* Telefono: tutti i tasti in alto ordinati in 2 file da 5, solo icone per compattezza. */
+  /* Telefono: tutti i tasti in alto in una sola riga compatta da 7 pulsanti, solo icone. */
   .app-header-side {
-    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 5px; align-items: stretch;
+    display: grid; grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px; align-items: stretch; width: 100%;
   }
   .app-header-side .app-header-group,
   .app-header-side .app-header-language,
@@ -703,7 +703,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .app-header-side .app-header-group > button,
   .app-header-side .game-actions-btn {
     width: 100%; min-width: 0 !important; max-width: none; box-sizing: border-box;
-    min-height: 34px; padding: 4px 6px !important; font-size: 18px !important;
+    min-height: 32px; padding: 4px 1px !important; font-size: 16px !important;
     display: inline-flex; align-items: center; justify-content: center;
   }
   .app-shell { padding-left: 8px !important; padding-right: 8px !important; overflow-x: clip; }
