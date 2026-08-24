@@ -1704,7 +1704,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.50';
+const APP_VERSION = '3.9.51';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -6290,6 +6290,23 @@ export default function App() {
               )}
 
               {/* Competenze di classe: scelta dell'utente (diventano ★ nella scheda) */}
+              {bozzaCrea.classe && (() => {
+                const ts = tiriSalvezzaPerClasse(bozzaCrea.classe);
+                const add = addestramentoPerClasse(bozzaCrea.classe);
+                const tsNomi = ts ? Object.entries(ts).filter(([, v]) => v).map(([k]) => t('attr.' + k)).join(', ') : '';
+                return (
+                  <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 10px', marginBottom: 12, fontSize: 11, lineHeight: 1.5 }}>
+                    {tsNomi && <div>🛡️ <strong>{lingua === 'it' ? 'Tiri Salvezza' : 'Saving Throws'}:</strong> {tsNomi}</div>}
+                    {add && (
+                      <div>
+                        ⚔️ <strong>{lingua === 'it' ? 'Competenze' : 'Proficiencies'}:</strong> {add.armi}
+                        {add.armature?.pesanti ? ' · Tutte le armature e scudi' : add.armature?.medie ? ' · Armature leggere, medie e scudi' : add.armature?.leggere ? ' · Armature leggere' : ' · Nessuna armatura'}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
               {(() => {
                 const cc = competenzeClasseDi(bozzaCrea.classe);
                 if (!cc) return null;

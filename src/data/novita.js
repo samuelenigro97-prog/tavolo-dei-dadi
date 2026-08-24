@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.51',
+    voci: {
+      it: [
+        'Creazione Guidata con Anteprima Tiri Salvezza: nella creazione del personaggio viene ora mostrato il riepilogo in tempo reale dei Tiri Salvezza e delle competenze in armi/armature associate alla classe scelta.',
+      ],
+      en: [
+        'Character Creation Saving Throws Preview: the creation wizard now displays a live preview of class saving throws and weapon/armor proficiencies as soon as a class is selected.',
+      ],
+    },
+  },
+  {
     versione: '3.9.50',
     voci: {
       it: [
