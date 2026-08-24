@@ -713,13 +713,32 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .dadi-riga { justify-content: space-between; flex-wrap: wrap !important; gap: 4px !important; }
   .dadi-riga .dado-btn { flex: 0 0 auto; min-width: 28px !important; width: 28px !important; height: 28px !important; padding: 0 !important; text-align: center; }
   .dadi-riga .dadi-espressione { flex: 1 1 90px !important; max-width: none !important; margin-left: 0 !important; }
-  /* modalità di tiro: riga intera a 4 colonne uguali, testo rimpicciolito
-     quanto basta perché "Svantaggio" e "Cronologia" stiano su una sola riga */
-  .dadi-riga .dadi-modi { flex: 1 1 100%; margin-left: 0 !important; gap: 4px !important; }
-  /* Su telefono la barra va a capo: il titolo prende una riga sua, centrato,
-     sopra i modi di tiro (i margini automatici del desktop non servono più). */
-  .dadi-riga .app-header-title { flex: 1 1 100%; margin: 2px auto 0 !important; justify-content: center; }
-   .dadi-riga .dadi-modi button { font-size: 10px !important; padding: 5px 1px !important; overflow: hidden; text-overflow: ellipsis; }
+  /* modalità di tiro: riga intera a 4 colonne uguali a tutta larghezza */
+  .dadi-riga .dadi-modi {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    gap: 4px !important;
+    box-sizing: border-box !important;
+  }
+  .dadi-riga .dadi-modi button {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    padding: 6px 2px !important;
+    text-align: center !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
   /* tabelle incantesimi più compatte sul telefono: celle strette così i
      tasti azione (✎ 🗑) restano visibili senza scorrere in orizzontale */
   .spell-table { font-size: 12px; }
