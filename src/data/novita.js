@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.55',
+    voci: {
+      it: [
+        'Colori Dinamici Barra di Ingombro: la barra dell\'ingombro è verde sotto il 50% di carico, diventa arancione quando raggiunge la metà/carico moderato, e rossa solo quando si è ingombrati o sovraccarichi.',
+      ],
+      en: [
+        'Dynamic Encumbrance Bar Colors: the weight capacity bar is green under 50% load, turns orange around half/moderate load, and turns red only when encumbered or overloaded.',
+      ],
+    },
+  },
+  {
     versione: '3.9.54',
     voci: {
       it: [
