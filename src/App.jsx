@@ -374,7 +374,6 @@ function TendinaCategorieArmi({ valoreArmi, onImpostaCategoria }) {
     { id: 'entrambe', label: 'Armi semplici e da guerra', attivo: haEntrambe },
     { id: 'semplici', label: 'Armi semplici', attivo: haSemplici && !haGuerra },
     { id: 'guerra', label: 'Armi da guerra', attivo: haGuerra && !haSemplici },
-    { id: 'nessuna', label: 'Nessuna categoria (armi singole)', attivo: !haSemplici && !haGuerra },
   ];
 
   return (
@@ -417,12 +416,7 @@ function TendinaArmiSpecifiche({ valoreArmi, onToggleArmaSingola }) {
   const tutteVoci = gruppi.flatMap((g) => g.voci);
   const competenti = tutteVoci.filter((v) => v.attivo);
 
-  let anteprima = 'Nessuna arma';
-  if (haSemplici && haGuerra) anteprima = 'Tutte le armi (Semplici e da guerra)';
-  else if (haSemplici) anteprima = 'Tutte le armi semplici';
-  else if (haGuerra) anteprima = 'Tutte le armi da guerra';
-  else if (competenti.length === 1) anteprima = competenti[0].label;
-  else if (competenti.length > 1) anteprima = `${competenti[0].label} (+${competenti.length - 1})`;
+  const anteprima = competenti.length === 0 ? 'Nessuna arma' : competenti.map((c) => c.label).join(', ');
 
   return (
     <TendinaCompetenzaCustom
@@ -465,12 +459,7 @@ function TendinaStrumenti({ valoreStrumenti, onToggleStrumento }) {
     });
   }
 
-  const attivi = listaAttuale;
-  const anteprima = attivi.length === 0
-    ? 'Nessuno strumento'
-    : attivi.length === 1
-      ? attivi[0]
-      : `${attivi[0]} (+${attivi.length - 1})`;
+  const anteprima = listaAttuale.length === 0 ? 'Nessuno strumento' : listaAttuale.join(', ');
 
   return (
     <TendinaCompetenzaCustom
@@ -516,12 +505,7 @@ function TendinaLingue({ valoreLingue, onToggleLingua }) {
     });
   }
 
-  const attive = listaAttuale;
-  const anteprima = attive.length === 0
-    ? 'Nessuna lingua'
-    : attive.length === 1
-      ? attive[0]
-      : `${attive[0]} (+${attive.length - 1})`;
+  const anteprima = listaAttuale.length === 0 ? 'Nessuna lingua' : listaAttuale.join(', ');
 
   return (
     <TendinaCompetenzaCustom
@@ -1687,7 +1671,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.38';
+const APP_VERSION = '3.9.39';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7807,14 +7791,21 @@ export default function App() {
                 valoreArmi={scheda.addestramento?.armi}
                 onImpostaCategoria={(id) => {
                   const raw = (scheda.addestramento?.armi || '');
+                  const haSemplici = /armi\s*semplici|simple\s*weapons/i.test(raw);
+                  const haGuerra = /armi\s*da\s*guerra|martial\s*weapons/i.test(raw);
+                  const haEntrambe = haSemplici && haGuerra;
+
                   const singole = raw.split(/[,\n]/).map((s) => s.trim()).filter((s) => Boolean(s) && !/armi\s*semplici|simple\s*weapons|armi\s*da\s*guerra|martial\s*weapons/i.test(s));
                   let nuovoValore = '';
                   if (id === 'entrambe') {
-                    nuovoValore = ['Armi semplici e da guerra', ...singole].join(', ');
+                    if (haEntrambe) nuovoValore = singole.join(', ');
+                    else nuovoValore = ['Armi semplici e da guerra', ...singole].join(', ');
                   } else if (id === 'semplici') {
-                    nuovoValore = ['Armi semplici', ...singole].join(', ');
+                    if (haSemplici && !haGuerra) nuovoValore = singole.join(', ');
+                    else nuovoValore = ['Armi semplici', ...singole].join(', ');
                   } else if (id === 'guerra') {
-                    nuovoValore = ['Armi da guerra', ...singole].join(', ');
+                    if (haGuerra && !haSemplici) nuovoValore = singole.join(', ');
+                    else nuovoValore = ['Armi da guerra', ...singole].join(', ');
                   } else {
                     nuovoValore = singole.join(', ');
                   }

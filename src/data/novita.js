@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.39',
+    voci: {
+      it: [
+        'Competenze: anteprime dei menù aggiornate con l’elenco effettivo delle voci possedute separate da virgola e spazio (senza diciture generiche o contatori +N), e rimossa la voce ridondante "nessuna categoria" dal selettore Categorie Armi.',
+      ],
+      en: [
+        'Proficiencies: dropdown previews now display the actual comma-separated list of proficiencies, and removed redundant "no category" option from Weapon Categories.',
+      ],
+    },
+  },
+  {
     versione: '3.9.38',
     voci: {
       it: [
