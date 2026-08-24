@@ -5,6 +5,28 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.33',
+    voci: {
+      it: [
+        'Sezione "Addestramento" rinominata in "Competenze".',
+      ],
+      en: [
+        'Section "Training" renamed to "Proficiencies".',
+      ],
+    },
+  },
+  {
+    versione: '3.9.32',
+    voci: {
+      it: [
+        'Sezione rinominata in "Notifiche" e rimossa la voce ridondante "Nessun avviso: è tutto a posto".',
+      ],
+      en: [
+        'Section renamed to "Notifications" and removed the redundant "No alerts: all clear" item.',
+      ],
+    },
+  },
+  {
     versione: '3.9.31',
     voci: {
       it: [
