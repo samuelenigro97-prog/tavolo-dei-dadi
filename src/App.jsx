@@ -1704,7 +1704,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.59';
+const APP_VERSION = '3.9.60';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3152,27 +3152,27 @@ export default function App() {
   // Durante il trascinamento uso uno stato locale (fluidità) e scrivo nella
   // scheda solo al rilascio; cambiando PG risincronizzo dal personaggio attivo.
   const [mappaMarker, setMappaMarker] = useState(
-    scheda.mappaMarker && typeof scheda.mappaMarker.x === 'number' ? scheda.mappaMarker : { x: 50, y: 50 }
+    scheda?.mappaMarker && typeof scheda.mappaMarker.x === 'number' ? scheda.mappaMarker : { x: 50, y: 50 }
   );
   const mappaMarkerRef = useRef(mappaMarker);
   useEffect(() => {
-    const m = scheda.mappaMarker;
+    const m = scheda?.mappaMarker;
     const val = m && typeof m.x === 'number' ? m : { x: 50, y: 50 };
     mappaMarkerRef.current = val;
     setMappaMarker(val);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roster.attivo, scheda.mappaMarker?.x, scheda.mappaMarker?.y]);
+  }, [roster.attivo, scheda?.mappaMarker?.x, scheda?.mappaMarker?.y]);
   // Su Safari mobile il trascinamento può terminare con pointercancel invece di
   // pointerup. Salva quindi anche poco dopo ogni spostamento: il pin non dipende
   // dall'evento finale e conserva la posizione a ogni riapertura/ricaricamento.
   useEffect(() => {
-    if (!mappaAperta) return undefined;
-    const salvato = scheda.mappaMarker;
+    if (!mappaAperta || !scheda) return undefined;
+    const salvato = scheda?.mappaMarker;
     if (salvato && salvato.x === mappaMarker.x && salvato.y === mappaMarker.y) return undefined;
     const timer = setTimeout(() => aggiorna({ mappaMarker: mappaMarkerRef.current }), 180);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mappaMarker.x, mappaMarker.y, mappaAperta]);
+  }, [mappaMarker.x, mappaMarker.y, mappaAperta, scheda]);
   const trascinaMarker = (e) => {
     const wrap = mappaWrapRef.current;
     if (!wrap) return;

@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.60',
+    voci: {
+      it: [
+        'Risoluzione Crash Segnalino Mappa: corretto il controllo di sicurezza sul segnalino mappa che causava un errore di caricamento in assenza di personaggi.',
+      ],
+      en: [
+        'Map Marker Crash Fix: resolved safe-navigation check on the map marker component preventing launch errors on empty storage.',
+      ],
+    },
+  },
+  {
     versione: '3.9.59',
     voci: {
       it: [
