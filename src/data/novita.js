@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.37',
+    voci: {
+      it: [
+        'Sezione Reazioni: il menù rapido e i suggerimenti propongono ora incantesimi di reazione (Scudo, Controincantesimo, Caduta Morbida...) e reazioni tattiche (Attacco di opportunità, Schivata prodigiosa...) anziché le normali armi.',
+      ],
+      en: [
+        'Reactions section: quick menu and suggestions now offer reaction spells (Shield, Counterspell, Feather Fall...) and tactical reactions (Opportunity Attack, Uncanny Dodge...) instead of weapons.',
+      ],
+    },
+  },
+  {
     versione: '3.9.36',
     voci: {
       it: [

@@ -234,6 +234,57 @@ export const ARMI_5E = [
   { nome: 'Balestra pesante', danno: '1d10', tipo: 'Perforante', note: 'Munizioni, Pesante, Caricamento, Due mani (30/120 m)', ranged: true, maestria: 'Spingere (Push)' },
 ];
 
+export const REAZIONI_5E = [
+  // Incantesimi di reazione
+  { nome: 'Scudo (Shield)', tipo: 'incantesimo', danno: '', tipoDanno: '', note: '+5 CA fino al prossimo turno, annulla Dardo Incantato' },
+  { nome: 'Controincantesimo (Counterspell)', tipo: 'incantesimo', danno: '', tipoDanno: '', note: 'Interrompi incantesimo entro 18 m (auto fino al 3° liv.)' },
+  { nome: 'Caduta Morbida (Feather Fall)', tipo: 'incantesimo', danno: '', tipoDanno: '', note: 'Fino a 5 creature: riduce danni da caduta di 1d4×10' },
+  { nome: 'Rappresaglia Infernale (Hellish Rebuke)', tipo: 'incantesimo', danno: '2d10', tipoDanno: 'Fuoco', note: 'TS Destrezza per metà quando subisci danni' },
+  { nome: 'Assorbire Elementi (Absorb Elements)', tipo: 'incantesimo', danno: '1d6', tipoDanno: 'Elementale', note: 'Resistenza al danno elementale + 1d6 al prossimo attacco' },
+  { nome: 'Parola di Ritorno / Ripulsa (Silvery Barbs)', tipo: 'incantesimo', danno: '', tipoDanno: '', note: 'Forza a ritirare un d20 e dona vantaggio a un alleato' },
+  
+  // Reazioni fisiche, privilegi e manovre
+  { nome: 'Attacco di Opportunità', tipo: 'tattica', danno: '1d8', tipoDanno: 'Da arma', note: 'Reazione quando un nemico esce dalla portata' },
+  { nome: 'Schivata Prodigiosa (Uncanny Dodge)', tipo: 'privilegio', danno: '', tipoDanno: '', note: 'Dimezza i danni di un attacco che ti colpisce' },
+  { nome: 'Deviare Proiettili (Deflect Missiles)', tipo: 'privilegio', danno: '1d10', tipoDanno: '', note: 'Riduci danni a distanza di 1d10 + Des + Livello Monaco' },
+  { nome: 'Parata (Parry)', tipo: 'manovra', danno: '1d8', tipoDanno: '', note: 'Riduci i danni in mischia con dado superiorità + Des' },
+  { nome: 'Intercettare (Interception)', tipo: 'stile', danno: '1d10', tipoDanno: '', note: 'Riduci danni a un alleato entro 1,5 m di 1d10 + Comp' },
+  { nome: 'Protezione (Protection)', tipo: 'stile', danno: '', tipoDanno: '', note: 'Imponi svantaggio a un attacco contro alleato vicino con scudo' },
+  { nome: 'Sentinella (Colpo di reazione)', tipo: 'talento', danno: '1d8', tipoDanno: '', note: 'Attacco contro chi colpisce un alleato vicino' },
+  { nome: 'Parole Taglienti (Cutting Words)', tipo: 'privilegio', danno: '1d6', tipoDanno: '', note: 'Sottrai dado Ispirazione Bardica al tiro del nemico' },
+  { nome: 'Bagliore Protettivo (Warding Flare)', tipo: 'privilegio', danno: '', tipoDanno: '', note: 'Imponi svantaggio a chi ti attacca con luce divina' },
+  { nome: 'Ripicca / Ritorsione (Retaliation)', tipo: 'privilegio', danno: '1d12', tipoDanno: '', note: 'Attacca chi ti ferisce in mischia' },
+  { nome: 'Fuga Nebbiosa (Misty Escape)', tipo: 'privilegio', danno: '', tipoDanno: '', note: 'Teletrasporto e invisibilità quando subisci danni' },
+];
+
+export const AZIONI_BONUS_5E = [
+  // Combattimento e armi
+  { nome: 'Attacco Seconda Arma (Off-hand)', tipo: 'combattimento', danno: '1d6', tipoDanno: 'Da arma', note: 'Azione bonus con arma leggera nella mano secondaria' },
+  { nome: 'Colpo di Scudo (Shield Master)', tipo: 'talento', danno: '', tipoDanno: '', note: 'Spingi o atterra una creatura entro 1,5 m' },
+  { nome: 'Colpo con Asta (Polearm Master)', tipo: 'talento', danno: '1d4', tipoDanno: 'Contundente', note: 'Attacco con l\'estremità opposta dell\'asta' },
+  { nome: 'Attacco Disarmato Bonus (Monaco)', tipo: 'privilegio', danno: '1d6', tipoDanno: 'Contundente', note: 'Colpo senz\'armi come azione bonus dopo un attacco' },
+  { nome: 'Raffica di Colpi (Flurry of Blows)', tipo: 'privilegio', danno: '2d6', tipoDanno: 'Contundente', note: '2 colpi senz\'armi spendendo 1 punto Focus/Ki' },
+
+  // Incantesimi azione bonus
+  { nome: 'Arma Spirituale (Spiritual Weapon)', tipo: 'incantesimo', danno: '1d8', tipoDanno: 'Forza', note: 'Attacco magico a distanza (18 m) come azione bonus' },
+  { nome: 'Parola Guaritrice (Healing Word)', tipo: 'incantesimo', danno: '1d4', tipoDanno: 'Guarigione', note: 'Cura 1d4 + mod a distanza (18 m) come azione bonus' },
+  { nome: 'Passo Velato (Misty Step)', tipo: 'incantesimo', danno: '', tipoDanno: '', note: 'Teletrasporto fino a 9 m in uno spazio visibile' },
+  { nome: 'Marchio del Cacciatore (Hunter\'s Mark)', tipo: 'incantesimo', danno: '1d6', tipoDanno: 'Forza', note: '+1d6 danni a ogni colpo sul bersaglio marcato' },
+  { nome: 'Maledizione (Hex)', tipo: 'incantesimo', danno: '1d6', tipoDanno: 'Necrotico', note: '+1d6 danni necrotici e svantaggio alle prove' },
+  { nome: 'Punizione Divina (Divine Smite 2024)', tipo: 'incantesimo', danno: '2d8', tipoDanno: 'Radioso', note: 'Azione bonus dopo aver colpito un bersaglio' },
+  { nome: 'Punizione Tonante (Thunderous Smite)', tipo: 'incantesimo', danno: '2d6', tipoDanno: 'Tuono', note: 'Spinge di 3 m e atterra (TS Forza)' },
+  { nome: 'Punizione Infuocata (Searing Smite)', tipo: 'incantesimo', danno: '1d6', tipoDanno: 'Fuoco', note: 'Brucia il bersaglio a ogni turno' },
+  { nome: 'Punizione Iridescente (Wrathful Smite)', tipo: 'incantesimo', danno: '1d6', tipoDanno: 'Psichico', note: 'Spaventa il bersaglio (TS Saggezza)' },
+
+  // Privilegi di classe
+  { nome: 'Ira Barbarica (Rage)', tipo: 'privilegio', danno: '', tipoDanno: '', note: 'Resistenza ai danni e bonus danni in mischia' },
+  { nome: 'Ispirazione Bardica', tipo: 'privilegio', danno: '1d6', tipoDanno: '', note: 'Dona un dado Ispirazione a un alleato entro 18 m' },
+  { nome: 'Azione Scaltra (Cunning Action)', tipo: 'privilegio', danno: '', tipoDanno: '', note: 'Scatto, disimpegno o furtività come azione bonus' },
+  { nome: 'Recuperare Energie (Second Wind)', tipo: 'privilegio', danno: '1d10', tipoDanno: 'Guarigione', note: 'Recuperi 1d10 + livello da Guerriero in PF' },
+  { nome: 'Forma Selvatica (Wild Shape)', tipo: 'privilegio', danno: '', tipoDanno: '', note: 'Trasformazione in bestia come azione bonus' },
+  { nome: 'Stregoneria Innata (Innate Sorcery)', tipo: 'privilegio', danno: '', tipoDanno: '', note: '+1 CD e vantaggio ai tiri per colpire' },
+];
+
 export const BACKGROUND_COMPETENZE = {
   Accolito: ['intuizione', 'religione'],
   Artigiano: ['indagare', 'persuasione'],

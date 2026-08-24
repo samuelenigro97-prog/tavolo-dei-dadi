@@ -1031,7 +1031,7 @@ import { spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spieg
 import { INCANTESIMI_DB, datiIncantesimo } from './data/incantesimi.js';
 
 const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(INCANTESIMI_DB)])).sort((a, b) => a.localeCompare(b, 'it'));
-import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E } from './data/dati5e.js';
+import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
 import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni } from './rules/regole.js';
@@ -1514,7 +1514,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.36';
+const APP_VERSION = '3.9.37';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7907,15 +7907,55 @@ export default function App() {
                                       ) : (
                                         <select
                                           value=""
-                                          title={t('tip.scegli_arma')}
+                                          title={
+                                            cat === 'Reazione'
+                                              ? "Scegli un incantesimo di reazione o una reazione"
+                                              : cat === 'Bonus'
+                                                ? "Scegli un'azione bonus o incantesimo bonus"
+                                                : t('tip.scegli_arma')
+                                          }
                                           onChange={(e) => {
-                                            const arma = ARMI_5E.find((w) => w.nome === e.target.value);
-                                            if (arma) aggiornaAttacco(attaccoDaArma(arma, scheda));
+                                            const v = e.target.value;
+                                            if (!v) return;
+                                            if (cat === 'Reazione') {
+                                              const r = REAZIONI_5E.find((x) => x.nome === v);
+                                              if (r) {
+                                                aggiornaAttacco({ nome: r.nome, bonus: 0, danno: r.danno || '', tipoDanno: r.tipoDanno || '', note: r.note || '' });
+                                              }
+                                            } else if (cat === 'Bonus') {
+                                              const b = AZIONI_BONUS_5E.find((x) => x.nome === v);
+                                              if (b) {
+                                                aggiornaAttacco({ nome: b.nome, bonus: 0, danno: b.danno || '', tipoDanno: b.tipoDanno || '', note: b.note || '' });
+                                              }
+                                            } else {
+                                              const arma = ARMI_5E.find((w) => w.nome === v);
+                                              if (arma) aggiornaAttacco(attaccoDaArma(arma, scheda));
+                                            }
                                           }}
                                           style={{ ...styles.inlineInput, appearance: 'none', width: 22, height: 22, padding: 0, textAlign: 'center', cursor: 'pointer', flexShrink: 0 }}
                                         >
-                                          <option value="">⚔️</option>
-                                          {[...ARMI_5E].sort((a, b) => a.nome.localeCompare(b.nome, 'it')).map((w) => <option key={w.nome} value={w.nome}>{w.nome}</option>)}
+                                          <option value="">{cat === 'Reazione' ? '🪄' : cat === 'Bonus' ? '⚡' : '⚔️'}</option>
+                                          {cat === 'Reazione' ? (
+                                            <>
+                                              <optgroup label="Incantesimi di Reazione">
+                                                {REAZIONI_5E.filter((x) => x.tipo === 'incantesimo').map((r) => <option key={r.nome} value={r.nome}>{r.nome}</option>)}
+                                              </optgroup>
+                                              <optgroup label="Reazioni e Privilegi">
+                                                {REAZIONI_5E.filter((x) => x.tipo !== 'incantesimo').map((r) => <option key={r.nome} value={r.nome}>{r.nome}</option>)}
+                                              </optgroup>
+                                            </>
+                                          ) : cat === 'Bonus' ? (
+                                            <>
+                                              <optgroup label="Azioni Bonus & Armi">
+                                                {AZIONI_BONUS_5E.filter((x) => x.tipo === 'combattimento' || x.tipo === 'talento' || x.tipo === 'privilegio').map((b) => <option key={b.nome} value={b.nome}>{b.nome}</option>)}
+                                              </optgroup>
+                                              <optgroup label="Incantesimi Azione Bonus">
+                                                {AZIONI_BONUS_5E.filter((x) => x.tipo === 'incantesimo').map((b) => <option key={b.nome} value={b.nome}>{b.nome}</option>)}
+                                              </optgroup>
+                                            </>
+                                          ) : (
+                                            [...ARMI_5E].sort((a, b) => a.nome.localeCompare(b.nome, 'it')).map((w) => <option key={w.nome} value={w.nome}>{w.nome}</option>)
+                                          )}
                                         </select>
                                       )}
                                       <Editable
@@ -7997,26 +8037,54 @@ export default function App() {
                         <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                           <input
                             id={`wpn-add-input-${cat}`}
-                            list="wpn-presets"
-                            placeholder={t('combat.aggiungi_ph')}
+                            list={`presets-${cat}`}
+                            placeholder={
+                              cat === 'Reazione'
+                                ? '+ Aggiungi reazione o incantesimo (Scudo, Controincantesimo, Attacco di opportunità...)'
+                                : cat === 'Bonus'
+                                  ? '+ Aggiungi azione bonus (Attacco seconda arma, Arma Spirituale, Smite...)'
+                                  : t('combat.aggiungi_ph')
+                            }
                             style={{ ...styles.inlineInput, flex: 1, minWidth: 140, padding: '6px 8px' }}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter' && e.target.value.trim()) {
-                                const nomeArma = e.target.value.trim();
-                                const arma = ARMI_5E.find((w) => w.nome === nomeArma);
-                                const nuova = arma ? attaccoDaArma(arma, scheda) : { nome: nomeArma, bonus: 0, danno: '', tipoDanno: '', note: '' };
+                                const nomeInserito = e.target.value.trim();
+                                let nuova;
+                                if (cat === 'Reazione') {
+                                  const r = REAZIONI_5E.find((x) => x.nome.toLowerCase() === nomeInserito.toLowerCase() || x.nome.toLowerCase().startsWith(nomeInserito.toLowerCase()));
+                                  nuova = r
+                                    ? { nome: r.nome, bonus: 0, danno: r.danno || '', tipoDanno: r.tipoDanno || '', note: r.note || '' }
+                                    : { nome: nomeInserito, bonus: 0, danno: '', tipoDanno: '', note: '' };
+                                } else if (cat === 'Bonus') {
+                                  const b = AZIONI_BONUS_5E.find((x) => x.nome.toLowerCase() === nomeInserito.toLowerCase() || x.nome.toLowerCase().startsWith(nomeInserito.toLowerCase()));
+                                  nuova = b
+                                    ? { nome: b.nome, bonus: 0, danno: b.danno || '', tipoDanno: b.tipoDanno || '', note: b.note || '' }
+                                    : { nome: nomeInserito, bonus: 0, danno: '', tipoDanno: '', note: '' };
+                                } else {
+                                  const arma = ARMI_5E.find((w) => w.nome.toLowerCase() === nomeInserito.toLowerCase());
+                                  nuova = arma ? attaccoDaArma(arma, scheda) : { nome: nomeInserito, bonus: 0, danno: '', tipoDanno: '', note: '' };
+                                }
                                 const inv = scheda.inventario || [];
-                                aggiorna({
+                                const patch = {
                                   attacchi: [...scheda.attacchi, { ...nuova, id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, categoria: cat }],
-                                  inventario: inv.some((x) => x.nome === nuova.nome)
-                                    ? inv.map((x) => (x.nome === nuova.nome ? { ...x, equip: true } : x))
-                                    : [...inv, { nome: nuova.nome, qta: 1, peso: pesoStimato(nuova.nome), equip: true }]
-                                });
+                                };
+                                if (cat === 'Azione' && !inv.some((x) => x.nome === nuova.nome)) {
+                                  patch.inventario = [...inv, { nome: nuova.nome, qta: 1, peso: pesoStimato(nuova.nome), equip: true }];
+                                }
+                                aggiorna(patch);
                                 e.target.value = '';
                               }
                             }}
                           />
-                          {cat === 'Azione' && <datalist id="wpn-presets">{[...ARMI_5E].sort((a, b) => a.nome.localeCompare(b.nome, 'it')).map((w) => <option key={w.nome} value={w.nome} />)}</datalist>}
+                          <datalist id={`presets-${cat}`}>
+                            {cat === 'Reazione' ? (
+                              REAZIONI_5E.map((r) => <option key={r.nome} value={r.nome} />)
+                            ) : cat === 'Bonus' ? (
+                              AZIONI_BONUS_5E.map((b) => <option key={b.nome} value={b.nome} />)
+                            ) : (
+                              [...ARMI_5E].sort((a, b) => a.nome.localeCompare(b.nome, 'it')).map((w) => <option key={w.nome} value={w.nome} />)
+                            )}
+                          </datalist>
                         </div>
                       </div>
                     );
