@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.56',
+    voci: {
+      it: [
+        'Filtro Sezione Famigli & Evocazioni: il menu delle creature evocate compare solo per i personaggi che hanno effettivamente incantesimi di evocazione nel grimorio o sono Warlock del Patto della Catena, e la Forma Selvatica rimane dedicata al Druido.',
+      ],
+      en: [
+        'Filtered Familiars & Summons Section: the summoned creatures panel now only appears for characters that actually know conjuration/familiar spells or are Pact of the Chain Warlocks, keeping Wild Shape strictly dedicated to Druids.',
+      ],
+    },
+  },
+  {
     versione: '3.9.55',
     voci: {
       it: [

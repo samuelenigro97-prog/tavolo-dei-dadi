@@ -1704,7 +1704,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.55';
+const APP_VERSION = '3.9.56';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -9316,18 +9316,21 @@ export default function App() {
               </Sezione>
             )}
 
-            {/* Famigli & Creature Evocate (per Mago, Warlock, Chierico, Druido, Bardo o personaggi con incantesimi) */}
+            {/* Famigli & Creature Evocate: compare SOLO se il PG possiede incantesimi o abilità specifiche di evocazione/famigli nel grimorio, oppure è un Warlock con Patto della Catena */}
             {Boolean(
-              /(mago|wizard|warlock|chierico|cleric|druido|druid|bardo|bard|stregone|sorcerer)/i.test(scheda.classe || '') ||
-              (scheda.incantesimiLista || []).some((s) => /famiglio|evoca|spiriti|spirit|elementale/i.test(s.nome || ''))
+              (/warlock/i.test(scheda.classe || '') && /catena|chain/i.test(scheda.sottoclasse || '')) ||
+              (scheda.incantesimiLista || []).some((s) => /famiglio|evoca|spiriti|spirit|elementale|summon|conjure/i.test(s.nome || ''))
             ) && (
-              <Sezione titolo={lingua === 'en' ? '🦉 Familiars & Summons' : '🦉 Famigli & Evocazioni'} style={{ order: ordineSezioni.indexOf('incantesimi') }} {...apertoProps('famigliEvocazioni', false)}>
+              <Sezione titolo={lingua === 'en' ? '✨ Familiars & Summons' : '✨ Famigli & Evocazioni'} style={{ order: ordineSezioni.indexOf('incantesimi') }} {...apertoProps('famigliEvocazioni', false)}>
                 <div>
                   <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8 }}>
-                    {lingua === 'en' ? 'Statblocks for common familiars and summoned spiritual creatures:' : 'Statblock rapidi per famigli (Trova Famiglio / Patto della Catena) ed evocazioni spirituali:'}
+                    {lingua === 'en' ? 'Quick statblocks for your active familiars and summoned creatures:' : 'Statblock rapidi per i tuoi famigli e creature evocate:'}
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 }}>
-                    {[...FAMIGLI, ...EVOCAZIONI].map((c) => (
+                    {[
+                      ...(/warlock/i.test(scheda.classe || '') && /catena|chain/i.test(scheda.sottoclasse || '') ? FAMIGLI : (scheda.incantesimiLista || []).some((s) => /famiglio|familiar/i.test(s.nome || '')) ? FAMIGLI : []),
+                      ...(scheda.incantesimiLista || []).some((s) => /evoca|spiriti|spirit|elementale|summon|conjure/i.test(s.nome || '')) ? EVOCAZIONI : (FAMIGLI.length > 0 ? [] : EVOCAZIONI),
+                    ].map((c) => (
                       <div
                         key={c.nome}
                         onClick={() => setBestiaDettaglio(c)}

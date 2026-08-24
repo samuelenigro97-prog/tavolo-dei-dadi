@@ -181,23 +181,8 @@ export const BESTIE = [
   },
 ];
 
-/** Famigli comuni (Trova Famiglio / Patto della Catena). */
+/** Famigli speciali / avanzati (Patto della Catena Warlock). */
 export const FAMIGLI = [
-  {
-    nome: 'Gufo (Famiglio)', nomeEn: 'Owl (Familiar)', tipo: 'Celestiale / Fatato / Immondo',
-    taglia: 'Minuscola', ca: 11, pf: 1, pfFormula: '1d4 − 1',
-    velocita: { terra: 1.5, volo: 18 },
-    car: { forza: 3, destrezza: 13, costituzione: 8, intelligenza: 2, saggezza: 12, carisma: 7 },
-    abilita: 'Percezione +3, Furtività +3',
-    sensi: 'Scurovisione 36 m · Percezione passiva 13',
-    tratti: [
-      'Volo radente: non provoca attacchi di opportunità quando vola fuori dalla portata.',
-      'Udito e vista acuti: vantaggio alle prove di Percezione su udito e vista.',
-      'Collegamento telepatico: comunica telepaticamente col padrone entro 30 m e può trasmettere incantesimi a contatto.',
-    ],
-    azioni: ['Aiuto: conferisce vantaggio al prossimo tiro per colpire di un alleato.'],
-    note: 'Il famiglio classico più versatile per esplorazione e aiuto in combattimento.',
-  },
   {
     nome: 'Pseudodrago (Famiglio)', nomeEn: 'Pseudodragon (Familiar)', tipo: 'Drago (Patto della Catena)',
     taglia: 'Minuscola', ca: 13, pf: 7, pfFormula: '2d4 + 2',
