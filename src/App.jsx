@@ -3682,12 +3682,12 @@ export default function App() {
             setRoster((r) => {
               const personaggi = { ...r.personaggi };
               let ultimo = r.attivo;
-              const nomiEsistenti = new Set(Object.values(personaggi).map((p) => `${String(p.nome||'').toLowerCase().trim()}|${String(p.classe||'').toLowerCase().trim()}|${Number(p.livello)||0}`));
+              const nomiEsistenti = new Set(Object.values(personaggi).map((p) => String(p.nome||'').toLowerCase().trim()));
               let nuovi = 0, duplicati = 0;
               lista.forEach((s, i) => {
                 const norm = normalizeImported(forzaVersione(s));
-                const chiave = `${String(norm.nome||'').toLowerCase().trim()}|${String(norm.classe||'').toLowerCase().trim()}|${Number(norm.livello)||0}`;
-                if (nomiEsistenti.has(chiave)) { duplicati++; return; }
+                const chiave = String(norm.nome||'').toLowerCase().trim();
+                if (chiave && nomiEsistenti.has(chiave)) { duplicati++; return; }
                 const id = `pg-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 6)}`;
                 personaggi[id] = norm;
                 nomiEsistenti.add(chiave);
@@ -3702,10 +3702,10 @@ export default function App() {
           }
         }
         const norm = normalizeImported(forzaVersione(dati));
-        const chiave = `${String(norm.nome||'').toLowerCase().trim()}|${String(norm.classe||'').toLowerCase().trim()}|${Number(norm.livello)||0}`;
-        const esiste = Object.values(roster.personaggi || {}).some((p) => `${String(p.nome||'').toLowerCase().trim()}|${String(p.classe||'').toLowerCase().trim()}|${Number(p.livello)||0}` === chiave);
+        const chiave = String(norm.nome||'').toLowerCase().trim();
+        const esiste = chiave && Object.values(roster.personaggi || {}).some((p) => String(p.nome||'').toLowerCase().trim() === chiave);
         if (esiste) {
-          setErroreImport(`PG "${norm.nome}" Liv.${norm.livello} già esistente: import ignorato per evitare duplicato.`);
+          setErroreImport(`PG "${norm.nome}" già esistente: import ignorato per evitare duplicato.`);
           continue;
         }
         nuovoPersonaggio(norm);
@@ -5766,24 +5766,6 @@ export default function App() {
           </button>
         </div>
 
-        <div className="app-header-group">
-          <button
-            ref={ambientazioneBtnRef}
-            style={styles.modeButton(false)}
-            title={t('luogo.tooltip')}
-            onClick={() => { sbloccaAudio(); if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}
-          >
-            {iconaAmbientazione(presetColori)} <span className="header-label">{t('luogo.titolo')}</span>
-          </button>
-          <button
-            style={{ ...styles.modeButton(false), padding: '4px 8px' }}
-            title={t('tooltip.tema')}
-            onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}
-          >
-            {tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'} <span className="header-label">{tema === 'auto' ? 'Auto' : tema === 'chiaro' ? 'Giorno' : 'Notte'}</span>
-          </button>
-        </div>
-
         <input ref={mappaRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaMappa} />
         </div>
 
@@ -6476,10 +6458,15 @@ export default function App() {
                 title={t('nome.tooltip_selettore')}
               >
                 {Object.entries(roster.personaggi).map(([id, p]) => {
-                  const tot = (p.livello || 1) + (Array.isArray(p.multiclasse) ? p.multiclasse.reduce((s, m) => s + (Number(m.livello) || 0), 0) : 0);
+                  const mc = Array.isArray(p.multiclasse) ? p.multiclasse.filter((m) => m.classe) : [];
+                  const classi = [
+                    ...(p.classe ? [`${p.classe} ${p.livello || 1}`] : []),
+                    ...mc.map((m) => `${m.classe} ${m.livello || 1}`),
+                  ];
+                  const tot = classi.length ? classi.reduce((s, c) => s + parseInt(c.split(' ').pop(), 10) || 0, 0) : 0;
                   return (
                     <option key={id} value={id}>
-                      {p.nome || t('menu.senza_nome')}{p.classe ? ` · ${p.classe}` : ''} · {t('nome.liv')} {tot}{tot !== (p.livello || 1) ? ` (${p.livello || 1}+${(p.multiclasse || []).map((m) => m.livello).join('+')})` : ''}
+                      {p.nome || t('menu.senza_nome')}{classi.length ? ` — ${classi.join(' / ')}` : ''}{tot ? ` (${t('nome.liv')} ${tot})` : ''}
                     </option>
                   );
                 })}
@@ -6531,6 +6518,8 @@ export default function App() {
             <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' }); setMostraCrea(true); }} title={t('tip.nuovo_pg')}>＋</button>
             <button style={{ ...styles.buttonMini, borderColor: C.red, color: C.red }} onClick={eliminaPersonaggio} title={t('tip.elimina_pg')}>🗑</button>
             <span style={{ width: 1, height: 18, background: C.border, margin: '0 2px', flexShrink: 0, opacity: 0.6 }} aria-hidden />
+            <button ref={ambientazioneBtnRef} style={styles.buttonMini} title={t('luogo.tooltip')} onClick={() => { sbloccaAudio(); if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
+            <button style={styles.buttonMini} title={t('tooltip.tema')} onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}>{tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'}</button>
             <button style={styles.buttonMini} onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())} title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}>🗺️</button>
             <button style={styles.buttonMini} onClick={() => {
               if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
@@ -6671,7 +6660,7 @@ export default function App() {
                         <div style={{ minWidth: 0, flex: 1 }}>{contenuto}</div>
                       </div>
                     ) : contenuto;
-                    return (
+                    const contenuto = (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: multi ? 6 : 4 }}>
                         {/* Sottoclasse della classe principale */}
                         {riga(scheda.classe, campoSottoclasse(scheda.classe, scheda.livello, scheda.sottoclasse, (v) => {
@@ -6701,6 +6690,21 @@ export default function App() {
                           </div>
                         ) : null))}
                       </div>
+                    );
+                    // Con il multiclasse le righe multiple occupano troppo: le
+                    // chiudiamo in un <details> con riepilogo compatto in chiusura.
+                    if (!multi) return contenuto;
+                    const riepilogo = [
+                      scheda.sottoclasse || `${traduciDato(scheda.classe)}: —`,
+                      ...(scheda.multiclasse || []).filter((m) => m.classe).map((m) => m.sottoclasse || `${traduciDato(m.classe)}: —`),
+                    ].join(' · ');
+                    return (
+                      <details>
+                        <summary style={{ cursor: 'pointer', fontSize: 12, color: C.inkDim, userSelect: 'none' }} title="Click per mostrare/nascondere le sottoclassi">
+                          {riepilogo} <span style={{ opacity: 0.6 }}>▾</span>
+                        </summary>
+                        <div style={{ marginTop: 6 }}>{contenuto}</div>
+                      </details>
                     );
                   })()}
                 </CampoModulo>
