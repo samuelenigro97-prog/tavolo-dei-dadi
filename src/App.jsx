@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.66';
+const APP_VERSION = '3.9.67';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -9078,7 +9078,7 @@ export default function App() {
                                         title={eff || t('tip.cosa_fa_inc')}
                                         onClick={() => setInfo({ titolo: `${s.nome || 'Incantesimo'}${s.livello === 0 ? ' · Trucchetto' : ` · ${s.livello}° livello`}`, testo: eff || 'Nessuna descrizione disponibile per questo incantesimo. Aprilo con ✎ per aggiungere delle note.' })}
                                       >
-                                        {s.nome || t('menu.senza_nome')} {eff ? 'ⓘ' : ''}
+                                        {s.nome || t('menu.senza_nome')}
                                       </button>
                                       {s.bonus && (
                                         <span

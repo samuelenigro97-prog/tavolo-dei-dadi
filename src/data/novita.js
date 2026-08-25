@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.67',
+    voci: {
+      it: [
+        'Grimorio Più Pulito: rimosso il simbolo ⓘ accanto al nome degli incantesimi; la spiegazione completa resta consultabile al passaggio del cursore o cliccando sul nome.',
+      ],
+      en: [
+        'Cleaner Spellbook: removed ⓘ icon next to spell names; full spell text remains accessible via hover tooltip and direct click.',
+      ],
+    },
+  },
+  {
     versione: '3.9.66',
     voci: {
       it: [
