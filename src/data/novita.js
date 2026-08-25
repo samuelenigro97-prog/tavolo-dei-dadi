@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.64',
+    voci: {
+      it: [
+        'Colori Dinamici Barra Ingombro: la barra dell\'ingombro è verde brillante se il PG non è ingombrato (<50%), arancione a metà/verso il limite, e rossa se ingombrato o sovraccarico.',
+      ],
+      en: [
+        'Dynamic Encumbrance Bar Colors: the encumbrance gauge displays vivid green when unencumbered (<50%), orange at mid/threshold load, and red when encumbered or overloaded.',
+      ],
+    },
+  },
+  {
     versione: '3.9.63',
     voci: {
       it: [

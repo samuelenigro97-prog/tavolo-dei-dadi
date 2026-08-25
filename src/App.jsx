@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.63';
+const APP_VERSION = '3.9.64';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -9485,8 +9485,10 @@ export default function App() {
                 const spingiTrascina = capFisica * 2;
                 const stato = pesoTot > cap ? 'sovraccarico' : pesoTot > soglia2 ? 'grave' : pesoTot > soglia1 ? 'ingombrato' : 'ok';
                 const perc = Math.min(100, (pesoTot / cap) * 100);
-                // Colore barra ingombro: verde (sotto 50%), arancione (tra 50% e limite normale), rosso (ingombrato/sovraccarico)
-                const colore = stato !== 'ok' ? '#c0392b' : (pesoTot >= cap * 0.5 || pesoTot >= soglia1 ? '#e08a1e' : '#3e9b4f');
+                // Colore barra ingombro: verde (se non ingombrato < 50%), arancione (a metà / verso il limite), rossa (se ingombrato o sovraccarico)
+                const colore = (stato !== 'ok' || pesoTot > soglia1)
+                  ? '#c0392b'
+                  : (pesoTot >= cap * 0.5 ? '#e08a1e' : '#2e9d4d');
                 const modInv = (id, patch) => aggiorna({ inventario: inv.map((x) => (x.id === id ? { ...x, ...patch } : x)) });
                 const sintoniaArr = Array.isArray(scheda.sintonia) ? scheda.sintonia : (scheda.sintonia ? [scheda.sintonia] : []);
                 const normalizzaNomeOggetto = (v) => String(v || '').toLocaleLowerCase('it').replace(/[^a-zà-ÿ0-9]/gi, ' ').replace(/\s+/g, ' ').trim();
