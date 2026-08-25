@@ -473,7 +473,50 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   grid-column: 3;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  height: 100%;
+}
+.car-tier-1 {
+  display: flex;
+  flex-direction: column;
   gap: 8px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.car-tier-1 > .blocco-car {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 6px 10px;
+  min-width: 0;
+}
+.car-tier-2 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.car-tier-2 > .blocco-car {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 5px 10px;
+  min-width: 0;
+}
+.car-tier-3 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.car-tier-3 > .blocco-car {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 6px 10px;
   min-width: 0;
 }
 /* Il box immagine rettangolare (270px × 295px) allineato alla fine di Anagrafica+PF e Forza+Des+Cost */
@@ -497,9 +540,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 }
 .profilo-col-sinistra .sezione { margin-bottom: 0 !important; }
 .profilo-col-sinistra .sezione > summary { font-size: 11.5px !important; letter-spacing: 0.7px !important; white-space: nowrap !important; overflow: hidden; text-overflow: ellipsis; }
-.profilo-caratteristiche > .blocco-car { margin-bottom: 0 !important; }
-/* Destrezza + Costituzione impilate in un'unica riga condivisa (i Punti Ferita) */
-.car-coppia { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.profilo-caratteristiche > * .blocco-car { margin-bottom: 0 !important; }
 /* i gruppi di vitali riempiono la larghezza della loro riga */
 .pm-anagrafica, .pm-pf, .pm-gruppo { min-width: 0; }
 .pm-anagrafica { display: flex; flex-direction: column; }
