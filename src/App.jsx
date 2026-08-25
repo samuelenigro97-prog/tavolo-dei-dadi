@@ -2697,9 +2697,12 @@ export default function App() {
   // Pannello Avvisi: raccoglie i promemoria (backup, controlli scheda) e le
   // novità di versione, al posto dei riquadri a tutta larghezza che rubavano
   // spazio in cima e, sopra la foto del luogo, si leggevano male.
-  const [mostraAvvisi, setMostraAvvisi] = useState(false);
-  const [posAvvisi, setPosAvvisi] = useState({ top: 60, left: 16 });
-  const avvisiBtnRef = useRef(null);
+  const [mostraAggiorna, setMostraAggiorna] = useState(false);
+  const [posAggiorna, setPosAggiorna] = useState({ top: 60, left: 16 });
+  const aggiornaBtnRef = useRef(null);
+  const [mostraNovita, setMostraNovita] = useState(false);
+  const [posNovita, setPosNovita] = useState({ top: 60, left: 16 });
+  const novitaBtnRef = useRef(null);
   const [novitaViste, setNovitaViste] = useState(() => {
     try { return localStorage.getItem('scheda-interattiva:novita-viste') || ''; } catch { return ''; }
   });
@@ -4925,20 +4928,34 @@ export default function App() {
   const novitaNonLette = novitaViste !== ultimaVersioneNovita();
   const daNotificare = nAvvisi > 0 || novitaNonLette;
 
-  function apriAvvisi() {
-    if (!mostraAvvisi) {
+  function apriAggiorna() {
+    if (!mostraAggiorna) {
       setStatoVerificaManuale(false);
-      const r = avvisiBtnRef.current?.getBoundingClientRect();
-      if (r) setPosAvvisi({
+      const r = aggiornaBtnRef.current?.getBoundingClientRect();
+      if (r) setPosAggiorna({
         top: Math.max(8, Math.min(window.innerHeight - 200, r.bottom + 5)),
         left: Math.max(8, Math.min(window.innerWidth - 330, r.left)),
       });
-      // Aprendo il pannello le novità risultano lette: il puntino si spegne.
+      setMostraNovita(false);
+      setMostraMenuEsporta(false);
+    }
+    setMostraAggiorna((v) => !v);
+  }
+
+  function apriNovita() {
+    if (!mostraNovita) {
+      const r = novitaBtnRef.current?.getBoundingClientRect();
+      if (r) setPosNovita({
+        top: Math.max(8, Math.min(window.innerHeight - 200, r.bottom + 5)),
+        left: Math.max(8, Math.min(window.innerWidth - 330, r.left)),
+      });
       const ultima = ultimaVersioneNovita();
       setNovitaViste(ultima);
       try { localStorage.setItem('scheda-interattiva:novita-viste', ultima); } catch { /* niente */ }
+      setMostraAggiorna(false);
+      setMostraMenuEsporta(false);
     }
-    setMostraAvvisi((v) => !v);
+    setMostraNovita((v) => !v);
   }
 
   return (
@@ -5548,13 +5565,6 @@ export default function App() {
               <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>⚡ Azioni Rapide</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
                 <button
-                  style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
-                  onClick={() => { setMostraMenu(false); setTimeout(() => { setCloudStatus({ text: '', type: '' }); setMostraCloud(true); }, 50); }}
-                  title={t('tooltip.cloud_off')}
-                >
-                  <span>☁️</span> <span>Cloud</span>
-                </button>
-                <button
                   style={{ ...styles.button, width: '100%', opacity: passiUndo ? 1 : 0.45, display: 'flex', alignItems: 'center', gap: 6 }}
                   disabled={!passiUndo}
                   onClick={() => { annullaModifica(); setMostraMenu(false); }}
@@ -5581,13 +5591,27 @@ export default function App() {
                 </button>
                 <button
                   style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
-                  onClick={() => { setMostraMenu(false); setTimeout(() => apriAvvisi(), 50); }}
-                  title={nAvvisi > 0 ? `${nAvvisi} notifiche` : 'Notifiche'}
+                  onClick={() => { setMostraMenu(false); setTimeout(() => { setCloudStatus({ text: '', type: '' }); setMostraCloud(true); }, 50); }}
+                  title={t('tooltip.cloud_off')}
                 >
-                  <span>🔔</span> <span>Notifiche{daNotificare ? ` (${nAvvisi > 0 ? nAvvisi : '!'})` : ''}</span>
+                  <span>☁️</span> <span>Cloud</span>
                 </button>
                 <button
                   style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
+                  onClick={() => { setMostraMenu(false); setTimeout(() => apriAggiorna(), 50); }}
+                  title="Verifica e aggiorna scheda"
+                >
+                  <span>🔄</span> <span>Aggiorna{controlliAttivi.length > 0 ? ` (${controlliAttivi.length})` : ''}</span>
+                </button>
+                <button
+                  style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
+                  onClick={() => { setMostraMenu(false); setTimeout(() => apriNovita(), 50); }}
+                  title="Novità di versione"
+                >
+                  <span>📰</span> <span>Novità{novitaNonLette ? ' (!)' : ''}</span>
+                </button>
+                <button
+                  style={{ ...styles.button, width: '100%', gridColumn: 'span 2', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                   onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
                   title={t('tooltip.lingua')}
                 >
@@ -6733,6 +6757,7 @@ export default function App() {
       <header className="app-header" style={styles.header}>
         <div className="app-header-side">
         <div className="app-header-group">
+          {/* 1. Menu */}
           <button
             style={styles.modeButton(false)}
             title={t('tip.menu_iniziale')}
@@ -6740,20 +6765,7 @@ export default function App() {
           >
             🏠 <span className="header-label">Menu</span>
           </button>
-          <button
-            style={{ ...styles.modeButton(mostraCloud), color: C.goldDark, borderColor: C.goldDark }}
-            title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato (auto-salvataggio spento)') : (codiceSync && autoSyncCodice ? `Sincronizzato con codice${ultimoSyncCodice ? ` · ultimo ${ultimoSyncCodice}` : ''}` : 'Sincronizza i tuoi personaggi sul Cloud')}
-            onClick={() => { setCloudStatus({ text: '', type: '' }); setSyncCodiceStatus({ text: '', type: '' }); setMostraCloud(true); }}
-          >
-            ☁️ <span className="header-label">Cloud</span>
-            {sincronizzando ? (
-              <span style={{ fontSize: 11, marginLeft: 3 }}>🔄</span>
-            ) : (githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice) ? (
-              <span aria-label="Sincronizzazione automatica attiva" style={{ color: '#2e9d4d', fontWeight: 900, marginLeft: 3, fontSize: 12 }}>✓</span>
-            ) : (
-              <span style={{ color: '#c0392b', fontSize: 12, marginLeft: 3, fontWeight: 900 }} title="Salvataggio solo locale (non sincronizzato sul cloud)">❗</span>
-            )}
-          </button>
+          {/* 2. Annulla */}
           <button
             style={{ ...styles.modeButton(false), opacity: passiUndo ? 1 : 0.4, cursor: passiUndo ? 'pointer' : 'default' }}
             title={passiUndo ? t('undo.tooltip', { n: passiUndo }) : t('undo.vuoto')}
@@ -6762,6 +6774,7 @@ export default function App() {
           >
             ↩︎ <span className="header-label">{t('undo.annulla')}</span>
           </button>
+          {/* 3. Importa */}
           <input ref={jsonRef} type="file" accept="application/json,.json,application/pdf,image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif,.pdf" multiple style={{ display: 'none' }} onChange={importaJson} />
           <button
             style={styles.modeButton(false)}
@@ -6770,6 +6783,7 @@ export default function App() {
           >
             📂 <span className="header-label">Importa</span>
           </button>
+          {/* 4. Esporta */}
           <button
             ref={esportaBtnRef}
             style={styles.modeButton(mostraMenuEsporta)}
@@ -6787,24 +6801,56 @@ export default function App() {
           >
             💾 <span className="header-label">Esporta</span>
           </button>
+          {/* 5. Cloud */}
           <button
-            ref={avvisiBtnRef}
-            style={styles.modeButton(mostraAvvisi)}
-            title={nAvvisi > 0
-              ? `${nAvvisi} ${nAvvisi === 1 ? 'notifica' : 'notifiche'} da vedere`
-              : 'Notifiche'}
-            onClick={apriAvvisi}
+            style={{ ...styles.modeButton(mostraCloud), color: C.goldDark, borderColor: C.goldDark }}
+            title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato (auto-salvataggio spento)') : (codiceSync && autoSyncCodice ? `Sincronizzato con codice${ultimoSyncCodice ? ` · ultimo ${ultimoSyncCodice}` : ''}` : 'Sincronizza i tuoi personaggi sul Cloud')}
+            onClick={() => { setCloudStatus({ text: '', type: '' }); setSyncCodiceStatus({ text: '', type: '' }); setMostraCloud(true); }}
           >
-            🔔 <span className="header-label">Notifiche</span>
-            {daNotificare && (
+            ☁️ <span className="header-label">Cloud</span>
+            {sincronizzando ? (
+              <span style={{ fontSize: 11, marginLeft: 3 }}>🔄</span>
+            ) : (githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice) ? (
+              <span aria-label="Sincronizzazione automatica attiva" style={{ color: '#2e9d4d', fontWeight: 900, marginLeft: 3, fontSize: 12 }}>✓</span>
+            ) : (
+              <span style={{ color: '#c0392b', fontSize: 12, marginLeft: 3, fontWeight: 900 }} title="Salvataggio solo locale (non sincronizzato sul cloud)">❗</span>
+            )}
+          </button>
+          {/* 6. Aggiorna (Verifica & Correzione Scheda) */}
+          <button
+            ref={aggiornaBtnRef}
+            style={styles.modeButton(mostraAggiorna)}
+            title={controlliAttivi.length > 0
+              ? `${controlliAttivi.length} incongruenze da verificare`
+              : 'Verifica e aggiorna scheda'}
+            onClick={apriAggiorna}
+          >
+            🔄 <span className="header-label">Aggiorna</span>
+            {controlliAttivi.length > 0 && (
               <span
                 className="avvisi-pallino"
-                aria-label={nAvvisi > 0 ? `${nAvvisi} notifiche` : 'nuove notifiche'}
-              >{nAvvisi > 0 ? nAvvisi : '!'}</span>
+                aria-label={`${controlliAttivi.length} incongruenze`}
+              >{controlliAttivi.length}</span>
+            )}
+          </button>
+          {/* 7. Novità (Novità di versione) */}
+          <button
+            ref={novitaBtnRef}
+            style={styles.modeButton(mostraNovita)}
+            title={novitaNonLette ? 'Nuove novità da leggere' : 'Novità di versione'}
+            onClick={apriNovita}
+          >
+            📰 <span className="header-label">Novità</span>
+            {novitaNonLette && (
+              <span
+                className="avvisi-pallino"
+                aria-label="Nuove novità di versione"
+              >!</span>
             )}
           </button>
         </div>
 
+        {/* 8. Lingua */}
         <div className="app-header-group app-header-language">
           <button
             style={styles.modeButton(false)}
@@ -6909,23 +6955,22 @@ export default function App() {
         </div>
       )}
 
-      {/* Pannello Notifiche: promemoria (backup, controlli scheda) e novità di
-          versione. */}
-      {mostraAvvisi && (
-        <div onClick={() => setMostraAvvisi(false)} style={{ position: 'fixed', inset: 0, zIndex: 1400, background: 'transparent' }}>
+      {/* Pannello Aggiorna: verifica, controllo e correzione della scheda */}
+      {mostraAggiorna && (
+        <div onClick={() => setMostraAggiorna(false)} style={{ position: 'fixed', inset: 0, zIndex: 1400, background: 'transparent' }}>
           <div
             onClick={(e) => e.stopPropagation()}
             className="no-stampa"
             style={{
-              position: 'fixed', top: posAvvisi.top, left: posAvvisi.left,
+              position: 'fixed', top: posAggiorna.top, left: posAggiorna.left,
               width: 'min(320px, calc(100vw - 16px))', maxHeight: 'min(70vh, 560px)', overflowY: 'auto',
               background: C.panel, border: `1px solid ${C.gold}`, borderRadius: 10,
               boxShadow: '0 10px 30px rgba(0,0,0,0.45)', padding: '10px 12px', zIndex: 1401,
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <strong style={{ color: C.goldDark, fontSize: 15, marginRight: 'auto' }}>🔔 {t('notifiche.titolo')}</strong>
-              <button style={{ ...styles.buttonMini, padding: '2px 7px' }} onClick={() => setMostraAvvisi(false)}>✕</button>
+              <strong style={{ color: C.goldDark, fontSize: 15, marginRight: 'auto' }}>🔄 {t('aggiorna.titolo')}</strong>
+              <button style={{ ...styles.buttonMini, padding: '2px 7px' }} onClick={() => setMostraAggiorna(false)}>✕</button>
             </div>
 
             {/* Barra di verifica rapida del PG attivo */}
@@ -6965,29 +7010,7 @@ export default function App() {
               </div>
             )}
 
-            {avvisoBackup && (
-              <div style={{ border: `1px solid ${C.gold}`, borderRadius: 8, padding: '8px 10px', marginBottom: 8, background: 'color-mix(in srgb, var(--c-panel) 88%, #c88c14)' }}>
-                <div style={{ fontSize: 13, color: C.ink, marginBottom: 6 }}>
-                  🛟 <strong>Fai un backup dei tuoi personaggi.</strong> I dati sono salvati solo su questo
-                  dispositivo: un backup ti protegge se cambi telefono o svuoti la cache.
-                </div>
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  <button style={{ ...styles.buttonPrimary, fontSize: 12, padding: '6px 12px' }} onClick={esportaBackupCompleto}>
-                    💾 Scarica backup
-                  </button>
-                  <button
-                    style={styles.buttonMini}
-                    onClick={() => { try { localStorage.setItem('scheda-interattiva:snooze-backup', String(Date.now() + 3 * 24 * 3600 * 1000)); } catch { /* niente */ } setPromemoriaBackup(false); }}
-                    title="Ricordamelo tra qualche giorno"
-                  >Più tardi</button>
-                </div>
-              </div>
-            )}
-
-            {/* Controlli scheda: suggerimenti su competenze/TS che il calcolo
-                automatico non trova. Mai una correzione automatica: talenti,
-                multiclasse e oggetti magici possono spiegare eccezioni
-                legittime, quindi ogni voce si può ignorare per sempre. */}
+            {/* Controlli scheda: suggerimenti su competenze/TS con correzione istantanea */}
             {controlliAttivi.length > 0 && (() => {
               const certi = controlliAttivi.filter((r) => r.gravita === 'certo').length;
               const ignorati = scheda.controlliIgnorati || [];
@@ -7135,11 +7158,69 @@ export default function App() {
               );
             })()}
 
-            {/* Registro versioni e notifiche */}
-            <div style={{ borderTop: (avvisoBackup || controlliAttivi.length > 0) ? `1px solid ${C.border}` : 'none', paddingTop: (avvisoBackup || controlliAttivi.length > 0) ? 8 : 0 }}>
-              {novitaRecenti(3).map((n) => (
-                <div key={n.versione} style={{ marginBottom: 8 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark }}>
+            {/* Ricarica / Aggiornamento PWA */}
+            <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
+              <button
+                style={{ ...styles.button, width: '100%', fontSize: 12, padding: '6px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                onClick={() => {
+                  if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then((regs) => {
+                      for (const r of regs) r.update();
+                    });
+                  }
+                  window.location.reload();
+                }}
+                title={t('aggiorna.ricarica_desc')}
+              >
+                <span>🔄</span> <span>{t('aggiorna.ricarica_app')}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Pannello Novità: registro versioni e promemoria */}
+      {mostraNovita && (
+        <div onClick={() => setMostraNovita(false)} style={{ position: 'fixed', inset: 0, zIndex: 1400, background: 'transparent' }}>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="no-stampa"
+            style={{
+              position: 'fixed', top: posNovita.top, left: posNovita.left,
+              width: 'min(320px, calc(100vw - 16px))', maxHeight: 'min(70vh, 560px)', overflowY: 'auto',
+              background: C.panel, border: `1px solid ${C.gold}`, borderRadius: 10,
+              boxShadow: '0 10px 30px rgba(0,0,0,0.45)', padding: '10px 12px', zIndex: 1401,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <strong style={{ color: C.goldDark, fontSize: 15, marginRight: 'auto' }}>📰 {t('novita.titolo')}</strong>
+              <button style={{ ...styles.buttonMini, padding: '2px 7px' }} onClick={() => setMostraNovita(false)}>✕</button>
+            </div>
+
+            {avvisoBackup && (
+              <div style={{ border: `1px solid ${C.gold}`, borderRadius: 8, padding: '8px 10px', marginBottom: 8, background: 'color-mix(in srgb, var(--c-panel) 88%, #c88c14)' }}>
+                <div style={{ fontSize: 13, color: C.ink, marginBottom: 6 }}>
+                  🛟 <strong>Fai un backup dei tuoi personaggi.</strong> I dati sono salvati solo su questo
+                  dispositivo: un backup ti protegge se cambi telefono o svuoti la cache.
+                </div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <button style={{ ...styles.buttonPrimary, fontSize: 12, padding: '6px 12px' }} onClick={esportaBackupCompleto}>
+                    💾 Scarica backup
+                  </button>
+                  <button
+                    style={styles.buttonMini}
+                    onClick={() => { try { localStorage.setItem('scheda-interattiva:snooze-backup', String(Date.now() + 3 * 24 * 3600 * 1000)); } catch { /* niente */ } setPromemoriaBackup(false); }}
+                    title="Ricordamelo tra qualche giorno"
+                  >Più tardi</button>
+                </div>
+              </div>
+            )}
+
+            {/* Registro versioni */}
+            <div>
+              {novitaRecenti(4).map((n) => (
+                <div key={n.versione} style={{ marginBottom: 10 }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: C.goldDark }}>
                     v{n.versione}{n.versione === APP_VERSION ? (lingua === 'en' ? ' · Current Version' : ' · Versione Attuale') : ''}
                   </div>
                   <ul style={{ margin: '3px 0 0', paddingLeft: 18 }}>
