@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.71',
+    voci: {
+      it: [
+        'Auto-Equip Focus alla Creazione: quando crei un nuovo personaggio, il focus arcano, focus druidico, simbolo sacro o borsa componenti presente nella dotazione viene equipaggiato automaticamente nell\'inventario.',
+      ],
+      en: [
+        'Auto-Equip Spell Focus on Creation: newly created characters will automatically have their starting arcane/druidic focus, holy symbol, or component pouch equipped.',
+      ],
+    },
+  },
+  {
     versione: '3.9.70',
     voci: {
       it: [

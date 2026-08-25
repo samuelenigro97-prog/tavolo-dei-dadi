@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.70';
+const APP_VERSION = '3.9.71';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3347,6 +3347,21 @@ export default function App() {
         })
         .filter(Boolean);
       if (armi.length) s.attacchi = armi;
+
+      // Inizializza l'inventario strutturato ed equipaggia in automatico il Focus arcano/druidico, simbolo sacro o borsa componenti
+      s.inventario = kit.equip.map((raw, i) => {
+        const { nome, qta } = separaQtaOggetto(raw);
+        const isFocus = /focus|simbolo sacro|borsa (da )?componenti|bacchetta|cristallo|totem|bastone runico|feticcio/i.test(nome);
+        const base = completaUtilizziOggetto({
+          id: `inv-init-${Date.now()}-${i}`,
+          nome,
+          qta,
+          peso: 0,
+          equip: isFocus, // equipaggia automaticamente all'avvio
+          categoria: isFocus ? 'Focus' : '',
+        });
+        return { ...base, peso: pesoStimato(base.nome) };
+      });
     }
     // risorse di classe automatiche (Ira, Punti Stregoneria, Ki, Ispirazione Bardica…)
     s.risorse = risorseAutoClasse(classe, s.livello, s.caratteristiche, regoleVersione);
