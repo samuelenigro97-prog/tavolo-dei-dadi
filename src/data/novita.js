@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.63',
+    voci: {
+      it: [
+        'Spiegazioni Incantesimi al Passaggio del Cursore: passando il mouse sul nome di qualsiasi incantesimo compare subito il tooltip con il testo integrale e l\'icona ⓘ cliccabile.',
+      ],
+      en: [
+        'Spell Hover Explanations: hovering over any spell name now instantly shows a tooltip preview with the full rules text and a clickable ⓘ icon.',
+      ],
+    },
+  },
+  {
     versione: '3.9.62',
     voci: {
       it: [
