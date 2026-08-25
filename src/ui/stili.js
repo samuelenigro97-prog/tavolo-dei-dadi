@@ -963,6 +963,37 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .avvisi-pallino { animation: none; }
 }
 
+/* Nuvoletta / Tooltip Globale al passaggio del cursore */
+.nuvoletta-tooltip {
+  position: fixed;
+  z-index: 999999;
+  pointer-events: none;
+  background: var(--c-panel-light, #261c14);
+  color: var(--c-title, #f6efe2);
+  border: 1.5px solid var(--c-gold-dark, #c07718);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.65), 0 0 0 1px rgba(0,0,0,0.3);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  max-width: 320px;
+  white-space: pre-wrap;
+  text-align: center;
+  user-select: none;
+  animation: nuvoletta-anim 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+}
+:root[data-tema="chiaro"] .nuvoletta-tooltip {
+  background: #fcf6eb;
+  color: #2b1f13;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.08);
+}
+@keyframes nuvoletta-anim {
+  from { opacity: 0; transform: translate(-50%, -85%) scale(0.95); }
+  to { opacity: 1; transform: translate(-50%, -100%) scale(1); }
+}
+
 /* Nuvoletta "Bonus dato da": tooltip INVERTITO rispetto al tema, così
    risalta sempre. Un fondo scuro su tema scuro spariva contro lo sfondo
    della pagina (contrasto 1.02) proprio quando la nuvoletta cadeva nello

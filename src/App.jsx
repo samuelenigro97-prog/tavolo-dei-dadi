@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.109';
+const APP_VERSION = '3.9.110';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7754,26 +7754,7 @@ export default function App() {
             };
             return (
               <div className="selettore-personaggio-azioni" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
-                {/* Gruppo 1: Versione D&D + Gestione PG (Prime 5 voci) */}
-                <div
-                  style={{
-                    ...btnAzione,
-                    fontFamily: "Georgia, 'Times New Roman', serif",
-                    fontStyle: 'italic',
-                    fontWeight: 'bold',
-                    fontSize: 13,
-                    color: C.goldDark,
-                    borderColor: C.goldDark,
-                    cursor: 'default',
-                    userSelect: 'none',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                  title={`Versione Regole D&D: ${(scheda.versione || '2024') === '2024' ? '5.5 (2024)' : '5.0 (2014)'}`}
-                >
-                  {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
-                </div>
+                {/* Gruppo 1: Gestione PG */}
                 <button
                   style={btnAzione}
                   title={t('tip.levelup')}
@@ -8178,12 +8159,12 @@ export default function App() {
             <div className="profilo-main">
               {/* Riga 1 — Anagrafica (con Nome PG in cima) */}
               <div className="pm-anagrafica">
-                {/* Nome PG & Selettore Personaggio */}
-                <div style={{ marginBottom: 6 }}>
+                {/* Nome PG & Selettore Personaggio con versione D&D nello sfondo */}
+                <div style={{ position: 'relative', width: '100%', marginBottom: 6 }}>
                   {rinominando ? (
                     <input
                       autoFocus
-                      style={{ ...styles.inlineInput, width: '100%', fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', height: 38, padding: '4px 12px', border: `1.5px solid ${C.goldDark}`, borderRadius: 8, boxSizing: 'border-box' }}
+                      style={{ ...styles.inlineInput, width: '100%', fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', height: 38, padding: '4px 60px 4px 12px', border: `1.5px solid ${C.goldDark}`, borderRadius: 8, boxSizing: 'border-box' }}
                       value={scheda.nome}
                       onChange={(e) => aggiorna({ nome: e.target.value })}
                       onBlur={() => {
@@ -8204,7 +8185,7 @@ export default function App() {
                   ) : (
                     <div style={{ position: 'relative', width: '100%', display: 'flex', overflow: 'hidden', borderRadius: 8, border: `1.5px solid ${C.goldDark}`, height: 38, background: 'rgba(0,0,0,0.03)', boxSizing: 'border-box' }}>
                       <select
-                        style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', padding: '4px 26px 4px 12px', textOverflow: 'ellipsis', background: 'transparent', position: 'relative', zIndex: 2, border: 'none', height: '100%' }}
+                        style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', padding: '4px 60px 4px 12px', textOverflow: 'ellipsis', background: 'transparent', position: 'relative', zIndex: 2, border: 'none', height: '100%' }}
                         value={roster.attivo}
                         onChange={(e) => setRoster((r) => ({ ...r, attivo: e.target.value }))}
                         title={t('nome.tooltip_selettore')}
@@ -8217,6 +8198,28 @@ export default function App() {
                       </select>
                     </div>
                   )}
+                  {/* Badge/filigrana Versione D&D posizionato nello sfondo del campo nome */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      right: 28,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      zIndex: 3,
+                      pointerEvents: 'none',
+                      userSelect: 'none',
+                      fontFamily: "Georgia, 'Times New Roman', serif",
+                      fontStyle: 'italic',
+                      fontWeight: 'bold',
+                      fontSize: 13,
+                      color: C.goldDark,
+                      opacity: 0.75,
+                      letterSpacing: 0.5,
+                    }}
+                    title={`Versione Regole D&D: ${(scheda.versione || '2024') === '2024' ? '5.5 (2024)' : '5.0 (2014)'}`}
+                  >
+                    {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
+                  </div>
                 </div>
 
                 <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px 10px', alignItems: 'end' }}>
@@ -11442,6 +11445,86 @@ export default function App() {
           </div>
         </div>
       ) : null}
+      <NuvolettaGlobale />
+    </div>
+  );
+}
+
+/** Nuvoletta fluttuante istantanea e a tema D&D per qualsiasi elemento con title o tooltip al passaggio del cursore. */
+function NuvolettaGlobale() {
+  const [tooltip, setTooltip] = useState({ visible: false, text: '', x: 0, y: 0, placement: 'top' });
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    function onPointerOver(e) {
+      const target = e.target?.closest?.('[title], [data-app-tooltip]');
+      if (!target) return;
+
+      const testo = target.getAttribute('title') || target.getAttribute('data-app-tooltip');
+      if (!testo || !testo.trim()) return;
+
+      // Sposta il title nativo in data-app-tooltip per evitare il tooltip predefinito e lento del browser
+      if (target.hasAttribute('title')) {
+        target.setAttribute('data-app-tooltip', testo);
+        target.removeAttribute('title');
+      }
+
+      clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+        const rect = target.getBoundingClientRect();
+        const placement = rect.top < 48 ? 'bottom' : 'top';
+        setTooltip({
+          visible: true,
+          text: testo,
+          x: Math.max(16, Math.min(window.innerWidth - 16, rect.left + rect.width / 2)),
+          y: placement === 'bottom' ? rect.bottom + 8 : rect.top - 8,
+          placement,
+        });
+      }, 100);
+    }
+
+    function onPointerOut(e) {
+      const target = e.target?.closest?.('[data-app-tooltip]');
+      if (target && !target.hasAttribute('title')) {
+        const text = target.getAttribute('data-app-tooltip');
+        if (text) target.setAttribute('title', text);
+      }
+      clearTimeout(timerRef.current);
+      setTooltip((t) => (t.visible ? { ...t, visible: false } : t));
+    }
+
+    function onPointerDown() {
+      clearTimeout(timerRef.current);
+      setTooltip((t) => (t.visible ? { ...t, visible: false } : t));
+    }
+
+    document.addEventListener('pointerover', onPointerOver, { capture: true, passive: true });
+    document.addEventListener('pointerout', onPointerOut, { capture: true, passive: true });
+    document.addEventListener('pointerdown', onPointerDown, { capture: true, passive: true });
+    window.addEventListener('scroll', onPointerDown, { capture: true, passive: true });
+
+    return () => {
+      document.removeEventListener('pointerover', onPointerOver, { capture: true });
+      document.removeEventListener('pointerout', onPointerOut, { capture: true });
+      document.removeEventListener('pointerdown', onPointerDown, { capture: true });
+      window.removeEventListener('scroll', onPointerDown, { capture: true });
+      clearTimeout(timerRef.current);
+    };
+  }, []);
+
+  if (!tooltip.visible || !tooltip.text) return null;
+
+  return (
+    <div
+      className="nuvoletta-tooltip"
+      style={{
+        position: 'fixed',
+        left: tooltip.x,
+        top: tooltip.y,
+        transform: tooltip.placement === 'bottom' ? 'translate(-50%, 0)' : 'translate(-50%, -100%)',
+      }}
+    >
+      {tooltip.text}
     </div>
   );
 }
