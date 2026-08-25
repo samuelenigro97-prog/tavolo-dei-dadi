@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.68',
+    voci: {
+      it: [
+        'Risoluzione Spaziatura Anagrafica a Ritratto Chiuso: corretto il comportamento della griglia del Profilo quando il ritratto è collassato, eliminando l\'eccessivo spazio vuoto verticale tra i campi anagrafici.',
+      ],
+      en: [
+        'Profile Grid Spacing Fix when Minimized: resolved excessive vertical gaps in character details when the portrait is collapsed.',
+      ],
+    },
+  },
+  {
     versione: '3.9.67',
     voci: {
       it: [

@@ -496,16 +496,15 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   min-width: 0;
   row-gap: 10px;
 }
-/* Ritratto ridotto: Competenze/Risorse salgono e usano tutta la colonna. */
+/* Ritratto ridotto: Competenze/Risorse salgono naturalmente. */
 .profilo-griglia.senza-ritratto .profilo-ritratto { grid-row: 1 / 2; align-self: start; }
 .profilo-griglia.senza-ritratto .profilo-extra {
-  grid-row: 1 / -1;
-  padding-top: 36px;
+  grid-row: 2 / -1;
+  padding-top: 0;
 }
 .profilo-extra > .sezione { margin-bottom: 0 !important; }
 .profilo-extra > .sezione:first-child {
-  grid-row: 1 / 2;
-  height: 100%;
+  height: auto;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -514,12 +513,12 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 6px;
   margin-top: 6px !important;
 }
 .profilo-extra > .sezione:last-child {
-  grid-row: 2 / 4;
-  height: 100%;
+  height: auto;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
