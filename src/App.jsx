@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.86';
+const APP_VERSION = '3.9.87';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -6912,13 +6912,24 @@ export default function App() {
                         </span>
                         {r.correggibile && (
                           <button
-                            style={{ ...styles.buttonMini, fontSize: 10, padding: '3px 7px', background: '#2e9d4d', color: '#fff', borderColor: '#2e9d4d', fontWeight: 700, flexShrink: 0 }}
-                            title="Applica subito questa competenza sulla scheda"
+                            style={{
+                              ...styles.buttonMini,
+                              fontSize: 10,
+                              padding: '3px 7px',
+                              background: r.tipo === 'rimuovi_abilita' ? '#d97706' : '#2e9d4d',
+                              color: '#fff',
+                              borderColor: r.tipo === 'rimuovi_abilita' ? '#d97706' : '#2e9d4d',
+                              fontWeight: 700,
+                              flexShrink: 0,
+                            }}
+                            title={r.tipo === 'rimuovi_abilita' ? "Rimuovi questa competenza non spiegata dalla scheda" : "Applica subito questa competenza sulla scheda"}
                             onClick={() => {
                               if (r.tipo === 'ts') {
                                 aggiorna({ tiriSalvezza: { ...scheda.tiriSalvezza, [r.targetKey]: true } });
                               } else if (r.tipo === 'abilita') {
                                 aggiorna({ abilita: { ...scheda.abilita, [r.targetKey]: Math.max(1, (scheda.abilita?.[r.targetKey] || 0) + 1) } });
+                              } else if (r.tipo === 'rimuovi_abilita') {
+                                aggiorna({ abilita: { ...scheda.abilita, [r.targetKey]: 0 } });
                               }
                             }}
                           >
@@ -6933,22 +6944,40 @@ export default function App() {
                       </div>
                     ))}
                     {controlliAttivi.some((r) => r.correggibile) && (
-                      <button
-                        style={{ ...styles.buttonMini, fontSize: 11, background: '#2e9d4d', color: '#fff', borderColor: '#2e9d4d', fontWeight: 700, padding: '4px 8px', alignSelf: 'flex-start' }}
-                        onClick={() => {
-                          const newTs = { ...scheda.tiriSalvezza };
-                          const newAb = { ...scheda.abilita };
-                          for (const r of controlliAttivi) {
-                            if (r.correggibile) {
-                              if (r.tipo === 'ts') newTs[r.targetKey] = true;
-                              if (r.tipo === 'abilita') newAb[r.targetKey] = Math.max(1, (newAb[r.targetKey] || 0) + 1);
-                            }
-                          }
-                          aggiorna({ tiriSalvezza: newTs, abilita: newAb });
-                        }}
-                      >
-                        ⚡ Correggi tutte le mancanze certe
-                      </button>
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
+                        {controlliAttivi.some((r) => r.correggibile && r.gravita === 'certo') && (
+                          <button
+                            style={{ ...styles.buttonMini, fontSize: 10.5, background: '#2e9d4d', color: '#fff', borderColor: '#2e9d4d', fontWeight: 700, padding: '4px 8px' }}
+                            onClick={() => {
+                              const newTs = { ...scheda.tiriSalvezza };
+                              const newAb = { ...scheda.abilita };
+                              for (const r of controlliAttivi) {
+                                if (r.correggibile && r.gravita === 'certo') {
+                                  if (r.tipo === 'ts') newTs[r.targetKey] = true;
+                                  if (r.tipo === 'abilita') newAb[r.targetKey] = Math.max(1, (newAb[r.targetKey] || 0) + 1);
+                                }
+                              }
+                              aggiorna({ tiriSalvezza: newTs, abilita: newAb });
+                            }}
+                          >
+                            ⚡ Correggi tutte le mancanze certe
+                          </button>
+                        )}
+                        {controlliAttivi.some((r) => r.tipo === 'rimuovi_abilita') && (
+                          <button
+                            style={{ ...styles.buttonMini, fontSize: 10.5, background: '#d97706', color: '#fff', borderColor: '#d97706', fontWeight: 700, padding: '4px 8px' }}
+                            onClick={() => {
+                              const newAb = { ...scheda.abilita };
+                              for (const r of controlliAttivi) {
+                                if (r.tipo === 'rimuovi_abilita') newAb[r.targetKey] = 0;
+                              }
+                              aggiorna({ abilita: newAb });
+                            }}
+                          >
+                            ⚡ Rimuovi tutte le competenze extra
+                          </button>
+                        )}
+                      </div>
                     )}
                     {ignorati.length > 0 && (
                       <button

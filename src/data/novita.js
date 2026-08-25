@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.87',
+    voci: {
+      it: [
+        'Pulsante "Correggi" anche per Avvisi Gialli: ora è possibile correggere/rimuovere con un click sia le competenze mancanti (avvisi rossi) sia le abilità segnate prive di fonte o in eccesso (avvisi gialli).',
+      ],
+      en: [
+        '"Fix" Button on Yellow Warnings: you can now one-click fix/remove extra or unsourced skill proficiencies (yellow warnings) as well as apply missing ones (red warnings).',
+      ],
+    },
+  },
+  {
     versione: '3.9.86',
     voci: {
       it: [

@@ -403,8 +403,11 @@ export function controlliScheda(scheda) {
   for (const a of segnate.filter((a) => !unione.has(a.key))) {
     risultati.push({
       id: `fonte-${a.key}`,
+      tipo: 'rimuovi_abilita',
+      targetKey: a.key,
       gravita: 'da_controllare',
       testo: `${a.label}: nessuna fonte automatica (né razza, né classe, né background). Se non deriva da un talento, un oggetto o una concessione del DM, controllala.`,
+      correggibile: true,
     });
   }
 
