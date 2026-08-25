@@ -474,11 +474,11 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   gap: 8px;
   min-width: 0;
 }
-/* Il box immagine con altezza proporzionata (250px) */
+/* Il box immagine con altezza proporzionata (270px) */
 .ritratto-box {
   width: 100%;
-  height: 250px;
-  min-height: 250px;
+  height: 270px;
+  min-height: 270px;
   border-radius: 12px;
   overflow: hidden;
   position: relative;

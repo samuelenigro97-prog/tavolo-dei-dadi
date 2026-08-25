@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.106';
+const APP_VERSION = '3.9.107';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7894,47 +7894,8 @@ export default function App() {
           <h2 style={styles.panelTitle}>{t("profilo.titolo")}</h2>
           {/* Con il ritratto ridotto, Addestramento/Risorse si prendono lo spazio libero. */}
           <div className="profilo-griglia">
-            {/* COLONNA SINISTRA: Nome PG + Ritratto + Competenze + Risorse di classe */}
+            {/* COLONNA SINISTRA: Ritratto + Competenze + Risorse di classe */}
             <div className="profilo-col-sinistra">
-              {/* Nome e selettore PG posizionato sopra l'immagine del PG */}
-              {rinominando ? (
-                <input
-                  autoFocus
-                  style={{ ...styles.inlineInput, width: '100%', fontSize: 15, fontWeight: 'bold', color: 'var(--c-title)', height: 38, padding: '4px 10px', border: `1.5px solid ${C.goldDark}`, borderRadius: 8, marginBottom: 4 }}
-                  value={scheda.nome}
-                  onChange={(e) => aggiorna({ nome: e.target.value })}
-                  onBlur={() => {
-                    setRinominando(false);
-                    const nomeFmt = formattaNomePg(scheda.nome);
-                    const rPatch = ritrattoAuto(scheda.classe, scheda.specie, nomeFmt);
-                    aggiorna({ nome: nomeFmt, ...rPatch });
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === 'Escape') {
-                      setRinominando(false);
-                      const nomeFmt = formattaNomePg(scheda.nome);
-                      const rPatch = ritrattoAuto(scheda.classe, scheda.specie, nomeFmt);
-                      aggiorna({ nome: nomeFmt, ...rPatch });
-                    }
-                  }}
-                />
-              ) : (
-                <div style={{ position: 'relative', width: '100%', display: 'flex', overflow: 'hidden', borderRadius: 8, border: `1.5px solid ${C.goldDark}`, height: 38, marginBottom: 4, background: 'rgba(0,0,0,0.03)' }}>
-                  <select
-                    style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 15, fontWeight: 'bold', color: 'var(--c-title)', padding: '4px 26px 4px 8px', textOverflow: 'ellipsis', background: 'transparent', position: 'relative', zIndex: 2, border: 'none', height: '100%' }}
-                    value={roster.attivo}
-                    onChange={(e) => setRoster((r) => ({ ...r, attivo: e.target.value }))}
-                    title={t('nome.tooltip_selettore')}
-                  >
-                    {Object.entries(roster.personaggi).map(([id, p]) => (
-                      <option key={id} value={id}>
-                        {formattaNomePg(p.nome) || t('menu.senza_nome')}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
               {/* Ritratto */}
               {!(scheda.sezioniAperte?.ritratto ?? true) && (
                 <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 2 }}>
@@ -7971,7 +7932,7 @@ export default function App() {
                   <div
                     className="ritratto-box"
                     style={{
-                      width: '100%', height: 250, minHeight: 250, borderRadius: 12, overflow: 'hidden',
+                      width: '100%', height: 270, minHeight: 270, borderRadius: 12, overflow: 'hidden',
                       // emblema auto (foto assente o SVG): sfondo col colore classe, si fonde coi bordi
                       background: (!scheda.ritratto || scheda.ritratto.startsWith('data:image/svg')) ? (coloreClasse(scheda.classe)?.chiaro || C.panel) : C.panel,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -8226,9 +8187,50 @@ export default function App() {
 
             {/* COLONNA CENTRALE: anagrafica + riquadri vitali */}
             <div className="profilo-main">
-              {/* Riga 1 — Anagrafica (allineata a Forza) */}
+              {/* Riga 1 — Anagrafica (con Nome PG in cima) */}
               <div className="pm-anagrafica">
-              <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px 10px', alignItems: 'end' }}>
+                {/* Nome PG & Selettore Personaggio */}
+                <div style={{ marginBottom: 6 }}>
+                  {rinominando ? (
+                    <input
+                      autoFocus
+                      style={{ ...styles.inlineInput, width: '100%', fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', height: 38, padding: '4px 12px', border: `1.5px solid ${C.goldDark}`, borderRadius: 8, boxSizing: 'border-box' }}
+                      value={scheda.nome}
+                      onChange={(e) => aggiorna({ nome: e.target.value })}
+                      onBlur={() => {
+                        setRinominando(false);
+                        const nomeFmt = formattaNomePg(scheda.nome);
+                        const rPatch = ritrattoAuto(scheda.classe, scheda.specie, nomeFmt);
+                        aggiorna({ nome: nomeFmt, ...rPatch });
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === 'Escape') {
+                          setRinominando(false);
+                          const nomeFmt = formattaNomePg(scheda.nome);
+                          const rPatch = ritrattoAuto(scheda.classe, scheda.specie, nomeFmt);
+                          aggiorna({ nome: nomeFmt, ...rPatch });
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div style={{ position: 'relative', width: '100%', display: 'flex', overflow: 'hidden', borderRadius: 8, border: `1.5px solid ${C.goldDark}`, height: 38, background: 'rgba(0,0,0,0.03)', boxSizing: 'border-box' }}>
+                      <select
+                        style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', padding: '4px 26px 4px 12px', textOverflow: 'ellipsis', background: 'transparent', position: 'relative', zIndex: 2, border: 'none', height: '100%' }}
+                        value={roster.attivo}
+                        onChange={(e) => setRoster((r) => ({ ...r, attivo: e.target.value }))}
+                        title={t('nome.tooltip_selettore')}
+                      >
+                        {Object.entries(roster.personaggi).map(([id, p]) => (
+                          <option key={id} value={id}>
+                            {formattaNomePg(p.nome) || t('menu.senza_nome')}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+
+                <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px 10px', alignItems: 'end' }}>
                 <CampoModulo label={t("profilo.sesso")}>
                   <select
                     value={scheda.sesso || ''}
