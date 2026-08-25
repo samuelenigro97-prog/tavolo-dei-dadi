@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.2';
+const APP_VERSION = '4.0.3';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3973,7 +3973,16 @@ export default function App() {
         concentrazione: '',
       };
     });
-    registra({ etichetta: `🌙 ${t('vital.riposo_lungo_tooltip')}`, tipo: 'riposo', dettaglio: t('rest.lungo_fatto') });
+    // Ciclo Notte ↔ Giorno: dopo il riposo lungo alterna il tema
+    const attualeScuro = tema === 'scuro' || (tema === 'auto' && (sistemaScuro || eNotte()));
+    const nuovoTema = attualeScuro ? 'chiaro' : 'scuro';
+    setTema(nuovoTema);
+    try {
+      localStorage.setItem('scheda-interattiva:tema', nuovoTema);
+    } catch { /* ignore */ }
+
+    const cicloLabel = nuovoTema === 'chiaro' ? '🌅 Giorno' : '🌌 Notte';
+    registra({ etichetta: `🌙 ${t('vital.riposo_lungo_tooltip')}`, tipo: 'riposo', dettaglio: `${t('rest.lungo_fatto')} · ${cicloLabel}` });
   }
 
   function riposoLungo() {
