@@ -9936,7 +9936,7 @@ export default function App() {
 
             {/* Forma Selvatica (solo Druido dal 2° livello): subito sotto la Magia */}
             {/(druido|druid)/i.test(scheda.classe || '') && (Number(scheda.livello) || 1) >= 2 && (
-              <Sezione titolo={lingua === 'en' ? '🐾 Wild Shape Bestiary' : '🐾 Forma Selvatica & Bestiario'} style={{ order: ordineSezioni.indexOf('incantesimi') }} {...apertoProps('formaSelvatica', true)}>
+              <Sezione titolo={lingua === 'en' ? 'Wild Shape Bestiary' : 'Forma Selvatica & Bestiario'} style={{ order: ordineSezioni.indexOf('incantesimi') }} {...apertoProps('formaSelvatica', true)}>
                 {(() => {
                   const disp = bestieDisponibili(scheda.livello, scheda.sottoclasse);
                   const lim = limitiFormaSelvatica(scheda.livello, scheda.sottoclasse);
@@ -9993,7 +9993,7 @@ export default function App() {
               (/warlock/i.test(scheda.classe || '') && /catena|chain/i.test(scheda.sottoclasse || '')) ||
               (scheda.incantesimiLista || []).some((s) => /famiglio|evoca|spiriti|spirit|elementale|summon|conjure/i.test(s.nome || ''))
             ) && (
-              <Sezione titolo={lingua === 'en' ? '✨ Familiars & Summons' : '✨ Famigli & Evocazioni'} style={{ order: ordineSezioni.indexOf('incantesimi') }} {...apertoProps('famigliEvocazioni', false)}>
+              <Sezione titolo={lingua === 'en' ? 'Familiars & Summons' : 'Famigli & Evocazioni'} style={{ order: ordineSezioni.indexOf('incantesimi') }} {...apertoProps('famigliEvocazioni', false)}>
                 <div>
                   <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8 }}>
                     {lingua === 'en' ? 'Quick statblocks for your active familiars and summoned creatures:' : 'Statblock rapidi per i tuoi famigli e creature evocate:'}
@@ -10039,7 +10039,7 @@ export default function App() {
             {/* Sezione Unificata: Privilegi di Classe, Sottoclasse, Tratti di Specie e Talenti */}
             <div style={{ order: ordineSezioni.indexOf('incantesimi') }}>
               <Sezione
-                titolo={lingua === 'en' ? '📖 Features, Traits & Feats' : '📖 Privilegi, Tratti & Talenti'}
+                titolo={lingua === 'en' ? 'Features, Traits & Feats' : 'Privilegi, Tratti & Talenti'}
                 {...apertoProps('privilegi', true)}
               >
                 <div>
@@ -10047,10 +10047,10 @@ export default function App() {
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', justifyContent: 'space-between', borderBottom: `1px solid ${C.border}`, paddingBottom: 8 }}>
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                       {[
-                        ['tutti', lingua === 'en' ? '📋 All' : '📋 Tutti'],
-                        ['classe', lingua === 'en' ? '🛡️ Class' : '🛡️ Classe & Sottoclasse'],
-                        ['specie', lingua === 'en' ? '🧬 Species' : '🧬 Tratti di Specie'],
-                        ['talenti', lingua === 'en' ? '⭐ Feats' : '⭐ Talenti'],
+                        ['tutti', lingua === 'en' ? 'All' : 'Tutti'],
+                        ['classe', lingua === 'en' ? 'Class' : 'Classe & Sottoclasse'],
+                        ['specie', lingua === 'en' ? 'Species' : 'Tratti di Specie'],
+                        ['talenti', lingua === 'en' ? 'Feats' : 'Talenti'],
                       ].map(([k, label]) => (
                         <button
                           key={k}
@@ -10078,7 +10078,7 @@ export default function App() {
                         onClick={() => setMostraPrivilegi(true)}
                         title={t('tip.panoramica_priv')}
                       >
-                        📖 {t("priv.panoramica_btn")}
+                        {t("priv.panoramica_btn")}
                       </button>
                       {Boolean(scheda.sottoclasse || (scheda.multiclasse || []).some(m => m.sottoclasse)) && (
                         <button
@@ -10087,7 +10087,7 @@ export default function App() {
                           onClick={() => setMostraPrivilegiSub(true)}
                           title={t('tip.panoramica_priv_sub')}
                         >
-                          📖 {t("priv.panoramica_sub_btn")}
+                          {t("priv.panoramica_sub_btn")}
                         </button>
                       )}
                     </div>
@@ -10099,7 +10099,7 @@ export default function App() {
                     {(schedaPrivilegiTab === 'tutti' || schedaPrivilegiTab === 'classe') && (
                       <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
                         <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
-                          🛡️ {lingua === 'en' ? 'Class & Subclass Features' : 'Privilegi di Classe & Sottoclasse'}
+                          {lingua === 'en' ? 'Class & Subclass Features' : 'Privilegi di Classe & Sottoclasse'}
                         </div>
                         {(() => {
                           const tutteLeSub = [
@@ -10147,7 +10147,7 @@ export default function App() {
                                   onClick={() => setMostraPrivilegi(true)}
                                   title={t('tip.panoramica_priv')}
                                 >
-                                  📖 {t("priv.panoramica_btn")} ({scheda.classe || t('profilo.nessuna')} Liv. {scheda.livello || 1})
+                                  {t("priv.panoramica_btn")} ({scheda.classe || t('profilo.nessuna')} Liv. {scheda.livello || 1})
                                 </button>
                                 {tutteLeSub.length > 0 ? (
                                   <button
@@ -10155,7 +10155,7 @@ export default function App() {
                                     onClick={() => setMostraPrivilegiSub(true)}
                                     title={t('tip.panoramica_priv_sub')}
                                   >
-                                    📖 {t("priv.panoramica_sub_btn")}: {tutteLeSub.map(s => traduciDato(s.sottoclasse)).join(', ')}
+                                    {t("priv.panoramica_sub_btn")}: {tutteLeSub.map(s => traduciDato(s.sottoclasse)).join(', ')}
                                   </button>
                                 ) : (
                                   <div style={{ ...styles.detail, fontSize: 11.5, display: 'flex', alignItems: 'center' }}>
@@ -10173,7 +10173,7 @@ export default function App() {
                     {(schedaPrivilegiTab === 'tutti' || schedaPrivilegiTab === 'specie') && (
                       <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
                         <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
-                          🧬 {t("sez.tratti_specie")} ({traduciDato(scheda.razza) || t('profilo.nessuna')})
+                          {t("sez.tratti_specie")} ({traduciDato(scheda.razza) || t('profilo.nessuna')})
                         </div>
                         <ListaQuadratini
                           value={scheda.trattiSpecie}
@@ -10188,7 +10188,7 @@ export default function App() {
                     {(schedaPrivilegiTab === 'tutti' || schedaPrivilegiTab === 'talenti') && (
                       <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
                         <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
-                          ⭐ {t("sez.talenti")}
+                          {t("sez.talenti")}
                         </div>
                         <ListaQuadratini
                           value={scheda.talenti}
