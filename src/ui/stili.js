@@ -202,13 +202,12 @@ export const styles = {
     padding: '8px 6px',
     display: 'flex',
     flexDirection: 'column',
-    // Nome ancorato in alto (assoluto); il contenuto (valore ecc.) è centrato
-    // verticalmente, così i valori dei vari riquadri sono allineati fra loro
-    // (simmetria) anche quando qualche riquadro ha righe extra.
     justifyContent: 'center',
     alignItems: 'center',
-    minHeight: 56,
-    paddingTop: 30,
+    minHeight: 64,
+    height: '100%',
+    boxSizing: 'border-box',
+    paddingTop: 28,
     position: 'relative',
     overflow: 'hidden',
   },
@@ -447,11 +446,9 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 @media (max-width: 720px) { .privilegi-duo { grid-template-columns: 1fr; } }
 /* Profilo: caratteristiche (colonna sinistra) e riquadri vitali (colonna
    centrale) vivono nella STESSA griglia con righe condivise (subgrid), così
-   ogni caratteristica si allinea riga per riga al gruppo di vitali corrispondente
-   (Forza↔anagrafica, Des+Cos↔Punti Ferita, Int↔difesa, Sag↔salvezza, Car↔stato).
-   Il ritratto occupa la colonna destra per tu.profilo-griglia {
+.profilo-griglia {
   display: grid;
-  grid-template-columns: 210px minmax(0, 1fr) 230px;
+  grid-template-columns: 260px minmax(0, 1fr) 260px;
   grid-template-rows: repeat(5, auto);
   column-gap: 14px;
   row-gap: 10px;
@@ -473,12 +470,11 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .profilo-extra {
   grid-column: 1;
   grid-row: 3 / -1;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: subgrid;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   align-self: stretch;
   min-width: 0;
-  row-gap: 10px;
 }
 .profilo-main {
   grid-column: 2;
@@ -535,29 +531,24 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   flex: 1 1 auto;
   overflow-y: auto;
 }
-/* colonna stretta (~210px): titolo sezione più piccolo e meno spaziato */
-.profilo-extra .sezione > summary { font-size: 11px !important; letter-spacing: 0.7px !important; white-space: nowrap !important; overflow: hidden; text-overflow: ellipsis; }
+/* Titolo sezione addestramento/risorse */
+.profilo-extra .sezione > summary { font-size: 11.5px !important; letter-spacing: 0.7px !important; white-space: nowrap !important; overflow: hidden; text-overflow: ellipsis; }
 .profilo-caratteristiche > .blocco-car { margin-bottom: 0 !important; }
 /* Destrezza + Costituzione impilate in un'unica riga condivisa (i Punti Ferita) */
 .car-coppia { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 /* i gruppi di vitali riempiono la larghezza della loro riga */
 .pm-anagrafica, .pm-pf, .pm-gruppo { min-width: 0; }
-/* Anagrafica alta quanto il riquadro Forza (riga 1): la prima riga di campi
-   (Specie/Taglia/Allineamento) resta in alto e la seconda (Background/Classe/
-   Sottoclasse) va in fondo, così Specie è allineata all'inizio di Forza e
-   Background alla sua base. */
+/* Anagrafica alta quanto il riquadro Forza (riga 1) */
 .pm-anagrafica { display: flex; flex-direction: column; }
 .pm-anagrafica > .campi-anagrafica { flex: 1 1 auto; align-content: space-between; }
-/* Punti Ferita: la riga 2 è alta quanto Destrezza+Costituzione impilate a
-   sinistra; il riquadro PF cresce per riempire tutta quell'altezza (niente più
-   spazio vuoto sotto) e resta allineato col resto della griglia. */
+/* Punti Ferita: la riga 2 è alta quanto Destrezza+Costituzione impilate */
 .pm-pf { display: flex; flex-direction: column; }
 .pm-pf > * { width: 100%; flex: 1 1 auto; }
 @media (min-width: 681px) and (max-width: 1024px) {
   /* iPad / Tablet: layout a due colonne bilanciato con ritratto e caratteristiche */
   .profilo-griglia {
     display: grid;
-    grid-template-columns: 210px minmax(0, 1fr);
+    grid-template-columns: 240px minmax(0, 1fr);
     column-gap: 12px;
     row-gap: 10px;
   }

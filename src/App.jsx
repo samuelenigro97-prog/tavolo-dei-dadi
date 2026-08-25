@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.98';
+const APP_VERSION = '3.9.99';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7802,7 +7802,7 @@ export default function App() {
 
                 <span className="selettore-divisore" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
 
-                {/* Gruppo 2: Gestione PG & Versione D&D */}
+                {/* Gruppo 2: Gestione PG */}
                 <button
                   style={btnAzione}
                   title={t('tip.levelup')}
@@ -7825,15 +7825,6 @@ export default function App() {
                 <button style={btnAzione} onClick={() => { setBozzaCrea({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' }); setMostraCrea(true); }} title={t('tip.nuovo_pg')}>＋</button>
                 <button style={btnAzione} onClick={eliminaPersonaggio} title={t('tip.elimina_pg')}>🗑</button>
 
-                {/* Tasto Versione D&D come tasto tra gli altri */}
-                <button
-                  style={{ ...btnAzione, minWidth: 44, padding: '6px 8px', fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: 'italic', fontWeight: 'bold', fontSize: 14, color: C.goldDark, borderColor: C.goldDark }}
-                  title={`Versione Regole D&D: ${(scheda.versione || '2024') === '2024' ? '5.5 (2024)' : '5.0 (2014)'} — click per cambiare`}
-                  onClick={() => aggiorna({ versione: (scheda.versione || '2024') === '2024' ? '2014' : '2024' })}
-                >
-                  {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
-                </button>
-
                 <span className="selettore-divisore" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
 
                 {/* Gruppo 3: Gameplay & Sessione */}
@@ -7848,7 +7839,7 @@ export default function App() {
 
                 <span className="selettore-divisore" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
 
-                {/* Gruppo 4: Sincronizzazione Cloud — come ultimo di tutti */}
+                {/* Gruppo 4: Sincronizzazione Cloud */}
                 <button
                   style={{ ...btnAzione, color: C.goldDark, borderColor: C.goldDark, minWidth: 44 }}
                   title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato') : 'Sincronizza sul Cloud'}
@@ -7862,6 +7853,17 @@ export default function App() {
                   ) : (
                     <span style={{ color: '#c0392b', fontSize: 13, marginLeft: 2, fontWeight: 900 }}>!</span>
                   )}
+                </button>
+
+                <span className="selettore-divisore" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
+
+                {/* Tasto Versione D&D — ultimo di tutti */}
+                <button
+                  style={{ ...btnAzione, minWidth: 44, padding: '6px 8px', fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: 'italic', fontWeight: 'bold', fontSize: 14, color: C.goldDark, borderColor: C.goldDark }}
+                  title={`Versione Regole D&D: ${(scheda.versione || '2024') === '2024' ? '5.5 (2024)' : '5.0 (2014)'} — click per cambiare`}
+                  onClick={() => aggiorna({ versione: (scheda.versione || '2024') === '2024' ? '2014' : '2024' })}
+                >
+                  {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
                 </button>
               </div>
             );
@@ -8526,7 +8528,9 @@ export default function App() {
                     flexDirection: 'column',
                     justifyContent: 'space-between',
                     gap: 6,
-                    minHeight: 80,
+                    minHeight: 64,
+                    height: '100%',
+                    boxSizing: 'border-box',
                   }}
                   title={t('vital.passive_tooltip')}
                 >
@@ -8569,7 +8573,9 @@ export default function App() {
                     flexDirection: 'column',
                     justifyContent: 'space-between',
                     gap: 6,
-                    minHeight: 80,
+                    minHeight: 64,
+                    height: '100%',
+                    boxSizing: 'border-box',
                   }}
                 >
                   {/* Sezione Superiore: Resistenze */}
