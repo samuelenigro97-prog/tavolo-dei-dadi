@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.88';
+const APP_VERSION = '3.9.89';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -6930,6 +6930,8 @@ export default function App() {
                                 aggiorna({ abilita: { ...scheda.abilita, [r.targetKey]: Math.max(1, (scheda.abilita?.[r.targetKey] || 0) + 1) } });
                               } else if (r.tipo === 'rimuovi_abilita') {
                                 aggiorna({ abilita: { ...scheda.abilita, [r.targetKey]: 0 } });
+                              } else if (r.tipo === 'bonus_competenza') {
+                                aggiorna({ bonusCompetenza: r.targetVal });
                               }
                             }}
                           >
@@ -6949,15 +6951,20 @@ export default function App() {
                           <button
                             style={{ ...styles.buttonMini, fontSize: 10.5, background: '#2e9d4d', color: '#fff', borderColor: '#2e9d4d', fontWeight: 700, padding: '4px 8px' }}
                             onClick={() => {
+                              const patch = {};
                               const newTs = { ...scheda.tiriSalvezza };
                               const newAb = { ...scheda.abilita };
+                              let changedTs = false, changedAb = false;
                               for (const r of controlliAttivi) {
                                 if (r.correggibile && r.gravita === 'certo') {
-                                  if (r.tipo === 'ts') newTs[r.targetKey] = true;
-                                  if (r.tipo === 'abilita') newAb[r.targetKey] = Math.max(1, (newAb[r.targetKey] || 0) + 1);
+                                  if (r.tipo === 'ts') { newTs[r.targetKey] = true; changedTs = true; }
+                                  if (r.tipo === 'abilita') { newAb[r.targetKey] = Math.max(1, (newAb[r.targetKey] || 0) + 1); changedAb = true; }
+                                  if (r.tipo === 'bonus_competenza') { patch.bonusCompetenza = r.targetVal; }
                                 }
                               }
-                              aggiorna({ tiriSalvezza: newTs, abilita: newAb });
+                              if (changedTs) patch.tiriSalvezza = newTs;
+                              if (changedAb) patch.abilita = newAb;
+                              aggiorna(patch);
                             }}
                           >
                             ⚡ Correggi tutte le mancanze certe

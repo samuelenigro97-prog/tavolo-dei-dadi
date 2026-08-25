@@ -389,15 +389,37 @@ export function controlliScheda(scheda) {
     }
   }
 
-  // --- Abilità: quante sono spiegabili da razza+classe+background, e quali
-  // non hanno nessuna fonte automatica. Solo suggerimenti. ---
+  // --- Abilità e Budget: quante sono spiegabili da razza + classe + multiclasse + background ---
   const raceInfo = competenzeSpecieDi(scheda.specie);
   const classeDati = classeKey && COMPETENZE_CLASSE[classeKey];
   const classeInfo = classeDati
     ? { numero: classeDati.numero, lista: classeDati.lista === 'tutte' ? ABILITA.map((a) => a.key) : classeDati.lista }
     : null;
-  const unione = new Set([...(raceInfo?.lista || []), ...(classeInfo?.lista || []), ...bgLista]);
-  const budget = (raceInfo?.numero || 0) + (classeInfo?.numero || 0) + bgLista.length;
+
+  // Competenze multiclasse ufficiali (Manuale del Giocatore 5e):
+  // - Ladro: 1 abilità dalla lista del ladro
+  // - Bardo: 1 abilità a scelta tra tutte
+  // - Ranger: 1 abilità dalla lista del ranger
+  let bonusAbilitaMulti = 0;
+  const multiListe = [];
+  if (Array.isArray(scheda.multiclasse)) {
+    for (const m of scheda.multiclasse) {
+      const mk = chiaveClasse(m.classe);
+      if (mk === 'ladro') {
+        bonusAbilitaMulti += 1;
+        multiListe.push(...(COMPETENZE_CLASSE.ladro.lista || []));
+      } else if (mk === 'bardo') {
+        bonusAbilitaMulti += 1;
+        multiListe.push(...ABILITA.map((a) => a.key));
+      } else if (mk === 'ranger') {
+        bonusAbilitaMulti += 1;
+        multiListe.push(...(COMPETENZE_CLASSE.ranger.lista || []));
+      }
+    }
+  }
+
+  const unione = new Set([...(raceInfo?.lista || []), ...(classeInfo?.lista || []), ...multiListe, ...bgLista]);
+  const budget = (raceInfo?.numero || 0) + (classeInfo?.numero || 0) + bonusAbilitaMulti + bgLista.length;
 
   const segnate = ABILITA.filter((a) => (abilita[a.key] || 0) > 0);
   for (const a of segnate.filter((a) => !unione.has(a.key))) {
@@ -416,8 +438,35 @@ export function controlliScheda(scheda) {
     risultati.push({
       id: 'budget-abilita',
       gravita: 'da_controllare',
-      testo: `Hai ${segnateSpiegabili} competenze segnate tra quelle spiegabili da razza (${raceInfo?.numero || 0}), classe (${classeInfo?.numero || 0}) e background (${bgLista.length}), che insieme ne concederebbero ${budget}. Se non hai talenti o multiclasse che ne spiegano altre, controlla quali tenere.`,
+      testo: `Hai ${segnateSpiegabili} competenze segnate tra quelle spiegabili da razza (${raceInfo?.numero || 0}), classe (${classeInfo?.numero || 0})${bonusAbilitaMulti ? `, multiclasse (${bonusAbilitaMulti})` : ''} e background (${bgLista.length}), che insieme ne concederebbero ${budget}. Se non hai talenti che ne spiegano altre, controlla quali tenere.`,
     });
+  }
+
+  // --- Verifica Bonus Competenza rispetto al Livello Totale ---
+  const livTotale = (scheda.livello || 1) + (Array.isArray(scheda.multiclasse) ? scheda.multiclasse.reduce((s, m) => s + (Number(m.livello) || 0), 0) : 0);
+  const bonusAtteso = bonusCompetenzaDaLivello(livTotale);
+  if (scheda.bonusCompetenza != null && Number(scheda.bonusCompetenza) !== bonusAtteso) {
+    risultati.push({
+      id: 'bonus-competenza',
+      gravita: 'certo',
+      testo: `Bonus Competenza: la scheda ha ${conSegno(scheda.bonusCompetenza)}, ma per un personaggio di livello totale ${livTotale} deve essere ${conSegno(bonusAtteso)}.`,
+      correggibile: true,
+      tipo: 'bonus_competenza',
+      targetVal: bonusAtteso,
+    });
+  }
+
+  // --- Verifica Incantesimi Preparati / Conosciuti ---
+  if (scheda.classe && Array.isArray(scheda.incantesimiLista)) {
+    const maxInc = incantesimiMaxAuto(scheda, scheda.versione || '2024');
+    const nIncanti = scheda.incantesimiLista.filter((s) => s.livello > 0 && !s.bonus).length;
+    if (maxInc != null && nIncanti > maxInc) {
+      risultati.push({
+        id: 'budget-incantesimi',
+        gravita: 'da_controllare',
+        testo: `Incantesimi: hai ${nIncanti} incantesimi di 1° livello o superiore, ma le regole per ${scheda.classe} al livello ${scheda.livello || 1} ne consentono ${maxInc}.`,
+      });
+    }
   }
 
   return risultati;

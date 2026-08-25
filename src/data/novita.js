@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.89',
+    voci: {
+      it: [
+        'Sistema di Validazione Regole D&D 2014/2024 Potenziato: verifica rigorosa del budget competenze (inclusi bonus multiclasse per Ladro, Bardo e Ranger), allineamento automatico del Bonus Competenza al livello totale del PG e controllo del tetto massimo di incantesimi preparati/conosciuti.',
+      ],
+      en: [
+        'Enhanced D&D 2014/2024 Rulebook Validation Engine: strict skill proficiency budget check (including multiclass bonuses for Rogue, Bard, and Ranger), total level proficiency bonus alignment, and prepared/known spell limit enforcement.',
+      ],
+    },
+  },
+  {
     versione: '3.9.88',
     voci: {
       it: [
