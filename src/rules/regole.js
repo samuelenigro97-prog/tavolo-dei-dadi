@@ -6,7 +6,7 @@ import { CLASSI, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, SLOT_FULL_CASTER, SLOT
   INCANTESIMI_CLASSE, CARATT_INCANTATORE, SOTTOCLASSE_TERZO_CASTER,
   SCUOLE_TERZO_CASTER_2014, SLOT_TERZO_CASTER, INC_MAX_TERZO, TRUCCHETTI_TERZO_CASTER,
   TS_CLASSE, COMPETENZE_CLASSE, COMPETENZE_SPECIE, BACKGROUND_COMPETENZE } from '../data/dati5e.js';
-import { modificatore } from './dadi.js';
+import { modificatore, conSegno, bonusCompetenzaDaLivello } from './dadi.js';
 import { spiegaIncantesimo } from '../data/spiegazioni.js';
 import { INCANTESIMI_DB, datiIncantesimo } from '../data/incantesimi.js';
 import { ABILITA, CARATTERISTICHE } from '../data/caratteristiche.js';
@@ -443,17 +443,19 @@ export function controlliScheda(scheda) {
   }
 
   // --- Verifica Bonus Competenza rispetto al Livello Totale ---
-  const livTotale = (scheda.livello || 1) + (Array.isArray(scheda.multiclasse) ? scheda.multiclasse.reduce((s, m) => s + (Number(m.livello) || 0), 0) : 0);
-  const bonusAtteso = bonusCompetenzaDaLivello(livTotale);
-  if (scheda.bonusCompetenza != null && Number(scheda.bonusCompetenza) !== bonusAtteso) {
-    risultati.push({
-      id: 'bonus-competenza',
-      gravita: 'certo',
-      testo: `Bonus Competenza: la scheda ha ${conSegno(scheda.bonusCompetenza)}, ma per un personaggio di livello totale ${livTotale} deve essere ${conSegno(bonusAtteso)}.`,
-      correggibile: true,
-      tipo: 'bonus_competenza',
-      targetVal: bonusAtteso,
-    });
+  if (scheda.classe && scheda.bonusCompetenza != null && Number(scheda.bonusCompetenza) > 0) {
+    const livTotale = (scheda.livello || 1) + (Array.isArray(scheda.multiclasse) ? scheda.multiclasse.reduce((s, m) => s + (Number(m.livello) || 0), 0) : 0);
+    const bonusAtteso = bonusCompetenzaDaLivello(livTotale);
+    if (Number(scheda.bonusCompetenza) !== bonusAtteso) {
+      risultati.push({
+        id: 'bonus-competenza',
+        gravita: 'certo',
+        testo: `Bonus Competenza: la scheda ha ${conSegno(scheda.bonusCompetenza)}, ma per un personaggio di livello totale ${livTotale} deve essere ${conSegno(bonusAtteso)}.`,
+        correggibile: true,
+        tipo: 'bonus_competenza',
+        targetVal: bonusAtteso,
+      });
+    }
   }
 
   // --- Verifica Incantesimi Preparati / Conosciuti ---
