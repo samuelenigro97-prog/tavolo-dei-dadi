@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.81';
+const APP_VERSION = '3.9.82';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2572,6 +2572,9 @@ export default function App() {
   const [vociDiarioChiuse, setVociDiarioChiuse] = useState({});
   const [filtroInventario, setFiltroInventario] = useState('');
   const [filtroVistaInventario, setFiltroVistaInventario] = useState('tutti'); // 'tutti' | 'equip' | 'zaino'
+  const [filtroCatInventario, setFiltroCatInventario] = useState('tutti'); // 'tutti' | 'armi_armature' | 'pozioni' | 'magici' | 'attrezzi'
+  const [mostraSplitMonete, setMostraSplitMonete] = useState(false);
+  const [splitGiocatori, setSplitGiocatori] = useState(4);
   const [effettoInventarioAperto, setEffettoInventarioAperto] = useState(null);
   const [bestiaDettaglio, setBestiaDettaglio] = useState(null); // bestia aperta in modale statblock
   const [fontePopover, setFontePopover] = useState(null); // { tipo: 'ts'|'car', key, top, left } menu "da cosa deriva il bonus" aperto
@@ -7103,8 +7106,51 @@ export default function App() {
             })}
           </div>
 
+          {/* Soundboard SFX Rapida (effetti one-shot per sessione) */}
+          <div style={{ borderTop: `1px dashed ${C.border}`, paddingTop: 6 }}>
+            <div style={{ fontSize: 11, fontWeight: 'bold', color: C.goldDark, marginBottom: 4 }}>
+              ⚡ Effetti Sonori Rapidi (SFX)
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4 }}>
+              {[
+                { id: 'arma', icona: '⚔️', label: 'Spada' },
+                { id: 'arco', icona: '🏹', label: 'Arco' },
+                { id: 'magia', icona: '✨', label: 'Magia' },
+                { id: 'cura', icona: '💚', label: 'Cura' },
+                { id: 'tuono', icona: '⚡', label: 'Tuono' },
+                { id: 'monete', icona: '🪙', label: 'Monete' },
+                { id: 'campana', icona: '🔔', label: 'Campana' },
+                { id: 'porta', icona: '🚪', label: 'Porta' },
+              ].map((sfx) => (
+                <button
+                  key={sfx.id}
+                  type="button"
+                  onClick={() => {
+                    sbloccaAudio();
+                    eseguiEffettoSonoro(sfx.id, volumeEffetti);
+                  }}
+                  title={`Suona effetto: ${sfx.label}`}
+                  style={{
+                    ...styles.buttonMini,
+                    padding: '4px 2px',
+                    fontSize: 11,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 2,
+                    background: C.panelLight,
+                  }}
+                >
+                  <span style={{ fontSize: 13 }}>{sfx.icona}</span>
+                  <span style={{ fontSize: 9.5, whiteSpace: 'nowrap' }}>{sfx.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div style={{ fontSize: 10, color: C.inkDim, opacity: 0.8, textAlign: 'center' }}>
-            🔊 Suoni ambientali reali da Freesound.com · licenza CC0 (dominio pubblico)
+            🔊 Suoni ambientali ed effetti procedurali · Web Audio API & Freesound CC0
           </div>
         </div>
         </div>
@@ -9741,56 +9787,59 @@ export default function App() {
                         <button style={styles.buttonMini} onClick={() => setFiltroInventario('')}>✕</button>
                       )}
                       
-                      {/* Pillole Filtro Zaino vs Equipaggiato */}
-                      <div style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }}>
-                        <button
-                          type="button"
-                          onClick={() => setFiltroVistaInventario('tutti')}
-                          style={{
-                            ...styles.buttonMini,
-                            fontSize: 11,
-                            padding: '3px 8px',
-                            borderRadius: 12,
-                            borderColor: filtroVistaInventario === 'tutti' ? C.goldDark : C.border,
-                            background: filtroVistaInventario === 'tutti' ? 'rgba(200,140,20,0.18)' : 'transparent',
-                            color: filtroVistaInventario === 'tutti' ? C.goldDark : C.inkDim,
-                            fontWeight: filtroVistaInventario === 'tutti' ? 700 : 500,
-                          }}
-                        >
-                          📦 {lingua === 'en' ? 'All' : 'Tutti'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setFiltroVistaInventario('equip')}
-                          style={{
-                            ...styles.buttonMini,
-                            fontSize: 11,
-                            padding: '3px 8px',
-                            borderRadius: 12,
-                            borderColor: filtroVistaInventario === 'equip' ? '#2e9d4d' : C.border,
-                            background: filtroVistaInventario === 'equip' ? 'rgba(46,157,77,0.18)' : 'transparent',
-                            color: filtroVistaInventario === 'equip' ? '#2e9d4d' : C.inkDim,
-                            fontWeight: filtroVistaInventario === 'equip' ? 700 : 500,
-                          }}
-                        >
-                          🛡️ {lingua === 'en' ? 'Equipped' : 'Indossati'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setFiltroVistaInventario('zaino')}
-                          style={{
-                            ...styles.buttonMini,
-                            fontSize: 11,
-                            padding: '3px 8px',
-                            borderRadius: 12,
-                            borderColor: filtroVistaInventario === 'zaino' ? '#1890ff' : C.border,
-                            background: filtroVistaInventario === 'zaino' ? 'rgba(24,144,255,0.18)' : 'transparent',
-                            color: filtroVistaInventario === 'zaino' ? '#1890ff' : C.inkDim,
-                            fontWeight: filtroVistaInventario === 'zaino' ? 700 : 500,
-                          }}
-                        >
-                          🎒 {lingua === 'en' ? 'Backpack' : 'Nello Zaino'}
-                        </button>
+                      {/* Pillole Filtro Zaino vs Equipaggiato e Categorie */}
+                      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
+                        {[
+                          ['tutti', '📦 ' + (lingua === 'en' ? 'All' : 'Tutti')],
+                          ['equip', '🛡️ ' + (lingua === 'en' ? 'Equipped' : 'Indossati')],
+                          ['zaino', '🎒 ' + (lingua === 'en' ? 'Backpack' : 'Zaino')],
+                        ].map(([k, label]) => (
+                          <button
+                            key={k}
+                            type="button"
+                            onClick={() => setFiltroVistaInventario(k)}
+                            style={{
+                              ...styles.buttonMini,
+                              fontSize: 11,
+                              padding: '3px 8px',
+                              borderRadius: 12,
+                              borderColor: filtroVistaInventario === k ? C.goldDark : C.border,
+                              background: filtroVistaInventario === k ? 'rgba(200,140,20,0.18)' : 'transparent',
+                              color: filtroVistaInventario === k ? C.goldDark : C.inkDim,
+                              fontWeight: filtroVistaInventario === k ? 700 : 500,
+                            }}
+                          >
+                            {label}
+                          </button>
+                        ))}
+
+                        <span style={{ width: 1, height: 16, background: C.border, margin: '0 2px' }} />
+
+                        {[
+                          ['tutti', lingua === 'en' ? 'All Types' : 'Tutti i tipi'],
+                          ['armi_armature', '⚔️ ' + (lingua === 'en' ? 'Weapons/Armor' : 'Armi & Armature')],
+                          ['pozioni', '🧪 ' + (lingua === 'en' ? 'Potions' : 'Pozioni & Unguenti')],
+                          ['magici', '✨ ' + (lingua === 'en' ? 'Magic' : 'Oggetti Magici')],
+                          ['attrezzi', '🔧 ' + (lingua === 'en' ? 'Tools' : 'Attrezzi')],
+                        ].map(([k, label]) => (
+                          <button
+                            key={k}
+                            type="button"
+                            onClick={() => setFiltroCatInventario(k)}
+                            style={{
+                              ...styles.buttonMini,
+                              fontSize: 11,
+                              padding: '3px 8px',
+                              borderRadius: 12,
+                              borderColor: filtroCatInventario === k ? C.goldDark : C.border,
+                              background: filtroCatInventario === k ? 'rgba(200,140,20,0.18)' : 'transparent',
+                              color: filtroCatInventario === k ? C.goldDark : C.inkDim,
+                              fontWeight: filtroCatInventario === k ? 700 : 500,
+                            }}
+                          >
+                            {label}
+                          </button>
+                        ))}
                       </div>
 
                       <button
@@ -9822,14 +9871,26 @@ export default function App() {
                               const matchTesto = !filtroInventario || (o.nome || '').toLowerCase().includes(filtroInventario.trim().toLowerCase());
                               if (!matchTesto) return false;
                               const isWeapon = ARMI_5E.some((w) => w.nome === o.nome) || attacchi.some((a) => a.nome === o.nome);
+                              const isArmor = trovaArmatura(o.nome) || eScudo(o.nome);
+                              const isPotion = /pozione|filtro|unguento|elisir|potion/i.test(o.nome || '');
+                              const isMagic = !!o.effettoMeccanico || indiceSintonia(o.nome) >= 0 || /bacchetta|pergamena|anello|amuleto|mantello|stivali|sfera/i.test(o.nome || '');
+                              const isTool = /arnesi|attrezzi|strumento|set|kit|strumenti/i.test(o.nome || '');
+
                               const isEquip = isWeapon ? attacchi.some((a) => a.nome === o.nome) : !!o.equip;
                               if (filtroVistaInventario === 'equip' && !isEquip) return false;
                               if (filtroVistaInventario === 'zaino' && isEquip) return false;
+
+                              if (filtroCatInventario === 'armi_armature' && !isWeapon && !isArmor) return false;
+                              if (filtroCatInventario === 'pozioni' && !isPotion) return false;
+                              if (filtroCatInventario === 'magici' && !isMagic) return false;
+                              if (filtroCatInventario === 'attrezzi' && !isTool) return false;
+
                               return true;
                             }).sort((a, b) => String(a.nome || '').localeCompare(String(b.nome || ''), 'it', { sensitivity: 'base' })).map((o) => {
                               const isWeapon = ARMI_5E.some((w) => w.nome === o.nome) || attacchi.some((a) => a.nome === o.nome);
                               const isEquip = isWeapon ? attacchi.some((a) => a.nome === o.nome) : !!o.equip;
                               const isSintonizzato = indiceSintonia(o.nome) >= 0;
+                              const isPotion = /pozione|filtro|unguento|elisir|potion/i.test(o.nome || '');
                               const effettoAttivo = !!o.effettoMeccanico && isEquip && (!o.richiedeSintonia || isSintonizzato);
                               // Effetto e Utilizzi sono dettagli dello STESSO oggetto: niente riga
                               // divisoria fra il nome e le sue righe di dettaglio, che restano
@@ -9837,14 +9898,70 @@ export default function App() {
                               const mostraEffetto = effettoInventarioAperto === o.id || o.effettoMeccanico;
                               const mostraUtilizzi = o.usiMax > 0;
                               const senzaBordo = { borderBottom: 'none' };
+
+                              const beviPozione = () => {
+                                const nome = (o.nome || '').toLowerCase();
+                                let curaFormula = '2d4+2';
+                                if (nome.includes('maggiore') || nome.includes('greater')) curaFormula = '4d4+4';
+                                else if (nome.includes('superiore') || nome.includes('superior')) curaFormula = '8d4+8';
+                                else if (nome.includes('suprema') || nome.includes('supreme')) curaFormula = '10d4+20';
+
+                                if (/guarigione|cura|healing/i.test(nome)) {
+                                  const p = parseEspressioneDado(curaFormula);
+                                  let tot = 0;
+                                  if (p) {
+                                    for (const t of p.termini) {
+                                      if (t.tipo === 'dado') for (let i = 0; i < t.quantita; i++) tot += tiraDado(t.facce);
+                                      if (t.tipo === 'fisso') tot += t.valore;
+                                    }
+                                  }
+                                  setScheda((s) => ({
+                                    ...s,
+                                    pfAttuali: Math.min(s.pfMax, (s.pfAttuali || 0) + tot),
+                                    inventario: (s.inventario || []).map((x) => (x.id === o.id ? { ...x, qta: Math.max(0, (Number(x.qta) || 1) - 1) } : x)),
+                                  }));
+                                  registra({ etichetta: `🧪 ${o.nome}`, tipo: 'cura', totale: tot, dettaglio: `Bevi ${o.nome}: recuperi ${tot} PF (${curaFormula})` });
+                                  setInfo({ titolo: `🧪 ${o.nome}`, testo: `Hai bevuto ${o.nome} e recuperato ${tot} PF! (Quantità residua: ${Math.max(0, (Number(o.qta) || 1) - 1)})` });
+                                } else {
+                                  setScheda((s) => ({
+                                    ...s,
+                                    inventario: (s.inventario || []).map((x) => (x.id === o.id ? { ...x, qta: Math.max(0, (Number(x.qta) || 1) - 1) } : x)),
+                                  }));
+                                  registra({ etichetta: `🧪 ${o.nome}`, tipo: 'usa', dettaglio: `Usato/bevuto ${o.nome}` });
+                                  setInfo({ titolo: `🧪 ${o.nome}`, testo: `Hai usato/bevuto ${o.nome}! (Quantità residua: ${Math.max(0, (Number(o.qta) || 1) - 1)})` });
+                                }
+                              };
+
                               return (
                                 <Fragment key={o.id}>
                                 <tr className="inventario-riga" style={{ opacity: isEquip ? 1 : 0.82 }}>
                                   <td data-label={t('inv.equip')} style={{ ...styles.td, textAlign: 'center', ...((mostraEffetto || mostraUtilizzi) && senzaBordo) }}>
                                     <input type="checkbox" checked={isEquip} onChange={(e) => toggleEquip(o, e.target.checked)} title={t('inv.equip_tooltip')} />
                                   </td>
-                                  <td data-label={t('inv.nome')} style={{ ...styles.td, ...((mostraEffetto || mostraUtilizzi) && senzaBordo) }}><Editable value={o.nome} width={150} onChange={(v) => rinominaItem(o, v)} /></td>
-                                  <td data-label={t('inv.qta')} style={{ ...styles.td, ...((mostraEffetto || mostraUtilizzi) && senzaBordo) }}>×<Editable value={o.qta} tipo="numero" width={30} onChange={(v) => modInv(o.id, { qta: Math.max(1, v) })} /></td>
+                                  <td data-label={t('inv.nome')} style={{ ...styles.td, ...((mostraEffetto || mostraUtilizzi) && senzaBordo) }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                      <Editable value={o.nome} width={150} onChange={(v) => rinominaItem(o, v)} />
+                                      {isPotion && (
+                                        <button
+                                          type="button"
+                                          onClick={beviPozione}
+                                          style={{
+                                            ...styles.buttonMini,
+                                            padding: '1px 6px',
+                                            fontSize: 10,
+                                            fontWeight: 700,
+                                            color: '#2e9d4d',
+                                            borderColor: '#2e9d4d',
+                                            background: 'rgba(46,157,77,0.12)',
+                                          }}
+                                          title="Bevi o usa questa pozione/consumabile (consuma 1 unità e cura se applicabile)"
+                                        >
+                                          🧪 {lingua === 'en' ? 'Drink' : 'Bevi'}
+                                        </button>
+                                      )}
+                                    </div>
+                                  </td>
+                                  <td data-label={t('inv.qta')} style={{ ...styles.td, ...((mostraEffetto || mostraUtilizzi) && senzaBordo) }}>×<Editable value={o.qta} tipo="numero" width={30} onChange={(v) => modInv(o.id, { qta: Math.max(0, v) })} /></td>
                                   <td data-label={t('inv.sintonia')} style={{ ...styles.td, textAlign: 'center', ...((mostraEffetto || mostraUtilizzi) && senzaBordo) }}>
                                     <button
                                       type="button"
@@ -9991,8 +10108,9 @@ export default function App() {
                         const numMonete = (d.mr || 0) + (d.ma || 0) + (d.me || 0) + (d.mo || 0) + (d.mp || 0);
                         const pesoMonete = numMonete * 0.01; // 50 monete = 0.5 kg (0.01 kg a moneta)
                         return (
+                          <>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 10, minWidth: 0 }}>
-                            <div style={{ display: 'flex', justifyContent: 'flex-start', minWidth: 0 }}>
+                            <div style={{ display: 'flex', justifyContent: 'flex-start', gap: 6, minWidth: 0, flexWrap: 'wrap' }}>
                               <button
                                 style={{ ...styles.buttonMini, fontSize: 11, color: C.goldDark, borderColor: C.goldDark, whiteSpace: 'nowrap' }}
                                 title={t('monete.converti_tip')}
@@ -10004,12 +10122,80 @@ export default function App() {
                                   else alert(t('monete.insufficienti'));
                                 }}
                               >🔄 {t('monete.converti')}</button>
+                              <button
+                                style={{ ...styles.buttonMini, fontSize: 11, color: '#1890ff', borderColor: '#1890ff', whiteSpace: 'nowrap' }}
+                                title="Dividi equamente il bottino o le monete del party"
+                                onClick={() => setMostraSplitMonete(!mostraSplitMonete)}
+                              >⚖️ {lingua === 'en' ? 'Split Party Loot' : 'Dividi con Party'}</button>
                             </div>
                             <div title={t('monete.totale_tip', { n: numMonete })} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 7, minWidth: 0, fontSize: 12, color: C.goldDark, fontWeight: 700, textAlign: 'right', whiteSpace: 'nowrap' }}>
                               <IconaMonetaOro size={18} />
                               <span>≈ {totMo.toFixed(2)} MO · {pesoMonete.toFixed(2)} kg</span>
                             </div>
                           </div>
+                          {mostraSplitMonete && (
+                            <div style={{ background: 'rgba(24,144,255,0.08)', border: '1px solid #1890ff', borderRadius: 6, padding: '8px 10px', marginBottom: 10, fontSize: 12 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                                <strong style={{ color: '#1890ff' }}>⚖️ {lingua === 'en' ? 'Party Split Calculator' : 'Calcolatore Spartizione Bottino'}</strong>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                  <span>{lingua === 'en' ? 'Players:' : 'Membri:'}</span>
+                                  <input
+                                    type="number"
+                                    min="2"
+                                    max="12"
+                                    value={splitGiocatori}
+                                    onChange={(e) => setSplitGiocatori(Math.max(2, Number(e.target.value) || 2))}
+                                    style={{ ...styles.inlineInput, width: 44, textAlign: 'center', padding: '2px 4px' }}
+                                  />
+                                </div>
+                              </div>
+                              <div style={{ fontSize: 11.5, color: C.ink, lineHeight: 1.4 }}>
+                                <div>{lingua === 'en' ? 'Each player receives:' : 'A testa per ciascun membro:'}</div>
+                                <div style={{ fontWeight: 700, color: C.goldDark, marginTop: 3 }}>
+                                  {Math.floor((d.mo || 0) / splitGiocatori)} MO · {Math.floor((d.ma || 0) / splitGiocatori)} MA · {Math.floor((d.mr || 0) / splitGiocatori)} MR
+                                  {((d.mo || 0) % splitGiocatori > 0 || (d.ma || 0) % splitGiocatori > 0 || (d.mr || 0) % splitGiocatori > 0) && (
+                                    <span style={{ fontSize: 10.5, fontWeight: 500, color: C.inkDim, marginLeft: 6 }}>
+                                      ({lingua === 'en' ? 'Remaining in party stash:' : 'Resto nel fondo cassa:'} {(d.mo || 0) % splitGiocatori} MO, {(d.ma || 0) % splitGiocatori} MA, {(d.mr || 0) % splitGiocatori} MR)
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+                                <button
+                                  type="button"
+                                  style={{ ...styles.buttonMini, fontSize: 11, background: '#1890ff', color: '#fff', borderColor: '#1890ff', fontWeight: 600, padding: '3px 8px' }}
+                                  onClick={() => {
+                                    const quotaMo = Math.floor((d.mo || 0) / splitGiocatori);
+                                    const quotaMa = Math.floor((d.ma || 0) / splitGiocatori);
+                                    const quotaMr = Math.floor((d.mr || 0) / splitGiocatori);
+                                    const quotaMe = Math.floor((d.me || 0) / splitGiocatori);
+                                    const quotaMp = Math.floor((d.mp || 0) / splitGiocatori);
+                                    aggiorna({
+                                      denari: {
+                                        mr: quotaMr,
+                                        ma: quotaMa,
+                                        me: quotaMe,
+                                        mo: quotaMo,
+                                        mp: quotaMp,
+                                      },
+                                    });
+                                    registra({ etichetta: '⚖️ Spartizione Bottino', tipo: 'info', dettaglio: `Spartite monete tra ${splitGiocatori} giocatori: la tua quota è ${quotaMo} MO, ${quotaMa} MA, ${quotaMr} MR` });
+                                    setMostraSplitMonete(false);
+                                  }}
+                                >
+                                  {lingua === 'en' ? 'Keep My Share Only' : 'Tieni solo la mia quota'}
+                                </button>
+                                <button
+                                  type="button"
+                                  style={{ ...styles.buttonMini, fontSize: 11 }}
+                                  onClick={() => setMostraSplitMonete(false)}
+                                >
+                                  {lingua === 'en' ? 'Close' : 'Chiudi'}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                          </>
                         );
                       })()}
                       <div className="griglia-monete" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 8, marginTop: 'auto' }}>

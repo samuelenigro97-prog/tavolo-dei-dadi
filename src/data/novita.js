@@ -5,6 +5,21 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.82',
+    voci: {
+      it: [
+        'Inventario Potenziato & Pozioni Rapide: filtri per tipo (Armi/Armature, Pozioni, Magici, Attrezzi) e tasto "Bevi" per consumare pozioni e curarsi automaticamente con tiro dadi integrato.',
+        'Divisione Bottino Party: calcolatore per spartire equamente le monete tra i membri del gruppo mantenendo la propria quota.',
+        'Soundboard Effetti Rapidi (SFX): pannello audio arricchito con effetti istantanei (Spada, Arco, Magia, Cura, Tuono, Monete, Campana, Porta).',
+      ],
+      en: [
+        'Enhanced Inventory & Quick Potions: category filters (Weapons/Armor, Potions, Magic, Tools) and instant "Drink" button for potions with automated healing rolls.',
+        'Party Loot Splitter: easy calculator to divide coins equally among party members and keep your share.',
+        'Quick SFX Soundboard: instant sound effects panel (Sword, Bow, Magic, Heal, Thunder, Coins, Bell, Stone Door).',
+      ],
+    },
+  },
+  {
     versione: '3.9.81',
     voci: {
       it: [

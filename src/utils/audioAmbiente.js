@@ -1036,4 +1036,72 @@ export function eseguiEffettoSonoro(tipo, volume = 0.5) {
       osc.stop(ctx.currentTime + delay + 0.35);
     });
   }
+  else if (tipo === 'tuono') {
+    const now = ctx.currentTime;
+    const len = Math.floor(ctx.sampleRate * 1.5);
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let j = 0; j < len; j++) d[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / len, 1.5);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(140, now);
+    filter.frequency.exponentialRampToValueAtTime(45, now + 1.4);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.8 * v, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    src.start(now);
+    src.stop(now + 1.5);
+  }
+  else if (tipo === 'monete') {
+    const now = ctx.currentTime;
+    [0, 0.06, 0.12].forEach((offset, idx) => {
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(2800 + idx * 400 + Math.random() * 200, now + offset);
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.4 * v, now + offset);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.15);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + offset);
+      osc.stop(now + offset + 0.15);
+    });
+  }
+  else if (tipo === 'campana') {
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(587.33, now); // D5
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.6 * v, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 2.0);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 2.0);
+  }
+  else if (tipo === 'porta') {
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(80, now);
+    osc.frequency.linearRampToValueAtTime(110, now + 0.3);
+    osc.frequency.exponentialRampToValueAtTime(50, now + 0.8);
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(180, now);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.5 * v, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.8);
+  }
 }
