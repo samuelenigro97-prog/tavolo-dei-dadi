@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.108';
+const APP_VERSION = '3.9.109';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3154,15 +3154,16 @@ export default function App() {
     setPassiUndo(storicoUndo.current.length);
   }
 
-  // Scorciatoia da tastiera: Ctrl+Z / Cmd+Z (non mentre si scrive in un campo)
+  // Scorciatoia da tastiera globale: Ctrl+Z (Windows) / Cmd+Z (Mac)
   useEffect(() => {
     function onKey(e) {
-      if (!(e.key === 'z' || e.key === 'Z') || !(e.ctrlKey || e.metaKey) || e.shiftKey) return;
-      const el = e.target;
-      const tag = el?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el?.isContentEditable) return;
-      e.preventDefault();
-      annullaModifica();
+      if ((e.code === 'KeyZ' || e.key === 'z' || e.key === 'Z') && (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey) {
+        const el = e.target;
+        const tag = el?.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el?.isContentEditable) return;
+        e.preventDefault();
+        annullaModifica();
+      }
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -7797,17 +7798,9 @@ export default function App() {
 
                 <span className="selettore-divisore" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
 
-                {/* Gruppo 2: Navigazione & App (Centrali) */}
+                {/* Gruppo 2: Navigazione, App & Cloud (Centrali) */}
                 <button style={btnAzione} title={t('tip.menu_iniziale')} onClick={() => setMostraMenu(true)}>
                   🏠
-                </button>
-                <button
-                  style={{ ...btnAzione, opacity: passiUndo ? 1 : 0.4, cursor: passiUndo ? 'pointer' : 'default' }}
-                  title={passiUndo ? t('undo.tooltip', { n: passiUndo }) : t('undo.vuoto')}
-                  disabled={!passiUndo}
-                  onClick={annullaModifica}
-                >
-                  ↩︎
                 </button>
                 <button style={btnAzione} title="Importa JSON, PDF o immagini" onClick={() => jsonRef.current?.click()}>
                   📂
@@ -7835,6 +7828,20 @@ export default function App() {
                   onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
                 >
                   {lingua === 'it' ? '🇮🇹' : '🇬🇧'}
+                </button>
+                <button
+                  style={{ ...btnAzione, color: C.goldDark, borderColor: C.goldDark }}
+                  title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato') : 'Sincronizza sul Cloud'}
+                  onClick={() => { setCloudStatus({ text: '', type: '' }); setSyncCodiceStatus({ text: '', type: '' }); setMostraCloud(true); }}
+                >
+                  ☁️
+                  {sincronizzando ? (
+                    <span style={{ fontSize: 11, marginLeft: 2 }}>🔄</span>
+                  ) : (githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice) ? (
+                    <span style={{ color: '#2e9d4d', fontWeight: 900, marginLeft: 2, fontSize: 13 }}>✓</span>
+                  ) : (
+                    <span style={{ color: '#c0392b', fontSize: 13, marginLeft: 2, fontWeight: 900 }}>!</span>
+                  )}
                 </button>
 
                 <span className="selettore-divisore" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
@@ -7864,24 +7871,6 @@ export default function App() {
                     <span className="avvisi-pallino" aria-label={`${nAvvisi} notifiche`}>
                       {controlliAttivi.length > 0 ? controlliAttivi.length : '!'}
                     </span>
-                  )}
-                </button>
-
-                <span className="selettore-divisore" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
-
-                {/* Gruppo 4: Sincronizzazione Cloud */}
-                <button
-                  style={{ ...btnAzione, color: C.goldDark, borderColor: C.goldDark }}
-                  title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato') : 'Sincronizza sul Cloud'}
-                  onClick={() => { setCloudStatus({ text: '', type: '' }); setSyncCodiceStatus({ text: '', type: '' }); setMostraCloud(true); }}
-                >
-                  ☁️
-                  {sincronizzando ? (
-                    <span style={{ fontSize: 11, marginLeft: 2 }}>🔄</span>
-                  ) : (githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice) ? (
-                    <span style={{ color: '#2e9d4d', fontWeight: 900, marginLeft: 2, fontSize: 13 }}>✓</span>
-                  ) : (
-                    <span style={{ color: '#c0392b', fontSize: 13, marginLeft: 2, fontWeight: 900 }}>!</span>
                   )}
                 </button>
               </div>
