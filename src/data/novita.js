@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.83',
+    voci: {
+      it: [
+        'Evidenziazione e Correzione Rapida Competenze: le abilità e i tiri salvezza mancanti sono ora cerchiati in rosso direttamente sulla scheda con badge "⚠️ Manca", e il pannello Notifiche include i pulsanti "✓ Correggi" e "⚡ Correggi tutte" per applicarle istantaneamente.',
+      ],
+      en: [
+        'Missing Proficiencies Highlighting & Quick Fix: missing skills and saving throws are now outlined in red on the sheet with a "⚠️ Manca" badge, and the Notifications panel features "✓ Fix" and "⚡ Fix all" buttons to apply them with one tap.',
+      ],
+    },
+  },
+  {
     versione: '3.9.82',
     voci: {
       it: [

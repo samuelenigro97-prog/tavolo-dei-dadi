@@ -364,8 +364,11 @@ export function controlliScheda(scheda) {
     if (tsAttesi.includes(key) && !tiriSalvezza[key]) {
       risultati.push({
         id: `ts-${key}`,
+        tipo: 'ts',
+        targetKey: key,
         gravita: 'certo',
         testo: `${scheda.classe || 'La classe'}: manca la competenza nel Tiro Salvezza di ${label}.`,
+        correggibile: true,
       });
     }
   }
@@ -377,8 +380,11 @@ export function controlliScheda(scheda) {
     if (def && !(abilita[chiave] > 0)) {
       risultati.push({
         id: `bg-${chiave}`,
+        tipo: 'abilita',
+        targetKey: chiave,
         gravita: 'certo',
         testo: `${scheda.background}: manca la competenza in ${def.label}.`,
+        correggibile: true,
       });
     }
   }

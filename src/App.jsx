@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.82';
+const APP_VERSION = '3.9.83';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -6762,10 +6762,25 @@ export default function App() {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                     {controlliAttivi.map((r) => (
-                      <div key={r.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 6, padding: '5px 8px' }}>
+                      <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 6, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 6, padding: '5px 8px' }}>
                         <span style={{ flex: 1, fontSize: 12, color: C.ink }}>
                           {r.gravita === 'certo' ? '🔴' : '🟡'} {r.testo}
                         </span>
+                        {r.correggibile && (
+                          <button
+                            style={{ ...styles.buttonMini, fontSize: 10, padding: '3px 7px', background: '#2e9d4d', color: '#fff', borderColor: '#2e9d4d', fontWeight: 700, flexShrink: 0 }}
+                            title="Applica subito questa competenza sulla scheda"
+                            onClick={() => {
+                              if (r.tipo === 'ts') {
+                                aggiorna({ tiriSalvezza: { ...scheda.tiriSalvezza, [r.targetKey]: true } });
+                              } else if (r.tipo === 'abilita') {
+                                aggiorna({ abilita: { ...scheda.abilita, [r.targetKey]: Math.max(1, (scheda.abilita?.[r.targetKey] || 0) + 1) } });
+                              }
+                            }}
+                          >
+                            ✓ Correggi
+                          </button>
+                        )}
                         <button
                           style={{ ...styles.buttonMini, fontSize: 10, padding: '3px 6px', flexShrink: 0 }}
                           title="Non segnalarlo più per questo personaggio"
@@ -6773,6 +6788,24 @@ export default function App() {
                         >Ignora</button>
                       </div>
                     ))}
+                    {controlliAttivi.some((r) => r.correggibile) && (
+                      <button
+                        style={{ ...styles.buttonMini, fontSize: 11, background: '#2e9d4d', color: '#fff', borderColor: '#2e9d4d', fontWeight: 700, padding: '4px 8px', alignSelf: 'flex-start' }}
+                        onClick={() => {
+                          const newTs = { ...scheda.tiriSalvezza };
+                          const newAb = { ...scheda.abilita };
+                          for (const r of controlliAttivi) {
+                            if (r.correggibile) {
+                              if (r.tipo === 'ts') newTs[r.targetKey] = true;
+                              if (r.tipo === 'abilita') newAb[r.targetKey] = Math.max(1, (newAb[r.targetKey] || 0) + 1);
+                            }
+                          }
+                          aggiorna({ tiriSalvezza: newTs, abilita: newAb });
+                        }}
+                      >
+                        ⚡ Correggi tutte le mancanze certe
+                      </button>
+                    )}
                     {ignorati.length > 0 && (
                       <button
                         style={{ ...styles.buttonMini, fontSize: 10, alignSelf: 'flex-start' }}
@@ -7117,10 +7150,6 @@ export default function App() {
                 { id: 'arco', icona: '🏹', label: 'Arco' },
                 { id: 'magia', icona: '✨', label: 'Magia' },
                 { id: 'cura', icona: '💚', label: 'Cura' },
-                { id: 'tuono', icona: '⚡', label: 'Tuono' },
-                { id: 'monete', icona: '🪙', label: 'Monete' },
-                { id: 'campana', icona: '🔔', label: 'Campana' },
-                { id: 'porta', icona: '🚪', label: 'Porta' },
               ].map((sfx) => (
                 <button
                   key={sfx.id}
@@ -8161,68 +8190,92 @@ export default function App() {
                     </div>
                   </div>
 
-                  <Rollable
-                    as="div"
-                    style={{ ...styles.skillRow(true), opacity: scheda.tiriSalvezza[key] ? 1 : 0.5, position: 'relative' }}
-                    title={`Tieni premuto e rilascia: tiro salvezza di ${t('attr.' + key)} · click sul pallino: competenza`}
-                    onRoll={() => lanciaD20(`Tiro salvezza: ${t('attr.' + key)}`, bonusTS)}
-                  >
-                    <span
-                      style={styles.dot(scheda.tiriSalvezza[key] ? 1 : 0)}
-                      onPointerDown={(e) => e.stopPropagation()}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        aggiorna({ tiriSalvezza: { ...scheda.tiriSalvezza, [key]: !scheda.tiriSalvezza[key] } });
-                      }}
-                    >
-                      {scheda.tiriSalvezza[key] ? '●' : '○'}
-                    </span>
-                    <strong style={{ width: 32 }}>{conSegno(bonusTS)}</strong>
-                    <em>{t('attr.tiro_salvezza')}</em>
-                    {(() => {
-                      const bonusOggettiTS = bonusTiriSalvezzaOggetti(scheda);
-                      if (!bonusOggettiTS) return null;
-                      const fontiTS = oggettiConEffettoAttivo(scheda).filter((o) => o.effettoMeccanico === 'classe_armatura_tiri_salvezza_1' || /^tiri_salvezza_[123]$/.test(o.effettoMeccanico));
-                      return (
-                        <span style={{ marginLeft: 'auto' }}>
-                          <button
-                            type="button"
-                            onPointerDown={(e) => e.stopPropagation()}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const r = e.currentTarget.getBoundingClientRect();
-                              setFontePopover((v) => (v && v.tipo === 'ts' && v.key === key ? null : { tipo: 'ts', key, ...posizionePopover(r, window) }));
-                            }}
-                            title={t('inv.fonte_bonus_tip')}
-                            style={{ ...styles.buttonMini, fontSize: 10, padding: '0 5px', height: 18, lineHeight: '16px', color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.12)' }}
-                          >✨ +{bonusOggettiTS}</button>
-                          {fontePopover?.tipo === 'ts' && fontePopover.key === key && createPortal(
-                            <div
-                              onPointerDown={(e) => e.stopPropagation()}
-                              onClick={(e) => e.stopPropagation()}
-                              className="popover-fonte" style={{ position: 'fixed', ...stilePopover(fontePopover), zIndex: 1050, borderRadius: 8, padding: '6px 10px', fontSize: 11, textAlign: 'left' }}
-                            >
-                              <div className="popover-titolo" style={{ fontWeight: 'bold', marginBottom: 4 }}>{t('inv.fonte_bonus')}:</div>
-                              {fontiTS.length
-                                ? fontiTS.map((o) => <div key={o.id}>🎒 {o.nome}</div>)
-                                : <div className="popover-titolo">—</div>}
-                            </div>,
-                            document.body
-                          )}
+                  {(() => {
+                    const tsMancante = controlliAttivi.find((c) => c.tipo === 'ts' && c.targetKey === key);
+                    return (
+                      <Rollable
+                        as="div"
+                        style={{
+                          ...styles.skillRow(true),
+                          opacity: scheda.tiriSalvezza[key] ? 1 : 0.5,
+                          position: 'relative',
+                          border: tsMancante ? `1px solid ${C.red}` : 'none',
+                          borderRadius: tsMancante ? 6 : 0,
+                          background: tsMancante ? 'rgba(231,76,60,0.12)' : 'transparent',
+                          padding: tsMancante ? '2px 4px' : styles.skillRow(true).padding,
+                        }}
+                        title={tsMancante ? `⚠️ ${tsMancante.testo} (Click per tirare, click sul pallino per impostare)` : `Tieni premuto e rilascia: tiro salvezza di ${t('attr.' + key)} · click sul pallino: competenza`}
+                        onRoll={() => lanciaD20(`Tiro salvezza: ${t('attr.' + key)}`, bonusTS)}
+                      >
+                        <span
+                          style={styles.dot(scheda.tiriSalvezza[key] ? 1 : 0)}
+                          onPointerDown={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            aggiorna({ tiriSalvezza: { ...scheda.tiriSalvezza, [key]: !scheda.tiriSalvezza[key] } });
+                          }}
+                        >
+                          {scheda.tiriSalvezza[key] ? '●' : '○'}
                         </span>
-                      );
-                    })()}
-                  </Rollable>
+                        <strong style={{ width: 32 }}>{conSegno(bonusTS)}</strong>
+                        <em>{t('attr.tiro_salvezza')}</em>
+                        {tsMancante && (
+                          <span style={{ marginLeft: 'auto', fontSize: 9.5, color: C.red, fontWeight: 700 }}>⚠️ Manca</span>
+                        )}
+                        {(() => {
+                          const bonusOggettiTS = bonusTiriSalvezzaOggetti(scheda);
+                          if (!bonusOggettiTS) return null;
+                          const fontiTS = oggettiConEffettoAttivo(scheda).filter((o) => o.effettoMeccanico === 'classe_armatura_tiri_salvezza_1' || /^tiri_salvezza_[123]$/.test(o.effettoMeccanico));
+                          return (
+                            <span style={{ marginLeft: 'auto' }}>
+                              <button
+                                type="button"
+                                onPointerDown={(e) => e.stopPropagation()}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const r = e.currentTarget.getBoundingClientRect();
+                                  setFontePopover((v) => (v && v.tipo === 'ts' && v.key === key ? null : { tipo: 'ts', key, ...posizionePopover(r, window) }));
+                                }}
+                                title={t('inv.fonte_bonus_tip')}
+                                style={{ ...styles.buttonMini, fontSize: 10, padding: '0 5px', height: 18, lineHeight: '16px', color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.12)' }}
+                              >✨ +{bonusOggettiTS}</button>
+                              {fontePopover?.tipo === 'ts' && fontePopover.key === key && createPortal(
+                                <div
+                                  onPointerDown={(e) => e.stopPropagation()}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="popover-fonte" style={{ position: 'fixed', ...stilePopover(fontePopover), zIndex: 1050, borderRadius: 8, padding: '6px 10px', fontSize: 11, textAlign: 'left' }}
+                                >
+                                  <div className="popover-titolo" style={{ fontWeight: 'bold', marginBottom: 4 }}>{t('inv.fonte_bonus')}:</div>
+                                  {fontiTS.length
+                                    ? fontiTS.map((o) => <div key={o.id}>🎒 {o.nome}</div>)
+                                    : <div className="popover-titolo">—</div>}
+                                </div>,
+                                document.body
+                              )}
+                            </span>
+                          );
+                        })()}
+                      </Rollable>
+                    );
+                  })()}
 
                   {abilitaDellaCar.map((a) => {
                     const bonus = bonusAbilita(scheda, a.key);
                     const liv = scheda.abilita[a.key] || 0;
+                    const abMancante = controlliAttivi.find((c) => c.tipo === 'abilita' && c.targetKey === a.key);
                     return (
                       <Rollable
                         as="div"
                         key={a.key}
-                        style={{ ...styles.skillRow(true), opacity: liv === 0 ? 0.5 : 1 }}
-                        title={`Tieni premuto e rilascia: prova di ${t('skill.' + a.key)} · click sul pallino: niente → competenza (●) → competenza di classe/razza (★) → Maestria/Expertise, doppia competenza (✦)`}
+                        style={{
+                          ...styles.skillRow(true),
+                          opacity: liv === 0 ? 0.5 : 1,
+                          border: abMancante ? `1px solid ${C.red}` : 'none',
+                          borderRadius: abMancante ? 6 : 0,
+                          background: abMancante ? 'rgba(231,76,60,0.12)' : 'transparent',
+                          padding: abMancante ? '2px 4px' : styles.skillRow(true).padding,
+                        }}
+                        title={abMancante ? `⚠️ ${abMancante.testo} (Click per tirare, click sul pallino per impostare)` : `Tieni premuto e rilascia: prova di ${t('skill.' + a.key)} · click sul pallino: niente → competenza (●) → competenza di classe/razza (★) → Maestria/Expertise, doppia competenza (✦)`}
                         onRoll={() => lanciaD20(`${t('skill.' + a.key)}`, bonus)}
                       >
                         <span
@@ -8237,6 +8290,9 @@ export default function App() {
                         </span>
                         <strong style={{ width: 32 }}>{conSegno(bonus)}</strong>
                         <span>{t('skill.' + a.key)}</span>
+                        {abMancante && (
+                          <span style={{ marginLeft: 'auto', fontSize: 9.5, color: C.red, fontWeight: 700 }}>⚠️ Manca</span>
+                        )}
                       </Rollable>
                     );
                   })}
