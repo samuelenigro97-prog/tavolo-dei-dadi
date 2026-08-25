@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.115';
+const APP_VERSION = '3.9.116';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -5575,22 +5575,14 @@ export default function App() {
               <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>⚡ Azioni Rapide</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
                 <button
-                  style={{ ...styles.button, width: '100%', opacity: passiUndo ? 1 : 0.45, display: 'flex', alignItems: 'center', gap: 6 }}
-                  disabled={!passiUndo}
-                  onClick={() => { annullaModifica(); setMostraMenu(false); }}
-                  title={passiUndo ? t('undo.tooltip', { n: passiUndo }) : t('undo.vuoto')}
-                >
-                  <span>↩︎</span> <span>{t('undo.annulla')}</span>
-                </button>
-                <button
-                  style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
+                  style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                   onClick={() => { setMostraMenu(false); setTimeout(() => jsonRef.current?.click(), 50); }}
                   title={t('tip.importa')}
                 >
                   <span>📂</span> <span>Importa</span>
                 </button>
                 <button
-                  style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
+                  style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                   onClick={() => {
                     setMostraMenu(false);
                     setTimeout(() => setMostraMenuEsporta(true), 50);
@@ -5600,25 +5592,25 @@ export default function App() {
                   <span>💾</span> <span>Esporta</span>
                 </button>
                 <button
-                  style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
-                  onClick={() => { setMostraMenu(false); setTimeout(() => { setCloudStatus({ text: '', type: '' }); setMostraCloud(true); }, 50); }}
-                  title={t('tooltip.cloud_off')}
-                >
-                  <span>☁️</span> <span>Cloud</span>
-                </button>
-                <button
-                  style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
+                  style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                   onClick={() => { setMostraMenu(false); setTimeout(() => apriNotifiche(), 50); }}
                   title={t('notifiche.titolo')}
                 >
                   <span>🔔</span> <span>{t('notifiche.titolo_breve')}{controlliAttivi.length > 0 ? ` (${controlliAttivi.length})` : novitaNonLette ? ' (!)' : ''}</span>
                 </button>
                 <button
-                  style={{ ...styles.button, width: '100%', gridColumn: 'span 2', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                  style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                   onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
                   title={t('tooltip.lingua')}
                 >
                   <span>{lingua === 'it' ? '🇮🇹' : '🇬🇧'}</span> <span>{t('common.lingua')}</span>
+                </button>
+                <button
+                  style={{ ...styles.button, width: '100%', minHeight: 38, gridColumn: 'span 2', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                  onClick={() => { setMostraMenu(false); setTimeout(() => { setCloudStatus({ text: '', type: '' }); setMostraCloud(true); }, 50); }}
+                  title={t('tooltip.cloud_off')}
+                >
+                  <span>☁️</span> <span>Sincronizzazione Cloud</span>
                 </button>
               </div>
             </div>
@@ -5626,20 +5618,20 @@ export default function App() {
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
               <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>{t('menu.sezione_backup')}</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
-                <button style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => jsonRef.current?.click()} title={t('menu.ripristina_tip')}>
+                <button style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} onClick={() => jsonRef.current?.click()} title={t('menu.ripristina_tip')}>
                   <span>📂</span> <span>{t('menu.ripristina')}</span>
                 </button>
-                <button style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }} onClick={esportaBackupCompleto} title={t('menu.esporta_tutto_tip')}>
+                <button style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} onClick={esportaBackupCompleto} title={t('menu.esporta_tutto_tip')}>
                   <span>💾</span> <span>{t('menu.esporta_tutto')}</span>
                 </button>
                 {leggiSnapshots().length > 0 && (
-                  <button style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => setMostraRipristino(true)}>
+                  <button style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} onClick={() => setMostraRipristino(true)}>
                     <span>🕓</span> <span>{t('menu.versioni')}</span>
                   </button>
                 )}
                 {URL_ARCHIVIO_PG && (
                   <button
-                    style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
+                    style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                     onClick={() => { setMostraArchivioDm(true); }}
                     title={t('menu.archivio_dm_tip')}
                   >
@@ -5651,16 +5643,16 @@ export default function App() {
 
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
               <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>{t('menu.sezione_info')}</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 6 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
                 <button
-                  style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, padding: '7px 4px', fontSize: 11 }}
+                  style={{ ...styles.button, width: '100%', height: 38, minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '0 6px', fontSize: 12.5, boxSizing: 'border-box' }}
                   onClick={() => { setMostraMenu(false); setMostraNoteLegali(true); }}
                   title={t('legali.titolo')}
                 >
                   <span>⚖️</span> <span>{t('menu.note_legali')}</span>
                 </button>
                 <button
-                  style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, padding: '7px 4px', fontSize: 11 }}
+                  style={{ ...styles.button, width: '100%', height: 38, minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '0 6px', fontSize: 12.5, boxSizing: 'border-box' }}
                   onClick={() => { setMostraMenu(false); setMostraDonazioni(true); }}
                   title={t('donazioni.titolo')}
                 >
@@ -5670,7 +5662,7 @@ export default function App() {
                   href="https://github.com/samuelenigro97-prog/tavolo-dei-dadi"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ ...styles.button, textDecoration: 'none', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, padding: '7px 4px', fontSize: 11, boxSizing: 'border-box' }}
+                  style={{ ...styles.button, textDecoration: 'none', width: '100%', height: 38, minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '0 6px', fontSize: 12.5, boxSizing: 'border-box' }}
                   title={t('menu.github_tip')}
                 >
                   <span>🐙</span> <span>{t('menu.github')}</span>
@@ -7779,7 +7771,7 @@ export default function App() {
 
                 <span className="selettore-divisore" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
 
-                {/* Gruppo 2: Navigazione, App, Notifiche & Cloud */}
+                {/* Gruppo 2: Navigazione, App, Notifiche, Lingua & Cloud */}
                 <button style={btnAzione} title={t('tip.menu_iniziale')} onClick={() => setMostraMenu(true)}>
                   🏠
                 </button>
@@ -7804,13 +7796,6 @@ export default function App() {
                   💾
                 </button>
                 <button
-                  style={btnAzione}
-                  title={lingua === 'it' ? 'Cambia in inglese' : 'Switch to Italian'}
-                  onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
-                >
-                  {lingua === 'it' ? '🇮🇹' : '🇬🇧'}
-                </button>
-                <button
                   ref={notificheBtnRef}
                   className={daNotificare ? 'btn-notifiche-lampeggia' : ''}
                   style={{
@@ -7827,6 +7812,13 @@ export default function App() {
                       {controlliAttivi.length > 0 ? controlliAttivi.length : '!'}
                     </span>
                   )}
+                </button>
+                <button
+                  style={btnAzione}
+                  title={lingua === 'it' ? 'Cambia in inglese' : 'Switch to Italian'}
+                  onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
+                >
+                  {lingua === 'it' ? '🇮🇹' : '🇬🇧'}
                 </button>
                 <button
                   style={{ ...btnAzione, color: C.goldDark, borderColor: C.goldDark }}
