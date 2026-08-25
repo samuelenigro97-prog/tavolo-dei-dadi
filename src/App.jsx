@@ -10566,48 +10566,70 @@ export default function App() {
                                     <button style={{ ...styles.buttonMini, color: C.red }} title={t('modal.elimina')} onClick={() => eliminaItem(o)}>🗑</button>
                                   </td>
                                 </tr>
-                                {mostraEffetto && (
-                                  <tr style={{ background: effettoAttivo ? 'rgba(201,162,39,0.08)' : 'rgba(0,0,0,0.035)' }}>
-                                    <td style={{ ...styles.td, ...(mostraUtilizzi && senzaBordo) }} />
-                                    <td colSpan={5} style={{ ...styles.td, paddingTop: 5, paddingBottom: 7, ...(mostraUtilizzi && senzaBordo) }}>
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                                        <strong style={{ fontSize: 12 }}>✨ {t('inv.effetto')}</strong>
-                                        <select
-                                          value={o.effettoMeccanico || ''}
-                                          onChange={(e) => modInv(o.id, { effettoMeccanico: e.target.value, richiedeSintonia: !!e.target.value })}
-                                          style={{ ...styles.inlineInput, flex: '1 1 250px', minWidth: 190, padding: '4px 7px', fontSize: 12 }}
-                                        >
-                                          <option value="">{EFFETTI_OGGETTO[0][lingua === 'it' ? 1 : 2]}</option>
-                                          {EFFETTI_OGGETTO.slice(1).sort((a, b) => a[lingua === 'it' ? 1 : 2].localeCompare(b[lingua === 'it' ? 1 : 2], lingua)).map(([id, labelIt, labelEn]) => <option key={id} value={id}>{lingua === 'it' ? labelIt : labelEn}</option>)}
-                                        </select>
-                                        {!!o.effettoMeccanico && (
-                                          <span style={{ ...styles.detail, fontSize: 11, whiteSpace: 'nowrap' }} title={t('inv.richiede_sintonia_tip')}>
-                                            🔗 {t('inv.richiede_sintonia')}
-                                          </span>
+                                {(mostraEffetto || mostraUtilizzi) && (
+                                  <tr style={{ background: effettoAttivo ? 'rgba(201,162,39,0.06)' : 'rgba(0,0,0,0.025)' }}>
+                                    <td style={{ ...styles.td, borderTop: 'none' }} />
+                                    <td colSpan={5} style={{ ...styles.td, borderTop: 'none', paddingTop: 4, paddingBottom: 6 }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', fontSize: 12 }}>
+                                        {mostraEffetto && (
+                                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                                            <span style={{ fontWeight: 600, color: C.inkDim, fontSize: 11.5 }}>
+                                              {t('inv.effetto')}:
+                                            </span>
+                                            <select
+                                              value={o.effettoMeccanico || ''}
+                                              onChange={(e) => modInv(o.id, { effettoMeccanico: e.target.value, richiedeSintonia: !!e.target.value })}
+                                              style={{ ...styles.inlineInput, padding: '3px 6px', fontSize: 11.5, maxWidth: 260 }}
+                                            >
+                                              <option value="">{EFFETTI_OGGETTO[0][lingua === 'it' ? 1 : 2]}</option>
+                                              {EFFETTI_OGGETTO.slice(1).sort((a, b) => a[lingua === 'it' ? 1 : 2].localeCompare(b[lingua === 'it' ? 1 : 2], lingua)).map(([id, labelIt, labelEn]) => (
+                                                <option key={id} value={id}>{lingua === 'it' ? labelIt : labelEn}</option>
+                                              ))}
+                                            </select>
+                                            {!!o.effettoMeccanico && (
+                                              <span style={{ ...styles.detail, fontSize: 11, display: 'inline-flex', alignItems: 'center', gap: 3 }} title={t('inv.richiede_sintonia_tip')}>
+                                                <span>🔗 {t('inv.richiede_sintonia')}</span>
+                                                <span style={{ color: effettoAttivo ? C.green : C.inkDim, fontSize: 13, lineHeight: 1 }}>
+                                                  {effettoAttivo ? '●' : '○'}
+                                                </span>
+                                              </span>
+                                            )}
+                                          </div>
                                         )}
-                                        <span title={t('inv.effetto_inattivo')} style={{ color: effettoAttivo ? C.green : C.inkDim, fontSize: 12 }}>
-                                          {effettoAttivo ? '●' : '○'}
-                                        </span>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                )}
-                                {o.usiMax > 0 && (
-                                  <tr style={{ background: 'rgba(0,0,0,0.035)' }}>
-                                    <td style={styles.td} />
-                                    <td colSpan={5} style={{ ...styles.td, paddingTop: 4, paddingBottom: 7 }}>
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
-                                        <strong style={{ fontSize: 12 }}>⚡ {t('inv.utilizzi')}</strong>
-                                        <button style={styles.buttonMini} onClick={() => modInv(o.id, { usi: Math.max(0, (Number(o.usi) || 0) - 1) })}>−</button>
-                                        <Editable value={Math.min(Number(o.usi) || 0, Number(o.usiMax) || 1)} tipo="numero" width={30} onChange={(v) => modInv(o.id, { usi: Math.max(0, Math.min(Number(o.usiMax) || 1, v)) })} />
-                                        <span>/</span>
-                                        <Editable value={o.usiMax || 1} tipo="numero" width={30} onChange={(v) => modInv(o.id, { usiMax: Math.max(1, v), usi: Math.min(Number(o.usi) || 0, Math.max(1, v)) })} />
-                                        <button style={styles.buttonMini} onClick={() => modInv(o.id, { usi: Math.min(Number(o.usiMax) || 1, (Number(o.usi) || 0) + 1) })}>＋</button>
-                                        <span style={{ fontSize: 12 }}>{t('inv.ricarica')}:</span>
-                                        <select value={o.ricarica || 'manuale'} onChange={(e) => modInv(o.id, { ricarica: e.target.value })} style={{ ...styles.inlineInput, width: 'auto', padding: '3px 6px', fontSize: 12 }}>
-                                          {['alba', 'breve', 'lungo', 'manuale'].sort((a, b) => t(`inv.${a}`).localeCompare(t(`inv.${b}`), 'it')).map((r) => <option key={r} value={r}>{t(`inv.${r}`)}</option>)}
-                                        </select>
-                                        {o.effetto && <button style={styles.buttonMini} title={o.effetto} onClick={() => setInfo({ titolo: o.nome, testo: o.effetto })}>ⓘ</button>}
+
+                                        {mostraEffetto && mostraUtilizzi && (
+                                          <span style={{ width: 1, height: 14, background: C.border, opacity: 0.6 }} />
+                                        )}
+
+                                        {mostraUtilizzi && (
+                                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                                            <span style={{ fontWeight: 600, color: C.inkDim, fontSize: 11.5 }}>
+                                              {t('inv.utilizzi')}:
+                                            </span>
+                                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                                              <button style={{ ...styles.buttonMini, padding: '1px 6px', fontSize: 11 }} onClick={() => modInv(o.id, { usi: Math.max(0, (Number(o.usi) || 0) - 1) })}>−</button>
+                                              <Editable value={Math.min(Number(o.usi) || 0, Number(o.usiMax) || 1)} tipo="numero" width={26} onChange={(v) => modInv(o.id, { usi: Math.max(0, Math.min(Number(o.usiMax) || 1, v)) })} />
+                                              <span style={{ color: C.inkDim, fontSize: 11 }}>/</span>
+                                              <Editable value={o.usiMax || 1} tipo="numero" width={26} onChange={(v) => modInv(o.id, { usiMax: Math.max(1, v), usi: Math.min(Number(o.usi) || 0, Math.max(1, v)) })} />
+                                              <button style={{ ...styles.buttonMini, padding: '1px 6px', fontSize: 11 }} onClick={() => modInv(o.id, { usi: Math.min(Number(o.usiMax) || 1, (Number(o.usi) || 0) + 1) })}>＋</button>
+                                            </div>
+                                            <span style={{ fontSize: 11, color: C.inkDim, marginLeft: 2 }}>{t('inv.ricarica')}:</span>
+                                            <select
+                                              value={o.ricarica || 'manuale'}
+                                              onChange={(e) => modInv(o.id, { ricarica: e.target.value })}
+                                              style={{ ...styles.inlineInput, padding: '3px 6px', fontSize: 11.5 }}
+                                            >
+                                              {['alba', 'breve', 'lungo', 'manuale'].sort((a, b) => t(`inv.${a}`).localeCompare(t(`inv.${b}`), 'it')).map((r) => (
+                                                <option key={r} value={r}>{t(`inv.${r}`)}</option>
+                                              ))}
+                                            </select>
+                                            {o.effetto && (
+                                              <button style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 11 }} title={o.effetto} onClick={() => setInfo({ titolo: o.nome, testo: o.effetto })}>
+                                                ⓘ
+                                              </button>
+                                            )}
+                                          </div>
+                                        )}
                                       </div>
                                     </td>
                                   </tr>
