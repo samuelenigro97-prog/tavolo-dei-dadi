@@ -2697,12 +2697,9 @@ export default function App() {
   // Pannello Avvisi: raccoglie i promemoria (backup, controlli scheda) e le
   // novità di versione, al posto dei riquadri a tutta larghezza che rubavano
   // spazio in cima e, sopra la foto del luogo, si leggevano male.
-  const [mostraAggiorna, setMostraAggiorna] = useState(false);
-  const [posAggiorna, setPosAggiorna] = useState({ top: 60, left: 16 });
-  const aggiornaBtnRef = useRef(null);
-  const [mostraNovita, setMostraNovita] = useState(false);
-  const [posNovita, setPosNovita] = useState({ top: 60, left: 16 });
-  const novitaBtnRef = useRef(null);
+  const [mostraNotifiche, setMostraNotifiche] = useState(false);
+  const [posNotifiche, setPosNotifiche] = useState({ top: 60, left: 16 });
+  const notificheBtnRef = useRef(null);
   const [novitaViste, setNovitaViste] = useState(() => {
     try { return localStorage.getItem('scheda-interattiva:novita-viste') || ''; } catch { return ''; }
   });
@@ -4955,34 +4952,20 @@ export default function App() {
     aggiorna(patch);
   }
 
-  function apriAggiorna() {
-    if (!mostraAggiorna) {
+  function apriNotifiche() {
+    if (!mostraNotifiche) {
       setStatoVerificaManuale(false);
-      const r = aggiornaBtnRef.current?.getBoundingClientRect();
-      if (r) setPosAggiorna({
+      const r = notificheBtnRef.current?.getBoundingClientRect();
+      if (r) setPosNotifiche({
         top: Math.max(8, Math.min(window.innerHeight - 200, r.bottom + 5)),
-        left: Math.max(8, Math.min(window.innerWidth - 330, r.left)),
-      });
-      setMostraNovita(false);
-      setMostraMenuEsporta(false);
-    }
-    setMostraAggiorna((v) => !v);
-  }
-
-  function apriNovita() {
-    if (!mostraNovita) {
-      const r = novitaBtnRef.current?.getBoundingClientRect();
-      if (r) setPosNovita({
-        top: Math.max(8, Math.min(window.innerHeight - 200, r.bottom + 5)),
-        left: Math.max(8, Math.min(window.innerWidth - 330, r.left)),
+        left: Math.max(8, Math.min(window.innerWidth - 340, r.left)),
       });
       const ultima = ultimaVersioneNovita();
       setNovitaViste(ultima);
       try { localStorage.setItem('scheda-interattiva:novita-viste', ultima); } catch { /* niente */ }
-      setMostraAggiorna(false);
       setMostraMenuEsporta(false);
     }
-    setMostraNovita((v) => !v);
+    setMostraNotifiche((v) => !v);
   }
 
   return (
@@ -5625,17 +5608,10 @@ export default function App() {
                 </button>
                 <button
                   style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
-                  onClick={() => { setMostraMenu(false); setTimeout(() => apriAggiorna(), 50); }}
-                  title={t('aggiorna.titolo')}
+                  onClick={() => { setMostraMenu(false); setTimeout(() => apriNotifiche(), 50); }}
+                  title={t('notifiche.titolo')}
                 >
-                  <span>🔄</span> <span>{t('header.aggiorna')}{controlliAttivi.length > 0 ? ` (${controlliAttivi.length})` : ''}</span>
-                </button>
-                <button
-                  style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
-                  onClick={() => { setMostraMenu(false); setTimeout(() => apriNovita(), 50); }}
-                  title={t('novita.titolo')}
-                >
-                  <span>📰</span> <span>{t('header.novita')}{novitaNonLette ? ' (!)' : ''}</span>
+                  <span>🔔</span> <span>{t('notifiche.titolo_breve')}{controlliAttivi.length > 0 ? ` (${controlliAttivi.length})` : novitaNonLette ? ' (!)' : ''}</span>
                 </button>
                 <button
                   style={{ ...styles.button, width: '100%', gridColumn: 'span 2', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
@@ -5675,26 +5651,42 @@ export default function App() {
 
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
               <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>{t('menu.sezione_info')}</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 6 }}>
                 <button
-                  style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
+                  style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, padding: '7px 4px', fontSize: 11 }}
                   onClick={() => { setMostraMenu(false); setMostraNoteLegali(true); }}
                   title={t('legali.titolo')}
                 >
                   <span>⚖️</span> <span>{t('menu.note_legali')}</span>
                 </button>
                 <button
-                  style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
+                  style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, padding: '7px 4px', fontSize: 11 }}
                   onClick={() => { setMostraMenu(false); setMostraDonazioni(true); }}
                   title={t('donazioni.titolo')}
                 >
                   <span>☕</span> <span>{t('menu.sostieni')}</span>
                 </button>
+                <a
+                  href="https://github.com/samuelenigro97-prog/tavolo-dei-dadi"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ ...styles.button, textDecoration: 'none', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, padding: '7px 4px', fontSize: 11, boxSizing: 'border-box' }}
+                  title={t('menu.github_tip')}
+                >
+                  <span>🐙</span> <span>{t('menu.github')}</span>
+                </a>
               </div>
             </div>
 
-            <div style={{ marginTop: 14, textAlign: 'center', fontSize: 10, opacity: 0.55, lineHeight: 1.4 }}>
-              {t('menu.footer_licenza')}
+            <div style={{ marginTop: 14, textAlign: 'center', fontSize: 10, opacity: 0.7, lineHeight: 1.4 }}>
+              <a
+                href="https://github.com/samuelenigro97-prog/tavolo-dei-dadi"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'inherit', textDecoration: 'underline' }}
+              >
+                {t('menu.footer_licenza')}
+              </a>
             </div>
             {erroreImport && <div style={{ color: C.red, marginTop: 10 }}>{erroreImport}</div>}
           </div>
@@ -6839,36 +6831,21 @@ export default function App() {
               <span style={{ color: '#c0392b', fontSize: 12, marginLeft: 3, fontWeight: 900 }} title="Salvataggio solo locale (non sincronizzato sul cloud)">❗</span>
             )}
           </button>
-          {/* 6. Aggiorna (Verifica & Correzione Scheda) */}
+          {/* 6. Notifiche (Bacheca, Verifiche Scheda & Novità) */}
           <button
-            ref={aggiornaBtnRef}
-            style={styles.modeButton(mostraAggiorna)}
-            title={controlliAttivi.length > 0
-              ? `${controlliAttivi.length} incongruenze da verificare`
-              : 'Verifica e aggiorna scheda'}
-            onClick={apriAggiorna}
+            ref={notificheBtnRef}
+            style={styles.modeButton(mostraNotifiche)}
+            title={daNotificare
+              ? (controlliAttivi.length > 0 ? `${controlliAttivi.length} avvisi sulla scheda` : t('notifiche.novita_presenti'))
+              : t('notifiche.titolo')}
+            onClick={apriNotifiche}
           >
-            🔄 <span className="header-label">{t('header.aggiorna')}</span>
-            {controlliAttivi.length > 0 && (
+            🔔 <span className="header-label">{t('notifiche.titolo_breve')}</span>
+            {daNotificare && (
               <span
                 className="avvisi-pallino"
-                aria-label={`${controlliAttivi.length} incongruenze`}
-              >{controlliAttivi.length}</span>
-            )}
-          </button>
-          {/* 7. Novità (Novità di versione) */}
-          <button
-            ref={novitaBtnRef}
-            style={styles.modeButton(mostraNovita)}
-            title={novitaNonLette ? 'Nuove novità da leggere' : 'Novità di versione'}
-            onClick={apriNovita}
-          >
-            📰 <span className="header-label">{t('header.novita')}</span>
-            {novitaNonLette && (
-              <span
-                className="avvisi-pallino"
-                aria-label="Nuove novità di versione"
-              >!</span>
+                aria-label={`${nAvvisi} notifiche`}
+              >{controlliAttivi.length > 0 ? controlliAttivi.length : '!'}</span>
             )}
           </button>
         </div>
@@ -6978,219 +6955,180 @@ export default function App() {
         </div>
       )}
 
-      {/* Pannello Aggiorna: verifica, controllo e correzione della scheda */}
-      {mostraAggiorna && (
-        <div onClick={() => setMostraAggiorna(false)} style={{ position: 'fixed', inset: 0, zIndex: 1400, background: 'transparent' }}>
+      {/* Pannello Notifiche Unificato: Bacheca, Verifiche Scheda, Promemoria e Novità */}
+      {mostraNotifiche && (
+        <div onClick={() => setMostraNotifiche(false)} style={{ position: 'fixed', inset: 0, zIndex: 1400, background: 'transparent' }}>
           <div
             onClick={(e) => e.stopPropagation()}
             className="no-stampa"
             style={{
-              position: 'fixed', top: posAggiorna.top, left: posAggiorna.left,
-              width: 'min(320px, calc(100vw - 16px))', maxHeight: 'min(70vh, 560px)', overflowY: 'auto',
+              position: 'fixed', top: posNotifiche.top, left: posNotifiche.left,
+              width: 'min(340px, calc(100vw - 16px))', maxHeight: 'min(75vh, 600px)', overflowY: 'auto',
               background: C.panel, border: `1px solid ${C.gold}`, borderRadius: 10,
-              boxShadow: '0 10px 30px rgba(0,0,0,0.45)', padding: '10px 12px', zIndex: 1401,
+              boxShadow: '0 10px 30px rgba(0,0,0,0.45)', padding: '12px 14px', zIndex: 1401,
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <strong style={{ color: C.goldDark, fontSize: 15, marginRight: 'auto' }}>🔄 {t('aggiorna.titolo')}</strong>
-              <button style={{ ...styles.buttonMini, padding: '2px 7px' }} onClick={() => setMostraAggiorna(false)}>✕</button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+              <strong style={{ color: C.goldDark, fontSize: 15, marginRight: 'auto' }}>🔔 {t('notifiche.titolo')}</strong>
+              <button style={{ ...styles.buttonMini, padding: '2px 7px' }} onClick={() => setMostraNotifiche(false)}>✕</button>
             </div>
 
-            {/* Barra stato PG attivo e azione rapida correggi */}
-            {scheda && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 8, padding: '7px 9px', background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8 }}>
-                <div style={{ fontSize: 12.5, color: C.ink, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  👤 {scheda?.nome || t('notifiche.nessuna_scheda')}
-                </div>
-                {controlliAttivi.some((r) => r.correggibile) ? (
-                  <button
-                    style={{ ...styles.buttonMini, fontSize: 11, padding: '4px 8px', flexShrink: 0, background: '#2e9d4d', color: '#fff', borderColor: '#2e9d4d', fontWeight: 700, boxShadow: '0 2px 5px rgba(46,157,77,0.35)' }}
-                    onClick={correggiTuttiControlli}
-                    title="Applica tutte le correzioni con un click"
-                  >
-                    ⚡ {lingua === 'en' ? 'Fix all' : 'Correggi tutto'}
-                  </button>
-                ) : (
-                  <span style={{ fontSize: 11, color: C.green, fontWeight: 700, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 3 }}>
-                    ✓ {lingua === 'en' ? 'Rules OK' : 'In regola'}
-                  </span>
-                )}
+            {/* SEZIONE 1: CONTROLLO E REGOLE DELLA SCHEDA */}
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: C.goldDark, letterSpacing: 0.5, marginBottom: 6 }}>
+                📋 {t('notifiche.sezione_scheda')}
               </div>
-            )}
 
-            {/* Esito verifica quando non ci sono incongruenze attive */}
-            {controlliAttivi.length === 0 && (
-              <div style={{ border: `1px solid #2e9d4d`, borderRadius: 8, padding: '9px 11px', marginBottom: 10, background: 'rgba(46, 157, 77, 0.12)' }}>
-                <div style={{ fontSize: 12.5, color: C.ink, display: 'flex', alignItems: 'flex-start', gap: 6, lineHeight: 1.45 }}>
-                  <span style={{ fontSize: 15 }}>✅</span>
-                  <span>{t('notifiche.scheda_ok')}</span>
-                </div>
-                {(scheda?.controlliIgnorati || []).length > 0 && (
-                  <div style={{ marginTop: 8, paddingTop: 6, borderTop: `1px solid rgba(46, 157, 77, 0.25)`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
-                    <span style={{ ...styles.detail, fontSize: 11 }}>{t('notifiche.controlli_ignorati', { n: scheda.controlliIgnorati.length })}</span>
-                    <button
-                      style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 6px' }}
-                      onClick={() => aggiorna({ controlliIgnorati: [] })}
-                    >
-                      {t('notifiche.mostra_ignorati')}
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Controlli scheda: suggerimenti su competenze/TS con correzione istantanea */}
-            {controlliAttivi.length > 0 && (() => {
-              const certi = controlliAttivi.filter((r) => r.gravita === 'certo').length;
-              const ignorati = scheda.controlliIgnorati || [];
-              return (
-                <div style={{ border: `1px solid ${certi ? C.red : C.gold}`, borderRadius: 8, padding: '8px 10px', marginBottom: 10, background: certi ? 'color-mix(in srgb, var(--c-panel) 88%, #c83c3c)' : 'color-mix(in srgb, var(--c-panel) 88%, #c88c14)' }}>
-                  <div style={{ fontSize: 13, color: C.ink, marginBottom: 6 }}>
-                    ⚠️ <strong>{controlliAttivi.length} {controlliAttivi.length === 1 ? 'cosa da controllare' : 'cose da controllare'}</strong> su {scheda.nome || 'questa scheda'}
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                    {controlliAttivi.map((r) => (
-                      <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 6, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 6, padding: '5px 8px' }}>
-                        <span style={{ flex: 1, fontSize: 12, color: C.ink }}>
-                          {r.gravita === 'certo' ? '🔴' : '🟡'} {r.testo}
-                        </span>
-                        {r.correggibile && (
-                          <button
-                            style={{
-                              ...styles.buttonMini,
-                              fontSize: 10,
-                              padding: '3px 7px',
-                              background: r.tipo === 'rimuovi_abilita' ? '#d97706' : '#2e9d4d',
-                              color: '#fff',
-                              borderColor: r.tipo === 'rimuovi_abilita' ? '#d97706' : '#2e9d4d',
-                              fontWeight: 700,
-                              flexShrink: 0,
-                            }}
-                            title={r.tipo === 'rimuovi_abilita' ? "Rimuovi questa competenza non spiegata dalla scheda" : "Applica subito questa competenza sulla scheda"}
-                            onClick={() => {
-                              if (r.tipo === 'ts') {
-                                aggiorna({ tiriSalvezza: { ...scheda.tiriSalvezza, [r.targetKey]: true } });
-                              } else if (r.tipo === 'abilita') {
-                                aggiorna({ abilita: { ...scheda.abilita, [r.targetKey]: Math.max(1, (scheda.abilita?.[r.targetKey] || 0) + 1) } });
-                              } else if (r.tipo === 'rimuovi_abilita') {
-                                aggiorna({ abilita: { ...scheda.abilita, [r.targetKey]: 0 } });
-                              } else if (r.tipo === 'bonus_competenza') {
-                                aggiorna({ bonusCompetenza: r.targetVal });
-                              }
-                            }}
-                          >
-                            ✓ Correggi
-                          </button>
-                        )}
-                        <button
-                          style={{ ...styles.buttonMini, fontSize: 10, padding: '3px 6px', flexShrink: 0 }}
-                          title="Non segnalarlo più per questo personaggio"
-                          onClick={() => aggiorna({ controlliIgnorati: [...ignorati, r.id] })}
-                        >Ignora</button>
-                      </div>
-                    ))}
-                    {controlliAttivi.some((r) => r.correggibile) && (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginTop: 6 }}>
-                        <button
-                          style={{
-                            ...styles.buttonPrimary,
-                            fontSize: 11.5,
-                            background: '#2e9d4d',
-                            color: '#fff',
-                            borderColor: '#2e9d4d',
-                            fontWeight: 700,
-                            padding: '6px 10px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 6,
-                            width: '100%',
-                            boxShadow: '0 2px 6px rgba(46, 157, 77, 0.3)',
-                          }}
-                          onClick={() => {
-                            const patch = {};
-                            const newTs = { ...scheda.tiriSalvezza };
-                            const newAb = { ...scheda.abilita };
-                            let changedTs = false, changedAb = false;
-                            for (const r of controlliAttivi) {
-                              if (r.correggibile) {
-                                if (r.tipo === 'ts') {
-                                  newTs[r.targetKey] = true;
-                                  changedTs = true;
-                                } else if (r.tipo === 'abilita') {
-                                  newAb[r.targetKey] = Math.max(1, (newAb[r.targetKey] || 0) + 1);
-                                  changedAb = true;
-                                } else if (r.tipo === 'rimuovi_abilita') {
-                                  newAb[r.targetKey] = 0;
-                                  changedAb = true;
-                                } else if (r.tipo === 'bonus_competenza') {
-                                  patch.bonusCompetenza = r.targetVal;
-                                }
-                              }
-                            }
-                            if (changedTs) patch.tiriSalvezza = newTs;
-                            if (changedAb) patch.abilita = newAb;
-                            aggiorna(patch);
-                          }}
-                          title={lingua === 'en' ? 'Apply all corrections automatically' : 'Applica tutte le correzioni automaticamente con un click'}
-                        >
-                          ⚡ {lingua === 'en' ? 'Fix all' : 'Correggi tutto'}
-                        </button>
-                        {(controlliAttivi.some((r) => r.correggibile && r.gravita === 'certo') &&
-                          controlliAttivi.some((r) => r.tipo === 'rimuovi_abilita')) && (
-                          <div style={{ display: 'flex', gap: 5 }}>
-                            <button
-                              style={{ ...styles.buttonMini, fontSize: 10, background: '#2e9d4d', color: '#fff', borderColor: '#2e9d4d', fontWeight: 600, padding: '3px 6px', flex: 1 }}
-                              onClick={() => {
-                                const patch = {};
-                                const newTs = { ...scheda.tiriSalvezza };
-                                const newAb = { ...scheda.abilita };
-                                let changedTs = false, changedAb = false;
-                                for (const r of controlliAttivi) {
-                                  if (r.correggibile && r.gravita === 'certo') {
-                                    if (r.tipo === 'ts') { newTs[r.targetKey] = true; changedTs = true; }
-                                    if (r.tipo === 'abilita') { newAb[r.targetKey] = Math.max(1, (newAb[r.targetKey] || 0) + 1); changedAb = true; }
-                                    if (r.tipo === 'bonus_competenza') { patch.bonusCompetenza = r.targetVal; }
-                                  }
-                                }
-                                if (changedTs) patch.tiriSalvezza = newTs;
-                                if (changedAb) patch.abilita = newAb;
-                                aggiorna(patch);
-                              }}
-                            >
-                              {lingua === 'en' ? 'Missing only' : 'Solo mancanze certe'}
-                            </button>
-                            <button
-                              style={{ ...styles.buttonMini, fontSize: 10, background: '#d97706', color: '#fff', borderColor: '#d97706', fontWeight: 600, padding: '3px 6px', flex: 1 }}
-                              onClick={() => {
-                                const newAb = { ...scheda.abilita };
-                                for (const r of controlliAttivi) {
-                                  if (r.tipo === 'rimuovi_abilita') newAb[r.targetKey] = 0;
-                                }
-                                aggiorna({ abilita: newAb });
-                              }}
-                            >
-                              {lingua === 'en' ? 'Extra only' : 'Solo extra'}
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    {ignorati.length > 0 && (
+              {scheda ? (
+                <>
+                  {/* Barra stato PG attivo */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 8, padding: '6px 8px', background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8 }}>
+                    <div style={{ fontSize: 12, color: C.ink, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      👤 {scheda.nome || t('notifiche.nessuna_scheda')}
+                    </div>
+                    {controlliAttivi.some((r) => r.correggibile) ? (
                       <button
-                        style={{ ...styles.buttonMini, fontSize: 10, alignSelf: 'flex-start' }}
-                        onClick={() => aggiorna({ controlliIgnorati: [] })}
-                      >↺ Mostra anche i {ignorati.length} ignorati</button>
+                        style={{ ...styles.buttonMini, fontSize: 10.5, padding: '3px 7px', flexShrink: 0, background: '#2e9d4d', color: '#fff', borderColor: '#2e9d4d', fontWeight: 700, boxShadow: '0 2px 5px rgba(46,157,77,0.35)' }}
+                        onClick={correggiTuttiControlli}
+                        title="Applica tutte le correzioni con un click"
+                      >
+                        ⚡ {lingua === 'en' ? 'Fix all' : 'Correggi tutto'}
+                      </button>
+                    ) : (
+                      <span style={{ fontSize: 11, color: C.green, fontWeight: 700, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 3 }}>
+                        ✓ {lingua === 'en' ? 'Rules OK' : 'In regola'}
+                      </span>
                     )}
                   </div>
-                </div>
-              );
-            })()}
 
-            {/* Ricarica / Aggiornamento PWA */}
-            <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
+                  {/* Nessuna incongruenza attiva */}
+                  {controlliAttivi.length === 0 && (
+                    <div style={{ border: `1px solid #2e9d4d`, borderRadius: 8, padding: '8px 10px', background: 'rgba(46, 157, 77, 0.12)' }}>
+                      <div style={{ fontSize: 12, color: C.ink, display: 'flex', alignItems: 'flex-start', gap: 6, lineHeight: 1.4 }}>
+                        <span style={{ fontSize: 14 }}>✅</span>
+                        <span>{t('notifiche.scheda_ok')}</span>
+                      </div>
+                      {(scheda.controlliIgnorati || []).length > 0 && (
+                        <div style={{ marginTop: 6, paddingTop: 6, borderTop: `1px solid rgba(46, 157, 77, 0.25)`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                          <span style={{ ...styles.detail, fontSize: 10.5 }}>{t('notifiche.controlli_ignorati', { n: scheda.controlliIgnorati.length })}</span>
+                          <button
+                            style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 5px' }}
+                            onClick={() => aggiorna({ controlliIgnorati: [] })}
+                          >
+                            {t('notifiche.mostra_ignorati')}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Elenco incongruenze con correzione singola */}
+                  {controlliAttivi.length > 0 && (() => {
+                    const certi = controlliAttivi.filter((r) => r.gravita === 'certo').length;
+                    const ignorati = scheda.controlliIgnorati || [];
+                    return (
+                      <div style={{ border: `1px solid ${certi ? C.red : C.gold}`, borderRadius: 8, padding: '8px 10px', background: certi ? 'color-mix(in srgb, var(--c-panel) 88%, #c83c3c)' : 'color-mix(in srgb, var(--c-panel) 88%, #c88c14)' }}>
+                        <div style={{ fontSize: 12.5, color: C.ink, marginBottom: 6 }}>
+                          ⚠️ <strong>{controlliAttivi.length} {controlliAttivi.length === 1 ? 'cosa da controllare' : 'cose da controllare'}</strong> su {scheda.nome || 'questa scheda'}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                          {controlliAttivi.map((r) => (
+                            <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 6, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 6, padding: '5px 7px' }}>
+                              <span style={{ flex: 1, fontSize: 11.5, color: C.ink, lineHeight: 1.35 }}>
+                                {r.gravita === 'certo' ? '🔴' : '🟡'} {r.testo}
+                              </span>
+                              {r.correggibile && (
+                                <button
+                                  style={{
+                                    ...styles.buttonMini,
+                                    fontSize: 10,
+                                    padding: '2px 6px',
+                                    background: r.tipo === 'rimuovi_abilita' ? '#d97706' : '#2e9d4d',
+                                    color: '#fff',
+                                    borderColor: r.tipo === 'rimuovi_abilita' ? '#d97706' : '#2e9d4d',
+                                    fontWeight: 700,
+                                    flexShrink: 0,
+                                  }}
+                                  title={r.tipo === 'rimuovi_abilita' ? "Rimuovi questa competenza non spiegata dalla scheda" : "Applica subito questa competenza sulla scheda"}
+                                  onClick={() => {
+                                    if (r.tipo === 'ts') {
+                                      aggiorna({ tiriSalvezza: { ...scheda.tiriSalvezza, [r.targetKey]: true } });
+                                    } else if (r.tipo === 'abilita') {
+                                      aggiorna({ abilita: { ...scheda.abilita, [r.targetKey]: Math.max(1, (scheda.abilita?.[r.targetKey] || 0) + 1) } });
+                                    } else if (r.tipo === 'rimuovi_abilita') {
+                                      aggiorna({ abilita: { ...scheda.abilita, [r.targetKey]: 0 } });
+                                    } else if (r.tipo === 'bonus_competenza') {
+                                      aggiorna({ bonusCompetenza: r.targetVal });
+                                    }
+                                  }}
+                                >
+                                  ✓
+                                </button>
+                              )}
+                              <button
+                                style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 5px', flexShrink: 0 }}
+                                title="Non segnalarlo più per questo personaggio"
+                                onClick={() => aggiorna({ controlliIgnorati: [...ignorati, r.id] })}
+                              >Ignora</button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </>
+              ) : (
+                <div style={{ ...styles.detail, padding: '8px', textAlign: 'center', background: C.panelLight, borderRadius: 6 }}>
+                  {t('notifiche.nessuna_scheda')}
+                </div>
+              )}
+            </div>
+
+            {/* SEZIONE 2: PROMEMORIA BACKUP */}
+            {avvisoBackup && (
+              <div style={{ border: `1px solid ${C.gold}`, borderRadius: 8, padding: '8px 10px', marginBottom: 12, background: 'color-mix(in srgb, var(--c-panel) 88%, #c88c14)' }}>
+                <div style={{ fontSize: 12, color: C.ink, marginBottom: 6 }}>
+                  🛟 <strong>Fai un backup dei tuoi personaggi.</strong> I dati sono salvati solo su questo
+                  dispositivo: un backup ti protegge se cambi telefono o svuoti la cache.
+                </div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <button style={{ ...styles.buttonPrimary, fontSize: 11, padding: '4px 10px' }} onClick={esportaBackupCompleto}>
+                    💾 Scarica backup
+                  </button>
+                  <button
+                    style={{ ...styles.buttonMini, fontSize: 10.5 }}
+                    onClick={() => { try { localStorage.setItem('scheda-interattiva:snooze-backup', String(Date.now() + 3 * 24 * 3600 * 1000)); } catch { /* niente */ } setPromemoriaBackup(false); }}
+                    title="Ricordamelo tra qualche giorno"
+                  >Più tardi</button>
+                </div>
+              </div>
+            )}
+
+            {/* SEZIONE 3: NOVITÀ DELL'APPLICAZIONE */}
+            <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 10, marginBottom: 10 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: C.goldDark, letterSpacing: 0.5, marginBottom: 6 }}>
+                📰 {t('notifiche.sezione_novita')}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {novitaRecenti(3).map((n) => (
+                  <div key={n.versione} style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '6px 8px' }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, marginBottom: 3 }}>
+                      v{n.versione}{n.versione === APP_VERSION ? (lingua === 'en' ? ' · Current Version' : ' · Versione Attuale') : ''}
+                    </div>
+                    <ul style={{ margin: 0, paddingLeft: 16 }}>
+                      {(lingua === 'en' ? n.voci.en : n.voci.it).map((v, i) => (
+                        <li key={i} style={{ fontSize: 11.5, color: C.ink, lineHeight: 1.4 }}>{v}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* SEZIONE 4: RICARICA / AGGIORNAMENTO PWA */}
+            <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 8 }}>
               <button
-                style={{ ...styles.button, width: '100%', fontSize: 12, padding: '6px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                style={{ ...styles.button, width: '100%', fontSize: 11.5, padding: '6px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                 onClick={() => {
                   if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.getRegistrations().then((regs) => {
@@ -7203,62 +7141,6 @@ export default function App() {
               >
                 <span>🔄</span> <span>{t('aggiorna.ricarica_app')}</span>
               </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Pannello Novità: registro versioni e promemoria */}
-      {mostraNovita && (
-        <div onClick={() => setMostraNovita(false)} style={{ position: 'fixed', inset: 0, zIndex: 1400, background: 'transparent' }}>
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="no-stampa"
-            style={{
-              position: 'fixed', top: posNovita.top, left: posNovita.left,
-              width: 'min(320px, calc(100vw - 16px))', maxHeight: 'min(70vh, 560px)', overflowY: 'auto',
-              background: C.panel, border: `1px solid ${C.gold}`, borderRadius: 10,
-              boxShadow: '0 10px 30px rgba(0,0,0,0.45)', padding: '10px 12px', zIndex: 1401,
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <strong style={{ color: C.goldDark, fontSize: 15, marginRight: 'auto' }}>📰 {t('novita.titolo')}</strong>
-              <button style={{ ...styles.buttonMini, padding: '2px 7px' }} onClick={() => setMostraNovita(false)}>✕</button>
-            </div>
-
-            {avvisoBackup && (
-              <div style={{ border: `1px solid ${C.gold}`, borderRadius: 8, padding: '8px 10px', marginBottom: 8, background: 'color-mix(in srgb, var(--c-panel) 88%, #c88c14)' }}>
-                <div style={{ fontSize: 13, color: C.ink, marginBottom: 6 }}>
-                  🛟 <strong>Fai un backup dei tuoi personaggi.</strong> I dati sono salvati solo su questo
-                  dispositivo: un backup ti protegge se cambi telefono o svuoti la cache.
-                </div>
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  <button style={{ ...styles.buttonPrimary, fontSize: 12, padding: '6px 12px' }} onClick={esportaBackupCompleto}>
-                    💾 Scarica backup
-                  </button>
-                  <button
-                    style={styles.buttonMini}
-                    onClick={() => { try { localStorage.setItem('scheda-interattiva:snooze-backup', String(Date.now() + 3 * 24 * 3600 * 1000)); } catch { /* niente */ } setPromemoriaBackup(false); }}
-                    title="Ricordamelo tra qualche giorno"
-                  >Più tardi</button>
-                </div>
-              </div>
-            )}
-
-            {/* Registro versioni */}
-            <div>
-              {novitaRecenti(4).map((n) => (
-                <div key={n.versione} style={{ marginBottom: 10 }}>
-                  <div style={{ fontSize: 12.5, fontWeight: 700, color: C.goldDark }}>
-                    v{n.versione}{n.versione === APP_VERSION ? (lingua === 'en' ? ' · Current Version' : ' · Versione Attuale') : ''}
-                  </div>
-                  <ul style={{ margin: '3px 0 0', paddingLeft: 18 }}>
-                    {(lingua === 'en' ? n.voci.en : n.voci.it).map((v, i) => (
-                      <li key={i} style={{ fontSize: 12, color: C.ink, lineHeight: 1.45 }}>{v}</li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
             </div>
           </div>
         </div>
