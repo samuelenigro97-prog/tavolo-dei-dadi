@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.95';
+const APP_VERSION = '3.9.96';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -8525,10 +8525,26 @@ export default function App() {
                   )}
                 </div>
                 {/* Box Unificato: Visione (Sensi) & Percezione Passiva */}
-                <div style={{ ...styles.vitalBox, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '6px 8px' }} title={t('vital.passive_tooltip')}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, width: '100%', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRight: `1px solid ${C.border}`, paddingRight: 4 }}>
-                      <div style={{ ...styles.vitalLabel, marginBottom: 2 }}>{t("vital.visione")}</div>
+                <div
+                  style={{
+                    background: C.panelLight,
+                    border: `1px solid ${C.border}`,
+                    borderRadius: 8,
+                    padding: '8px 10px',
+                    display: 'grid',
+                    gridTemplateColumns: '1fr auto 1fr',
+                    gap: 8,
+                    alignItems: 'center',
+                    minHeight: 64,
+                  }}
+                  title={t('vital.passive_tooltip')}
+                >
+                  {/* Sinistra: Visione / Sensi */}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: 0 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 4, textAlign: 'center', width: '100%' }}>
+                      👁️ {t("vital.visione")}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
                       <CampoConTendina
                         value={scheda.sensi}
                         opzioni={SENSI_5E}
@@ -8536,103 +8552,128 @@ export default function App() {
                         title={t('tip.sensi')}
                       />
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingLeft: 4 }}>
-                      <div style={{ ...styles.vitalLabel, marginBottom: 2 }}>{t("vital.percezione_passiva")}</div>
-                      <div style={{ ...styles.vitalValue, fontSize: 18 }}>{percezionePassiva}</div>
+                  </div>
+
+                  {/* Linetta divisoria verticale */}
+                  <div style={{ width: 1, height: '75%', background: C.border, opacity: 0.8 }} aria-hidden />
+
+                  {/* Destra: Percezione Passiva */}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: 0 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 2, textAlign: 'center', width: '100%' }}>
+                      {t("vital.percezione_passiva")}
+                    </div>
+                    <div style={{ fontSize: 26, fontWeight: 800, color: C.ink, lineHeight: 1 }}>
+                      {percezionePassiva}
                     </div>
                   </div>
                 </div>
 
                 {/* Box Unificato: Resistenze & Condizioni */}
-                <div style={{ ...styles.vitalBox, gridColumn: 'span 2', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', padding: '6px 10px', position: 'relative' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.25fr', gap: 10, width: '100%', alignItems: 'stretch' }}>
-                    {/* Metà sinistra: Resistenze */}
-                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', borderRight: `1px solid ${C.border}`, paddingRight: 8 }}>
-                      <div style={{ ...styles.vitalLabel, marginBottom: 4, textAlign: 'left' }}>🧪 {t("vital.resistenze")}</div>
-                      <CampoConTendina
-                        value={scheda.resistenze}
-                        opzioni={DANNI_5E}
-                        onChange={(v) => aggiorna({ resistenze: v })}
-                        title={t('tip.resistenze')}
-                      />
+                <div
+                  style={{
+                    gridColumn: 'span 2',
+                    background: C.panelLight,
+                    border: `1px solid ${C.border}`,
+                    borderRadius: 8,
+                    padding: '8px 12px',
+                    display: 'grid',
+                    gridTemplateColumns: '1fr auto 1.3fr',
+                    gap: 10,
+                    alignItems: 'stretch',
+                    minHeight: 64,
+                  }}
+                >
+                  {/* Metà sinistra: Resistenze */}
+                  <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', minWidth: 0 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 4, textAlign: 'left' }}>
+                      🧪 {t("vital.resistenze")}
+                    </div>
+                    <CampoConTendina
+                      value={scheda.resistenze}
+                      opzioni={DANNI_5E}
+                      onChange={(v) => aggiorna({ resistenze: v })}
+                      title={t('tip.resistenze')}
+                    />
+                  </div>
+
+                  {/* Linetta divisoria verticale */}
+                  <div style={{ width: 1, height: '90%', alignSelf: 'center', background: C.border, opacity: 0.8 }} aria-hidden />
+
+                  {/* Metà destra: Condizioni */}
+                  <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', minWidth: 0, textAlign: 'left' }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>⚠️ {t("vital.condizioni")}</span>
+                      <select
+                        value=""
+                        onChange={(e) => { if (e.target.value) aggiorna({ condizioni: [...scheda.condizioni, e.target.value] }); }}
+                        style={{ ...styles.inlineInput, fontSize: 10, padding: '2px 6px', height: 20, borderRadius: 4, background: C.panel }}
+                        title={t('tip.aggiungi_condizione')}
+                      >
+                        <option value="">＋ {lingua === 'en' ? 'add' : 'aggiungi'}</option>
+                        {CONDIZIONI_5E.filter((c) => !scheda.condizioni.includes(c)).sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((c) => (
+                          <option key={c} value={c}>{ICONE_CONDIZIONI[c] || '⚠️'} {traduciDato(c)}</option>
+                        ))}
+                      </select>
                     </div>
 
-                    {/* Metà destra: Condizioni */}
-                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingLeft: 4, textAlign: 'left' }}>
-                      <div style={{ ...styles.vitalLabel, marginBottom: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span>⚠️ {t("vital.condizioni")}</span>
-                        <select
-                          value=""
-                          onChange={(e) => { if (e.target.value) aggiorna({ condizioni: [...scheda.condizioni, e.target.value] }); }}
-                          style={{ ...styles.inlineInput, fontSize: 10, padding: '1px 4px', height: 18, borderRadius: 4 }}
-                          title={t('tip.aggiungi_condizione')}
-                        >
-                          <option value="">＋ {lingua === 'en' ? 'add' : 'aggiungi'}</option>
-                          {CONDIZIONI_5E.filter((c) => !scheda.condizioni.includes(c)).sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((c) => (
-                            <option key={c} value={c}>{ICONE_CONDIZIONI[c] || '⚠️'} {traduciDato(c)}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'center' }}>
-                        {scheda.condizioni.length === 0 && (
-                          <span style={{ fontSize: 10, color: C.inkDim, fontStyle: 'italic' }}>{lingua === 'en' ? 'None' : 'Nessuna'}</span>
-                        )}
-                        {scheda.condizioni.map((c) => {
-                          const eff = EFFETTI_CONDIZIONI[c];
-                          const testoEff = eff ? (lingua === 'en' ? eff.en : eff.it) : '';
-                          const col = COLORI_CONDIZIONI[c] || { bg: 'rgba(200,140,20,0.18)', border: C.goldDark, text: C.ink };
-                          const ico = ICONE_CONDIZIONI[c] || '⚠️';
-                          return (
-                            <span
-                              key={c}
-                              style={{
-                                background: col.bg,
-                                border: `1px solid ${col.border}`,
-                                borderRadius: 5,
-                                padding: '1px 4px',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: 3,
-                                fontSize: 9.5,
-                              }}
-                            >
-                              <button
-                                type="button"
-                                style={{ background: 'none', border: 0, padding: 0, font: 'inherit', color: col.text, cursor: eff ? 'help' : 'default', fontSize: 9.5, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 2 }}
-                                title={testoEff || c}
-                                onClick={() => eff && setInfo({ titolo: `${ico} ${traduciDato(c)}`, testo: testoEff })}
-                              >
-                                <span>{ico}</span>
-                                <span>{traduciDato(c)}</span>
-                              </button>
-                              <button
-                                type="button"
-                                style={{ background: 'none', border: 0, padding: '0 1px', font: 'inherit', color: C.inkDim, cursor: 'pointer', opacity: 0.8, fontSize: 9.5 }}
-                                title={t('tip.click_rimuovi')}
-                                onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
-                              >✕</button>
-                            </span>
-                          );
-                        })}
-                      </div>
-
-                      {/* Riepilogo compatto condizioni */}
-                      {(() => {
-                        const righe = riepilogoCondizioni(scheda.condizioni);
-                        if (!righe.length) return null;
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center' }}>
+                      {scheda.condizioni.length === 0 && (
+                        <span style={{ fontSize: 11, color: C.inkDim, fontStyle: 'italic' }}>{lingua === 'en' ? 'None' : 'Nessuna'}</span>
+                      )}
+                      {scheda.condizioni.map((c) => {
+                        const eff = EFFETTI_CONDIZIONI[c];
+                        const testoEff = eff ? (lingua === 'en' ? eff.en : eff.it) : '';
+                        const col = COLORI_CONDIZIONI[c] || { bg: 'rgba(200,140,20,0.18)', border: C.goldDark, text: C.ink };
+                        const ico = ICONE_CONDIZIONI[c] || '⚠️';
                         return (
-                          <div style={{ marginTop: 3, paddingTop: 3, borderTop: `1px dotted ${C.border}`, textAlign: 'left' }}>
-                            {righe.map(({ flag, da }) => (
-                              <div key={flag} style={{ fontSize: 8.5, lineHeight: 1.3, color: C.ink }}>
-                                • {(lingua === 'en' ? ETICHETTE_EFFETTI[flag].en : ETICHETTE_EFFETTI[flag].it)}
-                                <span style={{ opacity: 0.65 }}> ({da.map(traduciDato).join(', ')})</span>
-                              </div>
-                            ))}
-                          </div>
+                          <span
+                            key={c}
+                            style={{
+                              background: col.bg,
+                              border: `1px solid ${col.border}`,
+                              borderRadius: 6,
+                              padding: '2px 6px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 4,
+                              fontSize: 11,
+                            }}
+                          >
+                            <button
+                              type="button"
+                              style={{ background: 'none', border: 0, padding: 0, font: 'inherit', color: col.text, cursor: eff ? 'help' : 'default', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 3 }}
+                              title={testoEff || c}
+                              onClick={() => eff && setInfo({ titolo: `${ico} ${traduciDato(c)}`, testo: testoEff })}
+                            >
+                              <span>{ico}</span>
+                              <span>{traduciDato(c)}</span>
+                            </button>
+                            <button
+                              type="button"
+                              style={{ background: 'none', border: 0, padding: '0 2px', font: 'inherit', color: C.inkDim, cursor: 'pointer', opacity: 0.8, fontSize: 11 }}
+                              title={t('tip.click_rimuovi')}
+                              onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
+                            >✕</button>
+                          </span>
                         );
-                      })()}
+                      })}
                     </div>
+
+                    {/* Riepilogo compatto condizioni */}
+                    {(() => {
+                      const righe = riepilogoCondizioni(scheda.condizioni);
+                      if (!righe.length) return null;
+                      return (
+                        <div style={{ marginTop: 4, paddingTop: 4, borderTop: `1px dotted ${C.border}`, textAlign: 'left' }}>
+                          {righe.map(({ flag, da }) => (
+                            <div key={flag} style={{ fontSize: 9.5, lineHeight: 1.35, color: C.ink }}>
+                              • {(lingua === 'en' ? ETICHETTE_EFFETTI[flag].en : ETICHETTE_EFFETTI[flag].it)}
+                              <span style={{ opacity: 0.65 }}> ({da.map(traduciDato).join(', ')})</span>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
