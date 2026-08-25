@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.73',
+    voci: {
+      it: [
+        'Divisore Barra Azioni Personaggio: reso ben visibile e dorato il separatore verticale tra i tasti di gestione scheda (elimina, rinomina, aggiungi) e i tasti di utilità e mappa.',
+      ],
+      en: [
+        'Character Toolbar Divider: enhanced visibility and styling for the vertical separator between character management buttons and utility/map tools.',
+      ],
+    },
+  },
+  {
     versione: '3.9.72',
     voci: {
       it: [
