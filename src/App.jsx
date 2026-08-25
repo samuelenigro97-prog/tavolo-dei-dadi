@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.96';
+const APP_VERSION = '3.9.97';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7729,72 +7729,8 @@ export default function App() {
         ) : (
           <>
 
-        {/* Personaggi: il riquadro col bordo dorato/arancione ingrandito e a destra TUTTI i tasti ingranditi */}
-        <section className="selettore-personaggio" style={{ ...styles.panel, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: '8px 12px' }}>
-          {rinominando ? (
-            <input
-              autoFocus
-              style={{ ...styles.inlineInput, flex: '1 1 260px', minWidth: 200, fontSize: 18, fontWeight: 'bold', color: 'var(--c-title)', height: 42, padding: '6px 14px', border: `1.5px solid ${C.goldDark}`, borderRadius: 8 }}
-              value={scheda.nome}
-              onChange={(e) => aggiorna({ nome: e.target.value })}
-              onBlur={() => {
-                setRinominando(false);
-                const nomeFmt = formattaNomePg(scheda.nome);
-                const rPatch = ritrattoAuto(scheda.classe, scheda.specie, nomeFmt);
-                aggiorna({ nome: nomeFmt, ...rPatch });
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === 'Escape') {
-                  setRinominando(false);
-                  const nomeFmt = formattaNomePg(scheda.nome);
-                  const rPatch = ritrattoAuto(scheda.classe, scheda.specie, nomeFmt);
-                  aggiorna({ nome: nomeFmt, ...rPatch });
-                }
-              }}
-            />
-          ) : (
-            <div style={{ position: 'relative', flex: '1 1 260px', minWidth: 200, display: 'flex', overflow: 'hidden', borderRadius: 8, border: `1.5px solid ${C.goldDark}`, height: 42, background: 'rgba(0,0,0,0.03)' }}>
-              <select
-                style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 18, fontWeight: 'bold', color: 'var(--c-title)', padding: '6px 42px 6px 14px', textOverflow: 'ellipsis', background: 'transparent', position: 'relative', zIndex: 2, border: 'none', height: '100%' }}
-                value={roster.attivo}
-                onChange={(e) => setRoster((r) => ({ ...r, attivo: e.target.value }))}
-                title={t('nome.tooltip_selettore')}
-              >
-                {Object.entries(roster.personaggi).map(([id, p]) => {
-                  const mc = Array.isArray(p.multiclasse) ? p.multiclasse.filter((m) => m.classe) : [];
-                  const classi = [
-                    ...(p.classe ? [`${p.classe} ${p.livello || 1}`] : []),
-                    ...mc.map((m) => `${m.classe} ${m.livello || 1}`),
-                  ];
-                  return (
-                    <option key={id} value={id}>
-                      {formattaNomePg(p.nome) || t('menu.senza_nome')}{classi.length ? ` — ${classi.join(' / ')}` : ''}
-                    </option>
-                  );
-                })}
-              </select>
-              <span
-                aria-hidden
-                style={{
-                  position: 'absolute', left: 0, right: 0, top: 0, bottom: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
-                  paddingRight: 30,
-                  pointerEvents: 'none', userSelect: 'none', zIndex: 1,
-                }}
-              >
-                <span style={{
-                  fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: 'italic', fontWeight: 'bold',
-                  fontSize: 52, letterSpacing: 1, lineHeight: 1,
-                  marginRight: -1.5,
-                  color: C.goldDark, opacity: 0.35, whiteSpace: 'nowrap',
-                }}>
-                  {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
-                </span>
-              </span>
-            </div>
-          )}
-
-          {/* Tutti i tasti ingranditi a destra, con Cloud come ultimo di tutti */}
+        {/* Barra di navigazione, gestione PG, versione D&D e sessione */}
+        <section className="selettore-personaggio" style={{ ...styles.panel, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flexWrap: 'wrap', padding: '8px 12px' }}>
           {(() => {
             const btnAzione = {
               ...styles.buttonMini,
@@ -7810,7 +7746,7 @@ export default function App() {
               transition: 'all 0.15s ease',
             };
             return (
-              <div className="selettore-personaggio-azioni" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', flexShrink: 0, marginLeft: 'auto' }}>
+              <div className="selettore-personaggio-azioni" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
                 {/* Gruppo 1: Navigazione & App */}
                 <button style={btnAzione} title={t('tip.menu_iniziale')} onClick={() => setMostraMenu(true)}>
                   🏠
@@ -7866,7 +7802,7 @@ export default function App() {
 
                 <span className="selettore-divisore" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
 
-                {/* Gruppo 2: Gestione PG */}
+                {/* Gruppo 2: Gestione PG & Versione D&D */}
                 <button
                   style={btnAzione}
                   title={t('tip.levelup')}
@@ -7888,6 +7824,15 @@ export default function App() {
                 <button style={btnAzione} onClick={() => setRinominando(!rinominando)} title={t('tip.rinomina')}>✎</button>
                 <button style={btnAzione} onClick={() => { setBozzaCrea({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' }); setMostraCrea(true); }} title={t('tip.nuovo_pg')}>＋</button>
                 <button style={btnAzione} onClick={eliminaPersonaggio} title={t('tip.elimina_pg')}>🗑</button>
+
+                {/* Tasto Versione D&D come tasto tra gli altri */}
+                <button
+                  style={{ ...btnAzione, minWidth: 44, padding: '6px 8px', fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: 'italic', fontWeight: 'bold', fontSize: 14, color: C.goldDark, borderColor: C.goldDark }}
+                  title={`Versione Regole D&D: ${(scheda.versione || '2024') === '2024' ? '5.5 (2024)' : '5.0 (2014)'} — click per cambiare`}
+                  onClick={() => aggiorna({ versione: (scheda.versione || '2024') === '2024' ? '2014' : '2024' })}
+                >
+                  {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
+                </button>
 
                 <span className="selettore-divisore" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
 
@@ -7928,8 +7873,54 @@ export default function App() {
           <h2 style={styles.panelTitle}>{t("profilo.titolo")}</h2>
           {/* Con il ritratto ridotto, Addestramento/Risorse si prendono lo spazio libero. */}
           <div className={`profilo-griglia${(scheda.sezioniAperte?.ritratto ?? true) ? '' : ' senza-ritratto'}`}>
-            {/* RITRATTO — colonna destra, occupa tutta l'altezza */}
-            <div className="profilo-ritratto">
+            {/* RITRATTO — colonna destra con nome e selettore in cima */}
+            <div className="profilo-ritratto" style={{ display: 'flex', flexDirection: 'column' }}>
+              {/* Nome e selettore PG posizionato sopra l'immagine del PG */}
+              {rinominando ? (
+                <input
+                  autoFocus
+                  style={{ ...styles.inlineInput, width: '100%', fontSize: 15, fontWeight: 'bold', color: 'var(--c-title)', height: 38, padding: '4px 10px', border: `1.5px solid ${C.goldDark}`, borderRadius: 8, marginBottom: 8 }}
+                  value={scheda.nome}
+                  onChange={(e) => aggiorna({ nome: e.target.value })}
+                  onBlur={() => {
+                    setRinominando(false);
+                    const nomeFmt = formattaNomePg(scheda.nome);
+                    const rPatch = ritrattoAuto(scheda.classe, scheda.specie, nomeFmt);
+                    aggiorna({ nome: nomeFmt, ...rPatch });
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === 'Escape') {
+                      setRinominando(false);
+                      const nomeFmt = formattaNomePg(scheda.nome);
+                      const rPatch = ritrattoAuto(scheda.classe, scheda.specie, nomeFmt);
+                      aggiorna({ nome: nomeFmt, ...rPatch });
+                    }
+                  }}
+                />
+              ) : (
+                <div style={{ position: 'relative', width: '100%', display: 'flex', overflow: 'hidden', borderRadius: 8, border: `1.5px solid ${C.goldDark}`, height: 38, marginBottom: 8, background: 'rgba(0,0,0,0.03)' }}>
+                  <select
+                    style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 15, fontWeight: 'bold', color: 'var(--c-title)', padding: '4px 26px 4px 8px', textOverflow: 'ellipsis', background: 'transparent', position: 'relative', zIndex: 2, border: 'none', height: '100%' }}
+                    value={roster.attivo}
+                    onChange={(e) => setRoster((r) => ({ ...r, attivo: e.target.value }))}
+                    title={t('nome.tooltip_selettore')}
+                  >
+                    {Object.entries(roster.personaggi).map(([id, p]) => {
+                      const mc = Array.isArray(p.multiclasse) ? p.multiclasse.filter((m) => m.classe) : [];
+                      const classi = [
+                        ...(p.classe ? [`${p.classe} ${p.livello || 1}`] : []),
+                        ...mc.map((m) => `${m.classe} ${m.livello || 1}`),
+                      ];
+                      return (
+                        <option key={id} value={id}>
+                          {formattaNomePg(p.nome) || t('menu.senza_nome')}{classi.length ? ` — ${classi.join(' / ')}` : ''}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              )}
+
               {/* Da chiuso resta solo la barretta per riaprire; da aperto il
                   comando è la freccia nell'angolo in alto a sinistra dell'immagine. */}
               {!(scheda.sezioniAperte?.ritratto ?? true) && (
@@ -8524,51 +8515,49 @@ export default function App() {
                     >🎲 Tira TS</button>
                   )}
                 </div>
-                {/* Box Unificato: Visione (Sensi) & Percezione Passiva */}
+                {/* Box Unificato: Visione (Sensi) & Percezione Passiva — uniti in orizzontale */}
                 <div
                   style={{
                     background: C.panelLight,
                     border: `1px solid ${C.border}`,
                     borderRadius: 8,
                     padding: '8px 10px',
-                    display: 'grid',
-                    gridTemplateColumns: '1fr auto 1fr',
-                    gap: 8,
-                    alignItems: 'center',
-                    minHeight: 64,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    gap: 6,
+                    minHeight: 80,
                   }}
                   title={t('vital.passive_tooltip')}
                 >
-                  {/* Sinistra: Visione / Sensi */}
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: 0 }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 4, textAlign: 'center', width: '100%' }}>
+                  {/* Sezione Superiore: Visione / Sensi */}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '100%' }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 2, textAlign: 'left', width: '100%' }}>
                       👁️ {t("vital.visione")}
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                      <CampoConTendina
-                        value={scheda.sensi}
-                        opzioni={SENSI_5E}
-                        onChange={(v) => aggiorna({ sensi: v })}
-                        title={t('tip.sensi')}
-                      />
-                    </div>
+                    <CampoConTendina
+                      value={scheda.sensi}
+                      opzioni={SENSI_5E}
+                      onChange={(v) => aggiorna({ sensi: v })}
+                      title={t('tip.sensi')}
+                    />
                   </div>
 
-                  {/* Linetta divisoria verticale */}
-                  <div style={{ width: 1, height: '75%', background: C.border, opacity: 0.8 }} aria-hidden />
+                  {/* Divisore orizzontale */}
+                  <div style={{ width: '100%', height: 1, background: C.border, opacity: 0.7 }} aria-hidden />
 
-                  {/* Destra: Percezione Passiva */}
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: 0 }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 2, textAlign: 'center', width: '100%' }}>
+                  {/* Sezione Inferiore: Percezione Passiva */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '0 2px' }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase' }}>
                       {t("vital.percezione_passiva")}
                     </div>
-                    <div style={{ fontSize: 26, fontWeight: 800, color: C.ink, lineHeight: 1 }}>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: C.ink, lineHeight: 1 }}>
                       {percezionePassiva}
                     </div>
                   </div>
                 </div>
 
-                {/* Box Unificato: Resistenze & Condizioni */}
+                {/* Box Unificato: Resistenze & Condizioni — uniti in orizzontale */}
                 <div
                   style={{
                     gridColumn: 'span 2',
@@ -8576,16 +8565,16 @@ export default function App() {
                     border: `1px solid ${C.border}`,
                     borderRadius: 8,
                     padding: '8px 12px',
-                    display: 'grid',
-                    gridTemplateColumns: '1fr auto 1.3fr',
-                    gap: 10,
-                    alignItems: 'stretch',
-                    minHeight: 64,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    gap: 6,
+                    minHeight: 80,
                   }}
                 >
-                  {/* Metà sinistra: Resistenze */}
-                  <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', minWidth: 0 }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 4, textAlign: 'left' }}>
+                  {/* Sezione Superiore: Resistenze */}
+                  <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', width: '100%' }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 2, textAlign: 'left' }}>
                       🧪 {t("vital.resistenze")}
                     </div>
                     <CampoConTendina
@@ -8596,17 +8585,17 @@ export default function App() {
                     />
                   </div>
 
-                  {/* Linetta divisoria verticale */}
-                  <div style={{ width: 1, height: '90%', alignSelf: 'center', background: C.border, opacity: 0.8 }} aria-hidden />
+                  {/* Divisore orizzontale */}
+                  <div style={{ width: '100%', height: 1, background: C.border, opacity: 0.7 }} aria-hidden />
 
-                  {/* Metà destra: Condizioni */}
-                  <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', minWidth: 0, textAlign: 'left' }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  {/* Sezione Inferiore: Condizioni */}
+                  <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', width: '100%', textAlign: 'left' }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                       <span>⚠️ {t("vital.condizioni")}</span>
                       <select
                         value=""
                         onChange={(e) => { if (e.target.value) aggiorna({ condizioni: [...scheda.condizioni, e.target.value] }); }}
-                        style={{ ...styles.inlineInput, fontSize: 10, padding: '2px 6px', height: 20, borderRadius: 4, background: C.panel }}
+                        style={{ ...styles.inlineInput, fontSize: 10, padding: '1px 5px', height: 18, borderRadius: 4, background: C.panel }}
                         title={t('tip.aggiungi_condizione')}
                       >
                         <option value="">＋ {lingua === 'en' ? 'add' : 'aggiungi'}</option>
@@ -8616,7 +8605,7 @@ export default function App() {
                       </select>
                     </div>
 
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'center' }}>
                       {scheda.condizioni.length === 0 && (
                         <span style={{ fontSize: 11, color: C.inkDim, fontStyle: 'italic' }}>{lingua === 'en' ? 'None' : 'Nessuna'}</span>
                       )}
@@ -8631,17 +8620,17 @@ export default function App() {
                             style={{
                               background: col.bg,
                               border: `1px solid ${col.border}`,
-                              borderRadius: 6,
-                              padding: '2px 6px',
+                              borderRadius: 5,
+                              padding: '1px 5px',
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: 4,
-                              fontSize: 11,
+                              gap: 3,
+                              fontSize: 10.5,
                             }}
                           >
                             <button
                               type="button"
-                              style={{ background: 'none', border: 0, padding: 0, font: 'inherit', color: col.text, cursor: eff ? 'help' : 'default', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 3 }}
+                              style={{ background: 'none', border: 0, padding: 0, font: 'inherit', color: col.text, cursor: eff ? 'help' : 'default', fontSize: 10.5, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 3 }}
                               title={testoEff || c}
                               onClick={() => eff && setInfo({ titolo: `${ico} ${traduciDato(c)}`, testo: testoEff })}
                             >
@@ -8650,7 +8639,7 @@ export default function App() {
                             </button>
                             <button
                               type="button"
-                              style={{ background: 'none', border: 0, padding: '0 2px', font: 'inherit', color: C.inkDim, cursor: 'pointer', opacity: 0.8, fontSize: 11 }}
+                              style={{ background: 'none', border: 0, padding: '0 2px', font: 'inherit', color: C.inkDim, cursor: 'pointer', opacity: 0.8, fontSize: 10.5 }}
                               title={t('tip.click_rimuovi')}
                               onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
                             >✕</button>
@@ -8664,9 +8653,9 @@ export default function App() {
                       const righe = riepilogoCondizioni(scheda.condizioni);
                       if (!righe.length) return null;
                       return (
-                        <div style={{ marginTop: 4, paddingTop: 4, borderTop: `1px dotted ${C.border}`, textAlign: 'left' }}>
+                        <div style={{ marginTop: 3, paddingTop: 3, borderTop: `1px dotted ${C.border}`, textAlign: 'left' }}>
                           {righe.map(({ flag, da }) => (
-                            <div key={flag} style={{ fontSize: 9.5, lineHeight: 1.35, color: C.ink }}>
+                            <div key={flag} style={{ fontSize: 9, lineHeight: 1.3, color: C.ink }}>
                               • {(lingua === 'en' ? ETICHETTE_EFFETTI[flag].en : ETICHETTE_EFFETTI[flag].it)}
                               <span style={{ opacity: 0.65 }}> ({da.map(traduciDato).join(', ')})</span>
                             </div>
