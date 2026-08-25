@@ -4928,6 +4928,33 @@ export default function App() {
   const novitaNonLette = novitaViste !== ultimaVersioneNovita();
   const daNotificare = nAvvisi > 0 || novitaNonLette;
 
+  function correggiTuttiControlli() {
+    if (!scheda || !controlliAttivi.length) return;
+    const patch = {};
+    const newTs = { ...scheda.tiriSalvezza };
+    const newAb = { ...scheda.abilita };
+    let changedTs = false, changedAb = false;
+    for (const r of controlliAttivi) {
+      if (r.correggibile) {
+        if (r.tipo === 'ts') {
+          newTs[r.targetKey] = true;
+          changedTs = true;
+        } else if (r.tipo === 'abilita') {
+          newAb[r.targetKey] = Math.max(1, (newAb[r.targetKey] || 0) + 1);
+          changedAb = true;
+        } else if (r.tipo === 'rimuovi_abilita') {
+          newAb[r.targetKey] = 0;
+          changedAb = true;
+        } else if (r.tipo === 'bonus_competenza') {
+          patch.bonusCompetenza = r.targetVal;
+        }
+      }
+    }
+    if (changedTs) patch.tiriSalvezza = newTs;
+    if (changedAb) patch.abilita = newAb;
+    aggiorna(patch);
+  }
+
   function apriAggiorna() {
     if (!mostraAggiorna) {
       setStatoVerificaManuale(false);
@@ -6973,31 +7000,37 @@ export default function App() {
               <button style={{ ...styles.buttonMini, padding: '2px 7px' }} onClick={() => setMostraAggiorna(false)}>✕</button>
             </div>
 
-            {/* Barra di verifica rapida del PG attivo */}
+            {/* Barra stato PG attivo e azione rapida correggi */}
             {scheda && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 8, padding: '6px 8px', background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8 }}>
-                <div style={{ fontSize: 12, color: C.ink, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 8, padding: '7px 9px', background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8 }}>
+                <div style={{ fontSize: 12.5, color: C.ink, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   👤 {scheda?.nome || t('notifiche.nessuna_scheda')}
                 </div>
-                <button
-                  style={{ ...styles.buttonMini, fontSize: 11, padding: '3px 8px', flexShrink: 0, borderColor: C.goldDark, color: C.goldDark, fontWeight: 700 }}
-                  onClick={() => setStatoVerificaManuale(true)}
-                  title="Esegui una verifica completa delle regole su competenze, tiri salvezza e statistiche"
-                >
-                  🔍 {t('notifiche.verifica_tasto')}
-                </button>
+                {controlliAttivi.some((r) => r.correggibile) ? (
+                  <button
+                    style={{ ...styles.buttonMini, fontSize: 11, padding: '4px 8px', flexShrink: 0, background: '#2e9d4d', color: '#fff', borderColor: '#2e9d4d', fontWeight: 700, boxShadow: '0 2px 5px rgba(46,157,77,0.35)' }}
+                    onClick={correggiTuttiControlli}
+                    title="Applica tutte le correzioni con un click"
+                  >
+                    ⚡ {lingua === 'en' ? 'Fix all' : 'Correggi tutto'}
+                  </button>
+                ) : (
+                  <span style={{ fontSize: 11, color: C.green, fontWeight: 700, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 3 }}>
+                    ✓ {lingua === 'en' ? 'Rules OK' : 'In regola'}
+                  </span>
+                )}
               </div>
             )}
 
             {/* Esito verifica quando non ci sono incongruenze attive */}
-            {(controlliAttivi.length === 0 && (statoVerificaManuale || (scheda?.controlliIgnorati || []).length > 0)) && (
-              <div style={{ border: `1px solid #2e9d4d`, borderRadius: 8, padding: '8px 10px', marginBottom: 10, background: 'rgba(46, 157, 77, 0.12)' }}>
-                <div style={{ fontSize: 12.5, color: C.ink, display: 'flex', alignItems: 'flex-start', gap: 6 }}>
-                  <span style={{ fontSize: 14 }}>✅</span>
+            {controlliAttivi.length === 0 && (
+              <div style={{ border: `1px solid #2e9d4d`, borderRadius: 8, padding: '9px 11px', marginBottom: 10, background: 'rgba(46, 157, 77, 0.12)' }}>
+                <div style={{ fontSize: 12.5, color: C.ink, display: 'flex', alignItems: 'flex-start', gap: 6, lineHeight: 1.45 }}>
+                  <span style={{ fontSize: 15 }}>✅</span>
                   <span>{t('notifiche.scheda_ok')}</span>
                 </div>
                 {(scheda?.controlliIgnorati || []).length > 0 && (
-                  <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                  <div style={{ marginTop: 8, paddingTop: 6, borderTop: `1px solid rgba(46, 157, 77, 0.25)`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
                     <span style={{ ...styles.detail, fontSize: 11 }}>{t('notifiche.controlli_ignorati', { n: scheda.controlliIgnorati.length })}</span>
                     <button
                       style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 6px' }}
@@ -8265,7 +8298,7 @@ export default function App() {
                     </span>
                   </div>
 
-                  <div style={{ display: 'flex', gap: 4, marginBottom: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: 4, marginTop: 8, marginBottom: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
                     <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '3px 7px', fontWeight: 'bold', fontSize: 11 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 20) }); }} title={t('vital.danno')}>-20</button>
                     <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '3px 7px', fontWeight: 'bold', fontSize: 11 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 10) }); }} title={t('vital.danno')}>-10</button>
                     <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '3px 7px', fontWeight: 'bold', fontSize: 11 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 5) }); }} title={t('vital.danno')}>-5</button>
