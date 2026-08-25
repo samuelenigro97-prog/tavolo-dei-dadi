@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.102';
+const APP_VERSION = '3.9.103';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7781,7 +7781,12 @@ export default function App() {
                 </button>
                 <button
                   ref={notificheBtnRef}
-                  style={{ ...btnAzione, position: 'relative' }}
+                  className={daNotificare ? 'btn-notifiche-lampeggia' : ''}
+                  style={{
+                    ...btnAzione,
+                    position: 'relative',
+                    ...(daNotificare ? { color: C.goldDark, borderColor: C.goldDark } : {}),
+                  }}
                   title={daNotificare ? (controlliAttivi.length > 0 ? `${controlliAttivi.length} avvisi sulla scheda` : t('notifiche.novita_presenti')) : t('notifiche.titolo')}
                   onClick={apriNotifiche}
                 >

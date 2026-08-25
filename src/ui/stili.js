@@ -927,6 +927,27 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   50% { background: #2e8b57; border-color: #2e8b57; color: #fff; box-shadow: 0 0 12px 2px rgba(46,139,87,0.75); }
 }
 
+/* Pulsante Notifiche lampeggiante con colore Oro/Ambra coordinato con Cloud e Versione D&D */
+.btn-notifiche-lampeggia {
+  animation: notifiche-oro-lampeggia 1.6s ease-in-out infinite !important;
+  color: var(--c-gold-dark, #c07718) !important;
+  border-color: var(--c-gold-dark, #c07718) !important;
+}
+@keyframes notifiche-oro-lampeggia {
+  0%, 100% {
+    border-color: var(--c-gold-dark, #c07718);
+    box-shadow: 0 0 0 0 rgba(192, 119, 24, 0);
+  }
+  50% {
+    border-color: var(--c-gold, #f0c43f);
+    box-shadow: 0 0 10px 2px rgba(240, 196, 63, 0.65);
+    background: rgba(240, 196, 63, 0.12);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-notifiche-lampeggia { animation: none !important; }
+}
+
 /* Puntino di notifica sul pulsante Avvisi: lampeggia finché c'è qualcosa da
    vedere (promemoria di backup, controlli sulla scheda, novità non lette). */
 .avvisi-pallino {
@@ -936,13 +957,13 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   min-width: 16px; height: 16px; padding: 0 4px;
   display: inline-flex; align-items: center; justify-content: center;
   border-radius: 999px; flex-shrink: 0;
-  background: #c0392b; color: #fff;
+  background: var(--c-gold-dark, #c07718); color: #fff;
   font: 700 10px/1 Georgia, serif;
   animation: avvisi-lampeggia 1.4s ease-in-out infinite;
 }
 @keyframes avvisi-lampeggia {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(192,57,43,0.55); }
-  50% { transform: scale(1.12); box-shadow: 0 0 0 5px rgba(192,57,43,0); }
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(192, 119, 24, 0.6); }
+  50% { transform: scale(1.15); box-shadow: 0 0 0 5px rgba(192, 119, 24, 0); }
 }
 @media (prefers-reduced-motion: reduce) {
   .avvisi-pallino { animation: none; }
