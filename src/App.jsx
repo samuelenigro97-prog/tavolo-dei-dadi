@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.75';
+const APP_VERSION = '3.9.76';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7299,11 +7299,9 @@ export default function App() {
                     ...(p.classe ? [`${p.classe} ${p.livello || 1}`] : []),
                     ...mc.map((m) => `${m.classe} ${m.livello || 1}`),
                   ];
-                  const tot = classi.length ? classi.reduce((s, c) => s + (parseInt(c.split(' ').pop(), 10) || 0), 0) : 0;
-                  const isMulticlasse = mc.length > 0;
                   return (
                     <option key={id} value={id}>
-                      {p.nome || t('menu.senza_nome')}{classi.length ? ` — ${classi.join(' / ')}` : ''}{isMulticlasse && tot ? ` (${t('nome.liv')} ${tot})` : ''}
+                      {p.nome || t('menu.senza_nome')}{classi.length ? ` — ${classi.join(' / ')}` : ''}
                     </option>
                   );
                 })}

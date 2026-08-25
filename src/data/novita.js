@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.76',
+    voci: {
+      it: [
+        'Formattazione Selettore Personaggi: rimosso completamente il suffisso tra parentesi con il livello totale, lasciando la dicitura pulita con le sole classi e livelli (es. "Elevorn — Guerriero 1 / Ranger 6 / Ladro 3").',
+      ],
+      en: [
+        'Character Selector Formatting: completely removed the parenthesized total level suffix, displaying only clean class names and levels.',
+      ],
+    },
+  },
+  {
     versione: '3.9.75',
     voci: {
       it: [
