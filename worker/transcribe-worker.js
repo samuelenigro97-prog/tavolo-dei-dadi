@@ -42,8 +42,17 @@
 // Deve restare allineato allo schema di normalizeImported in src/App.jsx.
 const PROMPT = `Sei un assistente che trascrive schede di personaggi di D&D 5a edizione.
 Leggi l'immagine/PDF allegato (può essere Fantasy Grounds, D&D Beyond o scheda cartacea 5e) ed estrai i dati del personaggio.
-In Fantasy Grounds le abilità sono nella tab SKILLS (pallino vuoto=0, pieno blu=1, stella oro=2) e i punteggi a sinistra;
-la tab Main ha nome, classe/livello, background, specie, caratteristiche, CA, PF, velocità, sensi, tiri salvezza.
+
+COME LEGGERE FANTASY GROUNDS (MOLTO IMPORTANTE):
+- Nella tab SKILLS:
+  * Accanto al nome di ogni abilità c'è una STELLA a quattro punte.
+  * Se la stella è GRIGIA (spenta/vuota) → l'abilità NON È COMPETENTE: imposta il valore a 0! Non farti ingannare dal numero TOTAL o dall'icona del d20 azzurro a destra (tutte le abilità hanno il d20 per tirare).
+  * Se la stella è GIALLA/ORO/ACCESA (singola stella dorata) → COMPETENZA (imposta il valore a 1).
+  * Se ci sono DUE STELLE DORATE affiancate (o stella doppia dorata) → MAESTRIA / EXPERTISE (imposta il valore a 2).
+- Nella tab MAIN:
+  * In SAVES (Tiri Salvezza): solo le caratteristiche con la stella dorata accesa hanno competenza (tiriSalvezza: true). Se la stella è grigia/spenta, tiriSalvezza è false.
+  * In SENSES: "Darkvision 60" → "Scurovisione 18 m".
+  * In CLASS & LEVEL: se multiclasse (es. "Fighter 1 / Ranger 6 / Rogue 3"), classe="Guerriero", livello=1, e multiclasse=[{"classe":"Ranger","livello":6},{"classe":"Ladro","livello":3}].
 
 Rispondi SOLO con un oggetto JSON valido, senza testo prima o dopo, con questo schema:
 {
@@ -92,8 +101,8 @@ Rispondi SOLO con un oggetto JSON valido, senza testo prima o dopo, con questo s
 
 Regole:
 - Le caratteristiche sono i punteggi (1-30), non i modificatori.
-- "tiriSalvezza": true solo se COMPETENTE (pallino pieno).
-- "abilita": 0 = nessuna competenza, 1 = competenza (pallino pieno), 2 = maestria.
+- "tiriSalvezza": true solo se COMPETENTE (stella dorata accesa).
+- "abilita": 0 = NESSUNA competenza (stella grigia), 1 = competenza (singola stella dorata), 2 = maestria (doppia stella dorata).
 - "bonus" è il bonus per colpire; le voci senza bonus e danno (es. un focus) vanno omesse dagli attacchi.
 - "multiclasse": [] se monoclasse, altrimenti le classi secondarie da CLASS & LEVEL (es. "Fighter 1 / Ranger 6 / Rogue 3" → classe Fighter livello 1, multiclasse [{"classe":"Ranger","livello":6},{"classe":"Rogue","livello":3}]).
 - ATTENZIONE LIVELLO: "livello" è il livello della CLASSE PRINCIPALE, non il totale. Se la scheda mostra "Level 10" e "Fighter 1 / Ranger 6 / Rogue 3", allora livello=1 (totale 10), non 10. Se monoclassa con "Level 10", allora livello=10.

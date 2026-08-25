@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.86',
+    voci: {
+      it: [
+        'Miglioramento Import da Fantasy Grounds: istruzioni AI rafforzate per distinguere con precisione le abilità con stella dorata (competenza/maestria) da quelle con stella grigia (non competenti), evitando importazioni di competenze non possedute.',
+      ],
+      en: [
+        'Fantasy Grounds Import Enhancement: reinforced AI vision instructions to strictly identify gold star proficiencies/expertise vs gray unproficient stars, preventing false skills from being imported.',
+      ],
+    },
+  },
+  {
     versione: '3.9.85',
     voci: {
       it: [
