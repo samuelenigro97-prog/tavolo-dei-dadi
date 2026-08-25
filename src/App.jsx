@@ -5051,15 +5051,15 @@ export default function App() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 12, textAlign: 'center' }}>
               <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
-                <div style={{ fontSize: 10, color: C.inkDim, textTransform: 'uppercase', fontWeight: 700 }}>Classe Armatura</div>
+                <div style={{ fontSize: 10, color: C.inkDim, textTransform: 'uppercase', fontWeight: 700 }}>{t('armor.classe_armatura')}</div>
                 <div style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>🛡️ {bestiaDettaglio.ca}</div>
               </div>
               <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
-                <div style={{ fontSize: 10, color: C.inkDim, textTransform: 'uppercase', fontWeight: 700 }}>Punti Ferita</div>
+                <div style={{ fontSize: 10, color: C.inkDim, textTransform: 'uppercase', fontWeight: 700 }}>{t('vital.punti_ferita')}</div>
                 <div style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>❤️ {bestiaDettaglio.pf} <span style={{ fontSize: 11, fontWeight: 'normal', color: C.inkDim }}>({bestiaDettaglio.pfFormula})</span></div>
               </div>
               <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
-                <div style={{ fontSize: 10, color: C.inkDim, textTransform: 'uppercase', fontWeight: 700 }}>Velocità</div>
+                <div style={{ fontSize: 10, color: C.inkDim, textTransform: 'uppercase', fontWeight: 700 }}>{t('stat.velocita')}</div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginTop: 2 }}>
                   {bestiaDettaglio.velocita.terra}m{bestiaDettaglio.velocita.nuoto ? ` · 🏊${bestiaDettaglio.velocita.nuoto}m` : ''}{bestiaDettaglio.velocita.volo ? ` · 🦅${bestiaDettaglio.velocita.volo}m` : ''}{bestiaDettaglio.velocita.scalata ? ` · 🧗${bestiaDettaglio.velocita.scalata}m` : ''}
                 </div>
@@ -5084,19 +5084,19 @@ export default function App() {
             {/* Abilità e Sensi */}
             <div style={{ fontSize: 12, marginBottom: 8 }}>
               {bestiaDettaglio.abilita && bestiaDettaglio.abilita !== '—' && (
-                <div style={{ marginBottom: 4 }}><strong>Abilità:</strong> {bestiaDettaglio.abilita}</div>
+                <div style={{ marginBottom: 4 }}><strong>{t('bestia.abilita_label')}</strong> {bestiaDettaglio.abilita}</div>
               )}
               {bestiaDettaglio.sensi && (
-                <div><strong>Sensi:</strong> {bestiaDettaglio.sensi}</div>
+                <div><strong>{t('bestia.sensi_label')}</strong> {traduciDato(bestiaDettaglio.sensi)}</div>
               )}
             </div>
 
             {/* Tratti Speciali */}
             {bestiaDettaglio.tratti && bestiaDettaglio.tratti.length > 0 && (
               <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 8, marginTop: 8, marginBottom: 8 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: C.inkDim, marginBottom: 4 }}>Tratti Speciali</div>
-                {bestiaDettaglio.tratti.map((t, idx) => (
-                  <div key={idx} style={{ fontSize: 12, lineHeight: 1.4, marginBottom: 4 }}>• {t}</div>
+                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: C.inkDim, marginBottom: 4 }}>{t('bestia.tratti_speciali')}</div>
+                {bestiaDettaglio.tratti.map((tItem, idx) => (
+                  <div key={idx} style={{ fontSize: 12, lineHeight: 1.4, marginBottom: 4 }}>• {tItem}</div>
                 ))}
               </div>
             )}
@@ -5626,48 +5626,48 @@ export default function App() {
                 <button
                   style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
                   onClick={() => { setMostraMenu(false); setTimeout(() => apriAggiorna(), 50); }}
-                  title="Verifica e aggiorna scheda"
+                  title={t('aggiorna.titolo')}
                 >
-                  <span>🔄</span> <span>Aggiorna{controlliAttivi.length > 0 ? ` (${controlliAttivi.length})` : ''}</span>
+                  <span>🔄</span> <span>{t('header.aggiorna')}{controlliAttivi.length > 0 ? ` (${controlliAttivi.length})` : ''}</span>
                 </button>
                 <button
                   style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
                   onClick={() => { setMostraMenu(false); setTimeout(() => apriNovita(), 50); }}
-                  title="Novità di versione"
+                  title={t('novita.titolo')}
                 >
-                  <span>📰</span> <span>Novità{novitaNonLette ? ' (!)' : ''}</span>
+                  <span>📰</span> <span>{t('header.novita')}{novitaNonLette ? ' (!)' : ''}</span>
                 </button>
                 <button
                   style={{ ...styles.button, width: '100%', gridColumn: 'span 2', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                   onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
                   title={t('tooltip.lingua')}
                 >
-                  <span>{lingua === 'it' ? '🇮🇹' : '🇬🇧'}</span> <span>Lingua</span>
+                  <span>{lingua === 'it' ? '🇮🇹' : '🇬🇧'}</span> <span>{t('common.lingua')}</span>
                 </button>
               </div>
             </div>
 
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
-              <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>🛟 Backup & Archivio</div>
+              <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>{t('menu.sezione_backup')}</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
-                <button style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => jsonRef.current?.click()} title="Ripristina backup JSON">
-                  <span>📂</span> <span>Ripristina</span>
+                <button style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => jsonRef.current?.click()} title={t('menu.ripristina_tip')}>
+                  <span>📂</span> <span>{t('menu.ripristina')}</span>
                 </button>
-                <button style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }} onClick={esportaBackupCompleto} title="Esporta tutti i personaggi in un file unico">
-                  <span>💾</span> <span>Esporta tutto</span>
+                <button style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }} onClick={esportaBackupCompleto} title={t('menu.esporta_tutto_tip')}>
+                  <span>💾</span> <span>{t('menu.esporta_tutto')}</span>
                 </button>
                 {leggiSnapshots().length > 0 && (
                   <button style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => setMostraRipristino(true)}>
-                    <span>🕓</span> <span>Versioni</span>
+                    <span>🕓</span> <span>{t('menu.versioni')}</span>
                   </button>
                 )}
                 {URL_ARCHIVIO_PG && (
                   <button
                     style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
                     onClick={() => { setMostraArchivioDm(true); }}
-                    title="Archivio delle schede (serve chiave DM)"
+                    title={t('menu.archivio_dm_tip')}
                   >
-                    <span>🗂</span> <span>Archivio DM</span>
+                    <span>🗂</span> <span>{t('menu.archivio_dm')}</span>
                   </button>
                 )}
               </div>
@@ -5718,31 +5718,31 @@ export default function App() {
           onClick={(e) => { if (e.target === e.currentTarget) setMostraCloud(false); }}
         >
           <div style={{ ...styles.panel, maxWidth: 460, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
-            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 8 }}>🛟 Backup automatico</h1>
+            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 8 }}>{t('cloud.backup_titolo')}</h1>
 
             <div style={{ padding: 12, borderRadius: 8, background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, marginBottom: 16 }}>
-              <div style={{ ...styles.detail, fontWeight: 'bold', marginBottom: 6 }}>🔗 Sincronizza con un codice (senza account)</div>
+              <div style={{ ...styles.detail, fontWeight: 'bold', marginBottom: 6 }}>{t('cloud.sync_codice_titolo')}</div>
               {codiceSync && autoSyncCodice ? (
                 <>
                   <p style={{ ...styles.detail, fontSize: 12, marginTop: 0, marginBottom: 8, lineHeight: 1.5 }}>
-                    Digita questo stesso codice sull'altro dispositivo per collegarlo.
+                    {t('cloud.sync_codice_info')}
                   </p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                     <div style={{ color: C.goldDark, fontSize: 20, fontWeight: 800, letterSpacing: 2, fontFamily: 'monospace' }}>{formattaCodiceSync(codiceSync)}</div>
                     <button style={styles.buttonMini} onClick={() => navigator.clipboard?.writeText(formattaCodiceSync(codiceSync))}>📋</button>
                   </div>
-                  {ultimoSyncCodice && <div style={{ ...styles.detail, fontSize: 11, marginBottom: 8 }}>Ultimo salvataggio: {ultimoSyncCodice}</div>}
+                  {ultimoSyncCodice && <div style={{ ...styles.detail, fontSize: 11, marginBottom: 8 }}>{lingua === 'en' ? 'Last sync:' : 'Ultimo salvataggio:'} {ultimoSyncCodice}</div>}
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <button style={{ ...styles.button, flex: 1 }} onClick={caricaDaCodiceSync}>⬇️ Carica ora</button>
-                    <button style={styles.buttonMini} onClick={disattivaSyncCodice}>Disattiva</button>
+                    <button style={{ ...styles.button, flex: 1 }} onClick={caricaDaCodiceSync}>{t('cloud.carica_ora')}</button>
+                    <button style={styles.buttonMini} onClick={disattivaSyncCodice}>{t('cloud.disattiva')}</button>
                   </div>
                 </>
               ) : (
                 <>
                   <p style={{ ...styles.detail, fontSize: 12, marginTop: 0, marginBottom: 8, lineHeight: 1.5 }}>
-                    Crea un codice a 10 caratteri su questo dispositivo e digitalo sull'altro per collegarli, senza account né password.
+                    {t('cloud.crea_desc')}
                   </p>
-                  <button style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 10 }} onClick={creaCodiceSync}>🆕 Crea un nuovo codice</button>
+                  <button style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 10 }} onClick={creaCodiceSync}>{t('cloud.crea_btn')}</button>
                   <div style={{ display: 'flex', gap: 6 }}>
                     <input
                       type="text"
@@ -5752,7 +5752,7 @@ export default function App() {
                       onChange={(e) => setCodiceSyncInput(normalizzaCodiceSync(e.target.value))}
                       onKeyDown={(e) => { if (e.key === 'Enter' && normalizzaCodiceSync(codiceSyncInput).length === 10) usaCodiceSyncEsistente(); }}
                     />
-                    <button style={styles.buttonPrimary} disabled={normalizzaCodiceSync(codiceSyncInput).length !== 10} onClick={usaCodiceSyncEsistente}>Usa</button>
+                    <button style={styles.buttonPrimary} disabled={normalizzaCodiceSync(codiceSyncInput).length !== 10} onClick={usaCodiceSyncEsistente}>{t('cloud.usa')}</button>
                   </div>
                 </>
               )}
@@ -5763,15 +5763,11 @@ export default function App() {
               )}
             </div>
 
-
-
             {cloudStatus.text && (
               <div style={{ padding: 10, borderRadius: 6, background: cloudStatus.type === 'error' ? 'rgba(255,0,0,0.1)' : cloudStatus.type === 'success' ? 'rgba(0,255,0,0.1)' : 'rgba(255,255,255,0.05)', color: cloudStatus.type === 'error' ? C.red : cloudStatus.type === 'success' ? C.green : C.goldDark, fontSize: 13, textAlign: 'center', marginBottom: 12 }}>
                 {cloudStatus.text}
               </div>
             )}
-
-
 
             <button style={{ ...styles.button, width: '100%' }} onClick={() => setMostraCloud(false)}>{t('modal.chiudi')}</button>
           </div>
@@ -5787,9 +5783,9 @@ export default function App() {
           onClick={(e) => { if (e.target === e.currentTarget) { setMostraSceltaVersione(false); setImportPending(null); } }}
         >
           <div style={{ ...styles.panel, maxWidth: 420, width: '100%' }}>
-            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 8 }}>📥 Importa personaggio</h1>
+            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 8 }}>{t('importa.titolo')}</h1>
             <p style={{ ...styles.detail, textAlign: 'center', marginBottom: 16, lineHeight: 1.5 }}>
-              Hai selezionato {importPending?.files?.length || 0} file. Scegli per quale edizione importarlo:
+              {t('importa.selezionati', { n: importPending?.files?.length || 0 })}
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
               <button style={{ ...styles.button, padding: '14px 10px' }} onClick={() => eseguiImportConVersione('2014')}>
@@ -6504,7 +6500,7 @@ export default function App() {
                         </div>
                       );
                     })}
-                    <div style={{ color: C.inkDim, marginTop: 2 }}>Il +2 va alle caratteristiche più utili alla classe (max 20); puoi ritoccare tutto a mano dopo la creazione.</div>
+                    <div style={{ color: C.inkDim, marginTop: 2 }}>{t('crea.asi_guida_nota')}</div>
                   </div>
                 );
               })()}
@@ -6512,7 +6508,7 @@ export default function App() {
               {/* Talento di Origine (2024): il background lo concede già al 1° livello. */}
               {regoleVersione === '2024' && bozzaCrea.background && (
                 <div style={{ marginBottom: 12 }}>
-                  <label style={{ ...styles.detail, display: 'block', marginBottom: 3, fontWeight: 'bold' }}>🎖️ Talento di Origine (dal background)</label>
+                  <label style={{ ...styles.detail, display: 'block', marginBottom: 3, fontWeight: 'bold' }}>{t('crea.talento_origine_label')}</label>
                   <select value={bozzaCrea.talentoOrigine} onChange={(e) => setB({ talentoOrigine: e.target.value })} style={stileSelect}>
                     <option value="">{t('crea.scegli')}</option>
                     {[...TALENTI_5E].sort((a, b) => a.nome.localeCompare(b.nome, lingua)).map((tl) => <option key={tl.nome} value={tl.nome}>{tl.nome} — {tl.desc}</option>)}
@@ -6730,9 +6726,9 @@ export default function App() {
 
               {bozzaCrea.classe && (
                 <div style={{ marginTop: 4, marginBottom: 8 }}>
-                  <label style={{ ...styles.detail, display: 'block', marginBottom: 4, fontWeight: 'bold' }}>🎒 Equipaggiamento iniziale</label>
+                  <label style={{ ...styles.detail, display: 'block', marginBottom: 4, fontWeight: 'bold' }}>{t('crea.dotazione_titolo')}</label>
                   <div style={{ display: 'flex', gap: 6 }}>
-                    {[['pacchetto', 'Dotazione della classe'], ['oro', `Oro iniziale (${ORO_INIZIALE[chiaveClasse(bozzaCrea.classe)] || 0} mo)`]].map(([m, lab]) => (
+                    {[['pacchetto', t('crea.dotazione_classe')], ['oro', t('crea.dotazione_oro', { oro: ORO_INIZIALE[chiaveClasse(bozzaCrea.classe)] || 0 })]].map(([m, lab]) => (
                       <button
                         key={m}
                         style={{ ...styles.modeButton(bozzaCrea.dotazione === m), fontSize: 12, padding: '5px 10px', flex: 1 }}
@@ -6852,7 +6848,7 @@ export default function App() {
               : 'Verifica e aggiorna scheda'}
             onClick={apriAggiorna}
           >
-            🔄 <span className="header-label">Aggiorna</span>
+            🔄 <span className="header-label">{t('header.aggiorna')}</span>
             {controlliAttivi.length > 0 && (
               <span
                 className="avvisi-pallino"
@@ -6867,7 +6863,7 @@ export default function App() {
             title={novitaNonLette ? 'Nuove novità da leggere' : 'Novità di versione'}
             onClick={apriNovita}
           >
-            📰 <span className="header-label">Novità</span>
+            📰 <span className="header-label">{t('header.novita')}</span>
             {novitaNonLette && (
               <span
                 className="avvisi-pallino"
@@ -6884,7 +6880,7 @@ export default function App() {
             title={lingua === 'it' ? 'Interfaccia in italiano — click per passare all’inglese' : 'Interface in English — click to switch to Italian'}
             onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
           >
-            {lingua === 'it' ? '🇮🇹' : '🇬🇧'} <span className="header-label">Lingua</span>
+            {lingua === 'it' ? '🇮🇹' : '🇬🇧'} <span className="header-label">{t('common.lingua')}</span>
           </button>
         </div>
 
@@ -6908,7 +6904,7 @@ export default function App() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-              <strong style={{ color: C.goldDark, fontSize: 13 }}>💾 Opzioni Esportazione</strong>
+              <strong style={{ color: C.goldDark, fontSize: 13 }}>{t('esporta.opzioni_titolo')}</strong>
               <button style={styles.buttonMini} onClick={() => setMostraMenuEsporta(false)}>✕</button>
             </div>
 
@@ -6918,12 +6914,12 @@ export default function App() {
                 esportaJson();
                 setMostraMenuEsporta(false);
               }}
-              title="Salva file .JSON della scheda del personaggio attivo"
+              title={t('esporta.salva_json_tip')}
             >
               <span>💾</span>
               <div>
-                <strong style={{ display: 'block' }}>Salva Scheda (JSON)</strong>
-                <span style={{ fontSize: 10, color: C.inkDim, fontWeight: 'normal' }}>File leggero per backup o re-import</span>
+                <strong style={{ display: 'block' }}>{t('esporta.salva_json')}</strong>
+                <span style={{ fontSize: 10, color: C.inkDim, fontWeight: 'normal' }}>{t('esporta.salva_json_sub')}</span>
               </div>
             </button>
 
@@ -6935,12 +6931,12 @@ export default function App() {
                   window.print();
                 }, 100);
               }}
-              title="Stampa su carta o salva in PDF (formato scheda ufficiale D&D A4 pulito a 2-3 pagine)"
+              title={t('esporta.stampa_pdf_tip')}
             >
               <span>🖨️</span>
               <div>
-                <strong style={{ display: 'block' }}>Stampa / Salva PDF</strong>
-                <span style={{ fontSize: 10, color: '#fff', opacity: 0.9, fontWeight: 'normal' }}>Scheda ufficiale cartacea / PDF A4</span>
+                <strong style={{ display: 'block' }}>{t('esporta.stampa_pdf')}</strong>
+                <span style={{ fontSize: 10, color: '#fff', opacity: 0.9, fontWeight: 'normal' }}>{t('esporta.stampa_pdf_sub')}</span>
               </div>
             </button>
 
@@ -6950,12 +6946,12 @@ export default function App() {
                 condividiLink();
                 setMostraMenuEsporta(false);
               }}
-              title="Crea un link web condivisibile per aprire questo PG su qualsiasi dispositivo"
+              title={t('esporta.condividi_link_tip')}
             >
               <span>🔗</span>
               <div>
-                <strong style={{ display: 'block' }}>Condividi Link</strong>
-                <span style={{ fontSize: 10, color: C.inkDim, fontWeight: 'normal' }}>Invia il PG tramite link istantaneo</span>
+                <strong style={{ display: 'block' }}>{t('esporta.condividi_link')}</strong>
+                <span style={{ fontSize: 10, color: C.inkDim, fontWeight: 'normal' }}>{t('esporta.condividi_link_sub')}</span>
               </div>
             </button>
 
@@ -6967,9 +6963,9 @@ export default function App() {
                 esportaBackupCompleto();
                 setMostraMenuEsporta(false);
               }}
-              title="Scarica archivio JSON di tutti i personaggi salvati"
+              title={t('esporta.backup_tutti_tip')}
             >
-              🛟 Scarica Backup Completo (Tutti i PG)
+              {t('esporta.backup_tutti')}
             </button>
           </div>
         </div>
@@ -7911,11 +7907,11 @@ export default function App() {
 
         {!scheda ? (
           <section style={{ ...styles.panel, textAlign: 'center', padding: '24px 16px' }}>
-            <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--c-title)', marginBottom: 8 }}>Nessun personaggio</div>
-            <div style={{ ...styles.detail, marginBottom: 16 }}>Crea il tuo primo eroe o importane uno dal Menu.</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--c-title)', marginBottom: 8 }}>{t('pg.nessun_pg')}</div>
+            <div style={{ ...styles.detail, marginBottom: 16 }}>{t('pg.nessun_pg_desc')}</div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <button style={styles.buttonPrimary} onClick={() => setMostraMenu(true)}>🏠 Apri Menu</button>
-              <button style={styles.button} onClick={() => { setBozzaCrea({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' }); setMostraCrea(true); }}>＋ Nuovo personaggio</button>
+              <button style={styles.buttonPrimary} onClick={() => setMostraMenu(true)}>{t('pg.apri_menu')}</button>
+              <button style={styles.button} onClick={() => { setBozzaCrea({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' }); setMostraCrea(true); }}>＋ {t('tip.nuovo_pg')}</button>
             </div>
           </section>
         ) : (
@@ -9041,9 +9037,9 @@ export default function App() {
                 <button
                   style={{ ...styles.buttonMini, fontSize: 11, padding: '3px 8px', color: scheda.mostraIncantesimiAttacco !== false ? C.accentDark : C.inkDim, border: `1px solid ${scheda.mostraIncantesimiAttacco !== false ? C.accentDark : C.border}` }}
                   onClick={() => aggiorna({ mostraIncantesimiAttacco: scheda.mostraIncantesimiAttacco === false })}
-                  title="Mostra o nascondi automaticamente i tuoi incantesimi offensivi nella tabella degli attacchi"
+                  title={t('attacchi.incantesimi_offensivi_tip')}
                 >
-                  ✨ Incantesimi offensivi: {scheda.mostraIncantesimiAttacco !== false ? 'ON' : 'OFF'}
+                  {t('attacchi.incantesimi_offensivi')}: {scheda.mostraIncantesimiAttacco !== false ? 'ON' : 'OFF'}
                 </button>
               </div>
               <div style={{ overflowX: 'auto' }}>
@@ -9140,7 +9136,7 @@ export default function App() {
                                   <td style={styles.td} className="attacchi-nome">
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, width: '100%' }}>
                                       {a.isSpell ? (
-                                        <span style={{ fontSize: 16, cursor: 'help', display: 'inline-block', width: 22, textAlign: 'center' }} title="Incantesimo offensivo (integrato automaticamente)">✨</span>
+                                        <span style={{ fontSize: 16, cursor: 'help', display: 'inline-block', width: 22, textAlign: 'center' }} title={t('attacchi.incantesimo_integrato_tip')}>✨</span>
                                       ) : (
                                         <select
                                           value=""
@@ -9442,10 +9438,10 @@ export default function App() {
                           setLivelliIncChiusi(obj);
                         }
                       }}
-                      title="Comprimi o espandi tutti i livelli di incantesimo"
+                      title={t('spell.toggle_livelli_tip')}
                       style={{ ...styles.buttonMini, padding: '2px 8px', fontSize: 11 }}
                     >
-                      {Array.from({ length: 10 }, (_, i) => i).every((l) => livelliIncChiusi[l]) ? '⇕ Espandi livelli' : '⇕ Riduci livelli'}
+                      {Array.from({ length: 10 }, (_, i) => i).every((l) => livelliIncChiusi[l]) ? t('spell.espandi_tutti_livelli') : t('spell.riduci_tutti_livelli')}
                     </button>
                     <button
                       type="button"
@@ -10429,14 +10425,14 @@ export default function App() {
 
                       <button
                         style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, fontSize: 11 }}
-                        title="Rimuovi automaticamente dal tuo inventario tutti gli oggetti con quantità pari a 0"
+                        title={t('inv.pulisci_esauriti_tip')}
                         onClick={() => {
-                          if (window.confirm("Vuoi rimuovere dall'inventario tutti gli oggetti esauriti (quantità 0)?")) {
+                          if (window.confirm(t('inv.pulisci_conferma'))) {
                             aggiorna({ inventario: inv.filter((x) => (Number(x.qta) || 0) > 0) });
                           }
                         }}
                       >
-                        🧹 Pulisci esauriti (qta 0)
+                        {t('inv.pulisci_esauriti')}
                       </button>
                     </div>
                     {/* Lista oggetti */}
@@ -10506,14 +10502,14 @@ export default function App() {
                                     inventario: (s.inventario || []).map((x) => (x.id === o.id ? { ...x, qta: Math.max(0, (Number(x.qta) || 1) - 1) } : x)),
                                   }));
                                   registra({ etichetta: `🧪 ${o.nome}`, tipo: 'cura', totale: tot, dettaglio: `Bevi ${o.nome}: recuperi ${tot} PF (${curaFormula})` });
-                                  setInfo({ titolo: `🧪 ${o.nome}`, testo: `Hai bevuto ${o.nome} e recuperato ${tot} PF! (Quantità residua: ${Math.max(0, (Number(o.qta) || 1) - 1)})` });
+                                  setInfo({ titolo: `🧪 ${o.nome}`, testo: t('inv.pozione_testo', { nome: o.nome, tot: tot, qta: Math.max(0, (Number(o.qta) || 1) - 1) }) });
                                 } else {
                                   setScheda((s) => ({
                                     ...s,
                                     inventario: (s.inventario || []).map((x) => (x.id === o.id ? { ...x, qta: Math.max(0, (Number(x.qta) || 1) - 1) } : x)),
                                   }));
                                   registra({ etichetta: `🧪 ${o.nome}`, tipo: 'usa', dettaglio: `Usato/bevuto ${o.nome}` });
-                                  setInfo({ titolo: `🧪 ${o.nome}`, testo: `Hai usato/bevuto ${o.nome}! (Quantità residua: ${Math.max(0, (Number(o.qta) || 1) - 1)})` });
+                                  setInfo({ titolo: `🧪 ${o.nome}`, testo: t('inv.pozione_usata', { nome: o.nome, qta: Math.max(0, (Number(o.qta) || 1) - 1) }) });
                                 }
                               };
 
@@ -10539,7 +10535,7 @@ export default function App() {
                                             borderColor: '#2e9d4d',
                                             background: 'rgba(46,157,77,0.12)',
                                           }}
-                                          title="Bevi o usa questa pozione/consumabile (consuma 1 unità e cura se applicabile)"
+                                          title={t('inv.bevi_pozione_tip')}
                                         >
                                           🧪 {lingua === 'en' ? 'Drink' : 'Bevi'}
                                         </button>
@@ -10920,7 +10916,7 @@ export default function App() {
                               className="no-stampa"
                               style={{ ...styles.buttonMini, fontSize: 11, padding: '4px 8px' }}
                               onClick={copiaDiario}
-                              title="Copia l'intero diario negli appunti"
+                              title={t('diario.copia_tip')}
                             >
                               📋 {lingua === 'en' ? 'Copy all' : 'Copia'}
                             </button>
@@ -10928,7 +10924,7 @@ export default function App() {
                               className="no-stampa"
                               style={{ ...styles.buttonMini, fontSize: 11, padding: '4px 8px', color: C.goldDark, borderColor: C.goldDark }}
                               onClick={scaricaDiario}
-                              title="Scarica il diario come file Markdown (.md)"
+                              title={t('diario.scarica_md_tip')}
                             >
                               📥 .md
                             </button>
