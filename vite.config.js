@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, mkdirSync } from 'node:fs';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
@@ -15,8 +15,9 @@ const scriveVersionJson = {
   name: 'scrive-version-json',
   apply: 'build',
   closeBundle() {
-    const dir = process.env.BASE_PATH ? 'dist' : 'dist';
+    const dir = 'dist';
     try {
+      mkdirSync(dir, { recursive: true });
       writeFileSync(`${dir}/version.json`, JSON.stringify({ build: BUILD_ID }));
     } catch (e) {
       console.warn('version.json non scritto:', e?.message);

@@ -6876,7 +6876,8 @@ export default function App() {
           </button>
         </div>
 
-          {/* 8. Lingua */}
+        {/* 8. Lingua */}
+        <div className="app-header-group app-header-language">
           <button
             style={styles.modeButton(false)}
             title={lingua === 'it' ? 'Interfaccia in italiano — click per passare all’inglese' : 'Interface in English — click to switch to Italian'}
