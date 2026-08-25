@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.94';
+const APP_VERSION = '3.9.95';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -6795,102 +6795,8 @@ export default function App() {
         );
       })()}
 
-      <header className="app-header" style={styles.header}>
-        <div className="app-header-side">
-        <div className="app-header-group">
-          {/* 1. Menu */}
-          <button
-            style={styles.modeButton(false)}
-            title={t('tip.menu_iniziale')}
-            onClick={() => setMostraMenu(true)}
-          >
-            🏠 <span className="header-label">Menu</span>
-          </button>
-          {/* 2. Annulla */}
-          <button
-            style={{ ...styles.modeButton(false), opacity: passiUndo ? 1 : 0.4, cursor: passiUndo ? 'pointer' : 'default' }}
-            title={passiUndo ? t('undo.tooltip', { n: passiUndo }) : t('undo.vuoto')}
-            disabled={!passiUndo}
-            onClick={annullaModifica}
-          >
-            ↩︎ <span className="header-label">{t('undo.annulla')}</span>
-          </button>
-          {/* 3. Importa */}
-          <input ref={jsonRef} type="file" accept="application/json,.json,application/pdf,image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif,.pdf" multiple style={{ display: 'none' }} onChange={importaJson} />
-          <button
-            style={styles.modeButton(false)}
-            title="Importa JSON, PDF o JPG/PNG (IA) — il Finder ora mostra anche le immagini"
-            onClick={() => jsonRef.current?.click()}
-          >
-            📂 <span className="header-label">Importa</span>
-          </button>
-          {/* 4. Esporta */}
-          <button
-            ref={esportaBtnRef}
-            style={styles.modeButton(mostraMenuEsporta)}
-            title={t('tip.esporta')}
-            onClick={() => {
-              if (!mostraMenuEsporta) {
-                const r = esportaBtnRef.current?.getBoundingClientRect();
-                if (r) setPosEsporta({
-                  top: Math.max(8, Math.min(window.innerHeight - 200, r.bottom + 5)),
-                  left: Math.max(8, Math.min(window.innerWidth - 240, r.left)),
-                });
-              }
-              setMostraMenuEsporta((v) => !v);
-            }}
-          >
-            💾 <span className="header-label">Esporta</span>
-          </button>
-          {/* 5. Cloud */}
-          <button
-            style={{ ...styles.modeButton(mostraCloud), color: C.goldDark, borderColor: C.goldDark }}
-            title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato (auto-salvataggio spento)') : (codiceSync && autoSyncCodice ? `Sincronizzato con codice${ultimoSyncCodice ? ` · ultimo ${ultimoSyncCodice}` : ''}` : 'Sincronizza i tuoi personaggi sul Cloud')}
-            onClick={() => { setCloudStatus({ text: '', type: '' }); setSyncCodiceStatus({ text: '', type: '' }); setMostraCloud(true); }}
-          >
-            ☁️ <span className="header-label">Cloud</span>
-            {sincronizzando ? (
-              <span style={{ fontSize: 11, marginLeft: 3 }}>🔄</span>
-            ) : (githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice) ? (
-              <span aria-label="Sincronizzazione automatica attiva" style={{ color: '#2e9d4d', fontWeight: 900, marginLeft: 3, fontSize: 12 }}>✓</span>
-            ) : (
-              <span style={{ color: '#c0392b', fontSize: 12, marginLeft: 3, fontWeight: 900 }} title="Salvataggio solo locale (non sincronizzato sul cloud)">❗</span>
-            )}
-          </button>
-          {/* 6. Notifiche (Bacheca, Verifiche Scheda & Novità) */}
-          <button
-            ref={notificheBtnRef}
-            style={styles.modeButton(mostraNotifiche)}
-            title={daNotificare
-              ? (controlliAttivi.length > 0 ? `${controlliAttivi.length} avvisi sulla scheda` : t('notifiche.novita_presenti'))
-              : t('notifiche.titolo')}
-            onClick={apriNotifiche}
-          >
-            🔔 <span className="header-label">{t('notifiche.titolo_breve')}</span>
-            {daNotificare && (
-              <span
-                className="avvisi-pallino"
-                aria-label={`${nAvvisi} notifiche`}
-              >{controlliAttivi.length > 0 ? controlliAttivi.length : '!'}</span>
-            )}
-          </button>
-        </div>
-
-        {/* 8. Lingua */}
-        <div className="app-header-group app-header-language">
-          <button
-            style={styles.modeButton(false)}
-            title={lingua === 'it' ? 'Interfaccia in italiano — click per passare all’inglese' : 'Interface in English — click to switch to Italian'}
-            onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
-          >
-            {lingua === 'it' ? '🇮🇹' : '🇬🇧'} <span className="header-label">{t('common.lingua')}</span>
-          </button>
-        </div>
-
-        <input ref={mappaRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaMappa} />
-        </div>
-
-      </header>
+      <input ref={jsonRef} type="file" accept="application/json,.json,application/pdf,image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif,.pdf" multiple style={{ display: 'none' }} onChange={importaJson} />
+      <input ref={mappaRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaMappa} />
 
       {/* Menu a comparsa Esporta */}
       {mostraMenuEsporta && (
@@ -7823,12 +7729,12 @@ export default function App() {
         ) : (
           <>
 
-        {/* Personaggi: il riquadro blu È il nome/selettore. Cambia PG al volo; ✎ per rinominare */}
-        <section className="selettore-personaggio" style={{ ...styles.panel, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: '6px 12px' }}>
+        {/* Personaggi: il riquadro col bordo dorato/arancione ingrandito e a destra TUTTI i tasti ingranditi */}
+        <section className="selettore-personaggio" style={{ ...styles.panel, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: '8px 12px' }}>
           {rinominando ? (
             <input
               autoFocus
-              style={{ ...styles.inlineInput, flex: '1 1 180px', minWidth: 150, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)' }}
+              style={{ ...styles.inlineInput, flex: '1 1 260px', minWidth: 200, fontSize: 18, fontWeight: 'bold', color: 'var(--c-title)', height: 42, padding: '6px 14px', border: `1.5px solid ${C.goldDark}`, borderRadius: 8 }}
               value={scheda.nome}
               onChange={(e) => aggiorna({ nome: e.target.value })}
               onBlur={() => {
@@ -7847,9 +7753,9 @@ export default function App() {
               }}
             />
           ) : (
-            <div style={{ position: 'relative', flex: '1 1 180px', minWidth: 150, display: 'flex', overflow: 'hidden', borderRadius: 8 }}>
+            <div style={{ position: 'relative', flex: '1 1 260px', minWidth: 200, display: 'flex', overflow: 'hidden', borderRadius: 8, border: `1.5px solid ${C.goldDark}`, height: 42, background: 'rgba(0,0,0,0.03)' }}>
               <select
-                style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', padding: '9px 28px 9px 8px', textOverflow: 'ellipsis', background: 'transparent', position: 'relative', zIndex: 2 }}
+                style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 18, fontWeight: 'bold', color: 'var(--c-title)', padding: '6px 42px 6px 14px', textOverflow: 'ellipsis', background: 'transparent', position: 'relative', zIndex: 2, border: 'none', height: '100%' }}
                 value={roster.attivo}
                 onChange={(e) => setRoster((r) => ({ ...r, attivo: e.target.value }))}
                 title={t('nome.tooltip_selettore')}
@@ -7871,18 +7777,16 @@ export default function App() {
                 aria-hidden
                 style={{
                   position: 'absolute', left: 0, right: 0, top: 0, bottom: 0,
-                  // centrato verticalmente e a filo destro, DENTRO il riquadro
                   display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
-                  paddingRight: 28,
+                  paddingRight: 30,
                   pointerEvents: 'none', userSelect: 'none', zIndex: 1,
                 }}
               >
                 <span style={{
                   fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: 'italic', fontWeight: 'bold',
-                  // grande: riempie l'altezza del riquadro, dal bordo inferiore al superiore
-                  fontSize: 46, letterSpacing: 1, lineHeight: 1,
+                  fontSize: 52, letterSpacing: 1, lineHeight: 1,
                   marginRight: -1.5,
-                  color: C.goldDark, opacity: 0.3, whiteSpace: 'nowrap',
+                  color: C.goldDark, opacity: 0.35, whiteSpace: 'nowrap',
                 }}>
                   {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
                 </span>
@@ -7890,43 +7794,133 @@ export default function App() {
             </div>
           )}
 
-          {/* Tasti PG e sessione allineati tutti a destra dopo il nome del PG */}
-          <div className="selettore-personaggio-azioni" style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap', flexShrink: 0, marginLeft: 'auto' }}>
-            {/* Gruppo PG: Level Up, Rinomina, Nuovo, Elimina */}
-            <button
-              style={styles.buttonMini}
-              title={t('tip.levelup')}
-              onClick={() => {
-                const dvMatch = String(scheda.dadiVita || '').match(/d(\d+)/i);
-                const facceDV = dvMatch ? parseInt(dvMatch[1]) : 8;
-                const modCos = modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10) || 0;
-                const avgHpGain = Math.floor(facceDV / 2) + 1 + modCos;
-                setLevelUpBozza({
-                  metodo: 'media', hpGainMedia: Math.max(1, avgHpGain), facceDV, modCos, tiroFatto: 0,
-                  asiMode: 'aumento', asiA: '', asiB: '', talento: '',
-                  sottoclasse: scheda.sottoclasse || '',
-                });
-                setMostraLevelUp(true);
-              }}
-            >
-              ⬆️
-            </button>
-            <button style={styles.buttonMini} onClick={() => setRinominando(!rinominando)} title={t('tip.rinomina')}>✎</button>
-            <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' }); setMostraCrea(true); }} title={t('tip.nuovo_pg')}>＋</button>
-            <button style={styles.buttonMini} onClick={eliminaPersonaggio} title={t('tip.elimina_pg')}>🗑</button>
+          {/* Tutti i tasti ingranditi a destra, con Cloud come ultimo di tutti */}
+          {(() => {
+            const btnAzione = {
+              ...styles.buttonMini,
+              padding: '6px 11px',
+              fontSize: 18,
+              minWidth: 38,
+              height: 38,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 8,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            };
+            return (
+              <div className="selettore-personaggio-azioni" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', flexShrink: 0, marginLeft: 'auto' }}>
+                {/* Gruppo 1: Navigazione & App */}
+                <button style={btnAzione} title={t('tip.menu_iniziale')} onClick={() => setMostraMenu(true)}>
+                  🏠
+                </button>
+                <button
+                  style={{ ...btnAzione, opacity: passiUndo ? 1 : 0.4, cursor: passiUndo ? 'pointer' : 'default' }}
+                  title={passiUndo ? t('undo.tooltip', { n: passiUndo }) : t('undo.vuoto')}
+                  disabled={!passiUndo}
+                  onClick={annullaModifica}
+                >
+                  ↩︎
+                </button>
+                <button style={btnAzione} title="Importa JSON, PDF o immagini" onClick={() => jsonRef.current?.click()}>
+                  📂
+                </button>
+                <button
+                  ref={esportaBtnRef}
+                  style={{ ...btnAzione, ...(mostraMenuEsporta ? { borderColor: C.goldDark, color: C.goldDark } : {}) }}
+                  title={t('tip.esporta')}
+                  onClick={() => {
+                    if (!mostraMenuEsporta) {
+                      const r = esportaBtnRef.current?.getBoundingClientRect();
+                      if (r) setPosEsporta({
+                        top: Math.max(8, Math.min(window.innerHeight - 200, r.bottom + 5)),
+                        left: Math.max(8, Math.min(window.innerWidth - 240, r.left)),
+                      });
+                    }
+                    setMostraMenuEsporta((v) => !v);
+                  }}
+                >
+                  💾
+                </button>
+                <button
+                  ref={notificheBtnRef}
+                  style={{ ...btnAzione, position: 'relative' }}
+                  title={daNotificare ? (controlliAttivi.length > 0 ? `${controlliAttivi.length} avvisi sulla scheda` : t('notifiche.novita_presenti')) : t('notifiche.titolo')}
+                  onClick={apriNotifiche}
+                >
+                  🔔
+                  {daNotificare && (
+                    <span className="avvisi-pallino" aria-label={`${nAvvisi} notifiche`}>
+                      {controlliAttivi.length > 0 ? controlliAttivi.length : '!'}
+                    </span>
+                  )}
+                </button>
+                <button
+                  style={btnAzione}
+                  title={lingua === 'it' ? 'Cambia in inglese' : 'Switch to Italian'}
+                  onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
+                >
+                  {lingua === 'it' ? '🇮🇹' : '🇬🇧'}
+                </button>
 
-            <span className="selettore-divisore" style={{ width: 1.5, height: 22, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
+                <span className="selettore-divisore" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
 
-            {/* Gruppo Sessione & Gameplay: Ambientazione, Tema, Mappa, Combattimento */}
-            <button ref={ambientazioneBtnRef} style={styles.buttonMini} title={t('luogo.tooltip')} onClick={() => { sbloccaAudio(); if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
-            <button style={styles.buttonMini} title={t('tooltip.tema')} onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}>{tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'}</button>
-            <button style={styles.buttonMini} onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())} title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}>🗺️</button>
-            <button style={styles.buttonMini} onClick={() => {
-              if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
-              else if (combat.combattenti.length) setCombat((c) => ({ ...c, attivo: true, aperto: true }));
-              else aggiungiPgAlCombat();
-            }} title={(combat.attivo && combat.aperto ? t('ct.minimizza') : t('ct.apri')) + (combat.combattenti.length ? ` (${combat.combattenti.length})` : '')}>⚔️</button>
-          </div>
+                {/* Gruppo 2: Gestione PG */}
+                <button
+                  style={btnAzione}
+                  title={t('tip.levelup')}
+                  onClick={() => {
+                    const dvMatch = String(scheda.dadiVita || '').match(/d(\d+)/i);
+                    const facceDV = dvMatch ? parseInt(dvMatch[1]) : 8;
+                    const modCos = modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10) || 0;
+                    const avgHpGain = Math.floor(facceDV / 2) + 1 + modCos;
+                    setLevelUpBozza({
+                      metodo: 'media', hpGainMedia: Math.max(1, avgHpGain), facceDV, modCos, tiroFatto: 0,
+                      asiMode: 'aumento', asiA: '', asiB: '', talento: '',
+                      sottoclasse: scheda.sottoclasse || '',
+                    });
+                    setMostraLevelUp(true);
+                  }}
+                >
+                  ⬆️
+                </button>
+                <button style={btnAzione} onClick={() => setRinominando(!rinominando)} title={t('tip.rinomina')}>✎</button>
+                <button style={btnAzione} onClick={() => { setBozzaCrea({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' }); setMostraCrea(true); }} title={t('tip.nuovo_pg')}>＋</button>
+                <button style={btnAzione} onClick={eliminaPersonaggio} title={t('tip.elimina_pg')}>🗑</button>
+
+                <span className="selettore-divisore" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
+
+                {/* Gruppo 3: Gameplay & Sessione */}
+                <button ref={ambientazioneBtnRef} style={btnAzione} title={t('luogo.tooltip')} onClick={() => { sbloccaAudio(); if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
+                <button style={btnAzione} title={t('tooltip.tema')} onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}>{tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'}</button>
+                <button style={btnAzione} onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())} title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}>🗺️</button>
+                <button style={btnAzione} onClick={() => {
+                  if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
+                  else if (combat.combattenti.length) setCombat((c) => ({ ...c, attivo: true, aperto: true }));
+                  else aggiungiPgAlCombat();
+                }} title={(combat.attivo && combat.aperto ? t('ct.minimizza') : t('ct.apri')) + (combat.combattenti.length ? ` (${combat.combattenti.length})` : '')}>⚔️</button>
+
+                <span className="selettore-divisore" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
+
+                {/* Gruppo 4: Sincronizzazione Cloud — come ultimo di tutti */}
+                <button
+                  style={{ ...btnAzione, color: C.goldDark, borderColor: C.goldDark, minWidth: 44 }}
+                  title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato') : 'Sincronizza sul Cloud'}
+                  onClick={() => { setCloudStatus({ text: '', type: '' }); setSyncCodiceStatus({ text: '', type: '' }); setMostraCloud(true); }}
+                >
+                  ☁️
+                  {sincronizzando ? (
+                    <span style={{ fontSize: 11, marginLeft: 2 }}>🔄</span>
+                  ) : (githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice) ? (
+                    <span style={{ color: '#2e9d4d', fontWeight: 900, marginLeft: 2, fontSize: 13 }}>✓</span>
+                  ) : (
+                    <span style={{ color: '#c0392b', fontSize: 13, marginLeft: 2, fontWeight: 900 }}>!</span>
+                  )}
+                </button>
+              </div>
+            );
+          })()}
         </section>
 
         {/* Testata: anagrafica + riquadri vitali uniformi */}
