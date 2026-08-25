@@ -6887,6 +6887,46 @@ export default function App() {
           </button>
         </div>
 
+        {/* Nuovi tasti rapidi a destra di quelli esistenti, divisi con linetta */}
+        <div className="app-header-group" style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'nowrap' }}>
+          <span className="selettore-divisore" style={{ width: 1.5, height: 22, background: C.goldDark, margin: '0 2px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
+
+          {/* Gruppo PG: Level Up, Rinomina, Nuovo, Elimina */}
+          <button
+            style={styles.buttonMini}
+            title={t('tip.levelup')}
+            onClick={() => {
+              const dvMatch = String(scheda.dadiVita || '').match(/d(\d+)/i);
+              const facceDV = dvMatch ? parseInt(dvMatch[1]) : 8;
+              const modCos = modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10) || 0;
+              const avgHpGain = Math.floor(facceDV / 2) + 1 + modCos;
+              setLevelUpBozza({
+                metodo: 'media', hpGainMedia: Math.max(1, avgHpGain), facceDV, modCos, tiroFatto: 0,
+                asiMode: 'aumento', asiA: '', asiB: '', talento: '',
+                sottoclasse: scheda.sottoclasse || '',
+              });
+              setMostraLevelUp(true);
+            }}
+          >
+            ⬆️
+          </button>
+          <button style={styles.buttonMini} onClick={() => setRinominando(!rinominando)} title={t('tip.rinomina')}>✎</button>
+          <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' }); setMostraCrea(true); }} title={t('tip.nuovo_pg')}>＋</button>
+          <button style={styles.buttonMini} onClick={eliminaPersonaggio} title={t('tip.elimina_pg')}>🗑</button>
+
+          <span className="selettore-divisore" style={{ width: 1.5, height: 22, background: C.goldDark, margin: '0 2px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
+
+          {/* Gruppo Gameplay: Ambientazione, Tema, Mappa, Combattimento */}
+          <button ref={ambientazioneBtnRef} style={styles.buttonMini} title={t('luogo.tooltip')} onClick={() => { sbloccaAudio(); if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
+          <button style={styles.buttonMini} title={t('tooltip.tema')} onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}>{tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'}</button>
+          <button style={styles.buttonMini} onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())} title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}>🗺️</button>
+          <button style={styles.buttonMini} onClick={() => {
+            if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
+            else if (combat.combattenti.length) setCombat((c) => ({ ...c, attivo: true, aperto: true }));
+            else aggiungiPgAlCombat();
+          }} title={(combat.attivo && combat.aperto ? t('ct.minimizza') : t('ct.apri')) + (combat.combattenti.length ? ` (${combat.combattenti.length})` : '')}>⚔️</button>
+        </div>
+
         <input ref={mappaRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaMappa} />
         </div>
 
@@ -7946,19 +7986,16 @@ export default function App() {
                   <button
                     type="button"
                     style={{
-                      background: scheda.ispirazione ? 'rgba(212,175,55,0.92)' : 'rgba(0,0,0,0.45)',
-                      border: `1.5px solid ${scheda.ispirazione ? '#fff' : 'rgba(255,255,255,0.5)'}`,
-                      borderRadius: '50%',
-                      width: 28,
-                      height: 28,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: 16,
-                      color: scheda.ispirazione ? '#fff' : 'rgba(255,255,255,0.85)',
-                      boxShadow: scheda.ispirazione ? '0 0 10px #d4af37' : 'none',
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      fontSize: 22,
+                      lineHeight: 1,
+                      color: scheda.ispirazione ? '#ffd700' : C.inkDim,
+                      textShadow: scheda.ispirazione ? '0 0 8px #ffd700, 0 1px 3px rgba(0,0,0,0.5)' : 'none',
                       cursor: 'pointer',
                       flexShrink: 0,
+                      transition: 'all 0.2s ease',
                     }}
                     title={scheda.ispirazione ? `${t('vital.ispirazione')}: ${t('common.attivo')}` : `${t('vital.ispirazione')}: ${t('common.non_attivo')}`}
                     onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
@@ -7991,27 +8028,24 @@ export default function App() {
                   onClick={(e) => { e.stopPropagation(); aggiorna({ sezioniAperte: { ...(scheda.sezioniAperte || {}), ritratto: false } }); }}
                 >▾</button>
 
-                {/* Tasto Ispirazione nell'angolo in alto a destra del ritratto */}
+                {/* Tasto Ispirazione nell'angolo in alto a destra del ritratto — pura stella senza cerchio */}
                 <button
                   type="button"
                   style={{
                     position: 'absolute',
                     top: 4,
-                    right: 4,
+                    right: 6,
                     zIndex: 3,
-                    background: scheda.ispirazione ? 'rgba(212,175,55,0.92)' : 'rgba(0,0,0,0.45)',
-                    border: `1.5px solid ${scheda.ispirazione ? '#fff' : 'rgba(255,255,255,0.5)'}`,
-                    borderRadius: '50%',
-                    width: 28,
-                    height: 28,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 16,
-                    color: scheda.ispirazione ? '#fff' : 'rgba(255,255,255,0.85)',
-                    boxShadow: scheda.ispirazione ? '0 0 10px #d4af37, 0 2px 5px rgba(0,0,0,0.5)' : '0 1px 3px rgba(0,0,0,0.3)',
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    fontSize: 24,
+                    lineHeight: 1,
+                    color: scheda.ispirazione ? '#ffd700' : 'rgba(255,255,255,0.75)',
+                    textShadow: scheda.ispirazione ? '0 0 10px #ffd700, 0 0 18px rgba(255,215,0,0.85), 0 1px 4px rgba(0,0,0,0.9)' : '0 1px 4px rgba(0,0,0,0.9)',
                     cursor: 'pointer',
-                    transition: 'all 0.25s ease',
+                    transition: 'all 0.2s ease',
+                    filter: scheda.ispirazione ? 'drop-shadow(0 0 6px rgba(255,215,0,0.9))' : 'none',
                   }}
                   title={scheda.ispirazione ? `${t('vital.ispirazione')}: ${t('common.attivo')} (Click per disattivare)` : `${t('vital.ispirazione')}: ${t('common.non_attivo')} (Click per attivare)`}
                   onClick={(e) => {
