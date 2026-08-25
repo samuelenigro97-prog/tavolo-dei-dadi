@@ -448,7 +448,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
    centrale) vivono nella STESSA griglia. */
 .profilo-griglia {
   display: grid;
-  grid-template-columns: 240px minmax(0, 1fr) 230px;
+  grid-template-columns: 280px minmax(0, 1fr) 230px;
   column-gap: 14px;
   row-gap: 10px;
   align-items: start;
@@ -474,11 +474,11 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   gap: 8px;
   min-width: 0;
 }
-/* Il box immagine con altezza proporzionata (270px) */
+/* Il box immagine allargato con proporzioni ottimali */
 .ritratto-box {
   width: 100%;
-  height: 270px;
-  min-height: 270px;
+  height: 250px;
+  min-height: 250px;
   border-radius: 12px;
   overflow: hidden;
   position: relative;
