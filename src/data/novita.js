@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.79',
+    voci: {
+      it: [
+        'Auto-Compilazione Competenze e Addestramento all\'Import: quando si importa un personaggio, se l\'addestramento in armature/armi non è specificato nel file, l\'app lo deduce e compila automaticamente in base alla classe principale.',
+      ],
+      en: [
+        'Automatic Proficiency & Training on Import: when importing a character without explicit training data, the app automatically populates armor and weapon proficiencies based on the character\'s class.',
+      ],
+    },
+  },
+  {
     versione: '3.9.78',
     voci: {
       it: [

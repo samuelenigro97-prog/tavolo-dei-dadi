@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.78';
+const APP_VERSION = '3.9.79';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2174,16 +2174,25 @@ function normalizeImported(dati) {
     concentrazione: str(dati.concentrazione),
     resistenze: str(dati.resistenze),
     sensi: str(dati.sensi),
-    addestramento: {
-      armature: {
-        leggera: Boolean(dati.addestramento?.armature?.leggera),
-        media: Boolean(dati.addestramento?.armature?.media),
-        pesante: Boolean(dati.addestramento?.armature?.pesante),
-        scudi: Boolean(dati.addestramento?.armature?.scudi),
-      },
-      armi: str(dati.addestramento?.armi),
-      strumenti: str(dati.addestramento?.strumenti),
-    },
+    addestramento: (() => {
+      const clsAdd = addestramentoPerClasse(traduciEN(str(dati.classe))) || {};
+      const armIn = dati.addestramento?.armature || {};
+      const hasAnyArmatura = Boolean(armIn.leggera || armIn.media || armIn.pesante || armIn.scudi);
+      const armature = hasAnyArmatura ? {
+        leggera: Boolean(armIn.leggera),
+        media: Boolean(armIn.media),
+        pesante: Boolean(armIn.pesante),
+        scudi: Boolean(armIn.scudi),
+      } : {
+        leggera: Boolean(clsAdd.armature?.leggera),
+        media: Boolean(clsAdd.armature?.media),
+        pesante: Boolean(clsAdd.armature?.pesante),
+        scudi: Boolean(clsAdd.armature?.scudi),
+      };
+      const armi = str(dati.addestramento?.armi) || str(clsAdd.armi) || '';
+      const strumenti = str(dati.addestramento?.strumenti) || '';
+      return { armature, armi, strumenti };
+    })(),
     denari,
     sezioniAperte: dati.sezioniAperte && typeof dati.sezioniAperte === 'object' && !Array.isArray(dati.sezioniAperte)
       ? Object.fromEntries(Object.entries(dati.sezioniAperte).map(([id, aperta]) => [id, Boolean(aperta)]))
