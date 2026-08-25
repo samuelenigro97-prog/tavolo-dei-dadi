@@ -10173,7 +10173,7 @@ export default function App() {
                     {(schedaPrivilegiTab === 'tutti' || schedaPrivilegiTab === 'specie') && (
                       <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
                         <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
-                          {t("sez.tratti_specie")} ({traduciDato(scheda.razza) || t('profilo.nessuna')})
+                          {t("sez.tratti_specie")}{scheda.specie ? ` (${traduciDato(scheda.specie)})` : ''}
                         </div>
                         <ListaQuadratini
                           value={scheda.trattiSpecie}

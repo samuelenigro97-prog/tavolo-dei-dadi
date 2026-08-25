@@ -357,23 +357,42 @@ export function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni,
     setEdit(null);
   };
   const elimina = () => { salva(righe.filter((_, i) => i !== edit.index)); setEdit(null); };
+
+  const estraiNomeVoce = (str) => {
+    const s = String(str || '').trim();
+    const idx = s.indexOf(':');
+    if (idx > 0 && idx <= 40) {
+      const nome = s.slice(0, idx).trim();
+      const desc = s.slice(idx + 1).trim();
+      if (desc) return { nome, desc };
+    }
+    return { nome: s, desc: '' };
+  };
+
   // Le opzioni possono arrivare come stringhe o come oggetti { nome, desc }.
   const listaOpzioni = (opzioni || [])
     .map((o) => (typeof o === 'string' ? { nome: o, desc: '' } : o))
     .sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'it', { sensitivity: 'base' }));
   const chip = { background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '5px 10px', fontSize: 13, cursor: 'pointer', color: C.ink, whiteSpace: unicaRiga ? 'nowrap' : 'normal' };
-  const spEdit = edit ? (lookup ? lookup(edit.valore) : null) : null;
+  const spEdit = edit
+    ? (lookup ? lookup(edit.valore) : null) || estraiNomeVoce(edit.valore).desc || null
+    : null;
   return (
     <>
       <div style={{ display: 'flex', flexWrap: unicaRiga ? 'nowrap' : 'wrap', gap: 6, overflowX: unicaRiga ? 'auto' : 'visible', paddingBottom: unicaRiga ? 4 : 0 }}>
         {righe.length === 0 && <span style={{ ...styles.detail, fontStyle: 'italic' }}>{placeholder || 'Nessuna voce.'}</span>}
         {righe.map((r, i) => {
-          const sp = lookup ? lookup(r) : null;
-          const isMagiaSelvaggia = /magia selvaggia/i.test(r) && onRoll;
+          const { nome, desc } = estraiNomeVoce(r);
+          const sp = (lookup ? lookup(r) || lookup(nome) : null) || desc;
+          const isMagiaSelvaggia = /magia selvaggia/i.test(nome) && onRoll;
           return (
             <div key={i} style={{ display: 'flex', alignItems: 'center', flexShrink: unicaRiga ? 0 : 1 }}>
-              <button style={{ ...chip, borderRight: isMagiaSelvaggia ? 'none' : chip.border, borderTopRightRadius: isMagiaSelvaggia ? 0 : 8, borderBottomRightRadius: isMagiaSelvaggia ? 0 : 8 }} title={t('tip.apri_dettagli')} onClick={() => setEdit({ index: i, valore: r })}>
-                {r}
+              <button
+                style={{ ...chip, borderRight: isMagiaSelvaggia ? 'none' : chip.border, borderTopRightRadius: isMagiaSelvaggia ? 0 : 8, borderBottomRightRadius: isMagiaSelvaggia ? 0 : 8 }}
+                title={sp || t('tip.apri_dettagli')}
+                onClick={() => setEdit({ index: i, valore: r })}
+              >
+                {nome}
               </button>
               {isMagiaSelvaggia && (
                 <button
