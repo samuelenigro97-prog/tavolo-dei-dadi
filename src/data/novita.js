@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.66',
+    voci: {
+      it: [
+        'Allineamento Competenze Vaelion: sincronizzate tutte le competenze in abilità (Addestrare Animali, Arcano, Intuizione, Medicina, Natura, Percezione, Sopravvivenza), tiri salvezza (Intelligenza, Saggezza), armature, armi e lingue con il formato numerico dell\'app.',
+      ],
+      en: [
+        'Vaelion Proficiencies Synchronization: synchronized all skill proficiencies (Animal Handling, Arcana, Insight, Medicine, Nature, Perception, Survival), saving throws, armors, weapons and languages with the app format.',
+      ],
+    },
+  },
+  {
     versione: '3.9.65',
     voci: {
       it: [

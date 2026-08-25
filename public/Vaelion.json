@@ -22,7 +22,7 @@
     "tipo": "media",
     "base": 14,
     "scudo": true,
-    "bonus": 1
+    "bonus": 0
   },
   "caratteristiche": {
     "forza": 4,
@@ -41,25 +41,36 @@
     "carisma": false
   },
   "abilita": {
-    "acrobazia": false,
-    "addestrareAnimali": true,
-    "arcano": true,
-    "atletica": false,
-    "furtivita": false,
-    "indagare": false,
-    "inganno": false,
-    "intimidire": false,
-    "intrattenere": false,
-    "intuizione": true,
-    "medicina": true,
-    "natura": true,
-    "percezione": true,
-    "persuasione": false,
-    "rapiditaDiMano": false,
-    "religione": false,
-    "sopravvivenza": true,
-    "storia": false
+    "acrobazia": 0,
+    "addestrareAnimali": 1,
+    "arcano": 1,
+    "atletica": 0,
+    "furtivita": 0,
+    "indagare": 0,
+    "inganno": 0,
+    "intimidire": 0,
+    "intrattenere": 0,
+    "intuizione": 1,
+    "medicina": 1,
+    "natura": 1,
+    "percezione": 1,
+    "persuasione": 0,
+    "rapiditaDiMano": 0,
+    "religione": 0,
+    "sopravvivenza": 1,
+    "storia": 0
   },
+  "addestramento": {
+    "armature": {
+      "leggera": true,
+      "media": true,
+      "pesante": false,
+      "scudi": true
+    },
+    "armi": "Bastoni ferrati, dardi, falcetti, giavellotti, lance, mazze, pugnali, fionde, spade corte, spade lunghe, archi corti, archi lunghi (Semplici)",
+    "strumenti": "Borsa da Erborista"
+  },
+  "lingue": "Comune, Sottocomune, Druidico, Silvano, Bestie, Folletti, Elfico",
   "maestrie": {},
   "armi": [
     {
@@ -161,6 +172,8 @@
       "qta": 1,
       "peso": 1.5,
       "equip": true,
+      "effettoMeccanico": "classe_armatura_tiri_salvezza_1",
+      "richiedeSintonia": true,
       "categoria": "Oggetto Magico",
       "descrizione": "+1 alla CA e +1 a tutti i Tiri Salvezza (in sintonia)"
     },
@@ -171,9 +184,9 @@
       "peso": 0.1,
       "equip": true,
       "categoria": "Oggetto Magico",
-      "utilizziMax": 1,
-      "utilizziAttuali": 1,
-      "resetUtilizzi": "lungo",
+      "usi": 1,
+      "usiMax": 1,
+      "ricarica": "alba",
       "descrizione": "Come azione permette di recuperare 1 slot incantesimo speso fino al 3° livello (1 volta al giorno, ricarica all'alba/riposo lungo)."
     },
     {
@@ -182,6 +195,8 @@
       "qta": 1,
       "peso": 1,
       "equip": true,
+      "effettoMeccanico": "forza_impostata_19",
+      "richiedeSintonia": true,
       "categoria": "Oggetto Magico",
       "descrizione": "Imposta la Forza del portatore a 19 (+4) se inferiore (in sintonia)."
     },
@@ -209,10 +224,7 @@
       "peso": 0.5,
       "equip": false,
       "dentroBorsa": true,
-      "categoria": "Consumabile",
-      "utilizziMax": 2,
-      "utilizziAttuali": 2,
-      "resetUtilizzi": "manuale"
+      "categoria": "Consumabile"
     },
     {
       "id": "v-inv-09",
@@ -262,8 +274,7 @@
   ],
   "risorse": [
     { "id": "auto-forma-selvatica", "nome": "Forma Selvatica", "attuali": 4, "max": 4, "reset": "breve" },
-    { "id": "auto-totem-spirituale", "nome": "Totem Spirituale (Aura)", "attuali": 1, "max": 1, "reset": "breve" },
-    { "id": "r-perla-potere", "nome": "Perla del Potere (Recupero Slot Liv.3)", "attuali": 1, "max": 1, "reset": "lungo" }
+    { "id": "auto-totem-spirituale", "nome": "Totem Spirituale (Aura)", "attuali": 1, "max": 1, "reset": "breve" }
   ],
   "monete": { "mr": 0, "ma": 0, "me": 0, "mo": 250, "mp": 0 },
   "tratti": "Retaggio Fatato: Vantaggio ai TS contro l'essere affascinato. La magia non può addormentarti.\nMaschera della Selva: Puoi tentare di nasconderti anche quando sei parzialmente oscurato da fenomeni naturali.\nScurovisione 18m\nForma Selvatica (Azione Bonus / Azione): Grado Sfida max 3.\nTotale comunione con gli spiriti della foresta.\nPrivilegio Background (Scoperta): Conoscenza di un'importante verità cosmica o segreto del mondo.",
