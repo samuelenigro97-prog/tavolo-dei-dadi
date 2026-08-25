@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.65',
+    voci: {
+      it: [
+        'Stile Uniforme Pulsante Cestino: rimosso il bordo colorato dal pulsante di eliminazione nell\'intestazione, uniformato agli altri pulsanti dell\'interfaccia.',
+      ],
+      en: [
+        'Uniform Trash Button Style: removed colored border from the header delete button to match all other interface controls.',
+      ],
+    },
+  },
+  {
     versione: '3.9.64',
     voci: {
       it: [
