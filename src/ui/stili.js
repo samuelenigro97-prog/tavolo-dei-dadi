@@ -451,7 +451,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   grid-template-columns: 280px minmax(0, 1fr) 230px;
   column-gap: 14px;
   row-gap: 10px;
-  align-items: start;
+  align-items: stretch;
 }
 .profilo-col-sinistra {
   grid-column: 1;
@@ -464,8 +464,10 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   grid-column: 2;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 12px;
   min-width: 0;
+  height: 100%;
 }
 .profilo-caratteristiche {
   grid-column: 3;
@@ -504,6 +506,8 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .pm-anagrafica > .campi-anagrafica { flex: 1 1 auto; align-content: space-between; }
 .pm-pf { display: flex; flex-direction: column; }
 .pm-pf > * { width: 100%; flex: 1 1 auto; }
+.pm-gruppo { display: flex; flex-direction: column; flex: 1 1 auto; }
+.pm-gruppo > .vitali { flex: 1 1 auto; height: 100%; }
 @media (min-width: 681px) and (max-width: 1024px) {
   /* iPad / Tablet: layout a due colonne bilanciato */
   .profilo-griglia {
