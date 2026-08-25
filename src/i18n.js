@@ -672,6 +672,12 @@ export const DIZIONARIO = {
     'donazioni.testo_1': 'Tavolo dei Dadi è uno strumento creato con passione per la community di giocatori di ruolo.',
     'donazioni.testo_2': 'Le donazioni sono contributi spontanei e facoltativi che aiutano a coprire i costi di hosting dei server (Cloudflare), la manutenzione e lo sviluppo continuo di nuove funzionalità.',
     'donazioni.grazie': 'Grazie di cuore a tutti i giocatori e Master che supportano il tavolo!',
+    'notifiche.titolo': 'Bacheca & Notifiche',
+    'notifiche.verifica_tasto': 'Verifica incongruenze',
+    'notifiche.scheda_ok': 'Scheda verificata: nessuna incongruenza rilevata. Competenze, tiri salvezza e statistiche sono conformi alle regole!',
+    'notifiche.nessuna_scheda': 'Nessun personaggio attivo',
+    'notifiche.controlli_ignorati': '{n} controlli ignorati',
+    'notifiche.mostra_ignorati': '↺ Mostra ignorati',
   },
   en: {
     'app.titolo': 'Dice Table',
@@ -1346,6 +1352,12 @@ export const DIZIONARIO = {
     'donazioni.testo_1': 'Tavolo dei Dadi is a passion project built for the tabletop roleplaying community.',
     'donazioni.testo_2': 'Donations are voluntary gratuities that help cover server hosting costs (Cloudflare), maintenance, and the continuous development of new features.',
     'donazioni.grazie': 'A heartfelt thank you to all the players and Dungeon Masters who support the project!',
+    'notifiche.titolo': 'Notice Board & Alerts',
+    'notifiche.verifica_tasto': 'Check inconsistencies',
+    'notifiche.scheda_ok': 'Character sheet verified: no inconsistencies detected. Skills, saving throws, and stats comply with 5e rules!',
+    'notifiche.nessuna_scheda': 'No active character',
+    'notifiche.controlli_ignorati': '{n} ignored checks',
+    'notifiche.mostra_ignorati': '↺ Show ignored',
   }
 };
 

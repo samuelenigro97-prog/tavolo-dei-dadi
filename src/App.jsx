@@ -2715,6 +2715,7 @@ export default function App() {
   const [mostraCrea, setMostraCrea] = useState(false); // schermata di creazione guidata
   const [mostraNoteLegali, setMostraNoteLegali] = useState(false);
   const [mostraDonazioni, setMostraDonazioni] = useState(false);
+  const [statoVerificaManuale, setStatoVerificaManuale] = useState(false);
   const [bozzaCrea, setBozzaCrea] = useState({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' });
   // versione delle regole: '2024' (5.5, default) o '2014' (5.0)
   const [regoleVersione, setRegoleVersione] = useState(() => localStorage.getItem('scheda-interattiva:versione') || '2024');
@@ -4926,6 +4927,7 @@ export default function App() {
 
   function apriAvvisi() {
     if (!mostraAvvisi) {
+      setStatoVerificaManuale(false);
       const r = avvisiBtnRef.current?.getBoundingClientRect();
       if (r) setPosAvvisi({
         top: Math.max(8, Math.min(window.innerHeight - 200, r.bottom + 5)),
@@ -6922,9 +6924,46 @@ export default function App() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <strong style={{ color: C.goldDark, fontSize: 15, marginRight: 'auto' }}>🔔 Notifiche</strong>
+              <strong style={{ color: C.goldDark, fontSize: 15, marginRight: 'auto' }}>🔔 {t('notifiche.titolo')}</strong>
               <button style={{ ...styles.buttonMini, padding: '2px 7px' }} onClick={() => setMostraAvvisi(false)}>✕</button>
             </div>
+
+            {/* Barra di verifica rapida del PG attivo */}
+            {scheda && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 8, padding: '6px 8px', background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8 }}>
+                <div style={{ fontSize: 12, color: C.ink, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  👤 {scheda?.nome || t('notifiche.nessuna_scheda')}
+                </div>
+                <button
+                  style={{ ...styles.buttonMini, fontSize: 11, padding: '3px 8px', flexShrink: 0, borderColor: C.goldDark, color: C.goldDark, fontWeight: 700 }}
+                  onClick={() => setStatoVerificaManuale(true)}
+                  title="Esegui una verifica completa delle regole su competenze, tiri salvezza e statistiche"
+                >
+                  🔍 {t('notifiche.verifica_tasto')}
+                </button>
+              </div>
+            )}
+
+            {/* Esito verifica quando non ci sono incongruenze attive */}
+            {(controlliAttivi.length === 0 && (statoVerificaManuale || (scheda?.controlliIgnorati || []).length > 0)) && (
+              <div style={{ border: `1px solid #2e9d4d`, borderRadius: 8, padding: '8px 10px', marginBottom: 10, background: 'rgba(46, 157, 77, 0.12)' }}>
+                <div style={{ fontSize: 12.5, color: C.ink, display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                  <span style={{ fontSize: 14 }}>✅</span>
+                  <span>{t('notifiche.scheda_ok')}</span>
+                </div>
+                {(scheda?.controlliIgnorati || []).length > 0 && (
+                  <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                    <span style={{ ...styles.detail, fontSize: 11 }}>{t('notifiche.controlli_ignorati', { n: scheda.controlliIgnorati.length })}</span>
+                    <button
+                      style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 6px' }}
+                      onClick={() => aggiorna({ controlliIgnorati: [] })}
+                    >
+                      {t('notifiche.mostra_ignorati')}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {avvisoBackup && (
               <div style={{ border: `1px solid ${C.gold}`, borderRadius: 8, padding: '8px 10px', marginBottom: 8, background: 'color-mix(in srgb, var(--c-panel) 88%, #c88c14)' }}>
