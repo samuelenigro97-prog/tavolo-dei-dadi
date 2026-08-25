@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.73';
+const APP_VERSION = '3.9.74';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -4072,13 +4072,13 @@ export default function App() {
     setPromemoriaBackup(false);
   }
 
-  /** Backup COMPLETO: esporta TUTTI i personaggi del roster in un unico file JSON importabile. */
+  /** Backup COMPLETO: esporta TUTTI i personaggi del roster in un unico file JSON consolidato. */
   function esportaBackupCompleto() {
     const ids = Object.keys(roster.personaggi || {});
     if (!ids.length) return;
     const dataStr = new Date().toISOString().slice(0, 10);
 
-    // 1) File principale Roster completo contenente TUTTI i personaggi
+    // File unico di backup consolidato contenente TUTTI i personaggi
     const datiTutti = {
       tipo: 'tavolo-dei-dadi-roster',
       app: 'Tavolo dei Dadi',
@@ -4094,33 +4094,6 @@ export default function App() {
     aRoster.download = `tavolo-dei-dadi-roster-completo-${dataStr}.json`;
     aRoster.click();
     URL.revokeObjectURL(urlRoster);
-
-    // 2) Se ci sono più personaggi, scarica anche i singoli file distanziati nel tempo per evitare il blocco popup del browser
-    if (ids.length > 1) {
-      ids.forEach((id, index) => {
-        setTimeout(() => {
-          const pg = roster.personaggi[id];
-          if (!pg) return;
-          const datiSingolo = {
-            tipo: 'tavolo-dei-dadi-backup',
-            app: 'Tavolo dei Dadi',
-            versione: APP_VERSION,
-            data: new Date().toISOString(),
-            personaggi: 1,
-            roster: { attivo: id, personaggi: { [id]: pg } },
-          };
-          const blob = new Blob([JSON.stringify(datiSingolo, null, 2)], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          const safeNome = String(pg.nome || 'pg').toLowerCase().replace(/[^a-z0-9àèéìòù]+/gi, '-').replace(/^-+|-+$/g, '') || 'pg';
-          a.download = `scheda-${safeNome}-${dataStr}.json`;
-          a.click();
-          URL.revokeObjectURL(url);
-        }, (index + 1) * 350);
-      });
-    }
-
     segnaBackupFatto();
   }
 
