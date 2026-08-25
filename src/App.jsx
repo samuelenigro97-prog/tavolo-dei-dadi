@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.1';
+const APP_VERSION = '4.0.2';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7746,7 +7746,31 @@ export default function App() {
             };
             return (
               <div className="selettore-personaggio-azioni" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
-                {/* Gruppo 1: Gestione PG */}
+                {/* Gruppo 1: Gestione PG (Nuovo PG, Modifica Nome, Level Up, Cestino) */}
+                <button
+                  style={btnAzione}
+                  onClick={() => {
+                    setBozzaCrea({
+                      nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '',
+                      livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [],
+                      competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {},
+                      multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '',
+                      multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '',
+                      dotazione: 'pacchetto'
+                    });
+                    setMostraCrea(true);
+                  }}
+                  title={t('tip.nuovo_pg')}
+                >
+                  ＋
+                </button>
+                <button
+                  style={btnAzione}
+                  onClick={() => setRinominando(!rinominando)}
+                  title={t('tip.rinomina')}
+                >
+                  ✎
+                </button>
                 <button
                   style={btnAzione}
                   title={t('tip.levelup')}
@@ -7765,9 +7789,13 @@ export default function App() {
                 >
                   ⬆️
                 </button>
-                <button style={btnAzione} onClick={() => setRinominando(!rinominando)} title={t('tip.rinomina')}>✎</button>
-                <button style={btnAzione} onClick={() => { setBozzaCrea({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' }); setMostraCrea(true); }} title={t('tip.nuovo_pg')}>＋</button>
-                <button style={btnAzione} onClick={eliminaPersonaggio} title={t('tip.elimina_pg')}>🗑</button>
+                <button
+                  style={btnAzione}
+                  onClick={eliminaPersonaggio}
+                  title={t('tip.elimina_pg')}
+                >
+                  🗑
+                </button>
 
                 <span className="selettore-divisore" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
 
