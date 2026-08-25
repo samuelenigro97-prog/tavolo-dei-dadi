@@ -448,7 +448,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
    centrale) vivono nella STESSA griglia. */
 .profilo-griglia {
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr) 230px;
+  grid-template-columns: 270px minmax(0, 1fr) 270px;
   column-gap: 14px;
   row-gap: 10px;
   align-items: stretch;
@@ -512,7 +512,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   /* iPad / Tablet: layout a due colonne bilanciato */
   .profilo-griglia {
     display: grid;
-    grid-template-columns: 240px minmax(0, 1fr);
+    grid-template-columns: 270px minmax(0, 1fr);
     column-gap: 12px;
     row-gap: 10px;
   }
