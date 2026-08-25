@@ -6980,27 +6980,7 @@ export default function App() {
 
               {scheda ? (
                 <>
-                  {/* Barra stato PG attivo */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 8, padding: '6px 8px', background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8 }}>
-                    <div style={{ fontSize: 12, color: C.ink, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      👤 {scheda.nome || t('notifiche.nessuna_scheda')}
-                    </div>
-                    {controlliAttivi.some((r) => r.correggibile) ? (
-                      <button
-                        style={{ ...styles.buttonMini, fontSize: 10.5, padding: '3px 7px', flexShrink: 0, background: '#2e9d4d', color: '#fff', borderColor: '#2e9d4d', fontWeight: 700, boxShadow: '0 2px 5px rgba(46,157,77,0.35)' }}
-                        onClick={correggiTuttiControlli}
-                        title="Applica tutte le correzioni con un click"
-                      >
-                        ⚡ {lingua === 'en' ? 'Fix all' : 'Correggi tutto'}
-                      </button>
-                    ) : (
-                      <span style={{ fontSize: 11, color: C.green, fontWeight: 700, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 3 }}>
-                        ✓ {lingua === 'en' ? 'Rules OK' : 'In regola'}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Nessuna incongruenza attiva */}
+                  {/* Nessuna incongruenza attiva: scheda in regola */}
                   {controlliAttivi.length === 0 && (
                     <div style={{ border: `1px solid #2e9d4d`, borderRadius: 8, padding: '8px 10px', background: 'rgba(46, 157, 77, 0.12)' }}>
                       <div style={{ fontSize: 12, color: C.ink, display: 'flex', alignItems: 'flex-start', gap: 6, lineHeight: 1.4 }}>
@@ -7021,14 +7001,26 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* Elenco incongruenze con correzione singola */}
+                  {/* Elenco incongruenze e verifiche attive */}
                   {controlliAttivi.length > 0 && (() => {
                     const certi = controlliAttivi.filter((r) => r.gravita === 'certo').length;
                     const ignorati = scheda.controlliIgnorati || [];
+                    const haCorreggibili = controlliAttivi.some((r) => r.correggibile);
                     return (
                       <div style={{ border: `1px solid ${certi ? C.red : C.gold}`, borderRadius: 8, padding: '8px 10px', background: certi ? 'color-mix(in srgb, var(--c-panel) 88%, #c83c3c)' : 'color-mix(in srgb, var(--c-panel) 88%, #c88c14)' }}>
-                        <div style={{ fontSize: 12.5, color: C.ink, marginBottom: 6 }}>
-                          ⚠️ <strong>{controlliAttivi.length} {controlliAttivi.length === 1 ? 'cosa da controllare' : 'cose da controllare'}</strong> su {scheda.nome || 'questa scheda'}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 6 }}>
+                          <div style={{ fontSize: 12.5, color: C.ink, fontWeight: 700 }}>
+                            ⚠️ {controlliAttivi.length} {controlliAttivi.length === 1 ? (lingua === 'en' ? 'thing to check' : 'cosa da verificare') : (lingua === 'en' ? 'things to check' : 'cose da verificare')}
+                          </div>
+                          {haCorreggibili && (
+                            <button
+                              style={{ ...styles.buttonMini, fontSize: 10.5, padding: '3px 7px', background: '#2e9d4d', color: '#fff', borderColor: '#2e9d4d', fontWeight: 700, boxShadow: '0 2px 5px rgba(46,157,77,0.35)' }}
+                              onClick={correggiTuttiControlli}
+                              title={lingua === 'en' ? 'Apply all fixes with one click' : 'Applica tutte le correzioni con un click'}
+                            >
+                              ⚡ {lingua === 'en' ? 'Fix all' : 'Correggi tutto'}
+                            </button>
+                          )}
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                           {controlliAttivi.map((r) => (
@@ -7071,6 +7063,12 @@ export default function App() {
                               >Ignora</button>
                             </div>
                           ))}
+                          {ignorati.length > 0 && (
+                            <button
+                              style={{ ...styles.buttonMini, fontSize: 10, alignSelf: 'flex-start', marginTop: 3 }}
+                              onClick={() => aggiorna({ controlliIgnorati: [] })}
+                            >↺ Mostra anche i {ignorati.length} ignorati</button>
+                          )}
                         </div>
                       </div>
                     );
