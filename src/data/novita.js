@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.81',
+    voci: {
+      it: [
+        'Supporto Sottoclassi e Multiclasse: il riquadro Privilegi Sottoclasse e la relativa Panoramica ora mostrano e gestiscono automaticamente i privilegi per tutte le classi del personaggio con livello 3 o superiore (es. Ranger 6 / Ladro 3).',
+      ],
+      en: [
+        'Multiclass Subclass Features Support: the Subclass Features panel and overview modal now automatically display and manage features for all character classes with level 3 or higher.',
+      ],
+    },
+  },
+  {
     versione: '3.9.80',
     voci: {
       it: [

@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.80';
+const APP_VERSION = '3.9.81';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -5701,45 +5701,61 @@ export default function App() {
       })()}
 
       {mostraPrivilegiSub && (() => {
-        const liv = Math.max(1, Math.min(20, scheda.livello || 1));
-        const tab = SUBCLASS_PRIVILEGI[scheda.sottoclasse] || {};
-        const righe = [];
-        for (let L = 1; L <= 20; L++) if (tab[L]) righe.push({ L, feat: tab[L], futuro: L > liv });
+        const tutteLeSub = [
+          ...(scheda.sottoclasse ? [{ classe: scheda.classe, livello: scheda.livello || 1, sottoclasse: scheda.sottoclasse }] : []),
+          ...((scheda.multiclasse || []).filter((m) => m.sottoclasse).map((m) => ({ classe: m.classe, livello: m.livello || 1, sottoclasse: m.sottoclasse }))),
+        ];
         return (
           <div
             style={{ position: 'fixed', inset: 0, zIndex: 1003, padding: 16, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             onClick={(e) => { if (e.target === e.currentTarget) setMostraPrivilegiSub(false); }}
           >
-            <div style={{ ...styles.panel, maxWidth: 520, width: '100%', maxHeight: '88vh', overflowY: 'auto' }}>
+            <div style={{ ...styles.panel, maxWidth: 540, width: '100%', maxHeight: '88vh', overflowY: 'auto' }}>
               <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 4 }}>📖 {t('priv.panoramica_sub')}</h1>
-              <div style={{ textAlign: 'center', ...styles.detail, marginBottom: 12 }}>
-                {traduciDato(scheda.sottoclasse) || '—'} · {traduciDato(scheda.classe) || '—'} · Liv. {liv} · {versione === '2024' ? 'D&D 5.5' : 'D&D 5.0'}
+              <div style={{ textAlign: 'center', ...styles.detail, marginBottom: 14 }}>
+                {versione === '2024' ? 'D&D 5.5' : 'D&D 5.0'}
               </div>
-              {righe.length === 0 && <p style={styles.detail}>{t('priv.nessuno')}</p>}
-              {righe.map(({ L, feat, futuro }) => (
-                <div key={L} style={{ display: 'flex', gap: 10, padding: '6px 0', borderBottom: `1px solid ${C.border}`, opacity: futuro ? 0.5 : 1 }}>
-                  <div style={{ flexShrink: 0, width: 44, fontWeight: 'bold', color: futuro ? C.inkDim : C.goldDark }}>
-                    {t('priv.livello')} {L}
-                  </div>
-                  <div style={{ flex: 1, fontSize: 13 }}>
-                    {feat.split('\n').map((r, i) => {
-                      const sp = spiegaPrivilegio(r);
-                      return (
-                        <div key={i}>
-                          • {sp ? (
-                            <span
-                              style={{ cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
-                              title={t('priv.tocca_spiegazione')}
-                              onClick={() => setInfo({ titolo: r, testo: sp })}
-                            >{r}</span>
-                          ) : r}
+              {tutteLeSub.length === 0 && <p style={styles.detail}>{t('priv.nessuno')}</p>}
+              {tutteLeSub.map((item, idx) => {
+                const tab = SUBCLASS_PRIVILEGI[item.sottoclasse] || {};
+                const righe = [];
+                for (let L = 1; L <= 20; L++) if (tab[L]) righe.push({ L, feat: tab[L], futuro: L > item.livello });
+                return (
+                  <div key={idx} style={{ marginBottom: 18, background: 'rgba(0,0,0,0.02)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: C.goldDark, marginBottom: 2 }}>
+                      🌟 {traduciDato(item.sottoclasse)}
+                    </div>
+                    <div style={{ fontSize: 11, color: C.inkDim, marginBottom: 8 }}>
+                      {traduciDato(item.classe)} · Livello {item.livello}
+                    </div>
+                    {righe.length === 0 && <p style={{ ...styles.detail, fontSize: 12 }}>{t('priv.nessuno')}</p>}
+                    {righe.map(({ L, feat, futuro }) => (
+                      <div key={L} style={{ display: 'flex', gap: 10, padding: '5px 0', borderBottom: `1px solid ${C.border}`, opacity: futuro ? 0.5 : 1 }}>
+                        <div style={{ flexShrink: 0, width: 48, fontWeight: 'bold', fontSize: 12, color: futuro ? C.inkDim : C.goldDark }}>
+                          {t('priv.livello')} {L}
                         </div>
-                      );
-                    })}
-                    {futuro && <span style={{ ...styles.detail, fontStyle: 'italic' }}>— {t('priv.futuro')}</span>}
+                        <div style={{ flex: 1, fontSize: 12.5 }}>
+                          {feat.split('\n').map((r, i) => {
+                            const sp = spiegaPrivilegio(r);
+                            return (
+                              <div key={i}>
+                                • {sp ? (
+                                  <span
+                                    style={{ cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
+                                    title={t('priv.tocca_spiegazione')}
+                                    onClick={() => setInfo({ titolo: r, testo: sp })}
+                                  >{r}</span>
+                                ) : r}
+                              </div>
+                            );
+                          })}
+                          {futuro && <span style={{ ...styles.detail, fontStyle: 'italic', fontSize: 11 }}>— {t('priv.futuro')}</span>}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              ))}
+                );
+              })}
               <p style={{ ...styles.detail, marginTop: 10, fontSize: 11 }}>{t('priv.aiuto_sub')}</p>
               <button style={{ ...styles.button, width: '100%', marginTop: 6 }} onClick={() => setMostraPrivilegiSub(false)}>{t('modal.chiudi')}</button>
             </div>
@@ -9465,17 +9481,60 @@ export default function App() {
                   </button>
                 </Sezione>
                 <Sezione titolo={t("sez.privilegi_sottoclasse")} {...apertoProps('privilegiSottoclasse')}>
-                  {scheda.sottoclasse && SUBCLASS_PRIVILEGI[scheda.sottoclasse] ? (
-                    <button
-                      style={{ ...styles.button, width: '100%', fontSize: 12 }}
-                      onClick={() => setMostraPrivilegiSub(true)}
-                      title={t('tip.panoramica_priv_sub')}
-                    >
-                      📖 {t("priv.panoramica_sub_btn")}
-                    </button>
-                  ) : (
-                    <p style={{ ...styles.detail, fontSize: 12, margin: 0 }}>{t('priv.sub_nessuna')}</p>
-                  )}
+                  {(() => {
+                    const tutteLeSub = [
+                      ...(scheda.sottoclasse ? [{ classe: scheda.classe, livello: scheda.livello || 1, sottoclasse: scheda.sottoclasse }] : []),
+                      ...((scheda.multiclasse || []).filter((m) => m.sottoclasse).map((m) => ({ classe: m.classe, livello: m.livello || 1, sottoclasse: m.sottoclasse }))),
+                    ];
+                    const haAlmenoUna = tutteLeSub.some((s) => SUBCLASS_PRIVILEGI[s.sottoclasse]);
+                    const classiSenzaSubMaPronte = [
+                      ...((!scheda.sottoclasse && (scheda.livello || 1) >= livelloSceltaSottoclasse(scheda.classe, versione)) ? [{ classe: scheda.classe, livello: scheda.livello || 1, isMain: true }] : []),
+                      ...((scheda.multiclasse || []).filter((m) => !m.sottoclasse && (m.livello || 1) >= livelloSceltaSottoclasse(m.classe, versione)).map((m) => ({ classe: m.classe, livello: m.livello || 1, isMain: false }))),
+                    ];
+                    if (haAlmenoUna) {
+                      return (
+                        <button
+                          style={{ ...styles.button, width: '100%', fontSize: 12 }}
+                          onClick={() => setMostraPrivilegiSub(true)}
+                          title={t('tip.panoramica_priv_sub')}
+                        >
+                          📖 {t("priv.panoramica_sub_btn")}{tutteLeSub.length > 1 ? ` (${tutteLeSub.length})` : ''}
+                        </button>
+                      );
+                    }
+                    if (classiSenzaSubMaPronte.length > 0) {
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {classiSenzaSubMaPronte.map((c, idx) => (
+                            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                              <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 600 }}>{traduciDato(c.classe)}:</span>
+                              <select
+                                style={{ ...styles.inlineInput, fontSize: 12, padding: '3px 6px', flex: 1, minWidth: 130 }}
+                                value=""
+                                onChange={(e) => {
+                                  const sub = e.target.value;
+                                  if (!sub) return;
+                                  if (c.isMain) {
+                                    aggiorna({ sottoclasse: sub, privilegiSottoclasse: privilegiSottoclasseFinoA(sub, c.livello) });
+                                  } else {
+                                    aggiorna({
+                                      multiclasse: (scheda.multiclasse || []).map((m) => (m.classe === c.classe ? { ...m, sottoclasse: sub } : m)),
+                                    });
+                                  }
+                                }}
+                              >
+                                <option value="">Scegli sottoclasse…</option>
+                                {sottoclassiPerClasse(c.classe).map((sc) => (
+                                  <option key={sc} value={sc}>{traduciDato(sc)}</option>
+                                ))}
+                              </select>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    }
+                    return <p style={{ ...styles.detail, fontSize: 12, margin: 0 }}>{t('priv.sub_nessuna')}</p>;
+                  })()}
                 </Sezione>
               </div>
               {/* Talenti e Tratti della specie: sotto, come coppia di riquadri
