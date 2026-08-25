@@ -8,10 +8,10 @@ export const NOVITA = [
     versione: '3.9.91',
     voci: {
       it: [
-        'Nomi PG con Iniziale Maiuscola & Gestione Archivio DM: forzatura automatica della prima lettera maiuscola per tutti i personaggi (creazione, import e modifica), raggruppamento duplicati nell\'Archivio DM per nome, pulsante 🗑️ per eliminare singole schede e pulsante 🧹 per pulire con un click tutte le copie precedenti.',
+        'Nomi PG con Iniziale Maiuscola & Raggruppamento Archivio DM: forzatura automatica della prima lettera maiuscola per tutti i personaggi (creazione, import e modifica) e raggruppamento intelligente delle versioni dello stesso personaggio per nome nell\'Archivio DM.',
       ],
       en: [
-        'Capitalized Character Names & DM Archive Enhancements: automatic initial capitalization for character names across creation, import, and editing; robust name-based grouping in DM Archive, 🗑️ button to delete individual records, and 🧹 bulk button to permanently clean older copies.',
+        'Capitalized Character Names & DM Archive Grouping: automatic initial capitalization for character names across creation, import, and editing; robust name-based grouping of character versions in DM Archive.',
       ],
     },
   },

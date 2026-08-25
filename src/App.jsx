@@ -2322,29 +2322,6 @@ function ArchivioDm({ url, onChiudi, onApri }) {
   }
   const nDuplicati = gruppi.reduce((n, g) => n + g.copie.length - 1, 0);
 
-  const eliminaTutteCopiePrecedenti = async () => {
-    if (!nDuplicati) return;
-    if (!window.confirm(`Vuoi eliminare tutte le ${nDuplicati} copie precedenti dall'archivio DM?\n\nVerranno conservate solo le versioni più recenti di ogni personaggio.`)) return;
-    setStato('carico');
-    try {
-      const idsDaEliminare = [];
-      for (const g of gruppi) {
-        const [, ...vecchie] = g.copie;
-        for (const v of vecchie) idsDaEliminare.push(v.id);
-      }
-      for (const id of idsDaEliminare) {
-        await fetch(`${base}/pg/${encodeURIComponent(id)}?key=${encodeURIComponent(chiave)}`, {
-          method: 'DELETE',
-        });
-      }
-      const setEliminati = new Set(idsDaEliminare);
-      setElenco((el) => (el || []).filter((x) => !setEliminati.has(x.id)));
-      setStato('');
-    } catch (e) {
-      setStato(`Pulizia fallita: ${e.message}`);
-    }
-  };
-
   return (
     <div
       style={{ position: 'fixed', inset: 0, zIndex: 1002, padding: 16, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -2381,15 +2358,6 @@ function ArchivioDm({ url, onChiudi, onApri }) {
                 {gruppi.length} {gruppi.length === 1 ? 'personaggio' : 'personaggi'} in archivio
                 {nDuplicati > 0 && <> · {nDuplicati} {nDuplicati === 1 ? 'copia precedente' : 'copie precedenti'} nascoste</>}
               </span>
-              {nDuplicati > 0 && (
-                <button
-                  style={{ ...styles.buttonMini, fontSize: 11, color: C.red, borderColor: C.red, padding: '3px 8px' }}
-                  onClick={eliminaTutteCopiePrecedenti}
-                  title="Elimina dal Cloud tutte le copie più vecchie mantenendo solo l'ultima versione di ogni PG"
-                >
-                  🧹 Elimina {nDuplicati} {nDuplicati === 1 ? 'copia precedente' : 'copie precedenti'}
-                </button>
-              )}
               <input
                 value={filtro}
                 onChange={(e) => setFiltro(e.target.value)}
