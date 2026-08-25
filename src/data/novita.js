@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.75',
+    voci: {
+      it: [
+        'Pulizia Dicitura Livello nel Selettore: rimossa la ripetizione ridondante del livello "(Liv. X)" nei personaggi monoclasse, mostrandola solo nei multiclasse come livello totale.',
+      ],
+      en: [
+        'Character Selector Level Label Cleanup: removed redundant "(Lvl X)" label for single-class characters, displaying it only for multiclass characters as total level.',
+      ],
+    },
+  },
+  {
     versione: '3.9.74',
     voci: {
       it: [
