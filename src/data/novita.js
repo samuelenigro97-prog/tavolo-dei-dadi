@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.78',
+    voci: {
+      it: [
+        'Unione Intelligente Schermate Fantasy Grounds: caricando contemporaneamente più schermate (Main + Skills + Inventory), l\'app fonde automaticamente tutti i dati dando priorità alla scheda anagrafica e aggregando tutte le competenze e tiri salvezza.',
+      ],
+      en: [
+        'Smart Fantasy Grounds Multi-Image Merge: importing multiple screenshots (Main + Skills + Inventory) automatically merges character data, prioritizing main stats and aggregating all skill proficiencies and saving throws.',
+      ],
+    },
+  },
+  {
     versione: '3.9.77',
     voci: {
       it: [

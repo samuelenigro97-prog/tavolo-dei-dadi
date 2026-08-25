@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.77';
+const APP_VERSION = '3.9.78';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1759,13 +1759,23 @@ function rosterVuoto() {
 function unisciSchedeFG(lista) {
   if (!lista.length) return null;
   if (lista.length === 1) return lista[0];
-  const base = { ...lista[0] };
-  for (let i = 1; i < lista.length; i++) {
-    const cur = lista[i];
+  // Prioritizza come base la scheda che contiene la classe principale o caratteristiche piene
+  const listaOrdinata = [...lista].sort((a, b) => {
+    const scoreA = (a.classe ? 10 : 0) + (a.pfMax > 10 ? 5 : 0) + Object.values(a.caratteristiche || {}).filter((v) => v !== 10).length;
+    const scoreB = (b.classe ? 10 : 0) + (b.pfMax > 10 ? 5 : 0) + Object.values(b.caratteristiche || {}).filter((v) => v !== 10).length;
+    return scoreB - scoreA;
+  });
+  const base = { ...listaOrdinata[0] };
+  for (let i = 1; i < listaOrdinata.length; i++) {
+    const cur = listaOrdinata[i];
     for (const k in cur) {
       if (k === 'abilita' && cur.abilita && base.abilita) {
         base.abilita = { ...base.abilita };
-        for (const ak in cur.abilita) if (cur.abilita[ak] > 0) base.abilita[ak] = cur.abilita[ak];
+        for (const ak in cur.abilita) {
+          if (cur.abilita[ak] > (base.abilita[ak] || 0)) {
+            base.abilita[ak] = cur.abilita[ak];
+          }
+        }
       } else if (k === 'tiriSalvezza' && cur.tiriSalvezza && base.tiriSalvezza) {
         base.tiriSalvezza = { ...base.tiriSalvezza };
         for (const tk in cur.tiriSalvezza) if (cur.tiriSalvezza[tk]) base.tiriSalvezza[tk] = true;
@@ -1777,7 +1787,6 @@ function unisciSchedeFG(lista) {
       } else if (k === 'incantesimiLista' && Array.isArray(cur.incantesimiLista) && cur.incantesimiLista.length) {
         base.incantesimiLista = [...(base.incantesimiLista || []), ...cur.incantesimiLista];
       } else if (k === 'multiclasse' && Array.isArray(cur.multiclasse) && cur.multiclasse.length) {
-        // Unisce multiclasse senza duplicati
         const visti = new Set((base.multiclasse || []).map((m) => `${m.classe}:${m.livello}`));
         for (const m of cur.multiclasse) {
           const key = `${m.classe}:${m.livello}`;
@@ -4157,6 +4166,7 @@ export default function App() {
       setErroreImport('');
       setPdfStato('loading');
       try {
+        const trascrizioni = [];
         for (const file of imageFiles) {
           const name = file.name.toLowerCase();
           const base64 = await new Promise((risolvi, rifiuta) => {
@@ -4178,7 +4188,30 @@ export default function App() {
           const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
           if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || `errore ${res.status} su ${file.name}`); }
           const dati = await res.json();
-          nuovoPersonaggio(normalizeImported(forzaVersione(dati)));
+          trascrizioni.push(dati);
+        }
+        if (trascrizioni.length) {
+          // Raggruppa per nome PG oppure unisce tutte le schermate se appartengono allo stesso PG
+          const perNome = {};
+          for (const d of trascrizioni) {
+            const k = String(d?.nome || '').toLowerCase().trim() || '__pg__';
+            if (!perNome[k]) perNome[k] = [];
+            perNome[k].push(d);
+          }
+          setRoster((r) => {
+            const personaggi = { ...r.personaggi };
+            let ultimo = r.attivo;
+            for (const k in perNome) {
+              const schedaFusa = unisciSchedeFG(perNome[k]);
+              const norm = normalizeImported(forzaVersione(schedaFusa));
+              const chiave = String(norm.nome || '').toLowerCase().trim();
+              const idEsistente = chiave ? Object.keys(personaggi).find((id) => String(personaggi[id]?.nome || '').toLowerCase().trim() === chiave) : null;
+              const targetId = idEsistente || `pg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+              personaggi[targetId] = norm;
+              ultimo = targetId;
+            }
+            return { attivo: ultimo, personaggi };
+          });
         }
         setPdfStato('');
         setMostraMenu(false);
