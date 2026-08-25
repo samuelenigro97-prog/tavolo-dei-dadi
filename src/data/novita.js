@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.80',
+    voci: {
+      it: [
+        'Restyling Sezione Magia & Incantesimi: riprogettata la visualizzazione di Trucchetti e Incantesimi con card più pulite e ordinate, badge di preparazione chiari (⭐ Prep.) e pulsanti di tiro rapido integrati.',
+      ],
+      en: [
+        'Magic & Spells Section Redesign: refined layout for Cantrips and Spelled levels with cleaner cards, clear preparation badges (⭐ Prep.), and integrated roll triggers.',
+      ],
+    },
+  },
+  {
     versione: '3.9.79',
     voci: {
       it: [

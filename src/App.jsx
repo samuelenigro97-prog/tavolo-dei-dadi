@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.79';
+const APP_VERSION = '3.9.80';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -9175,17 +9175,26 @@ export default function App() {
                                           </button>
                                         </div>
                                       )}
-                                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 2, flexShrink: 0, marginLeft: 'auto' }}>
+                                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0, marginLeft: 'auto' }}>
                                         {classePreparata && s.livello >= 1 && (
                                           <button
-                                            style={{ ...styles.buttonMini, color: s.preparato !== false ? C.goldDark : C.inkDim, borderColor: s.preparato !== false ? C.goldDark : C.border }}
+                                            style={{
+                                              ...styles.buttonMini,
+                                              padding: '2px 7px',
+                                              borderRadius: 6,
+                                              fontSize: 11,
+                                              fontWeight: 700,
+                                              color: s.preparato !== false ? C.goldDark : C.inkDim,
+                                              background: s.preparato !== false ? 'rgba(201,162,39,0.12)' : 'transparent',
+                                              borderColor: s.preparato !== false ? C.goldDark : C.border,
+                                            }}
                                             title={s.preparato === false && preparatiPieni && !s.bonus ? t('spell.max_tooltip') : (s.preparato !== false ? t('spell.preparato_si') : t('spell.preparato_no'))}
                                             disabled={s.preparato === false && preparatiPieni && !s.bonus}
                                             onClick={() => cambiaPreparazione(s)}
-                                          >{s.preparato !== false ? '⭐' : '☆'}</button>
+                                          >{s.preparato !== false ? '⭐ Prep.' : '☆ Non prep.'}</button>
                                         )}
-                                        {!s.catalogo && <button style={styles.buttonMini} title={t('tip.modifica')} onClick={() => setDettaglioInc(s.id)}>✎</button>}
-                                        {!s.catalogo && <button style={{ ...styles.buttonMini, color: C.red }} title={t('tip.elimina_inc')} onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })}>🗑</button>}
+                                        {!s.catalogo && <button style={{ ...styles.buttonMini, padding: '2px 6px' }} title={t('tip.modifica')} onClick={() => setDettaglioInc(s.id)}>✎</button>}
+                                        {!s.catalogo && <button style={{ ...styles.buttonMini, padding: '2px 6px', color: C.red }} title={t('tip.elimina_inc')} onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })}>🗑</button>}
                                       </div>
                                     </div>
                                   </div>
