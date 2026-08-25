@@ -572,14 +572,11 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .car-coppia { gap: 8px; }
 }
 .vitali { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 10px; align-items: stretch; }
-/* 6 riquadri vitali distinti e separati (Visione, Percezione Passiva, Resistenze, Condizioni, TS Morte, Ispirazione) */
-.vitali-sezioni-6 { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; align-items: stretch; width: 100%; }
-.vitali-sezioni-6 > * { min-width: 0; }
-@media (max-width: 900px) {
-  .vitali-sezioni-6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-}
-@media (max-width: 600px) {
-  .vitali-sezioni-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+/* 3 riquadri vitali unificati 2 a 2 (Visione & Perc. Passiva, Resistenze & Condizioni, TS Morte & Ispirazione) */
+.vitali-sezioni-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; align-items: stretch; width: 100%; }
+.vitali-sezioni-3 > * { min-width: 0; }
+@media (max-width: 768px) {
+  .vitali-sezioni-3 { grid-template-columns: 1fr; }
 }
 /* consente ai riquadri di stringersi sotto la larghezza del contenuto (niente overflow) */
 .vitali > * { min-width: 0; }
