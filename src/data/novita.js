@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.85',
+    voci: {
+      it: [
+        'Uniformazione Completa Menu e Barra di Navigazione: nomi, icone e ordine delle azioni rapide nel menu principale (Cloud, Annulla, Importa, Esporta, Notifiche, Lingua) ora rispecchiano perfettamente i tasti della barra superiore.',
+      ],
+      en: [
+        'Full Menu & Header Actions Uniformity: action labels, icons, and order in the main menu (Cloud, Undo, Import, Export, Notifications, Language) now perfectly mirror the top header buttons.',
+      ],
+    },
+  },
+  {
     versione: '3.9.84',
     voci: {
       it: [

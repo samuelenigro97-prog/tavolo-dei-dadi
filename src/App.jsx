@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.84';
+const APP_VERSION = '3.9.85';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -5512,31 +5512,80 @@ export default function App() {
             )}
             <button style={{ ...styles.button, width: '100%', marginBottom: 14 }} onClick={() => generaPgCasuale()} title={t('menu.pg_casuale_tooltip')}>{t('menu.pg_casuale')}</button>
 
-            {/* Specchio tasti header globali subito dopo Carica, nello stesso ordine */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8, marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
-              <button style={{ ...styles.button, width: '100%' }} onClick={() => { setMostraMenu(false); setTimeout(() => { setCloudStatus({ text: '', type: '' }); setMostraCloud(true); }, 50); }} title={t('tooltip.cloud_off')}>☁️ Cloud</button>
-              <button style={{ ...styles.button, width: '100%', opacity: passiUndo ? 1 : 0.45 }} disabled={!passiUndo} onClick={() => { annullaModifica(); setMostraMenu(false); }} title={passiUndo ? t('undo.tooltip', { n: passiUndo }) : t('undo.vuoto')}>↩︎ {t('undo.annulla')}</button>
-              <button style={{ ...styles.button, width: '100%' }} onClick={() => jsonRef.current?.click()} title={t('tip.importa')}>📂 Importa</button>
-              <button style={{ ...styles.button, width: '100%' }} onClick={() => { esportaJson(); setMostraMenu(false); }} title={t('tip.esporta')}>💾 Esporta</button>
-              <button style={{ ...styles.button, width: '100%' }} onClick={() => { setMostraMenu(false); setTimeout(() => apriAvvisi(), 50); }} title={nAvvisi > 0 ? `${nAvvisi} notifiche` : 'Notifiche'}>🔔 Notifiche{daNotificare ? ` (${nAvvisi > 0 ? nAvvisi : '!'})` : ''}</button>
-              <button style={{ ...styles.button, width: '100%' }} onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))} title={t('tooltip.lingua')}>{lingua === 'it' ? '🇮🇹 Lingua' : '🇬🇧 Lingua'}</button>
+            {/* Specchio tasti header globali nello stesso identico ordine, con le stesse etichette e icone */}
+            <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
+              <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>⚡ Azioni Rapide</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
+                <button
+                  style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
+                  onClick={() => { setMostraMenu(false); setTimeout(() => { setCloudStatus({ text: '', type: '' }); setMostraCloud(true); }, 50); }}
+                  title={t('tooltip.cloud_off')}
+                >
+                  <span>☁️</span> <span>Cloud</span>
+                </button>
+                <button
+                  style={{ ...styles.button, width: '100%', opacity: passiUndo ? 1 : 0.45, display: 'flex', alignItems: 'center', gap: 6 }}
+                  disabled={!passiUndo}
+                  onClick={() => { annullaModifica(); setMostraMenu(false); }}
+                  title={passiUndo ? t('undo.tooltip', { n: passiUndo }) : t('undo.vuoto')}
+                >
+                  <span>↩︎</span> <span>{t('undo.annulla')}</span>
+                </button>
+                <button
+                  style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
+                  onClick={() => { setMostraMenu(false); setTimeout(() => jsonRef.current?.click(), 50); }}
+                  title={t('tip.importa')}
+                >
+                  <span>📂</span> <span>Importa</span>
+                </button>
+                <button
+                  style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
+                  onClick={() => {
+                    setMostraMenu(false);
+                    setTimeout(() => setMostraMenuEsporta(true), 50);
+                  }}
+                  title={t('tip.esporta')}
+                >
+                  <span>💾</span> <span>Esporta</span>
+                </button>
+                <button
+                  style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
+                  onClick={() => { setMostraMenu(false); setTimeout(() => apriAvvisi(), 50); }}
+                  title={nAvvisi > 0 ? `${nAvvisi} notifiche` : 'Notifiche'}
+                >
+                  <span>🔔</span> <span>Notifiche{daNotificare ? ` (${nAvvisi > 0 ? nAvvisi : '!'})` : ''}</span>
+                </button>
+                <button
+                  style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
+                  onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
+                  title={t('tooltip.lingua')}
+                >
+                  <span>{lingua === 'it' ? '🇮🇹' : '🇬🇧'}</span> <span>Lingua</span>
+                </button>
+              </div>
             </div>
 
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
-              <div style={{ ...styles.detail, marginBottom: 8 }}>🛟 Backup</div>
+              <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>🛟 Backup & Archivio</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
-                <button style={{ ...styles.button, width: '100%' }} onClick={() => jsonRef.current?.click()} title="Ripristina">📂 Ripristina</button>
-                <button style={{ ...styles.button, width: '100%' }} onClick={esportaBackupCompleto} title="Esporta tutti i PG in file separati">💾 Esporta tutto</button>
+                <button style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => jsonRef.current?.click()} title="Ripristina backup JSON">
+                  <span>📂</span> <span>Ripristina</span>
+                </button>
+                <button style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }} onClick={esportaBackupCompleto} title="Esporta tutti i personaggi in un file unico">
+                  <span>💾</span> <span>Esporta tutto</span>
+                </button>
                 {leggiSnapshots().length > 0 && (
-                  <button style={{ ...styles.button, width: '100%' }} onClick={() => setMostraRipristino(true)}>🕓 Versioni</button>
+                  <button style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => setMostraRipristino(true)}>
+                    <span>🕓</span> <span>Versioni</span>
+                  </button>
                 )}
                 {URL_ARCHIVIO_PG && (
                   <button
-                    style={{ ...styles.button, width: '100%' }}
+                    style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
                     onClick={() => { setMostraArchivioDm(true); }}
                     title="Archivio delle schede (serve chiave DM)"
                   >
-                    🗂 Archivio
+                    <span>🗂</span> <span>Archivio DM</span>
                   </button>
                 )}
               </div>
