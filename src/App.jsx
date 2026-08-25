@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.101';
+const APP_VERSION = '3.9.102';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7857,14 +7857,28 @@ export default function App() {
 
                 <span className="selettore-divisore" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
 
-                {/* Tasto Versione D&D — ultimo di tutti */}
-                <button
-                  style={{ ...btnAzione, minWidth: 44, padding: '6px 8px', fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: 'italic', fontWeight: 'bold', fontSize: 14, color: C.goldDark, borderColor: C.goldDark }}
-                  title={`Versione Regole D&D: ${(scheda.versione || '2024') === '2024' ? '5.5 (2024)' : '5.0 (2014)'} — click per cambiare`}
-                  onClick={() => aggiorna({ versione: (scheda.versione || '2024') === '2024' ? '2014' : '2024' })}
+                {/* Indicatore Versione D&D — mostra l'edizione delle regole stabilita alla creazione del PG */}
+                <div
+                  style={{
+                    ...btnAzione,
+                    minWidth: 44,
+                    padding: '6px 8px',
+                    fontFamily: "Georgia, 'Times New Roman', serif",
+                    fontStyle: 'italic',
+                    fontWeight: 'bold',
+                    fontSize: 14,
+                    color: C.goldDark,
+                    borderColor: C.goldDark,
+                    cursor: 'default',
+                    userSelect: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  title={`Versione Regole D&D: ${(scheda.versione || '2024') === '2024' ? '5.5 (2024)' : '5.0 (2014)'}`}
                 >
                   {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
-                </button>
+                </div>
               </div>
             );
           })()}
