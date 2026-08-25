@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.105';
+const APP_VERSION = '3.9.106';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7753,7 +7753,51 @@ export default function App() {
             };
             return (
               <div className="selettore-personaggio-azioni" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
-                {/* Gruppo 1: Navigazione & App */}
+                {/* Gruppo 1: Versione D&D + Gestione PG (Prime 5 voci) */}
+                <div
+                  style={{
+                    ...btnAzione,
+                    fontFamily: "Georgia, 'Times New Roman', serif",
+                    fontStyle: 'italic',
+                    fontWeight: 'bold',
+                    fontSize: 13,
+                    color: C.goldDark,
+                    borderColor: C.goldDark,
+                    cursor: 'default',
+                    userSelect: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  title={`Versione Regole D&D: ${(scheda.versione || '2024') === '2024' ? '5.5 (2024)' : '5.0 (2014)'}`}
+                >
+                  {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
+                </div>
+                <button
+                  style={btnAzione}
+                  title={t('tip.levelup')}
+                  onClick={() => {
+                    const dvMatch = String(scheda.dadiVita || '').match(/d(\d+)/i);
+                    const facceDV = dvMatch ? parseInt(dvMatch[1]) : 8;
+                    const modCos = modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10) || 0;
+                    const avgHpGain = Math.floor(facceDV / 2) + 1 + modCos;
+                    setLevelUpBozza({
+                      metodo: 'media', hpGainMedia: Math.max(1, avgHpGain), facceDV, modCos, tiroFatto: 0,
+                      asiMode: 'aumento', asiA: '', asiB: '', talento: '',
+                      sottoclasse: scheda.sottoclasse || '',
+                    });
+                    setMostraLevelUp(true);
+                  }}
+                >
+                  ⬆️
+                </button>
+                <button style={btnAzione} onClick={() => setRinominando(!rinominando)} title={t('tip.rinomina')}>✎</button>
+                <button style={btnAzione} onClick={() => { setBozzaCrea({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' }); setMostraCrea(true); }} title={t('tip.nuovo_pg')}>＋</button>
+                <button style={btnAzione} onClick={eliminaPersonaggio} title={t('tip.elimina_pg')}>🗑</button>
+
+                <span className="selettore-divisore" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
+
+                {/* Gruppo 2: Navigazione & App (Centrali) */}
                 <button style={btnAzione} title={t('tip.menu_iniziale')} onClick={() => setMostraMenu(true)}>
                   🏠
                 </button>
@@ -7786,6 +7830,25 @@ export default function App() {
                   💾
                 </button>
                 <button
+                  style={btnAzione}
+                  title={lingua === 'it' ? 'Cambia in inglese' : 'Switch to Italian'}
+                  onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
+                >
+                  {lingua === 'it' ? '🇮🇹' : '🇬🇧'}
+                </button>
+
+                <span className="selettore-divisore" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
+
+                {/* Gruppo 3: Gameplay, Sessione & Notifiche (dopo Fight) */}
+                <button ref={ambientazioneBtnRef} style={btnAzione} title={t('luogo.tooltip')} onClick={() => { sbloccaAudio(); if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
+                <button style={btnAzione} title={t('tooltip.tema')} onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}>{tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'}</button>
+                <button style={btnAzione} onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())} title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}>🗺️</button>
+                <button style={btnAzione} onClick={() => {
+                  if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
+                  else if (combat.combattenti.length) setCombat((c) => ({ ...c, attivo: true, aperto: true }));
+                  else aggiungiPgAlCombat();
+                }} title={(combat.attivo && combat.aperto ? t('ct.minimizza') : t('ct.apri')) + (combat.combattenti.length ? ` (${combat.combattenti.length})` : '')}>⚔️</button>
+                <button
                   ref={notificheBtnRef}
                   className={daNotificare ? 'btn-notifiche-lampeggia' : ''}
                   style={{
@@ -7803,50 +7866,6 @@ export default function App() {
                     </span>
                   )}
                 </button>
-                <button
-                  style={btnAzione}
-                  title={lingua === 'it' ? 'Cambia in inglese' : 'Switch to Italian'}
-                  onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
-                >
-                  {lingua === 'it' ? '🇮🇹' : '🇬🇧'}
-                </button>
-
-                <span className="selettore-divisore" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
-
-                {/* Gruppo 2: Gestione PG */}
-                <button
-                  style={btnAzione}
-                  title={t('tip.levelup')}
-                  onClick={() => {
-                    const dvMatch = String(scheda.dadiVita || '').match(/d(\d+)/i);
-                    const facceDV = dvMatch ? parseInt(dvMatch[1]) : 8;
-                    const modCos = modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10) || 0;
-                    const avgHpGain = Math.floor(facceDV / 2) + 1 + modCos;
-                    setLevelUpBozza({
-                      metodo: 'media', hpGainMedia: Math.max(1, avgHpGain), facceDV, modCos, tiroFatto: 0,
-                      asiMode: 'aumento', asiA: '', asiB: '', talento: '',
-                      sottoclasse: scheda.sottoclasse || '',
-                    });
-                    setMostraLevelUp(true);
-                  }}
-                >
-                  ⬆️
-                </button>
-                <button style={btnAzione} onClick={() => setRinominando(!rinominando)} title={t('tip.rinomina')}>✎</button>
-                <button style={btnAzione} onClick={() => { setBozzaCrea({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' }); setMostraCrea(true); }} title={t('tip.nuovo_pg')}>＋</button>
-                <button style={btnAzione} onClick={eliminaPersonaggio} title={t('tip.elimina_pg')}>🗑</button>
-
-                <span className="selettore-divisore" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
-
-                {/* Gruppo 3: Gameplay & Sessione */}
-                <button ref={ambientazioneBtnRef} style={btnAzione} title={t('luogo.tooltip')} onClick={() => { sbloccaAudio(); if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
-                <button style={btnAzione} title={t('tooltip.tema')} onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}>{tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'}</button>
-                <button style={btnAzione} onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())} title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}>🗺️</button>
-                <button style={btnAzione} onClick={() => {
-                  if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
-                  else if (combat.combattenti.length) setCombat((c) => ({ ...c, attivo: true, aperto: true }));
-                  else aggiungiPgAlCombat();
-                }} title={(combat.attivo && combat.aperto ? t('ct.minimizza') : t('ct.apri')) + (combat.combattenti.length ? ` (${combat.combattenti.length})` : '')}>⚔️</button>
 
                 <span className="selettore-divisore" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
 
@@ -7865,29 +7884,6 @@ export default function App() {
                     <span style={{ color: '#c0392b', fontSize: 13, marginLeft: 2, fontWeight: 900 }}>!</span>
                   )}
                 </button>
-
-                <span className="selettore-divisore" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
-
-                {/* Indicatore Versione D&D — mostra l'edizione delle regole stabilita alla creazione del PG */}
-                <div
-                  style={{
-                    ...btnAzione,
-                    fontFamily: "Georgia, 'Times New Roman', serif",
-                    fontStyle: 'italic',
-                    fontWeight: 'bold',
-                    fontSize: 13,
-                    color: C.goldDark,
-                    borderColor: C.goldDark,
-                    cursor: 'default',
-                    userSelect: 'none',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                  title={`Versione Regole D&D: ${(scheda.versione || '2024') === '2024' ? '5.5 (2024)' : '5.0 (2014)'}`}
-                >
-                  {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
-                </div>
               </div>
             );
           })()}
