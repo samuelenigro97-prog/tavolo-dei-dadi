@@ -507,6 +507,15 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   align-items: center;
   justify-content: center;
 }
+.ritratto-box img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 .ritratto-toggle {
   width: 100%; margin: 0 0 6px; padding: 5px 8px; border: 1px solid var(--c-border);
   border-radius: 7px; background: var(--c-panel-light); color: var(--c-title);

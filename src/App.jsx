@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.5';
+const APP_VERSION = '4.0.6';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7936,7 +7936,7 @@ export default function App() {
                         <img
                           src={scheda.ritratto}
                           alt={`Ritratto di ${scheda.nome}`}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
                           onError={(e) => {
                             if (!e.currentTarget.dataset.fallback) {
                               e.currentTarget.dataset.fallback = '1';
@@ -7945,11 +7945,11 @@ export default function App() {
                           }}
                         />
                       ) : (
-                        <div style={{ position: 'relative', width: '100%', height: '100%' }} title={t('tip.carica_img')}>
+                        <div style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} title={t('tip.carica_img')}>
                           <img
                             src={generaAvatar(scheda.classe, scheda.specie, scheda.nome)}
                             alt={`Ritratto di ${scheda.nome}`}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                           />
                           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.35)', color: '#fff', fontSize: 9, letterSpacing: 1, textAlign: 'center', padding: '2px 0' }}>{t("profilo.ritratto")}</div>
                         </div>
