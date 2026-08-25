@@ -478,12 +478,60 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   min-width: 0;
   height: 100%;
 }
+
+/* Tier 1: Sinistra (Ritratto), Centro (Anagrafica + Punti Vita), Destra (Forza + Des + Cos) */
+.ritratto-tier-1 {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+}
+.ritratto-tier-1 > div {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin-bottom: 0 !important;
+}
+.ritratto-box {
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 280px;
+  height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ritratto-toggle {
+  width: 100%; margin: 0 0 6px; padding: 5px 8px; border: 1px solid var(--c-border);
+  border-radius: 7px; background: var(--c-panel-light); color: var(--c-title);
+  font: 700 12px Georgia, serif; letter-spacing: 1px; text-align: left; cursor: pointer;
+}
+
+.pm-tier-1 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.pm-anagrafica, .pm-pf, .pm-gruppo { min-width: 0; }
+.pm-anagrafica { display: flex; flex-direction: column; }
+.pm-anagrafica > .campi-anagrafica { flex: 1 1 auto; align-content: space-between; }
+.pm-pf { display: flex; flex-direction: column; flex: 1 1 auto; }
+.pm-pf > * { width: 100%; flex: 1 1 auto; }
+
 .car-tier-1 {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  min-width: 0;
   flex: 1 1 auto;
+  min-width: 0;
 }
 .car-tier-1 > .blocco-car {
   flex: 1 1 0;
@@ -493,6 +541,21 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   padding: 6px 10px;
   min-width: 0;
 }
+
+/* Tier 2: Competenze, CA/Riposo/Vitali, Intelligenza/Saggezza */
+.competenze-tier-2 {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.pm-tier-2 {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.pm-gruppo { display: flex; flex-direction: column; flex: 1 1 auto; }
+.pm-gruppo > .vitali { flex: 1 1 auto; height: 100%; }
+
 .car-tier-2 {
   display: flex;
   flex-direction: column;
@@ -504,6 +567,18 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   flex-direction: column;
   justify-content: center;
   padding: 5px 10px;
+  min-width: 0;
+}
+
+/* Tier 3: Risorse, 3 Box Vitali, Carisma */
+.risorse-tier-3 {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.pm-tier-3 {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
 }
 .car-tier-3 {
@@ -519,36 +594,10 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   padding: 6px 10px;
   min-width: 0;
 }
-/* Il box immagine rettangolare (270px × 295px) allineato alla fine di Anagrafica+PF e Forza+Des+Cost */
-.ritratto-box {
-  width: 100%;
-  height: 295px;
-  min-height: 295px;
-  border-radius: 12px;
-  overflow: hidden;
-  position: relative;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.ritratto-toggle {
-  width: 100%; margin: 0 0 6px; padding: 5px 8px; border: 1px solid var(--c-border);
-  border-radius: 7px; background: var(--c-panel-light); color: var(--c-title);
-  font: 700 12px Georgia, serif; letter-spacing: 1px; text-align: left; cursor: pointer;
-}
+
 .profilo-col-sinistra .sezione { margin-bottom: 0 !important; }
 .profilo-col-sinistra .sezione > summary { font-size: 11.5px !important; letter-spacing: 0.7px !important; white-space: nowrap !important; overflow: hidden; text-overflow: ellipsis; }
 .profilo-caratteristiche > * .blocco-car { margin-bottom: 0 !important; }
-/* i gruppi di vitali riempiono la larghezza della loro riga */
-.pm-anagrafica, .pm-pf, .pm-gruppo { min-width: 0; }
-.pm-anagrafica { display: flex; flex-direction: column; }
-.pm-anagrafica > .campi-anagrafica { flex: 1 1 auto; align-content: space-between; }
-.pm-pf { display: flex; flex-direction: column; }
-.pm-pf > * { width: 100%; flex: 1 1 auto; }
-.pm-gruppo { display: flex; flex-direction: column; flex: 1 1 auto; }
-.pm-gruppo > .vitali { flex: 1 1 auto; height: 100%; }
 @media (min-width: 681px) and (max-width: 1024px) {
   /* iPad / Tablet: layout a due colonne bilanciato */
   .profilo-griglia {

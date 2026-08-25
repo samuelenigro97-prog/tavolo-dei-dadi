@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.4';
+const APP_VERSION = '4.0.5';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7895,271 +7895,260 @@ export default function App() {
           <div className="profilo-griglia">
             {/* COLONNA SINISTRA: Ritratto + Competenze + Risorse di classe */}
             <div className="profilo-col-sinistra">
-              {/* Ritratto */}
-              {!(scheda.sezioniAperte?.ritratto ?? true) && (
-                <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 2 }}>
-                  <button
-                    type="button"
-                    className="ritratto-toggle"
-                    style={{ margin: 0, flex: 1 }}
-                    onClick={() => aggiorna({ sezioniAperte: { ...(scheda.sezioniAperte || {}), ritratto: true } })}
-                    aria-expanded={false}
-                  >▸ 🖼️ {t('profilo.ritratto')}</button>
-                  <button
-                    type="button"
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      padding: 0,
-                      fontSize: 21,
-                      lineHeight: 1,
-                      color: scheda.ispirazione ? '#f0c43f' : C.inkDim,
-                      textShadow: scheda.ispirazione ? '0 0 5px rgba(240, 196, 63, 0.65)' : 'none',
-                      cursor: 'pointer',
-                      flexShrink: 0,
-                      transition: 'all 0.2s ease',
-                    }}
-                    title={scheda.ispirazione ? `${t('vital.ispirazione')}: ${t('common.attivo')}` : `${t('vital.ispirazione')}: ${t('common.non_attivo')}`}
-                    onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
-                  >
-                    {scheda.ispirazione ? '★' : '☆'}
-                  </button>
-                </div>
-              )}
-              {(scheda.sezioniAperte?.ritratto ?? true) && (
-                <div style={{ position: 'relative', width: '100%', marginBottom: 4 }}>
-                  <div
-                    className="ritratto-box"
-                    style={{
-                      width: '100%', borderRadius: 12, overflow: 'hidden',
-                      // emblema auto (foto assente o SVG): sfondo col colore classe, si fonde coi bordi
-                      background: (!scheda.ritratto || scheda.ritratto.startsWith('data:image/svg')) ? (coloreClasse(scheda.classe)?.chiaro || C.panel) : C.panel,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      boxShadow: 'inset 0 0 8px rgba(0,0,0,0.2)', border: `2px solid ${coloreClasse(scheda.classe) ? C.gold : C.border}`,
-                      cursor: 'pointer', position: 'relative', flexShrink: 0,
-                    }}
-                    title={scheda.ritratto ? 'Click: cambia immagine' : 'Click: carica l’immagine del personaggio'}
-                    onClick={() => ritrattoRef.current?.click()}
-                  >
-                    {/* Freccia di riduzione */}
+              {/* Tier 1: Ritratto */}
+              <div className="ritratto-tier-1">
+                {!(scheda.sezioniAperte?.ritratto ?? true) && (
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 2 }}>
                     <button
                       type="button"
-                      className="ritratto-collassa"
-                      title="Riduci il ritratto"
-                      aria-expanded
-                      onClick={(e) => { e.stopPropagation(); aggiorna({ sezioniAperte: { ...(scheda.sezioniAperte || {}), ritratto: false } }); }}
-                    >▾</button>
-
-                    {scheda.ritratto ? (
-                      <img
-                        src={scheda.ritratto}
-                        alt={`Ritratto di ${scheda.nome}`}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        onError={(e) => {
-                          if (!e.currentTarget.dataset.fallback) {
-                            e.currentTarget.dataset.fallback = '1';
-                            e.currentTarget.src = avatarSvgFallback(scheda.classe, scheda.specie, scheda.nome);
-                          }
-                        }}
-                      />
-                    ) : (
-                      <div style={{ position: 'relative', width: '100%', height: '100%' }} title={t('tip.carica_img')}>
-                        <img
-                          src={generaAvatar(scheda.classe, scheda.specie, scheda.nome)}
-                          alt={`Ritratto di ${scheda.nome}`}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                        />
-                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.35)', color: '#fff', fontSize: 9, letterSpacing: 1, textAlign: 'center', padding: '2px 0' }}>{t("profilo.ritratto")}</div>
-                      </div>
-                    )}
+                      className="ritratto-toggle"
+                      style={{ margin: 0, flex: 1 }}
+                      onClick={() => aggiorna({ sezioniAperte: { ...(scheda.sezioniAperte || {}), ritratto: true } })}
+                      aria-expanded={false}
+                    >▸ 🖼️ {t('profilo.ritratto')}</button>
                   </div>
-                  {scheda.ritratto && (
-                    <button
-                      style={{ ...styles.buttonDanger, position: 'absolute', bottom: -6, right: -6, padding: '0 6px', background: C.panel, zIndex: 4 }}
-                      title={t('tip.rimuovi_img')}
-                      onClick={() => aggiorna({ ritratto: '' })}
-                    >
-                      ×
-                    </button>
-                  )}
-                  <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
-                </div>
-              )}
-
-              {/* Addestramento / Competenze */}
-              <Sezione titolo={t("sez.addestramento")} {...apertoProps('addestramento')}>
-                {/* Armature */}
-                <TendinaArmature
-                  armature={scheda.addestramento?.armature}
-                  onModifica={(patch) =>
-                    aggiorna({
-                      addestramento: {
-                        ...scheda.addestramento,
-                        armature: { ...scheda.addestramento?.armature, ...patch },
-                      },
-                    })
-                  }
-                />
-
-                {/* Categorie Armi */}
-                <TendinaCategorieArmi
-                  valoreArmi={scheda.addestramento?.armi}
-                  onImpostaCategoria={(id) => {
-                    const raw = (scheda.addestramento?.armi || '');
-                    const haSemplici = /armi\s*semplici|simple\s*weapons/i.test(raw);
-                    const haGuerra = /armi\s*da\s*guerra|martial\s*weapons/i.test(raw);
-                    const haEntrambe = haSemplici && haGuerra;
-
-                    const singole = raw.split(/[,\n]/).map((s) => s.trim()).filter((s) => Boolean(s) && !/armi\s*semplici|simple\s*weapons|armi\s*da\s*guerra|martial\s*weapons/i.test(s));
-                    let nuovoValore = '';
-                    if (id === 'entrambe') {
-                      if (haEntrambe) nuovoValore = singole.join(', ');
-                      else nuovoValore = ['Armi semplici e da guerra', ...singole].join(', ');
-                    } else if (id === 'semplici') {
-                      if (haSemplici && !haGuerra) nuovoValore = singole.join(', ');
-                      else nuovoValore = ['Armi semplici', ...singole].join(', ');
-                    } else if (id === 'guerra') {
-                      if (haGuerra && !haSemplici) nuovoValore = singole.join(', ');
-                      else nuovoValore = ['Armi da guerra', ...singole].join(', ');
-                    } else {
-                      nuovoValore = singole.join(', ');
-                    }
-                    aggiorna({ addestramento: { ...scheda.addestramento, armi: nuovoValore } });
-                  }}
-                />
-
-                {/* Armi Specifiche */}
-                <TendinaArmiSpecifiche
-                  valoreArmi={scheda.addestramento?.armi}
-                  onToggleArmaSingola={(nomeArma) => {
-                    const raw = (scheda.addestramento?.armi || '');
-                    const haSemplici = /armi\s*semplici|simple\s*weapons/i.test(raw);
-                    const haGuerra = /armi\s*da\s*guerra|martial\s*weapons/i.test(raw);
-
-                    let singole = raw.split(/[,\n]/).map((s) => s.trim()).filter((s) => Boolean(s) && !/armi\s*semplici|simple\s*weapons|armi\s*da\s*guerra|martial\s*weapons/i.test(s));
-                    const haGiaSingola = singole.some((s) => s.toLowerCase() === nomeArma.toLowerCase());
-
-                    if (haGiaSingola) {
-                      singole = singole.filter((s) => s.toLowerCase() !== nomeArma.toLowerCase());
-                    } else {
-                      singole.push(nomeArma);
-                    }
-
-                    const categorie = [];
-                    if (haSemplici && haGuerra) categorie.push('Armi semplici e da guerra');
-                    else if (haSemplici) categorie.push('Armi semplici');
-                    else if (haGuerra) categorie.push('Armi da guerra');
-
-                    aggiorna({ addestramento: { ...scheda.addestramento, armi: [...categorie, ...singole].join(', ') } });
-                  }}
-                />
-
-                {/* Strumenti */}
-                <TendinaStrumenti
-                  valoreStrumenti={scheda.addestramento?.strumenti}
-                  onToggleStrumento={(nomeStrumento) => {
-                    let lista = (scheda.addestramento?.strumenti || '').split(/[,\n]/).map((s) => s.trim()).filter(Boolean);
-                    if (lista.some((s) => s.toLowerCase() === nomeStrumento.toLowerCase())) {
-                      lista = lista.filter((s) => s.toLowerCase() !== nomeStrumento.toLowerCase());
-                    } else {
-                      lista.push(nomeStrumento);
-                    }
-                    aggiorna({ addestramento: { ...scheda.addestramento, strumenti: lista.join(', ') } });
-                  }}
-                />
-
-                {/* Lingue */}
-                <TendinaLingue
-                  valoreLingue={scheda.lingue}
-                  onToggleLingua={(nomeLingua) => {
-                    let lista = (scheda.lingue || '').split(/[,\n]/).map((s) => s.trim()).filter(Boolean);
-                    if (lista.some((s) => s.toLowerCase() === nomeLingua.toLowerCase())) {
-                      lista = lista.filter((s) => s.toLowerCase() !== nomeLingua.toLowerCase());
-                    } else {
-                      lista.push(nomeLingua);
-                    }
-                    aggiorna({ lingue: lista.join(', ') });
-                  }}
-                />
-              </Sezione>
-
-              {/* Risorse di classe */}
-              <Sezione titolo={t("sez.risorse")} {...apertoProps('risorse')}>
-                {scheda.risorse.length === 0 && (
-                  <p style={{ ...styles.detail, marginTop: 0, fontSize: 11 }}>
-                    Nessuna risorsa. Aggiungi Ki, punti stregoneria, ira, ispirazione bardica, usi dei privilegi…
-                  </p>
                 )}
-                {scheda.risorse.map((r) => {
-                  const modifica = (patch) =>
-                    aggiorna({ risorse: scheda.risorse.map((x) => (x.id === r.id ? { ...x, ...patch } : x)) });
-                  const spiegazione = spiegaRisorsa(r.nome);
-                  const automatica = String(r.id || '').startsWith('auto-');
-                  return (
-                    <div key={r.id} style={{ marginBottom: 8, fontSize: 12, paddingBottom: 8, borderBottom: `1px dotted ${C.border}` }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                        {spiegazione ? (
-                          <button
-                            type="button"
-                            title={spiegazione}
-                            onClick={() => setInfo({ titolo: r.nome, testo: spiegazione })}
-                            style={{ padding: 0, border: 0, background: 'transparent', color: C.ink, font: 'inherit', fontWeight: 600, textAlign: 'left', cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3, marginRight: 'auto', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
-                          >{r.nome} ⓘ</button>
-                        ) : (
-                          <span style={{ marginRight: 'auto', minWidth: 0 }}><Editable value={r.nome} onChange={(v) => modifica({ nome: v })} width={110} title={t('tip.nome_risorsa')} /></span>
-                        )}
-                        {!automatica && (
-                          <button
-                            style={{ ...styles.buttonMini, padding: '0 6px', color: C.red, flexShrink: 0 }}
-                            title={t('tip.rimuovi_risorsa')}
-                            onClick={() => aggiorna({ risorse: scheda.risorse.filter((x) => x.id !== r.id) })}
-                          >✕</button>
-                        )}
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
-                        <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title={t('tip.spendi')} onClick={() => modifica({ attuali: Math.max(0, r.attuali - 1) })}>−</button>
-                        <strong style={{ minWidth: 16, textAlign: 'center', display: 'inline-block', color: r.attuali === r.max ? C.goldDark : (r.attuali === 0 ? C.inkDim : C.ink) }}>{r.attuali}</strong>
-                        <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title={t('tip.recupera')} onClick={() => modifica({ attuali: Math.min(r.max, r.attuali + 1) })}>+</button>
-                        <span style={styles.detail}>/ {automatica
-                          ? <strong>{r.max}</strong>
-                          : <Editable value={r.max} tipo="numero" width={30} onChange={(v) => modifica({ max: Math.max(0, v), attuali: Math.min(Math.max(0, v), r.attuali) })} />}
-                        </span>
-                        {automatica ? (
-                          <span style={{ ...styles.detail, fontSize: 10, whiteSpace: 'nowrap', marginLeft: 'auto' }} title={t('tip.quando_ricarica')}>↻ {r.reset === 'breve' ? t('res.breve') : t('res.lungo')}</span>
-                        ) : (
-                          <select
-                            style={{ ...styles.inlineInput, fontSize: 11, padding: '1px 3px', width: 'auto', marginLeft: 'auto' }}
-                            value={r.reset}
-                            onChange={(e) => modifica({ reset: e.target.value })}
-                            title={t('tip.quando_ricarica')}
-                          >
-                            <option value="">{t("res.manuale")}</option>
-                            <option value="breve">{t("res.breve")}</option>
-                            <option value="lungo">{t("res.lungo")}</option>
-                          </select>
-                        )}
-                      </div>
+                {(scheda.sezioniAperte?.ritratto ?? true) && (
+                  <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    <div
+                      className="ritratto-box"
+                      style={{
+                        width: '100%', height: '100%', flex: '1 1 0', borderRadius: 12, overflow: 'hidden',
+                        // emblema auto (foto assente o SVG): sfondo col colore classe, si fonde coi bordi
+                        background: (!scheda.ritratto || scheda.ritratto.startsWith('data:image/svg')) ? (coloreClasse(scheda.classe)?.chiaro || C.panel) : C.panel,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        boxShadow: 'inset 0 0 8px rgba(0,0,0,0.2)', border: `2px solid ${coloreClasse(scheda.classe) ? C.gold : C.border}`,
+                        cursor: 'pointer', position: 'relative',
+                      }}
+                      title={scheda.ritratto ? 'Click: cambia immagine' : 'Click: carica l’immagine del personaggio'}
+                      onClick={() => ritrattoRef.current?.click()}
+                    >
+                      {/* Freccia di riduzione */}
+                      <button
+                        type="button"
+                        className="ritratto-collassa"
+                        title="Riduci il ritratto"
+                        aria-expanded
+                        onClick={(e) => { e.stopPropagation(); aggiorna({ sezioniAperte: { ...(scheda.sezioniAperte || {}), ritratto: false } }); }}
+                      >▾</button>
+
+                      {scheda.ritratto ? (
+                        <img
+                          src={scheda.ritratto}
+                          alt={`Ritratto di ${scheda.nome}`}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          onError={(e) => {
+                            if (!e.currentTarget.dataset.fallback) {
+                              e.currentTarget.dataset.fallback = '1';
+                              e.currentTarget.src = avatarSvgFallback(scheda.classe, scheda.specie, scheda.nome);
+                            }
+                          }}
+                        />
+                      ) : (
+                        <div style={{ position: 'relative', width: '100%', height: '100%' }} title={t('tip.carica_img')}>
+                          <img
+                            src={generaAvatar(scheda.classe, scheda.specie, scheda.nome)}
+                            alt={`Ritratto di ${scheda.nome}`}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                          />
+                          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.35)', color: '#fff', fontSize: 9, letterSpacing: 1, textAlign: 'center', padding: '2px 0' }}>{t("profilo.ritratto")}</div>
+                        </div>
+                      )}
                     </div>
-                  );
-                })}
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 2 }}>
-                  <button
-                    style={{ ...styles.buttonMini }}
-                    onClick={() =>
+                    {scheda.ritratto && (
+                      <button
+                        style={{ ...styles.buttonDanger, position: 'absolute', bottom: -6, right: -6, padding: '0 6px', background: C.panel, zIndex: 4 }}
+                        title={t('tip.rimuovi_img')}
+                        onClick={() => aggiorna({ ritratto: '' })}
+                      >
+                        ×
+                      </button>
+                    )}
+                    <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
+                  </div>
+                )}
+              </div>
+
+              {/* Tier 2: Addestramento / Competenze */}
+              <div className="competenze-tier-2">
+                <Sezione titolo={t("sez.addestramento")} {...apertoProps('addestramento')}>
+                  {/* Armature */}
+                  <TendinaArmature
+                    armature={scheda.addestramento?.armature}
+                    onModifica={(patch) =>
                       aggiorna({
-                        risorse: [...scheda.risorse, { id: Date.now(), nome: t("res.nuova"), attuali: 0, max: 0, reset: 'lungo' }],
+                        addestramento: {
+                          ...scheda.addestramento,
+                          armature: { ...scheda.addestramento?.armature, ...patch },
+                        },
                       })
                     }
-                  >
-                    + {t("res.aggiungi")}
-                  </button>
-                </div>
-              </Sezione>
+                  />
+
+                  {/* Categorie Armi */}
+                  <TendinaCategorieArmi
+                    valoreArmi={scheda.addestramento?.armi}
+                    onImpostaCategoria={(id) => {
+                      const raw = (scheda.addestramento?.armi || '');
+                      const haSemplici = /armi\s*semplici|simple\s*weapons/i.test(raw);
+                      const haGuerra = /armi\s*da\s*guerra|martial\s*weapons/i.test(raw);
+                      const haEntrambe = haSemplici && haGuerra;
+
+                      const singole = raw.split(/[,\n]/).map((s) => s.trim()).filter((s) => Boolean(s) && !/armi\s*semplici|simple\s*weapons|armi\s*da\s*guerra|martial\s*weapons/i.test(s));
+                      let nuovoValore = '';
+                      if (id === 'entrambe') {
+                        if (haEntrambe) nuovoValore = singole.join(', ');
+                        else nuovoValore = ['Armi semplici e da guerra', ...singole].join(', ');
+                      } else if (id === 'semplici') {
+                        if (haSemplici && !haGuerra) nuovoValore = singole.join(', ');
+                        else nuovoValore = ['Armi semplici', ...singole].join(', ');
+                      } else if (id === 'guerra') {
+                        if (haGuerra && !haSemplici) nuovoValore = singole.join(', ');
+                        else nuovoValore = ['Armi da guerra', ...singole].join(', ');
+                      } else {
+                        nuovoValore = singole.join(', ');
+                      }
+                      aggiorna({ addestramento: { ...scheda.addestramento, armi: nuovoValore } });
+                    }}
+                  />
+
+                  {/* Armi Specifiche */}
+                  <TendinaArmiSpecifiche
+                    valoreArmi={scheda.addestramento?.armi}
+                    onToggleArmaSingola={(nomeArma) => {
+                      const raw = (scheda.addestramento?.armi || '');
+                      const haSemplici = /armi\s*semplici|simple\s*weapons/i.test(raw);
+                      const haGuerra = /armi\s*da\s*guerra|martial\s*weapons/i.test(raw);
+
+                      let singole = raw.split(/[,\n]/).map((s) => s.trim()).filter((s) => Boolean(s) && !/armi\s*semplici|simple\s*weapons|armi\s*da\s*guerra|martial\s*weapons/i.test(s));
+                      const haGiaSingola = singole.some((s) => s.toLowerCase() === nomeArma.toLowerCase());
+
+                      if (haGiaSingola) {
+                        singole = singole.filter((s) => s.toLowerCase() !== nomeArma.toLowerCase());
+                      } else {
+                        singole.push(nomeArma);
+                      }
+
+                      const categorie = [];
+                      if (haSemplici && haGuerra) categorie.push('Armi semplici e da guerra');
+                      else if (haSemplici) categorie.push('Armi semplici');
+                      else if (haGuerra) categorie.push('Armi da guerra');
+
+                      aggiorna({ addestramento: { ...scheda.addestramento, armi: [...categorie, ...singole].join(', ') } });
+                    }}
+                  />
+
+                  {/* Strumenti */}
+                  <TendinaStrumenti
+                    valoreStrumenti={scheda.addestramento?.strumenti}
+                    onToggleStrumento={(nomeStrumento) => {
+                      let lista = (scheda.addestramento?.strumenti || '').split(/[,\n]/).map((s) => s.trim()).filter(Boolean);
+                      if (lista.some((s) => s.toLowerCase() === nomeStrumento.toLowerCase())) {
+                        lista = lista.filter((s) => s.toLowerCase() !== nomeStrumento.toLowerCase());
+                      } else {
+                        lista.push(nomeStrumento);
+                      }
+                      aggiorna({ addestramento: { ...scheda.addestramento, strumenti: lista.join(', ') } });
+                    }}
+                  />
+
+                  {/* Lingue */}
+                  <TendinaLingue
+                    valoreLingue={scheda.lingue}
+                    onToggleLingua={(nomeLingua) => {
+                      let lista = (scheda.lingue || '').split(/[,\n]/).map((s) => s.trim()).filter(Boolean);
+                      if (lista.some((s) => s.toLowerCase() === nomeLingua.toLowerCase())) {
+                        lista = lista.filter((s) => s.toLowerCase() !== nomeLingua.toLowerCase());
+                      } else {
+                        lista.push(nomeLingua);
+                      }
+                      aggiorna({ lingue: lista.join(', ') });
+                    }}
+                  />
+                </Sezione>
+              </div>
+
+              {/* Tier 3: Risorse di classe */}
+              <div className="risorse-tier-3">
+                <Sezione titolo={t("sez.risorse")} {...apertoProps('risorse')}>
+                  {scheda.risorse.length === 0 && (
+                    <p style={{ ...styles.detail, marginTop: 0, fontSize: 11 }}>
+                      Nessuna risorsa. Aggiungi Ki, punti stregoneria, ira, ispirazione bardica, usi dei privilegi…
+                    </p>
+                  )}
+                  {scheda.risorse.map((r) => {
+                    const modifica = (patch) =>
+                      aggiorna({ risorse: scheda.risorse.map((x) => (x.id === r.id ? { ...x, ...patch } : x)) });
+                    const spiegazione = spiegaRisorsa(r.nome);
+                    const automatica = String(r.id || '').startsWith('auto-');
+                    return (
+                      <div key={r.id} style={{ marginBottom: 8, fontSize: 12, paddingBottom: 8, borderBottom: `1px dotted ${C.border}` }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                          {spiegazione ? (
+                            <button
+                              type="button"
+                              title={spiegazione}
+                              onClick={() => setInfo({ titolo: r.nome, testo: spiegazione })}
+                              style={{ padding: 0, border: 0, background: 'transparent', color: C.ink, font: 'inherit', fontWeight: 600, textAlign: 'left', cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3, marginRight: 'auto', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
+                            >{r.nome} ⓘ</button>
+                          ) : (
+                            <span style={{ marginRight: 'auto', minWidth: 0 }}><Editable value={r.nome} onChange={(v) => modifica({ nome: v })} width={110} title={t('tip.nome_risorsa')} /></span>
+                          )}
+                          {!automatica && (
+                            <button
+                              style={{ ...styles.buttonMini, padding: '0 6px', color: C.red, flexShrink: 0 }}
+                              title={t('tip.rimuovi_risorsa')}
+                              onClick={() => aggiorna({ risorse: scheda.risorse.filter((x) => x.id !== r.id) })}
+                            >✕</button>
+                          )}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
+                          <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title={t('tip.spendi')} onClick={() => modifica({ attuali: Math.max(0, r.attuali - 1) })}>−</button>
+                          <strong style={{ minWidth: 16, textAlign: 'center', display: 'inline-block', color: r.attuali === r.max ? C.goldDark : (r.attuali === 0 ? C.inkDim : C.ink) }}>{r.attuali}</strong>
+                          <button style={{ ...styles.buttonMini, padding: '1px 7px' }} title={t('tip.recupera')} onClick={() => modifica({ attuali: Math.min(r.max, r.attuali + 1) })}>+</button>
+                          <span style={styles.detail}>/ {automatica
+                            ? <strong>{r.max}</strong>
+                            : <Editable value={r.max} tipo="numero" width={30} onChange={(v) => modifica({ max: Math.max(0, v), attuali: Math.min(Math.max(0, v), r.attuali) })} />}
+                          </span>
+                          {automatica ? (
+                            <span style={{ ...styles.detail, fontSize: 10, whiteSpace: 'nowrap', marginLeft: 'auto' }} title={t('tip.quando_ricarica')}>↻ {r.reset === 'breve' ? t('res.breve') : t('res.lungo')}</span>
+                          ) : (
+                            <select
+                              style={{ ...styles.inlineInput, fontSize: 11, padding: '1px 3px', width: 'auto', marginLeft: 'auto' }}
+                              value={r.reset}
+                              onChange={(e) => modifica({ reset: e.target.value })}
+                              title={t('tip.quando_ricarica')}
+                            >
+                              <option value="">{t("res.manuale")}</option>
+                              <option value="breve">{t("res.breve")}</option>
+                              <option value="lungo">{t("res.lungo")}</option>
+                            </select>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 2 }}>
+                    <button
+                      style={{ ...styles.buttonMini }}
+                      onClick={() =>
+                        aggiorna({
+                          risorse: [...scheda.risorse, { id: Date.now(), nome: t("res.nuova"), attuali: 0, max: 0, reset: 'lungo' }],
+                        })
+                      }
+                    >
+                      + {t("res.aggiungi")}
+                    </button>
+                  </div>
+                </Sezione>
+              </div>
             </div>
 
             {/* COLONNA CENTRALE: anagrafica + riquadri vitali */}
             <div className="profilo-main">
-              {/* Riga 1 — Anagrafica (con Nome PG in cima) */}
+              {/* Tier 1: Anagrafica & Punti Ferita */}
+              <div className="pm-tier-1">
+                {/* Riga 1 — Anagrafica (con Nome PG in cima) */}
               <div className="pm-anagrafica">
                 {/* Nome PG & Selettore Personaggio con versione D&D nello sfondo */}
                 <div style={{ position: 'relative', width: '100%', marginBottom: 6 }}>
@@ -8536,9 +8525,11 @@ export default function App() {
                   })()}
                 </div>
               </div>
+              </div>{/* fine pm-tier-1 (Anagrafica + Punti Ferita) */}
 
-              {/* Riga 3 — Difesa e mobilità (allineata a Intelligenza) */}
-              <div className="vitali pm-gruppo">
+              {/* Tier 2: Difesa e mobilità (CA, Riposo, Comp, Iniziativa, Velocità, Sfinimento) */}
+              <div className="pm-tier-2">
+                <div className="vitali pm-gruppo">
             <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
               <SfondoVit>🛡️</SfondoVit>
               <div style={styles.vitalLabel}>{t("vital.ca")}</div>
@@ -8658,8 +8649,11 @@ export default function App() {
                   )}
                 </div>
               </div>
-              {/* Riga 4 — 3 Riquadri Vitali unificati 2 a 2 (Tier 3: Visione & Perc. Passiva, Resistenze & Condizioni, TS Morte & Ispirazione) */}
-              <div className="vitali-sezioni-3 pm-gruppo">
+              </div>{/* fine pm-tier-2 */}
+
+              {/* Tier 3: 3 Riquadri Vitali (Visione & Perc. Passiva, Resistenze & Condizioni, TS Morte & Ispirazione) */}
+              <div className="pm-tier-3">
+                <div className="vitali-sezioni-3 pm-gruppo">
                 {/* 1. Box Visione & Percezione Passiva */}
                 <div
                   style={{
@@ -8896,7 +8890,8 @@ export default function App() {
                   </div>
                 </div>
               </div>
-            </div>
+              </div>{/* fine pm-tier-3 */}
+            </div>{/* fine profilo-main */}
           <div className="profilo-caratteristiche">
             {(() => {
               const blocco = (key) => {
