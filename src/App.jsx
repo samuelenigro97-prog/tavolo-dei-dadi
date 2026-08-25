@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.103';
+const APP_VERSION = '3.9.104';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7734,15 +7734,21 @@ export default function App() {
           {(() => {
             const btnAzione = {
               ...styles.buttonMini,
-              padding: '6px 11px',
-              fontSize: 18,
+              width: 38,
               minWidth: 38,
+              maxWidth: 38,
               height: 38,
+              minHeight: 38,
+              maxHeight: 38,
+              padding: 0,
+              fontSize: 17,
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: 8,
               cursor: 'pointer',
+              boxSizing: 'border-box',
+              flexShrink: 0,
               transition: 'all 0.15s ease',
             };
             return (
@@ -7846,7 +7852,7 @@ export default function App() {
 
                 {/* Gruppo 4: Sincronizzazione Cloud */}
                 <button
-                  style={{ ...btnAzione, color: C.goldDark, borderColor: C.goldDark, minWidth: 44 }}
+                  style={{ ...btnAzione, color: C.goldDark, borderColor: C.goldDark }}
                   title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato') : 'Sincronizza sul Cloud'}
                   onClick={() => { setCloudStatus({ text: '', type: '' }); setSyncCodiceStatus({ text: '', type: '' }); setMostraCloud(true); }}
                 >
@@ -7866,12 +7872,10 @@ export default function App() {
                 <div
                   style={{
                     ...btnAzione,
-                    minWidth: 44,
-                    padding: '6px 8px',
                     fontFamily: "Georgia, 'Times New Roman', serif",
                     fontStyle: 'italic',
                     fontWeight: 'bold',
-                    fontSize: 14,
+                    fontSize: 13,
                     color: C.goldDark,
                     borderColor: C.goldDark,
                     cursor: 'default',
@@ -7926,18 +7930,11 @@ export default function App() {
                     onChange={(e) => setRoster((r) => ({ ...r, attivo: e.target.value }))}
                     title={t('nome.tooltip_selettore')}
                   >
-                    {Object.entries(roster.personaggi).map(([id, p]) => {
-                      const mc = Array.isArray(p.multiclasse) ? p.multiclasse.filter((m) => m.classe) : [];
-                      const classi = [
-                        ...(p.classe ? [`${p.classe} ${p.livello || 1}`] : []),
-                        ...mc.map((m) => `${m.classe} ${m.livello || 1}`),
-                      ];
-                      return (
-                        <option key={id} value={id}>
-                          {formattaNomePg(p.nome) || t('menu.senza_nome')}{classi.length ? ` — ${classi.join(' / ')}` : ''}
-                        </option>
-                      );
-                    })}
+                    {Object.entries(roster.personaggi).map(([id, p]) => (
+                      <option key={id} value={id}>
+                        {formattaNomePg(p.nome) || t('menu.senza_nome')}
+                      </option>
+                    ))}
                   </select>
                 </div>
               )}
@@ -7978,7 +7975,7 @@ export default function App() {
                   <div
                     className="ritratto-box"
                     style={{
-                      width: '100%', height: 180, minHeight: 180, borderRadius: 12, overflow: 'hidden',
+                      width: '100%', height: 250, minHeight: 250, borderRadius: 12, overflow: 'hidden',
                       // emblema auto (foto assente o SVG): sfondo col colore classe, si fonde coi bordi
                       background: (!scheda.ritratto || scheda.ritratto.startsWith('data:image/svg')) ? (coloreClasse(scheda.classe)?.chiaro || C.panel) : C.panel,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -8264,9 +8261,9 @@ export default function App() {
                     title={t('profilo.background_bloccato')}
                   />
                 </CampoModulo>
-                <CampoModulo label={t("profilo.classe")}>
+                <CampoModulo label={`${t("profilo.classe")} (Liv. ${scheda.livello || 1})`}>
                   <CampoBloccato
-                    valore={traduciDato(scheda.classe) || t('profilo.nessuna')}
+                    valore={traduciDato(scheda.classe) ? `${traduciDato(scheda.classe)} — Liv. ${scheda.livello || 1}` : t('profilo.nessuna')}
                     title={t('profilo.classe_bloccata')}
                   />
                 </CampoModulo>
@@ -8671,7 +8668,7 @@ export default function App() {
               </div>
               {/* Riga 4 — Salvezza, sensi e condizioni (allineata a Saggezza & Carisma) */}
               <div className="vitali pm-gruppo" style={{ gridRow: '4 / -1' }}>
-                <div className="ts-morte-box" style={{ ...styles.vitalBox }}>
+                <div className="ts-morte-box" style={{ ...styles.vitalBox, minHeight: 120 }}>
                   <SfondoVit>💀</SfondoVit>
                   <div style={styles.vitalLabel}>{t("vital.ts_morte")}</div>
                   <div className="ts-morte-controlli">
@@ -8710,12 +8707,12 @@ export default function App() {
                     background: C.panelLight,
                     border: `1px solid ${C.border}`,
                     borderRadius: 8,
-                    padding: '8px 10px',
+                    padding: '10px 10px',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
-                    gap: 6,
-                    minHeight: 64,
+                    gap: 8,
+                    minHeight: 120,
                     height: '100%',
                     boxSizing: 'border-box',
                   }}
@@ -8723,7 +8720,7 @@ export default function App() {
                 >
                   {/* Sezione Superiore: Visione / Sensi */}
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '100%' }}>
-                    <div style={{ fontSize: 10.5, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 2, textAlign: 'left', width: '100%' }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 3, textAlign: 'left', width: '100%' }}>
                       👁️ {t("vital.visione")}
                     </div>
                     <CampoConTendina
@@ -8742,7 +8739,7 @@ export default function App() {
                     <div style={{ fontSize: 10.5, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase' }}>
                       {t("vital.percezione_passiva")}
                     </div>
-                    <div style={{ fontSize: 20, fontWeight: 800, color: C.ink, lineHeight: 1 }}>
+                    <div style={{ fontSize: 22, fontWeight: 800, color: C.ink, lineHeight: 1 }}>
                       {percezionePassiva}
                     </div>
                   </div>
@@ -8755,12 +8752,12 @@ export default function App() {
                     background: C.panelLight,
                     border: `1px solid ${C.border}`,
                     borderRadius: 8,
-                    padding: '8px 12px',
+                    padding: '10px 12px',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
-                    gap: 6,
-                    minHeight: 64,
+                    gap: 8,
+                    minHeight: 120,
                     height: '100%',
                     boxSizing: 'border-box',
                   }}

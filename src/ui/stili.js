@@ -199,15 +199,15 @@ export const styles = {
     background: C.panelLight,
     border: `1px solid ${C.border}`,
     borderRadius: 8,
-    padding: '8px 6px',
+    padding: '10px 8px',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    minHeight: 64,
+    minHeight: 82,
     height: '100%',
     boxSizing: 'border-box',
-    paddingTop: 28,
+    paddingTop: 30,
     position: 'relative',
     overflow: 'hidden',
   },
@@ -474,11 +474,11 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   gap: 8px;
   min-width: 0;
 }
-/* Il box immagine con altezza fissa proporzionata (non si allunga a dismisura) */
+/* Il box immagine con altezza proporzionata (250px) */
 .ritratto-box {
   width: 100%;
-  height: 180px;
-  min-height: 180px;
+  height: 250px;
+  min-height: 250px;
   border-radius: 12px;
   overflow: hidden;
   position: relative;
@@ -523,16 +523,10 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .profilo-main { order: 2; width: 100%; }
   .profilo-caratteristiche { order: 3; width: 100%; }
   .profilo-caratteristiche > *, .car-coppia, .car-coppia > * { width: 100%; box-sizing: border-box; }
-  .ritratto-box { min-height: 220px; height: 220px; }
+  .ritratto-box { min-height: 240px; height: 240px; }
   .car-coppia { gap: 8px; }
 }
-/* riquadri vitali: 5 colonne fisse → riga 1: CA | PF(x2) | Riposo | TsMorte ; riga 2: BonusComp | Iniziativa | Velocità | PercPass */
-/* grid-auto-rows: auto → ogni riga è alta quanto il suo contenuto (niente più
-   spazi vuoti: prima "1fr" forzava tutte le righe all'altezza della più alta).
-   align-items: stretch tiene comunque uniformi i riquadri della STESSA riga. */
-/* grid-auto-rows: 1fr → tutte le righe di riquadri hanno la stessa altezza
-   (es. Classe Armatura/Riposo alti quanto Bonus comp./Iniziativa/Velocità sotto). */
-.vitali { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 8px; align-items: stretch; }
+.vitali { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 10px; align-items: stretch; }
 /* consente ai riquadri di stringersi sotto la larghezza del contenuto (niente overflow) */
 .vitali > * { min-width: 0; }
 .vitali > * > * { min-width: 0; }
