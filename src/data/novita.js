@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.69',
+    voci: {
+      it: [
+        'Esportazione Backup Completo Roster: "Esporta tutto" scarica un unico file consolidato contenente tutti i personaggi del roster e genera i singoli file di backup con intervalli temporizzati per evitare blocchi del browser.',
+      ],
+      en: [
+        'Full Roster Backup Export: "Export all" now downloads a single consolidated file with all roster characters plus timed individual backup downloads.',
+      ],
+    },
+  },
+  {
     versione: '3.9.68',
     voci: {
       it: [

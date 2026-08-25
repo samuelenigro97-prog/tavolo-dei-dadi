@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.68';
+const APP_VERSION = '3.9.69';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -4057,30 +4057,55 @@ export default function App() {
     setPromemoriaBackup(false);
   }
 
-  /** Backup COMPLETO: esporta OGNI personaggio in un file separato, per non perdere nulla. */
+  /** Backup COMPLETO: esporta TUTTI i personaggi del roster in un unico file JSON importabile. */
   function esportaBackupCompleto() {
     const ids = Object.keys(roster.personaggi || {});
     if (!ids.length) return;
     const dataStr = new Date().toISOString().slice(0, 10);
-    ids.forEach((id) => {
-      const pg = roster.personaggi[id];
-      const dati = {
-        tipo: 'tavolo-dei-dadi-backup',
-        app: 'Tavolo dei Dadi',
-        versione: APP_VERSION,
-        data: new Date().toISOString(),
-        personaggi: 1,
-        roster: { attivo: id, personaggi: { [id]: pg } }
-      };
-      const blob = new Blob([JSON.stringify(dati, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      const safeNome = String(pg.nome || 'pg').replace(/[^a-zA-Z0-9_.-]/g, '_');
-      a.download = `tavolo-dei-dadi-${safeNome}-${new Date().toISOString().slice(0, 10)}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-    });
+
+    // 1) File principale Roster completo contenente TUTTI i personaggi
+    const datiTutti = {
+      tipo: 'tavolo-dei-dadi-roster',
+      app: 'Tavolo dei Dadi',
+      versione: APP_VERSION,
+      data: new Date().toISOString(),
+      personaggi: ids.length,
+      roster: roster,
+    };
+    const blobRoster = new Blob([JSON.stringify(datiTutti, null, 2)], { type: 'application/json' });
+    const urlRoster = URL.createObjectURL(blobRoster);
+    const aRoster = document.createElement('a');
+    aRoster.href = urlRoster;
+    aRoster.download = `tavolo-dei-dadi-roster-completo-${dataStr}.json`;
+    aRoster.click();
+    URL.revokeObjectURL(urlRoster);
+
+    // 2) Se ci sono più personaggi, scarica anche i singoli file distanziati nel tempo per evitare il blocco popup del browser
+    if (ids.length > 1) {
+      ids.forEach((id, index) => {
+        setTimeout(() => {
+          const pg = roster.personaggi[id];
+          if (!pg) return;
+          const datiSingolo = {
+            tipo: 'tavolo-dei-dadi-backup',
+            app: 'Tavolo dei Dadi',
+            versione: APP_VERSION,
+            data: new Date().toISOString(),
+            personaggi: 1,
+            roster: { attivo: id, personaggi: { [id]: pg } },
+          };
+          const blob = new Blob([JSON.stringify(datiSingolo, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          const safeNome = String(pg.nome || 'pg').toLowerCase().replace(/[^a-z0-9àèéìòù]+/gi, '-').replace(/^-+|-+$/g, '') || 'pg';
+          a.download = `scheda-${safeNome}-${dataStr}.json`;
+          a.click();
+          URL.revokeObjectURL(url);
+        }, (index + 1) * 350);
+      });
+    }
+
     segnaBackupFatto();
   }
 
