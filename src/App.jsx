@@ -6876,8 +6876,7 @@ export default function App() {
           </button>
         </div>
 
-        {/* 8. Lingua */}
-        <div className="app-header-group app-header-language">
+          {/* 8. Lingua */}
           <button
             style={styles.modeButton(false)}
             title={lingua === 'it' ? 'Interfaccia in italiano — click per passare all’inglese' : 'Interface in English — click to switch to Italian'}
@@ -6885,46 +6884,6 @@ export default function App() {
           >
             {lingua === 'it' ? '🇮🇹' : '🇬🇧'} <span className="header-label">{t('common.lingua')}</span>
           </button>
-        </div>
-
-        {/* Nuovi tasti rapidi a destra di quelli esistenti, divisi con linetta */}
-        <div className="app-header-group" style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'nowrap' }}>
-          <span className="selettore-divisore" style={{ width: 1.5, height: 22, background: C.goldDark, margin: '0 2px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
-
-          {/* Gruppo PG: Level Up, Rinomina, Nuovo, Elimina */}
-          <button
-            style={styles.buttonMini}
-            title={t('tip.levelup')}
-            onClick={() => {
-              const dvMatch = String(scheda.dadiVita || '').match(/d(\d+)/i);
-              const facceDV = dvMatch ? parseInt(dvMatch[1]) : 8;
-              const modCos = modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10) || 0;
-              const avgHpGain = Math.floor(facceDV / 2) + 1 + modCos;
-              setLevelUpBozza({
-                metodo: 'media', hpGainMedia: Math.max(1, avgHpGain), facceDV, modCos, tiroFatto: 0,
-                asiMode: 'aumento', asiA: '', asiB: '', talento: '',
-                sottoclasse: scheda.sottoclasse || '',
-              });
-              setMostraLevelUp(true);
-            }}
-          >
-            ⬆️
-          </button>
-          <button style={styles.buttonMini} onClick={() => setRinominando(!rinominando)} title={t('tip.rinomina')}>✎</button>
-          <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' }); setMostraCrea(true); }} title={t('tip.nuovo_pg')}>＋</button>
-          <button style={styles.buttonMini} onClick={eliminaPersonaggio} title={t('tip.elimina_pg')}>🗑</button>
-
-          <span className="selettore-divisore" style={{ width: 1.5, height: 22, background: C.goldDark, margin: '0 2px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
-
-          {/* Gruppo Gameplay: Ambientazione, Tema, Mappa, Combattimento */}
-          <button ref={ambientazioneBtnRef} style={styles.buttonMini} title={t('luogo.tooltip')} onClick={() => { sbloccaAudio(); if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
-          <button style={styles.buttonMini} title={t('tooltip.tema')} onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}>{tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'}</button>
-          <button style={styles.buttonMini} onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())} title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}>🗺️</button>
-          <button style={styles.buttonMini} onClick={() => {
-            if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
-            else if (combat.combattenti.length) setCombat((c) => ({ ...c, attivo: true, aperto: true }));
-            else aggiungiPgAlCombat();
-          }} title={(combat.attivo && combat.aperto ? t('ct.minimizza') : t('ct.apri')) + (combat.combattenti.length ? ` (${combat.combattenti.length})` : '')}>⚔️</button>
         </div>
 
         <input ref={mappaRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaMappa} />
@@ -7930,8 +7889,78 @@ export default function App() {
             </div>
           )}
 
-          {/* Livello + pulsanti PG: tolti duplicati poco usati (⧉/↺), aggiunti gameplay per-PG */}
-          <div className="selettore-personaggio-azioni" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', flexShrink: 0 }}>
+          {/* Tutti i tasti di controllo a destra dopo il nome del PG, divisi con linetta */}
+          <div className="selettore-personaggio-azioni" style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap', flexShrink: 0 }}>
+            {/* Gruppo 1: Navigazione & Dati */}
+            <button style={styles.buttonMini} title={t('tip.menu_iniziale')} onClick={() => setMostraMenu(true)}>
+              🏠
+            </button>
+            <button
+              style={{ ...styles.buttonMini, opacity: passiUndo ? 1 : 0.4, cursor: passiUndo ? 'pointer' : 'default' }}
+              title={passiUndo ? t('undo.tooltip', { n: passiUndo }) : t('undo.vuoto')}
+              disabled={!passiUndo}
+              onClick={annullaModifica}
+            >
+              ↩︎
+            </button>
+            <button style={styles.buttonMini} title="Importa JSON, PDF o immagini" onClick={() => jsonRef.current?.click()}>
+              📂
+            </button>
+            <button
+              ref={esportaBtnRef}
+              style={{ ...styles.buttonMini, ...(mostraMenuEsporta ? { borderColor: C.goldDark, color: C.goldDark } : {}) }}
+              title={t('tip.esporta')}
+              onClick={() => {
+                if (!mostraMenuEsporta) {
+                  const r = esportaBtnRef.current?.getBoundingClientRect();
+                  if (r) setPosEsporta({
+                    top: Math.max(8, Math.min(window.innerHeight - 200, r.bottom + 5)),
+                    left: Math.max(8, Math.min(window.innerWidth - 240, r.left)),
+                  });
+                }
+                setMostraMenuEsporta((v) => !v);
+              }}
+            >
+              💾
+            </button>
+            <button
+              style={{ ...styles.buttonMini, color: C.goldDark, borderColor: C.goldDark }}
+              title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato') : 'Sincronizza sul Cloud'}
+              onClick={() => { setCloudStatus({ text: '', type: '' }); setSyncCodiceStatus({ text: '', type: '' }); setMostraCloud(true); }}
+            >
+              ☁️
+              {sincronizzando ? (
+                <span style={{ fontSize: 10, marginLeft: 2 }}>🔄</span>
+              ) : (githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice) ? (
+                <span style={{ color: '#2e9d4d', fontWeight: 900, marginLeft: 2, fontSize: 11 }}>✓</span>
+              ) : (
+                <span style={{ color: '#c0392b', fontSize: 11, marginLeft: 2, fontWeight: 900 }}>!</span>
+              )}
+            </button>
+            <button
+              ref={notificheBtnRef}
+              style={{ ...styles.buttonMini, position: 'relative' }}
+              title={daNotificare ? (controlliAttivi.length > 0 ? `${controlliAttivi.length} avvisi sulla scheda` : t('notifiche.novita_presenti')) : t('notifiche.titolo')}
+              onClick={apriNotifiche}
+            >
+              🔔
+              {daNotificare && (
+                <span className="avvisi-pallino" aria-label={`${nAvvisi} notifiche`}>
+                  {controlliAttivi.length > 0 ? controlliAttivi.length : '!'}
+                </span>
+              )}
+            </button>
+            <button
+              style={styles.buttonMini}
+              title={lingua === 'it' ? 'Cambia in inglese' : 'Switch to Italian'}
+              onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
+            >
+              {lingua === 'it' ? '🇮🇹' : '🇬🇧'}
+            </button>
+
+            <span className="selettore-divisore" style={{ width: 1.5, height: 22, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
+
+            {/* Gruppo 2: Gestione PG */}
             <button
               style={styles.buttonMini}
               title={t('tip.levelup')}
@@ -7953,7 +7982,10 @@ export default function App() {
             <button style={styles.buttonMini} onClick={() => setRinominando(!rinominando)} title={t('tip.rinomina')}>✎</button>
             <button style={styles.buttonMini} onClick={() => { setBozzaCrea({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' }); setMostraCrea(true); }} title={t('tip.nuovo_pg')}>＋</button>
             <button style={styles.buttonMini} onClick={eliminaPersonaggio} title={t('tip.elimina_pg')}>🗑</button>
-            <span className="selettore-divisore" style={{ width: 1.5, height: 22, background: C.goldDark, margin: '0 4px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
+
+            <span className="selettore-divisore" style={{ width: 1.5, height: 22, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
+
+            {/* Gruppo 3: Gameplay & Sessione */}
             <button ref={ambientazioneBtnRef} style={styles.buttonMini} title={t('luogo.tooltip')} onClick={() => { sbloccaAudio(); if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
             <button style={styles.buttonMini} title={t('tooltip.tema')} onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}>{tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'}</button>
             <button style={styles.buttonMini} onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())} title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}>🗺️</button>
