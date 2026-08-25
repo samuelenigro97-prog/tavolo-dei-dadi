@@ -445,130 +445,85 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .privilegi-talenti > .sezione, .privilegi-duo > .sezione { margin-bottom: 0 !important; }
 @media (max-width: 720px) { .privilegi-duo { grid-template-columns: 1fr; } }
 /* Profilo: caratteristiche (colonna sinistra) e riquadri vitali (colonna
-   centrale) vivono nella STESSA griglia con righe condivise (subgrid), così
+   centrale) vivono nella STESSA griglia. */
 .profilo-griglia {
   display: grid;
-  grid-template-columns: 260px minmax(0, 1fr) 260px;
-  grid-template-rows: repeat(5, auto);
+  grid-template-columns: 240px minmax(0, 1fr) 230px;
   column-gap: 14px;
   row-gap: 10px;
   align-items: start;
 }
-/* Le colonne si estendono su tutte e 5 le righe e ne ereditano le linee
-   con subgrid: è questo che tiene allineate le righe fra lati e centro. */
-.profilo-ritratto {
+.profilo-col-sinistra {
   grid-column: 1;
-  /* Righe 1-2: l'immagine e selettore occupano la colonna sinistra in alto */
-  grid-row: 1 / 3;
-  align-self: stretch;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  min-height: 0;
-}
-.profilo-extra {
-  grid-column: 1;
-  grid-row: 3 / -1;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  align-self: stretch;
   min-width: 0;
 }
 .profilo-main {
   grid-column: 2;
-  grid-row: 1 / -1;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: subgrid;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   min-width: 0;
 }
 .profilo-caratteristiche {
   grid-column: 3;
-  grid-row: 1 / -1;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: subgrid;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   min-width: 0;
 }
-/* Il box immagine riempie l'altezza disponibile (righe 1-2) senza forzarne la
-   crescita; su mobile, dove non c'è la griglia, gli diamo un'altezza minima. */
-.ritratto-box { min-height: 0; }
+/* Il box immagine con altezza fissa proporzionata (non si allunga a dismisura) */
+.ritratto-box {
+  width: 100%;
+  height: 180px;
+  min-height: 180px;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
 .ritratto-toggle {
   width: 100%; margin: 0 0 6px; padding: 5px 8px; border: 1px solid var(--c-border);
   border-radius: 7px; background: var(--c-panel-light); color: var(--c-title);
   font: 700 12px Georgia, serif; letter-spacing: 1px; text-align: left; cursor: pointer;
 }
-/* Ritratto ridotto: Competenze/Risorse salgono naturalmente. */
-.profilo-griglia.senza-ritratto .profilo-ritratto { grid-row: 1 / 2; align-self: start; }
-.profilo-griglia.senza-ritratto .profilo-extra {
-  grid-row: 2 / -1;
-  padding-top: 0;
-}
-.profilo-extra > .sezione { margin-bottom: 0 !important; }
-.profilo-extra > .sezione:first-child {
-  height: auto;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-}
-.profilo-extra > .sezione:first-child > div:last-child {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: 6px;
-  margin-top: 6px !important;
-}
-.profilo-extra > .sezione:last-child {
-  height: auto;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-}
-.profilo-extra > .sezione:last-child > div:last-child {
-  flex: 1 1 auto;
-  overflow-y: auto;
-}
-/* Titolo sezione addestramento/risorse */
-.profilo-extra .sezione > summary { font-size: 11.5px !important; letter-spacing: 0.7px !important; white-space: nowrap !important; overflow: hidden; text-overflow: ellipsis; }
+.profilo-col-sinistra .sezione { margin-bottom: 0 !important; }
+.profilo-col-sinistra .sezione > summary { font-size: 11.5px !important; letter-spacing: 0.7px !important; white-space: nowrap !important; overflow: hidden; text-overflow: ellipsis; }
 .profilo-caratteristiche > .blocco-car { margin-bottom: 0 !important; }
 /* Destrezza + Costituzione impilate in un'unica riga condivisa (i Punti Ferita) */
 .car-coppia { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 /* i gruppi di vitali riempiono la larghezza della loro riga */
 .pm-anagrafica, .pm-pf, .pm-gruppo { min-width: 0; }
-/* Anagrafica alta quanto il riquadro Forza (riga 1) */
 .pm-anagrafica { display: flex; flex-direction: column; }
 .pm-anagrafica > .campi-anagrafica { flex: 1 1 auto; align-content: space-between; }
-/* Punti Ferita: la riga 2 è alta quanto Destrezza+Costituzione impilate */
 .pm-pf { display: flex; flex-direction: column; }
 .pm-pf > * { width: 100%; flex: 1 1 auto; }
 @media (min-width: 681px) and (max-width: 1024px) {
-  /* iPad / Tablet: layout a due colonne bilanciato con ritratto e caratteristiche */
+  /* iPad / Tablet: layout a due colonne bilanciato */
   .profilo-griglia {
     display: grid;
     grid-template-columns: 240px minmax(0, 1fr);
     column-gap: 12px;
     row-gap: 10px;
   }
-  .profilo-ritratto { grid-column: 1; grid-row: 1; min-height: 220px; }
-  .profilo-main { grid-column: 2; grid-row: 1; }
-  .profilo-extra { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; gap: 10px; }
-  .profilo-caratteristiche { grid-column: 2; grid-row: 2; }
-  .profilo-extra > .sezione:first-child, .profilo-extra > .sezione:last-child { grid-row: auto; height: auto; }
+  .profilo-col-sinistra { grid-column: 1; }
+  .profilo-main { grid-column: 2; }
+  .profilo-caratteristiche { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 }
 @media (max-width: 680px) {
   /* Telefono: la sezione si impila in verticale in colonna singola */
   .profilo-griglia { display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
-  .profilo-ritratto { order: 1; width: 100%; }
-  .profilo-main { order: 2; display: flex; flex-direction: column; gap: 10px; width: 100%; }
-  .profilo-caratteristiche { order: 3; display: flex; flex-direction: column; gap: 8px; width: 100%; }
-  .profilo-extra { order: 4; width: 100%; display: flex; flex-direction: column; gap: 8px; }
-  .profilo-extra > .sezione:first-child, .profilo-extra > .sezione:last-child { grid-row: auto; height: auto; }
-  .profilo-griglia.senza-ritratto .profilo-extra { padding-top: 0; }
+  .profilo-col-sinistra { order: 1; width: 100%; }
+  .profilo-main { order: 2; width: 100%; }
+  .profilo-caratteristiche { order: 3; width: 100%; }
   .profilo-caratteristiche > *, .car-coppia, .car-coppia > * { width: 100%; box-sizing: border-box; }
-  .ritratto-box { min-height: 280px; }
+  .ritratto-box { min-height: 220px; height: 220px; }
   .car-coppia { gap: 8px; }
 }
 /* riquadri vitali: 5 colonne fisse → riga 1: CA | PF(x2) | Riposo | TsMorte ; riga 2: BonusComp | Iniziativa | Velocità | PercPass */
