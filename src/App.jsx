@@ -2713,6 +2713,8 @@ export default function App() {
   const [mostraListaCarica, setMostraListaCarica] = useState(false);
   const [versioneImportScelta, setVersioneImportScelta] = useState(null);
   const [mostraCrea, setMostraCrea] = useState(false); // schermata di creazione guidata
+  const [mostraNoteLegali, setMostraNoteLegali] = useState(false);
+  const [mostraDonazioni, setMostraDonazioni] = useState(false);
   const [bozzaCrea, setBozzaCrea] = useState({ nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '', livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [], competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {}, multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '', multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '', dotazione: 'pacchetto' });
   // versione delle regole: '2024' (5.5, default) o '2014' (5.0)
   const [regoleVersione, setRegoleVersione] = useState(() => localStorage.getItem('scheda-interattiva:versione') || '2024');
@@ -5617,6 +5619,30 @@ export default function App() {
                 )}
               </div>
             </div>
+
+            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
+              <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>{t('menu.sezione_info')}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
+                <button
+                  style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
+                  onClick={() => { setMostraMenu(false); setMostraNoteLegali(true); }}
+                  title={t('legali.titolo')}
+                >
+                  <span>⚖️</span> <span>{t('menu.note_legali')}</span>
+                </button>
+                <button
+                  style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', gap: 6 }}
+                  onClick={() => { setMostraMenu(false); setMostraDonazioni(true); }}
+                  title={t('donazioni.titolo')}
+                >
+                  <span>☕</span> <span>{t('menu.sostieni')}</span>
+                </button>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 14, textAlign: 'center', fontSize: 10, opacity: 0.55, lineHeight: 1.4 }}>
+              {t('menu.footer_licenza')}
+            </div>
             {erroreImport && <div style={{ color: C.red, marginTop: 10 }}>{erroreImport}</div>}
           </div>
         </div>
@@ -7275,6 +7301,70 @@ export default function App() {
           </div>
         );
       })()}
+
+      {/* Note Legali & Licenza Creative Commons SRD 5.1 */}
+      {mostraNoteLegali && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 1010, padding: 16, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setMostraNoteLegali(false); }}
+        >
+          <div style={{ background: C.panel, border: `1px solid ${C.gold}`, borderRadius: 12, padding: '18px 20px', maxWidth: 480, width: '100%', maxHeight: '86vh', overflowY: 'auto', boxShadow: '0 10px 40px rgba(0,0,0,0.45)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <h2 style={{ ...styles.title, fontSize: 20, margin: 0 }}>⚖️ {t('legali.titolo')}</h2>
+              <button style={styles.buttonMini} onClick={() => setMostraNoteLegali(false)}>✕</button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13, lineHeight: 1.5 }}>
+              <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
+                <strong style={{ color: C.goldDark, display: 'block', marginBottom: 4 }}>📜 {t('legali.srd_titolo')}</strong>
+                <p style={{ margin: 0, color: C.ink }}>{t('legali.srd_testo')}</p>
+              </div>
+
+              <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
+                <strong style={{ color: C.goldDark, display: 'block', marginBottom: 4 }}>🐉 {t('legali.wotc_titolo')}</strong>
+                <p style={{ margin: 0, color: C.ink }}>{t('legali.wotc_testo')}</p>
+              </div>
+
+              <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
+                <strong style={{ color: C.goldDark, display: 'block', marginBottom: 4 }}>🔒 {t('legali.privacy_titolo')}</strong>
+                <p style={{ margin: 0, color: C.ink }}>{t('legali.privacy_testo')}</p>
+              </div>
+            </div>
+
+            <button style={{ ...styles.buttonPrimary, width: '100%', marginTop: 16 }} onClick={() => setMostraNoteLegali(false)}>
+              {t('common.chiudi')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Supporto e Donazioni Spontanee */}
+      {mostraDonazioni && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 1010, padding: 16, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setMostraDonazioni(false); }}
+        >
+          <div style={{ background: C.panel, border: `1px solid ${C.gold}`, borderRadius: 12, padding: '18px 20px', maxWidth: 460, width: '100%', maxHeight: '86vh', overflowY: 'auto', boxShadow: '0 10px 40px rgba(0,0,0,0.45)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <h2 style={{ ...styles.title, fontSize: 20, margin: 0 }}>☕ {t('donazioni.titolo')}</h2>
+              <button style={styles.buttonMini} onClick={() => setMostraDonazioni(false)}>✕</button>
+            </div>
+            <p style={{ ...styles.detail, margin: '0 0 12px' }}>{t('donazioni.sottotitolo')}</p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13, lineHeight: 1.5, marginBottom: 14 }}>
+              <p style={{ margin: 0, color: C.ink }}>{t('donazioni.testo_1')}</p>
+              <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
+                <p style={{ margin: 0, color: C.inkDim, fontStyle: 'italic' }}>{t('donazioni.testo_2')}</p>
+              </div>
+              <p style={{ margin: 0, fontWeight: 600, color: C.goldDark, textAlign: 'center' }}>🎲 {t('donazioni.grazie')}</p>
+            </div>
+
+            <button style={{ ...styles.buttonPrimary, width: '100%' }} onClick={() => setMostraDonazioni(false)}>
+              {t('common.chiudi')}
+            </button>
+          </div>
+        </div>
+      )}
 
       {mostraPannelloAudio && (
         <div
