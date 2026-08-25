@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.70',
+    voci: {
+      it: [
+        'Correzione Colori Barra Ingombro: la barra e la scritta sono verdi se il peso è normale, arancioni quando si entra nello stato di ingombro (regola opzionale 5e), e rosse solo in caso di grave ingombro o sovraccarico.',
+      ],
+      en: [
+        'Encumbrance Bar Color Fix: bar and label display green under normal load, orange when encumbered (optional 5e rule), and red only when heavily encumbered or overloaded.',
+      ],
+    },
+  },
+  {
     versione: '3.9.69',
     voci: {
       it: [

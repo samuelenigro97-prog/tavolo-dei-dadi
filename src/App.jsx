@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.69';
+const APP_VERSION = '3.9.70';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -9505,15 +9505,15 @@ export default function App() {
                 }).reduce((s, o) => s + (o.qta || 1) * (o.peso || 0), 0);
                 const pesoEquipTot = pesoEquipItems + pesoArmi + pesoArm;
                 const pesoZainoTot = Math.max(0, pesoTot - pesoEquipTot);
-                const soglia1 = forza * 2.5 * moltiTaglia; // ingombrato
-                const soglia2 = forza * 5 * moltiTaglia;   // gravemente ingombrato
+                const soglia1 = forza * 2.5 * moltiTaglia; // ingombrato (regola opzionale 5e: > 5x FOR in libbre = 2.5x FOR in kg)
+                const soglia2 = forza * 5 * moltiTaglia;   // gravemente ingombrato (> 10x FOR in libbre = 5x FOR in kg)
                 const spingiTrascina = capFisica * 2;
-                const stato = pesoTot > cap ? 'sovraccarico' : pesoTot > soglia2 ? 'grave' : pesoTot > soglia1 ? 'ingombrato' : 'ok';
+                const stato = pesoTot > cap ? 'sovraccarico' : (pesoTot > soglia2 ? 'grave' : (pesoTot > soglia1 ? 'ingombrato' : 'ok'));
                 const perc = Math.min(100, (pesoTot / cap) * 100);
-                // Colore barra ingombro: verde (se non ingombrato < 50%), arancione (a metà / verso il limite), rossa (se ingombrato o sovraccarico)
-                const colore = (stato !== 'ok' || pesoTot > soglia1)
+                // Colore barra: verde se normale/non ingombrato, arancione se ingombrato (regola opzionale), rosso se gravemente ingombrato o sovraccarico (> 100%)
+                const colore = (stato === 'sovraccarico' || stato === 'grave')
                   ? '#c0392b'
-                  : (pesoTot >= cap * 0.5 ? '#e08a1e' : '#2e9d4d');
+                  : (stato === 'ingombrato' ? '#e08a1e' : '#2e9d4d');
                 const modInv = (id, patch) => aggiorna({ inventario: inv.map((x) => (x.id === id ? { ...x, ...patch } : x)) });
                 const sintoniaArr = Array.isArray(scheda.sintonia) ? scheda.sintonia : (scheda.sintonia ? [scheda.sintonia] : []);
                 const normalizzaNomeOggetto = (v) => String(v || '').toLocaleLowerCase('it').replace(/[^a-zà-ÿ0-9]/gi, ' ').replace(/\s+/g, ' ').trim();
