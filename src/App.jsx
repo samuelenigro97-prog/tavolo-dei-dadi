@@ -7935,12 +7935,37 @@ export default function App() {
               {/* Da chiuso resta solo la barretta per riaprire; da aperto il
                   comando è la freccia nell'angolo in alto a sinistra dell'immagine. */}
               {!(scheda.sezioniAperte?.ritratto ?? true) && (
-                <button
-                  type="button"
-                  className="ritratto-toggle"
-                  onClick={() => aggiorna({ sezioniAperte: { ...(scheda.sezioniAperte || {}), ritratto: true } })}
-                  aria-expanded={false}
-                >▸ 🖼️ {t('profilo.ritratto')}</button>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 6 }}>
+                  <button
+                    type="button"
+                    className="ritratto-toggle"
+                    style={{ margin: 0, flex: 1 }}
+                    onClick={() => aggiorna({ sezioniAperte: { ...(scheda.sezioniAperte || {}), ritratto: true } })}
+                    aria-expanded={false}
+                  >▸ 🖼️ {t('profilo.ritratto')}</button>
+                  <button
+                    type="button"
+                    style={{
+                      background: scheda.ispirazione ? 'rgba(212,175,55,0.92)' : 'rgba(0,0,0,0.45)',
+                      border: `1.5px solid ${scheda.ispirazione ? '#fff' : 'rgba(255,255,255,0.5)'}`,
+                      borderRadius: '50%',
+                      width: 28,
+                      height: 28,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 16,
+                      color: scheda.ispirazione ? '#fff' : 'rgba(255,255,255,0.85)',
+                      boxShadow: scheda.ispirazione ? '0 0 10px #d4af37' : 'none',
+                      cursor: 'pointer',
+                      flexShrink: 0,
+                    }}
+                    title={scheda.ispirazione ? `${t('vital.ispirazione')}: ${t('common.attivo')}` : `${t('vital.ispirazione')}: ${t('common.non_attivo')}`}
+                    onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
+                  >
+                    {scheda.ispirazione ? '★' : '☆'}
+                  </button>
+                </div>
               )}
               {(scheda.sezioniAperte?.ritratto ?? true) && <>
               <div
@@ -8473,8 +8498,8 @@ export default function App() {
                   )}
                 </div>
               </div>
-              {/* Riga 4 — Salvezza e sensi (allineata a Saggezza) */}
-              <div className="vitali pm-gruppo">
+              {/* Riga 4 — Salvezza, sensi e condizioni (allineata a Saggezza & Carisma) */}
+              <div className="vitali pm-gruppo" style={{ gridRow: '4 / -1' }}>
                 <div className="ts-morte-box" style={{ ...styles.vitalBox }}>
                   <SfondoVit>💀</SfondoVit>
                   <div style={styles.vitalLabel}>{t("vital.ts_morte")}</div>
