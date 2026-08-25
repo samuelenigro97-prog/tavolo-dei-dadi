@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.113';
+const APP_VERSION = '3.9.114';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -8251,9 +8251,9 @@ export default function App() {
                     title={t('profilo.background_bloccato')}
                   />
                 </CampoModulo>
-                <CampoModulo label={`${t("profilo.classe")} (Liv. ${scheda.livello || 1})`}>
+                <CampoModulo label={t("profilo.classe")}>
                   <CampoBloccato
-                    valore={traduciDato(scheda.classe) ? `${traduciDato(scheda.classe)} — Liv. ${scheda.livello || 1}` : t('profilo.nessuna')}
+                    valore={traduciDato(scheda.classe) ? `${traduciDato(scheda.classe)} - ${scheda.livello || 1}` : t('profilo.nessuna')}
                     title={t('profilo.classe_bloccata')}
                   />
                 </CampoModulo>
