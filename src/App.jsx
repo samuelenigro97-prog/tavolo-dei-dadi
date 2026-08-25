@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.91';
+const APP_VERSION = '3.9.92';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -8021,10 +8021,10 @@ export default function App() {
                       background: 'none',
                       border: 'none',
                       padding: 0,
-                      fontSize: 22,
+                      fontSize: 20,
                       lineHeight: 1,
-                      color: scheda.ispirazione ? '#ffd700' : C.inkDim,
-                      textShadow: scheda.ispirazione ? '0 0 8px #ffd700, 0 1px 3px rgba(0,0,0,0.5)' : 'none',
+                      color: scheda.ispirazione ? '#d4af37' : C.inkDim,
+                      textShadow: scheda.ispirazione ? '0 0 3px rgba(212,175,55,0.4)' : 'none',
                       cursor: 'pointer',
                       flexShrink: 0,
                       transition: 'all 0.2s ease',
@@ -8060,24 +8060,23 @@ export default function App() {
                   onClick={(e) => { e.stopPropagation(); aggiorna({ sezioniAperte: { ...(scheda.sezioniAperte || {}), ritratto: false } }); }}
                 >▾</button>
 
-                {/* Tasto Ispirazione nell'angolo in alto a destra del ritratto — pura stella senza cerchio */}
+                {/* Tasto Ispirazione nell'angolo in alto a destra del ritratto — pura stella dorata sobria */}
                 <button
                   type="button"
                   style={{
                     position: 'absolute',
-                    top: 4,
-                    right: 6,
+                    top: 5,
+                    right: 7,
                     zIndex: 3,
                     background: 'none',
                     border: 'none',
                     padding: 0,
-                    fontSize: 24,
+                    fontSize: 22,
                     lineHeight: 1,
-                    color: scheda.ispirazione ? '#ffd700' : 'rgba(255,255,255,0.75)',
-                    textShadow: scheda.ispirazione ? '0 0 10px #ffd700, 0 0 18px rgba(255,215,0,0.85), 0 1px 4px rgba(0,0,0,0.9)' : '0 1px 4px rgba(0,0,0,0.9)',
+                    color: scheda.ispirazione ? '#d4af37' : 'rgba(255,255,255,0.65)',
+                    textShadow: scheda.ispirazione ? '0 1px 3px rgba(0,0,0,0.8), 0 0 4px rgba(212,175,55,0.5)' : '0 1px 3px rgba(0,0,0,0.85)',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
-                    filter: scheda.ispirazione ? 'drop-shadow(0 0 6px rgba(255,215,0,0.9))' : 'none',
                   }}
                   title={scheda.ispirazione ? `${t('vital.ispirazione')}: ${t('common.attivo')} (Click per disattivare)` : `${t('vital.ispirazione')}: ${t('common.non_attivo')} (Click per attivare)`}
                   onClick={(e) => {
