@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.110';
+const APP_VERSION = '3.9.111';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7902,7 +7902,7 @@ export default function App() {
                   <div
                     className="ritratto-box"
                     style={{
-                      width: '100%', height: 250, minHeight: 250, borderRadius: 12, overflow: 'hidden',
+                      width: '100%', height: 350, minHeight: 350, borderRadius: 12, overflow: 'hidden',
                       // emblema auto (foto assente o SVG): sfondo col colore classe, si fonde coi bordi
                       background: (!scheda.ritratto || scheda.ritratto.startsWith('data:image/svg')) ? (coloreClasse(scheda.classe)?.chiaro || C.panel) : C.panel,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',

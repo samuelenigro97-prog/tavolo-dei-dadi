@@ -474,11 +474,11 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   gap: 8px;
   min-width: 0;
 }
-/* Il box immagine allargato con proporzioni ottimali */
+/* Il box immagine rettangolare (280px × 350px) */
 .ritratto-box {
   width: 100%;
-  height: 250px;
-  min-height: 250px;
+  height: 350px;
+  min-height: 350px;
   border-radius: 12px;
   overflow: hidden;
   position: relative;
