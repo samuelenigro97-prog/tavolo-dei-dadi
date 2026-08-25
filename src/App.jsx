@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.76';
+const APP_VERSION = '3.9.77';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -4220,12 +4220,13 @@ export default function App() {
         }
         const norm = normalizeImported(forzaVersione(dati));
         const chiave = String(norm.nome||'').toLowerCase().trim();
-        const esiste = chiave && Object.values(roster.personaggi || {}).some((p) => String(p.nome||'').toLowerCase().trim() === chiave);
-        if (esiste) {
-          setErroreImport(`PG "${norm.nome}" già esistente: import ignorato per evitare duplicato.`);
-          continue;
-        }
-        nuovoPersonaggio(norm);
+        setRoster((r) => {
+          const personaggi = { ...r.personaggi };
+          const idEsistente = chiave ? Object.keys(personaggi).find((k) => String(personaggi[k]?.nome||'').toLowerCase().trim() === chiave) : null;
+          const targetId = idEsistente || `pg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+          personaggi[targetId] = norm;
+          return { attivo: targetId, personaggi };
+        });
         setMostraMenu(false);
       } catch {
         setErroreImport(`File JSON non valido: ${file.name} — usa un file esportato da Tavolo dei Dadi.`);

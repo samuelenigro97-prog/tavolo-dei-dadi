@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.77',
+    voci: {
+      it: [
+        'Apertura Automatica Scheda Importata: quando importi un personaggio (da JSON, PDF o immagine), l\'app lo seleziona e apre immediatamente a schermo la sua scheda aggiornata.',
+      ],
+      en: [
+        'Auto-Open Imported Character: importing a character (JSON, PDF, or image) now immediately switches to and displays the newly imported sheet.',
+      ],
+    },
+  },
+  {
     versione: '3.9.76',
     voci: {
       it: [
