@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.104';
+const APP_VERSION = '3.9.105';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -8668,40 +8668,7 @@ export default function App() {
               </div>
               {/* Riga 4 — Salvezza, sensi e condizioni (allineata a Saggezza & Carisma) */}
               <div className="vitali pm-gruppo" style={{ gridRow: '4 / -1' }}>
-                <div className="ts-morte-box" style={{ ...styles.vitalBox, minHeight: 120 }}>
-                  <SfondoVit>💀</SfondoVit>
-                  <div style={styles.vitalLabel}>{t("vital.ts_morte")}</div>
-                  <div className="ts-morte-controlli">
-                    <div className="ts-morte-riga">
-                      <span style={{ color: C.green, fontWeight: 600 }}>✔</span>
-                      {[1, 2, 3].map((n) => (
-                        <input key={`s-${n}`} type="checkbox" checked={(scheda.tsMorte?.successi || 0) >= n} onChange={() => {
-                          const att = scheda.tsMorte?.successi || 0;
-                          aggiorna({ tsMorte: { ...scheda.tsMorte, successi: att === n ? n - 1 : n } });
-                        }} />
-                      ))}
-                    </div>
-                    <div className="ts-morte-riga">
-                      <span style={{ color: C.red, fontWeight: 600 }}>✘</span>
-                      {[1, 2, 3].map((n) => (
-                        <input key={`f-${n}`} type="checkbox" checked={(scheda.tsMorte?.fallimenti || 0) >= n} onChange={() => {
-                          const att = scheda.tsMorte?.fallimenti || 0;
-                          aggiorna({ tsMorte: { ...scheda.tsMorte, fallimenti: att === n ? n - 1 : n } });
-                        }} />
-                      ))}
-                    </div>
-                  </div>
-                  <button className="ts-morte-reset" style={{ ...styles.buttonMini, fontSize: 10 }} onClick={() => aggiorna({ tsMorte: { successi: 0, fallimenti: 0 } })}>{t("vital.reset_ts")}</button>
-                  {scheda.pfAttuali <= 0 && (
-                    <button
-                      style={{ ...styles.buttonMini, fontSize: 10, marginTop: 3, color: C.red, borderColor: C.red, fontWeight: 700 }}
-                      onClick={tiroSalvezzaMorte}
-                      disabled={rolling || (scheda.tsMorte?.successi || 0) >= 3 || (scheda.tsMorte?.fallimenti || 0) >= 3}
-                      title="Tira 1d20: 10 o più è un successo, 9 o meno è un fallimento"
-                    >🎲 Tira TS</button>
-                  )}
-                </div>
-                {/* Box Unificato: Visione (Sensi) & Percezione Passiva — uniti in orizzontale */}
+                {/* 1. Box Visione (Sensi) & Percezione Passiva (sinistra) */}
                 <div
                   style={{
                     background: C.panelLight,
@@ -8745,7 +8712,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Box Unificato: Resistenze & Condizioni — uniti in orizzontale */}
+                {/* 2. Box Resistenze & Condizioni (centro, span 2) */}
                 <div
                   style={{
                     gridColumn: 'span 2',
@@ -8854,6 +8821,41 @@ export default function App() {
                       );
                     })()}
                   </div>
+                </div>
+
+                {/* 3. Box TS Morte (destra) */}
+                <div className="ts-morte-box" style={{ ...styles.vitalBox, minHeight: 120 }}>
+                  <SfondoVit>💀</SfondoVit>
+                  <div style={styles.vitalLabel}>{t("vital.ts_morte")}</div>
+                  <div className="ts-morte-controlli">
+                    <div className="ts-morte-riga">
+                      <span style={{ color: C.green, fontWeight: 600 }}>✔</span>
+                      {[1, 2, 3].map((n) => (
+                        <input key={`s-${n}`} type="checkbox" checked={(scheda.tsMorte?.successi || 0) >= n} onChange={() => {
+                          const att = scheda.tsMorte?.successi || 0;
+                          aggiorna({ tsMorte: { ...scheda.tsMorte, successi: att === n ? n - 1 : n } });
+                        }} />
+                      ))}
+                    </div>
+                    <div className="ts-morte-riga">
+                      <span style={{ color: C.red, fontWeight: 600 }}>✘</span>
+                      {[1, 2, 3].map((n) => (
+                        <input key={`f-${n}`} type="checkbox" checked={(scheda.tsMorte?.fallimenti || 0) >= n} onChange={() => {
+                          const att = scheda.tsMorte?.fallimenti || 0;
+                          aggiorna({ tsMorte: { ...scheda.tsMorte, fallimenti: att === n ? n - 1 : n } });
+                        }} />
+                      ))}
+                    </div>
+                  </div>
+                  <button className="ts-morte-reset" style={{ ...styles.buttonMini, fontSize: 10 }} onClick={() => aggiorna({ tsMorte: { successi: 0, fallimenti: 0 } })}>{t("vital.reset_ts")}</button>
+                  {scheda.pfAttuali <= 0 && (
+                    <button
+                      style={{ ...styles.buttonMini, fontSize: 10, marginTop: 3, color: C.red, borderColor: C.red, fontWeight: 700 }}
+                      onClick={tiroSalvezzaMorte}
+                      disabled={rolling || (scheda.tsMorte?.successi || 0) >= 3 || (scheda.tsMorte?.fallimenti || 0) >= 3}
+                      title="Tira 1d20: 10 o più è un successo, 9 o meno è un fallimento"
+                    >🎲 Tira TS</button>
+                  )}
                 </div>
               </div>
             </div>
