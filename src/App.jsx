@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.89';
+const APP_VERSION = '3.9.90';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -6946,43 +6946,89 @@ export default function App() {
                       </div>
                     ))}
                     {controlliAttivi.some((r) => r.correggibile) && (
-                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
-                        {controlliAttivi.some((r) => r.correggibile && r.gravita === 'certo') && (
-                          <button
-                            style={{ ...styles.buttonMini, fontSize: 10.5, background: '#2e9d4d', color: '#fff', borderColor: '#2e9d4d', fontWeight: 700, padding: '4px 8px' }}
-                            onClick={() => {
-                              const patch = {};
-                              const newTs = { ...scheda.tiriSalvezza };
-                              const newAb = { ...scheda.abilita };
-                              let changedTs = false, changedAb = false;
-                              for (const r of controlliAttivi) {
-                                if (r.correggibile && r.gravita === 'certo') {
-                                  if (r.tipo === 'ts') { newTs[r.targetKey] = true; changedTs = true; }
-                                  if (r.tipo === 'abilita') { newAb[r.targetKey] = Math.max(1, (newAb[r.targetKey] || 0) + 1); changedAb = true; }
-                                  if (r.tipo === 'bonus_competenza') { patch.bonusCompetenza = r.targetVal; }
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginTop: 6 }}>
+                        <button
+                          style={{
+                            ...styles.buttonPrimary,
+                            fontSize: 11.5,
+                            background: '#2e9d4d',
+                            color: '#fff',
+                            borderColor: '#2e9d4d',
+                            fontWeight: 700,
+                            padding: '6px 10px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 6,
+                            width: '100%',
+                            boxShadow: '0 2px 6px rgba(46, 157, 77, 0.3)',
+                          }}
+                          onClick={() => {
+                            const patch = {};
+                            const newTs = { ...scheda.tiriSalvezza };
+                            const newAb = { ...scheda.abilita };
+                            let changedTs = false, changedAb = false;
+                            for (const r of controlliAttivi) {
+                              if (r.correggibile) {
+                                if (r.tipo === 'ts') {
+                                  newTs[r.targetKey] = true;
+                                  changedTs = true;
+                                } else if (r.tipo === 'abilita') {
+                                  newAb[r.targetKey] = Math.max(1, (newAb[r.targetKey] || 0) + 1);
+                                  changedAb = true;
+                                } else if (r.tipo === 'rimuovi_abilita') {
+                                  newAb[r.targetKey] = 0;
+                                  changedAb = true;
+                                } else if (r.tipo === 'bonus_competenza') {
+                                  patch.bonusCompetenza = r.targetVal;
                                 }
                               }
-                              if (changedTs) patch.tiriSalvezza = newTs;
-                              if (changedAb) patch.abilita = newAb;
-                              aggiorna(patch);
-                            }}
-                          >
-                            ⚡ Correggi tutte le mancanze certe
-                          </button>
-                        )}
-                        {controlliAttivi.some((r) => r.tipo === 'rimuovi_abilita') && (
-                          <button
-                            style={{ ...styles.buttonMini, fontSize: 10.5, background: '#d97706', color: '#fff', borderColor: '#d97706', fontWeight: 700, padding: '4px 8px' }}
-                            onClick={() => {
-                              const newAb = { ...scheda.abilita };
-                              for (const r of controlliAttivi) {
-                                if (r.tipo === 'rimuovi_abilita') newAb[r.targetKey] = 0;
-                              }
-                              aggiorna({ abilita: newAb });
-                            }}
-                          >
-                            ⚡ Rimuovi tutte le competenze extra
-                          </button>
+                            }
+                            if (changedTs) patch.tiriSalvezza = newTs;
+                            if (changedAb) patch.abilita = newAb;
+                            aggiorna(patch);
+                          }}
+                          title={lingua === 'en' ? 'Apply all corrections automatically' : 'Applica tutte le correzioni automaticamente con un click'}
+                        >
+                          ⚡ {lingua === 'en' ? 'Fix all' : 'Correggi tutto'}
+                        </button>
+                        {(controlliAttivi.some((r) => r.correggibile && r.gravita === 'certo') &&
+                          controlliAttivi.some((r) => r.tipo === 'rimuovi_abilita')) && (
+                          <div style={{ display: 'flex', gap: 5 }}>
+                            <button
+                              style={{ ...styles.buttonMini, fontSize: 10, background: '#2e9d4d', color: '#fff', borderColor: '#2e9d4d', fontWeight: 600, padding: '3px 6px', flex: 1 }}
+                              onClick={() => {
+                                const patch = {};
+                                const newTs = { ...scheda.tiriSalvezza };
+                                const newAb = { ...scheda.abilita };
+                                let changedTs = false, changedAb = false;
+                                for (const r of controlliAttivi) {
+                                  if (r.correggibile && r.gravita === 'certo') {
+                                    if (r.tipo === 'ts') { newTs[r.targetKey] = true; changedTs = true; }
+                                    if (r.tipo === 'abilita') { newAb[r.targetKey] = Math.max(1, (newAb[r.targetKey] || 0) + 1); changedAb = true; }
+                                    if (r.tipo === 'bonus_competenza') { patch.bonusCompetenza = r.targetVal; }
+                                  }
+                                }
+                                if (changedTs) patch.tiriSalvezza = newTs;
+                                if (changedAb) patch.abilita = newAb;
+                                aggiorna(patch);
+                              }}
+                            >
+                              {lingua === 'en' ? 'Missing only' : 'Solo mancanze certe'}
+                            </button>
+                            <button
+                              style={{ ...styles.buttonMini, fontSize: 10, background: '#d97706', color: '#fff', borderColor: '#d97706', fontWeight: 600, padding: '3px 6px', flex: 1 }}
+                              onClick={() => {
+                                const newAb = { ...scheda.abilita };
+                                for (const r of controlliAttivi) {
+                                  if (r.tipo === 'rimuovi_abilita') newAb[r.targetKey] = 0;
+                                }
+                                aggiorna({ abilita: newAb });
+                              }}
+                            >
+                              {lingua === 'en' ? 'Extra only' : 'Solo extra'}
+                            </button>
+                          </div>
                         )}
                       </div>
                     )}

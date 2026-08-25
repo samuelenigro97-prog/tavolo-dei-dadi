@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.90',
+    voci: {
+      it: [
+        'Pulsante "⚡ Correggi tutto" nelle Notifiche: aggiunto a fine riquadro delle notifiche il pulsante dedicato per applicare con un solo click tutte le correzioni disponibili (competenze mancanti, tiri salvezza, rimozione abilità extra e bonus competenza).',
+      ],
+      en: [
+        '"⚡ Fix all" Button in Notifications: added a dedicated button at the bottom of the notification box to apply all available character fixes with a single click (missing skills, saving throws, removing extra skills, and proficiency bonus).',
+      ],
+    },
+  },
+  {
     versione: '3.9.89',
     voci: {
       it: [
