@@ -1010,33 +1010,72 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
      Le variabili sono impostate inline su :root da App.jsx (style.setProperty),
      quindi qui serve !important: un foglio di stile non batte uno stile inline. */
   :root, :root[data-tema="scuro"], :root[data-tema="chiaro"] {
-    --c-bg: #ffffff !important; --c-panel: #ffffff !important; --c-panel-light: #ffffff !important;
-    --c-border: #999999 !important; --c-ink: #000000 !important; --c-ink-dim: #444444 !important;
-    --c-gold: #6b5300 !important; --c-gold-dark: #4a3900 !important; --c-title: #000000 !important;
-    --c-green: #1a6b2a !important; --c-red: #9e2b25 !important;
+    --c-bg: #ffffff !important; --c-panel: #ffffff !important; --c-panel-light: #fbfbfb !important;
+    --c-border: #888888 !important; --c-ink: #000000 !important; --c-ink-dim: #333333 !important;
+    --c-gold: #4a3900 !important; --c-gold-dark: #2a2000 !important; --c-title: #000000 !important;
+    --c-green: #1a6b2a !important; --c-red: #8b0000 !important;
   }
-  html, body { background: #fff !important; color: #000 !important; }
+  html, body {
+    background: #fff !important;
+    color: #000 !important;
+    font-size: 11pt !important;
+    line-height: 1.35 !important;
+  }
   /* Gli sfondi a tema vivono su pseudo-elementi del body: via anche quelli. */
   body::before, body::after { display: none !important; }
-  .app-shell { padding: 0 !important; }
+  .app-shell { padding: 0 !important; max-width: 100% !important; }
 
-  /* Comandi, banner e overlay non hanno senso su carta. */
+  /* Comandi, barre, dock, modali e overlay non hanno senso su carta. */
   .no-stampa,
+  .app-header,
   .app-header-side,
   .dadi-riga,
+  .barra-tiro,
   .cloud-bar,
   .game-actions-dock,
   .app-version,
   .inventario-azioni,
   .col-azioni,
-  .add-spell { display: none !important; }
+  .add-spell,
+  .ts-morte-reset,
+  .inc-prep-toggle,
+  .tag-rapidi-diario,
+  button:not(.stampa-inclusa) { display: none !important; }
 
-  /* Un pannello non deve spezzarsi a metà fra due pagine. */
+  /* Impaginazione pulita: nessun pannello spezzato a metà */
+  .scheda-sezione,
   .blocco-car,
+  .blocco-sezione,
   .inventario-wrap,
   .inventario-riga,
-  .privilegi-duo { break-inside: avoid; page-break-inside: avoid; }
-  .app-shell * { box-shadow: none !important; }
+  .privilegi-duo,
+  .inc-livello-box,
+  .attacco-card {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    box-shadow: none !important;
+  }
+
+  .profilo-card {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    margin-bottom: 12px !important;
+  }
+
+  .app-shell * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* Tabelle nitide con bordi chiari */
+  table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+  th, td {
+    border-color: #999 !important;
+    padding: 3px 6px !important;
+  }
 
   /* I campi editabili, su carta, sono testo normale e non caselle. */
   input, select, textarea {
@@ -1045,7 +1084,12 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     color: #000 !important;
     -webkit-appearance: none;
     appearance: none;
+    padding: 0 !important;
   }
-  @page { margin: 12mm; }
+
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm;
+  }
 }
 `;

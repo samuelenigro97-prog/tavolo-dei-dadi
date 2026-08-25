@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.83';
+const APP_VERSION = '3.9.84';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2871,6 +2871,9 @@ export default function App() {
   const [info, setInfo] = useState(null); // nuvoletta esplicativa: { titolo, testo }
   const [checkConc, setCheckConc] = useState(null); // TS concentrazione automatico: { danno, cd, spell, esito }
   const [dettaglioInc, setDettaglioInc] = useState(null); // id incantesimo aperto nel sottomenu
+  const [mostraMenuEsporta, setMostraMenuEsporta] = useState(false);
+  const [posEsporta, setPosEsporta] = useState({ top: 50, left: 200 });
+  const esportaBtnRef = useRef(null);
   const [conferma, setConferma] = useState(null); // { titolo, testo, onConferma } per la conferma in-app
   const [modalRiposo, setModalRiposo] = useState(null); // 'breve' | 'lungo' | null
   const [levelUpBozza, setLevelUpBozza] = useState({ metodo: 'media', hpLanciato: 0 });
@@ -6664,9 +6667,19 @@ export default function App() {
             📂 <span className="header-label">Importa</span>
           </button>
           <button
-            style={styles.modeButton(false)}
+            ref={esportaBtnRef}
+            style={styles.modeButton(mostraMenuEsporta)}
             title={t('tip.esporta')}
-            onClick={esportaJson}
+            onClick={() => {
+              if (!mostraMenuEsporta) {
+                const r = esportaBtnRef.current?.getBoundingClientRect();
+                if (r) setPosEsporta({
+                  top: Math.max(8, Math.min(window.innerHeight - 200, r.bottom + 5)),
+                  left: Math.max(8, Math.min(window.innerWidth - 240, r.left)),
+                });
+              }
+              setMostraMenuEsporta((v) => !v);
+            }}
           >
             💾 <span className="header-label">Esporta</span>
           </button>
@@ -6702,6 +6715,88 @@ export default function App() {
         </div>
 
       </header>
+
+      {/* Menu a comparsa Esporta */}
+      {mostraMenuEsporta && (
+        <div onClick={() => setMostraMenuEsporta(false)} style={{ position: 'fixed', inset: 0, zIndex: 1400, background: 'transparent' }}>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="no-stampa"
+            style={{
+              position: 'fixed', top: posEsporta.top, left: posEsporta.left,
+              width: 'min(260px, calc(100vw - 16px))',
+              background: C.panel, border: `1px solid ${C.gold}`, borderRadius: 10,
+              boxShadow: '0 10px 30px rgba(0,0,0,0.45)', padding: '10px 12px', zIndex: 1401,
+              display: 'flex', flexDirection: 'column', gap: 6,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+              <strong style={{ color: C.goldDark, fontSize: 13 }}>💾 Opzioni Esportazione</strong>
+              <button style={styles.buttonMini} onClick={() => setMostraMenuEsporta(false)}>✕</button>
+            </div>
+
+            <button
+              style={{ ...styles.button, fontSize: 12, padding: '7px 10px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 6 }}
+              onClick={() => {
+                esportaJson();
+                setMostraMenuEsporta(false);
+              }}
+              title="Salva file .JSON della scheda del personaggio attivo"
+            >
+              <span>💾</span>
+              <div>
+                <strong style={{ display: 'block' }}>Salva Scheda (JSON)</strong>
+                <span style={{ fontSize: 10, color: C.inkDim, fontWeight: 'normal' }}>File leggero per backup o re-import</span>
+              </div>
+            </button>
+
+            <button
+              style={{ ...styles.buttonPrimary, fontSize: 12, padding: '7px 10px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 6 }}
+              onClick={() => {
+                setMostraMenuEsporta(false);
+                setTimeout(() => {
+                  window.print();
+                }, 100);
+              }}
+              title="Stampa su carta o salva in PDF (formato scheda ufficiale D&D A4 pulito a 2-3 pagine)"
+            >
+              <span>🖨️</span>
+              <div>
+                <strong style={{ display: 'block' }}>Stampa / Salva PDF</strong>
+                <span style={{ fontSize: 10, color: '#fff', opacity: 0.9, fontWeight: 'normal' }}>Scheda ufficiale cartacea / PDF A4</span>
+              </div>
+            </button>
+
+            <button
+              style={{ ...styles.button, fontSize: 12, padding: '7px 10px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 6 }}
+              onClick={() => {
+                condividiLink();
+                setMostraMenuEsporta(false);
+              }}
+              title="Crea un link web condivisibile per aprire questo PG su qualsiasi dispositivo"
+            >
+              <span>🔗</span>
+              <div>
+                <strong style={{ display: 'block' }}>Condividi Link</strong>
+                <span style={{ fontSize: 10, color: C.inkDim, fontWeight: 'normal' }}>Invia il PG tramite link istantaneo</span>
+              </div>
+            </button>
+
+            <div style={{ borderTop: `1px dashed ${C.border}`, margin: '2px 0' }} />
+
+            <button
+              style={{ ...styles.buttonMini, fontSize: 11, padding: '5px 8px', textAlign: 'left', color: C.goldDark }}
+              onClick={() => {
+                esportaBackupCompleto();
+                setMostraMenuEsporta(false);
+              }}
+              title="Scarica archivio JSON di tutti i personaggi salvati"
+            >
+              🛟 Scarica Backup Completo (Tutti i PG)
+            </button>
+          </div>
+        </div>
+      )}
 
       {erroreImport && (
         <div style={{ maxWidth: 1080, margin: '8px auto 0', padding: '10px 12px', background: 'color-mix(in srgb, var(--c-panel) 94%, #c0392b)', border: `1px solid ${C.red}`, borderRadius: 8, color: C.red, fontSize: 13, lineHeight: 1.4, display: 'flex', gap: 10, alignItems: 'flex-start' }}>

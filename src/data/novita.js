@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.84',
+    voci: {
+      it: [
+        'Nuovo Menu Esporta & Stampa / Salva PDF Ufficiale: cliccando su "Esporta" si apre un menu con opzioni rapide per salvare in JSON, scaricare il backup completo, condividere il link o stampare/salvare in PDF con layout cartaceo D&D pulito a 2-3 pagine (formato A4 senza barre o elementi UI superflui).',
+      ],
+      en: [
+        'New Export Menu & Print / Official PDF Sheet: clicking "Export" now opens a dropdown menu with quick options to save JSON, download full backup, share link, or print/save as a clean 2-3 page D&D official character sheet PDF (A4 format with no clutter).',
+      ],
+    },
+  },
+  {
     versione: '3.9.83',
     voci: {
       it: [
