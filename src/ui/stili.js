@@ -476,11 +476,11 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   gap: 8px;
   min-width: 0;
 }
-/* Il box immagine rettangolare (280px × 350px) */
+/* Il box immagine rettangolare (270px × 295px) allineato alla fine di Anagrafica+PF e Forza+Des+Cost */
 .ritratto-box {
   width: 100%;
-  height: 350px;
-  min-height: 350px;
+  height: 295px;
+  min-height: 295px;
   border-radius: 12px;
   overflow: hidden;
   position: relative;

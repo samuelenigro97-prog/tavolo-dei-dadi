@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.116';
+const APP_VERSION = '3.9.117';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7913,33 +7913,6 @@ export default function App() {
                       onClick={(e) => { e.stopPropagation(); aggiorna({ sezioniAperte: { ...(scheda.sezioniAperte || {}), ritratto: false } }); }}
                     >▾</button>
 
-                    {/* Tasto Ispirazione */}
-                    <button
-                      type="button"
-                      style={{
-                        position: 'absolute',
-                        top: 5,
-                        right: 7,
-                        zIndex: 3,
-                        background: 'none',
-                        border: 'none',
-                        padding: 0,
-                        fontSize: 23,
-                        lineHeight: 1,
-                        color: scheda.ispirazione ? '#f0c43f' : 'rgba(255,255,255,0.7)',
-                        textShadow: scheda.ispirazione ? '0 0 6px rgba(240, 196, 63, 0.8), 0 0 12px rgba(240, 196, 63, 0.45), 0 1px 3px rgba(0,0,0,0.9)' : '0 1px 3px rgba(0,0,0,0.85)',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                      }}
-                      title={scheda.ispirazione ? `${t('vital.ispirazione')}: ${t('common.attivo')} (Click per disattivare)` : `${t('vital.ispirazione')}: ${t('common.non_attivo')} (Click per attivare)`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        aggiorna({ ispirazione: !scheda.ispirazione });
-                      }}
-                    >
-                      {scheda.ispirazione ? '★' : '☆'}
-                    </button>
-
                     {scheda.ritratto ? (
                       <img
                         src={scheda.ritratto}
@@ -8648,28 +8621,27 @@ export default function App() {
                   )}
                 </div>
               </div>
-              {/* Riga 4 — Salvezza, sensi e condizioni (allineata a Saggezza & Carisma) */}
+              {/* Riga 4 — Salvezza, sensi, condizioni e ispirazione (Tier 3: allineata a Risorse di classe e Carisma) */}
               <div className="vitali pm-gruppo" style={{ gridRow: '4 / -1' }}>
-                {/* 1. Box Visione (Sensi) & Percezione Passiva (sinistra) */}
+                {/* 1. Box Visione & Percezione Passiva */}
                 <div
                   style={{
                     background: C.panelLight,
                     border: `1px solid ${C.border}`,
                     borderRadius: 8,
-                    padding: '10px 10px',
+                    padding: '8px 8px',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
-                    gap: 8,
+                    gap: 6,
                     minHeight: 120,
                     height: '100%',
                     boxSizing: 'border-box',
                   }}
                   title={t('vital.passive_tooltip')}
                 >
-                  {/* Sezione Superiore: Visione / Sensi */}
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '100%' }}>
-                    <div style={{ fontSize: 10.5, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 3, textAlign: 'left', width: '100%' }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 2, textAlign: 'left', width: '100%' }}>
                       👁️ {t("vital.visione")}
                     </div>
                     <CampoConTendina
@@ -8680,40 +8652,36 @@ export default function App() {
                     />
                   </div>
 
-                  {/* Divisore orizzontale */}
-                  <div style={{ width: '100%', height: 1, background: C.border, opacity: 0.7 }} aria-hidden />
+                  <div style={{ width: '100%', height: 1, background: C.border, opacity: 0.6 }} aria-hidden />
 
-                  {/* Sezione Inferiore: Percezione Passiva */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '0 2px' }}>
-                    <div style={{ fontSize: 10.5, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+                    <div style={{ fontSize: 9.5, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase' }}>
                       {t("vital.percezione_passiva")}
                     </div>
-                    <div style={{ fontSize: 22, fontWeight: 800, color: C.ink, lineHeight: 1 }}>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: C.ink, lineHeight: 1 }}>
                       {percezionePassiva}
                     </div>
                   </div>
                 </div>
 
-                {/* 2. Box Resistenze & Condizioni (centro, span 2) */}
+                {/* 2. Box Resistenze & Condizioni */}
                 <div
                   style={{
-                    gridColumn: 'span 2',
                     background: C.panelLight,
                     border: `1px solid ${C.border}`,
                     borderRadius: 8,
-                    padding: '10px 12px',
+                    padding: '8px 8px',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
-                    gap: 8,
+                    gap: 6,
                     minHeight: 120,
                     height: '100%',
                     boxSizing: 'border-box',
                   }}
                 >
-                  {/* Sezione Superiore: Resistenze */}
                   <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', width: '100%' }}>
-                    <div style={{ fontSize: 10.5, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 2, textAlign: 'left' }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 2, textAlign: 'left' }}>
                       🧪 {t("vital.resistenze")}
                     </div>
                     <CampoConTendina
@@ -8724,17 +8692,15 @@ export default function App() {
                     />
                   </div>
 
-                  {/* Divisore orizzontale */}
-                  <div style={{ width: '100%', height: 1, background: C.border, opacity: 0.7 }} aria-hidden />
+                  <div style={{ width: '100%', height: 1, background: C.border, opacity: 0.6 }} aria-hidden />
 
-                  {/* Sezione Inferiore: Condizioni */}
                   <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', width: '100%', textAlign: 'left' }}>
-                    <div style={{ fontSize: 10.5, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                       <span>⚠️ {t("vital.condizioni")}</span>
                       <select
                         value=""
                         onChange={(e) => { if (e.target.value) aggiorna({ condizioni: [...scheda.condizioni, e.target.value] }); }}
-                        style={{ ...styles.inlineInput, fontSize: 10, padding: '1px 5px', height: 18, borderRadius: 4, background: C.panel }}
+                        style={{ ...styles.inlineInput, fontSize: 9.5, padding: '0 4px', height: 18, borderRadius: 4, background: C.panel }}
                         title={t('tip.aggiungi_condizione')}
                       >
                         <option value="">＋ {lingua === 'en' ? 'add' : 'aggiungi'}</option>
@@ -8744,13 +8710,11 @@ export default function App() {
                       </select>
                     </div>
 
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'center' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', maxHeight: 38, overflowY: 'auto' }}>
                       {scheda.condizioni.length === 0 && (
-                        <span style={{ fontSize: 11, color: C.inkDim, fontStyle: 'italic' }}>{lingua === 'en' ? 'None' : 'Nessuna'}</span>
+                        <span style={{ fontSize: 10.5, color: C.inkDim, fontStyle: 'italic' }}>{lingua === 'en' ? 'None' : 'Nessuna'}</span>
                       )}
                       {scheda.condizioni.map((c) => {
-                        const eff = EFFETTI_CONDIZIONI[c];
-                        const testoEff = eff ? (lingua === 'en' ? eff.en : eff.it) : '';
                         const col = COLORI_CONDIZIONI[c] || { bg: 'rgba(200,140,20,0.18)', border: C.goldDark, text: C.ink };
                         const ico = ICONE_CONDIZIONI[c] || '⚠️';
                         return (
@@ -8759,26 +8723,18 @@ export default function App() {
                             style={{
                               background: col.bg,
                               border: `1px solid ${col.border}`,
-                              borderRadius: 5,
-                              padding: '1px 5px',
+                              borderRadius: 4,
+                              padding: '1px 4px',
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: 3,
-                              fontSize: 10.5,
+                              gap: 2,
+                              fontSize: 9.5,
                             }}
                           >
+                            <span style={{ color: col.text, fontWeight: 700 }}>{ico} {traduciDato(c)}</span>
                             <button
                               type="button"
-                              style={{ background: 'none', border: 0, padding: 0, font: 'inherit', color: col.text, cursor: eff ? 'help' : 'default', fontSize: 10.5, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 3 }}
-                              title={testoEff || c}
-                              onClick={() => eff && setInfo({ titolo: `${ico} ${traduciDato(c)}`, testo: testoEff })}
-                            >
-                              <span>{ico}</span>
-                              <span>{traduciDato(c)}</span>
-                            </button>
-                            <button
-                              type="button"
-                              style={{ background: 'none', border: 0, padding: '0 2px', font: 'inherit', color: C.inkDim, cursor: 'pointer', opacity: 0.8, fontSize: 10.5 }}
+                              style={{ background: 'none', border: 0, padding: 0, color: C.inkDim, cursor: 'pointer', fontSize: 9 }}
                               title={t('tip.click_rimuovi')}
                               onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
                             >✕</button>
@@ -8786,27 +8742,11 @@ export default function App() {
                         );
                       })}
                     </div>
-
-                    {/* Riepilogo compatto condizioni */}
-                    {(() => {
-                      const righe = riepilogoCondizioni(scheda.condizioni);
-                      if (!righe.length) return null;
-                      return (
-                        <div style={{ marginTop: 3, paddingTop: 3, borderTop: `1px dotted ${C.border}`, textAlign: 'left' }}>
-                          {righe.map(({ flag, da }) => (
-                            <div key={flag} style={{ fontSize: 9, lineHeight: 1.3, color: C.ink }}>
-                              • {(lingua === 'en' ? ETICHETTE_EFFETTI[flag].en : ETICHETTE_EFFETTI[flag].it)}
-                              <span style={{ opacity: 0.65 }}> ({da.map(traduciDato).join(', ')})</span>
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    })()}
                   </div>
                 </div>
 
-                {/* 3. Box TS Morte (destra) */}
-                <div className="ts-morte-box" style={{ ...styles.vitalBox, minHeight: 120 }}>
+                {/* 3. Box TS Morte */}
+                <div className="ts-morte-box" style={{ ...styles.vitalBox, padding: '8px 6px', minHeight: 120 }}>
                   <SfondoVit>💀</SfondoVit>
                   <div style={styles.vitalLabel}>{t("vital.ts_morte")}</div>
                   <div className="ts-morte-controlli">
@@ -8829,15 +8769,50 @@ export default function App() {
                       ))}
                     </div>
                   </div>
-                  <button className="ts-morte-reset" style={{ ...styles.buttonMini, fontSize: 10 }} onClick={() => aggiorna({ tsMorte: { successi: 0, fallimenti: 0 } })}>{t("vital.reset_ts")}</button>
+                  <button className="ts-morte-reset" style={{ ...styles.buttonMini, fontSize: 9.5, padding: '1px 6px' }} onClick={() => aggiorna({ tsMorte: { successi: 0, fallimenti: 0 } })}>{t("vital.reset_ts")}</button>
                   {scheda.pfAttuali <= 0 && (
                     <button
-                      style={{ ...styles.buttonMini, fontSize: 10, marginTop: 3, color: C.red, borderColor: C.red, fontWeight: 700 }}
+                      style={{ ...styles.buttonMini, fontSize: 9.5, marginTop: 3, color: C.red, borderColor: C.red, fontWeight: 700 }}
                       onClick={tiroSalvezzaMorte}
                       disabled={rolling || (scheda.tsMorte?.successi || 0) >= 3 || (scheda.tsMorte?.fallimenti || 0) >= 3}
                       title="Tira 1d20: 10 o più è un successo, 9 o meno è un fallimento"
                     >🎲 Tira TS</button>
                   )}
+                </div>
+
+                {/* 4. Box Sezione con la Stella (Ispirazione ⭐) */}
+                <div
+                  style={{
+                    ...styles.vitalBox,
+                    padding: '8px 6px',
+                    cursor: 'pointer',
+                    borderColor: scheda.ispirazione ? C.goldDark : C.border,
+                    background: scheda.ispirazione ? 'rgba(240, 196, 63, 0.1)' : C.panelLight,
+                    transition: 'all 0.2s ease',
+                    minHeight: 120,
+                  }}
+                  onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
+                  title={scheda.ispirazione ? `${t('vital.ispirazione')}: ${t('common.attivo')} (Click per disattivare)` : `${t('vital.ispirazione')}: ${t('common.non_attivo')} (Click per attivare)`}
+                >
+                  <div style={styles.vitalLabel}>{t("vital.ispirazione") || 'ISPIRAZIONE'}</div>
+                  <div
+                    style={{
+                      fontSize: 36,
+                      lineHeight: 1,
+                      color: scheda.ispirazione ? '#f0c43f' : C.inkDim,
+                      textShadow: scheda.ispirazione ? '0 0 10px rgba(240, 196, 63, 0.8), 0 0 20px rgba(240, 196, 63, 0.45)' : 'none',
+                      transform: scheda.ispirazione ? 'scale(1.12)' : 'scale(1)',
+                      transition: 'all 0.2s ease',
+                      userSelect: 'none',
+                      marginTop: 4,
+                      marginBottom: 4,
+                    }}
+                  >
+                    {scheda.ispirazione ? '★' : '☆'}
+                  </div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: scheda.ispirazione ? C.goldDark : C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+                    {scheda.ispirazione ? (lingua === 'en' ? 'Active' : 'Attiva') : (lingua === 'en' ? 'None' : 'Inattiva')}
+                  </div>
                 </div>
               </div>
             </div>
@@ -9033,11 +9008,8 @@ export default function App() {
               return (
                 <>
                   {blocco('forza')}
-                  {/* Destrezza + Costituzione impilate: insieme si allineano ai Punti Ferita */}
-                  <div className="car-coppia">
-                    {blocco('destrezza')}
-                    {blocco('costituzione')}
-                  </div>
+                  {blocco('destrezza')}
+                  {blocco('costituzione')}
                   {blocco('intelligenza')}
                   {blocco('saggezza')}
                   {blocco('carisma')}
