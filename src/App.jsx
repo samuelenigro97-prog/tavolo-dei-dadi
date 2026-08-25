@@ -2599,8 +2599,7 @@ export default function App() {
   const [filtroInventario, setFiltroInventario] = useState('');
   const [filtroVistaInventario, setFiltroVistaInventario] = useState('tutti'); // 'tutti' | 'equip' | 'zaino'
   const [filtroCatInventario, setFiltroCatInventario] = useState('tutti'); // 'tutti' | 'armi_armature' | 'pozioni' | 'magici' | 'attrezzi'
-  const [mostraSplitMonete, setMostraSplitMonete] = useState(false);
-  const [splitGiocatori, setSplitGiocatori] = useState(4);
+  const [schedaPrivilegiTab, setSchedaPrivilegiTab] = useState('tutti'); // 'tutti' | 'classe' | 'specie' | 'talenti'
   const [effettoInventarioAperto, setEffettoInventarioAperto] = useState(null);
   const [bestiaDettaglio, setBestiaDettaglio] = useState(null); // bestia aperta in modale statblock
   const [fontePopover, setFontePopover] = useState(null); // { tipo: 'ts'|'car', key, top, left } menu "da cosa deriva il bonus" aperto
@@ -9302,7 +9301,71 @@ export default function App() {
                 })()}
               </div>
 
-              {/* Gli slot sono ora mostrati all'interno di ciascun livello nella lista. */}
+              {/* Barra Interattiva Rapida degli Slot Magici */}
+              {(() => {
+                const livelliConSlot = Array.from({ length: 9 }, (_, i) => i + 1).filter((l) => (scheda.slotIncantesimo?.[l]?.totale || 0) > 0);
+                if (livelliConSlot.length === 0) return null;
+                return (
+                  <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', marginTop: 4, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: C.goldDark, letterSpacing: 0.5 }}>
+                      ⚡ {lingua === 'en' ? 'Spell Slots:' : 'Slot Magia:'}
+                    </div>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                      {livelliConSlot.map((l) => {
+                        const slot = scheda.slotIncantesimo[l];
+                        const usati = slot.usati || 0;
+                        const liberi = slot.totale - usati;
+                        return (
+                          <div
+                            key={l}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 5,
+                              padding: '3px 8px',
+                              borderRadius: 6,
+                              background: liberi > 0 ? 'rgba(200,140,20,0.14)' : 'rgba(0,0,0,0.06)',
+                              border: `1px solid ${liberi > 0 ? C.goldDark : C.border}`,
+                              fontSize: 11.5,
+                            }}
+                          >
+                            <strong style={{ color: liberi > 0 ? C.goldDark : C.inkDim }}>{l}°</strong>
+                            <div style={{ display: 'inline-flex', gap: 3 }}>
+                              {Array.from({ length: slot.totale }, (_, i) => {
+                                const disponibile = i >= usati;
+                                return (
+                                  <span
+                                    key={i}
+                                    onClick={() => {
+                                      const nuovoUsati = i < usati ? i : i + 1;
+                                      aggiorna({
+                                        slotIncantesimo: {
+                                          ...scheda.slotIncantesimo,
+                                          [l]: { ...slot, usati: nuovoUsati }
+                                        }
+                                      });
+                                    }}
+                                    title={disponibile ? (lingua === 'en' ? 'Click to expend slot' : 'Click per usare lo slot') : (lingua === 'en' ? 'Click to restore slot' : 'Click per ripristinare')}
+                                    style={{
+                                      cursor: 'pointer',
+                                      fontSize: 13,
+                                      lineHeight: 1,
+                                      color: disponibile ? '#2e9d4d' : C.inkDim,
+                                      userSelect: 'none',
+                                    }}
+                                  >
+                                    {disponibile ? '●' : '○'}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Conteggi (compatti) + ricerca + collasso livelli */}
               <div style={{ marginTop: 14, marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -9975,98 +10038,172 @@ export default function App() {
               </Sezione>
             )}
 
-            {/* Privilegi (classe + sottoclasse affiancati) e Talenti, subito sotto la
-                Magia. I box mostrano SOLO la Panoramica: apre la lista dei privilegi
-                per livello e, cliccando un privilegio, la sua spiegazione. */}
-            <div className="privilegi-talenti" style={{ order: ordineSezioni.indexOf('incantesimi'), display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <div className="privilegi-duo">
-                <Sezione titolo={t("sez.privilegi")} {...apertoProps('privilegi')}>
-                  <button
-                    style={{ ...styles.button, width: '100%', fontSize: 12 }}
-                    onClick={() => setMostraPrivilegi(true)}
-                    title={t('tip.panoramica_priv')}
-                  >
-                    📖 {t("priv.panoramica_btn")}
-                  </button>
-                </Sezione>
-                <Sezione titolo={t("sez.privilegi_sottoclasse")} {...apertoProps('privilegiSottoclasse')}>
-                  {(() => {
-                    const tutteLeSub = [
-                      ...(scheda.sottoclasse ? [{ classe: scheda.classe, livello: scheda.livello || 1, sottoclasse: scheda.sottoclasse }] : []),
-                      ...((scheda.multiclasse || []).filter((m) => m.sottoclasse).map((m) => ({ classe: m.classe, livello: m.livello || 1, sottoclasse: m.sottoclasse }))),
-                    ];
-                    const haAlmenoUna = tutteLeSub.some((s) => SUBCLASS_PRIVILEGI[s.sottoclasse]);
-                    const classiSenzaSubMaPronte = [
-                      ...((!scheda.sottoclasse && (scheda.livello || 1) >= livelloSceltaSottoclasse(scheda.classe, versione)) ? [{ classe: scheda.classe, livello: scheda.livello || 1, isMain: true }] : []),
-                      ...((scheda.multiclasse || []).filter((m) => !m.sottoclasse && (m.livello || 1) >= livelloSceltaSottoclasse(m.classe, versione)).map((m) => ({ classe: m.classe, livello: m.livello || 1, isMain: false }))),
-                    ];
-                    if (haAlmenoUna) {
-                      return (
+            {/* Sezione Unificata: Privilegi di Classe, Sottoclasse, Tratti di Specie e Talenti */}
+            <div style={{ order: ordineSezioni.indexOf('incantesimi') }}>
+              <Sezione
+                titolo={lingua === 'en' ? '📖 Features, Traits & Feats' : '📖 Privilegi, Tratti & Talenti'}
+                {...apertoProps('privilegi', true)}
+              >
+                <div>
+                  {/* Segmented Tab Switcher */}
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', justifyContent: 'space-between', borderBottom: `1px solid ${C.border}`, paddingBottom: 8 }}>
+                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                      {[
+                        ['tutti', lingua === 'en' ? '📋 All' : '📋 Tutti'],
+                        ['classe', lingua === 'en' ? '🛡️ Class' : '🛡️ Classe & Sottoclasse'],
+                        ['specie', lingua === 'en' ? '🧬 Species' : '🧬 Tratti di Specie'],
+                        ['talenti', lingua === 'en' ? '⭐ Feats' : '⭐ Talenti'],
+                      ].map(([k, label]) => (
                         <button
-                          style={{ ...styles.button, width: '100%', fontSize: 12 }}
+                          key={k}
+                          type="button"
+                          onClick={() => setSchedaPrivilegiTab(k)}
+                          style={{
+                            ...styles.buttonMini,
+                            fontSize: 11.5,
+                            padding: '4px 10px',
+                            borderRadius: 8,
+                            borderColor: schedaPrivilegiTab === k ? C.goldDark : C.border,
+                            background: schedaPrivilegiTab === k ? 'rgba(200,140,20,0.18)' : C.panel,
+                            color: schedaPrivilegiTab === k ? C.goldDark : C.ink,
+                            fontWeight: schedaPrivilegiTab === k ? 700 : 500,
+                          }}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        style={{ ...styles.buttonMini, fontSize: 11, color: C.goldDark, borderColor: C.goldDark }}
+                        onClick={() => setMostraPrivilegi(true)}
+                        title={t('tip.panoramica_priv')}
+                      >
+                        📖 {t("priv.panoramica_btn")}
+                      </button>
+                      {Boolean(scheda.sottoclasse || (scheda.multiclasse || []).some(m => m.sottoclasse)) && (
+                        <button
+                          type="button"
+                          style={{ ...styles.buttonMini, fontSize: 11, color: C.goldDark, borderColor: C.goldDark }}
                           onClick={() => setMostraPrivilegiSub(true)}
                           title={t('tip.panoramica_priv_sub')}
                         >
-                          📖 {t("priv.panoramica_sub_btn")}{tutteLeSub.length > 1 ? ` (${tutteLeSub.length})` : ''}
+                          📖 {t("priv.panoramica_sub_btn")}
                         </button>
-                      );
-                    }
-                    if (classiSenzaSubMaPronte.length > 0) {
-                      return (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                          {classiSenzaSubMaPronte.map((c, idx) => (
-                            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                              <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 600 }}>{traduciDato(c.classe)}:</span>
-                              <select
-                                style={{ ...styles.inlineInput, fontSize: 12, padding: '3px 6px', flex: 1, minWidth: 130 }}
-                                value=""
-                                onChange={(e) => {
-                                  const sub = e.target.value;
-                                  if (!sub) return;
-                                  if (c.isMain) {
-                                    aggiorna({ sottoclasse: sub, privilegiSottoclasse: privilegiSottoclasseFinoA(sub, c.livello) });
-                                  } else {
-                                    aggiorna({
-                                      multiclasse: (scheda.multiclasse || []).map((m) => (m.classe === c.classe ? { ...m, sottoclasse: sub } : m)),
-                                    });
-                                  }
-                                }}
-                              >
-                                <option value="">Scegli sottoclasse…</option>
-                                {sottoclassiPerClasse(c.classe).map((sc) => (
-                                  <option key={sc} value={sc}>{traduciDato(sc)}</option>
-                                ))}
-                              </select>
-                            </div>
-                          ))}
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Contenuto in base al Tab selezionato */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {/* Blocco 1: Classe e Sottoclasse */}
+                    {(schedaPrivilegiTab === 'tutti' || schedaPrivilegiTab === 'classe') && (
+                      <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
+                          🛡️ {lingua === 'en' ? 'Class & Subclass Features' : 'Privilegi di Classe & Sottoclasse'}
                         </div>
-                      );
-                    }
-                    return <p style={{ ...styles.detail, fontSize: 12, margin: 0 }}>{t('priv.sub_nessuna')}</p>;
-                  })()}
-                </Sezione>
-              </div>
-              {/* Talenti e Tratti della specie: sotto, come coppia di riquadri
-                  della stessa dimensione dei Privilegi (classe/sottoclasse). */}
-              <div className="privilegi-duo">
-                <Sezione titolo={t("sez.talenti")} {...apertoProps('talenti')}>
-                  <ListaQuadratini
-                    value={scheda.talenti}
-                    lookup={spiegaTalento}
-                    opzioni={TALENTI_5E}
-                    placeholder={t("talenti.ph")}
-                    onChange={(v) => aggiorna({ talenti: v })}
-                  />
-                </Sezione>
-                <Sezione titolo={t("sez.tratti_specie")} {...apertoProps('trattiSpecie')}>
-                  <ListaQuadratini
-                    value={scheda.trattiSpecie}
-                    lookup={spiegaTratto}
-                    placeholder={t("tratti.ph")}
-                    onChange={(v) => aggiorna({ trattiSpecie: v })}
-                  />
-                </Sezione>
-              </div>
+                        {(() => {
+                          const tutteLeSub = [
+                            ...(scheda.sottoclasse ? [{ classe: scheda.classe, livello: scheda.livello || 1, sottoclasse: scheda.sottoclasse }] : []),
+                            ...((scheda.multiclasse || []).filter((m) => m.sottoclasse).map((m) => ({ classe: m.classe, livello: m.livello || 1, sottoclasse: m.sottoclasse }))),
+                          ];
+                          const classiSenzaSubMaPronte = [
+                            ...((!scheda.sottoclasse && (scheda.livello || 1) >= livelloSceltaSottoclasse(scheda.classe, versione)) ? [{ classe: scheda.classe, livello: scheda.livello || 1, isMain: true }] : []),
+                            ...((scheda.multiclasse || []).filter((m) => !m.sottoclasse && (m.livello || 1) >= livelloSceltaSottoclasse(m.classe, versione)).map((m) => ({ classe: m.classe, livello: m.livello || 1, isMain: false }))),
+                          ];
+                          return (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                              {classiSenzaSubMaPronte.length > 0 && (
+                                <div style={{ background: 'rgba(200,140,20,0.1)', border: `1px dashed ${C.gold}`, borderRadius: 6, padding: '6px 8px' }}>
+                                  {classiSenzaSubMaPronte.map((c, idx) => (
+                                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                                      <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 600 }}>{traduciDato(c.classe)}:</span>
+                                      <select
+                                        style={{ ...styles.inlineInput, fontSize: 12, padding: '3px 6px', flex: 1, minWidth: 130 }}
+                                        value=""
+                                        onChange={(e) => {
+                                          const sub = e.target.value;
+                                          if (!sub) return;
+                                          if (c.isMain) {
+                                            aggiorna({ sottoclasse: sub, privilegiSottoclasse: privilegiSottoclasseFinoA(sub, c.livello) });
+                                          } else {
+                                            aggiorna({
+                                              multiclasse: (scheda.multiclasse || []).map((m) => (m.classe === c.classe ? { ...m, sottoclasse: sub } : m)),
+                                            });
+                                          }
+                                        }}
+                                      >
+                                        <option value="">{lingua === 'en' ? 'Choose subclass…' : 'Scegli sottoclasse…'}</option>
+                                        {sottoclassiPerClasse(c.classe).map((sc) => (
+                                          <option key={sc} value={sc}>{traduciDato(sc)}</option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                                <button
+                                  style={{ ...styles.button, flex: 1, minWidth: 140, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                                  onClick={() => setMostraPrivilegi(true)}
+                                  title={t('tip.panoramica_priv')}
+                                >
+                                  📖 {t("priv.panoramica_btn")} ({scheda.classe || t('profilo.nessuna')} Liv. {scheda.livello || 1})
+                                </button>
+                                {tutteLeSub.length > 0 ? (
+                                  <button
+                                    style={{ ...styles.button, flex: 1, minWidth: 140, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                                    onClick={() => setMostraPrivilegiSub(true)}
+                                    title={t('tip.panoramica_priv_sub')}
+                                  >
+                                    📖 {t("priv.panoramica_sub_btn")}: {tutteLeSub.map(s => traduciDato(s.sottoclasse)).join(', ')}
+                                  </button>
+                                ) : (
+                                  <div style={{ ...styles.detail, fontSize: 11.5, display: 'flex', alignItems: 'center' }}>
+                                    {t('priv.sub_nessuna')}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    )}
+
+                    {/* Blocco 2: Tratti di Specie */}
+                    {(schedaPrivilegiTab === 'tutti' || schedaPrivilegiTab === 'specie') && (
+                      <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
+                          🧬 {t("sez.tratti_specie")} ({traduciDato(scheda.razza) || t('profilo.nessuna')})
+                        </div>
+                        <ListaQuadratini
+                          value={scheda.trattiSpecie}
+                          lookup={spiegaTratto}
+                          placeholder={t("tratti.ph")}
+                          onChange={(v) => aggiorna({ trattiSpecie: v })}
+                        />
+                      </div>
+                    )}
+
+                    {/* Blocco 3: Talenti */}
+                    {(schedaPrivilegiTab === 'tutti' || schedaPrivilegiTab === 'talenti') && (
+                      <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
+                          ⭐ {t("sez.talenti")}
+                        </div>
+                        <ListaQuadratini
+                          value={scheda.talenti}
+                          lookup={spiegaTalento}
+                          opzioni={TALENTI_5E}
+                          placeholder={t("talenti.ph")}
+                          onChange={(v) => aggiorna({ talenti: v })}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </Sezione>
             </div>
 
 
@@ -10238,20 +10375,33 @@ export default function App() {
                       </div>
                     </div>
                     {/* Barra di ricerca, filtri vista e pulizia esauriti */}
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10, flexWrap: 'wrap' }}>
-                      <input
-                        type="text"
-                        value={filtroInventario}
-                        onChange={(e) => setFiltroInventario(e.target.value)}
-                        placeholder="🔍 Cerca nell'inventario..."
-                        style={{ ...styles.inlineInput, flex: 1, minWidth: 160, padding: '4px 8px', fontSize: 13 }}
-                      />
-                      {filtroInventario && (
-                        <button style={styles.buttonMini} onClick={() => setFiltroInventario('')}>✕</button>
-                      )}
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', gap: 6, alignItems: 'center', flex: 1, minWidth: 220 }}>
+                        <input
+                          type="text"
+                          value={filtroInventario}
+                          onChange={(e) => setFiltroInventario(e.target.value)}
+                          placeholder="🔍 Cerca nell'inventario..."
+                          style={{ ...styles.inlineInput, flex: 1, minWidth: 140, padding: '5px 8px', fontSize: 12.5 }}
+                        />
+                        {filtroInventario && (
+                          <button style={styles.buttonMini} onClick={() => setFiltroInventario('')}>✕</button>
+                        )}
+                        <select
+                          value={filtroCatInventario}
+                          onChange={(e) => setFiltroCatInventario(e.target.value)}
+                          style={{ ...styles.inlineInput, padding: '5px 8px', fontSize: 12, maxWidth: 150 }}
+                        >
+                          <option value="tutti">{lingua === 'en' ? '📦 All Types' : '📦 Tutti i tipi'}</option>
+                          <option value="armi_armature">{lingua === 'en' ? '⚔️ Weapons & Armor' : '⚔️ Armi & Armature'}</option>
+                          <option value="pozioni">{lingua === 'en' ? '🧪 Potions' : '🧪 Pozioni & Unguenti'}</option>
+                          <option value="magici">{lingua === 'en' ? '✨ Magic Items' : '✨ Oggetti Magici'}</option>
+                          <option value="attrezzi">{lingua === 'en' ? '🔧 Tools' : '🔧 Attrezzi'}</option>
+                        </select>
+                      </div>
                       
-                      {/* Pillole Filtro Zaino vs Equipaggiato e Categorie */}
-                      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
+                      {/* Segmented View Tabs: Tutti vs Equipaggiato vs Zaino */}
+                      <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                         {[
                           ['tutti', '📦 ' + (lingua === 'en' ? 'All' : 'Tutti')],
                           ['equip', '🛡️ ' + (lingua === 'en' ? 'Equipped' : 'Indossati')],
@@ -10264,11 +10414,11 @@ export default function App() {
                             style={{
                               ...styles.buttonMini,
                               fontSize: 11,
-                              padding: '3px 8px',
-                              borderRadius: 12,
+                              padding: '4px 9px',
+                              borderRadius: 8,
                               borderColor: filtroVistaInventario === k ? C.goldDark : C.border,
-                              background: filtroVistaInventario === k ? 'rgba(200,140,20,0.18)' : 'transparent',
-                              color: filtroVistaInventario === k ? C.goldDark : C.inkDim,
+                              background: filtroVistaInventario === k ? 'rgba(200,140,20,0.18)' : C.panel,
+                              color: filtroVistaInventario === k ? C.goldDark : C.ink,
                               fontWeight: filtroVistaInventario === k ? 700 : 500,
                             }}
                           >
@@ -10276,46 +10426,18 @@ export default function App() {
                           </button>
                         ))}
 
-                        <span style={{ width: 1, height: 16, background: C.border, margin: '0 2px' }} />
-
-                        {[
-                          ['tutti', lingua === 'en' ? 'All Types' : 'Tutti i tipi'],
-                          ['armi_armature', '⚔️ ' + (lingua === 'en' ? 'Weapons/Armor' : 'Armi & Armature')],
-                          ['pozioni', '🧪 ' + (lingua === 'en' ? 'Potions' : 'Pozioni & Unguenti')],
-                          ['magici', '✨ ' + (lingua === 'en' ? 'Magic' : 'Oggetti Magici')],
-                          ['attrezzi', '🔧 ' + (lingua === 'en' ? 'Tools' : 'Attrezzi')],
-                        ].map(([k, label]) => (
-                          <button
-                            key={k}
-                            type="button"
-                            onClick={() => setFiltroCatInventario(k)}
-                            style={{
-                              ...styles.buttonMini,
-                              fontSize: 11,
-                              padding: '3px 8px',
-                              borderRadius: 12,
-                              borderColor: filtroCatInventario === k ? C.goldDark : C.border,
-                              background: filtroCatInventario === k ? 'rgba(200,140,20,0.18)' : 'transparent',
-                              color: filtroCatInventario === k ? C.goldDark : C.inkDim,
-                              fontWeight: filtroCatInventario === k ? 700 : 500,
-                            }}
-                          >
-                            {label}
-                          </button>
-                        ))}
+                        <button
+                          style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, fontSize: 11, padding: '4px 7px', marginLeft: 4 }}
+                          title={t('inv.pulisci_esauriti_tip')}
+                          onClick={() => {
+                            if (window.confirm(t('inv.pulisci_conferma'))) {
+                              aggiorna({ inventario: inv.filter((x) => (Number(x.qta) || 0) > 0) });
+                            }
+                          }}
+                        >
+                          🗑️
+                        </button>
                       </div>
-
-                      <button
-                        style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, fontSize: 11 }}
-                        title={t('inv.pulisci_esauriti_tip')}
-                        onClick={() => {
-                          if (window.confirm(t('inv.pulisci_conferma'))) {
-                            aggiorna({ inventario: inv.filter((x) => (Number(x.qta) || 0) > 0) });
-                          }
-                        }}
-                      >
-                        {t('inv.pulisci_esauriti')}
-                      </button>
                     </div>
                     {/* Lista oggetti */}
                     {(inv.length > 0 || numMonete > 0) && (
@@ -10573,91 +10695,22 @@ export default function App() {
                         return (
                           <>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 10, minWidth: 0 }}>
-                            <div style={{ display: 'flex', justifyContent: 'flex-start', gap: 6, minWidth: 0, flexWrap: 'wrap' }}>
-                              <button
-                                style={{ ...styles.buttonMini, fontSize: 11, color: C.goldDark, borderColor: C.goldDark, whiteSpace: 'nowrap' }}
-                                title={t('monete.converti_tip')}
-                                onClick={() => {
-                                  const mr = d.mr || 0;
-                                  const ma = d.ma || 0;
-                                  const addMo = Math.floor(mr / 100) + Math.floor(ma / 10);
-                                  if (addMo > 0) aggiorna({ denari: { ...d, mr: mr % 100, ma: ma % 10, mo: (d.mo || 0) + addMo } });
-                                  else alert(t('monete.insufficienti'));
-                                }}
-                              >🔄 {t('monete.converti')}</button>
-                              <button
-                                style={{ ...styles.buttonMini, fontSize: 11, color: '#1890ff', borderColor: '#1890ff', whiteSpace: 'nowrap' }}
-                                title="Dividi equamente il bottino o le monete del party"
-                                onClick={() => setMostraSplitMonete(!mostraSplitMonete)}
-                              >⚖️ {lingua === 'en' ? 'Split Party Loot' : 'Dividi con Party'}</button>
-                            </div>
+                            <button
+                              style={{ ...styles.buttonMini, fontSize: 11, color: C.goldDark, borderColor: C.goldDark, whiteSpace: 'nowrap' }}
+                              title={t('monete.converti_tip')}
+                              onClick={() => {
+                                const mr = d.mr || 0;
+                                const ma = d.ma || 0;
+                                const addMo = Math.floor(mr / 100) + Math.floor(ma / 10);
+                                if (addMo > 0) aggiorna({ denari: { ...d, mr: mr % 100, ma: ma % 10, mo: (d.mo || 0) + addMo } });
+                                else alert(t('monete.insufficienti'));
+                              }}
+                            >🔄 {t('monete.converti')}</button>
                             <div title={t('monete.totale_tip', { n: numMonete })} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 7, minWidth: 0, fontSize: 12, color: C.goldDark, fontWeight: 700, textAlign: 'right', whiteSpace: 'nowrap' }}>
                               <IconaMonetaOro size={18} />
                               <span>≈ {totMo.toFixed(2)} MO · {pesoMonete.toFixed(2)} kg</span>
                             </div>
                           </div>
-                          {mostraSplitMonete && (
-                            <div style={{ background: 'rgba(24,144,255,0.08)', border: '1px solid #1890ff', borderRadius: 6, padding: '8px 10px', marginBottom: 10, fontSize: 12 }}>
-                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                                <strong style={{ color: '#1890ff' }}>⚖️ {lingua === 'en' ? 'Party Split Calculator' : 'Calcolatore Spartizione Bottino'}</strong>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                  <span>{lingua === 'en' ? 'Players:' : 'Membri:'}</span>
-                                  <input
-                                    type="number"
-                                    min="2"
-                                    max="12"
-                                    value={splitGiocatori}
-                                    onChange={(e) => setSplitGiocatori(Math.max(2, Number(e.target.value) || 2))}
-                                    style={{ ...styles.inlineInput, width: 44, textAlign: 'center', padding: '2px 4px' }}
-                                  />
-                                </div>
-                              </div>
-                              <div style={{ fontSize: 11.5, color: C.ink, lineHeight: 1.4 }}>
-                                <div>{lingua === 'en' ? 'Each player receives:' : 'A testa per ciascun membro:'}</div>
-                                <div style={{ fontWeight: 700, color: C.goldDark, marginTop: 3 }}>
-                                  {Math.floor((d.mo || 0) / splitGiocatori)} MO · {Math.floor((d.ma || 0) / splitGiocatori)} MA · {Math.floor((d.mr || 0) / splitGiocatori)} MR
-                                  {((d.mo || 0) % splitGiocatori > 0 || (d.ma || 0) % splitGiocatori > 0 || (d.mr || 0) % splitGiocatori > 0) && (
-                                    <span style={{ fontSize: 10.5, fontWeight: 500, color: C.inkDim, marginLeft: 6 }}>
-                                      ({lingua === 'en' ? 'Remaining in party stash:' : 'Resto nel fondo cassa:'} {(d.mo || 0) % splitGiocatori} MO, {(d.ma || 0) % splitGiocatori} MA, {(d.mr || 0) % splitGiocatori} MR)
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                              <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-                                <button
-                                  type="button"
-                                  style={{ ...styles.buttonMini, fontSize: 11, background: '#1890ff', color: '#fff', borderColor: '#1890ff', fontWeight: 600, padding: '3px 8px' }}
-                                  onClick={() => {
-                                    const quotaMo = Math.floor((d.mo || 0) / splitGiocatori);
-                                    const quotaMa = Math.floor((d.ma || 0) / splitGiocatori);
-                                    const quotaMr = Math.floor((d.mr || 0) / splitGiocatori);
-                                    const quotaMe = Math.floor((d.me || 0) / splitGiocatori);
-                                    const quotaMp = Math.floor((d.mp || 0) / splitGiocatori);
-                                    aggiorna({
-                                      denari: {
-                                        mr: quotaMr,
-                                        ma: quotaMa,
-                                        me: quotaMe,
-                                        mo: quotaMo,
-                                        mp: quotaMp,
-                                      },
-                                    });
-                                    registra({ etichetta: '⚖️ Spartizione Bottino', tipo: 'info', dettaglio: `Spartite monete tra ${splitGiocatori} giocatori: la tua quota è ${quotaMo} MO, ${quotaMa} MA, ${quotaMr} MR` });
-                                    setMostraSplitMonete(false);
-                                  }}
-                                >
-                                  {lingua === 'en' ? 'Keep My Share Only' : 'Tieni solo la mia quota'}
-                                </button>
-                                <button
-                                  type="button"
-                                  style={{ ...styles.buttonMini, fontSize: 11 }}
-                                  onClick={() => setMostraSplitMonete(false)}
-                                >
-                                  {lingua === 'en' ? 'Close' : 'Chiudi'}
-                                </button>
-                              </div>
-                            </div>
-                          )}
                           </>
                         );
                       })()}
