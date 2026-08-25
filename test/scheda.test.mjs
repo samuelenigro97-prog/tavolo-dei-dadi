@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, punteggioCaratteristica } from '../src/rules/scheda.js';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, punteggioCaratteristica, formattaNomePg } from '../src/rules/scheda.js';
 import { ABILITA, CARATTERISTICHE } from '../src/data/caratteristiche.js';
 
 // Scheda minima di prova: DES 16 (+3), FOR 8 (-1), bonus competenza +3.
@@ -157,4 +157,15 @@ test('tabelle: 6 caratteristiche e 18 abilità, tutte collegate correttamente', 
   }
   // nessuna chiave duplicata
   assert.equal(new Set(ABILITA.map((a) => a.key)).size, 18);
+});
+
+test('formattaNomePg: forza maiuscole all inizio di ogni parola e token', () => {
+  assert.equal(formattaNomePg('kairon'), 'Kairon');
+  assert.equal(formattaNomePg('mago varis'), 'Mago Varis');
+  assert.equal(formattaNomePg('vaelion (val) leafwhisper'), 'Vaelion (Val) Leafwhisper');
+  assert.equal(formattaNomePg('frost'), 'Frost');
+  assert.equal(formattaNomePg('Elevorn DeVille'), 'Elevorn DeVille');
+  assert.equal(formattaNomePg('flyora delle acque nere'), 'Flyora Delle Acque Nere');
+  assert.equal(formattaNomePg(''), '');
+  assert.equal(formattaNomePg(null), '');
 });

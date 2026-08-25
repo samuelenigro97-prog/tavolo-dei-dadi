@@ -56,7 +56,7 @@ COME LEGGERE FANTASY GROUNDS (MOLTO IMPORTANTE):
 
 Rispondi SOLO con un oggetto JSON valido, senza testo prima o dopo, con questo schema:
 {
-  "nome": "string",
+  "nome": "string (con iniziale Maiuscola per ogni parola, es. \\"Kairon\\", \\"Frost\\")",
   "background": "string",
   "classe": "string",
   "sottoclasse": "string",
@@ -126,6 +126,12 @@ const MAX_SYNC_BYTES = 4 * 1024 * 1024;
 const DURATA_SYNC_SEC = 180 * 24 * 3600;
 const DURATA_RECORD_SEC = 25 * 60 * 60; // un'ora per distinguere scaduta da inesistente
 const ALFABETO_STANZA = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+
+/** Forza la prima lettera di ogni parola in maiuscolo. */
+function formattaNome(str) {
+  if (!str || typeof str !== 'string') return '';
+  return str.trim().replace(/(^|[\s\-(/'"])[a-zà-öø-ÿ]/gu, (m) => m.toUpperCase());
+}
 
 /** Toglie i campi pesanti (immagini) prima di archiviare. */
 function alleggerisci(scheda) {
@@ -335,7 +341,7 @@ async function gestisciArchivio(request, env, headers, percorso) {
     // I metadati alimentano l'elenco senza dover leggere ogni scheda intera:
     // il DM vede già l'essenziale a colpo d'occhio, senza aprire ogni scheda.
     const metadata = {
-      nome: String(scheda.nome || '').slice(0, 60),
+      nome: formattaNome(String(scheda.nome || '')).slice(0, 60),
       classe: String(scheda.classe || '').slice(0, 40),
       sottoclasse: String(scheda.sottoclasse || '').slice(0, 40),
       specie: String(scheda.specie || '').slice(0, 40),

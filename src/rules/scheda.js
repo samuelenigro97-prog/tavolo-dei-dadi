@@ -3,6 +3,13 @@
 import { modificatore } from './dadi.js';
 import { ABILITA } from '../data/caratteristiche.js';
 
+export function formattaNomePg(nome) {
+  if (!nome || typeof nome !== 'string') return '';
+  const pulito = nome.trim();
+  if (!pulito) return '';
+  return pulito.replace(/(^|[\s\-(/'"])[a-zà-öø-ÿ]/gu, (m) => m.toUpperCase());
+}
+
 function nomeNormalizzato(v) {
   return String(v || '').toLocaleLowerCase('it').replace(/[^a-zà-ÿ0-9]/gi, ' ').replace(/\s+/g, ' ').trim();
 }

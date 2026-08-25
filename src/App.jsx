@@ -7,7 +7,7 @@ import { avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro, s
 import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI } from './ui/tema.js';
 import { styles, GLOBAL_CSS } from './ui/stili.js';
 import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, Sezione, CampoBloccato } from './ui/componenti.jsx';
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica } from './rules/scheda.js';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from './data/condizioni.js';
@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.90';
+const APP_VERSION = '3.9.91';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2068,7 +2068,7 @@ function normalizeImported(dati) {
       successi: clampTs(dati.tsMorte?.successi),
       fallimenti: clampTs(dati.tsMorte?.fallimenti),
     },
-    nome: str(dati.nome, base.nome) || base.nome,
+    nome: formattaNomePg(str(dati.nome, base.nome)) || base.nome,
     sesso: ['maschio', 'femmina', 'altro'].includes(dati.sesso) ? dati.sesso : '',
     ritratto:
       typeof dati.ritratto === 'string' &&
@@ -2270,6 +2270,27 @@ function ArchivioDm({ url, onChiudi, onApri }) {
     }
   };
 
+  const eliminaCopia = async (s) => {
+    const nomeFmt = formattaNomePg(s.nome) || 'questa scheda';
+    if (!window.confirm(`Vuoi rimuovere definitivamente "${nomeFmt}" (${quando(s.aggiornato)}) dall'Archivio DM?`)) return;
+    setStato('carico');
+    try {
+      const r = await fetch(`${base}/pg/${encodeURIComponent(s.id)}?key=${encodeURIComponent(chiave)}`, {
+        method: 'DELETE',
+      });
+      if (!r.ok) {
+        const d = await r.json().catch(() => ({}));
+        setStato(d.error || `Errore ${r.status}`);
+        return;
+      }
+      setElenco((el) => (el || []).filter((x) => x.id !== s.id));
+      setDettagliAperti((d) => { const n = { ...d }; delete n[s.id]; return n; });
+      setStato('');
+    } catch (e) {
+      setStato(`Eliminazione fallita: ${e.message}`);
+    }
+  };
+
   const quando = (iso) => {
     if (!iso) return '—';
     try { return new Date(iso).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); }
@@ -2283,12 +2304,10 @@ function ArchivioDm({ url, onChiudi, onApri }) {
 
   // Lo stesso personaggio compare più volte in archivio quando viene depositato
   // da dispositivi diversi (cache svuotata, altro browser) o dopo un
-  // re-import, che gli assegna un id interno nuovo. Per il DM sono la STESSA
-  // scheda: qui le raggruppiamo per nome+classe+specie e mostriamo solo la
-  // copia più recente, tenendo le altre disponibili sotto "copie precedenti".
-  // Nessuna cancellazione: l'archivio sul Worker resta intatto.
-  const chiaveIdentita = (s) =>
-    [s.nome, s.classe, s.specie].map((v) => String(v || '').trim().toLowerCase()).join('|');
+  // re-import, che gli assegna un id interno nuovo.
+  // Raggruppiamo primariamente per NOME normalizzato così tutte le versioni
+  // (anche con specie o classe aggiornate) collassano sotto la più recente.
+  const chiaveIdentita = (s) => (s.nome || '').trim().toLowerCase();
   const gruppi = [];
   if (elencoFiltrato) {
     const perChiave = new Map();
@@ -2302,6 +2321,29 @@ function ArchivioDm({ url, onChiudi, onApri }) {
     }
   }
   const nDuplicati = gruppi.reduce((n, g) => n + g.copie.length - 1, 0);
+
+  const eliminaTutteCopiePrecedenti = async () => {
+    if (!nDuplicati) return;
+    if (!window.confirm(`Vuoi eliminare tutte le ${nDuplicati} copie precedenti dall'archivio DM?\n\nVerranno conservate solo le versioni più recenti di ogni personaggio.`)) return;
+    setStato('carico');
+    try {
+      const idsDaEliminare = [];
+      for (const g of gruppi) {
+        const [, ...vecchie] = g.copie;
+        for (const v of vecchie) idsDaEliminare.push(v.id);
+      }
+      for (const id of idsDaEliminare) {
+        await fetch(`${base}/pg/${encodeURIComponent(id)}?key=${encodeURIComponent(chiave)}`, {
+          method: 'DELETE',
+        });
+      }
+      const setEliminati = new Set(idsDaEliminare);
+      setElenco((el) => (el || []).filter((x) => !setEliminati.has(x.id)));
+      setStato('');
+    } catch (e) {
+      setStato(`Pulizia fallita: ${e.message}`);
+    }
+  };
 
   return (
     <div
@@ -2334,11 +2376,20 @@ function ArchivioDm({ url, onChiudi, onApri }) {
         )}
         {elenco && (
           <>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
               <span style={styles.detail}>
                 {gruppi.length} {gruppi.length === 1 ? 'personaggio' : 'personaggi'} in archivio
                 {nDuplicati > 0 && <> · {nDuplicati} {nDuplicati === 1 ? 'copia precedente' : 'copie precedenti'} nascoste</>}
               </span>
+              {nDuplicati > 0 && (
+                <button
+                  style={{ ...styles.buttonMini, fontSize: 11, color: C.red, borderColor: C.red, padding: '3px 8px' }}
+                  onClick={eliminaTutteCopiePrecedenti}
+                  title="Elimina dal Cloud tutte le copie più vecchie mantenendo solo l'ultima versione di ogni PG"
+                >
+                  🧹 Elimina {nDuplicati} {nDuplicati === 1 ? 'copia precedente' : 'copie precedenti'}
+                </button>
+              )}
               <input
                 value={filtro}
                 onChange={(e) => setFiltro(e.target.value)}
@@ -2356,7 +2407,7 @@ function ArchivioDm({ url, onChiudi, onApri }) {
                     <div key={s.id} style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 10px', ...(vecchia ? { marginLeft: 16, opacity: 0.75, borderStyle: 'dashed' } : {}) }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                         <div style={{ minWidth: 0 }}>
-                          <div style={{ fontWeight: 600, fontSize: 14 }}>{s.nome || '(senza nome)'}</div>
+                          <div style={{ fontWeight: 600, fontSize: 14 }}>{formattaNomePg(s.nome) || '(senza nome)'}</div>
                           <div style={{ ...styles.detail, fontSize: 11 }}>
                             {[s.classe, s.sottoclasse, s.specie, s.livello ? `Liv. ${s.livello}` : ''].filter(Boolean).join(' · ')}
                             {s.pfMax ? ` · PF ${s.pfAttuali ?? '?'}/${s.pfMax}` : ''}
@@ -2365,11 +2416,18 @@ function ArchivioDm({ url, onChiudi, onApri }) {
                             {quando(s.aggiornato)} · {s.dispositivo || '?'}
                           </div>
                         </div>
-                        <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                        <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
                           <button style={styles.buttonMini} onClick={() => toggleDettagli(s.id)}>
                             {dett && dett !== 'carico' ? '▲ Dettagli' : '▼ Dettagli'}
                           </button>
                           <button style={styles.buttonMini} onClick={() => apri(s.id)}>Apri</button>
+                          <button
+                            style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '3px 6px' }}
+                            onClick={() => eliminaCopia(s)}
+                            title="Elimina definitivamente questa copia dall'Archivio DM"
+                          >
+                            🗑️
+                          </button>
                         </div>
                       </div>
                       {dett === 'carico' && <div style={{ ...styles.detail, fontSize: 12, marginTop: 6 }}>Caricamento…</div>}
@@ -3172,10 +3230,11 @@ export default function App() {
   // e solo se la scheda ha un nome vero. Le immagini non vengono inviate.
   useEffect(() => {
     if (!URL_ARCHIVIO_PG || !scheda) return;
-    const nome = String(scheda?.nome || '').trim();
+    const nome = formattaNomePg(String(scheda?.nome || '')).trim();
     if (!nome || nome === 'Nuovo personaggio') return;
     const timer = setTimeout(() => {
       const { ritratto, mappaCampagna: _m, ...leggera } = scheda;
+      leggera.nome = nome;
       fetch(`${URL_ARCHIVIO_PG.replace(/\/+$/, '')}/pg`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -3281,7 +3340,7 @@ export default function App() {
     // Livello iniziale scelto in creazione (1-20): impostato SUBITO così dado vita,
     // slot incantesimo e bonus di competenza vengono calcolati per quel livello.
     s.livello = Math.max(1, Math.min(20, Number(livello) || 1));
-    s.nome = nome?.trim() || 'Nuovo personaggio';
+    s.nome = formattaNomePg(nome) || 'Nuovo personaggio';
     s.sesso = ['maschio', 'femmina', 'altro'].includes(sesso) ? sesso : '';
     s.classe = classe;
     s.sottoclasse = sottoclasse || '';
@@ -3470,7 +3529,7 @@ export default function App() {
   }
 
   function duplicaPersonaggio() {
-    nuovoPersonaggio({ ...scheda, nome: `${scheda.nome} (copia)` });
+    nuovoPersonaggio({ ...scheda, nome: `${formattaNomePg(scheda.nome)} (copia)` });
   }
 
   function eliminaPersonaggio() {
@@ -7634,14 +7693,16 @@ export default function App() {
               onChange={(e) => aggiorna({ nome: e.target.value })}
               onBlur={() => {
                 setRinominando(false);
-                const rPatch = ritrattoAuto(scheda.classe, scheda.specie, scheda.nome);
-                if (rPatch.ritratto) aggiorna(rPatch);
+                const nomeFmt = formattaNomePg(scheda.nome);
+                const rPatch = ritrattoAuto(scheda.classe, scheda.specie, nomeFmt);
+                aggiorna({ nome: nomeFmt, ...rPatch });
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === 'Escape') {
                   setRinominando(false);
-                  const rPatch = ritrattoAuto(scheda.classe, scheda.specie, scheda.nome);
-                  if (rPatch.ritratto) aggiorna(rPatch);
+                  const nomeFmt = formattaNomePg(scheda.nome);
+                  const rPatch = ritrattoAuto(scheda.classe, scheda.specie, nomeFmt);
+                  aggiorna({ nome: nomeFmt, ...rPatch });
                 }
               }}
             />
@@ -7661,7 +7722,7 @@ export default function App() {
                   ];
                   return (
                     <option key={id} value={id}>
-                      {p.nome || t('menu.senza_nome')}{classi.length ? ` — ${classi.join(' / ')}` : ''}
+                      {formattaNomePg(p.nome) || t('menu.senza_nome')}{classi.length ? ` — ${classi.join(' / ')}` : ''}
                     </option>
                   );
                 })}
