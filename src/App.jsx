@@ -5853,6 +5853,10 @@ export default function App() {
           ...(scheda.sottoclasse ? [{ classe: scheda.classe, livello: scheda.livello || 1, sottoclasse: scheda.sottoclasse }] : []),
           ...((scheda.multiclasse || []).filter((m) => m.sottoclasse).map((m) => ({ classe: m.classe, livello: m.livello || 1, sottoclasse: m.sottoclasse }))),
         ];
+        const subFiltrate = (typeof mostraPrivilegiSub === 'string')
+          ? tutteLeSub.filter((x) => x.sottoclasse === mostraPrivilegiSub)
+          : tutteLeSub;
+        const subDaMostrare = subFiltrate.length > 0 ? subFiltrate : tutteLeSub;
         return (
           <div
             style={{ position: 'fixed', inset: 0, zIndex: 1003, padding: 16, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -5860,11 +5864,34 @@ export default function App() {
           >
             <div style={{ ...styles.panel, maxWidth: 540, width: '100%', maxHeight: '88vh', overflowY: 'auto' }}>
               <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 4 }}>📖 {t('priv.panoramica_sub')}</h1>
-              <div style={{ textAlign: 'center', ...styles.detail, marginBottom: 14 }}>
+              <div style={{ textAlign: 'center', ...styles.detail, marginBottom: 12 }}>
                 {versione === '2024' ? 'D&D 5.5' : 'D&D 5.0'}
               </div>
-              {tutteLeSub.length === 0 && <p style={styles.detail}>{t('priv.nessuno')}</p>}
-              {tutteLeSub.map((item, idx) => {
+
+              {tutteLeSub.length > 1 && (
+                <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    style={{ ...styles.buttonMini, fontSize: 11, padding: '3px 9px', borderRadius: 8, background: mostraPrivilegiSub === true ? 'rgba(200,140,20,0.18)' : C.panel, borderColor: mostraPrivilegiSub === true ? C.goldDark : C.border, fontWeight: mostraPrivilegiSub === true ? 700 : 500 }}
+                    onClick={() => setMostraPrivilegiSub(true)}
+                  >
+                    {lingua === 'en' ? 'All' : 'Tutte'}
+                  </button>
+                  {tutteLeSub.map((item, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      style={{ ...styles.buttonMini, fontSize: 11, padding: '3px 9px', borderRadius: 8, background: mostraPrivilegiSub === item.sottoclasse ? 'rgba(200,140,20,0.18)' : C.panel, borderColor: mostraPrivilegiSub === item.sottoclasse ? C.goldDark : C.border, fontWeight: mostraPrivilegiSub === item.sottoclasse ? 700 : 500 }}
+                      onClick={() => setMostraPrivilegiSub(item.sottoclasse)}
+                    >
+                      🌟 {traduciDato(item.sottoclasse)}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {subDaMostrare.length === 0 && <p style={styles.detail}>{t('priv.nessuno')}</p>}
+              {subDaMostrare.map((item, idx) => {
                 const tab = SUBCLASS_PRIVILEGI[item.sottoclasse] || {};
                 const righe = [];
                 for (let L = 1; L <= 20; L++) if (tab[L]) righe.push({ L, feat: tab[L], futuro: L > item.livello });
@@ -6046,7 +6073,7 @@ export default function App() {
                         setLevelUpBozza((b) => ({ ...b, target: idx, facceDV: fDV, hpGainMedia: Math.max(1, Math.floor(fDV/2) + 1 + modCos), tiroFatto: 0 }));
                       }}
                     />
-                    <span>🥈 <strong>{m.classe}</strong> (da Liv. {m.livello || 1} → <strong>Liv. {(num(m.livello, 1)) + 1}</strong>)</span>
+                    <span>{idx === 0 ? '🥈' : idx === 1 ? '🥉' : '🎖️'} <strong>{m.classe}</strong> (da Liv. {m.livello || 1} → <strong>Liv. {(num(m.livello, 1)) + 1}</strong>)</span>
                     <span style={{ marginLeft: 'auto', fontSize: 11, opacity: 0.85, fontWeight: 'bold' }}>DV: d{dadoVitaClasse(m.classe)}</span>
                   </label>
                 ))}
@@ -7938,6 +7965,38 @@ export default function App() {
                   aria-expanded
                   onClick={(e) => { e.stopPropagation(); aggiorna({ sezioniAperte: { ...(scheda.sezioniAperte || {}), ritratto: false } }); }}
                 >▾</button>
+
+                {/* Tasto Ispirazione nell'angolo in alto a destra del ritratto */}
+                <button
+                  type="button"
+                  style={{
+                    position: 'absolute',
+                    top: 4,
+                    right: 4,
+                    zIndex: 3,
+                    background: scheda.ispirazione ? 'rgba(212,175,55,0.92)' : 'rgba(0,0,0,0.45)',
+                    border: `1.5px solid ${scheda.ispirazione ? '#fff' : 'rgba(255,255,255,0.5)'}`,
+                    borderRadius: '50%',
+                    width: 28,
+                    height: 28,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 16,
+                    color: scheda.ispirazione ? '#fff' : 'rgba(255,255,255,0.85)',
+                    boxShadow: scheda.ispirazione ? '0 0 10px #d4af37, 0 2px 5px rgba(0,0,0,0.5)' : '0 1px 3px rgba(0,0,0,0.3)',
+                    cursor: 'pointer',
+                    transition: 'all 0.25s ease',
+                  }}
+                  title={scheda.ispirazione ? `${t('vital.ispirazione')}: ${t('common.attivo')} (Click per disattivare)` : `${t('vital.ispirazione')}: ${t('common.non_attivo')} (Click per attivare)`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    aggiorna({ ispirazione: !scheda.ispirazione });
+                  }}
+                >
+                  {scheda.ispirazione ? '★' : '☆'}
+                </button>
+
                 {scheda.ritratto ? (
                   <img
                     src={scheda.ritratto}
@@ -7966,7 +8025,7 @@ export default function App() {
               </div>
               {scheda.ritratto && (
                 <button
-                  style={{ ...styles.buttonDanger, position: 'absolute', top: -8, right: -8, padding: '0 6px', background: C.panel }}
+                  style={{ ...styles.buttonDanger, position: 'absolute', bottom: -6, right: -6, padding: '0 6px', background: C.panel, zIndex: 4 }}
                   title={t('tip.rimuovi_img')}
                   onClick={() => aggiorna({ ritratto: '' })}
                 >
@@ -8051,68 +8110,136 @@ export default function App() {
               const dadiVita = calcolaFormulaDadiVita(scheda.classe, scheda.livello, arr);
               aggiorna({ multiclasse: arr, dadiVita });
             };
+            const applicaTuttoMc = (arrMc = mc) => {
+              const classiValide = arrMc.filter((m) => m.classe);
+              const classi = [{ classe: scheda.classe, livello: scheda.livello || 1 }, ...classiValide];
+              const livTotale = (scheda.livello || 1) + classiValide.reduce((a, m) => a + (m.livello || 0), 0);
+              const slot = slotMulticlasse(classi);
+              const patch = {
+                multiclasse: arrMc,
+                bonusCompetenza: bonusCompetenzaDaLivello(livTotale),
+                dadiVita: calcolaFormulaDadiVita(scheda.classe, scheda.livello, arrMc),
+              };
+              if (slot) {
+                const cur = scheda.slotIncantesimo || {};
+                for (let i = 1; i <= 9; i++) slot[i].spesi = Math.min(slot[i].totale, cur[i]?.spesi || 0);
+                patch.slotIncantesimo = slot;
+              }
+              // Auto-compilazione / unione dei privilegi di classe e sottoclasse
+              let privEsistenti = (scheda.privilegi || '').split('\n').map((x) => x.trim()).filter(Boolean);
+              let subEsistenti = (scheda.privilegiSottoclasse || '').split('\n').map((x) => x.trim()).filter(Boolean);
+              for (const m of classiValide) {
+                const privMc = privilegiClasseFinoA(m.classe, m.livello || 1, versione);
+                if (privMc) {
+                  for (const r of privMc.split('\n').map((x) => x.trim()).filter(Boolean)) {
+                    if (!privEsistenti.includes(r)) privEsistenti.push(r);
+                  }
+                }
+                if (m.sottoclasse) {
+                  const subPrivMc = privilegiSottoclasseFinoA(m.sottoclasse, m.livello || 1);
+                  if (subPrivMc) {
+                    for (const r of subPrivMc.split('\n').map((x) => x.trim()).filter(Boolean)) {
+                      if (!subEsistenti.includes(r)) subEsistenti.push(r);
+                    }
+                  }
+                }
+              }
+              patch.privilegi = privEsistenti.join('\n');
+              patch.privilegiSottoclasse = subEsistenti.join('\n');
+              aggiorna(patch);
+            };
             return (
-              <div style={{ ...styles.panel, padding: '8px 10px', margin: '2px 0 8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                  <span style={{ ...styles.detail, fontWeight: 700 }}>⚔️ {t('mc.titolo')}</span>
-                  <span style={{ ...styles.detail }}>
-                    {t('mc.liv_totale')}: <strong>{livTot}</strong> ({traduciDato(scheda.classe) || '—'} {scheda.livello || 1}{scheda.sottoclasse ? ` (${traduciDato(scheda.sottoclasse)})` : ''}{mc.map((m) => ` / ${traduciDato(m.classe) || '—'} ${m.livello || 1}${m.sottoclasse ? ` (${traduciDato(m.sottoclasse)})` : ''}`).join('')})
+              <div style={{ ...styles.panel, padding: '10px 12px', margin: '4px 0 10px', background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
+                  <span style={{ ...styles.detail, fontWeight: 700, color: C.goldDark, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                    ⚔️ {t('mc.titolo')}
+                  </span>
+                  <span style={{ ...styles.detail, fontSize: 11 }}>
+                    {t('mc.liv_totale')}: <strong style={{ color: C.goldDark, fontSize: 13 }}>{livTot}</strong> ({traduciDato(scheda.classe) || '—'} {scheda.livello || 1}{scheda.sottoclasse ? ` (${traduciDato(scheda.sottoclasse)})` : ''}{mc.map((m) => ` / ${traduciDato(m.classe) || '—'} ${m.livello || 1}${m.sottoclasse ? ` (${traduciDato(m.sottoclasse)})` : ''}`).join('')})
                   </span>
                 </div>
-                {mc.map((m, i) => (
-                  <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 6, flexWrap: 'wrap' }}>
-                    <select
-                      value={m.classe}
-                      onChange={(e) => {
-                        const nuovaClasse = e.target.value;
-                        setMc(mc.map((x, j) => (j === i ? { ...x, classe: nuovaClasse, sottoclasse: '' } : x)));
-                      }}
-                      style={{ ...styles.inlineInput, padding: '4px 6px', flex: 1, minWidth: 120 }}
-                    >
-                      <option value="">{t('crea.scegli')}</option>
-                      {[...NOMI_CLASSI].sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((n) => <option key={n} value={n}>{traduciDato(n)}</option>)}
-                    </select>
-                    <span style={{ ...styles.detail }}>{t('mc.liv')}</span>
-                    <Editable value={m.livello} tipo="numero" width={28} onChange={(v) => setMc(mc.map((x, j) => (j === i ? { ...x, livello: Math.max(1, v) } : x)))} />
-                    {m.classe && (
-                      <select
-                        value={m.sottoclasse || ''}
-                        onChange={(e) => {
-                          const sub = e.target.value;
-                          const multiNuovo = mc.map((x, j) => (j === i ? { ...x, sottoclasse: sub } : x));
-                          const patch = { multiclasse: multiNuovo };
-                          if (sottoclasseTerzoIncantatore(m.classe, sub)) {
-                            const slot = slotDaClasseLivello(m.classe, m.livello, sub);
-                            if (slot) patch.slotIncantesimo = slot;
-                          }
-                          aggiorna(patch);
-                        }}
-                        style={{ ...styles.inlineInput, padding: '4px 6px', flex: 1, minWidth: 130 }}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {mc.map((m, i) => (
+                    <div key={i} className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.6fr 1.5fr auto', gap: '6px 10px', alignItems: 'end' }}>
+                      <CampoModulo label={t('profilo.classe')}>
+                        <select
+                          value={m.classe}
+                          onChange={(e) => {
+                            const nuovaClasse = e.target.value;
+                            setMc(mc.map((x, j) => (j === i ? { ...x, classe: nuovaClasse, sottoclasse: '' } : x)));
+                          }}
+                          style={{ background: 'transparent', border: 'none', color: C.ink, fontFamily: 'inherit', width: '100%', outline: 'none', cursor: 'pointer', fontSize: 13 }}
+                        >
+                          <option value="">{t('crea.scegli')}</option>
+                          {[...NOMI_CLASSI].sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((n) => (
+                            <option key={n} value={n}>{traduciDato(n)}</option>
+                          ))}
+                        </select>
+                      </CampoModulo>
+
+                      <CampoModulo label={t('mc.liv')}>
+                        <Editable
+                          value={m.livello || 1}
+                          tipo="numero"
+                          width="100%"
+                          style={{ width: '100%', textAlign: 'left' }}
+                          onChange={(v) => setMc(mc.map((x, j) => (j === i ? { ...x, livello: Math.max(1, v) } : x)))}
+                        />
+                      </CampoModulo>
+
+                      <CampoModulo label={t('profilo.sottoclasse')}>
+                        {m.classe ? (
+                          <select
+                            value={m.sottoclasse || ''}
+                            onChange={(e) => {
+                              const sub = e.target.value;
+                              const multiNuovo = mc.map((x, j) => (j === i ? { ...x, sottoclasse: sub } : x));
+                              const patch = { multiclasse: multiNuovo };
+                              if (sottoclasseTerzoIncantatore(m.classe, sub)) {
+                                const slot = slotDaClasseLivello(m.classe, m.livello, sub);
+                                if (slot) patch.slotIncantesimo = slot;
+                              }
+                              aggiorna(patch);
+                            }}
+                            style={{ background: 'transparent', border: 'none', color: C.ink, fontFamily: 'inherit', width: '100%', outline: 'none', cursor: 'pointer', fontSize: 13 }}
+                          >
+                            <option value="">{t('crea.scegli')}</option>
+                            {sottoclassiPerClasse(m.classe).map((sc) => (
+                              <option key={sc} value={sc}>{traduciDato(sc)}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span style={{ fontSize: 12, color: C.inkDim }}>—</span>
+                        )}
+                      </CampoModulo>
+
+                      <button
+                        style={{ ...styles.buttonMini, color: C.red, height: 26, marginBottom: 4 }}
+                        title={t('modal.elimina')}
+                        onClick={() => setMc(mc.filter((_, j) => j !== i))}
                       >
-                        <option value="">{t('profilo.sottoclasse')}: {t('crea.scegli')}</option>
-                        {sottoclassiPerClasse(m.classe).map((sc) => (
-                          <option key={sc} value={sc}>{traduciDato(sc)}</option>
-                        ))}
-                      </select>
-                    )}
-                    <button style={{ ...styles.buttonMini, color: C.red }} title={t('modal.elimina')} onClick={() => setMc(mc.filter((_, j) => j !== i))}>🗑</button>
-                  </div>
-                ))}
-                <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
-                  <button style={{ ...styles.buttonMini }} onClick={() => setMc([...mc, { classe: '', livello: 1, sottoclasse: '' }])}>➕ {t('mc.aggiungi')}</button>
-                  <button style={{ ...styles.button, fontSize: 12, padding: '5px 12px' }} title={t('mc.applica_tip')} onClick={() => {
-                    const classi = [{ classe: scheda.classe, livello: scheda.livello || 1 }, ...mc.filter((m) => m.classe)];
-                    const slot = slotMulticlasse(classi);
-                    const patch = { bonusCompetenza: bonusCompetenzaDaLivello(livTot) };
-                    if (slot) {
-                      const cur = scheda.slotIncantesimo || {};
-                      for (let i = 1; i <= 9; i++) slot[i].spesi = Math.min(slot[i].totale, cur[i]?.spesi || 0);
-                      patch.slotIncantesimo = slot;
-                    }
-                    aggiorna(patch);
-                  }}>🔄 {t('mc.applica')}</button>
+                        🗑
+                      </button>
+                    </div>
+                  ))}
                 </div>
-                <div style={{ ...styles.detail, fontSize: 11, opacity: 0.75, marginTop: 6 }}>{t('mc.nota')}</div>
+
+                <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <button style={{ ...styles.buttonMini, padding: '4px 8px' }} onClick={() => setMc([...mc, { classe: '', livello: 1, sottoclasse: '' }])}>
+                    ➕ {t('mc.aggiungi')}
+                  </button>
+                  <button
+                    style={{ ...styles.button, fontSize: 12, padding: '4px 12px' }}
+                    title="Applica e compila automaticamente bonus di competenza, dadi vita, slot combinati e privilegi di classe/sottoclasse"
+                    onClick={() => applicaTuttoMc(mc)}
+                  >
+                    🔄 {t('mc.applica')}
+                  </button>
+                  <span style={{ ...styles.detail, fontSize: 10.5, opacity: 0.8 }}>
+                    Aggiorna competenza, DV, slot e compila i privilegi di tutte le classi.
+                  </span>
+                </div>
               </div>
             );
           })()}
@@ -8381,135 +8508,115 @@ export default function App() {
                     >🎲 Tira TS</button>
                   )}
                 </div>
-                <div style={{ ...styles.vitalBox }}>
-                  <SfondoVit>🧪</SfondoVit>
-                  <div style={styles.vitalLabel}>{t("vital.resistenze")}</div>
-                  <div style={{ display: 'flex', justifyContent: 'center' }}>
-                    <CampoConTendina
-                      value={scheda.resistenze}
-                      opzioni={DANNI_5E}
-                      onChange={(v) => aggiorna({ resistenze: v })}
-                      title={t('tip.resistenze')}
-                    />
+                {/* Box Unificato: Visione (Sensi) & Percezione Passiva */}
+                <div style={{ ...styles.vitalBox, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '6px 8px' }} title={t('vital.passive_tooltip')}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, width: '100%', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRight: `1px solid ${C.border}`, paddingRight: 4 }}>
+                      <div style={{ ...styles.vitalLabel, marginBottom: 2 }}>{t("vital.visione")}</div>
+                      <CampoConTendina
+                        value={scheda.sensi}
+                        opzioni={SENSI_5E}
+                        onChange={(v) => aggiorna({ sensi: v })}
+                        title={t('tip.sensi')}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingLeft: 4 }}>
+                      <div style={{ ...styles.vitalLabel, marginBottom: 2 }}>{t("vital.percezione_passiva")}</div>
+                      <div style={{ ...styles.vitalValue, fontSize: 18 }}>{percezionePassiva}</div>
+                    </div>
                   </div>
                 </div>
-                <div style={{ ...styles.vitalBox }}>
-                  <SfondoVit>🦉</SfondoVit>
-                  <div style={styles.vitalLabel}>{t("vital.visione")}</div>
-                  <div style={{ display: 'flex', justifyContent: 'center' }}>
-                    <CampoConTendina
-                      value={scheda.sensi}
-                      opzioni={SENSI_5E}
-                      onChange={(v) => aggiorna({ sensi: v })}
-                      title={t('tip.sensi')}
-                    />
-                  </div>
-                </div>
-                <div style={{ ...styles.vitalBox }} title={t('vital.passive_tooltip')}>
-                  <SfondoVit>👁️</SfondoVit>
-                  <div style={styles.vitalLabel}>{t("vital.percezione_passiva")}</div>
-                  <div style={styles.vitalValue}>{percezionePassiva}</div>
-                </div>
-              </div>
-              {/* Riga 5 — Stato: condizioni e ispirazione (allineata a Carisma) */}
-              <div className="vitali pm-gruppo">
-            <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
-              <SfondoVit>⚠️</SfondoVit>
-              <div style={styles.vitalLabel}>{t("vital.condizioni")}</div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center', alignItems: 'center', marginTop: 2 }}>
-                {scheda.condizioni.map((c) => {
-                  const eff = EFFETTI_CONDIZIONI[c];
-                  const testoEff = eff ? (lingua === 'en' ? eff.en : eff.it) : '';
-                  const col = COLORI_CONDIZIONI[c] || { bg: 'rgba(200,140,20,0.18)', border: C.goldDark, text: C.ink };
-                  const ico = ICONE_CONDIZIONI[c] || '⚠️';
-                  return (
-                    <span
-                      key={c}
-                      style={{
-                        background: col.bg,
-                        border: `1px solid ${col.border}`,
-                        borderRadius: 6,
-                        padding: '2px 5px',
-                        margin: '1px 2px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 4,
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                      }}
-                    >
-                      <button
-                        type="button"
-                        style={{ background: 'none', border: 0, padding: 0, font: 'inherit', color: col.text, cursor: eff ? 'help' : 'default', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 3 }}
-                        title={testoEff || c}
-                        onClick={() => eff && setInfo({ titolo: `${ico} ${traduciDato(c)}`, testo: testoEff })}
-                      >
-                        <span>{ico}</span>
-                        <span>{traduciDato(c)}</span>
-                      </button>
-                      <button
-                        type="button"
-                        style={{ background: 'none', border: 0, padding: '0 2px', font: 'inherit', color: C.inkDim, cursor: 'pointer', opacity: 0.8, fontSize: 10 }}
-                        title={t('tip.click_rimuovi')}
-                        onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
-                      >✕</button>
-                    </span>
-                  );
-                })}
-                <select
-                  value=""
-                  onChange={(e) => { if (e.target.value) aggiorna({ condizioni: [...scheda.condizioni, e.target.value] }); }}
-                  style={{ ...styles.inlineInput, fontSize: 10, padding: '1px 4px', height: 20, borderRadius: 5 }}
-                  title={t('tip.aggiungi_condizione')}
-                >
-                  <option value="">＋ {lingua === 'en' ? 'add' : 'aggiungi'}</option>
-                  {CONDIZIONI_5E.filter((c) => !scheda.condizioni.includes(c)).sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((c) => (
-                    <option key={c} value={c}>{ICONE_CONDIZIONI[c] || '⚠️'} {traduciDato(c)}</option>
-                  ))}
-                </select>
-              </div>
-              {/* Riepilogo: cosa comportano, sommate, le condizioni attive.
-                  Fra parentesi la condizione che causa l'effetto, così si vede
-                  subito cosa resterebbe togliendone una. */}
-              {(() => {
-                const righe = riepilogoCondizioni(scheda.condizioni);
-                if (!righe.length) return null;
-                return (
-                  <div style={{ marginTop: 5, paddingTop: 5, borderTop: `1px dotted ${C.border}`, textAlign: 'left' }}>
-                    {righe.map(({ flag, da }) => (
-                      <div key={flag} style={{ fontSize: 9, lineHeight: 1.45, color: C.ink }}>
-                        • {(lingua === 'en' ? ETICHETTE_EFFETTI[flag].en : ETICHETTE_EFFETTI[flag].it)}
-                        <span style={{ opacity: 0.65 }}> ({da.map(traduciDato).join(', ')})</span>
+
+                {/* Box Unificato: Resistenze & Condizioni */}
+                <div style={{ ...styles.vitalBox, gridColumn: 'span 2', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', padding: '6px 10px', position: 'relative' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.25fr', gap: 10, width: '100%', alignItems: 'stretch' }}>
+                    {/* Metà sinistra: Resistenze */}
+                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', borderRight: `1px solid ${C.border}`, paddingRight: 8 }}>
+                      <div style={{ ...styles.vitalLabel, marginBottom: 4, textAlign: 'left' }}>🧪 {t("vital.resistenze")}</div>
+                      <CampoConTendina
+                        value={scheda.resistenze}
+                        opzioni={DANNI_5E}
+                        onChange={(v) => aggiorna({ resistenze: v })}
+                        title={t('tip.resistenze')}
+                      />
+                    </div>
+
+                    {/* Metà destra: Condizioni */}
+                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingLeft: 4, textAlign: 'left' }}>
+                      <div style={{ ...styles.vitalLabel, marginBottom: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span>⚠️ {t("vital.condizioni")}</span>
+                        <select
+                          value=""
+                          onChange={(e) => { if (e.target.value) aggiorna({ condizioni: [...scheda.condizioni, e.target.value] }); }}
+                          style={{ ...styles.inlineInput, fontSize: 10, padding: '1px 4px', height: 18, borderRadius: 4 }}
+                          title={t('tip.aggiungi_condizione')}
+                        >
+                          <option value="">＋ {lingua === 'en' ? 'add' : 'aggiungi'}</option>
+                          {CONDIZIONI_5E.filter((c) => !scheda.condizioni.includes(c)).sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((c) => (
+                            <option key={c} value={c}>{ICONE_CONDIZIONI[c] || '⚠️'} {traduciDato(c)}</option>
+                          ))}
+                        </select>
                       </div>
-                    ))}
-                  </div>
-                );
-              })()}
-            </div>
-                <div style={{
-                  ...styles.vitalBox, gridColumn: 'span 2',
-                  border: `1px solid ${scheda.ispirazione ? '#d4af37' : C.border}`,
-                  background: scheda.ispirazione ? 'rgba(212,175,55,0.16)' : C.panelLight,
-                  boxShadow: scheda.ispirazione ? '0 0 9px rgba(212,175,55,0.55)' : 'none',
-                  transition: 'background 0.25s, border-color 0.25s, box-shadow 0.25s',
-                }}>
-                  <SfondoVit>⭐</SfondoVit>
-                  <div style={{ ...styles.vitalLabel, color: scheda.ispirazione ? '#c8991a' : C.inkDim }}>{t("vital.ispirazione")}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <button
-                      className="tirabile"
-                      style={{
-                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                        padding: '0 8px', fontSize: 28, border: 'none', lineHeight: 1,
-                        background: 'transparent',
-                        color: scheda.ispirazione ? '#d4af37' : C.inkDim,
-                        textShadow: scheda.ispirazione ? '0 0 7px rgba(212,175,55,0.7)' : 'none',
-                        cursor: 'pointer', transition: 'all 0.2s',
-                      }}
-                      onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
-                      title={t('tip.ispirazione')}
-                    >
-                      {scheda.ispirazione ? '★' : '☆'}
-                    </button>
+
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'center' }}>
+                        {scheda.condizioni.length === 0 && (
+                          <span style={{ fontSize: 10, color: C.inkDim, fontStyle: 'italic' }}>{lingua === 'en' ? 'None' : 'Nessuna'}</span>
+                        )}
+                        {scheda.condizioni.map((c) => {
+                          const eff = EFFETTI_CONDIZIONI[c];
+                          const testoEff = eff ? (lingua === 'en' ? eff.en : eff.it) : '';
+                          const col = COLORI_CONDIZIONI[c] || { bg: 'rgba(200,140,20,0.18)', border: C.goldDark, text: C.ink };
+                          const ico = ICONE_CONDIZIONI[c] || '⚠️';
+                          return (
+                            <span
+                              key={c}
+                              style={{
+                                background: col.bg,
+                                border: `1px solid ${col.border}`,
+                                borderRadius: 5,
+                                padding: '1px 4px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 3,
+                                fontSize: 9.5,
+                              }}
+                            >
+                              <button
+                                type="button"
+                                style={{ background: 'none', border: 0, padding: 0, font: 'inherit', color: col.text, cursor: eff ? 'help' : 'default', fontSize: 9.5, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 2 }}
+                                title={testoEff || c}
+                                onClick={() => eff && setInfo({ titolo: `${ico} ${traduciDato(c)}`, testo: testoEff })}
+                              >
+                                <span>{ico}</span>
+                                <span>{traduciDato(c)}</span>
+                              </button>
+                              <button
+                                type="button"
+                                style={{ background: 'none', border: 0, padding: '0 1px', font: 'inherit', color: C.inkDim, cursor: 'pointer', opacity: 0.8, fontSize: 9.5 }}
+                                title={t('tip.click_rimuovi')}
+                                onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
+                              >✕</button>
+                            </span>
+                          );
+                        })}
+                      </div>
+
+                      {/* Riepilogo compatto condizioni */}
+                      {(() => {
+                        const righe = riepilogoCondizioni(scheda.condizioni);
+                        if (!righe.length) return null;
+                        return (
+                          <div style={{ marginTop: 3, paddingTop: 3, borderTop: `1px dotted ${C.border}`, textAlign: 'left' }}>
+                            {righe.map(({ flag, da }) => (
+                              <div key={flag} style={{ fontSize: 8.5, lineHeight: 1.3, color: C.ink }}>
+                                • {(lingua === 'en' ? ETICHETTE_EFFETTI[flag].en : ETICHETTE_EFFETTI[flag].it)}
+                                <span style={{ opacity: 0.65 }}> ({da.map(traduciDato).join(', ')})</span>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -10014,16 +10121,23 @@ export default function App() {
                       >
                         📖 {t("priv.panoramica_btn")}
                       </button>
-                      {Boolean(scheda.sottoclasse || (scheda.multiclasse || []).some(m => m.sottoclasse)) && (
-                        <button
-                          type="button"
-                          style={{ ...styles.buttonMini, fontSize: 11, color: C.goldDark, borderColor: C.goldDark }}
-                          onClick={() => setMostraPrivilegiSub(true)}
-                          title={t('tip.panoramica_priv_sub')}
-                        >
-                          📖 {t("priv.panoramica_sub_btn")}
-                        </button>
-                      )}
+                      {(() => {
+                        const tutteLeSubTop = [
+                          ...(scheda.sottoclasse ? [{ classe: scheda.classe, livello: scheda.livello || 1, sottoclasse: scheda.sottoclasse }] : []),
+                          ...((scheda.multiclasse || []).filter((m) => m.sottoclasse).map((m) => ({ classe: m.classe, livello: m.livello || 1, sottoclasse: m.sottoclasse }))),
+                        ];
+                        return tutteLeSubTop.map((subItem, sIdx) => (
+                          <button
+                            key={sIdx}
+                            type="button"
+                            style={{ ...styles.buttonMini, fontSize: 11, color: C.goldDark, borderColor: C.goldDark }}
+                            onClick={() => setMostraPrivilegiSub(subItem.sottoclasse || true)}
+                            title={t('tip.panoramica_priv_sub')}
+                          >
+                            📖 {traduciDato(subItem.sottoclasse)}
+                          </button>
+                        ));
+                      })()}
                     </div>
                   </div>
 
@@ -10084,13 +10198,16 @@ export default function App() {
                                   📖 {t("priv.panoramica_btn")} ({scheda.classe || t('profilo.nessuna')} Liv. {scheda.livello || 1})
                                 </button>
                                 {tutteLeSub.length > 0 ? (
-                                  <button
-                                    style={{ ...styles.button, flex: 1, minWidth: 140, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-                                    onClick={() => setMostraPrivilegiSub(true)}
-                                    title={t('tip.panoramica_priv_sub')}
-                                  >
-                                    📖 {t("priv.panoramica_sub_btn")}: {tutteLeSub.map(s => traduciDato(s.sottoclasse)).join(', ')}
-                                  </button>
+                                  tutteLeSub.map((subItem, sIdx) => (
+                                    <button
+                                      key={sIdx}
+                                      style={{ ...styles.button, flex: 1, minWidth: 140, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                                      onClick={() => setMostraPrivilegiSub(subItem.sottoclasse || true)}
+                                      title={t('tip.panoramica_priv_sub')}
+                                    >
+                                      📖 {traduciDato(subItem.sottoclasse)} ({traduciDato(subItem.classe)} Liv. {subItem.livello})
+                                    </button>
+                                  ))
                                 ) : (
                                   <div style={{ ...styles.detail, fontSize: 11.5, display: 'flex', alignItems: 'center' }}>
                                     {t('priv.sub_nessuna')}
@@ -10103,36 +10220,41 @@ export default function App() {
                       </div>
                     )}
 
-                    {/* Blocco 2: Tratti di Specie */}
-                    {(schedaPrivilegiTab === 'tutti' || schedaPrivilegiTab === 'specie') && (
-                      <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
-                          🧬 {t("sez.tratti_specie")}{scheda.specie ? ` (${traduciDato(scheda.specie)})` : ''}
+                    {/* Blocchi 2 e 3: Tratti di Specie e Talenti affiancati quando il tab è 'tutti' */}
+                    <div style={{
+                      display: (schedaPrivilegiTab === 'tutti') ? 'grid' : 'block',
+                      gridTemplateColumns: (schedaPrivilegiTab === 'tutti') ? 'repeat(auto-fit, minmax(280px, 1fr))' : undefined,
+                      gap: 10
+                    }}>
+                      {(schedaPrivilegiTab === 'tutti' || schedaPrivilegiTab === 'specie') && (
+                        <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column' }}>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
+                            🧬 {t("sez.tratti_specie")}{scheda.specie ? ` (${traduciDato(scheda.specie)})` : ''}
+                          </div>
+                          <ListaQuadratini
+                            value={scheda.trattiSpecie}
+                            lookup={spiegaTratto}
+                            placeholder={t("tratti.ph")}
+                            onChange={(v) => aggiorna({ trattiSpecie: v })}
+                          />
                         </div>
-                        <ListaQuadratini
-                          value={scheda.trattiSpecie}
-                          lookup={spiegaTratto}
-                          placeholder={t("tratti.ph")}
-                          onChange={(v) => aggiorna({ trattiSpecie: v })}
-                        />
-                      </div>
-                    )}
+                      )}
 
-                    {/* Blocco 3: Talenti */}
-                    {(schedaPrivilegiTab === 'tutti' || schedaPrivilegiTab === 'talenti') && (
-                      <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
-                          ⭐ {t("sez.talenti")}
+                      {(schedaPrivilegiTab === 'tutti' || schedaPrivilegiTab === 'talenti') && (
+                        <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column' }}>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
+                            ⭐ {t("sez.talenti")}
+                          </div>
+                          <ListaQuadratini
+                            value={scheda.talenti}
+                            lookup={spiegaTalento}
+                            opzioni={TALENTI_5E}
+                            placeholder={t("talenti.ph")}
+                            onChange={(v) => aggiorna({ talenti: v })}
+                          />
                         </div>
-                        <ListaQuadratini
-                          value={scheda.talenti}
-                          lookup={spiegaTalento}
-                          opzioni={TALENTI_5E}
-                          placeholder={t("talenti.ph")}
-                          onChange={(v) => aggiorna({ talenti: v })}
-                        />
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
               </Sezione>
@@ -10765,12 +10887,12 @@ export default function App() {
                 };
 
                 const TAG_RAPIDI = [
-                  { icona: '👤', label: 'PNG' },
-                  { icona: '📜', label: lingua === 'en' ? 'Quest' : 'Obiettivo' },
                   { icona: '🗺️', label: lingua === 'en' ? 'Location' : 'Luogo' },
-                  { icona: '💰', label: lingua === 'en' ? 'Loot' : 'Bottino' },
-                  { icona: '⚔️', label: lingua === 'en' ? 'Combat' : 'Scontro' },
+                  { icona: '📜', label: lingua === 'en' ? 'Quest' : 'Obiettivo' },
+                  { icona: '👤', label: 'PNG' },
                   { icona: '💡', label: lingua === 'en' ? 'Clue' : 'Indizio' },
+                  { icona: '⚔️', label: lingua === 'en' ? 'Combat' : 'Scontro' },
+                  { icona: '💰', label: lingua === 'en' ? 'Loot' : 'Bottino' },
                 ];
 
                 return (

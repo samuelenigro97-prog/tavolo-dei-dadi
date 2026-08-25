@@ -344,6 +344,8 @@ export const DIZIONARIO = {
     'atk.tira_danni_critico': 'Tira danni RADDOPPIATI',
     'common.chiudi': 'Chiudi',
     'common.annulla': 'Annulla',
+    'common.attivo': 'Attivo',
+    'common.non_attivo': 'Non attivo',
     // Campi dell'anagrafica bloccati dopo la creazione
     'profilo.nessuna': 'Nessuna',
     'profilo.nessuno': 'Nessuno',
@@ -1101,6 +1103,8 @@ export const DIZIONARIO = {
     'atk.tira_danni_critico': 'Roll DOUBLED damage',
     'common.chiudi': 'Close',
     'common.annulla': 'Cancel',
+    'common.attivo': 'Active',
+    'common.non_attivo': 'Inactive',
     // Identity fields locked after creation
     'profilo.nessuna': 'None',
     'profilo.nessuno': 'None',
