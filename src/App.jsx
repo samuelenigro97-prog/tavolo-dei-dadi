@@ -7476,10 +7476,37 @@ export default function App() {
               <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
                 <p style={{ margin: 0, color: C.inkDim, fontStyle: 'italic' }}>{t('donazioni.testo_2')}</p>
               </div>
-              <p style={{ margin: 0, fontWeight: 600, color: C.goldDark, textAlign: 'center' }}>🎲 {t('donazioni.grazie')}</p>
+
+              {/* Pulsante ufficiale Ko-fi */}
+              <a
+                href="https://ko-fi.com/samuelenigro"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  background: '#ff5e5b',
+                  color: '#ffffff',
+                  fontWeight: 700,
+                  fontSize: 14,
+                  padding: '10px 16px',
+                  borderRadius: 8,
+                  textDecoration: 'none',
+                  boxShadow: '0 4px 14px rgba(255, 94, 91, 0.4)',
+                  margin: '6px 0 2px',
+                  textAlign: 'center',
+                }}
+              >
+                <span style={{ fontSize: 16 }}>☕</span>
+                <span>{t('donazioni.bottone_kofi')}</span>
+              </a>
+
+              <p style={{ margin: '4px 0 0', fontWeight: 600, color: C.goldDark, textAlign: 'center', fontSize: 12 }}>🎲 {t('donazioni.grazie')}</p>
             </div>
 
-            <button style={{ ...styles.buttonPrimary, width: '100%' }} onClick={() => setMostraDonazioni(false)}>
+            <button style={{ ...styles.button, width: '100%' }} onClick={() => setMostraDonazioni(false)}>
               {t('common.chiudi')}
             </button>
           </div>
