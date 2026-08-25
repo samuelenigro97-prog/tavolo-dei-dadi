@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.88',
+    voci: {
+      it: [
+        'Modificatori Rapidi PF Potenziati: aggiunti pulsanti veloci -20, -10, -5, -1 per il danno e +1, +5, +10, +20 per la cura sotto la barra della vita del personaggio.',
+      ],
+      en: [
+        'Expanded Quick HP Modifiers: added fast -20, -10, -5, -1 damage buttons and +1, +5, +10, +20 healing buttons right under the character health bar.',
+      ],
+    },
+  },
+  {
     versione: '3.9.87',
     voci: {
       it: [

@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '3.9.87';
+const APP_VERSION = '3.9.88';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7946,11 +7946,15 @@ export default function App() {
                     </span>
                   </div>
 
-                  <div style={{ display: 'flex', gap: 6, marginBottom: 6, justifyContent: 'center' }}>
-                    <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '3px 10px', fontWeight: 'bold' }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 1) }); }} title={t('vital.danno')}>-1</button>
-                    <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '3px 10px', fontWeight: 'bold' }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 5) }); }} title={t('vital.danno')}>-5</button>
-                    <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '3px 10px', fontWeight: 'bold' }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 1) }); }} title={t('vital.cura')}>+1</button>
-                    <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '3px 10px', fontWeight: 'bold' }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 5) }); }} title={t('vital.cura')}>+5</button>
+                  <div style={{ display: 'flex', gap: 4, marginBottom: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '3px 7px', fontWeight: 'bold', fontSize: 11 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 20) }); }} title={t('vital.danno')}>-20</button>
+                    <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '3px 7px', fontWeight: 'bold', fontSize: 11 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 10) }); }} title={t('vital.danno')}>-10</button>
+                    <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '3px 7px', fontWeight: 'bold', fontSize: 11 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 5) }); }} title={t('vital.danno')}>-5</button>
+                    <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '3px 7px', fontWeight: 'bold', fontSize: 11 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 1) }); }} title={t('vital.danno')}>-1</button>
+                    <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '3px 7px', fontWeight: 'bold', fontSize: 11 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 1) }); }} title={t('vital.cura')}>+1</button>
+                    <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '3px 7px', fontWeight: 'bold', fontSize: 11 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 5) }); }} title={t('vital.cura')}>+5</button>
+                    <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '3px 7px', fontWeight: 'bold', fontSize: 11 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 10) }); }} title={t('vital.cura')}>+10</button>
+                    <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '3px 7px', fontWeight: 'bold', fontSize: 11 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 20) }); }} title={t('vital.cura')}>+20</button>
                   </div>
 
                   {(() => {
