@@ -449,24 +449,36 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
    centrale) vivono nella STESSA griglia con righe condivise (subgrid), così
    ogni caratteristica si allinea riga per riga al gruppo di vitali corrispondente
    (Forza↔anagrafica, Des+Cos↔Punti Ferita, Int↔difesa, Sag↔salvezza, Car↔stato).
-   Il ritratto occupa la colonna destra per tutta l'altezza. */
-.profilo-griglia {
+   Il ritratto occupa la colonna destra per tu.profilo-griglia {
   display: grid;
-  grid-template-columns: 230px minmax(0, 1fr) 210px;
+  grid-template-columns: 210px minmax(0, 1fr) 230px;
   grid-template-rows: repeat(5, auto);
   column-gap: 14px;
   row-gap: 10px;
   align-items: start;
 }
-/* Le due colonne si estendono su tutte e 5 le righe e ne ereditano le linee
-   con subgrid: è questo che tiene allineate le righe fra sinistra e centro. */
-.profilo-caratteristiche {
+/* Le colonne si estendono su tutte e 5 le righe e ne ereditano le linee
+   con subgrid: è questo che tiene allineate le righe fra lati e centro. */
+.profilo-ritratto {
   grid-column: 1;
-  grid-row: 1 / -1;
+  /* Righe 1-2: l'immagine e selettore occupano la colonna sinistra in alto */
+  grid-row: 1 / 3;
+  align-self: stretch;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.profilo-extra {
+  grid-column: 1;
+  grid-row: 3 / -1;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: subgrid;
+  align-self: stretch;
   min-width: 0;
+  row-gap: 10px;
 }
 .profilo-main {
   grid-column: 2;
@@ -476,17 +488,13 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   grid-template-rows: subgrid;
   min-width: 0;
 }
-.profilo-ritratto {
+.profilo-caratteristiche {
   grid-column: 3;
-  /* Righe 1-2 soltanto: l'immagine parte dal bordo di Forza e finisce alla
-     linea di Costituzione (simmetrica ai primi due blocchi caratteristica). */
-  grid-row: 1 / 3;
-  align-self: stretch;
-  position: relative;
-  display: flex;
-  flex-direction: column;
+  grid-row: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: subgrid;
   min-width: 0;
-  min-height: 0;
 }
 /* Il box immagine riempie l'altezza disponibile (righe 1-2) senza forzarne la
    crescita; su mobile, dove non c'è la griglia, gli diamo un'altezza minima. */
@@ -495,20 +503,6 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   width: 100%; margin: 0 0 6px; padding: 5px 8px; border: 1px solid var(--c-border);
   border-radius: 7px; background: var(--c-panel-light); color: var(--c-title);
   font: 700 12px Georgia, serif; letter-spacing: 1px; text-align: left; cursor: pointer;
-}
-/* Competenze + Risorse riempiono lo spazio vuoto sotto il ritratto (colonna
-   destra, righe 3-5 = Intelligenza→Carisma).
-   Competenze è agganciata alla riga 3 (allineata simmetricamente a Riposo e Sfinimento).
-   Risorse è agganciata alle righe 4-5 (allineata simmetricamente da Percezione Passiva a Ispirazione). */
-.profilo-extra {
-  grid-column: 3;
-  grid-row: 3 / -1;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: subgrid;
-  align-self: stretch;
-  min-width: 0;
-  row-gap: 10px;
 }
 /* Ritratto ridotto: Competenze/Risorse salgono naturalmente. */
 .profilo-griglia.senza-ritratto .profilo-ritratto { grid-row: 1 / 2; align-self: start; }
@@ -560,25 +554,25 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .pm-pf { display: flex; flex-direction: column; }
 .pm-pf > * { width: 100%; flex: 1 1 auto; }
 @media (min-width: 681px) and (max-width: 1024px) {
-  /* iPad / Tablet: layout a due colonne bilanciato con caratteristiche e dati affiancati */
+  /* iPad / Tablet: layout a due colonne bilanciato con ritratto e caratteristiche */
   .profilo-griglia {
     display: grid;
-    grid-template-columns: 215px minmax(0, 1fr);
+    grid-template-columns: 210px minmax(0, 1fr);
     column-gap: 12px;
     row-gap: 10px;
   }
-  .profilo-caratteristiche { grid-column: 1; grid-row: 1; }
+  .profilo-ritratto { grid-column: 1; grid-row: 1; min-height: 220px; }
   .profilo-main { grid-column: 2; grid-row: 1; }
-  .profilo-ritratto { grid-column: 2; grid-row: auto; min-height: 220px; }
-  .profilo-extra { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .profilo-extra { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; gap: 10px; }
+  .profilo-caratteristiche { grid-column: 2; grid-row: 2; }
   .profilo-extra > .sezione:first-child, .profilo-extra > .sezione:last-child { grid-row: auto; height: auto; }
 }
 @media (max-width: 680px) {
   /* Telefono: la sezione si impila in verticale in colonna singola */
   .profilo-griglia { display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
-  .profilo-main { order: 1; display: flex; flex-direction: column; gap: 10px; width: 100%; }
-  .profilo-caratteristiche { order: 2; display: flex; flex-direction: column; gap: 8px; width: 100%; }
-  .profilo-ritratto { order: 3; width: 100%; }
+  .profilo-ritratto { order: 1; width: 100%; }
+  .profilo-main { order: 2; display: flex; flex-direction: column; gap: 10px; width: 100%; }
+  .profilo-caratteristiche { order: 3; display: flex; flex-direction: column; gap: 8px; width: 100%; }
   .profilo-extra { order: 4; width: 100%; display: flex; flex-direction: column; gap: 8px; }
   .profilo-extra > .sezione:first-child, .profilo-extra > .sezione:last-child { grid-row: auto; height: auto; }
   .profilo-griglia.senza-ritratto .profilo-extra { padding-top: 0; }
