@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '3.9.72',
+    voci: {
+      it: [
+        'Miglioramento Gestione Ingombro e Borsa Conservante: risolto il falso avviso di ingombro quando è equipaggiata la Borsa Conservante o quando il carico rientra ampiamente nella capacità del personaggio.',
+      ],
+      en: [
+        'Improved Encumbrance and Bag of Holding: fixed false encumbrance warnings when Bag of Holding is equipped or when weight is well within capacity.',
+      ],
+    },
+  },
+  {
     versione: '3.9.71',
     voci: {
       it: [
