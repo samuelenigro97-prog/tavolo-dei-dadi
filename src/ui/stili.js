@@ -8,7 +8,10 @@ export const styles = {
     background: 'transparent', // lo sfondo tematico è sul body (cambia con la classe)
     color: C.ink,
     fontFamily: "Georgia, 'Times New Roman', serif",
-    padding: '0 16px 48px',
+    paddingTop: 'max(8px, env(safe-area-inset-top))',
+    paddingBottom: 'max(48px, env(safe-area-inset-bottom))',
+    paddingLeft: 'max(14px, env(safe-area-inset-left))',
+    paddingRight: 'max(14px, env(safe-area-inset-right))',
   },
   header: {
     maxWidth: 1080,
@@ -77,7 +80,7 @@ export const styles = {
   // Barra del tiro (sticky in alto)
   rollBar: {
     position: 'sticky',
-    top: 4,
+    top: 'max(4px, env(safe-area-inset-top))',
     zIndex: 10,
     background: C.panel,
     border: `1px solid ${C.gold}`,
@@ -357,12 +360,23 @@ export const GLOBAL_CSS = `
     --c-green: #7fb069; --c-title: #de8f88;
   }
 }
-html, body { margin: 0; padding: 0; background: ${C.bg}; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: ${C.bg};
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  -webkit-overflow-scrolling: touch;
+}
 /* box-sizing coerente: padding e bordi non allargano mai gli elementi
    (evita che i pannelli con width:100% sbordino a destra) */
 *, *::before, *::after { box-sizing: border-box; }
 /* touch: il doppio tap deve tirare il dado, non zoomare la pagina */
-* { touch-action: manipulation; }
+* {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
 
 /* ===================== SISTEMA GRAFICO UNIFICATO =====================
    Regole di base condivise da TUTTE le sezioni, così menu a tendina, campi e
@@ -545,9 +559,22 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
    spazio vuoto sotto) e resta allineato col resto della griglia. */
 .pm-pf { display: flex; flex-direction: column; }
 .pm-pf > * { width: 100%; flex: 1 1 auto; }
-@media (max-width: 820px) {
-  /* Sotto 820px la sezione si impila: prima i dati centrali, poi le
-     caratteristiche, infine il ritratto. Niente subgrid: torna tutto a colonna. */
+@media (min-width: 681px) and (max-width: 1024px) {
+  /* iPad / Tablet: layout a due colonne bilanciato con caratteristiche e dati affiancati */
+  .profilo-griglia {
+    display: grid;
+    grid-template-columns: 215px minmax(0, 1fr);
+    column-gap: 12px;
+    row-gap: 10px;
+  }
+  .profilo-caratteristiche { grid-column: 1; grid-row: 1; }
+  .profilo-main { grid-column: 2; grid-row: 1; }
+  .profilo-ritratto { grid-column: 2; grid-row: auto; min-height: 220px; }
+  .profilo-extra { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .profilo-extra > .sezione:first-child, .profilo-extra > .sezione:last-child { grid-row: auto; height: auto; }
+}
+@media (max-width: 680px) {
+  /* Telefono: la sezione si impila in verticale in colonna singola */
   .profilo-griglia { display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
   .profilo-main { order: 1; display: flex; flex-direction: column; gap: 10px; width: 100%; }
   .profilo-caratteristiche { order: 2; display: flex; flex-direction: column; gap: 8px; width: 100%; }
@@ -556,7 +583,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .profilo-extra > .sezione:first-child, .profilo-extra > .sezione:last-child { grid-row: auto; height: auto; }
   .profilo-griglia.senza-ritratto .profilo-extra { padding-top: 0; }
   .profilo-caratteristiche > *, .car-coppia, .car-coppia > * { width: 100%; box-sizing: border-box; }
-  .ritratto-box { min-height: 300px; }
+  .ritratto-box { min-height: 280px; }
   .car-coppia { gap: 8px; }
 }
 /* riquadri vitali: 5 colonne fisse → riga 1: CA | PF(x2) | Riposo | TsMorte ; riga 2: BonusComp | Iniziativa | Velocità | PercPass */
