@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.30';
+const APP_VERSION = '4.0.31';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7956,18 +7956,24 @@ export default function App() {
             />
             <span style={{ minWidth: 38, textAlign: 'right', fontSize: 12, fontWeight: 'bold' }}>{Math.round(volumeEffetti * 100)}%</span>
           </div>
-          {/* Due interruttori simmetrici: suoni dei dadi e muto generale */}
-          <div style={{ display: 'flex', gap: 8 }}>
+          {/* Due interruttori simmetrici: suoni dei dadi e muto generale (stessa larghezza e griglia dei tasti ambientazione) */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 4 }}>
             <button
               onClick={() => setEffettiSonoriAttivi((v) => !v)}
-              title={'Attiva/disattiva i suoni dei tiri di dado. La barra qui sopra regola invece il volume del sottofondo ambientale (sono due cose diverse).'}
+              title="Attiva/disattiva i suoni dei tiri di dado. La barra qui sopra regola invece il volume del sottofondo ambientale."
               style={{
-                ...styles.btnMini, flex: 1, padding: '8px 6px', whiteSpace: 'nowrap',
-                border: `1px solid ${effettiSonoriAttivi ? C.gold : C.border}`,
-                background: effettiSonoriAttivi ? C.gold : C.panel,
-                color: effettiSonoriAttivi ? '#fff' : C.inkDim, fontWeight: 'bold'
+                padding: '6px 4px', minHeight: 32, borderRadius: 6,
+                border: `1px solid ${effettiSonoriAttivi ? C.goldDark : C.border}`,
+                background: effettiSonoriAttivi ? C.goldDark : C.panelLight,
+                color: effettiSonoriAttivi ? '#ffffff' : C.inkDim,
+                fontWeight: 'bold', fontSize: 11.5, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                whiteSpace: 'nowrap', width: '100%', boxSizing: 'border-box',
+                transition: 'all 0.15s ease'
               }}
-            >🎲 Suoni dadi {effettiSonoriAttivi ? 'ON' : 'OFF'}</button>
+            >
+              🎲 Suoni dadi: {effettiSonoriAttivi ? 'ON' : 'OFF'}
+            </button>
             <button
               onClick={() => {
                 if (mutoAudio) {
@@ -7979,12 +7985,18 @@ export default function App() {
               }}
               title={mutoAudio ? 'Audio in muto · click per riattivare tutto' : 'Muta rapidamente tutto l’audio (sottofondo + effetti)'}
               style={{
-                ...styles.btnMini, flex: 1, padding: '8px 6px', whiteSpace: 'nowrap',
-                border: `1px solid ${mutoAudio ? C.gold : C.border}`,
-                background: mutoAudio ? C.gold : C.panel,
-                color: mutoAudio ? '#fff' : C.inkDim, fontWeight: 'bold'
+                padding: '6px 4px', minHeight: 32, borderRadius: 6,
+                border: `1px solid ${!mutoAudio ? C.goldDark : C.border}`,
+                background: !mutoAudio ? C.goldDark : C.panelLight,
+                color: !mutoAudio ? '#ffffff' : C.inkDim,
+                fontWeight: 'bold', fontSize: 11.5, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                whiteSpace: 'nowrap', width: '100%', boxSizing: 'border-box',
+                transition: 'all 0.15s ease'
               }}
-            >{mutoAudio ? '🔇 Muto' : '🔊 Audio ON'}</button>
+            >
+              {mutoAudio ? '🔇 Audio: OFF' : '🔊 Audio: ON'}
+            </button>
           </div>
 
           {/* Ambientazioni: un click applica palette + sfondo + audio abbinato */}
