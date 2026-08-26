@@ -448,7 +448,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
    centrale) vivono nella STESSA griglia. */
 .profilo-griglia {
   display: grid;
-  grid-template-columns: 270px minmax(0, 1fr) 270px;
+  grid-template-columns: 270px minmax(0, 1fr) 300px;
   column-gap: 14px;
   row-gap: 10px;
   align-items: stretch;
@@ -479,26 +479,17 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   height: 100%;
 }
 
-/* Tier 1: Sinistra (Ritratto), Centro (Anagrafica + Punti Vita), Destra (Forza + Des + Cos) */
+/* Tier 1: Sinistra (Ritratto con altezza fissa perfetta a filo Punti Vita), Centro (Anagrafica + Punti Vita), Destra (Forza + Des + Cos) */
 .ritratto-tier-1 {
   display: flex;
   flex-direction: column;
-  flex: 1 1 auto;
   min-width: 0;
-  height: 100%;
-}
-.ritratto-tier-1 > div {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  margin-bottom: 0 !important;
 }
 .ritratto-box {
   width: 100%;
-  flex: 1 1 0;
-  min-height: 280px;
-  height: 100%;
+  height: 315px;
+  min-height: 315px;
+  max-height: 315px;
   border-radius: 12px;
   overflow: hidden;
   position: relative;
@@ -506,6 +497,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 .ritratto-box img {
   position: absolute;
@@ -539,16 +531,21 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   display: flex;
   flex-direction: column;
   gap: 8px;
-  flex: 1 1 auto;
   min-width: 0;
+  height: 100%;
 }
 .car-tier-1 > .blocco-car {
-  flex: 1 1 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 6px 10px;
+  padding: 6px 12px;
   min-width: 0;
+}
+.car-tier-1 > .blocco-car:nth-child(2) {
+  flex: 1.3 1 auto;
+}
+.car-tier-1 > .blocco-car:not(:nth-child(2)) {
+  flex: 1 1 auto;
 }
 
 /* Tier 2: Competenze, CA/Riposo/Vitali, Intelligenza/Saggezza */

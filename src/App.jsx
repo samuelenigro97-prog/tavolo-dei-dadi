@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.6';
+const APP_VERSION = '4.0.7';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -8244,7 +8244,7 @@ export default function App() {
                 </CampoModulo>
                 <CampoModulo label={t("profilo.classe")}>
                   <CampoBloccato
-                    valore={traduciDato(scheda.classe) ? `${traduciDato(scheda.classe)} - ${scheda.livello || 1}` : t('profilo.nessuna')}
+                    valore={traduciDato(scheda.classe) ? `${traduciDato(scheda.classe)} ${scheda.livello || 1}` : t('profilo.nessuna')}
                     title={t('profilo.classe_bloccata')}
                   />
                 </CampoModulo>
@@ -8773,7 +8773,7 @@ export default function App() {
                       </div>
                     )}
 
-                    {/* Pulsante/tendina Aggiungi posizionato sotto */}
+                    {/* Tendina Condizioni con valore di default 'Nessuna' */}
                     <div style={{ marginTop: 'auto' }}>
                       <select
                         value=""
@@ -8781,7 +8781,7 @@ export default function App() {
                         style={{ ...styles.inlineInput, fontSize: 10.5, padding: '2px 8px', height: 22, width: '100%', borderRadius: 4, background: C.panel, color: C.ink }}
                         title={t('tip.aggiungi_condizione')}
                       >
-                        <option value="">＋ {lingua === 'en' ? 'Add condition...' : 'Aggiungi condizione...'}</option>
+                        <option value="">{lingua === 'en' ? 'None' : 'Nessuna'}</option>
                         {CONDIZIONI_5E.filter((c) => !scheda.condizioni.includes(c)).sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((c) => (
                           <option key={c} value={c}>{ICONE_CONDIZIONI[c] || '⚠️'} {traduciDato(c)}</option>
                         ))}
@@ -8840,11 +8840,11 @@ export default function App() {
                         >🎲 TS</button>
                       )}
                     </div>
-                    {/* Nome sezione in basso */}
-                    <div style={{ ...styles.vitalLabel, marginTop: 'auto', paddingTop: 3 }}>💀 {t("vital.ts_morte")}</div>
+                    {/* Nome sezione posizionato sotto i controlli */}
+                    <div style={{ ...styles.vitalLabel, marginTop: 4, paddingTop: 2, textAlign: 'center', whiteSpace: 'nowrap' }}>💀 {t("vital.ts_morte")}</div>
                   </div>
 
-                  {/* Divisore verticale */}
+                  {/* Divisore verticale netto */}
                   <div style={{ width: 1, background: C.border, opacity: 0.6, zIndex: 2 }} aria-hidden />
 
                   {/* Metà Destra: Ispirazione con stella */}
@@ -8885,8 +8885,8 @@ export default function App() {
                         </div>
                       )}
                     </div>
-                    {/* Nome sezione in basso */}
-                    <div style={{ ...styles.vitalLabel, marginTop: 'auto', paddingTop: 3 }}>⭐ {t("vital.ispirazione") || 'ISPIRAZIONE'}</div>
+                    {/* Nome sezione posizionato sotto la stella */}
+                    <div style={{ ...styles.vitalLabel, marginTop: 4, paddingTop: 2, textAlign: 'center', whiteSpace: 'nowrap' }}>⭐ {t("vital.ispirazione") || 'ISPIRAZIONE'}</div>
                   </div>
                 </div>
               </div>
