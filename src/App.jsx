@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.38';
+const APP_VERSION = '4.0.39';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -8564,10 +8564,27 @@ export default function App() {
               flexShrink: 0,
               transition: 'all 0.15s ease',
             };
+            const separatore = (
+              <span
+                className="selettore-divisore"
+                style={{
+                  display: 'inline-block',
+                  width: 1.5,
+                  height: 22,
+                  background: C.border,
+                  margin: '0 2px',
+                  opacity: 0.6,
+                  alignSelf: 'center',
+                  flexShrink: 0,
+                  borderRadius: 1,
+                }}
+                aria-hidden="true"
+              />
+            );
             return (
               <div className="selettore-personaggio-azioni" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
                 <div className="selettore-riga-1">
-                  {/* Gruppo 1: Gestione PG (Nuovo PG, Modifica Nome, Level Up, Cestino) */}
+                  {/* Gruppo 1 (4 tasti): Gestione PG (Nuovo PG, Modifica Nome, Level Up, Cestino) */}
                   <button
                     style={btnAzione}
                     onClick={() => {
@@ -8618,7 +8635,10 @@ export default function App() {
                     🗑
                   </button>
 
-                  {/* Gruppo 2: Navigazione & File (Menu, Importa, Esporta) */}
+                  {/* Separatore ogni 4 tasti */}
+                  {separatore}
+
+                  {/* Gruppo 2 (4 tasti): File & Cloud (Menu, Importa, Esporta, Cloud) */}
                   <button style={btnAzione} title={t('tip.menu_iniziale')} onClick={() => setMostraMenu(true)}>
                     🏠
                   </button>
@@ -8642,10 +8662,6 @@ export default function App() {
                   >
                     ⬆️
                   </button>
-                </div>
-
-                <div className="selettore-riga-2">
-                  {/* Gruppo 3: Cloud, Notifiche & Lingua */}
                   <button
                     style={{ ...btnAzione, color: C.goldDark, borderColor: C.goldDark }}
                     title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato') : 'Sincronizza sul Cloud'}
@@ -8660,6 +8676,13 @@ export default function App() {
                       <span style={{ color: '#c0392b', fontSize: 13, marginLeft: 2, fontWeight: 900 }}>!</span>
                     )}
                   </button>
+                </div>
+
+                {/* Separatore desktop tra riga 1 e riga 2 (ogni 4 tasti) */}
+                <span className="selettore-divisore selettore-divisore-desktop" aria-hidden="true" style={{ width: 1.5, height: 22, background: C.border, margin: '0 2px', opacity: 0.6, alignSelf: 'center', flexShrink: 0, borderRadius: 1 }} />
+
+                <div className="selettore-riga-2">
+                  {/* Gruppo 3 (4 tasti): Notifiche, Lingua, Audio & Tema */}
                   <button
                     ref={notificheBtnRef}
                     className={daNotificare ? 'btn-notifiche-lampeggia' : ''}
@@ -8685,10 +8708,13 @@ export default function App() {
                   >
                     {lingua === 'it' ? '🇮🇹' : '🇬🇧'}
                   </button>
-
-                  {/* Gruppo 4: Gameplay & Sessione */}
                   <button ref={ambientazioneBtnRef} style={btnAzione} title={t('luogo.tooltip')} onClick={() => { sbloccaAudio(); if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
                   <button style={btnAzione} title={t('tooltip.tema')} onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}>{tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'}</button>
+
+                  {/* Separatore ogni 4 tasti */}
+                  {separatore}
+
+                  {/* Gruppo 4 (2 tasti): Gameplay & Sessione (Mappa, Combattimento) */}
                   <button style={btnAzione} onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())} title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}>🗺️</button>
                   <button style={btnAzione} onClick={() => {
                     if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));

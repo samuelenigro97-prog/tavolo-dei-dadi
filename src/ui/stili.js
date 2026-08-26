@@ -531,6 +531,17 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 
 .car-col-fisiche, .car-col-mentali { display: contents; }
 .selettore-riga-1, .selettore-riga-2 { display: contents; }
+.selettore-divisore {
+  display: inline-block;
+  width: 1.5px;
+  height: 22px;
+  background: var(--c-border);
+  opacity: 0.6;
+  margin: 0 2px;
+  flex-shrink: 0;
+  align-self: center;
+  border-radius: 1px;
+}
 
 .car-tier-1 {
   display: flex;
