@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.15';
+const APP_VERSION = '4.0.16';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -4997,11 +4997,39 @@ export default function App() {
   const novitaNonLette = novitaViste !== ultimaVersioneNovita();
   const daNotificare = nAvvisi > 0 || novitaNonLette;
 
+  function eseguiCorrezione(r) {
+    if (!r || !r.correggibile) return;
+    if (r.tipo === 'ts') {
+      aggiorna({ tiriSalvezza: { ...scheda.tiriSalvezza, [r.targetKey]: true } });
+    } else if (r.tipo === 'abilita') {
+      aggiorna({ abilita: { ...scheda.abilita, [r.targetKey]: Math.max(1, (scheda.abilita?.[r.targetKey] || 0) + 1) } });
+    } else if (r.tipo === 'rimuovi_abilita') {
+      aggiorna({ abilita: { ...scheda.abilita, [r.targetKey]: 0 } });
+    } else if (r.tipo === 'bonus_competenza') {
+      aggiorna({ bonusCompetenza: r.targetVal });
+    } else if (r.tipo === 'budget_abilita') {
+      const bg = Array.isArray(r.bgLista) ? r.bgLista : [];
+      const unione = new Set(Array.isArray(r.unione) ? r.unione : []);
+      const budget = Number(r.budget) || 4;
+      const attuali = { ...(scheda.abilita || {}) };
+      const scelte = [];
+      for (const k of bg) if (attuali[k] > 0 && !scelte.includes(k)) scelte.push(k);
+      for (const [k, v] of Object.entries(attuali)) if (v >= 2 && !scelte.includes(k) && scelte.length < budget) scelte.push(k);
+      for (const [k, v] of Object.entries(attuali)) if (v > 0 && unione.has(k) && !scelte.includes(k) && scelte.length < budget) scelte.push(k);
+      for (const [k, v] of Object.entries(attuali)) if (v > 0 && !scelte.includes(k) && scelte.length < budget) scelte.push(k);
+      const nuoveAbilita = {};
+      for (const { key } of ABILITA) {
+        nuoveAbilita[key] = scelte.includes(key) ? attuali[key] : 0;
+      }
+      aggiorna({ abilita: nuoveAbilita });
+    }
+  }
+
   function correggiTuttiControlli() {
     if (!scheda || !controlliAttivi.length) return;
     const patch = {};
-    const newTs = { ...scheda.tiriSalvezza };
-    const newAb = { ...scheda.abilita };
+    let newTs = { ...scheda.tiriSalvezza };
+    let newAb = { ...scheda.abilita };
     let changedTs = false, changedAb = false;
     for (const r of controlliAttivi) {
       if (r.correggibile) {
@@ -5016,6 +5044,19 @@ export default function App() {
           changedAb = true;
         } else if (r.tipo === 'bonus_competenza') {
           patch.bonusCompetenza = r.targetVal;
+        } else if (r.tipo === 'budget_abilita') {
+          const bg = Array.isArray(r.bgLista) ? r.bgLista : [];
+          const unione = new Set(Array.isArray(r.unione) ? r.unione : []);
+          const budget = Number(r.budget) || 4;
+          const scelte = [];
+          for (const k of bg) if (newAb[k] > 0 && !scelte.includes(k)) scelte.push(k);
+          for (const [k, v] of Object.entries(newAb)) if (v >= 2 && !scelte.includes(k) && scelte.length < budget) scelte.push(k);
+          for (const [k, v] of Object.entries(newAb)) if (v > 0 && unione.has(k) && !scelte.includes(k) && scelte.length < budget) scelte.push(k);
+          for (const [k, v] of Object.entries(newAb)) if (v > 0 && !scelte.includes(k) && scelte.length < budget) scelte.push(k);
+          const nuove = {};
+          for (const { key } of ABILITA) nuove[key] = scelte.includes(key) ? newAb[key] : 0;
+          newAb = nuove;
+          changedAb = true;
         }
       }
     }
@@ -7020,52 +7061,46 @@ export default function App() {
                             </button>
                           )}
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                           {controlliAttivi.map((r) => (
-                            <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 6, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 6, padding: '5px 7px' }}>
-                              <span style={{ flex: 1, fontSize: 11.5, color: C.ink, lineHeight: 1.35 }}>
+                            <div key={r.id} style={{ display: 'flex', flexDirection: 'column', gap: 5, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 6, padding: '7px 9px' }}>
+                              <div style={{ fontSize: 11.5, color: C.ink, lineHeight: 1.4 }}>
                                 {r.gravita === 'certo' ? '🔴' : '🟡'} {r.testo}
-                              </span>
-                              {r.correggibile && (
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6, marginTop: 2, paddingTop: 4, borderTop: `1px solid ${C.border}`, opacity: 0.95 }}>
+                                {r.correggibile && (
+                                  <button
+                                    style={{
+                                      ...styles.buttonMini,
+                                      fontSize: 10.5,
+                                      padding: '2px 8px',
+                                      background: r.tipo === 'rimuovi_abilita' ? '#d97706' : '#2e9d4d',
+                                      color: '#fff',
+                                      borderColor: r.tipo === 'rimuovi_abilita' ? '#d97706' : '#2e9d4d',
+                                      fontWeight: 700,
+                                      boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                                    }}
+                                    title={r.tipo === 'rimuovi_abilita' ? (lingua === 'en' ? 'Remove extra skill' : 'Rimuovi competenza extra') : (lingua === 'en' ? 'Apply fix' : 'Applica correzione')}
+                                    onClick={() => eseguiCorrezione(r)}
+                                  >
+                                    🪄 {lingua === 'en' ? 'Fix' : 'Correggi'}
+                                  </button>
+                                )}
                                 <button
-                                  style={{
-                                    ...styles.buttonMini,
-                                    fontSize: 10,
-                                    padding: '2px 6px',
-                                    background: r.tipo === 'rimuovi_abilita' ? '#d97706' : '#2e9d4d',
-                                    color: '#fff',
-                                    borderColor: r.tipo === 'rimuovi_abilita' ? '#d97706' : '#2e9d4d',
-                                    fontWeight: 700,
-                                    flexShrink: 0,
-                                  }}
-                                  title={r.tipo === 'rimuovi_abilita' ? "Rimuovi questa competenza non spiegata dalla scheda" : "Applica subito questa competenza sulla scheda"}
-                                  onClick={() => {
-                                    if (r.tipo === 'ts') {
-                                      aggiorna({ tiriSalvezza: { ...scheda.tiriSalvezza, [r.targetKey]: true } });
-                                    } else if (r.tipo === 'abilita') {
-                                      aggiorna({ abilita: { ...scheda.abilita, [r.targetKey]: Math.max(1, (scheda.abilita?.[r.targetKey] || 0) + 1) } });
-                                    } else if (r.tipo === 'rimuovi_abilita') {
-                                      aggiorna({ abilita: { ...scheda.abilita, [r.targetKey]: 0 } });
-                                    } else if (r.tipo === 'bonus_competenza') {
-                                      aggiorna({ bonusCompetenza: r.targetVal });
-                                    }
-                                  }}
+                                  style={{ ...styles.buttonMini, fontSize: 10.5, padding: '2px 8px' }}
+                                  title={lingua === 'en' ? 'Do not show this again for this character' : 'Non segnalarlo più per questo personaggio'}
+                                  onClick={() => aggiorna({ controlliIgnorati: [...ignorati, r.id] })}
                                 >
-                                  ✓
+                                  {lingua === 'en' ? 'Ignore' : 'Ignora'}
                                 </button>
-                              )}
-                              <button
-                                style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 5px', flexShrink: 0 }}
-                                title="Non segnalarlo più per questo personaggio"
-                                onClick={() => aggiorna({ controlliIgnorati: [...ignorati, r.id] })}
-                              >Ignora</button>
+                              </div>
                             </div>
                           ))}
                           {ignorati.length > 0 && (
                             <button
                               style={{ ...styles.buttonMini, fontSize: 10, alignSelf: 'flex-start', marginTop: 3 }}
                               onClick={() => aggiorna({ controlliIgnorati: [] })}
-                            >↺ Mostra anche i {ignorati.length} ignorati</button>
+                            >↺ {lingua === 'en' ? `Show ${ignorati.length} ignored` : `Mostra anche i ${ignorati.length} ignorati`}</button>
                           )}
                         </div>
                       </div>

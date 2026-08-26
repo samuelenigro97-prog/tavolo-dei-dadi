@@ -444,8 +444,13 @@ export function controlliScheda(scheda) {
   if (budget > 0 && segnateSpiegabili > budget) {
     risultati.push({
       id: 'budget-abilita',
+      tipo: 'budget_abilita',
       gravita: 'da_controllare',
       testo: `Hai ${segnateSpiegabili} competenze segnate tra quelle spiegabili da razza (${raceInfo?.numero || 0}), classe (${classeInfo?.numero || 0})${bonusAbilitaMulti ? `, multiclasse (${bonusAbilitaMulti})` : ''} e background (${bgLista.length}), che insieme ne concederebbero ${budget}. Se non hai talenti che ne spiegano altre, controlla quali tenere.`,
+      correggibile: true,
+      budget,
+      bgLista,
+      unione: Array.from(unione),
     });
   }
 
