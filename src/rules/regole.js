@@ -478,9 +478,75 @@ export function controlliScheda(scheda) {
       risultati.push({
         id: 'budget-incantesimi',
         gravita: 'da_controllare',
-        testo: `Incantesimi: hai ${nIncanti} incantesimi di 1° livello o superiore, ma le regole per ${scheda.classe} al livello ${scheda.livello || 1} ne consentono ${maxInc}.`,
+        testo: `Incantesimi: hai ${nIncanti} incantesimi preparati/conosciuti (1° liv+), ma le regole per ${scheda.classe} al livello ${scheda.livello || 1} ne prevedono ${maxInc}.`,
       });
     }
+
+    // Trucchetti noti
+    const maxTruc = trucchettiMax(scheda.classe, scheda.livello || 1, scheda.sottoclasse);
+    const nTruc = scheda.incantesimiLista.filter((s) => s.livello === 0 && !s.bonus).length;
+    if (maxTruc != null && nTruc > maxTruc) {
+      risultati.push({
+        id: 'budget-trucchetti',
+        gravita: 'da_controllare',
+        testo: `Trucchetti: hai ${nTruc} trucchetti conosciuti, ma le regole per ${scheda.classe} al livello ${scheda.livello || 1} ne prevedono ${maxTruc}.`,
+      });
+    }
+
+    // Incantesimi di livello superiore al massimo slot posseduto
+    if (scheda.slotIncantesimo) {
+      const slot = scheda.slotIncantesimo;
+      const maxSlotLivello = Math.max(0, ...Object.keys(slot).filter((k) => (slot[k]?.totale || 0) > 0).map(Number));
+      if (maxSlotLivello > 0) {
+        for (const inc of scheda.incantesimiLista) {
+          if (inc.livello > maxSlotLivello && !inc.bonus) {
+            risultati.push({
+              id: `incantesimo-troppo-alto-${inc.nome}`,
+              gravita: 'da_controllare',
+              testo: `Incantesimi: "${inc.nome}" è di ${inc.livello}° livello, ma la scheda dispone di slot fino al ${maxSlotLivello}° livello.`,
+            });
+          }
+        }
+      }
+    }
+
+    // Incantesimi duplicati
+    const visti = new Set();
+    for (const inc of scheda.incantesimiLista) {
+      const nomeN = String(inc.nome || '').trim().toLowerCase();
+      if (nomeN && visti.has(nomeN)) {
+        risultati.push({
+          id: `incantesimo-duplicato-${nomeN}`,
+          gravita: 'da_controllare',
+          testo: `Incantesimi: "${inc.nome}" è inserito più di una volta nella lista incantesimi.`,
+        });
+      }
+      if (nomeN) visti.add(nomeN);
+    }
+  }
+
+  // --- Caratteristica da Incantatore ---
+  const carAttesa = caratteristicaIncantatoreEffettiva(scheda.classe, scheda.sottoclasse);
+  if (carAttesa && scheda.incantatore?.caratteristica && scheda.incantatore.caratteristica !== carAttesa) {
+    const nomeAttesa = CARATTERISTICHE.find((c) => c.key === carAttesa)?.label || carAttesa;
+    const nomeAttuale = CARATTERISTICHE.find((c) => c.key === scheda.incantatore.caratteristica)?.label || scheda.incantatore.caratteristica;
+    risultati.push({
+      id: 'caratteristica-incantatore',
+      gravita: 'certo',
+      testo: `Incantatore: la caratteristica magica di ${scheda.classe} è ${nomeAttesa}, mentre sulla scheda è impostata su ${nomeAttuale}.`,
+      correggibile: true,
+      tipo: 'caratteristica_incantatore',
+      targetVal: carAttesa,
+    });
+  }
+
+  // --- Punti Ferita Massimi ---
+  if (scheda.pfMax != null && Number(scheda.pfMax) <= 0) {
+    risultati.push({
+      id: 'pf-max-invalido',
+      gravita: 'certo',
+      testo: `Punti Ferita: i PF massimi (${scheda.pfMax}) devono essere maggiori di 0.`,
+    });
   }
 
   return risultati;

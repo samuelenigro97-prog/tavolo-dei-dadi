@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.41';
+const APP_VERSION = '4.0.42';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -5428,6 +5428,17 @@ export default function App() {
         motivo: r.testo,
       };
     }
+    if (r.tipo === 'caratteristica_incantatore') {
+      const nomeAttesa = CARATTERISTICHE.find((c) => c.key === r.targetVal)?.label || r.targetVal;
+      const nomeAttuale = CARATTERISTICHE.find((c) => c.key === pg.incantatore?.caratteristica)?.label || pg.incantatore?.caratteristica || '—';
+      return {
+        icona: '🔮',
+        campo: isEn ? 'Spellcasting Ability' : 'Caratteristica Incantatore',
+        prima: nomeAttuale,
+        dopo: nomeAttesa,
+        motivo: r.testo,
+      };
+    }
     return {
       icona: '🪄',
       campo: isEn ? 'Character Sheet Fix' : 'Correzione Scheda',
@@ -5448,6 +5459,8 @@ export default function App() {
       aggiorna({ abilita: { ...scheda.abilita, [r.targetKey]: 0 } });
     } else if (r.tipo === 'bonus_competenza') {
       aggiorna({ bonusCompetenza: r.targetVal });
+    } else if (r.tipo === 'caratteristica_incantatore') {
+      aggiorna({ incantatore: { ...(scheda.incantatore || {}), caratteristica: r.targetVal } });
     } else if (r.tipo === 'budget_abilita') {
       const bg = Array.isArray(r.bgLista) ? r.bgLista : [];
       const unione = new Set(Array.isArray(r.unione) ? r.unione : []);
@@ -5495,6 +5508,8 @@ export default function App() {
           changedAb = true;
         } else if (r.tipo === 'bonus_competenza') {
           patch.bonusCompetenza = r.targetVal;
+        } else if (r.tipo === 'caratteristica_incantatore') {
+          patch.incantatore = { ...(patch.incantatore || scheda.incantatore || {}), caratteristica: r.targetVal };
         } else if (r.tipo === 'budget_abilita') {
           const bg = Array.isArray(r.bgLista) ? r.bgLista : [];
           const unione = new Set(Array.isArray(r.unione) ? r.unione : []);
