@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.25';
+const APP_VERSION = '4.0.26';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2748,6 +2748,12 @@ export default function App() {
   }, [fontePopover]);
   const [addLivIncantesimo, setAddLivIncantesimo] = useState(0); // livello scelto nella barra "aggiungi"
   const [addBonusIncantesimo, setAddBonusIncantesimo] = useState(false); // aggiungi come incantesimo bonus ✦
+  const [nuvolettaCorrezioni, setNuvolettaCorrezioni] = useState(null); // feedback dettagliato delle differenze applicate { titolo, voci: [{ icona, campo, prima, dopo, motivo }] }
+  useEffect(() => {
+    if (!nuvolettaCorrezioni) return;
+    const t = setTimeout(() => setNuvolettaCorrezioni(null), 12000);
+    return () => clearTimeout(t);
+  }, [nuvolettaCorrezioni]);
   const [espressioneLibera, setEspressioneLibera] = useState('');
   const [erroreEspressione, setErroreEspressione] = useState(false);
   const [storico, setStorico] = useState([]);
@@ -5087,8 +5093,82 @@ export default function App() {
   const novitaNonLette = novitaViste !== ultimaVersioneNovita();
   const daNotificare = nAvvisi > 0 || novitaNonLette;
 
+  function calcolaDettaglioCorrezione(r, pg, lang = lingua) {
+    const isEn = lang === 'en';
+    if (!r || !pg) return null;
+    if (r.tipo === 'ts') {
+      const nomeCar = traduciDato(r.targetKey) || r.targetKey;
+      const mod = modificatore(punteggioCaratteristica(pg, r.targetKey) || 10);
+      const comp = pg.bonusCompetenza || 2;
+      const valPrima = conSegno(mod);
+      const valDopo = conSegno(mod + comp);
+      return {
+        icona: '🛡️',
+        campo: isEn ? `Tiro Salvezza: ${nomeCar}` : `Tiro Salvezza: ${nomeCar}`,
+        prima: isEn ? `Not proficient (${valPrima})` : `Non competente (${valPrima})`,
+        dopo: isEn ? `Proficient (${valDopo})` : `Competente (${valDopo})`,
+        motivo: r.testo,
+      };
+    }
+    if (r.tipo === 'abilita') {
+      const nomeAb = traduciDato(r.targetKey) || r.targetKey;
+      const livPrima = pg.abilita?.[r.targetKey] || 0;
+      const livDopo = livPrima + 1;
+      const txtPrima = livPrima === 0 ? (isEn ? 'Not proficient' : 'Non competente') : (livPrima === 1 ? (isEn ? 'Proficient' : 'Competente') : (isEn ? 'Expertise' : 'Maestria'));
+      const txtDopo = livDopo === 1 ? (isEn ? 'Proficient' : 'Competente') : (isEn ? 'Expertise' : 'Maestria');
+      return {
+        icona: '🎯',
+        campo: isEn ? `Skill: ${nomeAb}` : `Abilità: ${nomeAb}`,
+        prima: txtPrima,
+        dopo: txtDopo,
+        motivo: r.testo,
+      };
+    }
+    if (r.tipo === 'rimuovi_abilita') {
+      const nomeAb = traduciDato(r.targetKey) || r.targetKey;
+      const livPrima = pg.abilita?.[r.targetKey] || 0;
+      const txtPrima = livPrima === 1 ? (isEn ? 'Proficient' : 'Competente') : (livPrima === 2 ? (isEn ? 'Expertise' : 'Maestria') : '1');
+      return {
+        icona: '✂️',
+        campo: isEn ? `Skill: ${nomeAb}` : `Abilità: ${nomeAb}`,
+        prima: txtPrima,
+        dopo: isEn ? 'Removed (0)' : 'Rimossa (0)',
+        motivo: r.testo,
+      };
+    }
+    if (r.tipo === 'bonus_competenza') {
+      const prima = conSegno(pg.bonusCompetenza || 2);
+      const dopo = conSegno(r.targetVal);
+      const liv = pg.livello || 1;
+      return {
+        icona: '✨',
+        campo: isEn ? `Proficiency Bonus (Level ${liv})` : `Bonus Competenza (Livello ${liv})`,
+        prima: prima,
+        dopo: dopo,
+        motivo: r.testo,
+      };
+    }
+    if (r.tipo === 'budget_abilita') {
+      return {
+        icona: '⚖️',
+        campo: isEn ? 'Skill Budget' : 'Budget Abilità',
+        prima: isEn ? 'Exceeded allowed skills' : 'Superate le abilità concesse',
+        dopo: isEn ? `Aligned to max budget (${r.budget || 4})` : `Riallineato al budget massimo (${r.budget || 4})`,
+        motivo: r.testo,
+      };
+    }
+    return {
+      icona: '🪄',
+      campo: isEn ? 'Character Sheet Fix' : 'Correzione Scheda',
+      prima: '—',
+      dopo: isEn ? 'Fixed' : 'Corretto',
+      motivo: r.testo,
+    };
+  }
+
   function eseguiCorrezione(r) {
     if (!r || !r.correggibile) return;
+    const dettaglio = calcolaDettaglioCorrezione(r, scheda, lingua);
     if (r.tipo === 'ts') {
       aggiorna({ tiriSalvezza: { ...scheda.tiriSalvezza, [r.targetKey]: true } });
     } else if (r.tipo === 'abilita') {
@@ -5113,6 +5193,13 @@ export default function App() {
       }
       aggiorna({ abilita: nuoveAbilita });
     }
+    if (dettaglio) {
+      setNuvolettaCorrezioni({
+        titolo: lingua === 'en' ? '🪄 Correction applied' : '🪄 Correzione applicata',
+        voci: [dettaglio],
+        timestamp: Date.now(),
+      });
+    }
   }
 
   function correggiTuttiControlli() {
@@ -5121,8 +5208,11 @@ export default function App() {
     let newTs = { ...scheda.tiriSalvezza };
     let newAb = { ...scheda.abilita };
     let changedTs = false, changedAb = false;
+    const modifiche = [];
     for (const r of controlliAttivi) {
       if (r.correggibile) {
+        const dett = calcolaDettaglioCorrezione(r, scheda, lingua);
+        if (dett) modifiche.push(dett);
         if (r.tipo === 'ts') {
           newTs[r.targetKey] = true;
           changedTs = true;
@@ -5153,6 +5243,15 @@ export default function App() {
     if (changedTs) patch.tiriSalvezza = newTs;
     if (changedAb) patch.abilita = newAb;
     aggiorna(patch);
+    if (modifiche.length > 0) {
+      setNuvolettaCorrezioni({
+        titolo: lingua === 'en'
+          ? `🪄 ${modifiche.length} ${modifiche.length === 1 ? 'fix applied' : 'fixes applied'}`
+          : `🪄 ${modifiche.length} ${modifiche.length === 1 ? 'correzione applicata' : 'correzioni applicate'}`,
+        voci: modifiche,
+        timestamp: Date.now(),
+      });
+    }
   }
 
   function apriNotifiche() {
@@ -7131,6 +7230,44 @@ export default function App() {
                 📋 {t('notifiche.sezione_scheda')}
               </div>
 
+              {/* Nuvoletta feedback differenze applicate */}
+              {nuvolettaCorrezioni && (
+                <div style={{
+                  marginBottom: 10,
+                  padding: '9px 11px',
+                  background: 'color-mix(in srgb, var(--c-panel) 84%, #2e9d4d)',
+                  border: '1.5px solid #2e9d4d',
+                  borderRadius: 8,
+                  boxShadow: '0 3px 12px rgba(46,157,77,0.25)',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 6 }}>
+                    <strong style={{ fontSize: 12, color: '#2e9d4d', display: 'flex', alignItems: 'center', gap: 5 }}>
+                      {nuvolettaCorrezioni.titolo}
+                    </strong>
+                    <button
+                      style={{ ...styles.buttonMini, padding: '1px 6px', fontSize: 10, lineHeight: 1 }}
+                      onClick={() => setNuvolettaCorrezioni(null)}
+                      title={lingua === 'en' ? 'Close' : 'Chiudi'}
+                    >✕</button>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                    {nuvolettaCorrezioni.voci.map((v, idx) => (
+                      <div key={idx} style={{ background: C.panel, border: `1px solid ${C.border}`, borderRadius: 6, padding: '6px 8px', fontSize: 11 }}>
+                        <div style={{ fontWeight: 700, color: C.ink, marginBottom: 3, display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <span>{v.icona}</span>
+                          <span>{v.campo}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10.5, flexWrap: 'wrap' }}>
+                          <span style={{ textDecoration: 'line-through', opacity: 0.8, color: C.red }}>{v.prima}</span>
+                          <span style={{ color: '#2e9d4d', fontWeight: 800 }}>➔</span>
+                          <span style={{ color: '#2e9d4d', fontWeight: 700 }}>{v.dopo}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {scheda ? (
                 <>
                   {/* Nessuna incongruenza attiva: scheda in regola */}
@@ -7286,6 +7423,55 @@ export default function App() {
                 <span>🔄</span> <span>{t('aggiorna.ricarica_app')}</span>
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Nuvoletta fluttuante toast: mostra le differenze applicate anche a pannello chiuso */}
+      {nuvolettaCorrezioni && !mostraNotifiche && (
+        <div
+          className="no-stampa"
+          style={{
+            position: 'fixed',
+            bottom: 24,
+            right: 16,
+            maxWidth: 'min(380px, calc(100vw - 32px))',
+            zIndex: 1500,
+            background: C.panel,
+            border: '2px solid #2e9d4d',
+            borderRadius: 12,
+            padding: '11px 14px',
+            boxShadow: '0 10px 32px rgba(0,0,0,0.5)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 6,
+            animation: 'fadeIn 0.2s ease',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+            <strong style={{ fontSize: 13, color: '#2e9d4d', display: 'flex', alignItems: 'center', gap: 6 }}>
+              {nuvolettaCorrezioni.titolo}
+            </strong>
+            <button
+              style={{ ...styles.buttonMini, padding: '1px 6px', fontSize: 10 }}
+              onClick={() => setNuvolettaCorrezioni(null)}
+              title={lingua === 'en' ? 'Close' : 'Chiudi'}
+            >✕</button>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 180, overflowY: 'auto' }}>
+            {nuvolettaCorrezioni.voci.map((v, idx) => (
+              <div key={idx} style={{ background: 'rgba(46,157,77,0.08)', border: '1px solid rgba(46,157,77,0.25)', borderRadius: 6, padding: '5px 8px', fontSize: 11 }}>
+                <div style={{ fontWeight: 700, color: C.ink, marginBottom: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span>{v.icona}</span>
+                  <span>{v.campo}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10.5, flexWrap: 'wrap' }}>
+                  <span style={{ textDecoration: 'line-through', opacity: 0.8, color: C.red }}>{v.prima}</span>
+                  <span style={{ color: '#2e9d4d', fontWeight: 800 }}>➔</span>
+                  <span style={{ color: '#2e9d4d', fontWeight: 700 }}>{v.dopo}</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
