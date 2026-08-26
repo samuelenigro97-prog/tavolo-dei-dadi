@@ -9111,11 +9111,11 @@ export default function App() {
 
               {/* Riga 2 — Punti Ferita e Tiri Morte (spaziature bilanciate e sezioni centrate) */}
               <div className="pm-pf profilo-pf-box">
-                <div style={{ ...styles.vitalBox, gridColumn: 'span 4', padding: '10px 12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', minHeight: 'auto', height: '100%', boxSizing: 'border-box' }}>
+                <div style={{ ...styles.vitalBox, gridColumn: 'span 4', padding: '8px 12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', minHeight: 'auto', height: '100%', boxSizing: 'border-box' }}>
                   <SfondoVit>🩸</SfondoVit>
 
                   {/* Sezione Superiore: Punti Ferita — perfettamente centrata nello spazio disponibile */}
-                  <div style={{ flex: '1 1 auto', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, padding: '2px 0' }}>
+                  <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, padding: '2px 0' }}>
                     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: 0 }}>
                       <div style={{ ...styles.vitalLabel, position: 'static', margin: 0, fontSize: 12 }}>❤️ {t("vital.pf")}</div>
                     </div>
@@ -9223,11 +9223,11 @@ export default function App() {
                   </div>
 
                   {/* Linea divisoria centrata tra Punti Ferita e Tiri Morte */}
-                  <div style={{ width: '100%', height: 1, background: C.border, margin: '6px 0', opacity: 0.65 }} />
+                  <div style={{ width: '100%', height: 1, background: C.border, margin: '4px 0', opacity: 0.65, flexShrink: 0 }} />
 
-                  {/* Sezione Inferiore: Tiri Morte / Death Saves */}
-                  <div style={{ flex: '0 0 auto', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '2px 0' }}>
-                    <div style={{ ...styles.vitalLabel, position: 'static', margin: '0 0 6px 0', fontSize: 12 }}>
+                  {/* Sezione Inferiore: Tiri Morte / Death Saves — perfettamente centrata */}
+                  <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 4, padding: '2px 0' }}>
+                    <div style={{ ...styles.vitalLabel, position: 'static', margin: 0, fontSize: 12 }}>
                       💀 {lingua === 'en' ? 'Death Saves' : 'Tiri Morte'}
                     </div>
 
