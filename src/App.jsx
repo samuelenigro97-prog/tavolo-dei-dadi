@@ -2004,7 +2004,8 @@ function immagineRidotta(img, maxLato, maxBytes, qualitaIniziale = 0.86) {
 
 
 /** Normalizza i dati importati dal PDF (o da JSON/esempio) nel modello della scheda. */
-function normalizeImported(dati) {
+function normalizeImported(rawDati) {
+  const dati = rawDati?.scheda && typeof rawDati.scheda === 'object' ? rawDati.scheda : rawDati;
   const base = schedaVuota();
   if (!dati || typeof dati !== 'object') return base;
 
@@ -2343,6 +2344,11 @@ function ArchivioDm({ url, onChiudi, onApri }) {
   };
 
   const apri = async (id) => {
+    const giaScaricata = dettagliAperti[id];
+    if (giaScaricata && giaScaricata !== 'carico' && !giaScaricata.errore) {
+      onApri(giaScaricata);
+      return;
+    }
     setStato('carico');
     try {
       const r = await fetch(`${base}/pg/${encodeURIComponent(id)}?key=${encodeURIComponent(chiave)}`);
@@ -5848,7 +5854,13 @@ export default function App() {
         <ArchivioDm
           url={URL_ARCHIVIO_PG}
           onChiudi={() => setMostraArchivioDm(false)}
-          onApri={(s) => { nuovoPersonaggio(normalizeImported(s)); setMostraArchivioDm(false); setMostraMenu(false); }}
+          onApri={(s) => {
+            if (!s) return;
+            const unwrapped = s?.scheda && typeof s.scheda === 'object' ? s.scheda : s;
+            nuovoPersonaggio(normalizeImported(unwrapped));
+            setMostraArchivioDm(false);
+            setMostraMenu(false);
+          }}
         />
       )}
 
