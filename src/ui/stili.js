@@ -675,6 +675,8 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   text-align: center; white-space: nowrap; margin: 0;
   display: inline-flex; align-items: center; justify-content: center; gap: 9px;
 }
+.app-header-title-desktop { display: inline; }
+.app-header-title-mobile { display: none; }
 /* Il titolo sta sopra la FOTO dell'ambientazione, non sopra un pannello: una
    sola ombra da 1px non bastava e il testo spariva sui punti scuri della foto
    (tronchi, rocce). Un alone del colore del pannello, ripetuto su più raggi,
@@ -769,6 +771,8 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 }
 .ts-morte-reset { display: block !important; margin: 5px auto 0 !important; }
 @media (max-width: 780px) {
+  .app-header-title-desktop { display: none !important; }
+  .app-header-title-mobile { display: inline !important; font-weight: 800; }
   .spell-filters { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
   .spell-filters > input:first-child { grid-column: 1 / -1; }
   /* schermo medio: titolo centrato in prima riga, poi i due gruppi di bottoni

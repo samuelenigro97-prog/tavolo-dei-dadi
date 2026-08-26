@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.20';
+const APP_VERSION = '4.0.21';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1834,93 +1834,126 @@ function unisciSchedeFG(lista) {
 
 function loadState() {
   try {
+    let roster = null;
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
-      const roster = JSON.parse(raw);
-      if (roster?.personaggi && roster.attivo && roster.personaggi[roster.attivo]) {
-        // completa i campi eventualmente mancanti con i default correnti
-        for (const id of Object.keys(roster.personaggi)) {
-          const s = { ...schedaVuota(), ...roster.personaggi[id] };
-          // i dadi vita seguono sempre livello e classi correnti (anche multiclasse:
-          // ricalcolare da un solo termine cancellerebbe il dado della seconda classe)
-          s.dadiVita = calcolaFormulaDadiVita(s.classe, s.livello, s.multiclasse);
-          // assegna un id agli incantesimi che ne fossero privi (schede legacy),
-          // così ognuno è modificabile singolarmente nel sottomenu
-          if (Array.isArray(s.incantesimiLista)) {
-            s.incantesimiLista = s.incantesimiLista.map((sp, i) => {
-              const base = sp && sp.id != null ? sp : { ...sp, id: Date.now() + i };
-              if (base.nome === 'Vampa') {
-                base.nome = 'Stregoneria Esplosiva';
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed?.personaggi && Object.keys(parsed.personaggi).length > 0) {
+          roster = parsed;
+        }
+      } catch { /* niente */ }
+    }
+
+    // Se STORAGE_KEY non ha personaggi, tenta il recupero automatico dagli snapshots locali
+    if (!roster?.personaggi || Object.keys(roster.personaggi).length === 0) {
+      try {
+        const snapsRaw = localStorage.getItem('scheda-interattiva:snapshots');
+        if (snapsRaw) {
+          const snaps = JSON.parse(snapsRaw);
+          if (Array.isArray(snaps)) {
+            for (const s of snaps) {
+              if (s?.roster?.personaggi && Object.keys(s.roster.personaggi).length > 0) {
+                roster = s.roster;
+                break;
               }
-              // Auto-completa i dettagli mancanti (gittata/tempo/note vuoti) per
-              // gli incantesimi noti: le righe importate o riaggiunte a mano non
-              // restano più "vuote" (es. Dardo Incantato → gittata 36m).
-              const d = dettagliIncantesimo(base.nome);
-              if (!d) return base;
-              const patch = {};
-              if (!base.gittata && d.gittata) patch.gittata = d.gittata;
-              if (!base.note && d.note) patch.note = d.note;
-              if ((!base.tempo || base.tempo === '1 Az.') && d.tempo) patch.tempo = d.tempo;
-              if (!base.scuola && d.scuola) patch.scuola = d.scuola;
-              if (!base.area && d.area) patch.area = d.area;
-              if (!base.danno && d.danno) patch.danno = d.danno;
-              if (!base.tipoDanno && d.tipoDanno) patch.tipoDanno = d.tipoDanno;
-              
-              return Object.keys(patch).length ? { ...base, ...patch } : base;
-            });
-          }
-          // Migrazione legacy: se l'inventario strutturato è vuoto ma esiste il
-          // vecchio equipaggiamento testuale, converti le voci in oggetti (con
-          // peso stimato) e svuota il testo, così gli oggetti non spariscono.
-          if ((!Array.isArray(s.inventario) || s.inventario.length === 0) && typeof s.equipaggiamento === 'string' && s.equipaggiamento.trim()) {
-            s.inventario = s.equipaggiamento.split(/[;,\n]/).map((x) => x.trim()).filter(Boolean).map((raw, i) => {
-              const { nome, qta } = separaQtaOggetto(raw);
-              const base = completaUtilizziOggetto({ id: `inv-mig-${i}`, nome, qta, peso: 0, equip: false, categoria: '' });
-              return { ...base, peso: pesoStimato(base.nome) };
-            });
-            s.equipaggiamento = '';
-          }
-          // Riporta la quantità dal nome alla colonna qta anche per l'inventario
-          // già strutturato ("20 frecce" → Frecce ×20, "Pugnale ×2" → Pugnale ×2),
-          // così i nomi combaciano con le armi note e le munizioni si scalano.
-          if (Array.isArray(s.inventario)) {
-            s.inventario = s.inventario.map((o) => {
-              const parsed = separaQtaOggetto(String(o.nome || ''));
-              return completaUtilizziOggetto((parsed.qta > 1 && parsed.nome && parsed.nome !== o.nome)
-                ? { ...o, nome: parsed.nome, qta: parsed.qta }
-                : o);
-            });
-          }
-          // Tratti di specie salvati come stringa con virgole (formato vecchio):
-          // se combaciano con la dotazione automatica della specie, li ri-spezzo in
-          // voci separate (una chip per tratto) senza toccare gli inserimenti manuali.
-          if (s.specie && typeof s.trattiSpecie === 'string' && !s.trattiSpecie.includes('\n')) {
-            const sp = datiSpecieDi(s.specie);
-            if (sp && s.trattiSpecie.trim() === String(sp.tratti || '').trim()) {
-              s.trattiSpecie = trattiSpecieTesto(sp.tratti);
             }
           }
-          // "Fissa" il massimo di trucchetti/incantesimi per le schede che ne
-          // conoscono più di quanti la classe suggerirebbe (import da PDF): senza
-          // questo, togliere un incantesimo non sblocca mai il selettore.
-          if (Array.isArray(s.incantesimiLista)) {
-            const nTruc = s.incantesimiLista.filter((x) => x.livello === 0 && !x.bonus).length;
-            const nInc = s.incantesimiLista.filter((x) => x.livello > 0 && !x.bonus).length;
-            const baseTruc = trucchettiMax(s.classe, s.livello, s.sottoclasse);
-            const baseInc = incantesimiMaxAuto(s, s.versione === '2014' ? '2014' : '2024');
-            if (!(s.maxTrucchetti > 0) && baseTruc != null && nTruc > baseTruc) s.maxTrucchetti = nTruc;
-            if (!(s.maxIncantesimi > 0) && baseInc != null && nInc > baseInc) s.maxIncantesimi = nInc;
-          }
-          roster.personaggi[id] = s;
         }
-        return roster;
-      }
+      } catch { /* niente */ }
     }
-    // migrazione dal vecchio formato a scheda singola
-    const vecchio = localStorage.getItem(STORAGE_KEY_LEGACY);
-    if (vecchio) {
-      const id = nuovoId();
-      return { attivo: id, personaggi: { [id]: { ...schedaVuota(), ...JSON.parse(vecchio) } } };
+
+    // Se ancora nessun personaggio, controlla il vecchio formato legacy
+    if (!roster?.personaggi || Object.keys(roster.personaggi).length === 0) {
+      try {
+        const vecchio = localStorage.getItem(STORAGE_KEY_LEGACY);
+        if (vecchio) {
+          const id = nuovoId();
+          roster = { attivo: id, personaggi: { [id]: { ...schedaVuota(), ...JSON.parse(vecchio) } } };
+        }
+      } catch { /* niente */ }
+    }
+
+    if (roster?.personaggi && Object.keys(roster.personaggi).length > 0) {
+      const ids = Object.keys(roster.personaggi);
+      if (!roster.attivo || !roster.personaggi[roster.attivo]) {
+        roster.attivo = ids[0];
+      }
+      for (const id of ids) {
+        const s = { ...schedaVuota(), ...roster.personaggi[id] };
+        // i dadi vita seguono sempre livello e classi correnti (anche multiclasse:
+        // ricalcolare da un solo termine cancellerebbe il dado della seconda classe)
+        s.dadiVita = calcolaFormulaDadiVita(s.classe, s.livello, s.multiclasse);
+        // assegna un id agli incantesimi che ne fossero privi (schede legacy),
+        // così ognuno è modificabile singolarmente nel sottomenu
+        if (Array.isArray(s.incantesimiLista)) {
+          s.incantesimiLista = s.incantesimiLista.map((sp, i) => {
+            const base = sp && sp.id != null ? sp : { ...sp, id: Date.now() + i };
+            if (base.nome === 'Vampa') {
+              base.nome = 'Stregoneria Esplosiva';
+            }
+            // Auto-completa i dettagli mancanti (gittata/tempo/note vuoti) per
+            // gli incantesimi noti: le righe importate o riaggiunte a mano non
+            // restano più "vuote" (es. Dardo Incantato → gittata 36m).
+            const d = dettagliIncantesimo(base.nome);
+            if (!d) return base;
+            const patch = {};
+            if (!base.gittata && d.gittata) patch.gittata = d.gittata;
+            if (!base.note && d.note) patch.note = d.note;
+            if ((!base.tempo || base.tempo === '1 Az.') && d.tempo) patch.tempo = d.tempo;
+            if (!base.scuola && d.scuola) patch.scuola = d.scuola;
+            if (!base.area && d.area) patch.area = d.area;
+            if (!base.danno && d.danno) patch.danno = d.danno;
+            if (!base.tipoDanno && d.tipoDanno) patch.tipoDanno = d.tipoDanno;
+            
+            return Object.keys(patch).length ? { ...base, ...patch } : base;
+          });
+        }
+        // Migrazione legacy: se l'inventario strutturato è vuoto ma esiste il
+        // vecchio equipaggiamento testuale, converti le voci in oggetti (con
+        // peso stimato) e svuota il testo, così gli oggetti non spariscono.
+        if ((!Array.isArray(s.inventario) || s.inventario.length === 0) && typeof s.equipaggiamento === 'string' && s.equipaggiamento.trim()) {
+          s.inventario = s.equipaggiamento.split(/[;,\n]/).map((x) => x.trim()).filter(Boolean).map((raw, i) => {
+            const { nome, qta } = separaQtaOggetto(raw);
+            const base = completaUtilizziOggetto({ id: `inv-mig-${i}`, nome, qta, peso: 0, equip: false, categoria: '' });
+            return { ...base, peso: pesoStimato(base.nome) };
+          });
+          s.equipaggiamento = '';
+        }
+        // Riporta la quantità dal nome alla colonna qta anche per l'inventario
+        // già strutturato ("20 frecce" → Frecce ×20, "Pugnale ×2" → Pugnale ×2),
+        // così i nomi combaciano con le armi note e le munizioni si scalano.
+        if (Array.isArray(s.inventario)) {
+          s.inventario = s.inventario.map((o) => {
+            const parsed = separaQtaOggetto(String(o.nome || ''));
+            return completaUtilizziOggetto((parsed.qta > 1 && parsed.nome && parsed.nome !== o.nome)
+              ? { ...o, nome: parsed.nome, qta: parsed.qta }
+              : o);
+          });
+        }
+        // Tratti di specie salvati come stringa con virgole (formato vecchio):
+        // se combaciano con la dotazione automatica della specie, li ri-spezzo in
+        // voci separate (una chip per tratto) senza toccare gli inserimenti manuali.
+        if (s.specie && typeof s.trattiSpecie === 'string' && !s.trattiSpecie.includes('\n')) {
+          const sp = datiSpecieDi(s.specie);
+          if (sp && s.trattiSpecie.trim() === String(sp.tratti || '').trim()) {
+            s.trattiSpecie = trattiSpecieTesto(sp.tratti);
+          }
+        }
+        // "Fissa" il massimo di trucchetti/incantesimi per le schede che ne
+        // conoscono più di quanti la classe suggerirebbe (import da PDF): senza
+        // questo, togliere un incantesimo non sblocca mai il selettore.
+        if (Array.isArray(s.incantesimiLista)) {
+          const nTruc = s.incantesimiLista.filter((x) => x.livello === 0 && !x.bonus).length;
+          const nInc = s.incantesimiLista.filter((x) => x.livello > 0 && !x.bonus).length;
+          const baseTruc = trucchettiMax(s.classe, s.livello, s.sottoclasse);
+          const baseInc = incantesimiMaxAuto(s, s.versione === '2014' ? '2014' : '2024');
+          if (!(s.maxTrucchetti > 0) && baseTruc != null && nTruc > baseTruc) s.maxTrucchetti = nTruc;
+          if (!(s.maxIncantesimi > 0) && baseInc != null && nInc > baseInc) s.maxIncantesimi = nInc;
+        }
+        roster.personaggi[id] = s;
+      }
+      return roster;
     }
   } catch {
     // dati corrotti: riparti da zero
@@ -1930,6 +1963,19 @@ function loadState() {
 }
 
 function saveState(roster) {
+  // Protezione di sicurezza: se il roster in memoria è vuoto ma nel localStorage ci sono
+  // già personaggi salvati, non sovrascrivere per sbaglio con vuoto.
+  if (!roster?.personaggi || Object.keys(roster.personaggi).length === 0) {
+    try {
+      const esistente = localStorage.getItem(STORAGE_KEY);
+      if (esistente) {
+        const parsed = JSON.parse(esistente);
+        if (parsed?.personaggi && Object.keys(parsed.personaggi).length > 0) {
+          return { ok: true, bytes: esistente.length };
+        }
+      }
+    } catch { /* niente */ }
+  }
   return salvaJson(localStorage, STORAGE_KEY, rosterSenzaImmagini(roster));
 }
 
@@ -7742,7 +7788,10 @@ export default function App() {
 
             {/* Titolo centrato nella barra */}
             <h1 className="app-header-title" style={{ ...styles.title, fontSize: 18, whiteSpace: 'nowrap', color: 'var(--c-title)', display: 'inline-flex', alignItems: 'baseline', gap: 0 }}>
-              <span>Tavolo dei Dadi</span>
+              <span>
+                <span className="app-header-title-desktop">Tavolo dei Dadi</span>
+                <span className="app-header-title-mobile">{scheda?.nome ? scheda.nome : 'Tavolo dei Dadi'}</span>
+              </span>
               <span className="app-version" style={{ fontSize: 9, color: 'var(--c-ink-dim)', fontWeight: 500, marginLeft: 3, position: 'relative', top: 0, letterSpacing: 0.3, lineHeight: 1, border: 'none', background: 'transparent', padding: 0, minHeight: 'auto', borderRadius: 0, display: 'inline-block', verticalAlign: 'baseline', fontVariantNumeric: 'tabular-nums lining-nums', fontFeatureSettings: '"lnum" 1, "tnum" 1', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>v{APP_VERSION}</span>
             </h1>
 
