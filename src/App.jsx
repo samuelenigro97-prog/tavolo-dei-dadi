@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.35';
+const APP_VERSION = '4.0.36';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -4683,6 +4683,7 @@ export default function App() {
               personaggi[targetId] = norm;
               ultimo = targetId;
             }
+            setSchedaSolaLettura(null);
             return { attivo: ultimo, personaggi };
           });
         }
@@ -4698,7 +4699,7 @@ export default function App() {
     for (const file of jsonFiles) {
       try {
         const dati = JSON.parse(await file.text());
-        const personaggiBackup = dati?.roster?.personaggi || (dati?.tipo === 'tavolo-dei-dadi-backup' ? dati?.personaggi : null);
+        const personaggiBackup = dati?.roster?.personaggi || (dati?.tipo === 'tavolo-dei-dadi-backup' || dati?.tipo === 'tavolo-dei-dadi-roster' ? dati?.personaggi : null);
         if (personaggiBackup && typeof personaggiBackup === 'object' && !Array.isArray(personaggiBackup)) {
           const lista = Object.values(personaggiBackup).filter((s) => s && typeof s === 'object');
           if (lista.length) {
@@ -4718,6 +4719,7 @@ export default function App() {
                 nuovi++;
               });
               if (duplicati) setErroreImport(`Import: ${nuovi} nuovi, ${duplicati} già esistenti ignorati.`);
+              setSchedaSolaLettura(null);
               return { attivo: ultimo, personaggi };
             });
             setMostraMenu(false);
@@ -4726,6 +4728,7 @@ export default function App() {
         }
         const norm = normalizeImported(forzaVersione(dati));
         const chiave = String(norm.nome||'').toLowerCase().trim();
+        setSchedaSolaLettura(null);
         setRoster((r) => {
           const personaggi = { ...r.personaggi };
           const idEsistente = chiave ? Object.keys(personaggi).find((k) => String(personaggi[k]?.nome||'').toLowerCase().trim() === chiave) : null;
@@ -6097,7 +6100,7 @@ export default function App() {
                     <div key={id} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                       <button
                         style={{ ...styles.button, flex: 1, display: 'flex', justifyContent: 'space-between', gap: 10, textAlign: 'left' }}
-                        onClick={() => { setRoster((r) => ({ ...r, attivo: id })); setMostraMenu(false); }}
+                        onClick={() => { setSchedaSolaLettura(null); setRoster((r) => ({ ...r, attivo: id })); setMostraMenu(false); }}
                       >
                         <span>{p.nome || t('menu.senza_nome')}</span>
                         <span style={styles.detail}>{p.classe ? `${p.classe}` : '—'}</span>
@@ -6262,14 +6265,7 @@ export default function App() {
           onApriSolaLettura={(s) => {
             if (!s) return;
             try {
-              let obj = s;
-              if (typeof obj === 'string') {
-                try { obj = JSON.parse(obj); } catch {}
-              }
-              const raw = (obj && typeof obj === 'object' && obj.scheda && typeof obj.scheda === 'object')
-                ? obj.scheda
-                : obj;
-              const imported = normalizeImported(raw);
+              const imported = normalizeImported(s);
               setSchedaSolaLettura(imported);
             } catch (e) {
               console.error('Errore apertura sola lettura PG:', e);
@@ -6280,14 +6276,7 @@ export default function App() {
           onApri={(s) => {
             if (!s) return;
             try {
-              let obj = s;
-              if (typeof obj === 'string') {
-                try { obj = JSON.parse(obj); } catch {}
-              }
-              const raw = (obj && typeof obj === 'object' && obj.scheda && typeof obj.scheda === 'object')
-                ? obj.scheda
-                : obj;
-              const imported = normalizeImported(raw);
+              const imported = normalizeImported(s);
               const id = nuovoId();
               setSchedaSolaLettura(null);
               setRoster((r) => {
@@ -9023,7 +9012,7 @@ export default function App() {
                       <select
                         style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', padding: '4px 60px 4px 12px', textOverflow: 'ellipsis', background: 'transparent', position: 'relative', zIndex: 2, border: 'none', height: '100%' }}
                         value={roster.attivo}
-                        onChange={(e) => setRoster((r) => ({ ...r, attivo: e.target.value }))}
+                        onChange={(e) => { setSchedaSolaLettura(null); setRoster((r) => ({ ...r, attivo: e.target.value })); }}
                         title={t('nome.tooltip_selettore')}
                       >
                         {Object.entries(roster.personaggi).map(([id, p]) => (
