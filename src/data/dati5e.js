@@ -185,13 +185,13 @@ export const LINGUE_5E = [
   'Nanico', 'Orchesco', 'Primordiale', 'Silvano', 'Sottocomune'
 ];
 export const STRUMENTI_5E = [
-  'Arnesi da scasso', 'Borsa da erborista', 'Strumenti da avvelenatore', 'Kit da travestimento',
-  'Kit da falsario', 'Strumenti da calligrafo', 'Attrezzi da fabbro', 'Attrezzi da birraio',
-  'Attrezzi da carpentiere', 'Attrezzi da cartografo', 'Attrezzi da calzolaio', 'Attrezzi da cuoco',
-  'Attrezzi da vetraio', 'Attrezzi da gioielliere', 'Attrezzi da vasaio', 'Attrezzi da conciatore',
-  'Attrezzi da intagliatore', 'Attrezzi da tessitore', 'Attrezzi da ceramista', 'Attrezzi da muratore',
-  'Attrezzi da pittore', 'Attrezzi da fabbro d’armi', 'Strumenti da navigatore', 'Set da gioco',
-  'Carte da gioco', 'Dadi', 'Strumento musicale', 'Cornamusa', 'Tamburo', 'Flauto', 'Liuto',
+  'Arnesi da Scasso', 'Borsa da Erborista', 'Strumenti da Avvelenatore', 'Kit da Travestimento',
+  'Kit da Falsario', 'Strumenti da Calligrafo', 'Attrezzi da Fabbro', 'Attrezzi da Birraio',
+  'Attrezzi da Carpentiere', 'Attrezzi da Cartografo', 'Attrezzi da Calzolaio', 'Attrezzi da Cuoco',
+  'Attrezzi da Vetraio', 'Attrezzi da Gioielliere', 'Attrezzi da Vasaio', 'Attrezzi da Conciatore',
+  'Attrezzi da Intagliatore', 'Attrezzi da Tessitore', 'Attrezzi da Ceramista', 'Attrezzi da Muratore',
+  'Attrezzi da Pittore', 'Attrezzi da Fabbro d’Armi', 'Strumenti da Navigatore', 'Set da Gioco',
+  'Carte da Gioco', 'Dadi', 'Strumento Musicale', 'Cornamusa', 'Tamburo', 'Flauto', 'Liuto',
   'Lira', 'Corno', 'Zufolo', 'Veicoli (terrestri)', 'Veicoli (acquatici)',
 ];
 
@@ -217,20 +217,20 @@ export const GRUPPI_ARMI_5E = [
 export const GRUPPI_STRUMENTI_5E = [
   {
     titolo: '🗝️ Speciali & Furtività',
-    voci: ['Arnesi da scasso', 'Borsa da erborista', 'Kit da falsario', 'Kit da travestimento', 'Strumenti da avvelenatore', 'Strumenti da navigatore'],
+    voci: ['Arnesi da Scasso', 'Borsa da Erborista', 'Kit da Falsario', 'Kit da Travestimento', 'Strumenti da Avvelenatore', 'Strumenti da Navigatore'],
   },
   {
     titolo: '🪕 Strumenti Musicali',
-    voci: ['Cornamusa', 'Corno', 'Flauto', 'Lira', 'Liuto', 'Tamburo', 'Zufolo', 'Strumento musicale'],
+    voci: ['Cornamusa', 'Corno', 'Flauto', 'Lira', 'Liuto', 'Tamburo', 'Zufolo', 'Strumento Musicale'],
   },
   {
     titolo: '🔧 Attrezzi Artigianali',
     voci: [
-      'Attrezzi da fabbro', 'Attrezzi da fabbro d’armi', 'Attrezzi da alchimista', 'Attrezzi da falegname',
-      'Attrezzi da carpentiere', 'Attrezzi da cuoco', 'Attrezzi da conciatore', 'Attrezzi da calzolaio',
-      'Attrezzi da muratore', 'Attrezzi da birraio', 'Attrezzi da cartografo', 'Attrezzi da ceramista',
-      'Attrezzi da intagliatore', 'Attrezzi da gioielliere', 'Attrezzi da pittore', 'Attrezzi da vetraio',
-      'Attrezzi da tessitore', 'Attrezzi da vasaio', 'Strumenti da calligrafo'
+      'Attrezzi da Fabbro', 'Attrezzi da Fabbro d’Armi', 'Attrezzi da Alchimista', 'Attrezzi da Falegname',
+      'Attrezzi da Carpentiere', 'Attrezzi da Cuoco', 'Attrezzi da Conciatore', 'Attrezzi da Calzolaio',
+      'Attrezzi da Muratore', 'Attrezzi da Birraio', 'Attrezzi da Cartografo', 'Attrezzi da Ceramista',
+      'Attrezzi da Intagliatore', 'Attrezzi da Gioielliere', 'Attrezzi da Pittore', 'Attrezzi da Vetraio',
+      'Attrezzi da Tessitore', 'Attrezzi da Vasaio', 'Strumenti da Calligrafo'
     ],
   },
   {

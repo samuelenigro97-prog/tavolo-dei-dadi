@@ -714,7 +714,13 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .car-col-fisiche .blocco-car,
   .car-col-mentali .blocco-car {
     width: 100% !important;
+    min-width: 0 !important;
+    padding: 6px 6px !important;
     box-sizing: border-box !important;
+  }
+  .car-col-fisiche .blocco-car > div:first-of-type,
+  .car-col-mentali .blocco-car > div:first-of-type {
+    gap: 6px !important;
   }
   /* 7. Competenze (Armature, Armi, Strumenti, Lingue) */
   .profilo-competenze-box {
@@ -1102,17 +1108,13 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     border-radius: 8px !important;
   }
   .selettore-divisore {
-    display: inline-block !important;
-    width: 1px !important;
-    height: 22px !important;
-    margin: 0 2px !important;
-    background: var(--c-gold-dark, #b8860b) !important;
-    opacity: 0.5 !important;
+    display: none !important;
   }
   .anagrafica > div:last-child > div:last-child { grid-template-columns: repeat(2, 1fr) !important; }
   /* su telefono i riquadri anagrafica e vitali passano a 2 colonne (leggibili,
      niente 5 colonne schiacciate); le altezze non sono più forzate uguali */
-  .campi-anagrafica { grid-template-columns: repeat(2, 1fr) !important; }
+  .campi-anagrafica { grid-template-columns: repeat(2, 1fr) !important; gap: 8px 10px !important; }
+  .campi-anagrafica .campo-modulo-box { min-height: 32px !important; height: auto !important; overflow: visible !important; }
   .vitali { grid-template-columns: repeat(2, 1fr) !important; grid-auto-rows: auto !important; }
   /* niente riquadri a doppia colonna su mobile: griglia 2×N perfettamente uniforme */
   .vitali > * { grid-column: auto !important; }

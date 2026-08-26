@@ -1541,9 +1541,9 @@ const KIT_CLASSE = {
   barbaro:  { armi: ['Ascia bipenne'], equip: ['Ascia ×4', 'Dotazione da esploratore'], denari: 15, armatura: ARM_NESSUNA, scudo: false, strumenti: '' },
   bardo:    { armi: ['Stocco'], equip: ['Armatura di cuoio', 'Pugnale', 'Strumento musicale', 'Dotazione da intrattenitore'], denari: 19, armatura: ARM_CUOIO, scudo: false, strumenti: 'Strumenti musicali (3 a scelta)' },
   chierico: { armi: ['Mazza'], equip: ['Armatura a scaglie', 'Scudo', 'Balestra leggera + 20 dardi', 'Simbolo sacro', 'Dotazione da sacerdote'], denari: 7, armatura: ARM_SCAGLIE, scudo: true, strumenti: '' },
-  druido:   { armi: ['Scimitarra'], equip: ['Armatura di cuoio', 'Scudo (legno)', 'Focus druidico', 'Borsa da erborista', 'Dotazione da esploratore'], denari: 9, armatura: ARM_CUOIO, scudo: true, strumenti: 'Borsa da erborista' },
+  druido:   { armi: ['Scimitarra'], equip: ['Armatura di cuoio', 'Scudo (legno)', 'Focus druidico', 'Borsa da Erborista', 'Dotazione da esploratore'], denari: 9, armatura: ARM_CUOIO, scudo: true, strumenti: 'Borsa da Erborista' },
   guerriero:{ armi: ['Spada lunga', 'Arco lungo'], equip: ['Cotta di maglia', 'Scudo', 'Frecce ×20', 'Dotazione da avventuriero'], denari: 4, armatura: ARM_MAGLIA, scudo: true, strumenti: '' },
-  ladro:    { armi: ['Stocco', 'Arco corto'], equip: ['Armatura di cuoio', 'Pugnale ×2', 'Arnesi da scasso', 'Dotazione da scassinatore', 'Frecce ×20'], denari: 8, armatura: ARM_CUOIO, scudo: false, strumenti: 'Arnesi da scasso' },
+  ladro:    { armi: ['Stocco', 'Arco corto'], equip: ['Armatura di cuoio', 'Pugnale ×2', 'Arnesi da Scasso', 'Dotazione da scassinatore', 'Frecce ×20'], denari: 8, armatura: ARM_CUOIO, scudo: false, strumenti: 'Arnesi da Scasso' },
   mago:     { armi: ['Pugnale'], equip: ['Focus arcano', 'Libro degli incantesimi', 'Dotazione da studioso'], denari: 5, armatura: ARM_NESSUNA, scudo: false, strumenti: '' },
   monaco:   { armi: ['Spada corta'], equip: ['Dardo ×10', 'Dotazione da esploratore'], denari: 11, armatura: ARM_NESSUNA, scudo: false, strumenti: 'Un tipo di attrezzi da artigiano o uno strumento musicale' },
   paladino: { armi: ['Spada lunga'], equip: ['Cotta di maglia', 'Scudo', 'Giavellotto ×6', 'Simbolo sacro', 'Dotazione da sacerdote'], denari: 9, armatura: ARM_MAGLIA, scudo: true, strumenti: '' },
@@ -1731,7 +1731,7 @@ function lingueIniziali(specie) {
 // Suggerimenti per l'autocompletamento dell'equipaggiamento comune (5e).
 const EQUIP_5E = [
   'Abiti da viaggiatore', 'Abiti comuni', 'Abiti eleganti', 'Acciarino ed esca', 'Ampolla',
-  'Arnesi da scasso', 'Balestra a mano', 'Borraccia', 'Borsa da componenti', 'Borsa da erborista',
+  'Arnesi da Scasso', 'Balestra a mano', 'Borraccia', 'Borsa da componenti', 'Borsa da Erborista',
   'Candela', 'Catena (3 m)', 'Cesto', 'Chiodi da rampino (10)', 'Coperta', 'Corda di canapa (15 m)',
   'Corda di seta (15 m)', 'Corno', 'Dotazione da avventuriero', 'Dotazione da esploratore',
   'Dotazione da scassinatore', 'Focus arcano', 'Fiaccola', 'Grimaldelli', 'Kit del guaritore',
@@ -1739,7 +1739,7 @@ const EQUIP_5E = [
   'Otre', 'Pala', 'Pergamena (foglio)', 'Piccone', 'Pietra focaia', 'Piede di porco',
   'Rampino', 'Razioni (1 giorno)', 'Sacca a pelo', 'Sacco', 'Simbolo sacro', 'Specchietto d’acciaio',
   'Torcia', 'Zaino', 'Corda', 'Tenda', 'Acqua santa (ampolla)', 'Veleno base (fiala)',
-  'Kit da erborista', 'Pozione di guarigione',
+  'Kit da Erborista', 'Pozione di Guarigione',
 ];
 
 
@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.32';
+const APP_VERSION = '4.0.33';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2330,7 +2330,7 @@ function normalizeImported(rawDati) {
  * Serve la chiave DM (verificata dal Worker, non salvata nel sito): senza
  * quella l'elenco non è leggibile. La chiave resta solo su questo dispositivo.
  */
-function ArchivioDm({ url, onChiudi, onApri }) {
+function ArchivioDm({ url, onChiudi, onApri, onApriSolaLettura }) {
   const [chiave, setChiave] = useState(() => {
     try { return localStorage.getItem('scheda-interattiva:dm-key') || ''; } catch { return ''; }
   });
@@ -2354,6 +2354,37 @@ function ArchivioDm({ url, onChiudi, onApri }) {
       try { localStorage.setItem('scheda-interattiva:dm-key', k); } catch { /* niente */ }
     } catch (e) {
       setStato(`Connessione fallita: ${e.message}`);
+    }
+  };
+
+  const apriInSolaLettura = async (s) => {
+    let raw = dettagliAperti[s.id];
+    if (!raw || raw === 'carico' || raw.errore) {
+      setAprendoId(s.id);
+      setStato('carico');
+      try {
+        const r = await fetch(`${base}/pg/${encodeURIComponent(s.id)}?key=${encodeURIComponent(chiave)}`);
+        if (!r.ok) {
+          let errTxt = `Errore ${r.status}`;
+          try { const d = await r.json(); if (d?.error) errTxt = d.error; } catch {}
+          setStato(errTxt);
+          setAprendoId('');
+          return;
+        }
+        raw = await r.json();
+        setDettagliAperti((d2) => ({ ...d2, [s.id]: raw }));
+        setAprendoId('');
+        setStato('');
+      } catch (e) {
+        setAprendoId('');
+        setStato(`Connessione fallita: ${e.message}`);
+        return;
+      }
+    }
+    if (onApriSolaLettura) {
+      onApriSolaLettura(raw);
+    } else if (onApri) {
+      onApri(raw);
     }
   };
 
@@ -2516,7 +2547,7 @@ function ArchivioDm({ url, onChiudi, onApri }) {
           <button style={styles.buttonMini} onClick={onChiudi}>✕</button>
         </div>
         <p style={{ ...styles.detail, marginTop: 0 }}>
-          Le schede salvate dagli utenti. Clicca su <strong>Apri</strong> per visualizzarla in sola lettura, oppure su <strong>Esporta</strong> per scaricare il file JSON.
+          Le schede salvate dagli utenti. Clicca su <strong>Apri</strong> per visualizzarla nel tavolo in sola lettura (senza modificarla), oppure su <strong>Esporta</strong> per scaricare il file JSON.
         </p>
         <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
           <input
@@ -2571,18 +2602,19 @@ function ArchivioDm({ url, onChiudi, onApri }) {
                         </div>
                         <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center', flexWrap: 'wrap' }}>
                           <button
-                            style={{ ...styles.buttonMini, fontWeight: 700, borderColor: C.goldDark, color: C.goldDark, minWidth: 64 }}
-                            onClick={() => toggleDettagli(s.id)}
-                            title="Visualizza la scheda completa in sola lettura (senza modificarla)"
+                            style={{ ...styles.buttonMini, fontWeight: 700, borderColor: C.goldDark, color: '#fff', background: C.goldDark, minWidth: 68 }}
+                            disabled={aprendoId === s.id}
+                            onClick={() => apriInSolaLettura(s)}
+                            title="Apri e consulta la scheda completa nel tavolo in sola lettura (senza modificarla)"
                           >
-                            {isAperto ? '▲ Chiudi' : '👁️ Apri'}
+                            {aprendoId === s.id ? '…' : '👁️ Apri'}
                           </button>
                           <button
                             style={{ ...styles.buttonMini, fontWeight: 600, background: '#2e9d4d', color: '#fff', borderColor: '#2e9d4d' }}
                             onClick={() => esportaScheda(s)}
                             title="Esporta e scarica il file JSON di questo personaggio"
                           >
-                            ⬇️ Esporta
+                            📂 Esporta
                           </button>
                           <button
                             style={{ ...styles.buttonMini, fontWeight: 500 }}
@@ -2590,7 +2622,7 @@ function ArchivioDm({ url, onChiudi, onApri }) {
                             onClick={() => apri(s.id)}
                             title="Carica questo personaggio nella tua scheda per poterlo modificare"
                           >
-                            {aprendoId === s.id ? 'Importo…' : '📥 Importa'}
+                            {aprendoId === s.id ? 'Importo…' : '⬇️ Importa'}
                           </button>
                           <button
                             style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '3px 6px' }}
@@ -2870,6 +2902,7 @@ export default function App() {
     } catch { return 'anonimo'; }
   }, []);
   const [mostraArchivioDm, setMostraArchivioDm] = useState(false);
+  const [schedaSolaLettura, setSchedaSolaLettura] = useState(null); // Scheda aperta dall'Archivio DM in sola lettura
   const [filtroIncantesimo, setFiltroIncantesimo] = useState('');
   const [filtroLivelloInc, setFiltroLivelloInc] = useState('');
   const [filtroScuolaInc, setFiltroScuolaInc] = useState('');
@@ -3383,7 +3416,8 @@ export default function App() {
   const pdfRef = useRef(null);
   const ritrattoRef = useRef(null);
 
-  const scheda = roster.personaggi[roster.attivo];
+  const isSolaLettura = Boolean(schedaSolaLettura);
+  const scheda = schedaSolaLettura || (roster?.personaggi && roster.personaggi[roster.attivo]) || creaPersonaggio();
   const caratteristicaIncantatore = caratteristicaIncantatoreEffettiva(scheda);
   // versione delle regole del personaggio attivo (fallback: impostazione globale)
   const versione = scheda?.versione || regoleVersione || '2024';
@@ -3394,7 +3428,7 @@ export default function App() {
   // Le risorse tipiche della classe devono esserci anche nelle schede vecchie
   // o importate e devono seguire automaticamente livello e caratteristiche.
   useEffect(() => {
-    if (!scheda) return;
+    if (!scheda || isSolaLettura) return;
     setRoster((r) => {
       const corrente = r.personaggi[r.attivo];
       if (!corrente) return r;
@@ -3405,7 +3439,7 @@ export default function App() {
         personaggi: { ...r.personaggi, [r.attivo]: { ...corrente, risorse: sincronizzate } },
       };
     });
-  }, [roster.attivo, scheda?.classe, scheda?.livello, scheda?.versione, scheda?.caratteristiche, regoleVersione]);
+  }, [roster.attivo, scheda?.classe, scheda?.livello, scheda?.versione, scheda?.caratteristiche, regoleVersione, isSolaLettura]);
 
   useEffect(() => {
     const esito = saveState(roster);
@@ -3463,8 +3497,12 @@ export default function App() {
 
   useEffect(() => () => clearInterval(intervalRef.current), []);
 
-  /** Aggiorna la scheda del personaggio attivo. */
+  /** Aggiorna la scheda del personaggio attivo (o in sola lettura in memoria). */
   function setScheda(valore) {
+    if (schedaSolaLettura) {
+      setSchedaSolaLettura((s) => typeof valore === 'function' ? valore(s) : { ...s, ...valore });
+      return;
+    }
     setRoster((r) => ({
       ...r,
       personaggi: {
@@ -3493,7 +3531,7 @@ export default function App() {
   // e solo se la scheda ha un nome vero e i dati sono effettivamente cambiati.
   const ultimoInvioDmRef = useRef('');
   useEffect(() => {
-    if (!URL_ARCHIVIO_PG || !scheda) return;
+    if (!URL_ARCHIVIO_PG || !scheda || isSolaLettura) return;
     const nome = formattaNomePg(String(scheda?.nome || '')).trim();
     if (!nome || nome === 'Nuovo personaggio') return;
     const { ritratto, mappaCampagna: _m, ...leggera } = scheda;
@@ -6030,7 +6068,7 @@ export default function App() {
                   onClick={() => { setMostraMenu(false); setTimeout(() => jsonRef.current?.click(), 50); }}
                   title={t('tip.importa')}
                 >
-                  <span>📂</span> <span>Importa</span>
+                  <span>⬇️</span> <span>Importa</span>
                 </button>
                 <button
                   style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
@@ -6040,7 +6078,7 @@ export default function App() {
                   }}
                   title={t('tip.esporta')}
                 >
-                  <span>💾</span> <span>Esporta</span>
+                  <span>📂</span> <span>Esporta</span>
                 </button>
                 <button
                   style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
@@ -6070,10 +6108,10 @@ export default function App() {
               <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>{t('menu.sezione_backup')}</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
                 <button style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} onClick={() => jsonRef.current?.click()} title={t('menu.ripristina_tip')}>
-                  <span>📂</span> <span>{t('menu.ripristina')}</span>
+                  <span>⬇️</span> <span>{t('menu.ripristina')}</span>
                 </button>
                 <button style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} onClick={esportaBackupCompleto} title={t('menu.esporta_tutto_tip')}>
-                  <span>💾</span> <span>{t('menu.esporta_tutto')}</span>
+                  <span>📂</span> <span>{t('menu.esporta_tutto')}</span>
                 </button>
                 {leggiSnapshots().length > 0 && (
                   <button style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} onClick={() => setMostraRipristino(true)}>
@@ -6121,9 +6159,10 @@ export default function App() {
               </div>
             </div>
 
-            <div style={{ marginTop: 14, textAlign: 'center', fontSize: 10, opacity: 0.7, lineHeight: 1.4 }}>
+            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11, color: C.muted }}>
+              <span>{t('menu.footer_versione', { v: APP_VERSION })}</span>
               <a
-                href="https://github.com/samuelenigro97-prog/tavolo-dei-dadi"
+                href="https://dnd.wizards.com/resources/systems-reference-document"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ color: 'inherit', textDecoration: 'underline' }}
@@ -6140,6 +6179,24 @@ export default function App() {
         <ArchivioDm
           url={URL_ARCHIVIO_PG}
           onChiudi={() => setMostraArchivioDm(false)}
+          onApriSolaLettura={(s) => {
+            if (!s) return;
+            try {
+              let obj = s;
+              if (typeof obj === 'string') {
+                try { obj = JSON.parse(obj); } catch {}
+              }
+              const raw = (obj && typeof obj === 'object' && obj.scheda && typeof obj.scheda === 'object')
+                ? obj.scheda
+                : obj;
+              const imported = normalizeImported(raw);
+              setSchedaSolaLettura(imported);
+            } catch (e) {
+              console.error('Errore apertura sola lettura PG:', e);
+            }
+            setMostraArchivioDm(false);
+            setMostraMenu(false);
+          }}
           onApri={(s) => {
             if (!s) return;
             try {
@@ -6152,6 +6209,7 @@ export default function App() {
                 : obj;
               const imported = normalizeImported(raw);
               const id = nuovoId();
+              setSchedaSolaLettura(null);
               setRoster((r) => {
                 const base = (r?.personaggi && Object.keys(r.personaggi).length > 0) ? r.personaggi : {};
                 return {
@@ -6211,7 +6269,7 @@ export default function App() {
                       onChange={(e) => setCodiceSyncInput(normalizzaCodiceSync(e.target.value))}
                       onKeyDown={(e) => { if (e.key === 'Enter' && normalizzaCodiceSync(codiceSyncInput).length === 10) usaCodiceSyncEsistente(); }}
                     />
-                    <button style={styles.buttonPrimary} disabled={normalizzaCodiceSync(codiceSyncInput).length !== 10} onClick={usaCodiceSyncEsistente}>{t('cloud.usa')}</button>
+                    <button style={{ ...styles.buttonPrimary, disabled: normalizzaCodiceSync(codiceSyncInput).length !== 10 }} onClick={usaCodiceSyncEsistente}>{t('cloud.usa')}</button>
                   </div>
                 </>
               )}
@@ -6222,11 +6280,6 @@ export default function App() {
               )}
             </div>
 
-            {cloudStatus.text && (
-              <div style={{ padding: 10, borderRadius: 6, background: cloudStatus.type === 'error' ? 'rgba(255,0,0,0.1)' : cloudStatus.type === 'success' ? 'rgba(0,255,0,0.1)' : 'rgba(255,255,255,0.05)', color: cloudStatus.type === 'error' ? C.red : cloudStatus.type === 'success' ? C.green : C.goldDark, fontSize: 13, textAlign: 'center', marginBottom: 12 }}>
-                {cloudStatus.text}
-              </div>
-            )}
 
             <button style={{ ...styles.button, width: '100%' }} onClick={() => setMostraCloud(false)}>{t('modal.chiudi')}</button>
           </div>
@@ -8292,6 +8345,49 @@ export default function App() {
           </section>
         ) : (
           <>
+        {/* Banner Sola Lettura quando si apre una scheda dall'Archivio DM */}
+        {isSolaLettura && (
+          <div style={{
+            background: 'linear-gradient(90deg, #b8860b 0%, #8b4513 100%)',
+            color: '#ffffff',
+            padding: '8px 12px',
+            borderRadius: 8,
+            marginBottom: 8,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 8,
+            boxShadow: '0 3px 10px rgba(0,0,0,0.25)',
+            border: '1px solid rgba(255,255,255,0.3)',
+            flexWrap: 'wrap'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+              <span style={{ fontSize: 20 }}>🔒</span>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontWeight: 800, fontSize: 13, textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>
+                  {lingua === 'en' ? 'DM Archive: Read-Only Character Sheet' : 'Archivio DM: Scheda in Sola Lettura'}
+                </div>
+                <div style={{ fontSize: 11, opacity: 0.95, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {formattaNomePg(scheda.nome) || 'Personaggio'} · {lingua === 'en' ? 'No changes will be saved' : 'Consultazione sicura · nessuna modifica al cloud o al roster'}
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
+              <button
+                style={{ ...styles.buttonMini, background: 'rgba(255,255,255,0.2)', color: '#ffffff', borderColor: 'rgba(255,255,255,0.45)', padding: '4px 8px', fontSize: 11, fontWeight: 700 }}
+                onClick={() => setMostraArchivioDm(true)}
+              >
+                🗂 {lingua === 'en' ? 'Archive' : 'Archivio DM'}
+              </button>
+              <button
+                style={{ ...styles.buttonMini, background: '#c62828', color: '#ffffff', borderColor: '#e53935', padding: '4px 10px', fontSize: 11, fontWeight: 800 }}
+                onClick={() => setSchedaSolaLettura(null)}
+              >
+                ✕ {lingua === 'en' ? 'Exit View' : 'Esci'}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Barra di navigazione, gestione PG, versione D&D e sessione */}
         <section className="selettore-personaggio" style={{ ...styles.panel, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flexWrap: 'wrap', padding: '8px 12px' }}>
@@ -8376,7 +8472,7 @@ export default function App() {
                     🏠
                   </button>
                   <button style={btnAzione} title="Importa JSON, PDF o immagini" onClick={() => jsonRef.current?.click()}>
-                    📂
+                    ⬇️
                   </button>
                   <button
                     ref={esportaBtnRef}
@@ -8393,7 +8489,7 @@ export default function App() {
                       setMostraMenuEsporta((v) => !v);
                     }}
                   >
-                    💾
+                    📂
                   </button>
                 </div>
 
@@ -9013,14 +9109,14 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Riga 2 — Punti Ferita e Tiri Morte (spaziature bilanciate e linea centrale ribassata) */}
+              {/* Riga 2 — Punti Ferita e Tiri Morte (spaziature bilanciate e sezioni centrate) */}
               <div className="pm-pf profilo-pf-box">
-                <div style={{ ...styles.vitalBox, gridColumn: 'span 4', padding: '10px 12px 10px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', minHeight: 250 }}>
+                <div style={{ ...styles.vitalBox, gridColumn: 'span 4', padding: '12px 12px 10px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: 'auto', height: '100%', boxSizing: 'border-box' }}>
                   <SfondoVit>🩸</SfondoVit>
 
                   {/* Sezione Superiore: Punti Ferita */}
-                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 3 }}>
+                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', margin: '2px 0 4px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 4 }}>
                       <div style={{ ...styles.vitalLabel, position: 'static', margin: 0, fontSize: 12 }}>❤️ {t("vital.pf")}</div>
                     </div>
 
@@ -9126,11 +9222,11 @@ export default function App() {
                     })()}
                   </div>
 
-                  {/* Linea divisoria ribassata e centrata tra Punti Ferita e Tiri Morte */}
-                  <div style={{ width: '100%', height: 1, background: C.border, margin: '8px 0 6px', opacity: 0.65 }} />
+                  {/* Linea divisoria centrata tra Punti Ferita e Tiri Morte */}
+                  <div style={{ width: '100%', height: 1, background: C.border, margin: '6px 0 8px', opacity: 0.65 }} />
 
                   {/* Sezione Inferiore: Tiri Morte / Death Saves */}
-                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', paddingBottom: 2 }}>
+                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', margin: '2px 0 4px' }}>
                     <div style={{ ...styles.vitalLabel, position: 'static', margin: '0 0 6px 0', fontSize: 12 }}>
                       💀 {lingua === 'en' ? 'Death Saves' : 'Tiri Morte'}
                     </div>
@@ -9184,7 +9280,7 @@ export default function App() {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center', justifyContent: 'center' }}>
                         <button
                           className="ts-morte-reset"
-                          style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 6px' }}
+                          style={{ ...styles.buttonMini, fontSize: 10.5, padding: '3px 8px', alignSelf: 'center' }}
                           onClick={() => aggiorna({ tsMorte: { successi: 0, fallimenti: 0 } })}
                           title={t("vital.reset_ts")}
                         >
@@ -9456,17 +9552,18 @@ export default function App() {
                     >
                       {conSegno(mod)}
                     </Rollable>
-                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8 }}>
+                    <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
                       <div
-                        style={{ fontSize: 13, color: C.ink, letterSpacing: 0.8, fontWeight: 'bold', cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
+                        className="car-header-label"
+                        style={{ minWidth: 0, fontSize: 12.5, color: C.ink, letterSpacing: 0.3, fontWeight: 'bold', cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                         title={t('tip.cosa_governa')}
                         onClick={() => setInfo({ titolo: t('attr.' + key), testo: t('spieg.' + key) })}
                       >{t('attr.' + key).toUpperCase()}</div>
-                      <div style={{ fontSize: 17, fontWeight: 'bold', color: C.goldDark }} title={t('tip.punteggio_car')}>
+                      <div style={{ flexShrink: 0, fontSize: 16, fontWeight: 'bold', color: C.goldDark, display: 'flex', alignItems: 'center' }} title={t('tip.punteggio_car')}>
                         <Editable
                           value={scheda.caratteristiche[key]}
                           tipo="numero"
-                          width={40}
+                          width={28}
                           onChange={(v) =>
                             aggiorna({ caratteristiche: { ...scheda.caratteristiche, [key]: v } })
                           }
@@ -9533,8 +9630,8 @@ export default function App() {
                         >
                           {scheda.tiriSalvezza[key] ? '●' : '○'}
                         </span>
-                        <strong style={{ width: 32 }}>{conSegno(bonusTS)}</strong>
-                        <em>{t('attr.tiro_salvezza')}</em>
+                        <strong style={{ width: 26, flexShrink: 0, textAlign: 'center' }}>{conSegno(bonusTS)}</strong>
+                        <em className="skill-nome" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0, flex: 1 }}>{t('attr.tiro_salvezza')}</em>
                         {tsMancante && (
                           <span style={{ marginLeft: 'auto', fontSize: 9.5, color: C.red, fontWeight: 700 }}>⚠️ Manca</span>
                         )}
@@ -9604,8 +9701,8 @@ export default function App() {
                         >
                           {liv === 3 ? '✦' : liv === 2 ? '★\uFE0E' : liv === 1 ? '●' : '○'}
                         </span>
-                        <strong style={{ width: 32 }}>{conSegno(bonus)}</strong>
-                        <span>{t('skill.' + a.key)}</span>
+                        <strong style={{ width: 26, flexShrink: 0, textAlign: 'center' }}>{conSegno(bonus)}</strong>
+                        <span className="skill-nome" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0, flex: 1 }}>{t('skill.' + a.key)}</span>
                         {abMancante && (
                           <span style={{ marginLeft: 'auto', fontSize: 9.5, color: C.red, fontWeight: 700 }}>⚠️ Manca</span>
                         )}
