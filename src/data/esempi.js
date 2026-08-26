@@ -160,3 +160,237 @@ export const ESEMPIO_GNOMO = {
   sfinimento: 0,
   concentrazione: '',
 };
+
+export const VAELION_JSON = {
+  versione: "2024",
+  nome: "Vaelion (Val) Leafwhisper",
+  classe: "Druido",
+  sottoclasse: "Circolo della Luna",
+  livello: 10,
+  background: "Eremita",
+  specie: "Elfo dei Boschi",
+  taglia: "Media",
+  allineamento: "Neutrale",
+  pe: 0,
+  pfMax: 64,
+  pfAttuali: 64,
+  pfTemp: 0,
+  dadiVita: "10d8",
+  dadiVitaSpesi: 0,
+  ca: 19,
+  velocita: 10.5,
+  ispirazione: false,
+  sfinimento: 0,
+  armatura: {
+    tipo: "media",
+    base: 14,
+    scudo: true,
+    bonus: 0
+  },
+  caratteristiche: {
+    forza: 4,
+    destrezza: 15,
+    costituzione: 14,
+    intelligenza: 10,
+    saggezza: 20,
+    carisma: 12
+  },
+  tiriSalvezza: {
+    forza: false,
+    destrezza: false,
+    costituzione: false,
+    intelligenza: true,
+    saggezza: true,
+    carisma: false
+  },
+  abilita: {
+    acrobazia: 0,
+    addestrareAnimali: 1,
+    arcano: 1,
+    atletica: 0,
+    furtivita: 0,
+    indagare: 0,
+    inganno: 0,
+    intimidire: 0,
+    intrattenere: 0,
+    intuizione: 1,
+    medicina: 1,
+    natura: 1,
+    percezione: 1,
+    persuasione: 0,
+    rapiditaDiMano: 0,
+    religione: 0,
+    sopravvivenza: 1,
+    storia: 0
+  },
+  addestramento: {
+    armature: {
+      leggera: true,
+      media: true,
+      pesante: false,
+      scudi: true
+    },
+    armi: "Bastoni ferrati, dardi, falcetti, giavellotti, lance, mazze, pugnali, fionde, spade corte, spade lunghe, archi corti, archi lunghi (Semplici)",
+    strumenti: "Borsa da Erborista"
+  },
+  lingue: "Comune, Sottocomune, Druidico, Silvano, Bestie, Folletti, Elfico",
+  attacchi: [
+    {
+      id: "v-a1",
+      nome: "Randello",
+      caratteristica: "saggezza",
+      competenza: true,
+      danno: "1d8+5",
+      tipoDanno: "Contundente",
+      bonus: 5,
+      note: "Incantato con Randello Incantato (Shillelagh)"
+    },
+    {
+      id: "v-a2",
+      nome: "Frusta di Spine",
+      caratteristica: "saggezza",
+      competenza: true,
+      danno: "2d6",
+      tipoDanno: "Perforante",
+      bonus: 5,
+      note: "Trascina 3m, gittata 9m"
+    },
+    {
+      id: "v-a3",
+      nome: "Morsa del Gelo",
+      caratteristica: "saggezza",
+      competenza: true,
+      danno: "2d6",
+      tipoDanno: "Freddo",
+      bonus: 5,
+      note: "Svantaggio prox attacco, gittata 18m"
+    }
+  ],
+  incantatore: {
+    caratteristica: "saggezza"
+  },
+  slotIncantesimo: {
+    "1": { totale: 4, spesi: 0 },
+    "2": { totale: 3, spesi: 0 },
+    "3": { totale: 3, spesi: 0 },
+    "4": { totale: 3, spesi: 0 },
+    "5": { totale: 2, spesi: 0 },
+    "6": { totale: 0, spesi: 0 },
+    "7": { totale: 0, spesi: 0 },
+    "8": { totale: 0, spesi: 0 },
+    "9": { totale: 0, spesi: 0 }
+  },
+  incantesimiLista: [
+    { id: "vi-01", nome: "Frusta di Spine", livello: 0, preparato: true },
+    { id: "vi-02", nome: "Guida", livello: 0, preparato: true },
+    { id: "vi-03", nome: "Morsa del Gelo", livello: 0, preparato: true },
+    { id: "vi-04", nome: "Randello Incantato", livello: 0, preparato: true },
+    { id: "vi-11", nome: "Assorbire Elementi", livello: 1, preparato: true, tempo: "Reazione" },
+    { id: "vi-12", nome: "Cura Ferite", livello: 1, preparato: true },
+    { id: "vi-13", nome: "Intralciare", livello: 1, preparato: true, conc: true },
+    { id: "vi-14", nome: "Parola Guaritrice", livello: 1, preparato: true, tempo: "Azione Bonus" },
+    { id: "vi-21", nome: "Protezione dai Veleni", livello: 2, preparato: true },
+    { id: "vi-22", nome: "Vincolo della Terra", livello: 2, preparato: true, conc: true },
+    { id: "vi-31", nome: "Camminare sull'Acqua", livello: 3, preparato: true, rituale: true },
+    { id: "vi-32", nome: "Crescita Vegetale", livello: 3, preparato: true },
+    { id: "vi-33", nome: "Dissolvi Magie", livello: 3, preparato: true },
+    { id: "vi-34", nome: "Evoca Animali", livello: 3, preparato: true, conc: true },
+    { id: "vi-35", nome: "Respirare sott'Acqua", livello: 3, preparato: true, rituale: true },
+    { id: "vi-41", nome: "Inaridire", livello: 4, preparato: true },
+    { id: "vi-42", nome: "Metamorfosi", livello: 4, preparato: true, conc: true },
+    { id: "vi-51", nome: "Cura Ferite di Massa", livello: 5, preparato: true },
+    { id: "vi-52", nome: "Evoca Elementale", livello: 5, preparato: true, conc: true }
+  ],
+  sintonia: "Mantello della Protezione, Perla del Potere, Guanti della Forza Orchesca",
+  inventario: [
+    { id: "v-inv-01", nome: "Corazza a Piastre in Legnoferro (CA 14)", qta: 1, peso: 20, equip: true, categoria: "Armatura" },
+    { id: "v-inv-02", nome: "Scudo in Legno", qta: 1, peso: 3, equip: true, categoria: "Scudo" },
+    { id: "v-inv-03", nome: "Mantello della Protezione", qta: 1, peso: 1.5, equip: true, effettoMeccanico: "classe_armatura_tiri_salvezza_1", richiedeSintonia: true, categoria: "Oggetto Magico", descrizione: "+1 alla CA e +1 a tutti i Tiri Salvezza (in sintonia)" },
+    { id: "v-inv-04", nome: "Perla del Potere", qta: 1, peso: 0.1, equip: true, categoria: "Oggetto Magico", usi: 1, usiMax: 1, ricarica: "alba", descrizione: "Come azione permette di recuperare 1 slot incantesimo speso fino al 3° livello (1 volta al giorno, ricarica all'alba/riposo lungo)." },
+    { id: "v-inv-05", nome: "Guanti della Forza Orchesca", qta: 1, peso: 1, equip: true, effettoMeccanico: "forza_impostata_19", richiedeSintonia: true, categoria: "Oggetto Magico", descrizione: "Imposta la Forza del portatore a 19 (+4) se inferiore (in sintonia)." },
+    { id: "v-inv-06", nome: "Borsa da Erborista", qta: 1, peso: 1.5, equip: false, categoria: "Strumenti" },
+    { id: "v-inv-07", nome: "Borsa Conservante", qta: 1, peso: 6.8, equip: true, categoria: "Oggetto Magico", descrizione: "Contiene fino a 250 kg senza gravare sull'ingombro del personaggio." },
+    { id: "v-inv-08", nome: "Pozione di Guarigione (2d4+2)", qta: 2, peso: 0.5, equip: false, dentroBorsa: true, categoria: "Consumabile" },
+    { id: "v-inv-09", nome: "Pozione di Resistenza al Freddo", qta: 2, peso: 0.5, equip: false, dentroBorsa: true, categoria: "Consumabile" },
+    { id: "v-inv-10", nome: "Pozione di Respirare sott'Acqua", qta: 2, peso: 0.5, equip: false, dentroBorsa: true, categoria: "Consumabile" },
+    { id: "v-inv-11", nome: "Pozione Antitossina", qta: 1, peso: 0.5, equip: false, dentroBorsa: true, categoria: "Consumabile" },
+    { id: "v-inv-12", nome: "Unguento di Resistenza al Veleno", qta: 1, peso: 0.5, equip: false, dentroBorsa: true, categoria: "Consumabile" },
+    { id: "v-inv-13", nome: "Sonaglio di zucca essiccata con bacche di agrifoglio", qta: 1, peso: 0.2, equip: false, categoria: "Trastullo", descrizione: "Oggetto prezioso e focus druidico legato alla sua infanzia tra le Montagne Rauvin." }
+  ],
+  risorse: [
+    { id: "auto-forma-selvatica", nome: "Forma Selvatica", attuali: 4, max: 4, reset: "breve" },
+    { id: "auto-totem-spirituale", nome: "Totem Spirituale (Aura)", attuali: 1, max: 1, reset: "breve" }
+  ],
+  denari: { mr: 0, ma: 0, me: 0, mo: 250, mp: 0 },
+  trattiSpecie: "Retaggio Fatato: Vantaggio ai TS contro l'essere affascinato. La magia non può addormentarti.\nMaschera della Selva: Puoi tentare di nasconderti anche quando sei parzialmente oscurato da fenomeni naturali.\nScurovisione 18m\nForma Selvatica (Azione Bonus / Azione): Grado Sfida max 3.\nTotale comunione con gli spiriti della foresta.\nPrivilegio Background (Scoperta): Conoscenza di un'importante verità cosmica o segreto del mondo.",
+  note: "STORIA & DETTAGLI:\nNato tra le Montagne Rauvin, membro degli Arpisti. Mentore: Un orso mannaro che gli ha insegnato il rispetto per tutte le creature viventi.\nAspetto Guida: Il fiume inarrestabile gli ricorda il ciclo eterno della natura."
+};
+
+export const ELEVORN_JSON = {
+  nome: "Elevorn DeVille",
+  sesso: "",
+  background: "Eremita",
+  classe: "Guerriero",
+  sottoclasse: "",
+  multiclasse: [
+    { classe: "Ranger", livello: 6 },
+    { classe: "Ladro", livello: 3 }
+  ],
+  specie: "Mezzelfo",
+  allineamento: "Neutrale",
+  versione: "2014",
+  livello: 1,
+  pe: 0,
+  ca: 21,
+  pfMax: 74,
+  pfAttuali: 74,
+  pfTemp: 0,
+  dadiVita: "7d10 + 3d8",
+  dadiVitaSpesi: 0,
+  velocita: 30,
+  taglia: "Media",
+  bonusCompetenza: 4,
+  ispirazione: false,
+  tsMorte: { successi: 0, fallimenti: 0 },
+  caratteristiche: { forza: 10, destrezza: 20, costituzione: 14, intelligenza: 10, saggezza: 14, carisma: 11 },
+  armatura: { nome: "", tipo: "media", base: 14, scudo: true, bonus: 2 },
+  condizioni: [],
+  tiriSalvezza: { forza: true, destrezza: true, costituzione: true, intelligenza: false, saggezza: false, carisma: false },
+  abilita: {
+    acrobazia: 1, addestrareAnimali: 1, arcano: 1, atletica: 2, furtivita: 1, indagare: 1, inganno: 2,
+    intimidire: 1, intrattenere: 1, intuizione: 1, medicina: 1, natura: 1, percezione: 2, persuasione: 1,
+    rapiditaDiMano: 1, religione: 1, sopravvivenza: 1, storia: 1
+  },
+  attacchi: [
+    { id: 1787725473620, nome: "Spada lunga", categoria: "Azione", bonus: 5, danno: "1d8+3", tipoDanno: "Tagliente", note: "" }
+  ],
+  incantatore: { caratteristica: "" },
+  slotIncantesimo: { "1": { totale: 0, spesi: 0 }, "2": { totale: 0, spesi: 0 }, "3": { totale: 0, spesi: 0 }, "4": { totale: 0, spesi: 0 }, "5": { totale: 0, spesi: 0 }, "6": { totale: 0, spesi: 0 }, "7": { totale: 0, spesi: 0 }, "8": { totale: 0, spesi: 0 }, "9": { totale: 0, spesi: 0 } },
+  incantesimiLista: [],
+  maxTrucchetti: 0,
+  maxIncantesimi: 0,
+  privilegi: "",
+  privilegiSottoclasse: "",
+  trattiSpecie: "",
+  talenti: "",
+  metamagie: "",
+  equipaggiamento: "",
+  inventario: [],
+  sintonia: "",
+  lingue: "Comune",
+  aspetto: "",
+  trattiCaratteriali: "",
+  diario: [],
+  note: "",
+  risorse: [{ id: "auto-recuperare-energie", nome: "Recuperare Energie", max: 1, attuali: 1, reset: "breve" }],
+  sfinimento: 0,
+  concentrazione: "",
+  resistenze: "",
+  sensi: "Scurovisione 18 m",
+  addestramento: { armature: { leggera: true, media: true, pesante: true, scudi: true }, armi: "Armi semplici e da guerra", strumenti: "" },
+  denari: { mr: 0, ma: 0, me: 0, mo: 0, mp: 0 },
+  sezioniAperte: { incantesimi: true, aspetto: false, diario: true },
+  controlliIgnorati: [],
+  mappaMarker: { x: 50, y: 50 }
+};
+

@@ -8,7 +8,7 @@ import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI } from './ui/tema.js';
 import { styles, GLOBAL_CSS } from './ui/stili.js';
 import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, Sezione, CampoBloccato } from './ui/componenti.jsx';
 import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg } from './rules/scheda.js';
-import { FLYORA_JSON, ESEMPIO_GNOMO } from './data/esempi.js';
+import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from './data/condizioni.js';
 import { BESTIE, FAMIGLI, EVOCAZIONI, bestieDisponibili, limitiFormaSelvatica } from './data/bestiario.js';
@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.23';
+const APP_VERSION = '4.0.24';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1781,77 +1781,22 @@ function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
 
-const PERSONAGGIO_PREDEFINITO = {
-  nome: "Elevorn DeVille",
-  sesso: "",
-  background: "Eremita",
-  classe: "Guerriero",
-  sottoclasse: "",
-  multiclasse: [
-    { classe: "Ranger", livello: 6 },
-    { classe: "Ladro", livello: 3 }
-  ],
-  specie: "Mezzelfo",
-  allineamento: "Neutrale",
-  versione: "2014",
-  livello: 1,
-  pe: 0,
-  ca: 21,
-  pfMax: 74,
-  pfAttuali: 74,
-  pfTemp: 0,
-  dadiVita: "7d10 + 3d8",
-  dadiVitaSpesi: 0,
-  velocita: 30,
-  taglia: "Media",
-  bonusCompetenza: 4,
-  ispirazione: false,
-  tsMorte: { successi: 0, fallimenti: 0 },
-  caratteristiche: { forza: 10, destrezza: 20, costituzione: 14, intelligenza: 10, saggezza: 14, carisma: 11 },
-  armatura: { nome: "", tipo: "media", base: 14, scudo: true, bonus: 2 },
-  condizioni: [],
-  tiriSalvezza: { forza: true, destrezza: true, costituzione: true, intelligenza: false, saggezza: false, carisma: false },
-  abilita: {
-    acrobazia: 1, addestrareAnimali: 1, arcano: 1, atletica: 2, furtivita: 1, indagare: 1, inganno: 2,
-    intimidire: 1, intrattenere: 1, intuizione: 1, medicina: 1, natura: 1, percezione: 2, persuasione: 1,
-    rapiditaDiMano: 1, religione: 1, sopravvivenza: 1, storia: 1
-  },
-  attacchi: [
-    { id: 1787725473620, nome: "Spada lunga", categoria: "Azione", bonus: 5, danno: "1d8+3", tipoDanno: "Tagliente", note: "" }
-  ],
-  incantatore: { caratteristica: "" },
-  slotIncantesimo: { "1": { totale: 0, spesi: 0 }, "2": { totale: 0, spesi: 0 }, "3": { totale: 0, spesi: 0 }, "4": { totale: 0, spesi: 0 }, "5": { totale: 0, spesi: 0 }, "6": { totale: 0, spesi: 0 }, "7": { totale: 0, spesi: 0 }, "8": { totale: 0, spesi: 0 }, "9": { totale: 0, spesi: 0 } },
-  incantesimiLista: [],
-  maxTrucchetti: 0,
-  maxIncantesimi: 0,
-  privilegi: "",
-  privilegiSottoclasse: "",
-  trattiSpecie: "",
-  talenti: "",
-  metamagie: "",
-  equipaggiamento: "",
-  inventario: [],
-  sintonia: "",
-  lingue: "Comune",
-  aspetto: "",
-  trattiCaratteriali: "",
-  diario: [],
-  note: "",
-  risorse: [{ id: "auto-recuperare-energie", nome: "Recuperare Energie", max: 1, attuali: 1, reset: "breve" }],
-  sfinimento: 0,
-  concentrazione: "",
-  resistenze: "",
-  sensi: "Scurovisione 18 m",
-  addestramento: { armature: { leggera: true, media: true, pesante: true, scudi: true }, armi: "Armi semplici e da guerra", strumenti: "" },
-  denari: { mr: 0, ma: 0, me: 0, mo: 0, mp: 0 },
-  sezioniAperte: { incantesimi: true, aspetto: false, diario: true },
-  controlliIgnorati: [],
-  mappaMarker: { x: 50, y: 50 }
-};
+function rosterPredefinito() {
+  const idVaelion = 'pg-vaelion';
+  const idFlyora = 'pg-flyora';
+  const idElevorn = 'pg-elevorn';
+  return {
+    attivo: idVaelion,
+    personaggi: {
+      [idVaelion]: { ...schedaVuota(), ...normalizeImported(VAELION_JSON) },
+      [idFlyora]: { ...schedaVuota(), ...normalizeImported(FLYORA_JSON) },
+      [idElevorn]: { ...schedaVuota(), ...normalizeImported(ELEVORN_JSON) },
+    }
+  };
+}
 
 function rosterVuoto() {
-  const id = nuovoId();
-  return { attivo: id, personaggi: { [id]: { ...schedaVuota(), ...PERSONAGGIO_PREDEFINITO } } };
+  return rosterPredefinito();
 }
 
 function unisciSchedeFG(lista) {
@@ -2026,9 +1971,8 @@ function loadState() {
   } catch {
     // dati corrotti: riparti da zero
   }
-  // Se nessun dato salvato: carica il personaggio predefinito
-  const defId = nuovoId();
-  return { attivo: defId, personaggi: { [defId]: { ...schedaVuota(), ...PERSONAGGIO_PREDEFINITO } } };
+  // Se nessun dato salvato: carica il roster predefinito con Vaelion, Flyora ed Elevorn
+  return rosterPredefinito();
 }
 
 function saveState(roster) {
@@ -4884,9 +4828,16 @@ export default function App() {
    *  caricaDaCodiceSync() e usaCodiceSyncEsistente(). Merge non distruttivo: mantiene i PG locali non presenti sul server. */
   async function caricaDaCodiceSyncPer(codice) {
     const { roster: rosterRicevuto, updatedAt } = await caricaSync(URL_STANZE, codice);
-    const caricato = { attivo: rosterRicevuto.attivo, personaggi: {} };
+    const caricato = { attivo: rosterRicevuto?.attivo || '', personaggi: {} };
     // NON normalizzare: i dati dal cloud sono già corretti
-    for (const id in (rosterRicevuto.personaggi || {})) caricato.personaggi[id] = rosterRicevuto.personaggi[id];
+    for (const id in (rosterRicevuto?.personaggi || {})) {
+      if (rosterRicevuto.personaggi[id]) caricato.personaggi[id] = rosterRicevuto.personaggi[id];
+    }
+    // Se il server non ha personaggi sotto questo codice, preserva il roster locale
+    if (Object.keys(caricato.personaggi).length === 0) {
+      setSyncCodiceStatus({ text: 'Nessun personaggio trovato nel cloud per questo codice. Mantengo i personaggi attuali.', type: 'info' });
+      return updatedAt;
+    }
     if (!caricato.attivo || !caricato.personaggi[caricato.attivo]) caricato.attivo = Object.keys(caricato.personaggi)[0] || '';
     // Assicura campi obbligatori per compatibilità
     for (const id in caricato.personaggi) {
@@ -4930,33 +4881,33 @@ export default function App() {
       if (!pg.condizioni) pg.condizioni = [];
       if (!pg.attacchi) pg.attacchi = [];
       if (!pg.incantatore) pg.incantatore = { caratteristica: '' };
-      if (!pg.incantesimiLista) pg.incantesimiLista = [];
       if (!pg.maxTrucchetti) pg.maxTrucchetti = 0;
       if (!pg.maxIncantesimi) pg.maxIncantesimi = 0;
-      if (!pg.risorse) pg.risorse = [];
-      if (!pg.addestramento) pg.addestramento = { armature: { leggera: false, media: false, pesante: false, scudi: false }, armi: '', strumenti: '' };
-      if (!pg.denari) pg.denari = { mr: 0, ma: 0, me: 0, mo: 0, mp: 0 };
-      if (!pg.sfinimento) pg.sfinimento = 0;
-      if (!pg.concentrazione) pg.concentrazione = '';
-      if (!pg.risorse) pg.risorse = [];
-      if (!pg.addestramento) pg.addestramento = { armature: { leggera: false, media: false, pesante: false, scudi: false }, armi: '', strumenti: '' };
-      if (!pg.denari) pg.denari = { mr: 0, ma: 0, me: 0, mo: 0, mp: 0 };
     }
     const conImmaginiLocali = await caricaImmaginiRoster(caricato).catch(() => caricato);
     const merged = (() => {
-      const base = rosterSyncRef.current || { attivo: '', personaggi: {} };
+      const base = (rosterSyncRef.current?.personaggi && Object.keys(rosterSyncRef.current.personaggi).length > 0)
+        ? rosterSyncRef.current
+        : rosterPredefinito();
       // Merge SEMPRE non distruttivo: unisci server + locale, server vince per conflitti (stesso ID)
       const personaggi = { ...(base.personaggi || {}) };
-      for (const [id, pg] of Object.entries(conImmaginiLocali.personaggi)) personaggi[id] = pg;
+      for (const [id, pg] of Object.entries(conImmaginiLocali.personaggi || {})) {
+        personaggi[id] = pg;
+      }
       // preserva immagini locali per i PG che arrivano senza
       for (const [id, pg] of Object.entries(personaggi)) {
         const cur = base.personaggi?.[id];
         if (cur?.ritratto && !pg.ritratto) pg.ritratto = cur.ritratto;
         if (cur?.mappaCampagna && !pg.mappaCampagna) pg.mappaCampagna = cur.mappaCampagna;
       }
-      // Mantieni l'attivo se esiste nel merged, altrimenti usa quello del server o il primo disponibile
-      let attivo = caricato.attivo || base.attivo || Object.keys(personaggi)[0] || '';
-      if (attivo && !personaggi[attivo]) attivo = Object.keys(personaggi)[0] || '';
+      if (Object.keys(personaggi).length === 0) {
+        return rosterPredefinito();
+      }
+      let attivo = (caricato.attivo && personaggi[caricato.attivo])
+        ? caricato.attivo
+        : (base.attivo && personaggi[base.attivo])
+          ? base.attivo
+          : Object.keys(personaggi)[0] || '';
       return { attivo, personaggi };
     })();
     setRoster(merged);
