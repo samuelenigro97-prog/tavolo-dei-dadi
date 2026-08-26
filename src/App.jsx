@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.31';
+const APP_VERSION = '4.0.32';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -9013,122 +9013,126 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Riga 2 — Punti Ferita (compatta, pulita e proporzionata) */}
+              {/* Riga 2 — Punti Ferita e Tiri Morte (spaziature bilanciate e linea centrale ribassata) */}
               <div className="pm-pf profilo-pf-box">
-                <div style={{ ...styles.vitalBox, gridColumn: 'span 4', padding: '10px 12px 8px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ ...styles.vitalBox, gridColumn: 'span 4', padding: '10px 12px 10px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', minHeight: 250 }}>
                   <SfondoVit>🩸</SfondoVit>
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 2 }}>
-                    <div style={{ ...styles.vitalLabel, position: 'static', margin: 0, fontSize: 12 }}>❤️ {t("vital.pf")}</div>
-                  </div>
 
-                  {/* BARRA DELLA VITA STILE VIDEOGIOCO */}
-                  {(() => {
-                    const att = Number(scheda.pfAttuali) || 0;
-                    const maxPf = Number(scheda.pfMax) || 10;
-                    const temp = Number(scheda.pfTemp) || 0;
-                    const max = Math.max(1, maxPf + temp);
-                    const percNormale = Math.max(0, Math.min(100, (att / max) * 100));
-                    const percTemp = Math.max(0, Math.min(100, (temp / max) * 100));
-                    const coloreNormale = (att / Math.max(1, maxPf)) > 0.5 ? 'linear-gradient(90deg, #2e7d32, #4caf50)' : (att / Math.max(1, maxPf)) > 0.25 ? 'linear-gradient(90deg, #f57f17, #ffb300)' : 'linear-gradient(90deg, #c62828, #e53935)';
-                    return (
-                      <div style={{ position: 'relative', width: '100%', height: 26, borderRadius: 13, background: 'rgba(0,0,0,0.7)', border: `2px solid ${C.goldDark}`, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.3)', overflow: 'hidden', margin: '3px 0', display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
-                        <div style={{ width: `${percNormale}%`, height: '100%', background: coloreNormale, transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: '0 0 10px rgba(76,175,80,0.5)', position: 'relative' }}>
-                          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)' }} />
-                        </div>
-                        {temp > 0 && (
-                          <div style={{ width: `${percTemp}%`, height: '100%', background: 'linear-gradient(90deg, #1565c0, #42a5f5)', transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)', position: 'relative' }}>
+                  {/* Sezione Superiore: Punti Ferita */}
+                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 3 }}>
+                      <div style={{ ...styles.vitalLabel, position: 'static', margin: 0, fontSize: 12 }}>❤️ {t("vital.pf")}</div>
+                    </div>
+
+                    {/* BARRA DELLA VITA STILE VIDEOGIOCO */}
+                    {(() => {
+                      const att = Number(scheda.pfAttuali) || 0;
+                      const maxPf = Number(scheda.pfMax) || 10;
+                      const temp = Number(scheda.pfTemp) || 0;
+                      const max = Math.max(1, maxPf + temp);
+                      const percNormale = Math.max(0, Math.min(100, (att / max) * 100));
+                      const percTemp = Math.max(0, Math.min(100, (temp / max) * 100));
+                      const coloreNormale = (att / Math.max(1, maxPf)) > 0.5 ? 'linear-gradient(90deg, #2e7d32, #4caf50)' : (att / Math.max(1, maxPf)) > 0.25 ? 'linear-gradient(90deg, #f57f17, #ffb300)' : 'linear-gradient(90deg, #c62828, #e53935)';
+                      return (
+                        <div style={{ position: 'relative', width: '100%', height: 26, borderRadius: 13, background: 'rgba(0,0,0,0.7)', border: `2px solid ${C.goldDark}`, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.3)', overflow: 'hidden', margin: '4px 0 3px', display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
+                          <div style={{ width: `${percNormale}%`, height: '100%', background: coloreNormale, transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: '0 0 10px rgba(76,175,80,0.5)', position: 'relative' }}>
                             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)' }} />
                           </div>
-                        )}
-                        {/* Overlay cliccabile per modificare PF attuali */}
-                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13.5, textShadow: '0 1px 3px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.8)', letterSpacing: 0.5, gap: 4 }}>
-                          <span style={{ color: '#fff', cursor: 'pointer' }}>
-                            <Editable value={scheda.pfAttuali} tipo="numero" onChange={(v) => {
-                              const danno = scheda.pfAttuali - v;
-                              aggiorna({ pfAttuali: v });
-                              if (danno > 0 && scheda.concentrazione) {
-                                setCheckConc({ danno, cd: Math.max(10, Math.floor(danno / 2)), spell: scheda.concentrazione, esito: null });
-                              }
-                            }} width={34} style={{ color: '#fff', fontWeight: 800, fontSize: 13.5, textShadow: '0 1px 3px rgba(0,0,0,0.9)', background: 'transparent', border: 'none' }} />
-                          </span>
-                          <span style={{ color: '#fff' }}>/ {maxPf}</span>
+                          {temp > 0 && (
+                            <div style={{ width: `${percTemp}%`, height: '100%', background: 'linear-gradient(90deg, #1565c0, #42a5f5)', transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)', position: 'relative' }}>
+                              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)' }} />
+                            </div>
+                          )}
+                          {/* Overlay cliccabile per modificare PF attuali */}
+                          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13.5, textShadow: '0 1px 3px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.8)', letterSpacing: 0.5, gap: 4 }}>
+                            <span style={{ color: '#fff', cursor: 'pointer' }}>
+                              <Editable value={scheda.pfAttuali} tipo="numero" onChange={(v) => {
+                                const danno = scheda.pfAttuali - v;
+                                aggiorna({ pfAttuali: v });
+                                if (danno > 0 && scheda.concentrazione) {
+                                  setCheckConc({ danno, cd: Math.max(10, Math.floor(danno / 2)), spell: scheda.concentrazione, esito: null });
+                                }
+                              }} width={34} style={{ color: '#fff', fontWeight: 800, fontSize: 13.5, textShadow: '0 1px 3px rgba(0,0,0,0.9)', background: 'transparent', border: 'none' }} />
+                            </span>
+                            <span style={{ color: '#fff' }}>/ {maxPf}</span>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })()}
+                      );
+                    })()}
 
-                  {/* PF Temporanei — centrati sotto la barra */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 2 }}>
-                    <span
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#42a5f5', background: 'rgba(66,165,245,0.12)', border: '1px solid rgba(66,165,245,0.45)', borderRadius: 10, padding: '1px 8px' }}
-                      title={t('vital.temporanei')}
-                    >
-                      🛡️ <span style={{ fontSize: 9.5, color: C.inkDim, letterSpacing: 0.4, textTransform: 'uppercase' }}>{t("vital.temporanei")}</span>
-                      <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={24} style={{ fontSize: 12, fontWeight: 'bold', color: '#42a5f5' }} />
-                    </span>
+                    {/* PF Temporanei — centrati sotto la barra */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, margin: '2px 0 4px' }}>
+                      <span
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#42a5f5', background: 'rgba(66,165,245,0.12)', border: '1px solid rgba(66,165,245,0.45)', borderRadius: 10, padding: '1px 8px' }}
+                        title={t('vital.temporanei')}
+                      >
+                        🛡️ <span style={{ fontSize: 9.5, color: C.inkDim, letterSpacing: 0.4, textTransform: 'uppercase' }}>{t("vital.temporanei")}</span>
+                        <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={24} style={{ fontSize: 12, fontWeight: 'bold', color: '#42a5f5' }} />
+                      </span>
+                    </div>
+
+                    {/* Pulsanti Rapidi Danno / Cura */}
+                    <div style={{ display: 'flex', gap: 3, margin: '3px 0 5px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                      <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 20) }); }} title={t('vital.danno')}>-20</button>
+                      <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 10) }); }} title={t('vital.danno')}>-10</button>
+                      <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 5) }); }} title={t('vital.danno')}>-5</button>
+                      <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 1) }); }} title={t('vital.danno')}>-1</button>
+                      <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 1) }); }} title={t('vital.cura')}>+1</button>
+                      <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 5) }); }} title={t('vital.cura')}>+5</button>
+                      <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 10) }); }} title={t('vital.cura')}>+10</button>
+                      <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 20) }); }} title={t('vital.cura')}>+20</button>
+                    </div>
+
+                    {/* Dadi Vita */}
+                    {(() => {
+                      const gruppiDV = gruppiDadoVita(scheda.dadiVita);
+                      const spesiMapDV = dadiVitaSpesiNormalizzati(scheda);
+                      return (
+                        <div style={{ ...styles.detail, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, flexWrap: 'wrap', marginTop: 1 }}>
+                          {gruppiDV.map((g) => (
+                            <span key={g.facce} style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                              {t('vital.dadi_vita')}{' '}
+                              <Rollable onRoll={() => tiraDadoVita(g.facce)} title={t('vital.dadi_vita_tooltip')}>
+                                <strong style={{ color: C.goldDark }}>{g.quantita}</strong>
+                              </Rollable>
+                              {' × d'}
+                              <strong style={{ color: C.goldDark }} title={t('vital.dado_tipo_tooltip')}>
+                                {g.facce}
+                              </strong>
+                              {' · '}{t('vital.spesi')}{' '}
+                              <select
+                                style={{ ...styles.inlineInput, fontSize: 10.5, padding: '1px 3px' }}
+                                value={Math.min(Math.max(0, spesiMapDV[g.facce] || 0), g.quantita)}
+                                onChange={(e) => aggiorna({ dadiVitaSpesi: { ...spesiMapDV, [g.facce]: Number(e.target.value) } })}
+                                title={t('vital.spesi_tooltip')}
+                              >
+                                {Array.from({ length: g.quantita + 1 }, (_, n) => (
+                                  <option key={n} value={n}>{n}</option>
+                                ))}
+                              </select>
+                              <span style={{ color: C.inkDim }}>/ {g.quantita}</span>
+                              <button
+                                style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 10.5, color: C.green, borderColor: C.green }}
+                                title={t('vital.usa_tooltip')}
+                                disabled={(spesiMapDV[g.facce] || 0) >= g.quantita}
+                                onClick={() => tiraDadoVita(g.facce)}
+                              >
+                                🎲 {t('vital.usa')}
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      );
+                    })()}
                   </div>
 
-                  {/* Pulsanti Rapidi Danno / Cura */}
-                  <div style={{ display: 'flex', gap: 3, margin: '2px 0 3px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                    <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 20) }); }} title={t('vital.danno')}>-20</button>
-                    <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 10) }); }} title={t('vital.danno')}>-10</button>
-                    <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 5) }); }} title={t('vital.danno')}>-5</button>
-                    <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 1) }); }} title={t('vital.danno')}>-1</button>
-                    <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 1) }); }} title={t('vital.cura')}>+1</button>
-                    <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 5) }); }} title={t('vital.cura')}>+5</button>
-                    <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 10) }); }} title={t('vital.cura')}>+10</button>
-                    <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 20) }); }} title={t('vital.cura')}>+20</button>
-                  </div>
+                  {/* Linea divisoria ribassata e centrata tra Punti Ferita e Tiri Morte */}
+                  <div style={{ width: '100%', height: 1, background: C.border, margin: '8px 0 6px', opacity: 0.65 }} />
 
-                  {/* Dadi Vita */}
-                  {(() => {
-                    const gruppiDV = gruppiDadoVita(scheda.dadiVita);
-                    const spesiMapDV = dadiVitaSpesiNormalizzati(scheda);
-                    return (
-                      <div style={{ ...styles.detail, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, flexWrap: 'wrap' }}>
-                        {gruppiDV.map((g) => (
-                          <span key={g.facce} style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-                            {t('vital.dadi_vita')}{' '}
-                            <Rollable onRoll={() => tiraDadoVita(g.facce)} title={t('vital.dadi_vita_tooltip')}>
-                              <strong style={{ color: C.goldDark }}>{g.quantita}</strong>
-                            </Rollable>
-                            {' × d'}
-                            <strong style={{ color: C.goldDark }} title={t('vital.dado_tipo_tooltip')}>
-                              {g.facce}
-                            </strong>
-                            {' · '}{t('vital.spesi')}{' '}
-                            <select
-                              style={{ ...styles.inlineInput, fontSize: 10.5, padding: '1px 3px' }}
-                              value={Math.min(Math.max(0, spesiMapDV[g.facce] || 0), g.quantita)}
-                              onChange={(e) => aggiorna({ dadiVitaSpesi: { ...spesiMapDV, [g.facce]: Number(e.target.value) } })}
-                              title={t('vital.spesi_tooltip')}
-                            >
-                              {Array.from({ length: g.quantita + 1 }, (_, n) => (
-                                <option key={n} value={n}>{n}</option>
-                              ))}
-                            </select>
-                            <span style={{ color: C.inkDim }}>/ {g.quantita}</span>
-                            <button
-                              style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 10.5, color: C.green, borderColor: C.green }}
-                              title={t('vital.usa_tooltip')}
-                              disabled={(spesiMapDV[g.facce] || 0) >= g.quantita}
-                              onClick={() => tiraDadoVita(g.facce)}
-                            >
-                              🎲 {t('vital.usa')}
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-                    );
-                  })()}
-
-                  {/* Linea divisoria sotto Dadi Vita */}
-                  <div style={{ width: '100%', height: 1, background: C.border, margin: '6px 0 4px', opacity: 0.7 }} />
-
-                  {/* Tiri Salvezza Morte: perfettamente centrato tra la linea e il bordo inferiore */}
-                  <div style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', paddingBottom: 2 }}>
-                    <div style={{ fontSize: 10.5, fontWeight: 700, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
-                      💀 {lingua === 'en' ? 'Death Saving Throws' : 'Tiri Salvezza Morte'}
+                  {/* Sezione Inferiore: Tiri Morte / Death Saves */}
+                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', paddingBottom: 2 }}>
+                    <div style={{ ...styles.vitalLabel, position: 'static', margin: '0 0 6px 0', fontSize: 12 }}>
+                      💀 {lingua === 'en' ? 'Death Saves' : 'Tiri Morte'}
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
