@@ -1,6 +1,6 @@
 // Calcoli 5e derivati dalla scheda: CA da equipaggiamento, bonus abilità e TS.
 // Funzioni pure (nessun React, nessuno stato): testabili in isolamento.
-import { modificatore } from './dadi.js';
+import { modificatore, bonusCompetenzaDaLivello } from './dadi.js';
 import { ABILITA } from '../data/caratteristiche.js';
 
 export function formattaNomePg(nome) {
@@ -86,19 +86,25 @@ export function competenteInArmatura(scheda, tipo) {
 export function bonusAbilita(scheda, abilita) {
   const def = ABILITA.find((a) => a.key === abilita);
   if (!def) return 0;
-  const livComp = scheda.abilita[abilita] || 0;
+  const livComp = (scheda?.abilita && scheda.abilita[abilita]) || 0;
   // 0 = niente, 1 = competenza (cerchietto ●), 2 = competenza di classe/razza
   // (stellina ★, solo un marcatore d'origine: vale ×1 come la 1), 3 = Maestria
   // /Expertise (✦, doppia competenza — Ladro e Bardo): vale ×2.
   const moltiplicatore = livComp >= 3 ? 2 : livComp >= 1 ? 1 : 0;
-  return modificatore(punteggioCaratteristica(scheda, def.car)) + moltiplicatore * scheda.bonusCompetenza;
+  const bonusComp = Number.isFinite(Number(scheda?.bonusCompetenza))
+    ? Number(scheda.bonusCompetenza)
+    : bonusCompetenzaDaLivello(scheda?.livello || 1);
+  return modificatore(punteggioCaratteristica(scheda, def.car)) + moltiplicatore * bonusComp;
 }
 
 /** Bonus di un tiro salvezza: mod caratteristica + eventuale competenza. */
 export function bonusTiroSalvezza(scheda, car) {
+  const bonusComp = Number.isFinite(Number(scheda?.bonusCompetenza))
+    ? Number(scheda.bonusCompetenza)
+    : bonusCompetenzaDaLivello(scheda?.livello || 1);
   return (
     modificatore(punteggioCaratteristica(scheda, car)) +
-    (scheda.tiriSalvezza[car] ? scheda.bonusCompetenza : 0) +
+    (scheda?.tiriSalvezza?.[car] ? bonusComp : 0) +
     bonusTiriSalvezzaOggetti(scheda)
   );
 }
