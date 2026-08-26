@@ -366,6 +366,10 @@ export function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni,
       const desc = s.slice(idx + 1).trim();
       if (desc) return { nome, desc };
     }
+    const matchParen = s.match(/^([^(]+)\s*\(([^)]+)\)$/);
+    if (matchParen && matchParen[1].trim().length <= 35) {
+      return { nome: matchParen[1].trim(), desc: matchParen[2].trim() };
+    }
     return { nome: s, desc: '' };
   };
 
