@@ -670,7 +670,10 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     width: 100% !important;
   }
   /* 5. Altri quadretti vitali (CA, Riposo, Velocità, Iniziativa, Bonus Comp, Sfinimento, Visione, Condizioni, ecc.) */
-  .profilo-vitali-box {
+  .profilo-vitali-box,
+  .pm-vitali-container,
+  .pm-tier-2,
+  .pm-tier-3 {
     order: 5 !important;
     width: 100% !important;
   }
