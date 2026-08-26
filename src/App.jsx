@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.21';
+const APP_VERSION = '4.0.22';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2323,6 +2323,7 @@ function ArchivioDm({ url, onChiudi, onApri }) {
   });
   const [elenco, setElenco] = useState(null);
   const [stato, setStato] = useState('');   // '' | 'carico' | messaggio d'errore
+  const [aprendoId, setAprendoId] = useState('');
   const [filtro, setFiltro] = useState('');
   const [dettagliAperti, setDettagliAperti] = useState({}); // id → scheda completa caricata, o 'carico'
   const [copieAperte, setCopieAperte] = useState({});       // chiave gruppo → mostra le copie più vecchie
@@ -2349,14 +2350,16 @@ function ArchivioDm({ url, onChiudi, onApri }) {
       onApri(giaScaricata);
       return;
     }
-    setStato('carico');
+    setAprendoId(id);
+    setStato('');
     try {
       const r = await fetch(`${base}/pg/${encodeURIComponent(id)}?key=${encodeURIComponent(chiave)}`);
       const d = await r.json();
-      if (!r.ok) { setStato(d.error || `Errore ${r.status}`); return; }
-      setStato('');
+      if (!r.ok) { setStato(d.error || `Errore ${r.status}`); setAprendoId(''); return; }
+      setAprendoId('');
       onApri(d);
     } catch (e) {
+      setAprendoId('');
       setStato(`Connessione fallita: ${e.message}`);
     }
   };
@@ -2497,7 +2500,13 @@ function ArchivioDm({ url, onChiudi, onApri }) {
                           <button style={styles.buttonMini} onClick={() => toggleDettagli(s.id)}>
                             {dett && dett !== 'carico' ? '▲ Dettagli' : '▼ Dettagli'}
                           </button>
-                          <button style={styles.buttonMini} onClick={() => apri(s.id)}>Apri</button>
+                          <button
+                            style={{ ...styles.buttonMini, fontWeight: 600, ...(aprendoId === s.id ? { opacity: 0.7 } : {}) }}
+                            disabled={aprendoId === s.id}
+                            onClick={() => apri(s.id)}
+                          >
+                            {aprendoId === s.id ? 'Apro…' : 'Apri'}
+                          </button>
                           <button
                             style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '3px 6px' }}
                             onClick={() => eliminaCopia(s)}
@@ -3417,7 +3426,10 @@ export default function App() {
 
   function nuovoPersonaggio(dati = schedaVuota()) {
     const id = nuovoId();
-    setRoster((r) => ({ attivo: id, personaggi: { ...r.personaggi, [id]: dati } }));
+    setRoster((r) => {
+      const p = { ...(r?.personaggi || {}), [id]: dati };
+      return { attivo: id, personaggi: p };
+    });
   }
 
   /** Genera un personaggio coerente da classe/specie/background (creazione guidata). */
@@ -5856,8 +5868,12 @@ export default function App() {
           onChiudi={() => setMostraArchivioDm(false)}
           onApri={(s) => {
             if (!s) return;
-            const unwrapped = s?.scheda && typeof s.scheda === 'object' ? s.scheda : s;
-            nuovoPersonaggio(normalizeImported(unwrapped));
+            try {
+              const unwrapped = s?.scheda && typeof s.scheda === 'object' ? s.scheda : (typeof s === 'string' ? JSON.parse(s) : s);
+              nuovoPersonaggio(normalizeImported(unwrapped));
+            } catch (e) {
+              console.error('Errore import PG:', e);
+            }
             setMostraArchivioDm(false);
             setMostraMenu(false);
           }}
