@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.26';
+const APP_VERSION = '4.0.27';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2383,8 +2383,7 @@ function ArchivioDm({ url, onChiudi, onApri }) {
     }
   };
 
-  // Espande/comprime i dettagli di una scheda SENZA importarla tra i propri
-  // personaggi: utile per controllare tutto (CA, PF, equip) a colpo d'occhio.
+  // Espande/comprime la visualizzazione della scheda in sola lettura SENZA importarla/modificarla
   const toggleDettagli = async (id) => {
     if (dettagliAperti[id]) {
       setDettagliAperti((d) => { const n = { ...d }; delete n[id]; return n; });
@@ -2393,11 +2392,64 @@ function ArchivioDm({ url, onChiudi, onApri }) {
     setDettagliAperti((d) => ({ ...d, [id]: 'carico' }));
     try {
       const r = await fetch(`${base}/pg/${encodeURIComponent(id)}?key=${encodeURIComponent(chiave)}`);
+      if (!r.ok) {
+        let errTxt = `Errore ${r.status}`;
+        try { const d = await r.json(); if (d?.error) errTxt = d.error; } catch {}
+        setDettagliAperti((d2) => ({ ...d2, [id]: { errore: errTxt } }));
+        return;
+      }
       const d = await r.json();
-      if (!r.ok) { setDettagliAperti((d2) => ({ ...d2, [id]: { errore: d.error || `Errore ${r.status}` } })); return; }
       setDettagliAperti((d2) => ({ ...d2, [id]: d }));
     } catch (e) {
       setDettagliAperti((d2) => ({ ...d2, [id]: { errore: `Connessione fallita: ${e.message}` } }));
+    }
+  };
+
+  // Esporta e scarica il file JSON della scheda direttamente dall'archivio
+  const esportaScheda = async (s) => {
+    let raw = dettagliAperti[s.id];
+    if (!raw || raw === 'carico' || raw.errore) {
+      setStato('carico');
+      try {
+        const r = await fetch(`${base}/pg/${encodeURIComponent(s.id)}?key=${encodeURIComponent(chiave)}`);
+        if (!r.ok) {
+          let err = `Errore ${r.status}`;
+          try { const j = await r.json(); if (j?.error) err = j.error; } catch {}
+          setStato(`Impossibile scaricare la scheda: ${err}`);
+          return;
+        }
+        raw = await r.json();
+        setDettagliAperti((d2) => ({ ...d2, [s.id]: raw }));
+        setStato('');
+      } catch (e) {
+        setStato(`Connessione fallita: ${e.message}`);
+        return;
+      }
+    }
+    try {
+      let obj = raw;
+      if (typeof obj === 'string') {
+        try { obj = JSON.parse(obj); } catch {}
+      }
+      const unwrapped = (obj && typeof obj === 'object' && obj.scheda && typeof obj.scheda === 'object')
+        ? obj.scheda
+        : obj;
+      const normalized = normalizeImported(unwrapped);
+      const jsonStr = JSON.stringify(normalized, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const dlUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = dlUrl;
+      const nomeClean = (formattaNomePg(normalized.nome || s.nome) || 'personaggio').replace(/[^a-zA-Z0-9_-]/g, '_');
+      a.download = `${nomeClean}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(dlUrl);
+      setStato(`Scheda "${formattaNomePg(normalized.nome || s.nome)}" esportata con successo!`);
+      setTimeout(() => setStato(''), 4000);
+    } catch (e) {
+      setStato(`Errore esportazione: ${e.message}`);
     }
   };
 
@@ -2458,13 +2510,13 @@ function ArchivioDm({ url, onChiudi, onApri }) {
       style={{ position: 'fixed', inset: 0, zIndex: 1002, padding: 16, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       onClick={(e) => { if (e.target === e.currentTarget) onChiudi(); }}
     >
-      <div style={{ ...styles.panel, maxWidth: 620, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
+      <div style={{ ...styles.panel, maxWidth: 640, width: '100%', maxHeight: '88vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
           <strong style={{ color: C.goldDark, fontSize: 17 }}>🗂 Archivio DM</strong>
           <button style={styles.buttonMini} onClick={onChiudi}>✕</button>
         </div>
         <p style={{ ...styles.detail, marginTop: 0 }}>
-          Le schede che gli utenti hanno creato (senza immagini). Visibili solo con la chiave DM.
+          Le schede salvate dagli utenti. Clicca su <strong>Apri</strong> per visualizzarla in sola lettura, oppure su <strong>Esporta</strong> per scaricare il file JSON.
         </p>
         <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
           <input
@@ -2480,7 +2532,7 @@ function ArchivioDm({ url, onChiudi, onApri }) {
           </button>
         </div>
         {stato && stato !== 'carico' && (
-          <div style={{ padding: 10, borderRadius: 8, background: 'rgba(200,60,60,0.12)', border: `1px solid ${C.red}`, marginBottom: 12, fontSize: 13 }}>{stato}</div>
+          <div style={{ padding: 10, borderRadius: 8, background: stato.includes('successo') ? 'rgba(46,157,77,0.15)' : 'rgba(200,60,60,0.12)', border: `1px solid ${stato.includes('successo') ? '#2e9d4d' : C.red}`, marginBottom: 12, fontSize: 13, color: stato.includes('successo') ? '#2e9d4d' : C.red, fontWeight: 600 }}>{stato}</div>
         )}
         {elenco && (
           <>
@@ -2500,31 +2552,45 @@ function ArchivioDm({ url, onChiudi, onApri }) {
               {gruppi.map((g) => {
                 const riga = (s, vecchia) => {
                   const dett = dettagliAperti[s.id];
-                  const completa = dett && dett !== 'carico' && !dett.errore ? dett : null;
+                  const rawObj = dett && dett !== 'carico' && !dett.errore ? dett : null;
+                  const completa = rawObj ? normalizeImported(rawObj?.scheda || rawObj) : null;
                   const ca = completa ? caTotale(completa) : null;
+                  const isAperto = !!completa;
                   return (
-                    <div key={s.id} style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 10px', ...(vecchia ? { marginLeft: 16, opacity: 0.75, borderStyle: 'dashed' } : {}) }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ fontWeight: 600, fontSize: 14 }}>{formattaNomePg(s.nome) || '(senza nome)'}</div>
-                          <div style={{ ...styles.detail, fontSize: 11 }}>
+                    <div key={s.id} style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', ...(vecchia ? { marginLeft: 16, opacity: 0.75, borderStyle: 'dashed' } : {}) }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+                        <div style={{ minWidth: 0, flex: '1 1 180px' }}>
+                          <div style={{ fontWeight: 700, fontSize: 14, color: C.ink }}>{formattaNomePg(s.nome) || '(senza nome)'}</div>
+                          <div style={{ ...styles.detail, fontSize: 11, marginTop: 1 }}>
                             {[s.classe, s.sottoclasse, s.specie, s.livello ? `Liv. ${s.livello}` : ''].filter(Boolean).join(' · ')}
                             {s.pfMax ? ` · PF ${s.pfAttuali ?? '?'}/${s.pfMax}` : ''}
                           </div>
-                          <div style={{ ...styles.detail, fontSize: 10, opacity: 0.75 }}>
+                          <div style={{ ...styles.detail, fontSize: 10, opacity: 0.75, marginTop: 2 }}>
                             {quando(s.aggiornato)} · {s.dispositivo || '?'}
                           </div>
                         </div>
-                        <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
-                          <button style={styles.buttonMini} onClick={() => toggleDettagli(s.id)}>
-                            {dett && dett !== 'carico' ? '▲ Dettagli' : '▼ Dettagli'}
+                        <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center', flexWrap: 'wrap' }}>
+                          <button
+                            style={{ ...styles.buttonMini, fontWeight: 700, borderColor: C.goldDark, color: C.goldDark, minWidth: 64 }}
+                            onClick={() => toggleDettagli(s.id)}
+                            title="Visualizza la scheda completa in sola lettura (senza modificarla)"
+                          >
+                            {isAperto ? '▲ Chiudi' : '👁️ Apri'}
                           </button>
                           <button
-                            style={{ ...styles.buttonMini, fontWeight: 600, ...(aprendoId === s.id ? { opacity: 0.7 } : {}) }}
+                            style={{ ...styles.buttonMini, fontWeight: 600, background: '#2e9d4d', color: '#fff', borderColor: '#2e9d4d' }}
+                            onClick={() => esportaScheda(s)}
+                            title="Esporta e scarica il file JSON di questo personaggio"
+                          >
+                            ⬇️ Esporta
+                          </button>
+                          <button
+                            style={{ ...styles.buttonMini, fontWeight: 500 }}
                             disabled={aprendoId === s.id}
                             onClick={() => apri(s.id)}
+                            title="Carica questo personaggio nella tua scheda per poterlo modificare"
                           >
-                            {aprendoId === s.id ? 'Apro…' : 'Apri'}
+                            {aprendoId === s.id ? 'Importo…' : '📥 Importa'}
                           </button>
                           <button
                             style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '3px 6px' }}
@@ -2535,18 +2601,101 @@ function ArchivioDm({ url, onChiudi, onApri }) {
                           </button>
                         </div>
                       </div>
-                      {dett === 'carico' && <div style={{ ...styles.detail, fontSize: 12, marginTop: 6 }}>Caricamento…</div>}
-                      {dett && dett.errore && <div style={{ ...styles.detail, fontSize: 12, marginTop: 6, color: C.red }}>{dett.errore}</div>}
+                      {dett === 'carico' && <div style={{ ...styles.detail, fontSize: 12, marginTop: 8 }}>Caricamento scheda in corso…</div>}
+                      {dett && dett.errore && <div style={{ ...styles.detail, fontSize: 12, marginTop: 8, color: C.red }}>{dett.errore}</div>}
                       {completa && (
-                        <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px dashed ${C.border}`, fontSize: 12, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 6 }}>
-                          <div><strong>CA</strong> {ca ?? '—'}</div>
-                          <div><strong>Background</strong> {completa.background || '—'}</div>
-                          <div><strong>Allineamento</strong> {completa.allineamento || '—'}</div>
-                          <div><strong>Armi</strong> {(completa.attacchi || []).length}</div>
-                          <div><strong>Incantesimi</strong> {(completa.incantesimiLista || []).length}</div>
-                          <div><strong>Inventario</strong> {(completa.inventario || []).length} ogg.</div>
-                          <div><strong>Talenti</strong> {(completa.talenti || '').split('\n').filter(Boolean).length}</div>
-                          <div><strong>Sintonia</strong> {(Array.isArray(completa.sintonia) ? completa.sintonia.length : 0)}/3</div>
+                        <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.border}`, fontSize: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                          {/* Banner sola lettura */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6, background: C.panelLight, padding: '6px 10px', borderRadius: 6 }}>
+                            <div>
+                              <strong style={{ fontSize: 12, color: C.goldDark }}>👁️ Visualizzazione scheda (Sola lettura)</strong>
+                              <span style={{ fontSize: 11, color: C.inkDim, marginLeft: 6 }}>Nessuna modifica ai dati</span>
+                            </div>
+                            <button style={{ ...styles.buttonMini, background: '#2e9d4d', color: '#fff', borderColor: '#2e9d4d', fontSize: 10.5, fontWeight: 700 }} onClick={() => esportaScheda(s)}>
+                              ⬇️ Scarica file JSON
+                            </button>
+                          </div>
+
+                          {/* Statistiche Vitali */}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(75px, 1fr))', gap: 6, textAlign: 'center' }}>
+                            <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
+                              <div style={{ fontSize: 9.5, color: C.inkDim, fontWeight: 700 }}>CA</div>
+                              <div style={{ fontSize: 14, fontWeight: 800, color: C.goldDark }}>{ca ?? '—'}</div>
+                            </div>
+                            <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
+                              <div style={{ fontSize: 9.5, color: C.inkDim, fontWeight: 700 }}>PF</div>
+                              <div style={{ fontSize: 14, fontWeight: 800, color: C.red }}>{completa.pfAttuali ?? '?'}/{completa.pfMax ?? '?'}</div>
+                            </div>
+                            <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
+                              <div style={{ fontSize: 9.5, color: C.inkDim, fontWeight: 700 }}>VELOCITÀ</div>
+                              <div style={{ fontSize: 13, fontWeight: 700 }}>{completa.velocita} m</div>
+                            </div>
+                            <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
+                              <div style={{ fontSize: 9.5, color: C.inkDim, fontWeight: 700 }}>BONUS COMP.</div>
+                              <div style={{ fontSize: 13, fontWeight: 700 }}>{conSegno(completa.bonusCompetenza || 2)}</div>
+                            </div>
+                            <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
+                              <div style={{ fontSize: 9.5, color: C.inkDim, fontWeight: 700 }}>INIZIATIVA</div>
+                              <div style={{ fontSize: 13, fontWeight: 700 }}>{conSegno(modificatore(punteggioCaratteristica(completa, 'destrezza')))}</div>
+                            </div>
+                          </div>
+
+                          {/* 6 Caratteristiche */}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 4, textAlign: 'center' }}>
+                            {[
+                              ['FOR', 'forza'],
+                              ['DES', 'destrezza'],
+                              ['COS', 'costituzione'],
+                              ['INT', 'intelligenza'],
+                              ['SAG', 'saggezza'],
+                              ['CAR', 'carisma'],
+                            ].map(([sigla, key]) => {
+                              const score = punteggioCaratteristica(completa, key);
+                              const mod = modificatore(score);
+                              const hasTs = !!completa.tiriSalvezza?.[key];
+                              return (
+                                <div key={sigla} style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 2px' }}>
+                                  <div style={{ fontSize: 9.5, fontWeight: 700, color: C.inkDim }}>{sigla}</div>
+                                  <div style={{ fontSize: 13, fontWeight: 800 }}>{conSegno(mod)}</div>
+                                  <div style={{ fontSize: 9, color: C.inkDim }}>{score}</div>
+                                  <div style={{ fontSize: 8.5, color: hasTs ? '#2e9d4d' : C.inkDim, fontWeight: hasTs ? 700 : 400 }}>
+                                    {hasTs ? '🛡️ TS' : 'TS —'}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* Dettagli sintetici: Attacchi, Incantesimi, Inventario, Note */}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 5, background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '8px 10px', fontSize: 11.5 }}>
+                            {completa.attacchi && completa.attacchi.length > 0 && (
+                              <div>
+                                <strong>⚔️ Attacchi ({completa.attacchi.length}):</strong>{' '}
+                                {completa.attacchi.map((a) => `${a.nome || 'Attacco'} (${a.danno || '—'})`).join(', ')}
+                              </div>
+                            )}
+                            {completa.incantesimiLista && completa.incantesimiLista.length > 0 && (
+                              <div>
+                                <strong>✨ Incantesimi ({completa.incantesimiLista.length}):</strong>{' '}
+                                {completa.incantesimiLista.slice(0, 10).map((inc) => inc.nome).join(', ')}
+                                {completa.incantesimiLista.length > 10 ? ` + altri ${completa.incantesimiLista.length - 10}...` : ''}
+                              </div>
+                            )}
+                            {completa.inventario && completa.inventario.length > 0 && (
+                              <div>
+                                <strong>🎒 Inventario ({completa.inventario.length} ogg.):</strong>{' '}
+                                {completa.inventario.slice(0, 8).map((it) => it.nome).join(', ')}
+                                {completa.inventario.length > 8 ? ` + altri ${completa.inventario.length - 8}...` : ''}
+                              </div>
+                            )}
+                            {completa.background && <div><strong>📜 Background:</strong> {completa.background}</div>}
+                            {completa.talenti && (
+                              <div>
+                                <strong>🌟 Talenti:</strong>{' '}
+                                {typeof completa.talenti === 'string' ? completa.talenti : (Array.isArray(completa.talenti) ? completa.talenti.map(t => t?.nome || t).join(', ') : '—')}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>

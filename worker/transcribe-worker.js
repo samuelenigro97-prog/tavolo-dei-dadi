@@ -397,13 +397,22 @@ async function gestisciArchivio(request, env, headers, percorso) {
   }
 
   if (request.method === 'GET' && id) {
-    const testo = await env.SCHEDE.get(id);
+    let testo = await env.SCHEDE.get(id);
+    if (testo == null && id.includes('%')) {
+      try { testo = await env.SCHEDE.get(decodeURIComponent(id)); } catch {}
+    }
+    if (testo == null && !id.startsWith('pg:')) {
+      testo = await env.SCHEDE.get(`pg:${id}`);
+    }
     if (testo == null) return new Response(JSON.stringify({ error: 'Scheda non trovata' }), { status: 404, headers });
     return new Response(testo, { headers });
   }
 
   if (request.method === 'DELETE' && id) {
     await env.SCHEDE.delete(id);
+    if (id.includes('%')) {
+      try { await env.SCHEDE.delete(decodeURIComponent(id)); } catch {}
+    }
     return new Response(JSON.stringify({ ok: true }), { headers });
   }
 
