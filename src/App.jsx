@@ -8860,9 +8860,11 @@ export default function App() {
               </div>
               </div>{/* fine pm-tier-1 (Anagrafica + Punti Ferita) */}
 
-              {/* Tier 2: Difesa e mobilità (CA, Riposo, Comp, Iniziativa, Velocità, Sfinimento) */}
-              <div className="pm-tier-2 profilo-vitali-box">
-                <div className="vitali pm-gruppo">
+              {/* Gruppo Vitali: Difesa, mobilità, riposo, visione, resistenze, condizioni */}
+              <div className="pm-vitali-container profilo-vitali-box" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {/* Tier 2: Difesa e mobilità (CA, Riposo, Comp, Iniziativa, Velocità, Sfinimento) */}
+                <div className="pm-tier-2">
+                  <div className="vitali pm-gruppo">
             <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
               <SfondoVit>🛡️</SfondoVit>
               <div style={styles.vitalLabel}>{t("vital.ca")}</div>
@@ -9075,6 +9077,7 @@ export default function App() {
                   </div>
                 </div>
               </div>{/* fine pm-tier-3 */}
+              </div>{/* fine pm-vitali-container */}
             </div>{/* fine profilo-main */}
           <div className="profilo-caratteristiche profilo-caratteristiche-box">
             {(() => {
