@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.36';
+const APP_VERSION = '4.0.37';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2368,12 +2368,13 @@ function ArchivioDm({ url, onChiudi, onApri, onApriSolaLettura }) {
   };
 
   const apriInSolaLettura = async (s) => {
-    let raw = dettagliAperti[s.id];
+    const id = (s && typeof s === 'object') ? s.id : s;
+    let raw = dettagliAperti[id];
     if (!raw || raw === 'carico' || raw.errore) {
-      setAprendoId(s.id);
+      setAprendoId(id);
       setStato('carico');
       try {
-        const r = await fetch(`${base}/pg/${encodeURIComponent(s.id)}?key=${encodeURIComponent(chiave)}`);
+        const r = await fetch(`${base}/pg/${encodeURIComponent(id)}?key=${encodeURIComponent(chiave)}`);
         if (!r.ok) {
           let errTxt = `Errore ${r.status}`;
           try { const d = await r.json(); if (d?.error) errTxt = d.error; } catch {}
@@ -2382,7 +2383,7 @@ function ArchivioDm({ url, onChiudi, onApri, onApriSolaLettura }) {
           return;
         }
         raw = await r.json();
-        setDettagliAperti((d2) => ({ ...d2, [s.id]: raw }));
+        setDettagliAperti((d2) => ({ ...d2, [id]: raw }));
         setAprendoId('');
         setStato('');
       } catch (e) {
@@ -8986,7 +8987,13 @@ export default function App() {
               <div className="pm-anagrafica">
                 {/* Nome PG & Selettore Personaggio con versione D&D nello sfondo */}
                 <div className="profilo-nome-box" style={{ position: 'relative', width: '100%', marginBottom: 6 }}>
-                  {rinominando ? (
+                  {isSolaLettura ? (
+                    <div style={{ position: 'relative', width: '100%', display: 'flex', alignItems: 'center', borderRadius: 8, border: `1.5px solid ${C.goldDark}`, height: 38, background: 'rgba(0,0,0,0.03)', padding: '4px 60px 4px 12px', boxSizing: 'border-box' }}>
+                      <span style={{ fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        🔒 {formattaNomePg(scheda.nome) || t('menu.senza_nome')}
+                      </span>
+                    </div>
+                  ) : rinominando ? (
                     <input
                       autoFocus
                       style={{ ...styles.inlineInput, width: '100%', fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', height: 38, padding: '4px 60px 4px 12px', border: `1.5px solid ${C.goldDark}`, borderRadius: 8, boxSizing: 'border-box' }}
@@ -11624,9 +11631,9 @@ export default function App() {
               {(() => {
                 // Oggetti magici sintonizzati: massimo 3 (regola 5e) → 3 slot compilabili.
                 const arr = Array.isArray(scheda.sintonia) ? scheda.sintonia : (scheda.sintonia ? [scheda.sintonia] : []);
-                const slots = [arr[0] || '', arr[1] || '', arr[2] || ''];
+                const slots = [String(arr[0] || ''), String(arr[1] || ''), String(arr[2] || '')];
                 const setSlot = (i, v) => { const n = [...slots]; n[i] = v; aggiorna({ sintonia: n }); };
-                const usati = slots.filter((x) => x.trim()).length;
+                const usati = slots.filter((x) => String(x || '').trim()).length;
                 return (
                   // I due pannelli si allungano alla stessa altezza (alignItems
                   // stretch): niente spazio morto sotto quello più corto.
