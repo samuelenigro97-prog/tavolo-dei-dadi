@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.24';
+const APP_VERSION = '4.0.25';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2367,8 +2367,14 @@ function ArchivioDm({ url, onChiudi, onApri }) {
     setStato('');
     try {
       const r = await fetch(`${base}/pg/${encodeURIComponent(id)}?key=${encodeURIComponent(chiave)}`);
+      if (!r.ok) {
+        let errTxt = `Errore ${r.status}`;
+        try { const d = await r.json(); if (d?.error) errTxt = d.error; } catch {}
+        setStato(errTxt);
+        setAprendoId('');
+        return;
+      }
       const d = await r.json();
-      if (!r.ok) { setStato(d.error || `Errore ${r.status}`); setAprendoId(''); return; }
       setAprendoId('');
       onApri(d);
     } catch (e) {
@@ -5889,8 +5895,22 @@ export default function App() {
           onApri={(s) => {
             if (!s) return;
             try {
-              const unwrapped = s?.scheda && typeof s.scheda === 'object' ? s.scheda : (typeof s === 'string' ? JSON.parse(s) : s);
-              nuovoPersonaggio(normalizeImported(unwrapped));
+              let obj = s;
+              if (typeof obj === 'string') {
+                try { obj = JSON.parse(obj); } catch {}
+              }
+              const raw = (obj && typeof obj === 'object' && obj.scheda && typeof obj.scheda === 'object')
+                ? obj.scheda
+                : obj;
+              const imported = normalizeImported(raw);
+              const id = nuovoId();
+              setRoster((r) => {
+                const base = (r?.personaggi && Object.keys(r.personaggi).length > 0) ? r.personaggi : {};
+                return {
+                  attivo: id,
+                  personaggi: { ...base, [id]: imported },
+                };
+              });
             } catch (e) {
               console.error('Errore import PG:', e);
             }
@@ -8091,7 +8111,7 @@ export default function App() {
             {/* COLONNA SINISTRA: Ritratto + Competenze + Risorse di classe */}
             <div className="profilo-col-sinistra">
               {/* Tier 1: Ritratto */}
-              <div className="ritratto-tier-1">
+              <div className="ritratto-tier-1 profilo-ritratto-box">
                 {!(scheda.sezioniAperte?.ritratto ?? true) && (
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 2 }}>
                     <button
@@ -8199,7 +8219,7 @@ export default function App() {
               </div>
 
               {/* Tier 2: Addestramento / Competenze */}
-              <div className="competenze-tier-2">
+              <div className="competenze-tier-2 profilo-competenze-box">
                 <Sezione titolo={t("sez.addestramento")} {...apertoProps('addestramento')}>
                   {/* Armature */}
                   <TendinaArmature
@@ -8298,7 +8318,7 @@ export default function App() {
               </div>
 
               {/* Tier 3: Risorse di classe */}
-              <div className="risorse-tier-3">
+              <div className="risorse-tier-3 profilo-risorse-box">
                 <Sezione titolo={t("sez.risorse")} {...apertoProps('risorse')}>
                   {scheda.risorse.length === 0 && (
                     <p style={{ ...styles.detail, marginTop: 0, fontSize: 11 }}>
@@ -8380,7 +8400,7 @@ export default function App() {
                 {/* Riga 1 — Anagrafica (con Nome PG in cima) */}
               <div className="pm-anagrafica">
                 {/* Nome PG & Selettore Personaggio con versione D&D nello sfondo */}
-                <div style={{ position: 'relative', width: '100%', marginBottom: 6 }}>
+                <div className="profilo-nome-box" style={{ position: 'relative', width: '100%', marginBottom: 6 }}>
                   {rinominando ? (
                     <input
                       autoFocus
@@ -8442,7 +8462,8 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px 10px', alignItems: 'end' }}>
+                <div className="profilo-anagrafica-campi" style={{ width: '100%' }}>
+                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px 10px', alignItems: 'end' }}>
                 <CampoModulo label={t("profilo.sesso")}>
                   <select
                     value={scheda.sesso || ''}
@@ -8646,10 +8667,11 @@ export default function App() {
               </div>
             );
           })()}
+                </div>
               </div>
 
               {/* Riga 2 — Punti Ferita (compatta, pulita e proporzionata) */}
-              <div className="pm-pf">
+              <div className="pm-pf profilo-pf-box">
                 <div style={{ ...styles.vitalBox, gridColumn: 'span 4', padding: '10px 12px 8px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center' }}>
                   <SfondoVit>🩸</SfondoVit>
                   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 2 }}>
@@ -8839,7 +8861,7 @@ export default function App() {
               </div>{/* fine pm-tier-1 (Anagrafica + Punti Ferita) */}
 
               {/* Tier 2: Difesa e mobilità (CA, Riposo, Comp, Iniziativa, Velocità, Sfinimento) */}
-              <div className="pm-tier-2">
+              <div className="pm-tier-2 profilo-vitali-box">
                 <div className="vitali pm-gruppo">
             <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
               <SfondoVit>🛡️</SfondoVit>
@@ -9054,7 +9076,7 @@ export default function App() {
                 </div>
               </div>{/* fine pm-tier-3 */}
             </div>{/* fine profilo-main */}
-          <div className="profilo-caratteristiche">
+          <div className="profilo-caratteristiche profilo-caratteristiche-box">
             {(() => {
               const blocco = (key) => {
               const punteggioEffettivo = punteggioCaratteristica(scheda, key);

@@ -628,13 +628,75 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     row-gap: 8px;
   }
 }
-@media (max-width: 659px) {
-  /* Mobile molto stretto: impila in ordine logico Sinistra, Centro, Caratteristiche */
-  .profilo-griglia { display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
-  .profilo-col-sinistra { order: 1; width: 100%; }
-  .profilo-main { order: 2; width: 100%; }
-  .profilo-caratteristiche { order: 3; width: 100%; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-  .profilo-caratteristiche > *, .car-coppia, .car-coppia > * { width: 100%; box-sizing: border-box; }
+@media (max-width: 780px) {
+  /* Layout Mobile: ordine esatto richiesto (Nome -> Immagine -> Sesso/Razza/Taglia -> PF -> Quadretti CA/Riposo -> Caratteristiche -> Competenze -> Risorse) */
+  .profilo-griglia {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  .profilo-col-sinistra {
+    display: contents !important;
+  }
+  .profilo-main {
+    display: contents !important;
+  }
+  .pm-tier-1 {
+    display: contents !important;
+  }
+  .pm-anagrafica {
+    display: contents !important;
+  }
+
+  /* 1. Nome del PG (con selettore) */
+  .profilo-nome-box {
+    order: 1 !important;
+    width: 100% !important;
+  }
+  /* 2. Immagine / Ritratto sotto il nome */
+  .profilo-ritratto-box {
+    order: 2 !important;
+    width: 100% !important;
+  }
+  /* 3. Sezione Anagrafica (Sesso, Razza/Specie, Taglia, Allineamento, Background, Classe, Sottoclasse, PE, Multiclasse) */
+  .profilo-anagrafica-campi {
+    order: 3 !important;
+    width: 100% !important;
+  }
+  /* 4. Sezione Punti Ferita (Barra vita, PF temp, Danni/Cura, Dadi vita, TS Morte) */
+  .profilo-pf-box {
+    order: 4 !important;
+    width: 100% !important;
+  }
+  /* 5. Altri quadretti vitali (CA, Riposo, Velocità, Iniziativa, Bonus Comp, Sfinimento, Visione, Condizioni, ecc.) */
+  .profilo-vitali-box {
+    order: 5 !important;
+    width: 100% !important;
+  }
+  /* 6. Punteggi Caratteristica (FOR, DES, COS, INT, SAG, CAR) a 2 colonne */
+  .profilo-caratteristiche-box {
+    order: 6 !important;
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  .profilo-caratteristiche-box > *, .car-coppia, .car-coppia > * {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  /* 7. Competenze (Armature, Armi, Strumenti, Lingue) */
+  .profilo-competenze-box {
+    order: 7 !important;
+    width: 100% !important;
+  }
+  /* 8. Risorse di classe */
+  .profilo-risorse-box {
+    order: 8 !important;
+    width: 100% !important;
+  }
+
   .ritratto-box { min-height: 240px; height: 240px; }
   .car-coppia { gap: 8px; }
 }
@@ -966,8 +1028,9 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .selettore-personaggio {
     flex-direction: column !important;
     align-items: stretch !important;
-    gap: 6px !important;
+    gap: 8px !important;
     width: 100% !important;
+    padding: 8px !important;
   }
   .selettore-personaggio > div:first-of-type {
     width: 100% !important;
@@ -976,23 +1039,33 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .selettore-personaggio-azioni {
     display: flex !important;
     width: 100% !important;
-    justify-content: space-between !important;
-    gap: 4px !important;
-    align-items: stretch !important;
-    flex-wrap: nowrap !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
   }
   .selettore-personaggio-azioni button {
-    flex: 1 1 0 !important;
-    min-width: 0 !important;
-    padding: 6px 0 !important;
-    font-size: 15px !important;
-    height: 34px !important;
+    flex: 0 0 36px !important;
+    width: 36px !important;
+    min-width: 36px !important;
+    max-width: 36px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    padding: 0 !important;
+    font-size: 16px !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
+    border-radius: 8px !important;
   }
   .selettore-divisore {
-    display: none !important;
+    display: inline-block !important;
+    width: 1px !important;
+    height: 22px !important;
+    margin: 0 2px !important;
+    background: var(--c-gold-dark, #b8860b) !important;
+    opacity: 0.5 !important;
   }
   .anagrafica > div:last-child > div:last-child { grid-template-columns: repeat(2, 1fr) !important; }
   /* su telefono i riquadri anagrafica e vitali passano a 2 colonne (leggibili,
