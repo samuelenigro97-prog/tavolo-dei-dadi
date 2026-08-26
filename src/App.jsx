@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.37';
+const APP_VERSION = '4.0.38';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -9054,65 +9054,70 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="profilo-anagrafica-campi" style={{ width: '100%' }}>
-                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px 10px', alignItems: 'end' }}>
-                <CampoModulo label={t("profilo.sesso")}>
-                  <select
-                    value={scheda.sesso || ''}
-                    onChange={(e) => aggiorna({ sesso: e.target.value })}
-                    title={t('profilo.sesso_tooltip')}
-                    style={{ background: 'transparent', border: 'none', color: C.ink, fontFamily: 'inherit', width: '100%', outline: 'none', cursor: 'pointer' }}
-                  >
-                    <option value="">{t('profilo.sesso_non_specificato')}</option>
-                    <option value="maschio">{t('profilo.sesso_maschio')}</option>
-                    <option value="femmina">{t('profilo.sesso_femmina')}</option>
-                    <option value="altro">{t('profilo.sesso_altro')}</option>
-                  </select>
-                </CampoModulo>
-                <CampoModulo label={versione === "2024" ? t("profilo.specie") : t("profilo.razza")}>
-                  <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} formattaOpzione={(v) => nomeSpeciePerSesso(v, scheda.sesso, lingua)} onChange={(v) => { const sp = datiSpecieDi(v); aggiorna({ specie: v, ...(sp ? { velocita: sp.velocita, sensi: sp.sensi, taglia: sp.taglia, trattiSpecie: trattiSpecieTesto(sp.tratti) } : {}), ...abilitaConSpecie(v), ...ritrattoAuto(scheda.classe, v, scheda.nome) }); }} title={t('tip.scegli_specie')} />
-                </CampoModulo>
-                <CampoModulo label={t("profilo.taglia")}>
-                  <CampoTendina value={scheda.taglia} opzioni={TAGLIE_5E} onChange={(v) => aggiorna({ taglia: v })} title={t('tip.scegli_taglia')} />
-                </CampoModulo>
-                <CampoModulo label={t("profilo.allineamento")}>
-                  <CampoTendina value={scheda.allineamento} opzioni={ALLINEAMENTI_5E} onChange={(v) => aggiorna({ allineamento: v })} title={t('tip.scegli_allineamento')} />
-                </CampoModulo>
-                <CampoModulo label={t("profilo.background")}>
-                  <CampoBloccato
-                    valore={traduciDato(scheda.background) || t('profilo.nessuno')}
-                    title={t('profilo.background_bloccato')}
-                  />
-                </CampoModulo>
-                <CampoModulo label={t("profilo.classe")}>
-                  <CampoBloccato
-                    valore={traduciDato(scheda.classe) ? `${traduciDato(scheda.classe)} ${scheda.livello || 1}` : t('profilo.nessuna')}
-                    title={t('profilo.classe_bloccata')}
-                  />
-                </CampoModulo>
-                <CampoModulo label={t("profilo.sottoclasse")}>
-                  {campoSottoclasse(scheda.classe, scheda.livello, scheda.sottoclasse, (v) => {
-                    const patch = { sottoclasse: v };
-                    const auto = privilegiSottoclasseFinoA(v, scheda.livello || 1);
-                    if (auto) patch.privilegiSottoclasse = auto;
-                    if (sottoclasseTerzoIncantatore(scheda.classe, v)) {
-                      const slot = slotDaClasseLivello(scheda.classe, scheda.livello, v);
-                      if (slot) patch.slotIncantesimo = slot;
-                    }
-                    aggiorna(patch);
-                  })}
-                </CampoModulo>
-                <CampoModulo label={t("profilo.pe")}>
-                  <Editable
-                    value={Math.max(0, Number(scheda.pe) || 0)}
-                    tipo="numero"
-                    width="100%"
-                    style={{ width: '100%', textAlign: 'left' }}
-                    title={t('profilo.pe_tooltip')}
-                    onChange={(v) => aggiorna({ pe: Math.max(0, v) })}
-                  />
-                </CampoModulo>
-              </div>
+                <div className="profilo-anagrafica-campi" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {/* Riga 1: Sesso, Specie/Razza, Taglia, Allineamento */}
+                  <div className="campi-anagrafica campi-anagrafica-riga1" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px 10px', alignItems: 'end' }}>
+                    <CampoModulo label={t("profilo.sesso")}>
+                      <select
+                        value={scheda.sesso || ''}
+                        onChange={(e) => aggiorna({ sesso: e.target.value })}
+                        title={t('profilo.sesso_tooltip')}
+                        style={{ background: 'transparent', border: 'none', color: 'inherit', fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 'inherit', width: '100%', outline: 'none', cursor: 'pointer' }}
+                      >
+                        <option value="">{t('profilo.sesso_non_specificato')}</option>
+                        <option value="maschio">{t('profilo.sesso_maschio')}</option>
+                        <option value="femmina">{t('profilo.sesso_femmina')}</option>
+                        <option value="altro">{t('profilo.sesso_altro')}</option>
+                      </select>
+                    </CampoModulo>
+                    <CampoModulo label={versione === "2024" ? t("profilo.specie") : t("profilo.razza")}>
+                      <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} formattaOpzione={(v) => nomeSpeciePerSesso(v, scheda.sesso, lingua)} onChange={(v) => { const sp = datiSpecieDi(v); aggiorna({ specie: v, ...(sp ? { velocita: sp.velocita, sensi: sp.sensi, taglia: sp.taglia, trattiSpecie: trattiSpecieTesto(sp.tratti) } : {}), ...abilitaConSpecie(v), ...ritrattoAuto(scheda.classe, v, scheda.nome) }); }} title={t('tip.scegli_specie')} />
+                    </CampoModulo>
+                    <CampoModulo label={t("profilo.taglia")}>
+                      <CampoTendina value={scheda.taglia} opzioni={TAGLIE_5E} onChange={(v) => aggiorna({ taglia: v })} title={t('tip.scegli_taglia')} />
+                    </CampoModulo>
+                    <CampoModulo label={t("profilo.allineamento")}>
+                      <CampoTendina value={scheda.allineamento} opzioni={ALLINEAMENTI_5E} onChange={(v) => aggiorna({ allineamento: v })} title={t('tip.scegli_allineamento')} />
+                    </CampoModulo>
+                  </div>
+
+                  {/* Riga 2: Background, Classe, Sottoclasse (allargata), P.E. (compatto) */}
+                  <div className="campi-anagrafica campi-anagrafica-riga2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.65fr 0.55fr', gap: '6px 10px', alignItems: 'end' }}>
+                    <CampoModulo label={t("profilo.background")}>
+                      <CampoBloccato
+                        valore={traduciDato(scheda.background) || t('profilo.nessuno')}
+                        title={t('profilo.background_bloccato')}
+                      />
+                    </CampoModulo>
+                    <CampoModulo label={t("profilo.classe")}>
+                      <CampoBloccato
+                        valore={traduciDato(scheda.classe) ? `${traduciDato(scheda.classe)} ${scheda.livello || 1}` : t('profilo.nessuna')}
+                        title={t('profilo.classe_bloccata')}
+                      />
+                    </CampoModulo>
+                    <CampoModulo label={t("profilo.sottoclasse")}>
+                      {campoSottoclasse(scheda.classe, scheda.livello, scheda.sottoclasse, (v) => {
+                        const patch = { sottoclasse: v };
+                        const auto = privilegiSottoclasseFinoA(v, scheda.livello || 1);
+                        if (auto) patch.privilegiSottoclasse = auto;
+                        if (sottoclasseTerzoIncantatore(scheda.classe, v)) {
+                          const slot = slotDaClasseLivello(scheda.classe, scheda.livello, v);
+                          if (slot) patch.slotIncantesimo = slot;
+                        }
+                        aggiorna(patch);
+                      })}
+                    </CampoModulo>
+                    <CampoModulo label={t("profilo.pe")}>
+                      <Editable
+                        value={Math.max(0, Number(scheda.pe) || 0)}
+                        tipo="numero"
+                        width="100%"
+                        style={{ width: '100%', textAlign: 'left' }}
+                        title={t('profilo.pe_tooltip')}
+                        onChange={(v) => aggiorna({ pe: Math.max(0, v) })}
+                      />
+                    </CampoModulo>
+                  </div>
           {/* Multiclasse (opzionale, non invasivo): quando vuoto è solo un
               tastino; aggiungendo classi secondarie puoi applicare competenza e
               slot incantesimo combinati (regola 5e). */}

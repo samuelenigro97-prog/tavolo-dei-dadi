@@ -291,9 +291,10 @@ export function CampoTendina({ value, opzioni, onChange, title, formattaOpzione 
         style={{
           background: 'transparent',
           border: 'none',
-          color: C.ink,
+          color: 'inherit',
           fontFamily: 'inherit',
-          fontSize: 13,
+          fontSize: 'inherit',
+          fontWeight: 'inherit',
           padding: '0 4px 0 0',
           width: '100%',
           outline: 'none',
@@ -319,7 +320,7 @@ export function CampoTendina({ value, opzioni, onChange, title, formattaOpzione 
       </select>
       {!std && value !== '' && (
         <div style={{ marginTop: 2 }}>
-          <Editable value={value} onChange={onChange} width={80} style={{ fontSize: 13, borderBottom: 'none' }} title={t('tip.valore_pers')} />
+          <Editable value={value} onChange={onChange} width={80} style={{ fontSize: 'inherit', borderBottom: 'none' }} title={t('tip.valore_pers')} />
         </div>
       )}
     </>
@@ -551,8 +552,20 @@ export function Sezione({ titolo, children, aperto = true, onToggleAperto, manig
 export function CampoBloccato({ valore, title }) {
   return (
     <div
-      style={{ fontSize: 13, color: C.inkDim, padding: '2px 0', cursor: 'default', userSelect: 'none' }}
-      title={title}
+      style={{
+        fontSize: 'inherit',
+        fontWeight: 'inherit',
+        fontFamily: 'inherit',
+        color: 'inherit',
+        padding: '0 2px',
+        cursor: 'default',
+        userSelect: 'none',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        width: '100%',
+      }}
+      title={title || (typeof valore === 'string' ? valore : undefined)}
     >
       {valore}
     </div>
