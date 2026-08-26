@@ -1100,6 +1100,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .selettore-riga-1,
   .selettore-riga-2 {
     display: flex !important;
+    flex-wrap: wrap !important;
     align-items: center !important;
     justify-content: center !important;
     gap: 6px !important;
