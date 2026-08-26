@@ -169,3 +169,33 @@ test('formattaNomePg: forza maiuscole all inizio di ogni parola e token', () => 
   assert.equal(formattaNomePg(''), '');
   assert.equal(formattaNomePg(null), '');
 });
+
+// ========================= Vaelion Leafwhisper =========================
+
+test('Vaelion: CA con Corazza Legnoferro (media 14) + DES 15 (+2) + Mantello (+1) = 17', () => {
+  const vaelion = {
+    nome: 'Vaelion (Val) Leafwhisper',
+    classe: 'Druido',
+    sottoclasse: 'Circolo del Pastore',
+    livello: 10,
+    bonusCompetenza: 4,
+    caratteristiche: { forza: 4, destrezza: 15, costituzione: 14, intelligenza: 10, saggezza: 20, carisma: 12 },
+    armatura: { nome: 'Corazza a Piastre in Legnoferro', tipo: 'media', base: 14, scudo: false, bonus: 0 },
+    tiriSalvezza: { forza: false, destrezza: false, costituzione: false, intelligenza: true, saggezza: true, carisma: false },
+    inventario: [
+      { id: 'inv-1', nome: 'Corazza a Piastre in Legnoferro', equip: true, categoria: 'Armatura' },
+      { id: 'inv-2', nome: 'Mantello della Protezione', equip: true, effettoMeccanico: 'classe_armatura_tiri_salvezza_1', richiedeSintonia: true },
+      { id: 'inv-3', nome: 'Guanti del Potere Orchesco', equip: true, effettoMeccanico: 'forza_impostata_19', richiedeSintonia: true },
+    ],
+    sintonia: ['Mantello della Protezione', 'Guanti del Potere Orchesco'],
+    addestramento: { armature: { leggera: true, media: true, pesante: false, scudi: true } },
+    abilita: { medicina: 1, natura: 2, percezione: 2, religione: 1, addestrareAnimali: 2 },
+  };
+
+  assert.equal(caTotale(vaelion), 17); // 14 + min(2,2) + 1 mantello
+  assert.equal(bonusTiroSalvezza(vaelion, 'saggezza'), 10); // +5 SAG + 4 comp + 1 mantello
+  assert.equal(punteggioCaratteristica(vaelion, 'forza'), 19); // 19 da guanti
+  assert.equal(bonusAbilita(vaelion, 'percezione'), 9); // +5 SAG + 4 comp
+  assert.equal(competenteInArmatura(vaelion, 'media'), true);
+});
+
