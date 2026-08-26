@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 
 import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, punteggioCaratteristica, formattaNomePg } from '../src/rules/scheda.js';
 import { ABILITA, CARATTERISTICHE } from '../src/data/caratteristiche.js';
+import { spiegaIncantesimo } from '../src/data/spiegazioni.js';
 
 // Scheda minima di prova: DES 16 (+3), FOR 8 (-1), bonus competenza +3.
 function schedaBase(patch = {}) {
@@ -197,5 +198,13 @@ test('Vaelion: CA con Corazza Legnoferro (media 14) + DES 15 (+2) + Mantello (+1
   assert.equal(punteggioCaratteristica(vaelion, 'forza'), 19); // 19 da guanti
   assert.equal(bonusAbilita(vaelion, 'percezione'), 9); // +5 SAG + 4 comp
   assert.equal(competenteInArmatura(vaelion, 'media'), true);
+});
+
+test('spiegaIncantesimo: funziona per tutti gli incantesimi (inclusi quelli dal database) senza ReferenceError', () => {
+  assert.ok(spiegaIncantesimo('Guida'));
+  assert.ok(spiegaIncantesimo('Arte Druidica'));
+  assert.ok(spiegaIncantesimo('Cura Ferite'));
+  assert.ok(spiegaIncantesimo('Passo Senza Tracce'));
+  assert.equal(spiegaIncantesimo('Incantesimo Non Esistente 999'), null);
 });
 
