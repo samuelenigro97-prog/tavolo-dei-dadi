@@ -45,14 +45,17 @@ Leggi l'immagine/PDF allegato (può essere Fantasy Grounds, D&D Beyond o scheda 
 
 COME LEGGERE FANTASY GROUNDS (MOLTO IMPORTANTE):
 - Nella tab SKILLS:
-  * Accanto al nome di ogni abilità c'è una STELLA a quattro punte.
-  * Se la stella è GRIGIA (spenta/vuota) → l'abilità NON È COMPETENTE: imposta il valore a 0! Non farti ingannare dal numero TOTAL o dall'icona del d20 azzurro a destra (tutte le abilità hanno il d20 per tirare).
-  * Se la stella è GIALLA/ORO/ACCESA (singola stella dorata) → COMPETENZA (imposta il valore a 1).
+  * Accanto al nome di ogni abilità c'è una STELLA a quattro punte a sinistra del nome.
+  * Se la stella è GRIGIA / TRASPARENTE / SPENTA → l'abilità NON È COMPETENTE: imposta il valore a 0!
+  * Se la stella è GIALLA / DORATA / ACCESA → COMPETENZA (imposta il valore a 1).
   * Se ci sono DUE STELLE DORATE affiancate (o stella doppia dorata) → MAESTRIA / EXPERTISE (imposta il valore a 2).
+  * ATTENZIONE: In D&D 5e un personaggio ha tipicamente solo 4-6 abilità competenti in totale. NON impostare tutte le 18 abilità a 1! L'icona del d20 azzurro a destra è solo il tasto per tirare e non indica competenza.
 - Nella tab MAIN:
-  * In SAVES (Tiri Salvezza): solo le caratteristiche con la stella dorata accesa hanno competenza (tiriSalvezza: true). Se la stella è grigia/spenta, tiriSalvezza è false.
+  * In SAVES (Tiri Salvezza): solo le caratteristiche con la stella dorata accesa hanno competenza (tiriSalvezza: true). In D&D un personaggio ha solo i 2 TS della classe iniziale (es. Guerriero: Forza e Costituzione). Se la stella è grigia/spenta, imposta false.
   * In SENSES: "Darkvision 60" → "Scurovisione 18 m".
   * In CLASS & LEVEL: se multiclasse (es. "Fighter 1 / Ranger 6 / Rogue 3"), classe="Guerriero", livello=1, e multiclasse=[{"classe":"Ranger","livello":6},{"classe":"Ladro","livello":3}].
+- Nelle tab ABILITIES / FEATS / TRAITS / POWERS:
+  * Estrai tutti i privilegi di classe in "privilegi", i tratti razziali in "trattiSpecie", i talenti in "talenti", e le risorse con utilizzi limitati in "risorse".
 
 Rispondi SOLO con un oggetto JSON valido, senza testo prima o dopo, con questo schema:
 {

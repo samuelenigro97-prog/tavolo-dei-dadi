@@ -1563,8 +1563,15 @@ function risorseAutoClasse(classe, livello, caratteristiche, versione = '2024') 
   const L = Math.max(1, Number(livello) || 1);
   const v24 = String(versione) !== '2014';
   const modCar = (v) => Math.floor(((Number(v) || 10) - 10) / 2);
-  const mk = (nome, max, reset) => ({ id: `auto-${nome.toLowerCase().replace(/\s+/g, '-')}`, nome, attuali: Math.max(0, max), max: Math.max(0, max), reset });
-  switch (chiaveClasse(classe)) {
+  const k = chiaveClasse(classe) || 'cls';
+  const mk = (nome, max, reset) => ({
+    id: `auto-${k}-${nome.toLowerCase().replace(/\s+/g, '-')}`,
+    nome,
+    attuali: Math.max(0, max),
+    max: Math.max(0, max),
+    reset,
+  });
+  switch (k) {
     case 'barbaro':
       // Stessa progressione nelle due edizioni; nella 5.5 un uso torna anche
       // con un riposo breve, nella 5.0 solo con quello lungo.
@@ -1575,7 +1582,10 @@ function risorseAutoClasse(classe, livello, caratteristiche, versione = '2024') 
       // 5.0: Punti Ki. 5.5: Punti Focus (stesso numero, nome diverso).
       return L >= 2 ? [mk(v24 ? 'Punti Focus' : 'Punti Ki', L, 'breve')] : [];
     case 'stregone':
-      return L >= 2 ? [mk('Punti Stregoneria', L, 'lungo')] : [];
+      return [
+        ...(v24 ? [mk('Stregoneria Innata', 2, 'lungo')] : []),
+        ...(L >= 2 ? [mk('Punti Stregoneria', L, 'lungo')] : []),
+      ];
     case 'mago':
       // Recupero Arcano: un uso per riposo lungo, si spende durante un riposo breve.
       return [mk('Recupero Arcano', 1, 'lungo')];
@@ -1584,6 +1594,7 @@ function risorseAutoClasse(classe, livello, caratteristiche, versione = '2024') 
       return [
         mk('Recuperare Energie', v24 ? (L >= 10 ? 4 : L >= 4 ? 3 : 2) : 1, 'breve'),
         ...(L >= 2 ? [mk('Azione Impetuosa', L >= 17 ? 2 : 1, 'breve')] : []),
+        ...(L >= 9 ? [mk('Indomito', L >= 17 ? 3 : L >= 13 ? 2 : 1, 'lungo')] : []),
       ];
     case 'druido':
       // Forma Selvatica: 2 usi nella 5.0, 2/3/4 nella 5.5.
@@ -1599,35 +1610,54 @@ function risorseAutoClasse(classe, livello, caratteristiche, versione = '2024') 
         mk('Imposizione delle Mani', L * 5, 'lungo'),
         ...(L >= 3 ? [mk('Incanalare Divinità', v24 ? (L >= 11 ? 3 : 2) : (L >= 18 ? 2 : 1), 'lungo')] : []),
       ];
+    case 'ranger':
+      // 2024: Marchio del Cacciatore (Hunter's Mark) senza slot; 2014: Sensi Primordiali / Nemico Prescelto
+      return v24
+        ? [mk('Marchio del Cacciatore', L >= 17 ? 6 : L >= 13 ? 5 : L >= 9 ? 4 : L >= 5 ? 3 : 2, 'lungo')]
+        : (L >= 3 ? [mk('Sensi Primordiali', Math.max(1, modCar(caratteristiche?.saggezza)), 'lungo')] : []);
+    case 'ladro':
+      return L >= 20 ? [mk('Colpo di Fortuna', 1, 'breve')] : [];
+    case 'warlock':
+      return L >= 20 ? [mk('Contatto Mistico', 1, 'lungo')] : [];
     default:
       return [];
   }
 }
 
 /**
- * Completa e aggiorna le risorse automatiche senza toccare quelle aggiunte a
- * mano. Quando il massimo cresce conserva il numero di utilizzi già spesi.
+ * Completa e aggiorna le risorse automatiche per la classe principale e per
+ * tutte le classi multiclasse, senza toccare quelle aggiunte a mano.
  */
 function sincronizzaRisorseClasse(scheda, versione = '2024') {
   if (!scheda) return [];
   const correnti = Array.isArray(scheda.risorse) ? scheda.risorse : [];
-  const automatiche = risorseAutoClasse(scheda.classe, scheda.livello, scheda.caratteristiche, versione);
+  const classiDaElaborare = [
+    { classe: scheda.classe, livello: scheda.livello },
+    ...(Array.isArray(scheda.multiclasse) ? scheda.multiclasse : [])
+  ].filter((c) => c && c.classe);
+
+  const automatiche = [];
+  for (const { classe, livello } of classiDaElaborare) {
+    automatiche.push(...risorseAutoClasse(classe, livello, scheda.caratteristiche, versione));
+  }
   if (!automatiche.length) return correnti;
 
   let cambiate = false;
   let risultato = [...correnti];
 
   for (const auto of automatiche) {
-    // Riconosce corrispondenza esatta per id, nome oppure alias storici (es. "Punti Stregoneria (Metamagia)" -> "Punti Stregoneria")
-    const matchAlias = (nome) => {
-      const n = String(nome || '').toLocaleLowerCase('it').trim();
+    const matchAlias = (r) => {
+      if (!r) return false;
+      if (r.id === auto.id) return true;
+      if (typeof r.id === 'string' && r.id.startsWith('auto-') && r.nome?.toLowerCase() === auto.nome?.toLowerCase()) return true;
+      const n = String(r.nome || '').toLocaleLowerCase('it').trim();
       const a = auto.nome.toLocaleLowerCase('it').trim();
-      return n === a || n.startsWith(a) || a.startsWith(n);
+      return n === a;
     };
 
     const indici = [];
     risultato.forEach((r, idx) => {
-      if (r?.id === auto.id || matchAlias(r?.nome)) indici.push(idx);
+      if (matchAlias(r)) indici.push(idx);
     });
 
     if (indici.length === 0) {
@@ -1643,12 +1673,12 @@ function sincronizzaRisorseClasse(scheda, versione = '2024') {
     const usati = Math.max(0, vecchioMax - vecchiAttuali);
     const attuali = Math.max(0, auto.max - usati);
 
-    if (corrente.max !== auto.max || corrente.reset !== auto.reset || corrente.id !== auto.id || corrente.nome !== auto.nome || corrente.attuali !== attuali) {
+    if (corrente.max !== auto.max || corrente.reset !== auto.reset || corrente.attuali !== attuali || corrente.id !== auto.id) {
       risultato[primoIndice] = { ...corrente, ...auto, attuali };
       cambiate = true;
     }
 
-    // Se erano presenti doppioni storici con nomi simili (es. Punti Stregoneria (Metamagia)), rimuovili
+    // Se erano presenti doppioni storici con lo stesso nome, rimuovili
     if (indici.length > 1) {
       const daRimuovere = new Set(indici.slice(1));
       risultato = risultato.filter((_, idx) => !daRimuovere.has(idx));
@@ -1724,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.14';
+const APP_VERSION = '4.0.15';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2105,11 +2135,32 @@ function normalizeImported(dati) {
     abilita,
     attacchi: attacchi.length ? attacchi : base.attacchi,
     incantatore: { caratteristica: carIncantatore },
-    slotIncantesimo: slot,
+    slotIncantesimo: (() => {
+      const haSlotSalvati = Object.values(slot).some((s) => s.totale > 0);
+      if (haSlotSalvati) return slot;
+      const tutteClassi = [{ classe: traduciEN(str(dati.classe)), livello: livelloCorretto, sottoclasse: traduciEN(str(dati.sottoclasse)) }, ...multiclassePin];
+      const slotAuto = multiclassePin.length > 0
+        ? slotMulticlasse(tutteClassi)
+        : slotDaClasseLivello(traduciEN(str(dati.classe)), livelloCorretto, traduciEN(str(dati.sottoclasse)));
+      return slotAuto || slot;
+    })(),
     incantesimiLista,
-    privilegi: str(dati.privilegi),
+    privilegi: (() => {
+      const p = str(dati.privilegi).trim();
+      if (p) return p;
+      const privs = [
+        privilegiClasseFinoA(traduciEN(str(dati.classe)), livelloCorretto, versionePin),
+        ...multiclassePin.map((m) => privilegiClasseFinoA(m.classe, m.livello, versionePin)),
+      ].filter(Boolean);
+      return privs.join('\n\n');
+    })(),
     privilegiSottoclasse: str(dati.privilegiSottoclasse),
-    trattiSpecie: str(dati.trattiSpecie),
+    trattiSpecie: (() => {
+      const ts = str(dati.trattiSpecie).trim();
+      if (ts) return ts;
+      const compSp = COMPETENZE_SPECIE[traduciEN(str(dati.specie))];
+      return Array.isArray(compSp) ? compSp.join(', ') : '';
+    })(),
     talenti: str(dati.talenti),
     metamagie: str(dati.metamagie),
     equipaggiamento: str(dati.equipaggiamento),
@@ -2158,18 +2209,24 @@ function normalizeImported(dati) {
     trattiCaratteriali: str(dati.trattiCaratteriali),
     diario: Array.isArray(dati.diario) ? dati.diario : [],
     note: str(dati.note),
-    risorse: Array.isArray(dati.risorse)
-      ? dati.risorse
-          .filter((r) => r && typeof r === 'object')
-          .slice(0, 20)
-          .map((r, i) => ({
-            id: Date.now() + i,
-            nome: str(r.nome, 'Risorsa') || 'Risorsa',
-            max: Math.max(0, num(r.max, 0)),
-            attuali: Math.max(0, Math.min(Math.max(0, num(r.max, 0)), num(r.attuali, num(r.max, 0)))),
-            reset: ['breve', 'lungo'].includes(r.reset) ? r.reset : '',
-          }))
-      : [],
+    risorse: sincronizzaRisorseClasse({
+      classe: traduciEN(str(dati.classe)),
+      livello: livelloCorretto,
+      multiclasse: multiclassePin,
+      caratteristiche: car,
+      risorse: Array.isArray(dati.risorse)
+        ? dati.risorse
+            .filter((r) => r && typeof r === 'object')
+            .slice(0, 20)
+            .map((r, i) => ({
+              id: r.id || Date.now() + i,
+              nome: str(r.nome, 'Risorsa') || 'Risorsa',
+              max: Math.max(0, num(r.max, 0)),
+              attuali: Math.max(0, Math.min(Math.max(0, num(r.max, 0)), num(r.attuali, num(r.max, 0)))),
+              reset: ['breve', 'lungo'].includes(r.reset) ? r.reset : '',
+            }))
+        : [],
+    }, versionePin),
     sfinimento: Math.max(0, Math.min(6, num(dati.sfinimento, 0))),
     concentrazione: str(dati.concentrazione),
     resistenze: str(dati.resistenze),

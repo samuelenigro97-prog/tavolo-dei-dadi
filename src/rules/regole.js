@@ -91,6 +91,13 @@ export function chiaveClasse(classe) {
 export function caratteristicaIncantatoreEffettiva(scheda) {
   const automatica = CARATT_INCANTATORE[chiaveClasse(scheda?.classe)] || '';
   if (automatica) return automatica;
+  // Se la classe principale non è incantatrice, controlla le classi multiclasse
+  if (Array.isArray(scheda?.multiclasse)) {
+    for (const m of scheda.multiclasse) {
+      const mcAuto = CARATT_INCANTATORE[chiaveClasse(m?.classe)];
+      if (mcAuto) return mcAuto;
+    }
+  }
   if (sottoclasseTerzoIncantatore(scheda?.classe, scheda?.sottoclasse)) return 'intelligenza';
   const salvata = scheda?.incantatore?.caratteristica;
   return ['forza', 'destrezza', 'costituzione', 'intelligenza', 'saggezza', 'carisma'].includes(salvata) ? salvata : '';
