@@ -527,6 +527,8 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .pm-pf { display: flex; flex-direction: column; flex: 1 1 auto; }
 .pm-pf > * { width: 100%; flex: 1 1 auto; }
 
+.car-col-fisiche, .car-col-mentali { display: contents; }
+
 .car-tier-1 {
   display: flex;
   flex-direction: column;
@@ -677,15 +679,38 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     order: 5 !important;
     width: 100% !important;
   }
-  /* 6. Punteggi Caratteristica (FOR, DES, COS, INT, SAG, CAR) a 2 colonne */
+  /* 6. Punteggi Caratteristica (FOR, DES, COS a SX | INT, SAG, CAR a DX) */
   .profilo-caratteristiche-box {
     order: 6 !important;
     width: 100% !important;
     display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-columns: 1fr 1fr !important;
     gap: 8px !important;
+    align-items: start !important;
   }
-  .profilo-caratteristiche-box > *, .car-coppia, .car-coppia > * {
+  .car-col-fisiche {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  .car-col-mentali {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  .car-col-fisiche .car-tier-1,
+  .car-col-mentali .car-tier-2,
+  .car-col-mentali .car-tier-3 {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+  .car-col-fisiche .blocco-car,
+  .car-col-mentali .blocco-car {
     width: 100% !important;
     box-sizing: border-box !important;
   }
