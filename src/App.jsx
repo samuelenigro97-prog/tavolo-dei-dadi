@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.45';
+const APP_VERSION = '4.0.46';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -5268,13 +5268,13 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roster, autoSyncCodice, codiceSync]);
 
-  // All'apertura della sezione Cloud, forza immediatamente l'upload aggiornato
+  // All'apertura della sezione Cloud, aggiorna silenziosamente in background se impostato
   useEffect(() => {
     if (mostraCloud) {
       if (codiceSyncRef.current && (autoSyncCodice || codiceSync)) {
-        salvaSuCodiceSync(false);
+        salvaSuCodiceSync(true);
       } else if (githubToken && gistId && autoSync) {
-        salvaSuGist(false);
+        salvaSuGist(true);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -6452,12 +6452,12 @@ export default function App() {
                     </div>
                   </>
                 )}
-              </div>
-            )}
 
-            {syncCodiceStatus.text && (
-              <div style={{ marginBottom: 12, padding: 8, borderRadius: 6, background: syncCodiceStatus.type === 'error' ? 'rgba(255,0,0,0.1)' : syncCodiceStatus.type === 'success' ? 'rgba(0,255,0,0.1)' : 'rgba(255,255,255,0.05)', color: syncCodiceStatus.type === 'error' ? C.red : syncCodiceStatus.type === 'success' ? C.green : C.goldDark, fontSize: 12, textAlign: 'center' }}>
-                {syncCodiceStatus.text}
+                {syncCodiceStatus.text && (
+                  <div style={{ marginTop: 12, padding: 8, borderRadius: 6, background: syncCodiceStatus.type === 'error' ? 'rgba(255,0,0,0.1)' : syncCodiceStatus.type === 'success' ? 'rgba(0,255,0,0.1)' : 'rgba(255,255,255,0.05)', color: syncCodiceStatus.type === 'error' ? C.red : syncCodiceStatus.type === 'success' ? C.green : C.goldDark, fontSize: 12, textAlign: 'center' }}>
+                    {syncCodiceStatus.text}
+                  </div>
+                )}
               </div>
             )}
 
