@@ -8755,25 +8755,25 @@ export default function App() {
                         onClick={(e) => { e.stopPropagation(); aggiorna({ sezioniAperte: { ...(scheda.sezioniAperte || {}), ritratto: false } }); }}
                       >▾</button>
 
-                      {/* Bottone Ispirazione in alto a destra sul ritratto */}
+                      {/* Bottone Ispirazione in basso a sinistra sul ritratto */}
                       <button
                         type="button"
                         className="ritratto-ispirazione"
                         title={scheda.ispirazione ? `${t('vital.ispirazione')}: ${t('common.attivo')} (Click per disattivare)` : `${t('vital.ispirazione')} (Click per attivare)`}
                         onClick={(e) => { e.stopPropagation(); aggiorna({ ispirazione: !scheda.ispirazione }); }}
                         style={{
-                          position: 'absolute', top: 6, right: 6, zIndex: 10,
-                          background: scheda.ispirazione ? 'rgba(20, 20, 20, 0.85)' : 'rgba(0, 0, 0, 0.5)',
-                          border: scheda.ispirazione ? '1.5px solid #f0c43f' : '1px solid rgba(255,255,255,0.3)',
-                          borderRadius: 8, padding: '2px 7px',
+                          position: 'absolute', bottom: 8, left: 8, zIndex: 2,
+                          background: scheda.ispirazione ? 'rgba(20, 20, 20, 0.88)' : 'rgba(0, 0, 0, 0.55)',
+                          border: scheda.ispirazione ? '1.5px solid #f0c43f' : '1px solid rgba(255,255,255,0.35)',
+                          borderRadius: 8, padding: '3px 8px',
                           display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer',
-                          boxShadow: scheda.ispirazione ? '0 0 10px rgba(240, 196, 63, 0.7)' : 'none',
+                          boxShadow: scheda.ispirazione ? '0 0 10px rgba(240, 196, 63, 0.7)' : '0 2px 5px rgba(0,0,0,0.3)',
                           backdropFilter: 'blur(4px)',
                           transition: 'all 0.2s ease',
                         }}
                       >
                         <span style={{
-                          fontSize: 16, lineHeight: 1,
+                          fontSize: 15, lineHeight: 1,
                           color: scheda.ispirazione ? '#f0c43f' : '#bbb',
                           textShadow: scheda.ispirazione ? '0 0 8px rgba(240, 196, 63, 0.9)' : 'none',
                         }}>
