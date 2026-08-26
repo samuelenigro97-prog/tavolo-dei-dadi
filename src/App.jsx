@@ -8628,8 +8628,6 @@ export default function App() {
                     🗑
                   </button>
 
-                  <span className="selettore-divisore" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
-
                   {/* Gruppo 2: Navigazione & File (Menu, Importa, Esporta) */}
                   <button style={btnAzione} title={t('tip.menu_iniziale')} onClick={() => setMostraMenu(true)}>
                     🏠
@@ -8655,8 +8653,6 @@ export default function App() {
                     ⬆️
                   </button>
                 </div>
-
-                <span className="selettore-divisore selettore-divisore-desktop" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
 
                 <div className="selettore-riga-2">
                   {/* Gruppo 3: Cloud, Notifiche & Lingua */}
@@ -8699,8 +8695,6 @@ export default function App() {
                   >
                     {lingua === 'it' ? '🇮🇹' : '🇬🇧'}
                   </button>
-
-                  <span className="selettore-divisore" style={{ width: 1.5, height: 26, background: C.goldDark, margin: '0 3px', flexShrink: 0, opacity: 0.65, borderRadius: 1 }} aria-hidden />
 
                   {/* Gruppo 4: Gameplay & Sessione */}
                   <button ref={ambientazioneBtnRef} style={btnAzione} title={t('luogo.tooltip')} onClick={() => { sbloccaAudio(); if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
