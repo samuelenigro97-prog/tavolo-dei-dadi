@@ -608,30 +608,6 @@ export function controlliScheda(scheda) {
     }
   }
 
-  // --- Incantesimi di Classe (non appartenenti alla lista) ---
-  if (classeKey && Array.isArray(scheda.incantesimiLista)) {
-    const liste = INCANTESIMI_CLASSE[classeKey];
-    if (liste) {
-      const nomiClasse = new Set(Object.values(liste).flat().map((n) => n.toLowerCase()));
-      for (const inc of scheda.incantesimiLista) {
-        if (inc.bonus || inc.origine) continue;
-        const n = String(inc.nome || '').trim().toLowerCase();
-        const nClean = n.replace(/\s*\(.*$/, '').trim();
-        const dbInfo = INCANTESIMI_DB[inc.nome] || INCANTESIMI_DB[nClean];
-        const classiDb = dbInfo?.classi || [];
-        const classeNomeNorm = scheda.classe.toLowerCase();
-        const matchDb = classiDb.some((c) => c.toLowerCase() === classeNomeNorm);
-        if (!nomiClasse.has(n) && !nomiClasse.has(nClean) && !matchDb) {
-          risultati.push({
-            id: `incantesimo-non-classe-${nClean}`,
-            gravita: 'da_controllare',
-            testo: `Incantesimi: "${inc.nome}" non appartiene alla lista di base di ${scheda.classe}. Se proviene da sottoclasse, razza o talento, puoi ignorare questo avviso.`,
-          });
-        }
-      }
-    }
-  }
-
   return risultati;
 }
 
