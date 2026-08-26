@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.17';
+const APP_VERSION = '4.0.18';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -8661,16 +8661,16 @@ export default function App() {
                   })()}
 
                   {/* Linea divisoria sotto Dadi Vita */}
-                  <div style={{ width: '100%', height: 1, background: C.border, margin: '4px 0 3px', opacity: 0.7 }} />
+                  <div style={{ width: '100%', height: 1, background: C.border, margin: '6px 0 4px', opacity: 0.7 }} />
 
-                  {/* Tiri Salvezza Morte: titolo e 3 caselle sopra (successi), 3 caselle sotto (fallimenti) */}
-                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <div style={{ fontSize: 10.5, fontWeight: 700, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 }}>
+                  {/* Tiri Salvezza Morte: perfettamente centrato tra la linea e il bordo inferiore */}
+                  <div style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', paddingBottom: 2 }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
                       💀 {lingua === 'en' ? 'Death Saving Throws' : 'Tiri Salvezza Morte'}
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2.5, alignItems: 'flex-start' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'flex-start' }}>
                         {/* 3 sopra: Successi */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <span style={{ fontSize: 10.5, fontWeight: 700, color: C.green, width: 68, textAlign: 'right' }}>
@@ -8715,7 +8715,7 @@ export default function App() {
                       </div>
 
                       {/* Reset e Tiro */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2.5, alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center', justifyContent: 'center' }}>
                         <button
                           className="ts-morte-reset"
                           style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 6px' }}
