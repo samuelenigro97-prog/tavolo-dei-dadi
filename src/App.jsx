@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.39';
+const APP_VERSION = '4.0.40';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -11540,7 +11540,16 @@ export default function App() {
                                     <button
                                       style={{ ...styles.buttonMini, color: (o.usiMax > 0) ? C.goldDark : C.inkDim, borderColor: (o.usiMax > 0) ? C.goldDark : C.border, background: (o.usiMax > 0) ? 'rgba(201,162,39,0.12)' : undefined }}
                                       title={t('inv.gestisci_utilizzi')}
-                                      onClick={() => modInv(o.id, o.usiMax > 0 ? { usi: undefined, usiMax: 0, ricarica: '', effetto: '' } : { usi: 1, usiMax: 1, ricarica: 'manuale' })}
+                                      onClick={() => {
+                                        if (o.usiMax > 0) {
+                                          modInv(o.id, { usi: undefined, usiMax: 0, ricarica: '', effetto: '' });
+                                        } else {
+                                          const noto = utilizziOggettoNoto(o.nome);
+                                          const defMax = noto ? noto.usiMax : 1;
+                                          const defUsi = noto ? noto.usi : defMax;
+                                          modInv(o.id, { usi: defUsi, usiMax: defMax, ricarica: noto ? noto.ricarica : 'manuale', effetto: noto ? noto.effetto : '' });
+                                        }
+                                      }}
                                     >⚡</button>{' '}
                                     <button style={{ ...styles.buttonMini, color: C.red }} title={t('modal.elimina')} onClick={() => eliminaItem(o)}>🗑</button>
                                   </td>
@@ -11586,11 +11595,43 @@ export default function App() {
                                               ⚡ {t('inv.utilizzi')}:
                                             </span>
                                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-                                              <button style={{ ...styles.buttonMini, padding: '1px 6px', fontSize: 11 }} onClick={() => modInv(o.id, { usi: Math.max(0, (Number(o.usi) || 0) - 1) })}>−</button>
-                                              <Editable value={Math.min(Number(o.usi) || 0, Number(o.usiMax) || 1)} tipo="numero" width={26} onChange={(v) => modInv(o.id, { usi: Math.max(0, Math.min(Number(o.usiMax) || 1, v)) })} />
+                                              <button
+                                                style={{ ...styles.buttonMini, padding: '1px 6px', fontSize: 11 }}
+                                                title="Spendi 1 utilizzo"
+                                                onClick={() => {
+                                                  const maxU = Number(o.usiMax) || 1;
+                                                  const curUsi = o.usi != null ? Number(o.usi) : maxU;
+                                                  modInv(o.id, { usi: Math.max(0, curUsi - 1) });
+                                                }}
+                                              >−</button>
+                                              <Editable
+                                                value={Math.min(o.usi != null ? Number(o.usi) : (Number(o.usiMax) || 1), Number(o.usiMax) || 1)}
+                                                tipo="numero"
+                                                width={26}
+                                                title="Utilizzi rimanenti (disponibili)"
+                                                onChange={(v) => modInv(o.id, { usi: Math.max(0, Math.min(Number(o.usiMax) || 1, v)) })}
+                                              />
                                               <span style={{ color: C.inkDim, fontSize: 11 }}>/</span>
-                                              <Editable value={o.usiMax || 1} tipo="numero" width={26} onChange={(v) => modInv(o.id, { usiMax: Math.max(1, v), usi: Math.min(Number(o.usi) || 0, Math.max(1, v)) })} />
-                                              <button style={{ ...styles.buttonMini, padding: '1px 6px', fontSize: 11 }} onClick={() => modInv(o.id, { usi: Math.min(Number(o.usiMax) || 1, (Number(o.usi) || 0) + 1) })}>＋</button>
+                                              <Editable
+                                                value={o.usiMax || 1}
+                                                tipo="numero"
+                                                width={26}
+                                                title="Utilizzi massimi"
+                                                onChange={(v) => {
+                                                  const newMax = Math.max(1, v);
+                                                  const curUsi = o.usi != null ? Number(o.usi) : newMax;
+                                                  modInv(o.id, { usiMax: newMax, usi: Math.min(curUsi, newMax) });
+                                                }}
+                                              />
+                                              <button
+                                                style={{ ...styles.buttonMini, padding: '1px 6px', fontSize: 11 }}
+                                                title="Recupera 1 utilizzo"
+                                                onClick={() => {
+                                                  const maxU = Number(o.usiMax) || 1;
+                                                  const curUsi = o.usi != null ? Number(o.usi) : maxU;
+                                                  modInv(o.id, { usi: Math.min(maxU, curUsi + 1) });
+                                                }}
+                                              >＋</button>
                                             </div>
                                             <span style={{ fontSize: 11, color: C.inkDim, marginLeft: 2 }}>{t('inv.ricarica')}:</span>
                                             <select
