@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.13';
+const APP_VERSION = '4.0.14';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -10687,11 +10687,15 @@ export default function App() {
                                   <td data-label={t('inv.peso')} style={{ ...styles.td, color: C.inkDim, whiteSpace: 'nowrap', ...((mostraEffetto || mostraUtilizzi) && senzaBordo) }}><Editable value={o.peso} tipo="numero" width={40} onChange={(v) => modInv(o.id, { peso: Math.max(0, v) })} /> kg</td>
                                   <td className="inventario-azioni" style={{ ...styles.td, textAlign: 'right', whiteSpace: 'nowrap', ...((mostraEffetto || mostraUtilizzi) && senzaBordo) }}>
                                     <button
-                                      style={{ ...styles.buttonMini, color: effettoAttivo ? C.goldDark : C.inkDim, borderColor: effettoAttivo ? C.goldDark : C.border }}
+                                      style={{ ...styles.buttonMini, color: effettoAttivo ? C.goldDark : C.inkDim, borderColor: effettoAttivo ? C.goldDark : C.border, background: effettoAttivo ? 'rgba(201,162,39,0.12)' : undefined }}
                                       title={t('inv.gestisci_effetti')}
                                       onClick={() => setEffettoInventarioAperto((id) => id === o.id ? null : o.id)}
                                     >✨</button>{' '}
-                                    <button style={styles.buttonMini} title={t('inv.gestisci_utilizzi')} onClick={() => modInv(o.id, o.usiMax > 0 ? { usi: undefined, usiMax: 0, ricarica: '', effetto: '' } : { usi: 1, usiMax: 1, ricarica: 'manuale' })}>⚡</button>{' '}
+                                    <button
+                                      style={{ ...styles.buttonMini, color: (o.usiMax > 0) ? C.goldDark : C.inkDim, borderColor: (o.usiMax > 0) ? C.goldDark : C.border, background: (o.usiMax > 0) ? 'rgba(201,162,39,0.12)' : undefined }}
+                                      title={t('inv.gestisci_utilizzi')}
+                                      onClick={() => modInv(o.id, o.usiMax > 0 ? { usi: undefined, usiMax: 0, ricarica: '', effetto: '' } : { usi: 1, usiMax: 1, ricarica: 'manuale' })}
+                                    >⚡</button>{' '}
                                     <button style={{ ...styles.buttonMini, color: C.red }} title={t('modal.elimina')} onClick={() => eliminaItem(o)}>🗑</button>
                                   </td>
                                 </tr>
