@@ -6188,10 +6188,10 @@ export default function App() {
               <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>{t('menu.sezione_backup')}</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
                 <button style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} onClick={() => jsonRef.current?.click()} title={t('menu.ripristina_tip')}>
-                  <span>⬇️</span> <span>{t('menu.ripristina')}</span>
+                  <span>📥</span> <span>{t('menu.ripristina')}</span>
                 </button>
                 <button style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} onClick={esportaBackupCompleto} title={t('menu.esporta_tutto_tip')}>
-                  <span>⬆️</span> <span>{t('menu.esporta_tutto')}</span>
+                  <span>📦</span> <span>{t('menu.esporta_tutto')}</span>
                 </button>
                 {leggiSnapshots().length > 0 && (
                   <button style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} onClick={() => setMostraRipristino(true)}>
@@ -6379,7 +6379,7 @@ export default function App() {
                     style={{ ...styles.buttonPrimary, width: '100%', padding: '9px 12px', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
                     onClick={esportaBackupCompleto}
                   >
-                    ⬆️ Scarica Archivio Completo (JSON)
+                    📦 Scarica Archivio Completo (JSON)
                   </button>
 
                   <button
@@ -6387,7 +6387,7 @@ export default function App() {
                     style={{ ...styles.button, width: '100%', padding: '9px 12px', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
                     onClick={() => ripristinaArchivioRef.current?.click()}
                   >
-                    ⬇️ Ripristina Archivio da File
+                    📥 Ripristina Archivio da File
                   </button>
                   <input
                     ref={ripristinaArchivioRef}
