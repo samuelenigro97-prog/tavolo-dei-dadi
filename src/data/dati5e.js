@@ -32,8 +32,8 @@ export const SOTTOCLASSI_5E = {
 };
 export const INCANTESIMI_CLASSE = {
   stregone: {
-    0: ['Dardo Infuocato', 'Raggio di Gelo', 'Morsa del Gelo', 'Mano Magica', 'Luce', 'Messaggio', 'Prestidigitazione', 'Illusione Minore', 'Spruzzo di Veleno', 'Tocco Folgorante', 'Luci Danzanti', 'Interdizione alle Lame', 'Stregoneria Esplosiva'],
-    1: ['Dardo Incantato', 'Scudo', 'Armatura Magica', 'Onda Tonante', 'Mani Brucianti', 'Sfera Cromatica', 'Sonno', 'Ammaliare Persone', 'Caduta Morbida', 'Individuazione del Magico', 'Nube di Nebbia', 'Camuffarsi', 'Immagine Silenziosa', 'Fulmine Stregato'],
+    0: ['Dardo Infuocato', 'Raggio di Gelo', 'Morsa del Gelo', 'Mano Magica', 'Luce', 'Messaggio', 'Prestidigitazione', 'Illusione Minore', 'Spruzzo di Veleno', 'Tocco Folgorante', 'Luci Danzanti', 'Interdizione alle Lame'],
+    1: ['Stregoneria Esplosiva', 'Dardo Incantato', 'Scudo', 'Armatura Magica', 'Onda Tonante', 'Mani Brucianti', 'Sfera Cromatica', 'Sonno', 'Ammaliare Persone', 'Caduta Morbida', 'Individuazione del Magico', 'Nube di Nebbia', 'Camuffarsi', 'Immagine Silenziosa', 'Fulmine Stregato'],
     2: ['Immagine Speculare', 'Passo Velato', 'Frantumare', 'Raggio Rovente', 'Invisibilità', 'Blocca Persone', 'Oscurità', 'Scurovisione', 'Levitazione', 'Ragnatela', 'Suggestione', 'Offuscamento', 'Vedere Invisibilità'],
     3: ['Palla di Fuoco', 'Controincantesimo', 'Fulmine', 'Volare', 'Velocità', 'Lentezza', 'Dissolvi Magie', 'Nube Mefitica', 'Paura'],
     4: ['Invisibilità Superiore', 'Porta Dimensionale', 'Tempesta di Ghiaccio', 'Scudo di Fuoco', 'Polimorfia', 'Confusione'],
@@ -43,7 +43,7 @@ export const INCANTESIMI_CLASSE = {
     0: ['Dardo Infuocato', 'Raggio di Gelo', 'Morsa del Gelo', 'Mano Magica', 'Luce', 'Messaggio', 'Prestidigitazione', 'Illusione Minore', 'Zampata Acida', 'Tocco Folgorante', 'Colpo Sicuro'],
     1: ['Dardo Incantato', 'Scudo', 'Armatura Magica', 'Onda Tonante', 'Mani Brucianti', 'Sonno', 'Individuazione del Magico', 'Comprendere Linguaggi', 'Identificare', 'Ritirata Veloce', 'Falsa Vita', 'Servitore Invisibile', 'Sfera Cromatica'],
     2: ['Immagine Speculare', 'Passo Velato', 'Frantumare', 'Raggio Rovente', 'Invisibilità', 'Blocca Persone', 'Ragnatela', 'Levitazione', 'Vedere Invisibilità', 'Bussare', 'Individuazione dei Pensieri'],
-    3: ['Palla di Fuoco', 'Controincantesimo', 'Fulmine', 'Volare', 'Velocità', 'Dissolvi Magie', 'Nube Mefitica', 'Animare Morti', 'Dardo Incantato Superiore'],
+    3: ['Palla di Fuoco', 'Controincantesimo', 'Fulmine', 'Volare', 'Velocità', 'Dissolvi Magie', 'Nube Mefitica', 'Animare Morti', 'Schema Ipnotico'],
     4: ['Invisibilità Superiore', 'Porta Dimensionale', 'Tempesta di Ghiaccio', 'Scudo di Fuoco', 'Polimorfia', 'Pelle di Pietra', 'Muro di Fuoco'],
     5: ['Cono di Freddo', 'Blocca Mostri', 'Telecinesi', 'Muro di Forza', 'Evocare Elementale'],
   },
