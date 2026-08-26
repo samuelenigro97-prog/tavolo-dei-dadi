@@ -607,25 +607,33 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 
 .profilo-col-sinistra .sezione { margin-bottom: 0 !important; }
 .profilo-col-sinistra .sezione > summary { font-size: 11.5px !important; letter-spacing: 0.7px !important; white-space: nowrap !important; overflow: hidden; text-overflow: ellipsis; }
-.profilo-caratteristiche > * .blocco-car { margin-bottom: 0 !important; }
-@media (min-width: 681px) and (max-width: 1024px) {
-  /* iPad / Tablet: layout a due colonne bilanciato */
+.profilo-griglia {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(340px, 1fr) minmax(180px, 310px);
+  column-gap: 12px;
+  row-gap: 12px;
+  align-items: stretch;
+}
+@media (max-width: 1100px) and (min-width: 840px) {
   .profilo-griglia {
-    display: grid;
-    grid-template-columns: 270px minmax(0, 1fr);
-    column-gap: 12px;
+    grid-template-columns: minmax(190px, 240px) minmax(300px, 1fr) minmax(150px, 220px);
+    column-gap: 10px;
     row-gap: 10px;
   }
-  .profilo-col-sinistra { grid-column: 1; }
-  .profilo-main { grid-column: 2; }
-  .profilo-caratteristiche { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 }
-@media (max-width: 680px) {
-  /* Telefono: la sezione si impila in verticale in colonna singola */
+@media (max-width: 839px) and (min-width: 660px) {
+  .profilo-griglia {
+    grid-template-columns: minmax(170px, 210px) minmax(260px, 1fr) minmax(130px, 180px);
+    column-gap: 8px;
+    row-gap: 8px;
+  }
+}
+@media (max-width: 659px) {
+  /* Mobile molto stretto: impila in ordine logico Sinistra, Centro, Caratteristiche */
   .profilo-griglia { display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
   .profilo-col-sinistra { order: 1; width: 100%; }
   .profilo-main { order: 2; width: 100%; }
-  .profilo-caratteristiche { order: 3; width: 100%; }
+  .profilo-caratteristiche { order: 3; width: 100%; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
   .profilo-caratteristiche > *, .car-coppia, .car-coppia > * { width: 100%; box-sizing: border-box; }
   .ritratto-box { min-height: 240px; height: 240px; }
   .car-coppia { gap: 8px; }

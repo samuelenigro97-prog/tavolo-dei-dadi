@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.16';
+const APP_VERSION = '4.0.17';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -8553,7 +8553,7 @@ export default function App() {
 
               {/* Riga 2 — Punti Ferita (compatta, pulita e proporzionata) */}
               <div className="pm-pf">
-                <div style={{ ...styles.vitalBox, gridColumn: 'span 4', padding: '12px 14px 10px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ ...styles.vitalBox, gridColumn: 'span 4', padding: '10px 12px 8px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center' }}>
                   <SfondoVit>🩸</SfondoVit>
                   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 2 }}>
                     <div style={{ ...styles.vitalLabel, position: 'static', margin: 0, fontSize: 12 }}>❤️ {t("vital.pf")}</div>
@@ -8569,7 +8569,7 @@ export default function App() {
                     const percTemp = Math.max(0, Math.min(100, (temp / max) * 100));
                     const coloreNormale = (att / Math.max(1, maxPf)) > 0.5 ? 'linear-gradient(90deg, #2e7d32, #4caf50)' : (att / Math.max(1, maxPf)) > 0.25 ? 'linear-gradient(90deg, #f57f17, #ffb300)' : 'linear-gradient(90deg, #c62828, #e53935)';
                     return (
-                      <div style={{ position: 'relative', width: '100%', height: 26, borderRadius: 13, background: 'rgba(0,0,0,0.7)', border: `2px solid ${C.goldDark}`, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.3)', overflow: 'hidden', margin: '4px 0', display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
+                      <div style={{ position: 'relative', width: '100%', height: 26, borderRadius: 13, background: 'rgba(0,0,0,0.7)', border: `2px solid ${C.goldDark}`, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.3)', overflow: 'hidden', margin: '3px 0', display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
                         <div style={{ width: `${percNormale}%`, height: '100%', background: coloreNormale, transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: '0 0 10px rgba(76,175,80,0.5)', position: 'relative' }}>
                           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)' }} />
                         </div>
@@ -8607,7 +8607,7 @@ export default function App() {
                   </div>
 
                   {/* Pulsanti Rapidi Danno / Cura */}
-                  <div style={{ display: 'flex', gap: 3, margin: '2px 0 4px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: 3, margin: '2px 0 3px', justifyContent: 'center', flexWrap: 'wrap' }}>
                     <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 20) }); }} title={t('vital.danno')}>-20</button>
                     <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 10) }); }} title={t('vital.danno')}>-10</button>
                     <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 5) }); }} title={t('vital.danno')}>-5</button>
@@ -8661,16 +8661,16 @@ export default function App() {
                   })()}
 
                   {/* Linea divisoria sotto Dadi Vita */}
-                  <div style={{ width: '100%', height: 1, background: C.border, margin: '6px 0 4px', opacity: 0.7 }} />
+                  <div style={{ width: '100%', height: 1, background: C.border, margin: '4px 0 3px', opacity: 0.7 }} />
 
                   {/* Tiri Salvezza Morte: titolo e 3 caselle sopra (successi), 3 caselle sotto (fallimenti) */}
                   <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <div style={{ fontSize: 10.5, fontWeight: 700, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 }}>
                       💀 {lingua === 'en' ? 'Death Saving Throws' : 'Tiri Salvezza Morte'}
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'flex-start' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2.5, alignItems: 'flex-start' }}>
                         {/* 3 sopra: Successi */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <span style={{ fontSize: 10.5, fontWeight: 700, color: C.green, width: 68, textAlign: 'right' }}>
@@ -8715,7 +8715,7 @@ export default function App() {
                       </div>
 
                       {/* Reset e Tiro */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2.5, alignItems: 'center', justifyContent: 'center' }}>
                         <button
                           className="ts-morte-reset"
                           style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 6px' }}
