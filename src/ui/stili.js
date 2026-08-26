@@ -767,10 +767,10 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .spell-chips::-webkit-scrollbar-thumb { background: var(--c-border); border-radius: 3px; }
 /* i campi anagrafica (con le tendine): font uniforme, padding compatto, allineati in basso */
 .campi-anagrafica > * { min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; }
-.campi-anagrafica select { max-width: 100%; font-size: 13px !important; font-family: inherit !important; font-weight: 600 !important; color: var(--c-ink) !important; padding: 1px 16px 1px 2px !important; height: 100% !important; line-height: 1.2; background-position: right 2px center !important; background-size: 8px !important; }
-.campi-anagrafica .campo-modulo-box { padding: 0 2px !important; min-height: 26px !important; height: 26px; display: flex; align-items: center; overflow: hidden; font-size: 13px !important; font-weight: 600 !important; color: var(--c-ink) !important; font-family: inherit !important; }
-.campi-anagrafica .campo-modulo-box * { font-size: 13px !important; font-family: inherit !important; font-weight: 600 !important; }
-.campi-anagrafica .campo-modulo-label { font-size: 9.5px !important; margin-top: 2px; font-weight: 700 !important; letter-spacing: 0.6px !important; }
+.campi-anagrafica select { max-width: 100%; font-size: 12px !important; font-family: inherit !important; font-weight: 600 !important; color: var(--c-ink) !important; padding: 1px 13px 1px 1px !important; height: 100% !important; line-height: 1.2; background-position: right 1px center !important; background-size: 7px !important; }
+.campi-anagrafica .campo-modulo-box { padding: 0 1px !important; min-height: 26px !important; height: 26px; display: flex; align-items: center; overflow: hidden; font-size: 12px !important; font-weight: 600 !important; color: var(--c-ink) !important; font-family: inherit !important; }
+.campi-anagrafica .campo-modulo-box * { font-size: 12px !important; font-family: inherit !important; font-weight: 600 !important; }
+.campi-anagrafica .campo-modulo-label { font-size: 9px !important; margin-top: 2px; font-weight: 700 !important; letter-spacing: 0.5px !important; }
 /* Sottoclasse con più classi (multiclasse): una riga per classe, l'altezza fissa
     da campo singolo taglierebbe via le righe in più. */
 .campi-anagrafica .campo-modulo-box.sottoclasse-multi { height: auto !important; align-items: flex-start !important; overflow: visible !important; padding-top: 2px !important; padding-bottom: 2px !important; }

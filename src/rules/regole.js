@@ -549,6 +549,89 @@ export function controlliScheda(scheda) {
     });
   }
 
+  // --- Sintonia Oggetti Magici (massimo 3) ---
+  if (Array.isArray(scheda.sintonia) && scheda.sintonia.filter(Boolean).length > 3) {
+    risultati.push({
+      id: 'sintonia-max',
+      gravita: 'certo',
+      testo: `Sintonia: hai ${scheda.sintonia.filter(Boolean).length} oggetti sintonizzati. Il limite massimo in D&D 5e è di 3 oggetti contemporaneamente.`,
+    });
+  }
+
+  // --- Livello Minimo Sottoclasse ---
+  if (scheda.classe && scheda.sottoclasse) {
+    const livMin = sottoclasseLivPer(scheda.classe, scheda.versione || '2024');
+    const livPg = Number(scheda.livello) || 1;
+    if (livMin && livPg < livMin) {
+      risultati.push({
+        id: 'sottoclasse-livello-insufficiente',
+        gravita: 'certo',
+        testo: `Sottoclasse: "${scheda.sottoclasse}" è impostata al livello ${livPg}, ma per ${scheda.classe} (${scheda.versione === '2014' ? '5.0' : '5.5'}) si sblocca al ${livMin}° livello.`,
+      });
+    }
+  }
+
+  // --- Punteggi Caratteristiche (range legale 1 - 30) ---
+  for (const { key, label } of CARATTERISTICHE) {
+    const v = Number(scheda.caratteristiche?.[key]);
+    if (v != null && !isNaN(v) && v > 0) {
+      if (v < 1 || v > 30) {
+        risultati.push({
+          id: `caratteristica-range-${key}`,
+          gravita: 'certo',
+          testo: `Caratteristiche: il punteggio di ${label} (${v}) è fuori dai limiti di D&D (1 - 30).`,
+        });
+      }
+    }
+  }
+
+  // --- Competenza nell'Armatura e Scudo Indossati ---
+  if (scheda.armatura?.tipo && scheda.armatura.tipo !== 'nessuna' && scheda.armatura.tipo !== 'manuale') {
+    const tipo = scheda.armatura.tipo;
+    const add = scheda.addestramento?.armature || {};
+    if (add[tipo] === false) {
+      risultati.push({
+        id: `armatura-senza-competenza-${tipo}`,
+        gravita: 'da_controllare',
+        testo: `Armatura: indossi un'armatura ${tipo} senza avere la competenza segnata in Addestramento. In D&D 5e questo impone svantaggio alle prove di FOR/DES e impedisce il lancio di incantesimi.`,
+      });
+    }
+  }
+  if (scheda.armatura?.scudo) {
+    const add = scheda.addestramento?.armature || {};
+    if (add.scudi === false) {
+      risultati.push({
+        id: 'scudo-senza-competenza',
+        gravita: 'da_controllare',
+        testo: `Scudo: impugni uno scudo senza avere la competenza segnata in Addestramento.`,
+      });
+    }
+  }
+
+  // --- Incantesimi di Classe (non appartenenti alla lista) ---
+  if (classeKey && Array.isArray(scheda.incantesimiLista)) {
+    const liste = INCANTESIMI_CLASSE[classeKey];
+    if (liste) {
+      const nomiClasse = new Set(Object.values(liste).flat().map((n) => n.toLowerCase()));
+      for (const inc of scheda.incantesimiLista) {
+        if (inc.bonus || inc.origine) continue;
+        const n = String(inc.nome || '').trim().toLowerCase();
+        const nClean = n.replace(/\s*\(.*$/, '').trim();
+        const dbInfo = INCANTESIMI_DB[inc.nome] || INCANTESIMI_DB[nClean];
+        const classiDb = dbInfo?.classi || [];
+        const classeNomeNorm = scheda.classe.toLowerCase();
+        const matchDb = classiDb.some((c) => c.toLowerCase() === classeNomeNorm);
+        if (!nomiClasse.has(n) && !nomiClasse.has(nClean) && !matchDb) {
+          risultati.push({
+            id: `incantesimo-non-classe-${nClean}`,
+            gravita: 'da_controllare',
+            testo: `Incantesimi: "${inc.nome}" non appartiene alla lista di base di ${scheda.classe}. Se proviene da sottoclasse, razza o talento, puoi ignorare questo avviso.`,
+          });
+        }
+      }
+    }
+  }
+
   return risultati;
 }
 
