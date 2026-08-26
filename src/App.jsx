@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.10';
+const APP_VERSION = '4.0.11';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -8727,7 +8727,7 @@ export default function App() {
                   {/* 1. Box Visione */}
                   <div style={{ ...styles.vitalBox }}>
                     <SfondoVit>👁️</SfondoVit>
-                    <div style={styles.vitalLabel}>👁️ {t("vital.visione")}</div>
+                    <div style={styles.vitalLabel}>{t("vital.visione")}</div>
                     <div style={{ width: '100%', marginTop: 2 }}>
                       <CampoConTendina
                         value={scheda.sensi}
@@ -8741,7 +8741,7 @@ export default function App() {
                   {/* 2. Box Percezione Passiva */}
                   <div style={{ ...styles.vitalBox }} title={t('vital.passive_tooltip')}>
                     <SfondoVit>👂</SfondoVit>
-                    <div style={styles.vitalLabel}>👂 {t("vital.percezione_passiva")}</div>
+                    <div style={styles.vitalLabel}>{t("vital.percezione_passiva")}</div>
                     <div style={styles.vitalValue}>
                       {percezionePassiva}
                     </div>
@@ -8750,7 +8750,7 @@ export default function App() {
                   {/* 3. Box Resistenze */}
                   <div style={{ ...styles.vitalBox }}>
                     <SfondoVit>🧪</SfondoVit>
-                    <div style={styles.vitalLabel}>🧪 {t("vital.resistenze")}</div>
+                    <div style={styles.vitalLabel}>{t("vital.resistenze")}</div>
                     <div style={{ width: '100%', marginTop: 2 }}>
                       <CampoConTendina
                         value={scheda.resistenze}
@@ -8764,7 +8764,7 @@ export default function App() {
                   {/* 4. Box Condizioni */}
                   <div style={{ ...styles.vitalBox }}>
                     <SfondoVit>⚠️</SfondoVit>
-                    <div style={styles.vitalLabel}>⚠️ {t("vital.condizioni")}</div>
+                    <div style={styles.vitalLabel}>{t("vital.condizioni")}</div>
                     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 4, marginTop: 2 }}>
                       {scheda.condizioni.length > 0 && (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'center', justifyContent: 'center', maxHeight: 42, overflowY: 'auto' }}>

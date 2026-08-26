@@ -199,15 +199,15 @@ export const styles = {
     background: C.panelLight,
     border: `1px solid ${C.border}`,
     borderRadius: 8,
-    padding: '10px 8px',
+    padding: '12px 8px',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    minHeight: 82,
+    minHeight: 90,
     height: '100%',
     boxSizing: 'border-box',
-    paddingTop: 26,
+    paddingTop: 28,
     position: 'relative',
     overflow: 'hidden',
   },
@@ -226,7 +226,7 @@ export const styles = {
     width: '100%',
   },
   vitalValue: {
-    fontSize: 23,
+    fontSize: 25,
     fontWeight: 800,
     color: C.ink,
     display: 'flex',
@@ -487,9 +487,9 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 }
 .ritratto-box {
   width: 100%;
-  height: 310px;
-  min-height: 310px;
-  max-height: 310px;
+  height: 250px;
+  min-height: 250px;
+  max-height: 250px;
   border-radius: 12px;
   overflow: hidden;
   position: relative;
