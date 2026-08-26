@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.34';
+const APP_VERSION = '4.0.35';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2018,7 +2018,17 @@ function immagineRidotta(img, maxLato, maxBytes, qualitaIniziale = 0.86) {
 
 /** Normalizza i dati importati dal PDF (o da JSON/esempio) nel modello della scheda. */
 function normalizeImported(rawDati) {
-  const dati = rawDati?.scheda && typeof rawDati.scheda === 'object' ? rawDati.scheda : rawDati;
+  let dati = rawDati;
+  if (typeof dati === 'string') {
+    try { dati = JSON.parse(dati); } catch {}
+  }
+  if (dati && typeof dati === 'object' && dati.scheda) {
+    if (typeof dati.scheda === 'string') {
+      try { dati = JSON.parse(dati.scheda); } catch { dati = dati.scheda; }
+    } else if (typeof dati.scheda === 'object') {
+      dati = dati.scheda;
+    }
+  }
   const base = schedaVuota();
   if (!dati || typeof dati !== 'object') return base;
 
@@ -2381,37 +2391,60 @@ function ArchivioDm({ url, onChiudi, onApri, onApriSolaLettura }) {
         return;
       }
     }
+    let target = raw;
+    if (typeof target === 'string') {
+      try { target = JSON.parse(target); } catch {}
+    }
+    if (target && typeof target === 'object' && target.scheda) {
+      if (typeof target.scheda === 'string') {
+        try { target = JSON.parse(target.scheda); } catch { target = target.scheda; }
+      } else if (typeof target.scheda === 'object') {
+        target = target.scheda;
+      }
+    }
     if (onApriSolaLettura) {
-      onApriSolaLettura(raw);
+      onApriSolaLettura(target);
     } else if (onApri) {
-      onApri(raw);
+      onApri(target);
     }
   };
 
-  const apri = async (id) => {
-    const giaScaricata = dettagliAperti[id];
-    if (giaScaricata && giaScaricata !== 'carico' && !giaScaricata.errore) {
-      onApri(giaScaricata);
-      return;
-    }
-    setAprendoId(id);
-    setStato('');
-    try {
-      const r = await fetch(`${base}/pg/${encodeURIComponent(id)}?key=${encodeURIComponent(chiave)}`);
-      if (!r.ok) {
-        let errTxt = `Errore ${r.status}`;
-        try { const d = await r.json(); if (d?.error) errTxt = d.error; } catch {}
-        setStato(errTxt);
+  const apri = async (s) => {
+    const id = (s && typeof s === 'object') ? s.id : s;
+    let raw = dettagliAperti[id];
+    if (!raw || raw === 'carico' || raw.errore) {
+      setAprendoId(id);
+      setStato('');
+      try {
+        const r = await fetch(`${base}/pg/${encodeURIComponent(id)}?key=${encodeURIComponent(chiave)}`);
+        if (!r.ok) {
+          let errTxt = `Errore ${r.status}`;
+          try { const d = await r.json(); if (d?.error) errTxt = d.error; } catch {}
+          setStato(errTxt);
+          setAprendoId('');
+          return;
+        }
+        raw = await r.json();
+        setDettagliAperti((d2) => ({ ...d2, [id]: raw }));
         setAprendoId('');
+      } catch (e) {
+        setAprendoId('');
+        setStato(`Connessione fallita: ${e.message}`);
         return;
       }
-      const d = await r.json();
-      setAprendoId('');
-      onApri(d);
-    } catch (e) {
-      setAprendoId('');
-      setStato(`Connessione fallita: ${e.message}`);
     }
+    let target = raw;
+    if (typeof target === 'string') {
+      try { target = JSON.parse(target); } catch {}
+    }
+    if (target && typeof target === 'object' && target.scheda) {
+      if (typeof target.scheda === 'string') {
+        try { target = JSON.parse(target.scheda); } catch { target = target.scheda; }
+      } else if (typeof target.scheda === 'object') {
+        target = target.scheda;
+      }
+    }
+    onApri(target);
   };
 
   // Espande/comprime la visualizzazione della scheda in sola lettura SENZA importarla/modificarla
@@ -3212,6 +3245,8 @@ export default function App() {
   const [ultimoSyncCodice, setUltimoSyncCodice] = useState(() => localStorage.getItem('scheda-interattiva:ultimo-sync-codice') || '');
   const [codiceSyncInput, setCodiceSyncInput] = useState('');
   const [syncCodiceStatus, setSyncCodiceStatus] = useState({ text: '', type: '' });
+  const [tabBackup, setTabBackup] = useState('locale');
+  const ripristinaArchivioRef = useRef(null);
   const codiceSyncRef = useRef(codiceSync);
   const syncCodiceInCorsoRef = useRef(false);
   const syncCodicePendenteRef = useRef(false);
@@ -4497,6 +4532,51 @@ export default function App() {
     aRoster.click();
     URL.revokeObjectURL(urlRoster);
     segnaBackupFatto();
+    setSyncCodiceStatus({ text: `✅ Archivio completo (${ids.length} personaggi) esportato con successo!`, type: 'success' });
+  }
+
+  /** Ripristina l'archivio locale da un file JSON (supporta backup multipli o singoli). */
+  async function ripristinaArchivioLocale(evento) {
+    const file = evento.target.files?.[0];
+    evento.target.value = '';
+    if (!file) return;
+    try {
+      const testo = await file.text();
+      const dati = JSON.parse(testo);
+      const personaggiBackup = dati?.roster?.personaggi || (dati?.tipo === 'tavolo-dei-dadi-roster' || dati?.tipo === 'tavolo-dei-dadi-backup' ? dati?.personaggi : null) || (dati?.personaggi && typeof dati.personaggi === 'object' && !Array.isArray(dati.personaggi) ? dati.personaggi : null);
+      if (personaggiBackup && typeof personaggiBackup === 'object' && !Array.isArray(personaggiBackup)) {
+        const lista = Object.values(personaggiBackup).filter((s) => s && typeof s === 'object');
+        if (lista.length) {
+          setRoster((r) => {
+            const base = (r?.personaggi && Object.keys(r.personaggi).length > 0) ? { ...r.personaggi } : {};
+            let ultimo = r?.attivo || '';
+            let nuovi = 0;
+            lista.forEach((s) => {
+              const norm = normalizeImported(s);
+              const id = nuovoId();
+              base[id] = norm;
+              ultimo = id;
+              nuovi++;
+            });
+            return { attivo: ultimo, personaggi: base };
+          });
+          setSyncCodiceStatus({ text: `✅ Ripristinati ${lista.length} personaggi nell'archivio!`, type: 'success' });
+          segnaBackupFatto();
+          return;
+        }
+      }
+      // Se era un singolo personaggio
+      const norm = normalizeImported(dati);
+      const id = nuovoId();
+      setRoster((r) => {
+        const base = (r?.personaggi && Object.keys(r.personaggi).length > 0) ? { ...r.personaggi } : {};
+        return { attivo: id, personaggi: { ...base, [id]: norm } };
+      });
+      setSyncCodiceStatus({ text: `✅ Personaggio "${formattaNomePg(norm.nome) || 'PG'}" importato con successo!`, type: 'success' });
+      segnaBackupFatto();
+    } catch (e) {
+      setSyncCodiceStatus({ text: `File JSON non valido: ${e.message}`, type: 'error' });
+    }
   }
 
   // --- Snapshot automatici: rete di sicurezza contro cancellazioni/reset accidentali.
@@ -6235,51 +6315,134 @@ export default function App() {
           onClick={(e) => { if (e.target === e.currentTarget) setMostraCloud(false); }}
         >
           <div style={{ ...styles.panel, maxWidth: 460, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
-            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 8 }}>{t('cloud.backup_titolo')}</h1>
+            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 12 }}>{t('cloud.backup_titolo')}</h1>
 
-            <div style={{ padding: 12, borderRadius: 8, background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, marginBottom: 16 }}>
-              <div style={{ ...styles.detail, fontWeight: 'bold', marginBottom: 6 }}>{t('cloud.sync_codice_titolo')}</div>
-              {codiceSync && autoSyncCodice ? (
-                <>
-                  <p style={{ ...styles.detail, fontSize: 12, marginTop: 0, marginBottom: 8, lineHeight: 1.5 }}>
-                    {t('cloud.sync_codice_info')}
-                  </p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                    <div style={{ color: C.goldDark, fontSize: 20, fontWeight: 800, letterSpacing: 2, fontFamily: 'monospace' }}>{formattaCodiceSync(codiceSync)}</div>
-                    <button style={styles.buttonMini} onClick={() => navigator.clipboard?.writeText(formattaCodiceSync(codiceSync))}>📋</button>
-                  </div>
-                  {ultimoSyncCodice && <div style={{ ...styles.detail, fontSize: 11, marginBottom: 8 }}>{lingua === 'en' ? 'Last sync:' : 'Ultimo salvataggio:'} {ultimoSyncCodice}</div>}
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button style={{ ...styles.button, flex: 1 }} onClick={caricaDaCodiceSync}>{t('cloud.carica_ora')}</button>
-                    <button style={styles.buttonMini} onClick={disattivaSyncCodice}>{t('cloud.disattiva')}</button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p style={{ ...styles.detail, fontSize: 12, marginTop: 0, marginBottom: 8, lineHeight: 1.5 }}>
-                    {t('cloud.crea_desc')}
-                  </p>
-                  <button style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 10 }} onClick={creaCodiceSync}>{t('cloud.crea_btn')}</button>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <input
-                      type="text"
-                      style={{ ...styles.inlineInput, flex: 1, padding: '6px 8px', fontSize: 15, fontFamily: 'monospace', textTransform: 'uppercase' }}
-                      placeholder="XXXXX-XXXXX"
-                      value={formattaCodiceSync(codiceSyncInput)}
-                      onChange={(e) => setCodiceSyncInput(normalizzaCodiceSync(e.target.value))}
-                      onKeyDown={(e) => { if (e.key === 'Enter' && normalizzaCodiceSync(codiceSyncInput).length === 10) usaCodiceSyncEsistente(); }}
-                    />
-                    <button style={{ ...styles.buttonPrimary, disabled: normalizzaCodiceSync(codiceSyncInput).length !== 10 }} onClick={usaCodiceSyncEsistente}>{t('cloud.usa')}</button>
-                  </div>
-                </>
-              )}
-              {syncCodiceStatus.text && (
-                <div style={{ marginTop: 10, padding: 8, borderRadius: 6, background: syncCodiceStatus.type === 'error' ? 'rgba(255,0,0,0.1)' : syncCodiceStatus.type === 'success' ? 'rgba(0,255,0,0.1)' : 'rgba(255,255,255,0.05)', color: syncCodiceStatus.type === 'error' ? C.red : syncCodiceStatus.type === 'success' ? C.green : C.goldDark, fontSize: 12, textAlign: 'center' }}>
-                  {syncCodiceStatus.text}
-                </div>
-              )}
+            {/* Selettore Modalità: 📱 Locale vs ☁️ Online */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 14, background: 'rgba(0,0,0,0.06)', padding: 3, borderRadius: 8 }}>
+              <button
+                type="button"
+                style={{
+                  ...styles.button,
+                  border: 'none',
+                  background: tabBackup === 'locale' ? C.panel : 'transparent',
+                  color: tabBackup === 'locale' ? C.goldDark : C.inkDim,
+                  fontWeight: tabBackup === 'locale' ? 700 : 500,
+                  boxShadow: tabBackup === 'locale' ? '0 1px 4px rgba(0,0,0,0.15)' : 'none',
+                  borderRadius: 6,
+                  padding: '8px 12px',
+                  fontSize: 13,
+                }}
+                onClick={() => { setTabBackup('locale'); setSyncCodiceStatus({ text: '', type: '' }); }}
+              >
+                📱 Locale
+              </button>
+              <button
+                type="button"
+                style={{
+                  ...styles.button,
+                  border: 'none',
+                  background: tabBackup === 'online' ? C.panel : 'transparent',
+                  color: tabBackup === 'online' ? C.goldDark : C.inkDim,
+                  fontWeight: tabBackup === 'online' ? 700 : 500,
+                  boxShadow: tabBackup === 'online' ? '0 1px 4px rgba(0,0,0,0.15)' : 'none',
+                  borderRadius: 6,
+                  padding: '8px 12px',
+                  fontSize: 13,
+                }}
+                onClick={() => { setTabBackup('online'); setSyncCodiceStatus({ text: '', type: '' }); }}
+              >
+                ☁️ Online
+              </button>
             </div>
 
+            {tabBackup === 'locale' ? (
+              <div style={{ padding: 12, borderRadius: 8, background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, marginBottom: 16 }}>
+                <div style={{ ...styles.detail, fontWeight: 'bold', fontSize: 13, marginBottom: 4, color: C.ink }}>
+                  📱 Backup Locale su File JSON
+                </div>
+                <p style={{ ...styles.detail, fontSize: 12, marginTop: 0, marginBottom: 12, lineHeight: 1.5 }}>
+                  Scarica l'intero archivio di tutti i personaggi salvati su questo dispositivo in un unico file JSON, oppure ripristina un backup precedente.
+                </p>
+
+                <div style={{ background: 'rgba(201,162,39,0.08)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 12, color: C.ink, fontWeight: 600 }}>
+                    📦 Personaggi nel tuo archivio:
+                  </span>
+                  <strong style={{ color: C.goldDark, fontSize: 14 }}>
+                    {Object.keys(roster.personaggi || {}).length}
+                  </strong>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <button
+                    type="button"
+                    style={{ ...styles.buttonPrimary, width: '100%', padding: '9px 12px', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                    onClick={esportaBackupCompleto}
+                  >
+                    📂 Scarica Archivio Completo (JSON)
+                  </button>
+
+                  <button
+                    type="button"
+                    style={{ ...styles.button, width: '100%', padding: '9px 12px', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                    onClick={() => ripristinaArchivioRef.current?.click()}
+                  >
+                    ⬇️ Ripristina Archivio da File
+                  </button>
+                  <input
+                    ref={ripristinaArchivioRef}
+                    type="file"
+                    accept=".json,application/json"
+                    style={{ display: 'none' }}
+                    onChange={ripristinaArchivioLocale}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div style={{ padding: 12, borderRadius: 8, background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, marginBottom: 16 }}>
+                <div style={{ ...styles.detail, fontWeight: 'bold', marginBottom: 6 }}>{t('cloud.sync_codice_titolo')}</div>
+                {codiceSync && autoSyncCodice ? (
+                  <>
+                    <p style={{ ...styles.detail, fontSize: 12, marginTop: 0, marginBottom: 8, lineHeight: 1.5 }}>
+                      {t('cloud.sync_codice_info')}
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                      <div style={{ color: C.goldDark, fontSize: 20, fontWeight: 800, letterSpacing: 2, fontFamily: 'monospace' }}>{formattaCodiceSync(codiceSync)}</div>
+                      <button style={styles.buttonMini} onClick={() => navigator.clipboard?.writeText(formattaCodiceSync(codiceSync))}>📋</button>
+                    </div>
+                    {ultimoSyncCodice && <div style={{ ...styles.detail, fontSize: 11, marginBottom: 8 }}>{lingua === 'en' ? 'Last sync:' : 'Ultimo salvataggio:'} {ultimoSyncCodice}</div>}
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button style={{ ...styles.button, flex: 1 }} onClick={caricaDaCodiceSync}>{t('cloud.carica_ora')}</button>
+                      <button style={styles.buttonMini} onClick={disattivaSyncCodice}>{t('cloud.disattiva')}</button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p style={{ ...styles.detail, fontSize: 12, marginTop: 0, marginBottom: 8, lineHeight: 1.5 }}>
+                      {t('cloud.crea_desc')}
+                    </p>
+                    <button style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 10 }} onClick={creaCodiceSync}>{t('cloud.crea_btn')}</button>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <input
+                        type="text"
+                        style={{ ...styles.inlineInput, flex: 1, padding: '6px 8px', fontSize: 15, fontFamily: 'monospace', textTransform: 'uppercase' }}
+                        placeholder="XXXXX-XXXXX"
+                        value={formattaCodiceSync(codiceSyncInput)}
+                        onChange={(e) => setCodiceSyncInput(normalizzaCodiceSync(e.target.value))}
+                        onKeyDown={(e) => { if (e.key === 'Enter' && normalizzaCodiceSync(codiceSyncInput).length === 10) usaCodiceSyncEsistente(); }}
+                      />
+                      <button style={{ ...styles.buttonPrimary, disabled: normalizzaCodiceSync(codiceSyncInput).length !== 10 }} onClick={usaCodiceSyncEsistente}>{t('cloud.usa')}</button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {syncCodiceStatus.text && (
+              <div style={{ marginBottom: 12, padding: 8, borderRadius: 6, background: syncCodiceStatus.type === 'error' ? 'rgba(255,0,0,0.1)' : syncCodiceStatus.type === 'success' ? 'rgba(0,255,0,0.1)' : 'rgba(255,255,255,0.05)', color: syncCodiceStatus.type === 'error' ? C.red : syncCodiceStatus.type === 'success' ? C.green : C.goldDark, fontSize: 12, textAlign: 'center' }}>
+                {syncCodiceStatus.text}
+              </div>
+            )}
 
             <button style={{ ...styles.button, width: '100%' }} onClick={() => setMostraCloud(false)}>{t('modal.chiudi')}</button>
           </div>
