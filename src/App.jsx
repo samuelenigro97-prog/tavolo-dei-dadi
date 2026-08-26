@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.7';
+const APP_VERSION = '4.0.8';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -8657,7 +8657,9 @@ export default function App() {
                 {/* 1. Box Visione & Percezione Passiva */}
                 <div
                   style={{
-                    ...styles.vitalBox,
+                    background: C.panel,
+                    border: `1px solid ${C.border}`,
+                    borderRadius: 10,
                     position: 'relative',
                     overflow: 'hidden',
                     padding: '10px 12px',
@@ -8703,7 +8705,9 @@ export default function App() {
                 {/* 2. Box Resistenze & Condizioni */}
                 <div
                   style={{
-                    ...styles.vitalBox,
+                    background: C.panel,
+                    border: `1px solid ${C.border}`,
+                    borderRadius: 10,
                     position: 'relative',
                     overflow: 'hidden',
                     padding: '10px 12px',
@@ -8793,7 +8797,9 @@ export default function App() {
                 {/* 3. Box TS Morte & Ispirazione */}
                 <div
                   style={{
-                    ...styles.vitalBox,
+                    background: C.panel,
+                    border: `1px solid ${C.border}`,
+                    borderRadius: 10,
                     position: 'relative',
                     overflow: 'hidden',
                     padding: '10px 12px',
@@ -8841,7 +8847,9 @@ export default function App() {
                       )}
                     </div>
                     {/* Nome sezione posizionato sotto i controlli */}
-                    <div style={{ ...styles.vitalLabel, marginTop: 4, paddingTop: 2, textAlign: 'center', whiteSpace: 'nowrap' }}>💀 {t("vital.ts_morte")}</div>
+                    <div style={{ position: 'static', fontSize: 11, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', textAlign: 'center', width: '100%', marginTop: 4, whiteSpace: 'nowrap' }}>
+                      💀 {t("vital.ts_morte")}
+                    </div>
                   </div>
 
                   {/* Divisore verticale netto */}
@@ -8886,7 +8894,9 @@ export default function App() {
                       )}
                     </div>
                     {/* Nome sezione posizionato sotto la stella */}
-                    <div style={{ ...styles.vitalLabel, marginTop: 4, paddingTop: 2, textAlign: 'center', whiteSpace: 'nowrap' }}>⭐ {t("vital.ispirazione") || 'ISPIRAZIONE'}</div>
+                    <div style={{ position: 'static', fontSize: 11, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', textAlign: 'center', width: '100%', marginTop: 4, whiteSpace: 'nowrap' }}>
+                      ⭐ {t("vital.ispirazione") || 'ISPIRAZIONE'}
+                    </div>
                   </div>
                 </div>
               </div>

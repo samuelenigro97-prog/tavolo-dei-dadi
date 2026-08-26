@@ -199,24 +199,24 @@ export const styles = {
     background: C.panelLight,
     border: `1px solid ${C.border}`,
     borderRadius: 8,
-    padding: '10px 8px',
+    padding: '8px 6px',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    minHeight: 82,
+    minHeight: 74,
     height: '100%',
     boxSizing: 'border-box',
-    paddingTop: 30,
+    paddingTop: 24,
     position: 'relative',
     overflow: 'hidden',
   },
   vitalLabel: {
     position: 'absolute',
-    top: 8,
+    top: 6,
     left: 0,
     right: 0,
-    fontSize: 13,
+    fontSize: 11,
     color: C.inkDim,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
@@ -226,7 +226,7 @@ export const styles = {
     width: '100%',
   },
   vitalValue: {
-    fontSize: 25,
+    fontSize: 22,
     fontWeight: 800,
     color: C.ink,
     display: 'flex',
@@ -448,16 +448,16 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
    centrale) vivono nella STESSA griglia. */
 .profilo-griglia {
   display: grid;
-  grid-template-columns: 270px minmax(0, 1fr) 300px;
+  grid-template-columns: 280px minmax(0, 1fr) 310px;
   column-gap: 14px;
-  row-gap: 10px;
+  row-gap: 12px;
   align-items: stretch;
 }
 .profilo-col-sinistra {
   grid-column: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   min-width: 0;
 }
 .profilo-main {
@@ -487,9 +487,9 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 }
 .ritratto-box {
   width: 100%;
-  height: 315px;
-  min-height: 315px;
-  max-height: 315px;
+  height: 310px;
+  min-height: 310px;
+  max-height: 310px;
   border-radius: 12px;
   overflow: hidden;
   position: relative;
@@ -567,13 +567,15 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   flex-direction: column;
   gap: 8px;
   min-width: 0;
+  height: 100%;
 }
 .car-tier-2 > .blocco-car {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 5px 10px;
+  padding: 6px 12px;
   min-width: 0;
+  flex: 1 1 auto;
 }
 
 /* Tier 3: Risorse, 3 Box Vitali, Carisma */
@@ -592,13 +594,15 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   flex-direction: column;
   gap: 8px;
   min-width: 0;
+  height: 100%;
 }
 .car-tier-3 > .blocco-car {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 6px 10px;
+  padding: 6px 12px;
   min-width: 0;
+  flex: 1 1 auto;
 }
 
 .profilo-col-sinistra .sezione { margin-bottom: 0 !important; }
