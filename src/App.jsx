@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.46';
+const APP_VERSION = '4.0.47';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -9104,7 +9104,7 @@ export default function App() {
 
                 <div className="profilo-anagrafica-campi" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {/* Riga 1: Sesso, Specie/Razza, Taglia, Allineamento */}
-                  <div className="campi-anagrafica campi-anagrafica-riga1" style={{ display: 'grid', gridTemplateColumns: '0.75fr 1.45fr 0.65fr 1.15fr', gap: '6px 10px', alignItems: 'end' }}>
+                  <div className="campi-anagrafica campi-anagrafica-riga1" style={{ display: 'grid', gridTemplateColumns: '0.85fr 1.25fr 1.35fr 0.95fr', gap: '6px 10px', alignItems: 'end' }}>
                     <CampoModulo label={t("profilo.sesso")}>
                       <select
                         value={scheda.sesso || ''}
@@ -9129,8 +9129,8 @@ export default function App() {
                     </CampoModulo>
                   </div>
 
-                  {/* Riga 2: Background, Classe, Sottoclasse (allargata), P.E. (compatto) */}
-                  <div className="campi-anagrafica campi-anagrafica-riga2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.65fr 0.55fr', gap: '6px 10px', alignItems: 'end' }}>
+                  {/* Riga 2: Background, Classe, Sottoclasse, P.E. (allineata a colonna 1-to-1 con Riga 1) */}
+                  <div className="campi-anagrafica campi-anagrafica-riga2" style={{ display: 'grid', gridTemplateColumns: '0.85fr 1.25fr 1.35fr 0.95fr', gap: '6px 10px', alignItems: 'end' }}>
                     <CampoModulo label={t("profilo.background")}>
                       <CampoBloccato
                         valore={traduciDato(scheda.background) || t('profilo.nessuno')}
