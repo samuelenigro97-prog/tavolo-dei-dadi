@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.11';
+const APP_VERSION = '4.0.12';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3197,21 +3197,27 @@ export default function App() {
   }, [scheda?.classe, scheda?.sottoclasse, scheda?.incantatore?.caratteristica]);
 
   // --- Archivio DM: deposita una copia della scheda attiva ---
-  // Parte ~10 secondi dopo l'ultima modifica (così non si scrive a ogni tasto)
-  // e solo se la scheda ha un nome vero. Le immagini non vengono inviate.
+  // Parte ~45 secondi dopo l'ultima modifica effettiva (anti-spreco Cloudflare KV)
+  // e solo se la scheda ha un nome vero e i dati sono effettivamente cambiati.
+  const ultimoInvioDmRef = useRef('');
   useEffect(() => {
     if (!URL_ARCHIVIO_PG || !scheda) return;
     const nome = formattaNomePg(String(scheda?.nome || '')).trim();
     if (!nome || nome === 'Nuovo personaggio') return;
+    const { ritratto, mappaCampagna: _m, ...leggera } = scheda;
+    leggera.nome = nome;
+    const payloadStr = JSON.stringify({ dispositivo: idDispositivo, id: roster.attivo, scheda: leggera });
+    if (payloadStr === ultimoInvioDmRef.current) return;
+
     const timer = setTimeout(() => {
-      const { ritratto, mappaCampagna: _m, ...leggera } = scheda;
-      leggera.nome = nome;
       fetch(`${URL_ARCHIVIO_PG.replace(/\/+$/, '')}/pg`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dispositivo: idDispositivo, id: roster.attivo, scheda: leggera }),
+        body: payloadStr,
+      }).then((res) => {
+        if (res.ok) ultimoInvioDmRef.current = payloadStr;
       }).catch(() => { /* offline o archivio spento: si riproverà alla prossima modifica */ });
-    }, 10000);
+    }, 45000);
     return () => clearTimeout(timer);
   }, [scheda, roster.attivo, idDispositivo]);
 
@@ -8455,10 +8461,10 @@ export default function App() {
 
               {/* Riga 2 — Punti Ferita (compatta, pulita e proporzionata) */}
               <div className="pm-pf">
-                <div style={{ ...styles.vitalBox, gridColumn: 'span 4', padding: '10px 12px 8px' }}>
+                <div style={{ ...styles.vitalBox, gridColumn: 'span 4', padding: '12px 14px 10px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center' }}>
                   <SfondoVit>🩸</SfondoVit>
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 4 }}>
-                    <div style={{ ...styles.vitalLabel, margin: 0, fontSize: 12 }}>❤️ {t("vital.pf")}</div>
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 2 }}>
+                    <div style={{ ...styles.vitalLabel, position: 'static', margin: 0, fontSize: 12 }}>❤️ {t("vital.pf")}</div>
                   </div>
 
                   {/* BARRA DELLA VITA STILE VIDEOGIOCO */}
@@ -8471,7 +8477,7 @@ export default function App() {
                     const percTemp = Math.max(0, Math.min(100, (temp / max) * 100));
                     const coloreNormale = (att / Math.max(1, maxPf)) > 0.5 ? 'linear-gradient(90deg, #2e7d32, #4caf50)' : (att / Math.max(1, maxPf)) > 0.25 ? 'linear-gradient(90deg, #f57f17, #ffb300)' : 'linear-gradient(90deg, #c62828, #e53935)';
                     return (
-                      <div style={{ position: 'relative', width: '100%', height: 24, borderRadius: 12, background: 'rgba(0,0,0,0.7)', border: `2px solid ${C.goldDark}`, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.3)', overflow: 'hidden', marginBottom: 4, display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
+                      <div style={{ position: 'relative', width: '100%', height: 26, borderRadius: 13, background: 'rgba(0,0,0,0.7)', border: `2px solid ${C.goldDark}`, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.3)', overflow: 'hidden', margin: '4px 0', display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
                         <div style={{ width: `${percNormale}%`, height: '100%', background: coloreNormale, transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: '0 0 10px rgba(76,175,80,0.5)', position: 'relative' }}>
                           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)' }} />
                         </div>
@@ -8481,7 +8487,7 @@ export default function App() {
                           </div>
                         )}
                         {/* Overlay cliccabile per modificare PF attuali */}
-                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13, textShadow: '0 1px 3px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.8)', letterSpacing: 0.5, gap: 4 }}>
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13.5, textShadow: '0 1px 3px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.8)', letterSpacing: 0.5, gap: 4 }}>
                           <span style={{ color: '#fff', cursor: 'pointer' }}>
                             <Editable value={scheda.pfAttuali} tipo="numero" onChange={(v) => {
                               const danno = scheda.pfAttuali - v;
@@ -8489,7 +8495,7 @@ export default function App() {
                               if (danno > 0 && scheda.concentrazione) {
                                 setCheckConc({ danno, cd: Math.max(10, Math.floor(danno / 2)), spell: scheda.concentrazione, esito: null });
                               }
-                            }} width={34} style={{ color: '#fff', fontWeight: 800, fontSize: 13, textShadow: '0 1px 3px rgba(0,0,0,0.9)', background: 'transparent', border: 'none' }} />
+                            }} width={34} style={{ color: '#fff', fontWeight: 800, fontSize: 13.5, textShadow: '0 1px 3px rgba(0,0,0,0.9)', background: 'transparent', border: 'none' }} />
                           </span>
                           <span style={{ color: '#fff' }}>/ {maxPf}</span>
                         </div>
@@ -8498,7 +8504,7 @@ export default function App() {
                   })()}
 
                   {/* PF Temporanei — centrati sotto la barra */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 4 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 2 }}>
                     <span
                       style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#42a5f5', background: 'rgba(66,165,245,0.12)', border: '1px solid rgba(66,165,245,0.45)', borderRadius: 10, padding: '1px 8px' }}
                       title={t('vital.temporanei')}
@@ -8508,7 +8514,8 @@ export default function App() {
                     </span>
                   </div>
 
-                  <div style={{ display: 'flex', gap: 3, marginTop: 2, marginBottom: 4, justifyContent: 'center', flexWrap: 'wrap' }}>
+                  {/* Pulsanti Rapidi Danno / Cura */}
+                  <div style={{ display: 'flex', gap: 3, margin: '2px 0 4px', justifyContent: 'center', flexWrap: 'wrap' }}>
                     <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 20) }); }} title={t('vital.danno')}>-20</button>
                     <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 10) }); }} title={t('vital.danno')}>-10</button>
                     <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 5) }); }} title={t('vital.danno')}>-5</button>
@@ -8519,80 +8526,125 @@ export default function App() {
                     <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 20) }); }} title={t('vital.cura')}>+20</button>
                   </div>
 
+                  {/* Dadi Vita */}
                   {(() => {
                     const gruppiDV = gruppiDadoVita(scheda.dadiVita);
                     const spesiMapDV = dadiVitaSpesiNormalizzati(scheda);
                     return (
-                      <div style={{ ...styles.detail, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 4, paddingTop: 4, borderTop: `1px solid ${C.border}`, gap: 10, flexWrap: 'wrap' }}>
-                        {/* Dadi Vita */}
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-                          {gruppiDV.map((g) => (
-                            <span key={g.facce} style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-                              {t('vital.dadi_vita')}{' '}
-                              <Rollable onRoll={() => tiraDadoVita(g.facce)} title={t('vital.dadi_vita_tooltip')}>
-                                <strong style={{ color: C.goldDark }}>{g.quantita}</strong>
-                              </Rollable>
-                              {' × d'}
-                              <strong style={{ color: C.goldDark }} title={t('vital.dado_tipo_tooltip')}>
-                                {g.facce}
-                              </strong>
-                              {' · '}{t('vital.spesi')}{' '}
-                              <select
-                                style={{ ...styles.inlineInput, fontSize: 10.5, padding: '1px 3px' }}
-                                value={Math.min(Math.max(0, spesiMapDV[g.facce] || 0), g.quantita)}
-                                onChange={(e) => aggiorna({ dadiVitaSpesi: { ...spesiMapDV, [g.facce]: Number(e.target.value) } })}
-                                title={t('vital.spesi_tooltip')}
-                              >
-                                {Array.from({ length: g.quantita + 1 }, (_, n) => (
-                                  <option key={n} value={n}>{n}</option>
-                                ))}
-                              </select>
-                              <span style={{ color: C.inkDim }}>/ {g.quantita}</span>
-                              <button
-                                style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 10.5, color: C.green, borderColor: C.green }}
-                                title={t('vital.usa_tooltip')}
-                                disabled={(spesiMapDV[g.facce] || 0) >= g.quantita}
-                                onClick={() => tiraDadoVita(g.facce)}
-                              >
-                                🎲 {t('vital.usa')}
-                              </button>
-                            </span>
-                          ))}
-                        </div>
-
-                        {/* Divisore */}
-                        <span style={{ width: 1, height: 14, background: C.border, opacity: 0.6 }} />
-
-                        {/* TS Morte centrato e compatto */}
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(0,0,0,0.05)', borderRadius: 6, padding: '1px 6px' }}>
-                          <span style={{ fontSize: 10, fontWeight: 700, color: C.inkDim, textTransform: 'uppercase' }}>💀 TS:</span>
-                          <span style={{ color: C.green, fontWeight: 700, fontSize: 9.5 }}>✔</span>
-                          {[1, 2, 3].map((n) => (
-                            <input key={`s-${n}`} type="checkbox" style={{ margin: 0, cursor: 'pointer' }} checked={(scheda.tsMorte?.successi || 0) >= n} onChange={() => {
-                              const att = scheda.tsMorte?.successi || 0;
-                              aggiorna({ tsMorte: { ...scheda.tsMorte, successi: att === n ? n - 1 : n } });
-                            }} />
-                          ))}
-                          <span style={{ color: C.red, fontWeight: 700, fontSize: 9.5, marginLeft: 2 }}>✘</span>
-                          {[1, 2, 3].map((n) => (
-                            <input key={`f-${n}`} type="checkbox" style={{ margin: 0, cursor: 'pointer' }} checked={(scheda.tsMorte?.fallimenti || 0) >= n} onChange={() => {
-                              const att = scheda.tsMorte?.fallimenti || 0;
-                              aggiorna({ tsMorte: { ...scheda.tsMorte, fallimenti: att === n ? n - 1 : n } });
-                            }} />
-                          ))}
-                          <button className="ts-morte-reset" style={{ ...styles.buttonMini, fontSize: 9, padding: '1px 4px', marginLeft: 2 }} onClick={() => aggiorna({ tsMorte: { successi: 0, fallimenti: 0 } })} title={t("vital.reset_ts")}>↺</button>
-                          {scheda.pfAttuali <= 0 && (
+                      <div style={{ ...styles.detail, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, flexWrap: 'wrap' }}>
+                        {gruppiDV.map((g) => (
+                          <span key={g.facce} style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                            {t('vital.dadi_vita')}{' '}
+                            <Rollable onRoll={() => tiraDadoVita(g.facce)} title={t('vital.dadi_vita_tooltip')}>
+                              <strong style={{ color: C.goldDark }}>{g.quantita}</strong>
+                            </Rollable>
+                            {' × d'}
+                            <strong style={{ color: C.goldDark }} title={t('vital.dado_tipo_tooltip')}>
+                              {g.facce}
+                            </strong>
+                            {' · '}{t('vital.spesi')}{' '}
+                            <select
+                              style={{ ...styles.inlineInput, fontSize: 10.5, padding: '1px 3px' }}
+                              value={Math.min(Math.max(0, spesiMapDV[g.facce] || 0), g.quantita)}
+                              onChange={(e) => aggiorna({ dadiVitaSpesi: { ...spesiMapDV, [g.facce]: Number(e.target.value) } })}
+                              title={t('vital.spesi_tooltip')}
+                            >
+                              {Array.from({ length: g.quantita + 1 }, (_, n) => (
+                                <option key={n} value={n}>{n}</option>
+                              ))}
+                            </select>
+                            <span style={{ color: C.inkDim }}>/ {g.quantita}</span>
                             <button
-                              style={{ ...styles.buttonMini, fontSize: 9, color: C.red, borderColor: C.red, fontWeight: 700, padding: '1px 4px' }}
-                              onClick={tiroSalvezzaMorte}
-                              disabled={rolling || (scheda.tsMorte?.successi || 0) >= 3 || (scheda.tsMorte?.fallimenti || 0) >= 3}
-                              title="Tira 1d20 TS Morte"
-                            >🎲</button>
-                          )}
-                        </div>
+                              style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 10.5, color: C.green, borderColor: C.green }}
+                              title={t('vital.usa_tooltip')}
+                              disabled={(spesiMapDV[g.facce] || 0) >= g.quantita}
+                              onClick={() => tiraDadoVita(g.facce)}
+                            >
+                              🎲 {t('vital.usa')}
+                            </button>
+                          </span>
+                        ))}
                       </div>
                     );
                   })()}
+
+                  {/* Linea divisoria sotto Dadi Vita */}
+                  <div style={{ width: '100%', height: 1, background: C.border, margin: '6px 0 4px', opacity: 0.7 }} />
+
+                  {/* Tiri Salvezza Morte: titolo e 3 caselle sopra (successi), 3 caselle sotto (fallimenti) */}
+                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
+                      💀 {lingua === 'en' ? 'Death Saving Throws' : 'Tiri Salvezza Morte'}
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'flex-start' }}>
+                        {/* 3 sopra: Successi */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ fontSize: 10.5, fontWeight: 700, color: C.green, width: 68, textAlign: 'right' }}>
+                            ✔ {lingua === 'en' ? 'Successes' : 'Successi'}
+                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            {[1, 2, 3].map((n) => (
+                              <input
+                                key={`s-${n}`}
+                                type="checkbox"
+                                style={{ width: 15, height: 15, margin: 0, cursor: 'pointer', accentColor: C.green }}
+                                checked={(scheda.tsMorte?.successi || 0) >= n}
+                                onChange={() => {
+                                  const att = scheda.tsMorte?.successi || 0;
+                                  aggiorna({ tsMorte: { ...scheda.tsMorte, successi: att === n ? n - 1 : n } });
+                                }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* 3 sotto: Fallimenti */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ fontSize: 10.5, fontWeight: 700, color: C.red, width: 68, textAlign: 'right' }}>
+                            ✘ {lingua === 'en' ? 'Failures' : 'Fallimenti'}
+                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            {[1, 2, 3].map((n) => (
+                              <input
+                                key={`f-${n}`}
+                                type="checkbox"
+                                style={{ width: 15, height: 15, margin: 0, cursor: 'pointer', accentColor: C.red }}
+                                checked={(scheda.tsMorte?.fallimenti || 0) >= n}
+                                onChange={() => {
+                                  const att = scheda.tsMorte?.fallimenti || 0;
+                                  aggiorna({ tsMorte: { ...scheda.tsMorte, fallimenti: att === n ? n - 1 : n } });
+                                }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Reset e Tiro */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center', justifyContent: 'center' }}>
+                        <button
+                          className="ts-morte-reset"
+                          style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 6px' }}
+                          onClick={() => aggiorna({ tsMorte: { successi: 0, fallimenti: 0 } })}
+                          title={t("vital.reset_ts")}
+                        >
+                          ↺ Reset
+                        </button>
+                        {scheda.pfAttuali <= 0 && (
+                          <button
+                            style={{ ...styles.buttonMini, fontSize: 10, color: C.red, borderColor: C.red, fontWeight: 700, padding: '2px 6px' }}
+                            onClick={tiroSalvezzaMorte}
+                            disabled={rolling || (scheda.tsMorte?.successi || 0) >= 3 || (scheda.tsMorte?.fallimenti || 0) >= 3}
+                            title="Tira 1d20 TS Morte"
+                          >
+                            🎲 {lingua === 'en' ? 'Roll' : 'Tira'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               </div>{/* fine pm-tier-1 (Anagrafica + Punti Ferita) */}
