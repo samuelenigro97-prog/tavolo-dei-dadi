@@ -2647,7 +2647,7 @@ function ArchivioDm({ url, onChiudi, onApri, onApriSolaLettura }) {
                             onClick={() => esportaScheda(s)}
                             title="Esporta e scarica il file JSON di questo personaggio"
                           >
-                            📂 Esporta
+                            ⬆️ Esporta
                           </button>
                           <button
                             style={{ ...styles.buttonMini, fontWeight: 500 }}
@@ -6087,7 +6087,7 @@ export default function App() {
               style={{ ...styles.button, width: '100%', marginBottom: 8 }}
               onClick={() => setMostraListaCarica((v) => !v)}
             >
-              📂 {t('menu.carica_personaggio')} {mostraListaCarica ? '▴' : '▾'} ({Object.keys(roster.personaggi).length})
+              👥 {t('menu.carica_personaggio')} {mostraListaCarica ? '▴' : '▾'} ({Object.keys(roster.personaggi).length})
             </button>
             {mostraListaCarica && (
               <>
@@ -6158,7 +6158,7 @@ export default function App() {
                   }}
                   title={t('tip.esporta')}
                 >
-                  <span>📂</span> <span>Esporta</span>
+                  <span>⬆️</span> <span>Esporta</span>
                 </button>
                 <button
                   style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
@@ -6191,7 +6191,7 @@ export default function App() {
                   <span>⬇️</span> <span>{t('menu.ripristina')}</span>
                 </button>
                 <button style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} onClick={esportaBackupCompleto} title={t('menu.esporta_tutto_tip')}>
-                  <span>📂</span> <span>{t('menu.esporta_tutto')}</span>
+                  <span>⬆️</span> <span>{t('menu.esporta_tutto')}</span>
                 </button>
                 {leggiSnapshots().length > 0 && (
                   <button style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} onClick={() => setMostraRipristino(true)}>
@@ -6379,7 +6379,7 @@ export default function App() {
                     style={{ ...styles.buttonPrimary, width: '100%', padding: '9px 12px', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
                     onClick={esportaBackupCompleto}
                   >
-                    📂 Scarica Archivio Completo (JSON)
+                    ⬆️ Scarica Archivio Completo (JSON)
                   </button>
 
                   <button
@@ -8652,7 +8652,7 @@ export default function App() {
                       setMostraMenuEsporta((v) => !v);
                     }}
                   >
-                    📂
+                    ⬆️
                   </button>
                 </div>
 

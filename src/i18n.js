@@ -54,7 +54,7 @@ export const DIZIONARIO = {
     'menu.elimina_testo': 'Vuoi eliminare davvero "{nome}"? L\'azione è irreversibile.',
     'menu.elimina_tooltip': 'Elimina {nome}',
     'menu.nessun_personaggio': 'Nessun personaggio salvato.',
-    'menu.da_file': '📂 Importa',
+    'menu.da_file': '⬇️ Importa',
     'menu.pg_casuale': '🎲 PG Casuale',
     'menu.pg_casuale_tooltip': 'Genera un personaggio casuale ma coerente (classe, specie, background, stat, competenze e nome)',
 
@@ -814,7 +814,7 @@ export const DIZIONARIO = {
     'menu.elimina_testo': 'Are you sure you want to delete "{nome}"? This action is irreversible.',
     'menu.elimina_tooltip': 'Delete {nome}',
     'menu.nessun_personaggio': 'No saved characters.',
-    'menu.da_file': '📂 Import',
+    'menu.da_file': '⬇️ Import',
     'menu.pg_casuale': '🎲 Random Character',
     'menu.pg_casuale_tooltip': 'Generate a coherent random character (class, species, background, stats, proficiencies and name)',
 
