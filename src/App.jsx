@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.22';
+const APP_VERSION = '4.0.23';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -1781,9 +1781,77 @@ function nuovoId() {
   return 'pg-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
 
+const PERSONAGGIO_PREDEFINITO = {
+  nome: "Elevorn DeVille",
+  sesso: "",
+  background: "Eremita",
+  classe: "Guerriero",
+  sottoclasse: "",
+  multiclasse: [
+    { classe: "Ranger", livello: 6 },
+    { classe: "Ladro", livello: 3 }
+  ],
+  specie: "Mezzelfo",
+  allineamento: "Neutrale",
+  versione: "2014",
+  livello: 1,
+  pe: 0,
+  ca: 21,
+  pfMax: 74,
+  pfAttuali: 74,
+  pfTemp: 0,
+  dadiVita: "7d10 + 3d8",
+  dadiVitaSpesi: 0,
+  velocita: 30,
+  taglia: "Media",
+  bonusCompetenza: 4,
+  ispirazione: false,
+  tsMorte: { successi: 0, fallimenti: 0 },
+  caratteristiche: { forza: 10, destrezza: 20, costituzione: 14, intelligenza: 10, saggezza: 14, carisma: 11 },
+  armatura: { nome: "", tipo: "media", base: 14, scudo: true, bonus: 2 },
+  condizioni: [],
+  tiriSalvezza: { forza: true, destrezza: true, costituzione: true, intelligenza: false, saggezza: false, carisma: false },
+  abilita: {
+    acrobazia: 1, addestrareAnimali: 1, arcano: 1, atletica: 2, furtivita: 1, indagare: 1, inganno: 2,
+    intimidire: 1, intrattenere: 1, intuizione: 1, medicina: 1, natura: 1, percezione: 2, persuasione: 1,
+    rapiditaDiMano: 1, religione: 1, sopravvivenza: 1, storia: 1
+  },
+  attacchi: [
+    { id: 1787725473620, nome: "Spada lunga", categoria: "Azione", bonus: 5, danno: "1d8+3", tipoDanno: "Tagliente", note: "" }
+  ],
+  incantatore: { caratteristica: "" },
+  slotIncantesimo: { "1": { totale: 0, spesi: 0 }, "2": { totale: 0, spesi: 0 }, "3": { totale: 0, spesi: 0 }, "4": { totale: 0, spesi: 0 }, "5": { totale: 0, spesi: 0 }, "6": { totale: 0, spesi: 0 }, "7": { totale: 0, spesi: 0 }, "8": { totale: 0, spesi: 0 }, "9": { totale: 0, spesi: 0 } },
+  incantesimiLista: [],
+  maxTrucchetti: 0,
+  maxIncantesimi: 0,
+  privilegi: "",
+  privilegiSottoclasse: "",
+  trattiSpecie: "",
+  talenti: "",
+  metamagie: "",
+  equipaggiamento: "",
+  inventario: [],
+  sintonia: "",
+  lingue: "Comune",
+  aspetto: "",
+  trattiCaratteriali: "",
+  diario: [],
+  note: "",
+  risorse: [{ id: "auto-recuperare-energie", nome: "Recuperare Energie", max: 1, attuali: 1, reset: "breve" }],
+  sfinimento: 0,
+  concentrazione: "",
+  resistenze: "",
+  sensi: "Scurovisione 18 m",
+  addestramento: { armature: { leggera: true, media: true, pesante: true, scudi: true }, armi: "Armi semplici e da guerra", strumenti: "" },
+  denari: { mr: 0, ma: 0, me: 0, mo: 0, mp: 0 },
+  sezioniAperte: { incantesimi: true, aspetto: false, diario: true },
+  controlliIgnorati: [],
+  mappaMarker: { x: 50, y: 50 }
+};
+
 function rosterVuoto() {
   const id = nuovoId();
-  return { attivo: id, personaggi: { [id]: schedaVuota() } };
+  return { attivo: id, personaggi: { [id]: { ...schedaVuota(), ...PERSONAGGIO_PREDEFINITO } } };
 }
 
 function unisciSchedeFG(lista) {
@@ -1958,8 +2026,9 @@ function loadState() {
   } catch {
     // dati corrotti: riparti da zero
   }
-  // Nessun dato salvato: parti vuoto e apri il Menu (niente più Avventuriero fantoccio).
-  return { attivo: '', personaggi: {} };
+  // Se nessun dato salvato: carica il personaggio predefinito
+  const defId = nuovoId();
+  return { attivo: defId, personaggi: { [defId]: { ...schedaVuota(), ...PERSONAGGIO_PREDEFINITO } } };
 }
 
 function saveState(roster) {
