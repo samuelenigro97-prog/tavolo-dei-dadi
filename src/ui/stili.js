@@ -204,7 +204,7 @@ export const styles = {
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    minHeight: 90,
+    minHeight: 104,
     height: '100%',
     boxSizing: 'border-box',
     paddingTop: 28,
@@ -630,9 +630,9 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .ritratto-box { min-height: 240px; height: 240px; }
   .car-coppia { gap: 8px; }
 }
-.vitali { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; align-items: stretch; }
+.vitali { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 8px; align-items: stretch; }
 /* 4 riquadri vitali separati (Visione, Perc. Passiva, Resistenze, Condizioni) identici alla riga sopra */
-.vitali-sezioni-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; align-items: stretch; width: 100%; }
+.vitali-sezioni-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 8px; align-items: stretch; width: 100%; }
 .vitali-sezioni-4 > * { min-width: 0; }
 @media (max-width: 768px) {
   .vitali-sezioni-4 { grid-template-columns: repeat(2, 1fr); }

@@ -223,20 +223,35 @@ export function CampoConTendina({ value, opzioni, onChange, width, title, lookup
     onChange(attuali.filter(x => x !== v).join(', '));
   };
 
-  // Stesso aspetto dei "quadratini" classici (ListaQuadratini), con la × per rimuovere.
-  const chip = { background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '5px 10px', fontSize: 13, color: C.ink, display: 'inline-flex', alignItems: 'center', gap: 6 };
+  // Aspetto compatto ed elegante per non sbordare nei box vitali
+  const chip = {
+    background: 'rgba(0,0,0,0.04)',
+    border: `1px solid ${C.border}`,
+    borderRadius: 6,
+    padding: '2px 7px',
+    fontSize: 11.5,
+    color: C.ink,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    maxWidth: '100%',
+    boxSizing: 'border-box',
+    whiteSpace: 'nowrap',
+  };
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', minHeight: 24 }} title={title}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, flexWrap: 'wrap', minHeight: 22, width: '100%' }} title={title}>
       {visualizzati.map(t => {
         const sp = lookup && setInfo ? lookup(t) : null;
         return (
         <span key={t} title={sp || t} style={chip}>
           <span
-            style={sp ? { cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 } : undefined}
+            style={{ overflow: 'hidden', textOverflow: 'ellipsis', ...(sp ? { cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 } : {}) }}
             onClick={sp ? () => setInfo({ titolo: traduciDato(t), testo: sp }) : undefined}
           >{mostraVoce(t)}</span>
           <button
-            style={{ background: 'transparent', border: 'none', color: '#c0392b', cursor: 'pointer', padding: 0, fontSize: 16, lineHeight: 0.8 }}
+            type="button"
+            style={{ background: 'transparent', border: 'none', color: '#c0392b', cursor: 'pointer', padding: 0, fontSize: 13, lineHeight: 1, fontWeight: 'bold' }}
             onClick={() => rimuovi(t)}
             title={`Rimuovi ${t}`}
           >
@@ -245,7 +260,7 @@ export function CampoConTendina({ value, opzioni, onChange, width, title, lookup
         </span>
         );
       })}
-      <label style={{ ...chip, borderStyle: 'dashed', color: C.goldDark, cursor: 'pointer', position: 'relative', fontWeight: 700 }} title={t('common.aggiungi_lista')}>
+      <label style={{ ...chip, borderStyle: 'dashed', color: C.goldDark, cursor: 'pointer', position: 'relative', fontWeight: 700, padding: '2px 6px' }} title={t('common.aggiungi_lista')}>
         ➕
         <select
           value=""
