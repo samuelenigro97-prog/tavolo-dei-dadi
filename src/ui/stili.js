@@ -727,7 +727,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     width: 100% !important;
   }
 
-  .ritratto-box { min-height: 240px; height: 240px; }
+  .ritratto-box { min-height: 320px; height: 320px; max-height: 380px; border-radius: 14px !important; }
   .car-coppia { gap: 8px; }
 }
 .vitali { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 8px; align-items: stretch; }

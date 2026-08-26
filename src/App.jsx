@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.29';
+const APP_VERSION = '4.0.30';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -8720,18 +8720,6 @@ export default function App() {
                       </div>
                     );
                   })}
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 2 }}>
-                    <button
-                      style={{ ...styles.buttonMini }}
-                      onClick={() =>
-                        aggiorna({
-                          risorse: [...scheda.risorse, { id: Date.now(), nome: t("res.nuova"), attuali: 0, max: 0, reset: 'lungo' }],
-                        })
-                      }
-                    >
-                      + {t("res.aggiungi")}
-                    </button>
-                  </div>
                 </Sezione>
               </div>
             </div>
