@@ -528,6 +528,8 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .pm-pf > * { width: 100%; flex: 1 1 auto; }
 
 .car-col-fisiche, .car-col-mentali { display: contents; }
+.selettore-riga-1, .selettore-riga-2 { display: contents; }
+.selettore-divisore-desktop { display: inline-block; }
 
 .car-tier-1 {
   display: flex;
@@ -1066,11 +1068,23 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   }
   .selettore-personaggio-azioni {
     display: flex !important;
+    flex-direction: column !important;
     width: 100% !important;
     justify-content: center !important;
     gap: 6px !important;
     align-items: center !important;
-    flex-wrap: wrap !important;
+    margin: 0 auto !important;
+  }
+  .selettore-riga-1,
+  .selettore-riga-2 {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+  .selettore-divisore-desktop {
+    display: none !important;
   }
   .selettore-personaggio-azioni button {
     flex: 0 0 36px !important;
