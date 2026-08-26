@@ -1754,7 +1754,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.33';
+const APP_VERSION = '4.0.34';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -8455,7 +8455,7 @@ export default function App() {
                       setMostraLevelUp(true);
                     }}
                   >
-                    ⬆️
+                    🆙
                   </button>
                   <button
                     style={btnAzione}
@@ -9111,12 +9111,12 @@ export default function App() {
 
               {/* Riga 2 — Punti Ferita e Tiri Morte (spaziature bilanciate e sezioni centrate) */}
               <div className="pm-pf profilo-pf-box">
-                <div style={{ ...styles.vitalBox, gridColumn: 'span 4', padding: '12px 12px 10px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: 'auto', height: '100%', boxSizing: 'border-box' }}>
+                <div style={{ ...styles.vitalBox, gridColumn: 'span 4', padding: '10px 12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', minHeight: 'auto', height: '100%', boxSizing: 'border-box' }}>
                   <SfondoVit>🩸</SfondoVit>
 
-                  {/* Sezione Superiore: Punti Ferita */}
-                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', margin: '2px 0 4px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 4 }}>
+                  {/* Sezione Superiore: Punti Ferita — perfettamente centrata nello spazio disponibile */}
+                  <div style={{ flex: '1 1 auto', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, padding: '2px 0' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: 0 }}>
                       <div style={{ ...styles.vitalLabel, position: 'static', margin: 0, fontSize: 12 }}>❤️ {t("vital.pf")}</div>
                     </div>
 
@@ -9130,7 +9130,7 @@ export default function App() {
                       const percTemp = Math.max(0, Math.min(100, (temp / max) * 100));
                       const coloreNormale = (att / Math.max(1, maxPf)) > 0.5 ? 'linear-gradient(90deg, #2e7d32, #4caf50)' : (att / Math.max(1, maxPf)) > 0.25 ? 'linear-gradient(90deg, #f57f17, #ffb300)' : 'linear-gradient(90deg, #c62828, #e53935)';
                       return (
-                        <div style={{ position: 'relative', width: '100%', height: 26, borderRadius: 13, background: 'rgba(0,0,0,0.7)', border: `2px solid ${C.goldDark}`, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.3)', overflow: 'hidden', margin: '4px 0 3px', display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
+                        <div style={{ position: 'relative', width: '100%', height: 26, borderRadius: 13, background: 'rgba(0,0,0,0.7)', border: `2px solid ${C.goldDark}`, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.3)', overflow: 'hidden', margin: '2px 0', display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
                           <div style={{ width: `${percNormale}%`, height: '100%', background: coloreNormale, transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: '0 0 10px rgba(76,175,80,0.5)', position: 'relative' }}>
                             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)' }} />
                           </div>
@@ -9157,7 +9157,7 @@ export default function App() {
                     })()}
 
                     {/* PF Temporanei — centrati sotto la barra */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, margin: '2px 0 4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, margin: '1px 0 2px' }}>
                       <span
                         style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#42a5f5', background: 'rgba(66,165,245,0.12)', border: '1px solid rgba(66,165,245,0.45)', borderRadius: 10, padding: '1px 8px' }}
                         title={t('vital.temporanei')}
@@ -9168,7 +9168,7 @@ export default function App() {
                     </div>
 
                     {/* Pulsanti Rapidi Danno / Cura */}
-                    <div style={{ display: 'flex', gap: 3, margin: '3px 0 5px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: 3, margin: '2px 0', justifyContent: 'center', flexWrap: 'wrap' }}>
                       <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 20) }); }} title={t('vital.danno')}>-20</button>
                       <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 10) }); }} title={t('vital.danno')}>-10</button>
                       <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 5) }); }} title={t('vital.danno')}>-5</button>
@@ -9184,7 +9184,7 @@ export default function App() {
                       const gruppiDV = gruppiDadoVita(scheda.dadiVita);
                       const spesiMapDV = dadiVitaSpesiNormalizzati(scheda);
                       return (
-                        <div style={{ ...styles.detail, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, flexWrap: 'wrap', marginTop: 1 }}>
+                        <div style={{ ...styles.detail, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, flexWrap: 'wrap', margin: 0 }}>
                           {gruppiDV.map((g) => (
                             <span key={g.facce} style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
                               {t('vital.dadi_vita')}{' '}
@@ -9223,10 +9223,10 @@ export default function App() {
                   </div>
 
                   {/* Linea divisoria centrata tra Punti Ferita e Tiri Morte */}
-                  <div style={{ width: '100%', height: 1, background: C.border, margin: '6px 0 8px', opacity: 0.65 }} />
+                  <div style={{ width: '100%', height: 1, background: C.border, margin: '6px 0', opacity: 0.65 }} />
 
                   {/* Sezione Inferiore: Tiri Morte / Death Saves */}
-                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', margin: '2px 0 4px' }}>
+                  <div style={{ flex: '0 0 auto', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '2px 0' }}>
                     <div style={{ ...styles.vitalLabel, position: 'static', margin: '0 0 6px 0', fontSize: 12 }}>
                       💀 {lingua === 'en' ? 'Death Saves' : 'Tiri Morte'}
                     </div>
