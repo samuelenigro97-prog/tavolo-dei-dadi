@@ -12,7 +12,7 @@ export const INCANTESIMI_DB = {
   'Derisione Crudele':     { livello:0, scuola:'Ammaliamento', classi:['Bardo'], tempo:'1 Azione', gittata:'18m', danno:'1d6', tipoDanno:'Psichico', desc:'TS Saggezza o svantaggio al prossimo attacco.' },
   'Fiamma Sacra':          { livello:0, scuola:'Evocazione', classi:['Chierico'], tempo:'1 Azione', gittata:'18m', danno:'1d8', tipoDanno:'Radiante', desc:'TS Destrezza (no copertura). Scala a 5/11/17.' },
   'Frusta di Spine':       { livello:0, scuola:'Trasmutazione', classi:['Druido'], tempo:'1 Azione', gittata:'9m', danno:'1d6', tipoDanno:'Perforante', desc:'Attacco magico, trascina 3m. Scala a 5/11/17.' },
-  'Guida':                 { livello:0, scuola:'Divinazione', classi:['Chierico','Druido'], tempo:'1 Azione', gittata:'Tocco', desc:'+1d4 a una prova di caratteristica. Concentrazione, 1 min.' },
+  'Guida':                 { livello:0, scuola:'Divinazione', classi:['Chierico','Druido'], tempo:'1 Azione', gittata:'Tocco', desc:'+1d4 a una prova di caratteristica (1 minuto).' },
   'Illusione Minore':      { livello:0, scuola:'Illusione', classi:['Bardo','Mago','Stregone','Warlock'], tempo:'1 Azione', gittata:'9m', area:'Cubo', desc:'Suono o immagine (max 1,5m) per 1 min.' },
   'Interdizione alle Lame':{ livello:0, scuola:'Abiurazione', classi:['Chierico'], tempo:'1 Azione', gittata:'Mischia', desc:'Nemico entro 1,5m ha −1d10 ai tiri per colpire con arma.' },
   'Luce':                  { livello:0, scuola:'Evocazione', classi:['Bardo','Chierico','Mago','Stregone','Warlock'], tempo:'1 Azione', gittata:'Tocco', desc:'Luce intensa raggio 6m per 1 ora. TS Destrezza per creatura ostile.' },

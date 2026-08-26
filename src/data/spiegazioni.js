@@ -824,7 +824,7 @@ const SPIEG_INCANTESIMI = {
   'Fuoco Fatato': "Liv. 1 · Area 6 m (gittata 18 m): le creature emanano luce e si attaccano con vantaggio (TS Destrezza). Concentrazione, 1 min.",
   'Guardiani Spirituali': 'Liv. 3 · Aura di 4,5 m attorno a te: 3d8 radiosi/necrotici e velocità dimezzata (TS Saggezza per metà). Concentrazione, 10 min.',
   'Guardiano della Fede': 'Liv. 4 · Un guardiano spettrale (gittata 9 m): 20 danni radiosi a chi entra/inizia il turno vicino (TS Destrezza per metà). 8 ore.',
-  'Guida': 'Aggiungi 1d4 a una prova di caratteristica a scelta. Concentrazione, 1 min.',
+  'Guida': 'Aggiungi 1d4 a una prova di caratteristica a scelta entro 1 minuto.',
   'Identificare': 'Liv. 1 · Scopri le proprietà magiche e gli incantesimi attivi di un oggetto toccato. Rituale, 1 min.',
   'Illusione Minore': "Crei un suono o un'immagine (max 1,5 m) entro 9 m; un esame (prova Intelligenza) la rivela. Dura 1 min.",
   'Immagine Maggiore': 'Liv. 3 · Illusione realistica (max 6 m) con suoni, odori e temperatura, entro 36 m. Concentrazione, 10 min.',

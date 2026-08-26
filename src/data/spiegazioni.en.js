@@ -204,7 +204,7 @@ export const EN_INCANTESIMI = {
   'Fuoco Fatato': 'Lv. 1 · 6 m area (range 18 m): creatures shed light and are attacked with advantage (Dexterity save). Concentration, 1 min.',
   'Guardiani Spirituali': 'Lv. 3 · 4.5 m aura around you: 3d8 radiant/necrotic and halved speed (Wisdom save for half). Concentration, 10 min.',
   'Guardiano della Fede': 'Lv. 4 · A spectral guardian (range 9 m): 20 radiant damage to anyone entering or starting its turn nearby (Dexterity save for half). 8 hours.',
-  'Guida': 'You add 1d4 to one ability check of your choice. Concentration, 1 min.',
+  'Guida': 'You add 1d4 to one ability check of your choice within 1 minute.',
   'Identificare': 'Lv. 1 · You learn the magical properties and active spells of an object you touch. Ritual, 1 min.',
   'Illusione Minore': 'You create a sound or an image (max 1.5 m) within 9 m; an examination (Intelligence check) reveals it. Lasts 1 min.',
   'Immagine Maggiore': 'Lv. 3 · A realistic illusion (max 6 m) with sounds, smells and temperature, within 36 m. Concentration, 10 min.',
