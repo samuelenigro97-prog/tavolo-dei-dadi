@@ -630,16 +630,16 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .ritratto-box { min-height: 240px; height: 240px; }
   .car-coppia { gap: 8px; }
 }
-.vitali { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 10px; align-items: stretch; }
-/* 3 riquadri vitali unificati 2 a 2 (Visione & Perc. Passiva, Resistenze & Condizioni, TS Morte & Ispirazione) */
-.vitali-sezioni-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; align-items: stretch; width: 100%; }
-.vitali-sezioni-3 > * { min-width: 0; }
+.vitali { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; align-items: stretch; }
+/* 4 riquadri vitali separati (Visione, Perc. Passiva, Resistenze, Condizioni) identici alla riga sopra */
+.vitali-sezioni-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; align-items: stretch; width: 100%; }
+.vitali-sezioni-4 > * { min-width: 0; }
 @media (max-width: 768px) {
-  .vitali-sezioni-3 { grid-template-columns: 1fr; }
+  .vitali-sezioni-4 { grid-template-columns: repeat(2, 1fr); }
 }
 /* consente ai riquadri di stringersi sotto la larghezza del contenuto (niente overflow) */
-.vitali > * { min-width: 0; }
-.vitali > * > * { min-width: 0; }
+.vitali > *, .vitali-sezioni-4 > * { min-width: 0; }
+.vitali > * > *, .vitali-sezioni-4 > * > * { min-width: 0; }
 /* Fascia dettagli incantesimo: scorre in orizzontale su una riga; scrollbar sottile. */
 .spell-chips { scrollbar-width: thin; }
 .spell-chips::-webkit-scrollbar { height: 5px; }

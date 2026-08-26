@@ -1724,7 +1724,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.8';
+const APP_VERSION = '4.0.9';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7932,6 +7932,40 @@ export default function App() {
                         onClick={(e) => { e.stopPropagation(); aggiorna({ sezioniAperte: { ...(scheda.sezioniAperte || {}), ritratto: false } }); }}
                       >▾</button>
 
+                      {/* Bottone Ispirazione in alto a destra sul ritratto */}
+                      <button
+                        type="button"
+                        className="ritratto-ispirazione"
+                        title={scheda.ispirazione ? `${t('vital.ispirazione')}: ${t('common.attivo')} (Click per disattivare)` : `${t('vital.ispirazione')} (Click per attivare)`}
+                        onClick={(e) => { e.stopPropagation(); aggiorna({ ispirazione: !scheda.ispirazione }); }}
+                        style={{
+                          position: 'absolute', top: 6, right: 6, zIndex: 10,
+                          background: scheda.ispirazione ? 'rgba(20, 20, 20, 0.85)' : 'rgba(0, 0, 0, 0.5)',
+                          border: scheda.ispirazione ? '1.5px solid #f0c43f' : '1px solid rgba(255,255,255,0.3)',
+                          borderRadius: 8, padding: '2px 7px',
+                          display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer',
+                          boxShadow: scheda.ispirazione ? '0 0 10px rgba(240, 196, 63, 0.7)' : 'none',
+                          backdropFilter: 'blur(4px)',
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        <span style={{
+                          fontSize: 16, lineHeight: 1,
+                          color: scheda.ispirazione ? '#f0c43f' : '#bbb',
+                          textShadow: scheda.ispirazione ? '0 0 8px rgba(240, 196, 63, 0.9)' : 'none',
+                        }}>
+                          {scheda.ispirazione ? '★' : '☆'}
+                        </span>
+                        <span style={{
+                          fontSize: 9.5, fontWeight: 700,
+                          color: scheda.ispirazione ? '#f0c43f' : '#ddd',
+                          letterSpacing: 0.5,
+                          textTransform: 'uppercase',
+                        }}>
+                          {t('vital.ispirazione') || 'Ispirazione'}
+                        </span>
+                      </button>
+
                       {scheda.ritratto ? (
                         <img
                           src={scheda.ritratto}
@@ -8488,40 +8522,73 @@ export default function App() {
                   {(() => {
                     const gruppiDV = gruppiDadoVita(scheda.dadiVita);
                     const spesiMapDV = dadiVitaSpesiNormalizzati(scheda);
-                    return gruppiDV.map((g, i) => (
-                      <div key={g.facce} style={{ ...styles.detail, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: i === 0 ? 14 : 4, paddingTop: i === 0 ? 12 : 0, paddingBottom: 2, borderTop: i === 0 ? `1px solid ${C.border}` : 'none', textAlign: 'center', position: 'relative', top: i === 0 ? 3 : 0 }}>
-                        <span style={{ width: '100%', display: 'inline-flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
-                          {t('vital.dadi_vita')}{' '}
-                          <Rollable onRoll={() => tiraDadoVita(g.facce)} title={t('vital.dadi_vita_tooltip')}>
-                            <strong style={{ color: C.goldDark }}>{g.quantita}</strong>
-                          </Rollable>
-                          {' × d'}
-                          <strong style={{ color: C.goldDark }} title={t('vital.dado_tipo_tooltip')}>
-                            {g.facce}
-                          </strong>
-                          {' · '}{t('vital.spesi')}{' '}
-                          <select
-                            style={{ ...styles.inlineInput, fontSize: 12, padding: '1px 3px' }}
-                            value={Math.min(Math.max(0, spesiMapDV[g.facce] || 0), g.quantita)}
-                            onChange={(e) => aggiorna({ dadiVitaSpesi: { ...spesiMapDV, [g.facce]: Number(e.target.value) } })}
-                            title={t('vital.spesi_tooltip')}
-                          >
-                            {Array.from({ length: g.quantita + 1 }, (_, n) => (
-                              <option key={n} value={n}>{n}</option>
-                            ))}
-                          </select>
-                          <span style={{ color: C.inkDim }}>/ {g.quantita}</span>
-                          <button
-                            style={{ ...styles.buttonMini, padding: '2px 8px', color: C.green, borderColor: C.green }}
-                            title={t('vital.usa_tooltip')}
-                            disabled={(spesiMapDV[g.facce] || 0) >= g.quantita}
-                            onClick={() => tiraDadoVita(g.facce)}
-                          >
-                            🎲 {t('vital.usa')}
-                          </button>
-                        </span>
+                    return (
+                      <div style={{ ...styles.detail, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, paddingTop: 8, borderTop: `1px solid ${C.border}`, gap: 8, flexWrap: 'wrap' }}>
+                        {/* Dadi Vita */}
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                          {gruppiDV.map((g) => (
+                            <span key={g.facce} style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                              {t('vital.dadi_vita')}{' '}
+                              <Rollable onRoll={() => tiraDadoVita(g.facce)} title={t('vital.dadi_vita_tooltip')}>
+                                <strong style={{ color: C.goldDark }}>{g.quantita}</strong>
+                              </Rollable>
+                              {' × d'}
+                              <strong style={{ color: C.goldDark }} title={t('vital.dado_tipo_tooltip')}>
+                                {g.facce}
+                              </strong>
+                              {' · '}{t('vital.spesi')}{' '}
+                              <select
+                                style={{ ...styles.inlineInput, fontSize: 11, padding: '1px 3px' }}
+                                value={Math.min(Math.max(0, spesiMapDV[g.facce] || 0), g.quantita)}
+                                onChange={(e) => aggiorna({ dadiVitaSpesi: { ...spesiMapDV, [g.facce]: Number(e.target.value) } })}
+                                title={t('vital.spesi_tooltip')}
+                              >
+                                {Array.from({ length: g.quantita + 1 }, (_, n) => (
+                                  <option key={n} value={n}>{n}</option>
+                                ))}
+                              </select>
+                              <span style={{ color: C.inkDim }}>/ {g.quantita}</span>
+                              <button
+                                style={{ ...styles.buttonMini, padding: '1px 6px', fontSize: 11, color: C.green, borderColor: C.green }}
+                                title={t('vital.usa_tooltip')}
+                                disabled={(spesiMapDV[g.facce] || 0) >= g.quantita}
+                                onClick={() => tiraDadoVita(g.facce)}
+                              >
+                                🎲 {t('vital.usa')}
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* TS Morte integrato a filo */}
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(0,0,0,0.05)', borderRadius: 6, padding: '2px 8px' }}>
+                          <span style={{ fontSize: 10.5, fontWeight: 700, color: C.inkDim, textTransform: 'uppercase' }}>💀 TS:</span>
+                          <span style={{ color: C.green, fontWeight: 700, fontSize: 10 }}>✔</span>
+                          {[1, 2, 3].map((n) => (
+                            <input key={`s-${n}`} type="checkbox" style={{ margin: 0, cursor: 'pointer' }} checked={(scheda.tsMorte?.successi || 0) >= n} onChange={() => {
+                              const att = scheda.tsMorte?.successi || 0;
+                              aggiorna({ tsMorte: { ...scheda.tsMorte, successi: att === n ? n - 1 : n } });
+                            }} />
+                          ))}
+                          <span style={{ color: C.red, fontWeight: 700, fontSize: 10, marginLeft: 2 }}>✘</span>
+                          {[1, 2, 3].map((n) => (
+                            <input key={`f-${n}`} type="checkbox" style={{ margin: 0, cursor: 'pointer' }} checked={(scheda.tsMorte?.fallimenti || 0) >= n} onChange={() => {
+                              const att = scheda.tsMorte?.fallimenti || 0;
+                              aggiorna({ tsMorte: { ...scheda.tsMorte, fallimenti: att === n ? n - 1 : n } });
+                            }} />
+                          ))}
+                          <button className="ts-morte-reset" style={{ ...styles.buttonMini, fontSize: 9.5, padding: '1px 5px', marginLeft: 3 }} onClick={() => aggiorna({ tsMorte: { successi: 0, fallimenti: 0 } })} title={t("vital.reset_ts")}>↺</button>
+                          {scheda.pfAttuali <= 0 && (
+                            <button
+                              style={{ ...styles.buttonMini, fontSize: 9.5, color: C.red, borderColor: C.red, fontWeight: 700, padding: '1px 5px' }}
+                              onClick={tiroSalvezzaMorte}
+                              disabled={rolling || (scheda.tsMorte?.successi || 0) >= 3 || (scheda.tsMorte?.fallimenti || 0) >= 3}
+                              title="Tira 1d20 TS Morte"
+                            >🎲</button>
+                          )}
+                        </div>
                       </div>
-                    ));
+                    );
                   })()}
                 </div>
               </div>
@@ -8651,138 +8718,86 @@ export default function App() {
               </div>
               </div>{/* fine pm-tier-2 */}
 
-              {/* Tier 3: 3 Riquadri Vitali (Visione & Perc. Passiva, Resistenze & Condizioni, TS Morte & Ispirazione) */}
+              {/* Tier 3: 4 Riquadri Vitali separati (Visione, Percezione Passiva, Resistenze, Condizioni) */}
               <div className="pm-tier-3">
-                <div className="vitali-sezioni-3 pm-gruppo">
-                {/* 1. Box Visione & Percezione Passiva */}
-                <div
-                  style={{
-                    background: C.panel,
-                    border: `1px solid ${C.border}`,
-                    borderRadius: 10,
-                    position: 'relative',
-                    overflow: 'hidden',
-                    padding: '10px 12px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    gap: 8,
-                    minHeight: 125,
-                    height: '100%',
-                    boxSizing: 'border-box',
-                  }}
-                  title={t('vital.passive_tooltip')}
-                >
-                  <SfondoVit>👁️</SfondoVit>
-
-                  {/* Sezione Superiore: Visione / Sensi */}
-                  <div style={{ width: '100%', textAlign: 'left', zIndex: 2 }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 3 }}>
-                      👁️ {t("vital.visione")}
+                <div className="vitali-sezioni-4 pm-gruppo">
+                  {/* 1. Box Visione */}
+                  <div style={{ ...styles.vitalBox }}>
+                    <SfondoVit>👁️</SfondoVit>
+                    <div style={styles.vitalLabel}>👁️ {t("vital.visione")}</div>
+                    <div style={{ width: '100%', marginTop: 2 }}>
+                      <CampoConTendina
+                        value={scheda.sensi}
+                        opzioni={SENSI_5E}
+                        onChange={(v) => aggiorna({ sensi: v })}
+                        title={t('tip.sensi')}
+                      />
                     </div>
-                    <CampoConTendina
-                      value={scheda.sensi}
-                      opzioni={SENSI_5E}
-                      onChange={(v) => aggiorna({ sensi: v })}
-                      title={t('tip.sensi')}
-                    />
                   </div>
 
-                  {/* Divisore orizzontale */}
-                  <div style={{ width: '100%', height: 1, background: C.border, opacity: 0.6, zIndex: 2 }} aria-hidden />
-
-                  {/* Sezione Inferiore: Percezione Passiva */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', zIndex: 2, padding: '0 2px' }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase' }}>
-                      👂 {t("vital.percezione_passiva")}
-                    </div>
-                    <div style={{ fontSize: 24, fontWeight: 800, color: C.ink, lineHeight: 1 }}>
+                  {/* 2. Box Percezione Passiva */}
+                  <div style={{ ...styles.vitalBox }} title={t('vital.passive_tooltip')}>
+                    <SfondoVit>👂</SfondoVit>
+                    <div style={styles.vitalLabel}>👂 {t("vital.percezione_passiva")}</div>
+                    <div style={styles.vitalValue}>
                       {percezionePassiva}
                     </div>
                   </div>
-                </div>
 
-                {/* 2. Box Resistenze & Condizioni */}
-                <div
-                  style={{
-                    background: C.panel,
-                    border: `1px solid ${C.border}`,
-                    borderRadius: 10,
-                    position: 'relative',
-                    overflow: 'hidden',
-                    padding: '10px 12px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    gap: 8,
-                    minHeight: 125,
-                    height: '100%',
-                    boxSizing: 'border-box',
-                  }}
-                >
-                  <SfondoVit>🧪</SfondoVit>
-
-                  {/* Sezione Superiore: Resistenze */}
-                  <div style={{ width: '100%', textAlign: 'left', zIndex: 2 }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 3 }}>
-                      🧪 {t("vital.resistenze")}
+                  {/* 3. Box Resistenze */}
+                  <div style={{ ...styles.vitalBox }}>
+                    <SfondoVit>🧪</SfondoVit>
+                    <div style={styles.vitalLabel}>🧪 {t("vital.resistenze")}</div>
+                    <div style={{ width: '100%', marginTop: 2 }}>
+                      <CampoConTendina
+                        value={scheda.resistenze}
+                        opzioni={DANNI_5E}
+                        onChange={(v) => aggiorna({ resistenze: v })}
+                        title={t('tip.resistenze')}
+                      />
                     </div>
-                    <CampoConTendina
-                      value={scheda.resistenze}
-                      opzioni={DANNI_5E}
-                      onChange={(v) => aggiorna({ resistenze: v })}
-                      title={t('tip.resistenze')}
-                    />
                   </div>
 
-                  {/* Divisore orizzontale */}
-                  <div style={{ width: '100%', height: 1, background: C.border, opacity: 0.6, zIndex: 2 }} aria-hidden />
-
-                  {/* Sezione Inferiore: Condizioni */}
-                  <div style={{ width: '100%', textAlign: 'left', zIndex: 2, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase' }}>
-                      ⚠️ {t("vital.condizioni")}
-                    </div>
-
-                    {/* Eventuali badge delle condizioni attive (se vuoto, non mostra nulla) */}
-                    {scheda.condizioni.length > 0 && (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'center' }}>
-                        {scheda.condizioni.map((c) => {
-                          const col = COLORI_CONDIZIONI[c] || { bg: 'rgba(200,140,20,0.18)', border: C.goldDark, text: C.ink };
-                          const ico = ICONE_CONDIZIONI[c] || '⚠️';
-                          return (
-                            <span
-                              key={c}
-                              style={{
-                                background: col.bg,
-                                border: `1px solid ${col.border}`,
-                                borderRadius: 4,
-                                padding: '1px 6px',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: 3,
-                                fontSize: 10.5,
-                              }}
-                            >
-                              <span style={{ color: col.text, fontWeight: 700 }}>{ico} {traduciDato(c)}</span>
-                              <button
-                                type="button"
-                                style={{ background: 'none', border: 0, padding: 0, color: C.inkDim, cursor: 'pointer', fontSize: 10.5, lineHeight: 1 }}
-                                title={t('tip.click_rimuovi')}
-                                onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
-                              >✕</button>
-                            </span>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {/* Tendina Condizioni con valore di default 'Nessuna' */}
-                    <div style={{ marginTop: 'auto' }}>
+                  {/* 4. Box Condizioni */}
+                  <div style={{ ...styles.vitalBox }}>
+                    <SfondoVit>⚠️</SfondoVit>
+                    <div style={styles.vitalLabel}>⚠️ {t("vital.condizioni")}</div>
+                    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 4, marginTop: 2 }}>
+                      {scheda.condizioni.length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'center', justifyContent: 'center', maxHeight: 42, overflowY: 'auto' }}>
+                          {scheda.condizioni.map((c) => {
+                            const col = COLORI_CONDIZIONI[c] || { bg: 'rgba(200,140,20,0.18)', border: C.goldDark, text: C.ink };
+                            const ico = ICONE_CONDIZIONI[c] || '⚠️';
+                            return (
+                              <span
+                                key={c}
+                                style={{
+                                  background: col.bg,
+                                  border: `1px solid ${col.border}`,
+                                  borderRadius: 4,
+                                  padding: '1px 5px',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 3,
+                                  fontSize: 10,
+                                }}
+                              >
+                                <span style={{ color: col.text, fontWeight: 700 }}>{ico} {traduciDato(c)}</span>
+                                <button
+                                  type="button"
+                                  style={{ background: 'none', border: 0, padding: 0, color: C.inkDim, cursor: 'pointer', fontSize: 10, lineHeight: 1 }}
+                                  title={t('tip.click_rimuovi')}
+                                  onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
+                                >✕</button>
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
                       <select
                         value=""
                         onChange={(e) => { if (e.target.value) aggiorna({ condizioni: [...scheda.condizioni, e.target.value] }); }}
-                        style={{ ...styles.inlineInput, fontSize: 10.5, padding: '2px 8px', height: 22, width: '100%', borderRadius: 4, background: C.panel, color: C.ink }}
+                        style={{ ...styles.inlineInput, fontSize: 10.5, padding: '2px 6px', height: 22, width: '100%', borderRadius: 4, background: C.panel, color: C.ink }}
                         title={t('tip.aggiungi_condizione')}
                       >
                         <option value="">{lingua === 'en' ? 'None' : 'Nessuna'}</option>
@@ -8793,113 +8808,6 @@ export default function App() {
                     </div>
                   </div>
                 </div>
-
-                {/* 3. Box TS Morte & Ispirazione */}
-                <div
-                  style={{
-                    background: C.panel,
-                    border: `1px solid ${C.border}`,
-                    borderRadius: 10,
-                    position: 'relative',
-                    overflow: 'hidden',
-                    padding: '10px 12px',
-                    display: 'flex',
-                    alignItems: 'stretch',
-                    gap: 10,
-                    minHeight: 125,
-                    height: '100%',
-                    boxSizing: 'border-box',
-                  }}
-                >
-                  <SfondoVit>⭐</SfondoVit>
-
-                  {/* Metà Sinistra: TS Morte */}
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', zIndex: 2 }}>
-                    <div className="ts-morte-controlli" style={{ marginTop: 2, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                      <div className="ts-morte-riga" style={{ gap: 4 }}>
-                        <span style={{ color: C.green, fontWeight: 700, fontSize: 11 }}>✔</span>
-                        {[1, 2, 3].map((n) => (
-                          <input key={`s-${n}`} type="checkbox" checked={(scheda.tsMorte?.successi || 0) >= n} onChange={() => {
-                            const att = scheda.tsMorte?.successi || 0;
-                            aggiorna({ tsMorte: { ...scheda.tsMorte, successi: att === n ? n - 1 : n } });
-                          }} />
-                        ))}
-                      </div>
-                      <div className="ts-morte-riga" style={{ gap: 4 }}>
-                        <span style={{ color: C.red, fontWeight: 700, fontSize: 11 }}>✘</span>
-                        {[1, 2, 3].map((n) => (
-                          <input key={`f-${n}`} type="checkbox" checked={(scheda.tsMorte?.fallimenti || 0) >= n} onChange={() => {
-                            const att = scheda.tsMorte?.fallimenti || 0;
-                            aggiorna({ tsMorte: { ...scheda.tsMorte, fallimenti: att === n ? n - 1 : n } });
-                          }} />
-                        ))}
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: 4, marginTop: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
-                      <button className="ts-morte-reset" style={{ ...styles.buttonMini, fontSize: 9.5, padding: '2px 6px' }} onClick={() => aggiorna({ tsMorte: { successi: 0, fallimenti: 0 } })}>{t("vital.reset_ts")}</button>
-                      {scheda.pfAttuali <= 0 && (
-                        <button
-                          style={{ ...styles.buttonMini, fontSize: 9.5, color: C.red, borderColor: C.red, fontWeight: 700, padding: '2px 6px' }}
-                          onClick={tiroSalvezzaMorte}
-                          disabled={rolling || (scheda.tsMorte?.successi || 0) >= 3 || (scheda.tsMorte?.fallimenti || 0) >= 3}
-                          title="Tira 1d20: 10 o più è un successo, 9 o meno è un fallimento"
-                        >🎲 TS</button>
-                      )}
-                    </div>
-                    {/* Nome sezione posizionato sotto i controlli */}
-                    <div style={{ position: 'static', fontSize: 11, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', textAlign: 'center', width: '100%', marginTop: 4, whiteSpace: 'nowrap' }}>
-                      💀 {t("vital.ts_morte")}
-                    </div>
-                  </div>
-
-                  {/* Divisore verticale netto */}
-                  <div style={{ width: 1, background: C.border, opacity: 0.6, zIndex: 2 }} aria-hidden />
-
-                  {/* Metà Destra: Ispirazione con stella */}
-                  <div
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      cursor: 'pointer',
-                      borderRadius: 6,
-                      padding: '2px 4px',
-                      background: scheda.ispirazione ? 'rgba(240, 196, 63, 0.12)' : 'transparent',
-                      transition: 'all 0.2s ease',
-                      zIndex: 2,
-                    }}
-                    onClick={() => aggiorna({ ispirazione: !scheda.ispirazione })}
-                    title={scheda.ispirazione ? `${t('vital.ispirazione')}: ${t('common.attivo')} (Click per disattivare)` : `${t('vital.ispirazione')} (Click per attivare)`}
-                  >
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-                      <div
-                        style={{
-                          fontSize: 34,
-                          lineHeight: 1,
-                          color: scheda.ispirazione ? '#f0c43f' : C.inkDim,
-                          textShadow: scheda.ispirazione ? '0 0 10px rgba(240, 196, 63, 0.8), 0 0 20px rgba(240, 196, 63, 0.45)' : 'none',
-                          transform: scheda.ispirazione ? 'scale(1.15)' : 'scale(1)',
-                          transition: 'all 0.2s ease',
-                          userSelect: 'none',
-                        }}
-                      >
-                        {scheda.ispirazione ? '★' : '☆'}
-                      </div>
-                      {scheda.ispirazione && (
-                        <div style={{ fontSize: 10, fontWeight: 700, color: C.goldDark, letterSpacing: 0.5, textTransform: 'uppercase', marginTop: 2 }}>
-                          {lingua === 'en' ? 'Active' : 'Attiva'}
-                        </div>
-                      )}
-                    </div>
-                    {/* Nome sezione posizionato sotto la stella */}
-                    <div style={{ position: 'static', fontSize: 11, fontWeight: 800, color: C.inkDim, letterSpacing: 0.5, textTransform: 'uppercase', textAlign: 'center', width: '100%', marginTop: 4, whiteSpace: 'nowrap' }}>
-                      ⭐ {t("vital.ispirazione") || 'ISPIRAZIONE'}
-                    </div>
-                  </div>
-                </div>
-              </div>
               </div>{/* fine pm-tier-3 */}
             </div>{/* fine profilo-main */}
           <div className="profilo-caratteristiche">
