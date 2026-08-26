@@ -8738,11 +8738,11 @@ export default function App() {
                   </div>
                 )}
                 {(scheda.sezioniAperte?.ritratto ?? true) && (
-                  <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <div
                       className="ritratto-box"
                       style={{
-                        width: '100%', height: '100%', flex: '1 1 0', borderRadius: 12, overflow: 'hidden',
+                        borderRadius: 14, overflow: 'hidden',
                         // emblema auto (foto assente o SVG): sfondo col colore classe, si fonde coi bordi
                         background: (!scheda.ritratto || scheda.ritratto.startsWith('data:image/svg')) ? (coloreClasse(scheda.classe)?.chiaro || C.panel) : C.panel,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',

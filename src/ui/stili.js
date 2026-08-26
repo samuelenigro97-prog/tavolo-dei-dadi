@@ -479,18 +479,20 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   height: 100%;
 }
 
-/* Tier 1: Sinistra (Ritratto con altezza fissa perfetta a filo Punti Vita), Centro (Anagrafica + Punti Vita), Destra (Forza + Des + Cos) */
+/* Tier 1: Sinistra (Ritratto con proporzione verticale rettangolare 3:4), Centro (Anagrafica + Punti Vita), Destra (Forza + Des + Cos) */
 .ritratto-tier-1 {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  width: 100%;
 }
 .ritratto-box {
   width: 100%;
-  height: 250px;
-  min-height: 250px;
-  max-height: 250px;
-  border-radius: 12px;
+  aspect-ratio: 3 / 4;
+  height: auto;
+  min-height: 280px;
+  max-height: 380px;
+  border-radius: 14px;
   overflow: hidden;
   position: relative;
   cursor: pointer;
@@ -658,10 +660,13 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     order: 1 !important;
     width: 100% !important;
   }
-  /* 2. Immagine / Ritratto sotto il nome */
+  /* 2. Immagine / Ritratto sotto il nome (rettangolare verso il basso) */
   .profilo-ritratto-box {
     order: 2 !important;
     width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
   }
   /* 3. Sezione Anagrafica (Sesso, Razza/Specie, Taglia, Allineamento, Background, Classe, Sottoclasse, PE, Multiclasse) */
   .profilo-anagrafica-campi {
@@ -733,7 +738,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     width: 100% !important;
   }
 
-  .ritratto-box { min-height: 320px; height: 320px; max-height: 380px; border-radius: 14px !important; }
+  .ritratto-box { width: 100% !important; max-width: 290px !important; aspect-ratio: 3 / 4 !important; height: auto !important; min-height: 350px !important; max-height: 420px !important; border-radius: 14px !important; margin: 0 auto !important; }
   .car-coppia { gap: 8px; }
 }
 .vitali { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 8px; align-items: stretch; }
