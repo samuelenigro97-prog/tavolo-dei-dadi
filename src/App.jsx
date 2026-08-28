@@ -1401,7 +1401,7 @@ const DENARI = [
 function schedaVuota() {
   return {
     nome: 'Avventuriero senza nome',
-    sesso: '', // maschio | femmina | altro; modifica solo il nome mostrato della specie
+    sesso: 'maschio', // maschio | femmina | altro; modifica solo il nome mostrato della specie
     ritratto: '', // immagine del personaggio come data URL (jpeg ridimensionato)
     background: '',
     classe: '',
@@ -12038,7 +12038,6 @@ export default function App() {
                         title={t('profilo.sesso_tooltip')}
                         style={{ background: 'transparent', border: 'none', color: 'inherit', fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 'inherit', width: '100%', outline: 'none', cursor: 'pointer' }}
                       >
-                        <option value="">{t('profilo.sesso_non_specificato')}</option>
                         <option value="maschio">{t('profilo.sesso_maschio')}</option>
                         <option value="femmina">{t('profilo.sesso_femmina')}</option>
                         <option value="altro">{t('profilo.sesso_altro')}</option>
@@ -12094,7 +12093,7 @@ export default function App() {
                     </CampoModulo>
                   </div>
 
-                  {/* Riga 2: Background, Classe (compatta), Sottoclasse (larga), P.E. (adeguato per 6 cifre) */}
+<                  {/* Riga 2: Background, Classe (compatta), Sottoclasse (larga), P.E. (adeguato per 6 cifre) */}
                   <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.7fr 0.85fr 1.8fr 0.65fr', gap: 10, alignItems: 'end' }}>
                     <CampoModulo label={t("profilo.background")} boxClassName={String(scheda.background || '').length > 12 ? 'testo-compatto' : undefined}>
                       <CampoBloccato
