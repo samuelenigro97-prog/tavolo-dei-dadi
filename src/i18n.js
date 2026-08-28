@@ -392,7 +392,7 @@ export const DIZIONARIO = {
     'spell.col_gittata': 'Gittata',
     'spell.col_note': 'Note',
     'spell.max_trucchetti': 'Massimo trucchetti raggiunto',
-    'spell.max_incantesimi': 'Massimo incantesimi raggiunto',
+    'spell.max_incantesimi': "Massimo numero d'incantesimi raggiunto",
     'spell.oltre_max': 'Sei oltre il massimo suggerito per la tua classe: puoi comunque aggiungerlo (es. incantesimi bonus da sottoclasse, talenti o oggetti). Regola il numero accanto ai conteggi se vuoi.',
     'spell.max_tooltip': 'Hai raggiunto il massimo per la tua classe. Togli un incantesimo, alza il numero accanto ai conteggi, oppure aggiungilo come Bonus (razza/sottoclasse).',
     'spell.bonus_add': 'Bonus (razza/sottoclasse)',
