@@ -1368,6 +1368,10 @@ function schedaVuota() {
     lingue: '',
     aspetto: '',
     trattiCaratteriali: '',
+    ideali: '',
+    legami: '',
+    difetti: '',
+    nemici: '',
     diario: [], // diario di sessione: [{ id, data, titolo, testo }]
     note: '',
     // stato di gioco
@@ -2300,6 +2304,10 @@ function normalizeImported(rawDati) {
     lingue: str(dati.lingue),
     aspetto: str(dati.aspetto),
     trattiCaratteriali: str(dati.trattiCaratteriali),
+    ideali: str(dati.ideali),
+    legami: str(dati.legami),
+    difetti: str(dati.difetti),
+    nemici: str(dati.nemici),
     diario: Array.isArray(dati.diario) ? dati.diario : [],
     note: str(dati.note),
     risorse: sincronizzaRisorseClasse({
@@ -5221,6 +5229,10 @@ export default function App() {
       if (!pg.lingue) pg.lingue = '';
       if (!pg.aspetto) pg.aspetto = '';
       if (!pg.trattiCaratteriali) pg.trattiCaratteriali = '';
+      if (!pg.ideali) pg.ideali = '';
+      if (!pg.legami) pg.legami = '';
+      if (!pg.difetti) pg.difetti = '';
+      if (!pg.nemici) pg.nemici = '';
       if (!pg.diario) pg.diario = [];
       if (!pg.note) pg.note = '';
       if (!pg.resistenze) pg.resistenze = '';
@@ -12333,23 +12345,41 @@ export default function App() {
             </Sezione>
 
             <Sezione titolo={t("sez.aspetto")} {...propsSez('aspetto')} {...apertoProps('aspetto', false)}>
-              <div style={styles.moduloLabel}>{t("aspetto.aspetto")}</div>
-              <AreaTesto
-                value={scheda.aspetto}
-                placeholder={t("aspetto.aspetto_ph")}
-                onChange={(v) => aggiorna({ aspetto: v })}
-              />
-              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>{t("aspetto.carattere")}</div>
-              <AreaTesto
-                value={scheda.trattiCaratteriali}
-                placeholder={t("aspetto.carattere_ph")}
-                onChange={(v) => aggiorna({ trattiCaratteriali: v })}
-              />
-              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>{t("aspetto.storia")}</div>
+              <div style={styles.moduloLabel}>{t("aspetto.background")}</div>
               <AreaTesto
                 value={scheda.note}
-                placeholder={t("aspetto.storia_ph")}
+                placeholder={t("aspetto.background_ph")}
                 onChange={(v) => aggiorna({ note: v })}
+              />
+              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>{t("aspetto.tratti_caratteriali")}</div>
+              <AreaTesto
+                value={scheda.trattiCaratteriali}
+                placeholder={t("aspetto.tratti_caratteriali_ph")}
+                onChange={(v) => aggiorna({ trattiCaratteriali: v })}
+              />
+              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>{t("aspetto.ideali")}</div>
+              <AreaTesto
+                value={scheda.ideali}
+                placeholder={t("aspetto.ideali_ph")}
+                onChange={(v) => aggiorna({ ideali: v })}
+              />
+              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>{t("aspetto.legami")}</div>
+              <AreaTesto
+                value={scheda.legami}
+                placeholder={t("aspetto.legami_ph")}
+                onChange={(v) => aggiorna({ legami: v })}
+              />
+              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>{t("aspetto.difetti")}</div>
+              <AreaTesto
+                value={scheda.difetti}
+                placeholder={t("aspetto.difetti_ph")}
+                onChange={(v) => aggiorna({ difetti: v })}
+              />
+              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>{t("aspetto.nemici")}</div>
+              <AreaTesto
+                value={scheda.nemici}
+                placeholder={t("aspetto.nemici_ph")}
+                onChange={(v) => aggiorna({ nemici: v })}
               />
             </Sezione>
           </div>
