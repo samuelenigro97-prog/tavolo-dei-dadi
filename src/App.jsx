@@ -9347,10 +9347,8 @@ export default function App() {
                   <SfondoVit>🩸</SfondoVit>
 
                   {/* Sezione Superiore: Punti Ferita — perfettamente centrata nello spazio disponibile */}
-                  <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, padding: '2px 0' }}>
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: 0 }}>
-                      <div style={{ ...styles.vitalLabel, position: 'static', margin: 0, fontSize: 12 }}>❤️ {t("vital.pf")}</div>
-                    </div>
+                  <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2px 0' }}>
+                    <div style={{ ...styles.vitalLabel, position: 'static', margin: 0, marginBottom: 6, fontSize: 12 }}>❤️ {t("vital.pf")}</div>
 
                     {/* BARRA DELLA VITA STILE VIDEOGIOCO */}
                     {(() => {
@@ -9418,7 +9416,7 @@ export default function App() {
                         }
                         aggiorna(patch);
                         if (scheda.concentrazione) {
-                          setCheckConc({ danno: quantita, cd: Math.max(10, Math.floor(quantita / 2)), spell: scheda.concentrazione, esito: null });
+                          setCheckConc({ danno: quantita, cd: Math.max(10, Math.floor(danno / 2)), spell: scheda.concentrazione, esito: null });
                         }
                       };
                       return (
@@ -9482,8 +9480,8 @@ export default function App() {
                   <div style={{ width: '100%', height: 1, background: C.border, margin: '4px 0', opacity: 0.65, flexShrink: 0 }} />
 
                   {/* Sezione Inferiore: Tiri Morte / Death Saves — perfettamente centrata e ben dimensionata */}
-                  <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 6, padding: '4px 0' }}>
-                    <div style={{ ...styles.vitalLabel, position: 'static', margin: 0, fontSize: 13, fontWeight: 800, letterSpacing: 1 }}>
+                  <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '4px 0' }}>
+                    <div style={{ ...styles.vitalLabel, position: 'static', margin: 0, marginBottom: 6, fontSize: 13, fontWeight: 800, letterSpacing: 1 }}>
                       💀 {lingua === 'en' ? 'DEATH SAVES' : 'TIRI MORTE'}
                     </div>
 
@@ -9609,215 +9607,227 @@ export default function App() {
             <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
               <SfondoVit>🛡️</SfondoVit>
               <div style={styles.vitalLabel}>{t("vital.ca")}</div>
-              <div style={styles.vitalValue}>
-                {scheda.armatura.tipo === 'manuale' && !scheda.armatura.scudo && !scheda.armatura.bonus && !bonusClasseArmaturaOggetti(scheda) ? (
-                  <Editable value={scheda.ca} tipo="numero" onChange={(v) => aggiorna({ ca: v })} width={48} />
-                ) : (
-                  <span title={t('tip.ca_calcolata')}>{caTotale(scheda)}</span>
-                )}
-              </div>
-              <select
-                style={{ ...styles.inlineInput, fontSize: 10, padding: '1px 3px', maxWidth: '100%', marginTop: 2 }}
-                value={scheda.armatura.tipo}
-                onChange={(e) => {
-                  const tipo = e.target.value;
-                  // Blocco: non puoi indossare armature per cui non sei competente.
-                  if (!competenteInArmatura(scheda, tipo)) return;
-                  // Passando a una categoria con armatura, parti da un valore base
-                  // sensato così la CA cambia subito (poi si può correggere a mano).
-                  const base = BASE_ARMATURA_DEFAULT[tipo] ?? scheda.armatura.base;
-                  aggiorna({ armatura: { ...scheda.armatura, tipo, base } });
-                }}
-              >
-                {TIPI_ARMATURA.map((ta) => {
-                  const bloccato = !competenteInArmatura(scheda, ta.key);
-                  // Niente lucchetto: l'opzione resta semplicemente non selezionabile.
-                  return <option key={ta.key} value={ta.key} disabled={bloccato}>{t('armor.' + ta.key)}</option>;
-                })}
-              </select>
-              <div style={{ fontSize: 10, color: C.inkDim, display: 'flex', gap: 5, alignItems: 'center', justifyContent: 'center', marginTop: 'auto', paddingTop: 6, flexWrap: 'wrap' }}>
-                {(scheda.armatura.tipo === 'leggera' || scheda.armatura.tipo === 'media' || scheda.armatura.tipo === 'pesante') && (
-                  <span title={`CA base dell'armatura. Esempi: ${ESEMPI_ARMATURA[scheda.armatura.tipo]}`}>base <Editable value={scheda.armatura.base} tipo="numero" width={24} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, base: Math.max(0, v) } })} /></span>
-                )}
-                {(() => {
-                  const scudiOk = !!scheda.addestramento?.armature?.scudi;
-                  return (
-                    <span
-                      className="tirabile"
-                      style={{ cursor: scudiOk || scheda.armatura.scudo ? 'pointer' : 'not-allowed', opacity: scudiOk || scheda.armatura.scudo ? 1 : 0.5 }}
-                      title={scudiOk ? 'Scudo: +2 alla CA' : 'Non sei competente con gli scudi (attivala in “Addestramento…”)'}
-                      onClick={() => {
-                        // Blocco: non puoi imbracciare uno scudo senza competenza (ma puoi sempre toglierlo).
-                        if (!scudiOk && !scheda.armatura.scudo) return;
-                        aggiorna({ armatura: { ...scheda.armatura, scudo: !scheda.armatura.scudo } });
-                      }}
-                    >
-                      <span style={styles.pip(scheda.armatura.scudo, C.goldDark)} /> <span style={{ opacity: scheda.armatura.scudo ? 1 : 0.4 }}>🛡️</span>
-                    </span>
-                  );
-                })()}
-                <span>+ <Editable value={scheda.armatura.bonus} tipo="numero" width={22} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, bonus: v } })} /></span>
-                {bonusClasseArmaturaOggetti(scheda) > 0 && <span title={t('inv.effetto_attivo')}>✨ +{bonusClasseArmaturaOggetti(scheda)}</span>}
-              </div>
-              {(!competenteInArmatura(scheda, scheda.armatura.tipo) || (scheda.armatura.scudo && !scheda.addestramento?.armature?.scudi)) && (
-                <div style={{ fontSize: 9, color: C.red, marginTop: 3, lineHeight: 1.2 }} title={t('tip.senza_comp_armatura')}>
-                  ⚠️ Non competente{!competenteInArmatura(scheda, scheda.armatura.tipo) ? ` (${scheda.armatura.tipo})` : ''}{scheda.armatura.scudo && !scheda.addestramento?.armature?.scudi ? ' (scudo)' : ''}
+              <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={styles.vitalValue}>
+                  {scheda.armatura.tipo === 'manuale' && !scheda.armatura.scudo && !scheda.armatura.bonus && !bonusClasseArmaturaOggetti(scheda) ? (
+                    <Editable value={scheda.ca} tipo="numero" onChange={(v) => aggiorna({ ca: v })} width={48} />
+                  ) : (
+                    <span title={t('tip.ca_calcolata')}>{caTotale(scheda)}</span>
+                  )}
                 </div>
-              )}
+                <select
+                  style={{ ...styles.inlineInput, fontSize: 10, padding: '1px 3px', maxWidth: '100%', marginTop: 2 }}
+                  value={scheda.armatura.tipo}
+                  onChange={(e) => {
+                    const tipo = e.target.value;
+                    // Blocco: non puoi indossare armature per cui non sei competente.
+                    if (!competenteInArmatura(scheda, tipo)) return;
+                    // Passando a una categoria con armatura, parti da un valore base
+                    // sensato così la CA cambia subito (poi si può correggere a mano).
+                    const base = BASE_ARMATURA_DEFAULT[tipo] ?? scheda.armatura.base;
+                    aggiorna({ armatura: { ...scheda.armatura, tipo, base } });
+                  }}
+                >
+                  {TIPI_ARMATURA.map((ta) => {
+                    const bloccato = !competenteInArmatura(scheda, ta.key);
+                    // Niente lucchetto: l'opzione resta semplicemente non selezionabile.
+                    return <option key={ta.key} value={ta.key} disabled={bloccato}>{t('armor.' + ta.key)}</option>;
+                  })}
+                </select>
+                <div style={{ fontSize: 10, color: C.inkDim, display: 'flex', gap: 5, alignItems: 'center', justifyContent: 'center', marginTop: 4, flexWrap: 'wrap' }}>
+                  {(scheda.armatura.tipo === 'leggera' || scheda.armatura.tipo === 'media' || scheda.armatura.tipo === 'pesante') && (
+                    <span title={`CA base dell'armatura. Esempi: ${ESEMPI_ARMATURA[scheda.armatura.tipo]}`}>base <Editable value={scheda.armatura.base} tipo="numero" width={24} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, base: Math.max(0, v) } })} /></span>
+                  )}
+                  {(() => {
+                    const scudiOk = !!scheda.addestramento?.armature?.scudi;
+                    return (
+                      <span
+                        className="tirabile"
+                        style={{ cursor: scudiOk || scheda.armatura.scudo ? 'pointer' : 'not-allowed', opacity: scudiOk || scheda.armatura.scudo ? 1 : 0.5 }}
+                        title={scudiOk ? 'Scudo: +2 alla CA' : 'Non sei competente con gli scudi (attivala in “Addestramento…”)'}
+                        onClick={() => {
+                          // Blocco: non puoi imbracciare uno scudo senza competenza (ma puoi sempre toglierlo).
+                          if (!scudiOk && !scheda.armatura.scudo) return;
+                          aggiorna({ armatura: { ...scheda.armatura, scudo: !scheda.armatura.scudo } });
+                        }}
+                      >
+                        <span style={styles.pip(scheda.armatura.scudo, C.goldDark)} /> <span style={{ opacity: scheda.armatura.scudo ? 1 : 0.4 }}>🛡️</span>
+                      </span>
+                    );
+                  })()}
+                  <span>+ <Editable value={scheda.armatura.bonus} tipo="numero" width={22} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, bonus: v } })} /></span>
+                  {bonusClasseArmaturaOggetti(scheda) > 0 && <span title={t('inv.effetto_attivo')}>✨ +{bonusClasseArmaturaOggetti(scheda)}</span>}
+                </div>
+                {(!competenteInArmatura(scheda, scheda.armatura.tipo) || (scheda.armatura.scudo && !scheda.addestramento?.armature?.scudi)) && (
+                  <div style={{ fontSize: 9, color: C.red, marginTop: 3, lineHeight: 1.2 }} title={t('tip.senza_comp_armatura')}>
+                    ⚠️ Non competente{!competenteInArmatura(scheda, scheda.armatura.tipo) ? ` (${scheda.armatura.tipo})` : ''}{scheda.armatura.scudo && !scheda.addestramento?.armature?.scudi ? ' (scudo)' : ''}
+                  </div>
+                )}
+              </div>
             </div>
             <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
               <SfondoVit>☕</SfondoVit>
               <div style={styles.vitalLabel}>{t("vital.riposo")}</div>
-                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
-                    <button style={{ ...styles.buttonMini, fontSize: 11 }} onClick={() => riposoBreve()} title={t('vital.riposo_breve_tip')}>☕ {t("vital.breve")}</button>
-                    <button style={{ ...styles.buttonMini, fontSize: 11, borderColor: C.goldDark, color: C.goldDark }} onClick={() => riposoLungo()} title={t('vital.riposo_lungo_tip')}>🌙 {t("vital.lungo")}</button>
-                  </div>
+              <div style={{ flex: 1, width: '100%', display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
+                <button style={{ ...styles.buttonMini, fontSize: 11, padding: '4px 10px' }} onClick={() => riposoBreve()} title={t('vital.riposo_breve_tip')}>☕ {t("vital.breve")}</button>
+                <button style={{ ...styles.buttonMini, fontSize: 11, padding: '4px 10px', borderColor: C.goldDark, color: C.goldDark }} onClick={() => riposoLungo()} title={t('vital.riposo_lungo_tip')}>🌙 {t("vital.lungo")}</button>
+              </div>
+            </div>
+            <div style={{ ...styles.vitalBox }}>
+              <SfondoVit>✨</SfondoVit>
+              <div style={styles.vitalLabel}>{t("vital.competenza")}</div>
+              <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={styles.vitalValue}>
+                  <Editable value={conSegno(scheda.bonusCompetenza)} onChange={(v) => aggiorna({ bonusCompetenza: parseInt(v, 10) || 0 })} width={48} title={t('tip.click_modifica')} />
                 </div>
-                <div style={{ ...styles.vitalBox }}>
-                  <SfondoVit>✨</SfondoVit>
-                  <div style={styles.vitalLabel}>{t("vital.competenza")}</div>
-                  <div style={styles.vitalValue}>
-                    <Editable value={conSegno(scheda.bonusCompetenza)} onChange={(v) => aggiorna({ bonusCompetenza: parseInt(v, 10) || 0 })} width={48} title={t('tip.click_modifica')} />
-                  </div>
-                  {scheda.bonusCompetenza !== bonusCompetenzaDaLivello(scheda.livello) && (
-                    <span className="tirabile" style={{ fontSize: 9, color: C.goldDark, cursor: 'pointer', marginTop: 1 }}
-                      title={`Bonus corretto per liv. ${scheda.livello}: ${conSegno(bonusCompetenzaDaLivello(scheda.livello))}`}
-                      onClick={() => aggiorna({ bonusCompetenza: bonusCompetenzaDaLivello(scheda.livello) })}>
-                      auto {conSegno(bonusCompetenzaDaLivello(scheda.livello))}
-                    </span>
-                  )}
-                </div>
-                <div style={{ ...styles.vitalBox }}>
-                  <SfondoVit>⚡</SfondoVit>
-                  <div style={styles.vitalLabel}>{t("vital.iniziativa")}</div>
-                  <div style={styles.vitalValue}>
-                    <Rollable onRoll={() => lanciaD20(t('vital.iniziativa'), modificatore(punteggioCaratteristica(scheda, 'destrezza')), { dopoTiro: (tot) => sincronizzaIniziativaPg(tot) })}>
-                      {conSegno(modificatore(punteggioCaratteristica(scheda, 'destrezza')))}
-                    </Rollable>
-                  </div>
-                </div>
-                <div
-                  style={{ ...styles.vitalBox }}
-                  title={`🏃 Salto in Lungo (con rincorsa): ${punteggioCaratteristica(scheda, 'forza') || 10} piedi (${((punteggioCaratteristica(scheda, 'forza') || 10) * 0.3).toFixed(1)} m) • ⬆️ Salto in Alto: ${3 + modificatore(punteggioCaratteristica(scheda, 'forza') || 10)} piedi (${((3 + modificatore(punteggioCaratteristica(scheda, 'forza') || 10)) * 0.3).toFixed(1)} m) • 🫁 Trattenere il Respiro: ${Math.max(1, 1 + modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10))} minuti`}
-                >
-                  <SfondoVit>🏃</SfondoVit>
-                  <div style={styles.vitalLabel}>{t("vital.movimento")}</div>
-                  <div style={styles.vitalValue}>
-                    <Editable value={scheda.velocita} tipo="numero" onChange={(v) => aggiorna({ velocita: v })} width={48} />
-                    <span style={{ fontSize: 17, color: C.inkDim, marginLeft: 2, fontWeight: 600 }}> m</span>
-                  </div>
-                  <div style={{ position: 'absolute', bottom: 5, left: 0, right: 0, fontSize: 10, color: C.goldDark, textAlign: 'center', fontWeight: 600 }}>
-                    🏃 Salto: {((punteggioCaratteristica(scheda, 'forza') || 10) * 0.3).toFixed(1)}m
-                  </div>
-                </div>
-                <div style={{ ...styles.vitalBox }}>
-                  <SfondoVit>🥱</SfondoVit>
-                  <div style={styles.vitalLabel}>{t("vital.sfinimento")}</div>
-                  <div style={styles.vitalValue}>
-                    <button style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 13 }} onClick={() => aggiorna({ sfinimento: Math.max(0, scheda.sfinimento - 1) })} title={t('tip.diminuisci')}>−</button>
-                    {' '}<strong style={{ color: scheda.sfinimento ? C.red : C.ink }}>{scheda.sfinimento}</strong>{' '}
-                    <button style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 13 }} onClick={() => aggiorna({ sfinimento: Math.min(6, scheda.sfinimento + 1) })} title={t('tip.aumenta')}>+</button>
-                  </div>
-                  {scheda.sfinimento > 0 && (
-                    <div style={{ fontSize: 9, color: C.red }} title={versione === '2024' ? 'Regole 2024: −2 ai tiri di d20 per livello' : `Regole 2014: ${SFINIMENTO_2014[scheda.sfinimento]}`}>
-                      {versione === '2024' ? `−${scheda.sfinimento * 2}` : SFINIMENTO_2014[scheda.sfinimento]}
-                    </div>
-                  )}
+                {scheda.bonusCompetenza !== bonusCompetenzaDaLivello(scheda.livello) && (
+                  <span className="tirabile" style={{ fontSize: 9, color: C.goldDark, cursor: 'pointer', marginTop: 1 }}
+                    title={`Bonus corretto per liv. ${scheda.livello}: ${conSegno(bonusCompetenzaDaLivello(scheda.livello))}`}
+                    onClick={() => aggiorna({ bonusCompetenza: bonusCompetenzaDaLivello(scheda.livello) })}>
+                    auto {conSegno(bonusCompetenzaDaLivello(scheda.livello))}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div style={{ ...styles.vitalBox }}>
+              <SfondoVit>⚡</SfondoVit>
+              <div style={styles.vitalLabel}>{t("vital.iniziativa")}</div>
+              <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={styles.vitalValue}>
+                  <Rollable onRoll={() => lanciaD20(t('vital.iniziativa'), modificatore(punteggioCaratteristica(scheda, 'destrezza')), { dopoTiro: (tot) => sincronizzaIniziativaPg(tot) })}>
+                    {conSegno(modificatore(punteggioCaratteristica(scheda, 'destrezza')))}
+                  </Rollable>
                 </div>
               </div>
-              </div>{/* fine pm-tier-2 */}
-
-              {/* Tier 3: 4 Riquadri Vitali separati (Visione, Percezione Passiva, Resistenze, Condizioni) */}
-              <div className="pm-tier-3">
-                <div className="vitali-sezioni-4 pm-gruppo">
-                  {/* 1. Box Visione */}
-                  <div style={{ ...styles.vitalBox }}>
-                    <SfondoVit>👁️</SfondoVit>
-                    <div style={styles.vitalLabel}>{t("vital.visione")}</div>
-                    <div style={{ width: '100%', marginTop: 2 }}>
-                      <CampoConTendina
-                        value={scheda.sensi}
-                        opzioni={SENSI_5E}
-                        onChange={(v) => aggiorna({ sensi: v })}
-                        title={t('tip.sensi')}
-                      />
-                    </div>
+            </div>
+            <div
+              style={{ ...styles.vitalBox }}
+              title={`🏃 Salto in Lungo (con rincorsa): ${punteggioCaratteristica(scheda, 'forza') || 10} piedi (${((punteggioCaratteristica(scheda, 'forza') || 10) * 0.3).toFixed(1)} m) • ⬆️ Salto in Alto: ${3 + modificatore(punteggioCaratteristica(scheda, 'forza') || 10)} piedi (${((3 + modificatore(punteggioCaratteristica(scheda, 'forza') || 10)) * 0.3).toFixed(1)} m) • 🫁 Trattenere il Respiro: ${Math.max(1, 1 + modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10))} minuti`}
+            >
+              <SfondoVit>🏃</SfondoVit>
+              <div style={styles.vitalLabel}>{t("vital.movimento")}</div>
+              <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={styles.vitalValue}>
+                  <Editable value={scheda.velocita} tipo="numero" onChange={(v) => aggiorna({ velocita: v })} width={48} />
+                  <span style={{ fontSize: 17, color: C.inkDim, marginLeft: 2, fontWeight: 600 }}> m</span>
+                </div>
+                <div style={{ fontSize: 10, color: C.goldDark, textAlign: 'center', fontWeight: 600, marginTop: 2 }}>
+                  🏃 Salto: {((punteggioCaratteristica(scheda, 'forza') || 10) * 0.3).toFixed(1)}m
+                </div>
+              </div>
+            </div>
+            <div style={{ ...styles.vitalBox }}>
+              <SfondoVit>🥱</SfondoVit>
+              <div style={styles.vitalLabel}>{t("vital.sfinimento")}</div>
+              <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={styles.vitalValue}>
+                  <button style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 13 }} onClick={() => aggiorna({ sfinimento: Math.max(0, scheda.sfinimento - 1) })} title={t('tip.diminuisci')}>−</button>
+                  {' '}<strong style={{ color: scheda.sfinimento ? C.red : C.ink }}>{scheda.sfinimento}</strong>{' '}
+                  <button style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 13 }} onClick={() => aggiorna({ sfinimento: Math.min(6, scheda.sfinimento + 1) })} title={t('tip.aumenta')}>+</button>
+                </div>
+                {scheda.sfinimento > 0 && (
+                  <div style={{ fontSize: 9, color: C.red }} title={versione === '2024' ? 'Regole 2024: −2 ai tiri di d20 per livello' : `Regole 2014: ${SFINIMENTO_2014[scheda.sfinimento]}`}>
+                    {versione === '2024' ? `−${scheda.sfinimento * 2}` : SFINIMENTO_2014[scheda.sfinimento]}
                   </div>
+                )}
+              </div>
+            </div>
+          </div>
+          </div>{/* fine pm-tier-2 */}
 
-                  {/* 2. Box Percezione Passiva */}
-                  <div style={{ ...styles.vitalBox }} title={t('vital.passive_tooltip')}>
-                    <SfondoVit>👂</SfondoVit>
-                    <div style={styles.vitalLabel}>{t("vital.percezione_passiva")}</div>
-                    <div style={styles.vitalValue}>
-                      {percezionePassiva}
-                    </div>
-                  </div>
+          {/* Tier 3: 4 Riquadri Vitali separati (Visione, Percezione Passiva, Resistenze, Condizioni) */}
+          <div className="pm-tier-3">
+            <div className="vitali-sezioni-4 pm-gruppo">
+              {/* 1. Box Visione */}
+              <div style={{ ...styles.vitalBox }}>
+                <SfondoVit>👁️</SfondoVit>
+                <div style={styles.vitalLabel}>{t("vital.visione")}</div>
+                <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <CampoConTendina
+                    value={scheda.sensi}
+                    opzioni={SENSI_5E}
+                    onChange={(v) => aggiorna({ sensi: v })}
+                    title={t('tip.sensi')}
+                  />
+                </div>
+              </div>
 
-                  {/* 3. Box Resistenze */}
-                  <div style={{ ...styles.vitalBox }}>
-                    <SfondoVit>🧪</SfondoVit>
-                    <div style={styles.vitalLabel}>{t("vital.resistenze")}</div>
-                    <div style={{ width: '100%', marginTop: 2 }}>
-                      <CampoConTendina
-                        value={scheda.resistenze}
-                        opzioni={DANNI_5E}
-                        onChange={(v) => aggiorna({ resistenze: v })}
-                        title={t('tip.resistenze')}
-                      />
-                    </div>
-                  </div>
-
-                  {/* 4. Box Condizioni */}
-                  <div style={{ ...styles.vitalBox }}>
-                    <SfondoVit>⚠️</SfondoVit>
-                    <div style={styles.vitalLabel}>{t("vital.condizioni")}</div>
-                    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 4, marginTop: 2 }}>
-                      {scheda.condizioni.length > 0 && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'center', justifyContent: 'center', maxHeight: 42, overflowY: 'auto' }}>
-                          {scheda.condizioni.map((c) => {
-                            const col = COLORI_CONDIZIONI[c] || { bg: 'rgba(200,140,20,0.18)', border: C.goldDark, text: C.ink };
-                            const ico = ICONE_CONDIZIONI[c] || '⚠️';
-                            return (
-                              <span
-                                key={c}
-                                style={{
-                                  background: col.bg,
-                                  border: `1px solid ${col.border}`,
-                                  borderRadius: 4,
-                                  padding: '1px 5px',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: 3,
-                                  fontSize: 10,
-                                }}
-                              >
-                                <span style={{ color: col.text, fontWeight: 700 }}>{ico} {traduciDato(c)}</span>
-                                <button
-                                  type="button"
-                                  style={{ background: 'none', border: 0, padding: 0, color: C.inkDim, cursor: 'pointer', fontSize: 10, lineHeight: 1 }}
-                                  title={t('tip.click_rimuovi')}
-                                  onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
-                                >✕</button>
-                              </span>
-                            );
-                          })}
-                        </div>
-                      )}
-                      <select
-                        value=""
-                        onChange={(e) => { if (e.target.value) aggiorna({ condizioni: [...scheda.condizioni, e.target.value] }); }}
-                        style={{ ...styles.inlineInput, fontSize: 10.5, padding: '2px 6px', height: 22, width: '100%', borderRadius: 4, background: C.panel, color: C.ink }}
-                        title={t('tip.aggiungi_condizione')}
-                      >
-                        <option value="">{lingua === 'en' ? 'None' : 'Nessuna'}</option>
-                        {CONDIZIONI_5E.filter((c) => !scheda.condizioni.includes(c)).sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((c) => (
-                          <option key={c} value={c}>{ICONE_CONDIZIONI[c] || '⚠️'} {traduciDato(c)}</option>
-                        ))}
-                      </select>
-                    </div>
+              {/* 2. Box Percezione Passiva */}
+              <div style={{ ...styles.vitalBox }} title={t('vital.passive_tooltip')}>
+                <SfondoVit>👂</SfondoVit>
+                <div style={styles.vitalLabel}>{t("vital.percezione_passiva")}</div>
+                <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={styles.vitalValue}>
+                    {percezionePassiva}
                   </div>
                 </div>
-              </div>{/* fine pm-tier-3 */}
+              </div>
+
+              {/* 3. Box Resistenze */}
+              <div style={{ ...styles.vitalBox }}>
+                <SfondoVit>🧪</SfondoVit>
+                <div style={styles.vitalLabel}>{t("vital.resistenze")}</div>
+                <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <CampoConTendina
+                    value={scheda.resistenze}
+                    opzioni={DANNI_5E}
+                    onChange={(v) => aggiorna({ resistenze: v })}
+                    title={t('tip.resistenze')}
+                  />
+                </div>
+              </div>
+
+              {/* 4. Box Condizioni */}
+              <div style={{ ...styles.vitalBox }}>
+                <SfondoVit>⚠️</SfondoVit>
+                <div style={styles.vitalLabel}>{t("vital.condizioni")}</div>
+                <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center', justifyContent: 'center' }}>
+                  {scheda.condizioni.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'center', justifyContent: 'center', maxHeight: 42, overflowY: 'auto' }}>
+                      {scheda.condizioni.map((c) => {
+                        const col = COLORI_CONDIZIONI[c] || { bg: 'rgba(200,140,20,0.18)', border: C.goldDark, text: C.ink };
+                        const ico = ICONE_CONDIZIONI[c] || '⚠️';
+                        return (
+                          <span
+                            key={c}
+                            style={{
+                              background: col.bg,
+                              border: `1px solid ${col.border}`,
+                              borderRadius: 4,
+                              padding: '1px 5px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 3,
+                              fontSize: 10,
+                            }}
+                          >
+                            <span style={{ color: col.text, fontWeight: 700 }}>{ico} {traduciDato(c)}</span>
+                            <button
+                              type="button"
+                              style={{ background: 'none', border: 0, padding: 0, color: C.inkDim, cursor: 'pointer', fontSize: 10, lineHeight: 1 }}
+                              title={t('tip.click_rimuovi')}
+                              onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
+                            >✕</button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <select
+                    value=""
+                    onChange={(e) => { if (e.target.value) aggiorna({ condizioni: [...scheda.condizioni, e.target.value] }); }}
+                    style={{ ...styles.inlineInput, fontSize: 10.5, padding: '2px 6px', height: 22, width: '100%', borderRadius: 4, background: C.panel, color: C.ink }}
+                    title={t('tip.aggiungi_condizione')}
+                  >
+                    <option value="">{lingua === 'en' ? 'None' : 'Nessuna'}</option>
+                    {CONDIZIONI_5E.filter((c) => !scheda.condizioni.includes(c)).sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((c) => (
+                      <option key={c} value={c}>{ICONE_CONDIZIONI[c] || '⚠️'} {traduciDato(c)}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>{/* fine pm-tier-3 */}
               </div>{/* fine pm-vitali-container */}
             </div>{/* fine profilo-main */}
           <div className="profilo-caratteristiche profilo-caratteristiche-box">
