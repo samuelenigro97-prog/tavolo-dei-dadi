@@ -10998,7 +10998,7 @@ export default function App() {
                   );
                 })()}
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12, alignItems: 'start' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12, alignItems: 'stretch' }}>
                   {/* Fonte di Magia: a sinistra */}
                   {(() => {
                     const risorse = scheda.risorse || [];
@@ -11014,7 +11014,7 @@ export default function App() {
                     };
                     const slotOra = scheda.slotIncantesimo || {};
                     return (
-                      <div style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', background: C.panelLight }}>
+                      <div style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', background: C.panelLight, display: 'flex', flexDirection: 'column', height: '100%', boxSizing: 'border-box' }}>
                         <div style={{ ...styles.detail, fontWeight: 700, marginBottom: 2 }}>🔄 Fonte di Magia</div>
                         <div style={{ ...styles.detail, fontSize: 11, marginBottom: 8 }}>
                           Converti i punti in uno slot già speso, o brucia uno slot per riavere punti.
@@ -11057,16 +11057,72 @@ export default function App() {
                   })()}
 
                   {/* Opzioni Metamagia apprese: a destra */}
-                  <div style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', background: C.panelLight }}>
-                    <div style={{ ...styles.detail, fontWeight: 700, marginBottom: 6 }}>✨ Opzioni Metamagia</div>
-                    <CampoConTendina
-                      value={scheda.metamagie}
-                      opzioni={METAMAGIA_5E}
-                      onChange={(v) => aggiorna({ metamagie: v })}
-                      lookup={spiegaMetamagia}
-                      setInfo={setInfo}
-                      title={t('tip.metamagia_attive')}
-                    />
+                  <div style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', background: C.panelLight, display: 'flex', flexDirection: 'column', height: '100%', boxSizing: 'border-box' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                      <div style={{ ...styles.detail, fontWeight: 700 }}>✨ Opzioni Metamagia</div>
+                      <span style={{ fontSize: 10.5, color: C.inkDim }}>
+                        {((scheda.metamagie || '').split(',').map((s) => s.trim()).filter(Boolean)).length} {lingua === 'en' ? 'chosen' : 'scelte'}
+                      </span>
+                    </div>
+                    <div style={{ marginBottom: 8 }}>
+                      <CampoConTendina
+                        value={scheda.metamagie}
+                        opzioni={METAMAGIA_5E}
+                        onChange={(v) => aggiorna({ metamagie: v })}
+                        lookup={spiegaMetamagia}
+                        setInfo={setInfo}
+                        title={t('tip.metamagia_attive')}
+                      />
+                    </div>
+                    {/* Elenco con spiegazione rapida delle metamagie scelte per valorizzare e riempire lo spazio */}
+                    {(() => {
+                      const scelte = (scheda.metamagie || '').split(',').map((s) => s.trim()).filter(Boolean);
+                      if (!scelte.length) {
+                        return (
+                          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.inkDim, fontSize: 11.5, fontStyle: 'italic', padding: '12px 0' }}>
+                            {lingua === 'en' ? 'No Metamagic selected. Click ➕ to add.' : 'Nessuna metamagia selezionata. Clicca ➕ per aggiungerne.'}
+                          </div>
+                        );
+                      }
+                      return (
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6, overflowY: 'auto', minHeight: 60 }}>
+                          {scelte.map((m) => {
+                            const spieg = spiegaMetamagia(m);
+                            return (
+                              <div
+                                key={m}
+                                onClick={() => spieg && setInfo({ titolo: traduciDato(m), testo: spieg })}
+                                style={{
+                                  background: C.panel,
+                                  border: `1px solid ${C.border}`,
+                                  borderRadius: 6,
+                                  padding: '5px 8px',
+                                  fontSize: 11.5,
+                                  cursor: spieg ? 'pointer' : 'default',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: 2,
+                                  transition: 'border-color 0.15s ease',
+                                }}
+                                onMouseEnter={(e) => { if (spieg) e.currentTarget.style.borderColor = C.goldDark; }}
+                                onMouseLeave={(e) => { if (spieg) e.currentTarget.style.borderColor = C.border; }}
+                                title={spieg ? (lingua === 'en' ? 'Click for full description' : 'Clicca per la spiegazione completa') : undefined}
+                              >
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                  <strong style={{ color: C.goldDark, fontSize: 12 }}>✨ {traduciDato(m)}</strong>
+                                  {spieg && <span style={{ fontSize: 10, color: C.inkDim }}>info ℹ️</span>}
+                                </div>
+                                {spieg && (
+                                  <div style={{ fontSize: 10.5, color: C.inkDim, lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                                    {spieg.replace(/\*\*/g, '').replace(/\\n/g, ' ')}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               </Sezione>
