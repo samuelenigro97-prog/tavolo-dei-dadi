@@ -5415,11 +5415,21 @@ export default function App() {
     .map(([livello]) => Number(livello) || 0));
   const targetFiltroClasse = filtroClasseInc || (classePreparata ? (scheda?.classe || '') : '');
   const catalogoMostrato = useMemo(() => {
+    const q = (filtroIncantesimo || '').trim().toLowerCase();
+    // Mostra elementi del catalogo globale SOLO se l'utente sta cercando esplicitamente un incantesimo col filtro di ricerca
+    // o se si tratta di una classe a lista divina completa (Chierico/Druido/Paladino) entro gli slot disponibili
+    const isClasseDivina = ['chierico', 'druido', 'paladino'].includes(chiaveClasse(scheda?.classe));
+    if (!q && !isClasseDivina) {
+      return [];
+    }
+
     const res = [];
     const chiaviSalvate = new Set(incLista.map((s) => `${s.livello}:${String(s.nome || '').toLocaleLowerCase('it')}`));
     for (const [nome, d] of Object.entries(INCANTESIMI_DB)) {
       const liv = Number(d.livello) || 0;
       if (chiaviSalvate.has(`${liv}:${nome.toLocaleLowerCase('it')}`)) continue;
+      // Per le classi divine senza ricerca testuale, non mostrare livelli superiori agli slot posseduti
+      if (!q && isClasseDivina && (liv > maxLivelloPreparabile || maxLivelloPreparabile === 0)) continue;
       if (targetFiltroClasse) {
         if (!(d.classi || []).some((c) => c.toLowerCase() === targetFiltroClasse.toLowerCase())) continue;
       }
@@ -5432,7 +5442,7 @@ export default function App() {
       });
     }
     return res;
-  }, [incLista, targetFiltroClasse]);
+  }, [incLista, targetFiltroClasse, filtroIncantesimo, scheda?.classe, maxLivelloPreparabile]);
 
   const incantesimiVisualizzati = [
     ...incLista,
@@ -10905,6 +10915,11 @@ export default function App() {
                                   >
                                     {s.nome || t('menu.senza_nome')}
                                   </button>
+                                  {s.catalogo && (
+                                    <span
+                                      style={{ fontSize: 10, fontWeight: 700, color: C.goldDark, border: `1px solid ${C.goldDark}`, background: 'rgba(201,162,39,0.12)', borderRadius: 6, padding: '0 4px', whiteSpace: 'nowrap', flexShrink: 0 }}
+                                    >📖 {lingua === 'en' ? 'Catalog' : 'Catalogo'}</span>
+                                  )}
                                   {s.bonus && (
                                     <span
                                       title={t('spell.bonus_badge_tooltip')}
@@ -10960,38 +10975,58 @@ export default function App() {
                                     </div>
                                   )}
                                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0, marginLeft: 'auto' }}>
-                                    {classePreparata && s.livello >= 1 && (
+                                    {s.catalogo ? (
                                       <button
                                         style={{
                                           ...styles.buttonMini,
-                                          padding: '2px 7px',
+                                          padding: '2px 8px',
                                           borderRadius: 6,
                                           fontSize: 11,
                                           fontWeight: 700,
-                                          color: s.preparato !== false ? C.goldDark : C.inkDim,
-                                          background: s.preparato !== false ? 'rgba(201,162,39,0.12)' : 'transparent',
-                                          borderColor: s.preparato !== false ? C.goldDark : C.border,
+                                          color: '#fff',
+                                          background: C.goldDark,
+                                          borderColor: C.goldDark,
+                                          cursor: 'pointer',
                                         }}
-                                        title={s.preparato === false && preparatiPieni && !s.bonus ? t('spell.max_tooltip') : (s.preparato !== false ? t('spell.preparato_si') : t('spell.preparato_no'))}
-                                        disabled={s.preparato === false && preparatiPieni && !s.bonus}
+                                        title={lingua === 'en' ? 'Add this spell to your character sheet' : 'Aggiungi questo incantesimo alla tua scheda'}
                                         onClick={() => cambiaPreparazione(s)}
-                                      >{s.preparato !== false ? '⭐ Prep.' : '☆ Non prep.'}</button>
-                                    )}
-                                    {!s.catalogo && <button style={{ ...styles.buttonMini, padding: '2px 6px' }} title={t('tip.modifica')} onClick={() => setDettaglioInc(s.id)}>✎</button>}
-                                    {!s.catalogo && (
-                                      <button
-                                        style={{ ...styles.buttonMini, padding: '2px 6px', color: C.red }}
-                                        title={t('tip.elimina_inc')}
-                                        onClick={() => {
-                                          setConferma({
-                                            titolo: t('spell.elimina_titolo') || 'Elimina incantesimo',
-                                            testo: `Vuoi eliminare "${s.nome}" dalla lista incantesimi?`,
-                                            onConferma: () => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) }),
-                                          });
-                                        }}
                                       >
-                                        🗑
+                                        ➕ {lingua === 'en' ? 'Add' : 'Aggiungi'}
                                       </button>
+                                    ) : (
+                                      <>
+                                        {classePreparata && s.livello >= 1 && (
+                                          <button
+                                            style={{
+                                              ...styles.buttonMini,
+                                              padding: '2px 7px',
+                                              borderRadius: 6,
+                                              fontSize: 11,
+                                              fontWeight: 700,
+                                              color: s.preparato !== false ? C.goldDark : C.inkDim,
+                                              background: s.preparato !== false ? 'rgba(201,162,39,0.12)' : 'transparent',
+                                              borderColor: s.preparato !== false ? C.goldDark : C.border,
+                                            }}
+                                            title={s.preparato === false && preparatiPieni && !s.bonus ? t('spell.max_tooltip') : (s.preparato !== false ? t('spell.preparato_si') : t('spell.preparato_no'))}
+                                            disabled={s.preparato === false && preparatiPieni && !s.bonus}
+                                            onClick={() => cambiaPreparazione(s)}
+                                          >{s.preparato !== false ? '⭐ Prep.' : '☆ Non prep.'}</button>
+                                        )}
+                                        <button style={{ ...styles.buttonMini, padding: '2px 6px' }} title={t('tip.modifica')} onClick={() => setDettaglioInc(s.id)}>✎</button>
+                                        <button
+                                          style={{ ...styles.buttonMini, padding: '2px 6px', color: C.red }}
+                                          title={t('tip.elimina_inc')}
+                                          onClick={() => {
+                                            setConferma({
+                                              titolo: t('spell.elimina_titolo') || 'Elimina incantesimo',
+                                              testo: `Vuoi eliminare "${s.nome}" dalla lista incantesimi?`,
+                                              onConferma: () => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) }),
+                                            });
+                                          }}
+                                        >
+                                          🗑
+                                        </button>
+                                      </>
                                     )}
                                   </div>
                                 </div>
