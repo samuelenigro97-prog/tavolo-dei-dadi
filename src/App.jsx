@@ -3339,7 +3339,9 @@ export default function App() {
       return <CampoBloccato valore={t('profilo.sottoclasse_dal_liv', { n: livSub })} title={t('profilo.sottoclasse_attesa', { n: livSub })} />;
     }
     if (valore) {
-      return <CampoBloccato valore={traduciDato(valore)} title={t('profilo.sottoclasse_bloccata')} />;
+      const txt = traduciDato(valore);
+      const isLungo = txt.length > 20;
+      return <CampoBloccato valore={txt} title={t('profilo.sottoclasse_bloccata')} style={isLungo ? { fontSize: 11.5, letterSpacing: -0.2 } : undefined} />;
     }
     return (
       <CampoTendina
@@ -8682,12 +8684,29 @@ export default function App() {
                 aria-hidden="true"
               />
             );
+            const stileTarghetta = {
+              fontSize: 9.5,
+              fontWeight: 700,
+              letterSpacing: 0.6,
+              color: C.inkDim,
+              textTransform: 'uppercase',
+              userSelect: 'none',
+              fontFamily: 'inherit',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 3.5,
+              padding: '1px 6px',
+              borderRadius: 6,
+              background: 'rgba(0,0,0,0.03)',
+              border: `1px solid ${C.border}`,
+            };
+
             return (
-              <div className="selettore-personaggio-azioni" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: 12 }}>
+              <div className="selettore-personaggio-azioni" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: 10 }}>
                 {/* Blocco 1 (Sinistra): GESTIONE SCHEDA */}
-                <div className="selettore-blocco-1" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, marginRight: 'auto' }}>
-                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.8, color: C.goldDark, textTransform: 'uppercase', userSelect: 'none' }}>
-                    {t('nav.gestione_scheda')}
+                <div className="selettore-blocco-1" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                  <span style={stileTarghetta}>
+                    <span>👤</span> {t('nav.gestione_scheda')}
                   </span>
                   <div className="selettore-riga-1" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                     <button
@@ -8743,9 +8762,9 @@ export default function App() {
                 </div>
 
                 {/* Blocco 2 (Centro): SISTEMA */}
-                <div className="selettore-blocco-2" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, margin: '0 auto' }}>
-                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.8, color: C.goldDark, textTransform: 'uppercase', userSelect: 'none' }}>
-                    {t('nav.sistema')}
+                <div className="selettore-blocco-2" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                  <span style={stileTarghetta}>
+                    <span>⚙️</span> {t('nav.sistema')}
                   </span>
                   <div className="selettore-riga-2" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                     <button style={btnAzione} title={t('tip.menu_iniziale')} onClick={() => setMostraMenu(true)}>
@@ -8814,9 +8833,9 @@ export default function App() {
                 </div>
 
                 {/* Blocco 3 (Destra): SESSIONE */}
-                <div className="selettore-blocco-3" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, marginLeft: 'auto' }}>
-                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.8, color: C.goldDark, textTransform: 'uppercase', userSelect: 'none' }}>
-                    {t('nav.sessione')}
+                <div className="selettore-blocco-3" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                  <span style={stileTarghetta}>
+                    <span>🎲</span> {t('nav.sessione')}
                   </span>
                   <div className="selettore-riga-3" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                     <button ref={ambientazioneBtnRef} style={btnAzione} title={t('luogo.tooltip')} onClick={() => { if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
@@ -9194,7 +9213,7 @@ export default function App() {
 
                 <div className="profilo-anagrafica-campi" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {/* Riga 1: Sesso, Specie/Razza, Taglia, Allineamento */}
-                  <div className="campi-anagrafica campi-anagrafica-riga1" style={{ display: 'grid', gridTemplateColumns: '0.7fr 1.05fr 1.6fr 1.15fr', gap: '6px 10px', alignItems: 'end' }}>
+                  <div className="campi-anagrafica campi-anagrafica-riga1" style={{ display: 'grid', gridTemplateColumns: '1.05fr 1.15fr 0.65fr 1.2fr', gap: '6px 10px', alignItems: 'end' }}>
                     <CampoModulo label={t("profilo.sesso")}>
                       <select
                         value={scheda.sesso || ''}
@@ -9219,21 +9238,21 @@ export default function App() {
                     </CampoModulo>
                   </div>
 
-                  {/* Riga 2: Background, Classe, Sottoclasse, P.E. (allineata a colonna 1-to-1 con Riga 1) */}
-                  <div className="campi-anagrafica campi-anagrafica-riga2" style={{ display: 'grid', gridTemplateColumns: '0.7fr 1.05fr 1.6fr 1.15fr', gap: '6px 10px', alignItems: 'end' }}>
-                    <CampoModulo label={t("profilo.background")}>
+                  {/* Riga 2: Background, Classe, Sottoclasse, P.E. */}
+                  <div className="campi-anagrafica campi-anagrafica-riga2" style={{ display: 'grid', gridTemplateColumns: '1.05fr 1.05fr 2.15fr 0.45fr', gap: '6px 10px', alignItems: 'end' }}>
+                    <CampoModulo label={t("profilo.background")} boxClassName={String(scheda.background || '').length > 12 ? 'testo-compatto' : undefined}>
                       <CampoBloccato
                         valore={traduciDato(scheda.background) || t('profilo.nessuno')}
                         title={t('profilo.background_bloccato')}
                       />
                     </CampoModulo>
-                    <CampoModulo label={t("profilo.classe")}>
+                    <CampoModulo label={t("profilo.classe")} boxClassName={String(scheda.classe || '').length > 10 ? 'testo-compatto' : undefined}>
                       <CampoBloccato
                         valore={traduciDato(scheda.classe) ? `${traduciDato(scheda.classe)} ${scheda.livello || 1}` : t('profilo.nessuna')}
                         title={t('profilo.classe_bloccata')}
                       />
                     </CampoModulo>
-                    <CampoModulo label={t("profilo.sottoclasse")}>
+                    <CampoModulo label={t("profilo.sottoclasse")} boxClassName={String(scheda.sottoclasse || '').length > 18 ? 'testo-compatto' : undefined}>
                       {campoSottoclasse(scheda.classe, scheda.livello, scheda.sottoclasse, (v) => {
                         const patch = { sottoclasse: v };
                         const auto = privilegiSottoclasseFinoA(v, scheda.livello || 1);

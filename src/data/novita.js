@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.52',
+    voci: {
+      it: [
+        'Nuovo Design Toolbar & Anagrafica Flessibile: micro-badge satinati con icone per i 3 blocchi della barra superiore e proporzioni dinamiche dei campi anagrafica (più spazio a Sottoclasse e Background, campi compatti per Taglia e P.E.).',
+      ],
+      en: [
+        'New Toolbar Design & Dynamic Character Info: satin micro-badges with icons for toolbar blocks and proportional responsive layout for character info fields.',
+      ],
+    },
+  },
+  {
     versione: '4.0.51',
     voci: {
       it: [

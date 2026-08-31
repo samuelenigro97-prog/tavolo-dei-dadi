@@ -549,7 +549,7 @@ export function Sezione({ titolo, children, aperto = true, onToggleAperto, manig
  * sottoclasse, background). Niente tendina e niente lucchetto: solo il
  * valore in grigio scuro, con la spiegazione nel tooltip.
  */
-export function CampoBloccato({ valore, title }) {
+export function CampoBloccato({ valore, title, style }) {
   return (
     <div
       style={{
@@ -564,6 +564,7 @@ export function CampoBloccato({ valore, title }) {
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         width: '100%',
+        ...style,
       }}
       title={title || (typeof valore === 'string' ? valore : undefined)}
     >
