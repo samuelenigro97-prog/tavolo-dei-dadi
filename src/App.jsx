@@ -9106,7 +9106,7 @@ export default function App() {
 
                 <div className="profilo-anagrafica-campi" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {/* Riga 1: Sesso, Specie/Razza, Taglia, Allineamento */}
-                  <div className="campi-anagrafica campi-anagrafica-riga1" style={{ display: 'grid', gridTemplateColumns: '1.05fr 1.15fr 0.65fr 1.2fr', gap: '6px 10px', alignItems: 'end' }}>
+                  <div className="campi-anagrafica campi-anagrafica-riga1" style={{ display: 'grid', gridTemplateColumns: '0.85fr 1.25fr 0.6fr 1.3fr', gap: '6px 10px', alignItems: 'end' }}>
                     <CampoModulo label={t("profilo.sesso")}>
                       <select
                         value={scheda.sesso || ''}
@@ -9132,7 +9132,7 @@ export default function App() {
                   </div>
 
                   {/* Riga 2: Background, Classe, Sottoclasse, P.E. */}
-                  <div className="campi-anagrafica campi-anagrafica-riga2" style={{ display: 'grid', gridTemplateColumns: '1.05fr 1.05fr 2.15fr 0.45fr', gap: '6px 10px', alignItems: 'end' }}>
+                  <div className="campi-anagrafica campi-anagrafica-riga2" style={{ display: 'grid', gridTemplateColumns: '0.92fr 1.05fr 2.33fr 0.4fr', gap: '6px 10px', alignItems: 'end' }}>
                     <CampoModulo label={t("profilo.background")} boxClassName={String(scheda.background || '').length > 12 ? 'testo-compatto' : undefined}>
                       <CampoBloccato
                         valore={traduciDato(scheda.background) || t('profilo.nessuno')}

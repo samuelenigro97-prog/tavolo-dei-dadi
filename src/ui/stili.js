@@ -771,7 +771,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .campi-anagrafica .campo-modulo-box { padding: 0 1px !important; min-height: 26px !important; height: 26px; display: flex; align-items: center; overflow: hidden; font-size: 12px; font-weight: 600 !important; color: var(--c-ink) !important; font-family: inherit !important; }
 .campi-anagrafica .campo-modulo-box * { font-size: inherit; font-family: inherit; font-weight: 600; }
 .campi-anagrafica .campo-modulo-box.testo-compatto, .campi-anagrafica .campo-modulo-box.testo-compatto * { font-size: 10.5px !important; letter-spacing: -0.2px; }
-.campi-anagrafica .campo-modulo-label { font-size: 9px !important; margin-top: 2px; font-weight: 700 !important; letter-spacing: 0.5px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.campi-anagrafica .campo-modulo-label { font-size: 8.5px !important; margin-top: 2px; font-weight: 700 !important; letter-spacing: 0.25px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* Sottoclasse con più classi (multiclasse): una riga per classe, l'altezza fissa
     da campo singolo taglierebbe via le righe in più. */
 .campi-anagrafica .campo-modulo-box.sottoclasse-multi { height: auto !important; align-items: flex-start !important; overflow: visible !important; padding-top: 2px !important; padding-bottom: 2px !important; }
