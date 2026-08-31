@@ -9897,26 +9897,26 @@ export default function App() {
                       {sfondoCar.symbol}
                     </span>
                   )}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                  <div className="blocco-car-header" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                     <Rollable
                       onRoll={() => lanciaD20(`Prova di ${t('attr.' + key)}`, mod)}
-                      style={styles.abilityMod}
+                      style={{ ...styles.abilityMod, fontSize: 22, padding: '0 4px' }}
                       title={`Tieni premuto e rilascia: prova di ${t('attr.' + key)}`}
                     >
                       {conSegno(mod)}
                     </Rollable>
-                    <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
+                    <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 3 }}>
                       <div
                         className="car-header-label"
-                        style={{ minWidth: 0, fontSize: 12.5, color: C.ink, letterSpacing: 0.3, fontWeight: 'bold', cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                        style={{ minWidth: 0, fontSize: 11.5, color: C.ink, letterSpacing: 0.2, fontWeight: 'bold', cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                         title={t('tip.cosa_governa')}
                         onClick={() => setInfo({ titolo: t('attr.' + key), testo: t('spieg.' + key) })}
                       >{t('attr.' + key).toUpperCase()}</div>
-                      <div style={{ flexShrink: 0, fontSize: 16, fontWeight: 'bold', color: C.goldDark, display: 'flex', alignItems: 'center' }} title={t('tip.punteggio_car')}>
+                      <div style={{ flexShrink: 0, fontSize: 14.5, fontWeight: 'bold', color: C.goldDark, display: 'flex', alignItems: 'center' }} title={t('tip.punteggio_car')}>
                         <Editable
                           value={scheda.caratteristiche[key]}
                           tipo="numero"
-                          width={28}
+                          width={24}
                           onChange={(v) =>
                             aggiorna({ caratteristiche: { ...scheda.caratteristiche, [key]: v } })
                           }

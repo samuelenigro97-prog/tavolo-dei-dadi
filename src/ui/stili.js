@@ -364,6 +364,8 @@ html, body {
   padding: 0;
   background: ${C.bg};
   -webkit-text-size-adjust: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 body {
   -webkit-overflow-scrolling: touch;
@@ -700,42 +702,56 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .profilo-caratteristiche-box {
     order: 6 !important;
     width: 100% !important;
+    max-width: 100% !important;
     display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 8px !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    gap: 6px !important;
     align-items: start !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
   }
-  .car-col-fisiche {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 8px !important;
-    width: 100% !important;
-  }
+  .car-col-fisiche,
   .car-col-mentali {
     display: flex !important;
     flex-direction: column !important;
-    gap: 8px !important;
+    gap: 6px !important;
     width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
   }
   .car-col-fisiche .car-tier-1,
   .car-col-mentali .car-tier-2,
   .car-col-mentali .car-tier-3 {
     display: flex !important;
     flex-direction: column !important;
-    gap: 8px !important;
+    gap: 6px !important;
     width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
     height: auto !important;
   }
   .car-col-fisiche .blocco-car,
   .car-col-mentali .blocco-car {
     width: 100% !important;
+    max-width: 100% !important;
     min-width: 0 !important;
-    padding: 6px 6px !important;
+    padding: 5px 6px !important;
     box-sizing: border-box !important;
   }
   .car-col-fisiche .blocco-car > div:first-of-type,
   .car-col-mentali .blocco-car > div:first-of-type {
-    gap: 6px !important;
+    gap: 4px !important;
+  }
+  .car-header-label {
+    font-size: 11.5px !important;
+    letter-spacing: 0px !important;
+  }
+  .blocco-car div[role="button"] {
+    font-size: 12.5px !important;
+    gap: 5px !important;
+  }
+  .blocco-car .skill-nome {
+    font-size: 11.5px !important;
   }
   /* 7. Competenze (Armature, Armi, Strumenti, Lingue) */
   .profilo-competenze-box {
