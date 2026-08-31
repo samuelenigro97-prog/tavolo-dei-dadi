@@ -209,6 +209,19 @@ test('spiegaIncantesimo: funziona per tutti gli incantesimi (inclusi quelli dal 
   assert.equal(spiegaIncantesimo('Incantesimo Non Esistente 999'), null);
 });
 
+test('bestiario: tutte le bestie, famigli ed evocazioni hanno statistiche e velocità valide', async () => {
+  const { BESTIE, FAMIGLI, EVOCAZIONI } = await import('../src/data/bestiario.js');
+  assert.ok(BESTIE.length > 20);
+  assert.ok(FAMIGLI.length > 8);
+  assert.ok(EVOCAZIONI.length > 8);
+  for (const c of [...BESTIE, ...FAMIGLI, ...EVOCAZIONI]) {
+    assert.ok(c.nome, 'Nome presente');
+    assert.ok(typeof c.ca === 'number' && c.ca > 0, `CA valida per ${c.nome}`);
+    assert.ok(typeof c.pf === 'number' && c.pf > 0, `PF validi per ${c.nome}`);
+    assert.ok(c.velocita, `Velocità presente per ${c.nome}`);
+  }
+});
+
 test('tiraDanni: critico raddoppia i dadi ma non i modificatori fissi', () => {
   const parsata = parseEspressioneDado('1d8+3');
   assert.ok(parsata);
@@ -220,5 +233,18 @@ test('tiraDanni: critico raddoppia i dadi ma non i modificatori fissi', () => {
   assert.ok(critico.totale >= 5 && critico.totale <= 19);
   assert.match(critico.dettaglio, /2d8/);
 });
+
+test('classificaIncantesimoCombattimento: Frusta di Spine e Morsa del Gelo riconosciuti come incantesimi offensivi', async () => {
+  const { classificaIncantesimoCombattimento } = await import('../src/rules/regole.js');
+  const sp1 = classificaIncantesimoCombattimento({ nome: 'Frusta di Spine' });
+  assert.equal(sp1.mostraInCombattimento, true);
+  assert.equal(sp1.isTS, false); // Attacco corpo a corpo magico
+
+  const sp2 = classificaIncantesimoCombattimento({ nome: 'Morsa del Gelo' });
+  assert.equal(sp2.mostraInCombattimento, true);
+  assert.equal(sp2.isTS, true); // Tiro salvezza su Costituzione
+});
+
+
 
 

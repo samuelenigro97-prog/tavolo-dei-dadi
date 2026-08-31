@@ -10120,8 +10120,25 @@ export default function App() {
               </div>
               <div style={{ overflowX: 'auto' }}>
                 {(() => {
+                  const isAttaccoIncantesimo = (a) => {
+                    if (a.isSpell || a.tipo === 'incantesimo' || a.idIncantesimo) return true;
+                    const clean = String(a.nome || '').replace(/^✨\s*/, '').trim().toLowerCase();
+                    if (datiIncantesimo(clean) != null) return true;
+                    if ((scheda.incantesimiLista || []).some((s) => (s.nome || '').trim().toLowerCase() === clean)) return true;
+                    return false;
+                  };
+
+                  const attacchiSalvati = (scheda.attacchi || []).map((a) => {
+                    const isSpell = isAttaccoIncantesimo(a);
+                    return isSpell && !a.isSpell ? { ...a, isSpell: true } : a;
+                  });
+
+                  const nomiSalvati = new Set(attacchiSalvati.map((a) => String(a.nome || '').replace(/^✨\s*/, '').trim().toLowerCase()));
+
                   const attacchiSpettro = (scheda.incantesimiLista || []).filter((s) => {
                     if (scheda.mostraIncantesimiAttacco === false || s.nascondiAttacco) return false;
+                    const cleanS = String(s.nome || '').replace(/^✨\s*/, '').trim().toLowerCase();
+                    if (nomiSalvati.has(cleanS)) return false;
                     return classificaIncantesimoCombattimento(s).mostraInCombattimento;
                   }).map((s) => {
                     const d = dettagliIncantesimo(s.nome) || {};
@@ -10158,12 +10175,17 @@ export default function App() {
                       note
                     };
                   });
-                  const attacchiFisici = (scheda.attacchi || []).filter(() => scheda.mostraArmiAttacco !== false);
-                  const listaAttacchiCompleta = [...attacchiFisici, ...attacchiSpettro];
+                  const attacchiVisibili = attacchiSalvati.filter((a) => {
+                    if (a.isSpell) {
+                      return scheda.mostraIncantesimiAttacco !== false;
+                    }
+                    return scheda.mostraArmiAttacco !== false;
+                  });
+                  const listaAttacchiCompleta = [...attacchiVisibili, ...attacchiSpettro];
                   // Per lanciare incantesimi in combattimento serve un focus (o
                   // borsa da componenti / simbolo sacro) EQUIPAGGIATO nell'inventario.
                   const haFocus = (scheda.inventario || []).some((o) => o.equip && /focus|simbolo sacro|borsa (da )?componenti|bacchetta|cristallo|totem|bastone runico|feticcio|strumento musicale|liuto|flauto|arpa|tamburo|cornamusa|lira/i.test(o.nome || ''));
-                  const serveFocus = Boolean(caratteristicaIncantatore) && attacchiSpettro.length > 0;
+                  const serveFocus = Boolean(caratteristicaIncantatore) && (attacchiSpettro.length > 0 || attacchiVisibili.some((a) => a.isSpell));
                   const bloccaSpell = serveFocus && !haFocus;
                   const avvisoFocus = bloccaSpell ? (
                     <div style={{ fontSize: 12, color: C.red, background: 'rgba(200,40,40,0.10)', border: `1px solid ${C.red}`, borderRadius: 8, padding: '6px 10px', marginBottom: 10 }}>
@@ -10390,14 +10412,19 @@ export default function App() {
                                           titolo: a.isSpell ? 'Nascondi attacco' : 'Elimina attacco',
                                           testo: a.isSpell ? `Nascondere "${a.nome}" dalla lista attacchi?` : `Vuoi eliminare l'attacco "${a.nome}"?`,
                                           onConferma: () => {
-                                            if (a.isSpell) {
+                                            if (a.idIncantesimo) {
                                               aggiorna({
-                                                incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === a.idIncantesimo ? { ...x, nascondiAttacco: true } : x))
+                                                incantesimiLista: (scheda.incantesimiLista || []).map((x) => (x.id === a.idIncantesimo ? { ...x, nascondiAttacco: true } : x)),
+                                                attacchi: (scheda.attacchi || []).filter((x) => x.id !== a.id)
+                                              });
+                                            } else if (a.isSpell) {
+                                              aggiorna({
+                                                attacchi: (scheda.attacchi || []).filter((x) => x.id !== a.id)
                                               });
                                             } else {
                                               const inv = scheda.inventario || [];
                                               aggiorna({
-                                                attacchi: scheda.attacchi.filter((x) => x.id !== a.id),
+                                                attacchi: (scheda.attacchi || []).filter((x) => x.id !== a.id),
                                                 inventario: inv.map((x) => (x.nome.toLowerCase() === a.nome.toLowerCase() ? { ...x, equip: false } : x))
                                               });
                                             }

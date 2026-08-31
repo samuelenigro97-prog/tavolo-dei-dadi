@@ -856,7 +856,7 @@ export const FAMIGLI = [
   {
     nome: 'Gazer (Famiglio)', nomeEn: 'Gazer (Familiar)', tipo: 'Aberrazione (Occhio Tiranno Minore)',
     taglia: 'Minuscola', ca: 13, pf: 13, pfFormula: '3d4 + 6',
-    velocita: { terra: 0, volo: 9 (fluttuare) },
+    velocita: { terra: 0, volo: 9 },
     car: { forza: 3, destrezza: 17, costituzione: 14, intelligenza: 3, saggezza: 10, carisma: 7 },
     abilita: 'Percezione +4, Furtività +5',
     sensi: 'Scurovisione 18 m · Percezione passiva 14',
@@ -986,7 +986,7 @@ export const EVOCAZIONI = [
   {
     nome: 'Elementale dell’Aria', nomeEn: 'Air Elemental', tipo: 'Elementale (Evocazione)',
     taglia: 'Grande', ca: 15, pf: 90, pfFormula: '12d10 + 24',
-    velocita: { terra: 0, volo: 27 (fluttuare) },
+    velocita: { terra: 0, volo: 27 },
     car: { forza: 14, destrezza: 20, costituzione: 14, intelligenza: 6, saggezza: 10, carisma: 6 },
     abilita: '—',
     sensi: 'Scurovisione 18 m · Percezione passiva 10',
