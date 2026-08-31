@@ -112,3 +112,28 @@ test('traduzioni: nessun testo inglese è rimasto in italiano per sbaglio', () =
   }
   assert.deepEqual(sospetti, [], `testi ancora in italiano: ${sospetti.join(', ')}`);
 });
+
+test('traduzioni: condizioni, armi, armature e sottoclassi sono tradotte in inglese', async () => {
+  const dati = await import('../src/data/dati5e.js');
+  conLingua('en', () => {
+    // Sottoclassi
+    for (const [cls, subs] of Object.entries(dati.SOTTOCLASSI_5E || {})) {
+      for (const sub of subs) {
+        if (['Berserker', 'Samurai', 'Scout'].includes(sub)) continue;
+        assert.notEqual(traduciDato(sub), sub, `Sottoclasse non tradotta: ${sub} (${cls})`);
+      }
+    }
+    // Armi
+    for (const w of (dati.ARMI_5E || [])) {
+      assert.notEqual(traduciDato(w.nome), w.nome, `Arma non tradotta: ${w.nome}`);
+    }
+    // Condizioni
+    for (const c of (dati.CONDIZIONI_5E || [])) {
+      assert.notEqual(traduciDato(c), c, `Condizione non tradotta: ${c}`);
+    }
+    // Strumenti
+    for (const s of (dati.STRUMENTI_5E || [])) {
+      assert.notEqual(traduciDato(s), s, `Strumento non tradotto: ${s}`);
+    }
+  });
+});

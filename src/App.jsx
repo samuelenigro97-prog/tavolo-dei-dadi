@@ -10297,24 +10297,24 @@ export default function App() {
                                           <option value="">{cat === 'Reazione' ? '🪄' : cat === 'Bonus' ? '⚡' : '⚔️'}</option>
                                           {cat === 'Reazione' ? (
                                             <>
-                                              <optgroup label="Incantesimi di Reazione">
-                                                {REAZIONI_5E.filter((x) => x.tipo === 'incantesimo').map((r) => <option key={r.nome} value={r.nome} title={r.note || spiegaIncantesimo(r.nome)}>{r.nome}</option>)}
+                                              <optgroup label={lingua === 'en' ? 'Reaction Spells' : 'Incantesimi di Reazione'}>
+                                                {REAZIONI_5E.filter((x) => x.tipo === 'incantesimo').map((r) => <option key={r.nome} value={r.nome} title={r.note || spiegaIncantesimo(r.nome)}>{traduciDato(r.nome)}</option>)}
                                               </optgroup>
-                                              <optgroup label="Reazioni e Privilegi">
-                                                {REAZIONI_5E.filter((x) => x.tipo !== 'incantesimo').map((r) => <option key={r.nome} value={r.nome} title={r.note || spiegaPrivilegio(r.nome)}>{r.nome}</option>)}
+                                              <optgroup label={lingua === 'en' ? 'Reactions & Features' : 'Reazioni e Privilegi'}>
+                                                {REAZIONI_5E.filter((x) => x.tipo !== 'incantesimo').map((r) => <option key={r.nome} value={r.nome} title={r.note || spiegaPrivilegio(r.nome)}>{traduciDato(r.nome)}</option>)}
                                               </optgroup>
                                             </>
                                           ) : cat === 'Bonus' ? (
                                             <>
-                                              <optgroup label="Azioni Bonus & Armi">
-                                                {AZIONI_BONUS_5E.filter((x) => x.tipo === 'combattimento' || x.tipo === 'talento' || x.tipo === 'privilegio').map((b) => <option key={b.nome} value={b.nome} title={b.note || spiegaPrivilegio(b.nome)}>{b.nome}</option>)}
+                                              <optgroup label={lingua === 'en' ? 'Bonus Actions & Weapons' : 'Azioni Bonus & Armi'}>
+                                                {AZIONI_BONUS_5E.filter((x) => x.tipo === 'combattimento' || x.tipo === 'talento' || x.tipo === 'privilegio').map((b) => <option key={b.nome} value={b.nome} title={b.note || spiegaPrivilegio(b.nome)}>{traduciDato(b.nome)}</option>)}
                                               </optgroup>
-                                              <optgroup label="Incantesimi Azione Bonus">
-                                                {AZIONI_BONUS_5E.filter((x) => x.tipo === 'incantesimo').map((b) => <option key={b.nome} value={b.nome} title={b.note || spiegaIncantesimo(b.nome)}>{b.nome}</option>)}
+                                              <optgroup label={lingua === 'en' ? 'Bonus Action Spells' : 'Incantesimi Azione Bonus'}>
+                                                {AZIONI_BONUS_5E.filter((x) => x.tipo === 'incantesimo').map((b) => <option key={b.nome} value={b.nome} title={b.note || spiegaIncantesimo(b.nome)}>{traduciDato(b.nome)}</option>)}
                                               </optgroup>
                                             </>
                                           ) : (
-                                            [...ARMI_5E].sort((a, b) => a.nome.localeCompare(b.nome, 'it')).map((w) => <option key={w.nome} value={w.nome}>{w.nome}</option>)
+                                            [...ARMI_5E].sort((a, b) => traduciDato(a.nome).localeCompare(traduciDato(b.nome), lingua)).map((w) => <option key={w.nome} value={w.nome}>{traduciDato(w.nome)}</option>)
                                           )}
                                         </select>
                                       )}
