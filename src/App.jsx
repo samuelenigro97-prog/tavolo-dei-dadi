@@ -1196,7 +1196,7 @@ const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(I
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -2266,6 +2266,8 @@ function normalizeImported(rawDati) {
             effettoMeccanico: EFFETTI_OGGETTO.some(([id]) => id === o.effettoMeccanico) ? o.effettoMeccanico : '',
             richiedeSintonia: typeof o.richiedeSintonia === 'boolean' ? o.richiedeSintonia : undefined,
           });
+          const cont = Array.isArray(o.contenuto) ? o.contenuto : (eContenitore(base) ? ottieniContenutoItem(base) : undefined);
+          if (cont && cont.length > 0) base.contenuto = cont;
           // Peso ricalcolato sul nome CORRETTO (post-riconoscimento): un oggetto
           // importato col nome abbreviato ("Mantello Prot.") va rinominato al
           // nome canonico prima di cercarne il peso, altrimenti resta a 0.
@@ -2280,6 +2282,8 @@ function normalizeImported(rawDati) {
         const { nome, qta } = separaQtaOggetto(raw);
         const isFocus = /focus|simbolo sacro|borsa (da )?componenti|bacchetta|cristallo|totem|bastone runico|feticcio|strumento musicale|liuto|flauto|arpa|tamburo|cornamusa|lira/i.test(nome);
         const base = completaUtilizziOggetto({ id: `inv-mig-${i}`, nome, qta, peso: 0, equip: isFocus, categoria: isFocus ? 'Focus' : '' });
+        const cont = eContenitore(base) ? ottieniContenutoItem(base) : undefined;
+        if (cont && cont.length > 0) base.contenuto = cont;
         return { ...base, peso: pesoStimato(base.nome) };
       });
     })(),
@@ -2965,6 +2969,7 @@ export default function App() {
   const [filtroCatInventario, setFiltroCatInventario] = useState('tutti'); // 'tutti' | 'armi_armature' | 'pozioni' | 'magici' | 'attrezzi'
   const [schedaPrivilegiTab, setSchedaPrivilegiTab] = useState('tutti'); // 'tutti' | 'classe' | 'specie' | 'talenti'
   const [effettoInventarioAperto, setEffettoInventarioAperto] = useState(null);
+  const [apertiContenitori, setApertiContenitori] = useState({});
   const [bestiaDettaglio, setBestiaDettaglio] = useState(null); // bestia aperta in modale statblock
   const [fontePopover, setFontePopover] = useState(null); // { tipo: 'ts'|'car', key, top, left } menu "da cosa deriva il bonus" aperto
   useEffect(() => {
@@ -3826,6 +3831,8 @@ export default function App() {
           equip: isFocus, // equipaggia automaticamente all'avvio
           categoria: isFocus ? 'Focus' : '',
         });
+        const cont = eContenitore(base) ? ottieniContenutoItem(base) : undefined;
+        if (cont && cont.length > 0) base.contenuto = cont;
         return { ...base, peso: pesoStimato(base.nome) };
       });
     }
@@ -11466,7 +11473,13 @@ export default function App() {
             <Sezione titolo={t("sez.equipaggiamento")} {...propsSez('equipaggiamento')} {...apertoProps('equipaggiamento')}>
               {(() => {
                 const inv = scheda.inventario || [];
-                const pesoInv = inv.reduce((s, o) => s + (o.qta || 1) * (o.peso || 0), 0);
+                const pesoItemUnitario = (o) => {
+                  if (Array.isArray(o?.contenuto) && o.contenuto.length > 0) {
+                    return o.contenuto.reduce((sum, sub) => sum + (Number(sub?.qta) || 1) * (Number(sub?.peso) || 0), 0);
+                  }
+                  return Number(o?.peso) || 0;
+                };
+                const pesoInv = inv.reduce((s, o) => s + (o.qta || 1) * pesoItemUnitario(o), 0);
                 // Peso di armi e armatura equipaggiate (tutto ciò che ho addosso).
                 // Le armi che sono GIÀ nell'inventario non vengono ricontate qui
                 // (altrimenti equipaggiare un oggetto già posseduto ne raddoppia il peso).
@@ -11489,13 +11502,13 @@ export default function App() {
                 const cap = capFisica + capBonusBorsa;
                 // Peso totale ESCLUSO ciò che sta dentro la Borsa Conservante equipaggiata
                 const pesoDentroBorsa = borsaEquip
-                  ? inv.filter((o) => o.dentroBorsa).reduce((s, o) => s + (o.qta || 1) * (o.peso || 0), 0)
+                  ? inv.filter((o) => o.dentroBorsa).reduce((s, o) => s + (o.qta || 1) * pesoItemUnitario(o), 0)
                   : 0;
                 const pesoTot = pesoInv + pesoArmi + pesoArm + pesoMonete - pesoDentroBorsa;
                 const pesoEquipItems = inv.filter((o) => {
                   const isWeapon = ARMI_5E.some((w) => w.nome === o.nome) || attacchi.some((a) => a.nome === o.nome);
                   return isWeapon ? attacchi.some((a) => a.nome === o.nome) : !!o.equip;
-                }).reduce((s, o) => s + (o.qta || 1) * (o.peso || 0), 0);
+                }).reduce((s, o) => s + (o.qta || 1) * pesoItemUnitario(o), 0);
                 const pesoEquipTot = pesoEquipItems + pesoArmi + pesoArm;
                 const pesoZainoTot = Math.max(0, pesoTot - pesoEquipTot);
                 const soglia1 = forza * 2.5 * moltiTaglia; // soglia variante opzionale 5e: > 5x FOR in libbre = 2.5x FOR in kg
@@ -11726,6 +11739,10 @@ export default function App() {
                               const isSintonizzato = indiceSintonia(o.nome) >= 0;
                               const isPotion = /pozione|filtro|unguento|elisir|potion/i.test(o.nome || '');
                               const effettoAttivo = !!o.effettoMeccanico && isEquip && (!o.richiedeSintonia || isSintonizzato);
+                              const isContainer = eContenitore(o);
+                              const subContenuto = ottieniContenutoItem(o);
+                              const isContainerAperto = !!apertiContenitori[o.id];
+                              const mostraContenuto = isContainer && isContainerAperto;
                               // Effetto e Utilizzi sono dettagli dello STESSO oggetto: niente riga
                               // divisoria fra il nome e le sue righe di dettaglio, che restano
                               // "attaccate" come un unico blocco (bordo solo dopo l'ultima).
@@ -11769,12 +11786,40 @@ export default function App() {
                               return (
                                 <Fragment key={o.id}>
                                 <tr className="inventario-riga" style={{ opacity: isEquip ? 1 : 0.82 }}>
-                                  <td data-label={t('inv.equip')} style={{ ...styles.td, textAlign: 'center', ...((mostraEffetto || mostraUtilizzi) && senzaBordo) }}>
+                                  <td data-label={t('inv.equip')} style={{ ...styles.td, textAlign: 'center', ...((mostraEffetto || mostraUtilizzi || mostraContenuto) && senzaBordo) }}>
                                     <input type="checkbox" checked={isEquip} onChange={(e) => toggleEquip(o, e.target.checked)} title={t('inv.equip_tooltip')} />
                                   </td>
-                                  <td data-label={t('inv.nome')} style={{ ...styles.td, ...((mostraEffetto || mostraUtilizzi) && senzaBordo) }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                  <td data-label={t('inv.nome')} style={{ ...styles.td, ...((mostraEffetto || mostraUtilizzi || mostraContenuto) && senzaBordo) }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                                       <Editable value={o.nome} width={150} onChange={(v) => rinominaItem(o, v)} />
+                                      {isContainer && (
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            const nuovoStato = !isContainerAperto;
+                                            setApertiContenitori((prev) => ({ ...prev, [o.id]: nuovoStato }));
+                                            if (!Array.isArray(o.contenuto) || o.contenuto.length === 0) {
+                                              modInv(o.id, { contenuto: ottieniContenutoItem(o) });
+                                            }
+                                          }}
+                                          style={{
+                                            ...styles.buttonMini,
+                                            padding: '1px 7px',
+                                            fontSize: 10.5,
+                                            fontWeight: 700,
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 4,
+                                            borderColor: isContainerAperto ? C.goldDark : C.border,
+                                            background: isContainerAperto ? 'rgba(201,162,39,0.18)' : 'rgba(0,0,0,0.03)',
+                                            color: isContainerAperto ? C.goldDark : C.ink,
+                                            cursor: 'pointer',
+                                          }}
+                                          title={isContainerAperto ? t('inv.chiudi_contenitore') : t('inv.apri_contenitore')}
+                                        >
+                                          🎒 {isContainerAperto ? '▲' : '▼'} {subContenuto.length} {subContenuto.length === 1 ? t('inv.oggetto_dentro') : t('inv.oggetti_dentro')}
+                                        </button>
+                                      )}
                                       {isPotion && (
                                         <button
                                           type="button"
@@ -11795,8 +11840,8 @@ export default function App() {
                                       )}
                                     </div>
                                   </td>
-                                  <td data-label={t('inv.qta')} style={{ ...styles.td, ...((mostraEffetto || mostraUtilizzi) && senzaBordo) }}>×<Editable value={o.qta} tipo="numero" width={30} onChange={(v) => modInv(o.id, { qta: Math.max(0, v) })} /></td>
-                                  <td data-label={t('inv.sintonia')} style={{ ...styles.td, textAlign: 'center', ...((mostraEffetto || mostraUtilizzi) && senzaBordo) }}>
+                                  <td data-label={t('inv.qta')} style={{ ...styles.td, ...((mostraEffetto || mostraUtilizzi || mostraContenuto) && senzaBordo) }}>×<Editable value={o.qta} tipo="numero" width={30} onChange={(v) => modInv(o.id, { qta: Math.max(0, v) })} /></td>
+                                  <td data-label={t('inv.sintonia')} style={{ ...styles.td, textAlign: 'center', ...((mostraEffetto || mostraUtilizzi || mostraContenuto) && senzaBordo) }}>
                                     <button
                                       type="button"
                                       aria-pressed={isSintonizzato}
@@ -11806,8 +11851,35 @@ export default function App() {
                                       style={{ border: 0, background: 'transparent', padding: '1px 5px', fontSize: 20, lineHeight: 1, color: isSintonizzato ? C.goldDark : C.inkDim, cursor: 'pointer' }}
                                     >{isSintonizzato ? '✦' : '◇'}</button>
                                   </td>
-                                  <td data-label={t('inv.peso')} style={{ ...styles.td, color: C.inkDim, whiteSpace: 'nowrap', ...((mostraEffetto || mostraUtilizzi) && senzaBordo) }}><Editable value={o.peso} tipo="numero" width={40} onChange={(v) => modInv(o.id, { peso: Math.max(0, v) })} /> kg</td>
-                                  <td className="inventario-azioni" style={{ ...styles.td, textAlign: 'right', whiteSpace: 'nowrap', ...((mostraEffetto || mostraUtilizzi) && senzaBordo) }}>
+                                  <td data-label={t('inv.peso')} style={{ ...styles.td, color: C.inkDim, whiteSpace: 'nowrap', ...((mostraEffetto || mostraUtilizzi || mostraContenuto) && senzaBordo) }}>
+                                    {isContainer && subContenuto.length > 0 ? (
+                                      <span title={lingua === 'en' ? `Weight computed from ${subContenuto.length} items: ${pesoItemUnitario(o).toFixed(1)} kg` : `Peso calcolato da ${subContenuto.length} oggetti contenuti: ${pesoItemUnitario(o).toFixed(1)} kg`}>
+                                        <strong>{pesoItemUnitario(o).toFixed(1)}</strong> kg
+                                      </span>
+                                    ) : (
+                                      <><Editable value={o.peso} tipo="numero" width={40} onChange={(v) => modInv(o.id, { peso: Math.max(0, v) })} /> kg</>
+                                    )}
+                                  </td>
+                                  <td className="inventario-azioni" style={{ ...styles.td, textAlign: 'right', whiteSpace: 'nowrap', ...((mostraEffetto || mostraUtilizzi || mostraContenuto) && senzaBordo) }}>
+                                    <button
+                                      style={{ ...styles.buttonMini, color: isContainer ? C.goldDark : C.inkDim, borderColor: isContainer ? C.goldDark : C.border, background: isContainer ? 'rgba(201,162,39,0.12)' : undefined }}
+                                      title={isContainer ? t('inv.apri_contenitore') : (lingua === 'en' ? 'Add sub-items (turn into container)' : 'Inserisci sotto-oggetti (rendi contenitore)')}
+                                      onClick={() => {
+                                        if (isContainer) {
+                                          setApertiContenitori((prev) => ({ ...prev, [o.id]: !prev[o.id] }));
+                                          if (!Array.isArray(o.contenuto) || o.contenuto.length === 0) {
+                                            modInv(o.id, { contenuto: ottieniContenutoItem(o) });
+                                          }
+                                        } else {
+                                          const nomeSub = prompt(t('inv.prompt_nome_sub'));
+                                          if (nomeSub && nomeSub.trim()) {
+                                            const nuovo = { id: `sub-${Date.now()}`, nome: nomeSub.trim(), qta: 1, peso: pesoStimato(nomeSub.trim()), icona: '📦' };
+                                            modInv(o.id, { contenuto: [nuovo] });
+                                            setApertiContenitori((prev) => ({ ...prev, [o.id]: true }));
+                                          }
+                                        }
+                                      }}
+                                    >🎒</button>{' '}
                                     <button
                                       style={{ ...styles.buttonMini, color: effettoAttivo ? C.goldDark : C.inkDim, borderColor: effettoAttivo ? C.goldDark : C.border, background: effettoAttivo ? 'rgba(201,162,39,0.12)' : undefined }}
                                       title={t('inv.gestisci_effetti')}
@@ -11840,6 +11912,128 @@ export default function App() {
                                     </button>
                                   </td>
                                 </tr>
+                                {mostraContenuto && (
+                                  <tr className="inventario-contenuto-riga" style={{ background: 'rgba(201,162,39,0.05)' }}>
+                                    <td style={{ ...styles.td, borderTop: 'none' }} />
+                                    <td colSpan={5} style={{ ...styles.td, borderTop: 'none', padding: '6px 10px 10px' }}>
+                                      <div style={{ borderLeft: `3px solid ${C.goldDark}`, paddingLeft: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+                                          <span style={{ fontSize: 11, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                            🎒 {t('inv.contenuto_titolo')} · {o.nome} ({subContenuto.length} {subContenuto.length === 1 ? t('inv.oggetto_dentro') : t('inv.oggetti_dentro')})
+                                          </span>
+                                          <button
+                                            type="button"
+                                            style={{ ...styles.buttonMini, fontSize: 10.5, padding: '2px 8px', color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.1)' }}
+                                            onClick={() => {
+                                              const nuovoNome = prompt(t('inv.prompt_nome_sub'));
+                                              if (nuovoNome && nuovoNome.trim()) {
+                                                const nuovo = { id: `sub-${Date.now()}`, nome: nuovoNome.trim(), qta: 1, peso: pesoStimato(nuovoNome.trim()), icona: '📦' };
+                                                modInv(o.id, { contenuto: [...subContenuto, nuovo] });
+                                              }
+                                            }}
+                                          >
+                                            ➕ {t('inv.aggiungi_dentro')}
+                                          </button>
+                                        </div>
+
+                                        {subContenuto.length === 0 ? (
+                                          <div style={{ ...styles.detail, fontSize: 11, fontStyle: 'italic' }}>
+                                            {lingua === 'en' ? 'Container is currently empty.' : 'Il contenitore è attualmente vuoto.'}
+                                          </div>
+                                        ) : (
+                                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 6 }}>
+                                            {subContenuto.map((sub, sIdx) => {
+                                              const modSub = (patch) => {
+                                                const updated = subContenuto.map((x, idx) => idx === sIdx ? { ...x, ...patch } : x);
+                                                modInv(o.id, { contenuto: updated });
+                                              };
+                                              const rimuoviSub = () => {
+                                                const updated = subContenuto.filter((_, idx) => idx !== sIdx);
+                                                modInv(o.id, { contenuto: updated });
+                                              };
+                                              const estraiSub = () => {
+                                                const estratto = completaUtilizziOggetto({
+                                                  id: `inv-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
+                                                  nome: sub.nome,
+                                                  qta: sub.qta || 1,
+                                                  peso: sub.peso != null ? sub.peso : pesoStimato(sub.nome),
+                                                  equip: false,
+                                                  categoria: '',
+                                                });
+                                                const updated = subContenuto.filter((_, idx) => idx !== sIdx);
+                                                aggiorna({
+                                                  inventario: [...inv.map((x) => x.id === o.id ? { ...x, contenuto: updated } : x), estratto]
+                                                });
+                                              };
+
+                                              return (
+                                                <div
+                                                  key={sub.id || sIdx}
+                                                  style={{
+                                                    background: C.panel,
+                                                    border: `1px solid ${C.border}`,
+                                                    borderRadius: 6,
+                                                    padding: '4px 7px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'space-between',
+                                                    gap: 6,
+                                                    fontSize: 11.5,
+                                                  }}
+                                                >
+                                                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, minWidth: 0, flex: 1 }}>
+                                                    <span>{sub.icona || '📦'}</span>
+                                                    <span style={{ fontWeight: 600, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={sub.nome}>
+                                                      {sub.nome}
+                                                    </span>
+                                                    {sub.peso > 0 && (
+                                                      <span style={{ fontSize: 10, color: C.inkDim, whiteSpace: 'nowrap' }}>
+                                                        ({((sub.peso || 0) * (sub.qta || 1)).toFixed(1)} kg)
+                                                      </span>
+                                                    )}
+                                                  </div>
+
+                                                  <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+                                                    <button
+                                                      type="button"
+                                                      style={{ ...styles.buttonMini, padding: '0 4px', fontSize: 10, height: 20, minWidth: 20 }}
+                                                      title={t('tip.diminuisci')}
+                                                      onClick={() => modSub({ qta: Math.max(0, (Number(sub.qta) || 1) - 1) })}
+                                                    >−</button>
+                                                    <strong style={{ minWidth: 16, textAlign: 'center', fontSize: 11 }}>{sub.qta || 1}</strong>
+                                                    <button
+                                                      type="button"
+                                                      style={{ ...styles.buttonMini, padding: '0 4px', fontSize: 10, height: 20, minWidth: 20 }}
+                                                      title={t('tip.aumenta')}
+                                                      onClick={() => modSub({ qta: (Number(sub.qta) || 1) + 1 })}
+                                                    >＋</button>
+
+                                                    <button
+                                                      type="button"
+                                                      style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 10, color: C.goldDark, borderColor: C.goldDark, height: 20 }}
+                                                      title={t('inv.estrai_tip')}
+                                                      onClick={estraiSub}
+                                                    >
+                                                      ↗ {t('inv.estrai')}
+                                                    </button>
+                                                    <button
+                                                      type="button"
+                                                      style={{ ...styles.buttonMini, padding: '0 4px', fontSize: 10, color: C.red, height: 20 }}
+                                                      title={t('modal.elimina')}
+                                                      onClick={rimuoviSub}
+                                                    >
+                                                      ✕
+                                                    </button>
+                                                  </div>
+                                                </div>
+                                              );
+                                            })}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
                                 {(mostraEffetto || mostraUtilizzi) && (
                                   <tr style={{ background: (effettoAttivo || mostraUtilizzi) ? 'rgba(201,162,39,0.08)' : 'rgba(0,0,0,0.025)' }}>
                                     <td style={{ ...styles.td, borderTop: 'none' }} />

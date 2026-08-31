@@ -277,6 +277,147 @@ export function pesoArmatura(armatura) {
   return p;
 }
 
+/** Contenuto standard 5e dei pacchetti di dotazione e contenitori comuni */
+export const CONTENUTO_DOTAZIONI_5E = {
+  'dotazione da avventuriero': [
+    { id: 'sub-zaino', nome: 'Zaino', qta: 1, peso: 2.3, icona: '🎒' },
+    { id: 'sub-sacco-pelo', nome: 'Sacco a pelo', qta: 1, peso: 3.2, icona: '⛺' },
+    { id: 'sub-gavetta', nome: 'Gavetta e borraccia', qta: 1, peso: 2.7, icona: '🥣' },
+    { id: 'sub-acciarino', nome: 'Acciarino ed esca', qta: 1, peso: 0.5, icona: '🪔' },
+    { id: 'sub-torce', nome: 'Torce', qta: 10, peso: 0.5, icona: '🕯️' },
+    { id: 'sub-razioni', nome: 'Razioni giornaliere', qta: 10, peso: 0.9, icona: '🥩' },
+    { id: 'sub-corda', nome: 'Corda di canapa (15m)', qta: 1, peso: 4.5, icona: '🪢' },
+  ],
+  'dotazione da esploratore': [
+    { id: 'sub-zaino', nome: 'Zaino', qta: 1, peso: 2.3, icona: '🎒' },
+    { id: 'sub-sacco-pelo', nome: 'Sacco a pelo', qta: 1, peso: 3.2, icona: '⛺' },
+    { id: 'sub-gavetta', nome: 'Gavetta e borraccia', qta: 1, peso: 2.7, icona: '🥣' },
+    { id: 'sub-acciarino', nome: 'Acciarino ed esca', qta: 1, peso: 0.5, icona: '🪔' },
+    { id: 'sub-torce', nome: 'Torce', qta: 10, peso: 0.5, icona: '🕯️' },
+    { id: 'sub-razioni', nome: 'Razioni giornaliere', qta: 10, peso: 0.9, icona: '🥩' },
+    { id: 'sub-corda', nome: 'Corda di canapa (15m)', qta: 1, peso: 4.5, icona: '🪢' },
+  ],
+  'dotazione da studioso': [
+    { id: 'sub-zaino', nome: 'Zaino', qta: 1, peso: 2.3, icona: '🎒' },
+    { id: 'sub-libro', nome: 'Libro di studio', qta: 1, peso: 2.3, icona: '📖' },
+    { id: 'sub-inchiostro', nome: "Boccetta d'inchiostro e penna", qta: 1, peso: 0.1, icona: '✒️' },
+    { id: 'sub-pergamena', nome: 'Fogli di pergamena', qta: 10, peso: 0.1, icona: '📜' },
+    { id: 'sub-sabbia', nome: 'Sacchetto di sabbia', qta: 1, peso: 0.5, icona: '⏳' },
+    { id: 'sub-coltello', nome: 'Coltellino multiuso', qta: 1, peso: 0.2, icona: '🔪' },
+  ],
+  'dotazione da scassinatore': [
+    { id: 'sub-zaino', nome: 'Zaino', qta: 1, peso: 2.3, icona: '🎒' },
+    { id: 'sub-biglie', nome: 'Biglie di metallo (1.000)', qta: 1, peso: 0.9, icona: '⚪' },
+    { id: 'sub-spago', nome: 'Spago e campanella', qta: 1, peso: 0.2, icona: '🔔' },
+    { id: 'sub-candele', nome: 'Candele', qta: 5, peso: 0.1, icona: '🕯️' },
+    { id: 'sub-piede-porco', nome: 'Piede di porco', qta: 1, peso: 2.3, icona: '🔨' },
+    { id: 'sub-martello-chiodi', nome: 'Martello e 10 chiodi da roccia', qta: 1, peso: 2.7, icona: '⚒️' },
+    { id: 'sub-lanterna', nome: 'Lanterna schermabile e 2 ampolle d’olio', qta: 1, peso: 2.7, icona: '🏮' },
+    { id: 'sub-razioni', nome: 'Razioni giornaliere', qta: 5, peso: 0.9, icona: '🥩' },
+    { id: 'sub-acciarino', nome: 'Acciarino ed esca', qta: 1, peso: 0.5, icona: '🪔' },
+    { id: 'sub-borraccia', nome: 'Borraccia', qta: 1, peso: 2.3, icona: '🍶' },
+    { id: 'sub-corda', nome: 'Corda di canapa (15m)', qta: 1, peso: 4.5, icona: '🪢' },
+  ],
+  'dotazione da sacerdote': [
+    { id: 'sub-zaino', nome: 'Zaino', qta: 1, peso: 2.3, icona: '🎒' },
+    { id: 'sub-coperta', nome: 'Coperta di lana', qta: 1, peso: 1.4, icona: '🛌' },
+    { id: 'sub-candele', nome: 'Candele', qta: 10, peso: 0.1, icona: '🕯️' },
+    { id: 'sub-acciarino', nome: 'Acciarino ed esca', qta: 1, peso: 0.5, icona: '🪔' },
+    { id: 'sub-elemosina', nome: 'Cassetta delle elemosine', qta: 1, peso: 1.0, icona: '📦' },
+    { id: 'sub-incenso', nome: 'Incenso e turibolo', qta: 2, peso: 1.0, icona: '💨' },
+    { id: 'sub-paramenti', nome: 'Paramenti sacerdotali', qta: 1, peso: 1.8, icona: '👘' },
+    { id: 'sub-razioni', nome: 'Razioni giornaliere', qta: 2, peso: 0.9, icona: '🥩' },
+    { id: 'sub-borraccia', nome: 'Borraccia', qta: 1, peso: 2.3, icona: '🍶' },
+  ],
+  'dotazione da intrattenitore': [
+    { id: 'sub-zaino', nome: 'Zaino', qta: 1, peso: 2.3, icona: '🎒' },
+    { id: 'sub-sacco-pelo', nome: 'Sacco a pelo', qta: 1, peso: 3.2, icona: '⛺' },
+    { id: 'sub-costumi', nome: 'Costumi di scena (x2)', qta: 2, peso: 1.8, icona: '🎭' },
+    { id: 'sub-candele', nome: 'Candele', qta: 5, peso: 0.1, icona: '🕯️' },
+    { id: 'sub-trucco', nome: 'Kit per il trucco', qta: 1, peso: 1.0, icona: '🎨' },
+    { id: 'sub-razioni', nome: 'Razioni giornaliere', qta: 5, peso: 0.9, icona: '🥩' },
+    { id: 'sub-borraccia', nome: 'Borraccia', qta: 1, peso: 2.3, icona: '🍶' },
+  ],
+  'dotazione da diplomatico': [
+    { id: 'sub-cassa', nome: 'Cassa di legno', qta: 1, peso: 11.3, icona: '🧰' },
+    { id: 'sub-astucci', nome: 'Astucci per mappe (x2)', qta: 2, peso: 0.5, icona: '🗺️' },
+    { id: 'sub-abiti', nome: 'Abiti eleganti', qta: 1, peso: 2.7, icona: '👔' },
+    { id: 'sub-inchiostro', nome: "Boccetta d'inchiostro e penna", qta: 1, peso: 0.1, icona: '✒️' },
+    { id: 'sub-lampada', nome: 'Lampada e 2 ampolle d’olio', qta: 1, peso: 1.4, icona: '🪔' },
+    { id: 'sub-pergamena', nome: 'Fogli di pergamena', qta: 5, peso: 0.1, icona: '📜' },
+    { id: 'sub-profumo', nome: 'Fiala di profumo', qta: 1, peso: 0.1, icona: '🌸' },
+    { id: 'sub-ceralacca', nome: 'Ceralacca e sigillo', qta: 1, peso: 0.1, icona: '🔖' },
+  ],
+  'dotazione da sotterraneo': [
+    { id: 'sub-zaino', nome: 'Zaino', qta: 1, peso: 2.3, icona: '🎒' },
+    { id: 'sub-piede-porco', nome: 'Piede di porco', qta: 1, peso: 2.3, icona: '🔨' },
+    { id: 'sub-martello', nome: 'Martello e 10 chiodi da roccia', qta: 1, peso: 2.7, icona: '⚒️' },
+    { id: 'sub-torce', nome: 'Torce', qta: 10, peso: 0.5, icona: '🕯️' },
+    { id: 'sub-acciarino', nome: 'Acciarino ed esca', qta: 1, peso: 0.5, icona: '🪔' },
+    { id: 'sub-razioni', nome: 'Razioni giornaliere', qta: 10, peso: 0.9, icona: '🥩' },
+    { id: 'sub-borraccia', nome: 'Borraccia', qta: 1, peso: 2.3, icona: '🍶' },
+    { id: 'sub-corda', nome: 'Corda di canapa (15m)', qta: 1, peso: 4.5, icona: '🪢' },
+  ],
+  'dotazione da dungeoneer': [
+    { id: 'sub-zaino', nome: 'Zaino', qta: 1, peso: 2.3, icona: '🎒' },
+    { id: 'sub-piede-porco', nome: 'Piede di porco', qta: 1, peso: 2.3, icona: '🔨' },
+    { id: 'sub-martello', nome: 'Martello e 10 chiodi da roccia', qta: 1, peso: 2.7, icona: '⚒️' },
+    { id: 'sub-torce', nome: 'Torce', qta: 10, peso: 0.5, icona: '🕯️' },
+    { id: 'sub-acciarino', nome: 'Acciarino ed esca', qta: 1, peso: 0.5, icona: '🪔' },
+    { id: 'sub-razioni', nome: 'Razioni giornaliere', qta: 10, peso: 0.9, icona: '🥩' },
+    { id: 'sub-borraccia', nome: 'Borraccia', qta: 1, peso: 2.3, icona: '🍶' },
+    { id: 'sub-corda', nome: 'Corda di canapa (15m)', qta: 1, peso: 4.5, icona: '🪢' },
+  ],
+  'borsa da erborista': [
+    { id: 'sub-marsupio', nome: 'Marsupio da erborista', qta: 1, peso: 0.5, icona: '🌿' },
+    { id: 'sub-cesoie', nome: 'Cesoie per erbe', qta: 1, peso: 0.3, icona: '✂️' },
+    { id: 'sub-mortaio', nome: 'Mortaio e pestello', qta: 1, peso: 0.5, icona: '🥣' },
+    { id: 'sub-fiale', nome: 'Fiale di vetro vuote (x5)', qta: 5, peso: 0.1, icona: '🧪' },
+  ],
+  'borsa del guaritore': [
+    { id: 'sub-bende', nome: 'Bende sterili e stecche', qta: 10, peso: 0.1, icona: '🩹' },
+    { id: 'sub-unguenti', nome: 'Unguenti medicamentosi', qta: 1, peso: 0.3, icona: '🧴' },
+  ],
+  'kit del guaritore': [
+    { id: 'sub-bende', nome: 'Bende sterili e stecche', qta: 10, peso: 0.1, icona: '🩹' },
+    { id: 'sub-unguenti', nome: 'Unguenti medicamentosi', qta: 1, peso: 0.3, icona: '🧴' },
+  ],
+  'kit da travestimento': [
+    { id: 'sub-trucco', nome: 'Cosmetici e parrucche', qta: 1, peso: 1.0, icona: '🎭' },
+    { id: 'sub-abiti', nome: 'Abiti di ricambio e accessori', qta: 1, peso: 0.5, icona: '👒' },
+  ],
+  'kit da falsario': [
+    { id: 'sub-pergamena', nome: 'Pergamene speciali e inchiostri', qta: 1, peso: 0.8, icona: '📜' },
+    { id: 'sub-sigilli', nome: 'Sigilli e ceralacca', qta: 1, peso: 0.5, icona: '🔖' },
+  ],
+  'arnesi da scasso': [
+    { id: 'sub-grimaldelli', nome: 'Grimaldelli di precisione', qta: 1, peso: 0.3, icona: '🗝️' },
+    { id: 'sub-lima', nome: 'Piccola lima e cesoia', qta: 1, peso: 0.2, icona: '🔧' },
+  ]
+};
+
+export function trovaContenutoDotazione(nome) {
+  if (!nome) return null;
+  const n = String(nome).trim().toLowerCase();
+  for (const [k, v] of Object.entries(CONTENUTO_DOTAZIONI_5E)) {
+    if (n.includes(k) || k.includes(n)) return v;
+  }
+  return null;
+}
+
+export function eContenitore(item) {
+  if (!item) return false;
+  if (Array.isArray(item.contenuto) && item.contenuto.length > 0) return true;
+  return Boolean(trovaContenutoDotazione(item.nome));
+}
+
+export function ottieniContenutoItem(item) {
+  if (!item) return [];
+  if (Array.isArray(item.contenuto) && item.contenuto.length > 0) return item.contenuto;
+  const def = trovaContenutoDotazione(item.nome);
+  return def ? def.map((x, i) => ({ ...x, id: x.id || `sub-${i}-${Date.now()}` })) : [];
+}
+
 /**
  * Trucchetti e incantesimi iniziali per un incantatore creato a livello alto.
  * Senza questi un Mago di 12° nascerebbe con gli slot pieni e la lista vuota.
