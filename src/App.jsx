@@ -2977,7 +2977,6 @@ export default function App() {
   const [soloPreparatiInc, setSoloPreparatiInc] = useState(false);
   const [soloConcInc, setSoloConcInc] = useState(false);
   const [filtroTempoInc, setFiltroTempoInc] = useState(''); // '' | 'azione' | 'bonus' | 'reazione'
-  const [listaMagicaMinimizzata, setListaMagicaMinimizzata] = useState(false);
   const [livelliIncChiusi, setLivelliIncChiusi] = useState({});
   const [filtroDiario, setFiltroDiario] = useState('');
   const [vociDiarioChiuse, setVociDiarioChiuse] = useState({});
@@ -10741,14 +10740,6 @@ export default function App() {
                     >
                       {Array.from({ length: 10 }, (_, i) => i).every((l) => livelliIncChiusi[l]) ? t('spell.espandi_tutti_livelli') : t('spell.riduci_tutti_livelli')}
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => setListaMagicaMinimizzata((v) => !v)}
-                      title={listaMagicaMinimizzata ? t('spell.espandi_lista_tip') : t('spell.minimizza_lista_tip')}
-                      style={{ ...styles.buttonMini, padding: '5px 10px', fontSize: 11.5, whiteSpace: 'nowrap' }}
-                    >
-                      {listaMagicaMinimizzata ? `▸ ${t('spell.espandi_lista')}` : `▾ ${t('spell.minimizza_lista')}`}
-                    </button>
                   </div>
                 </div>
               </div>
@@ -11066,7 +11057,7 @@ export default function App() {
                         </span>
                       ) : <span />}
                     </h3>
-                    {!listaMagicaMinimizzata && renderLivello(0)}
+                    {renderLivello(0)}
                     {maxLiv >= 1 && (
                       <h3 style={{ ...bannerStyle, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 6 }}>
                         <span />
@@ -11079,7 +11070,7 @@ export default function App() {
                         ) : <span />}
                       </h3>
                     )}
-                    {!listaMagicaMinimizzata && livelliInc.map((liv) => renderLivello(liv))}
+                    {livelliInc.map((liv) => renderLivello(liv))}
                   </>
                 );
                 })()}
