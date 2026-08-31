@@ -11989,7 +11989,7 @@ export default function App() {
                                             {lingua === 'en' ? 'Container is currently empty.' : 'Il contenitore è attualmente vuoto.'}
                                           </div>
                                         ) : (
-                                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 6 }}>
+                                          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100%' }}>
                                             {subContenuto.map((sub, sIdx) => {
                                               const modSub = (patch) => {
                                                 const updated = subContenuto.map((x, idx) => idx === sIdx ? { ...x, ...patch } : x);
@@ -12021,44 +12021,46 @@ export default function App() {
                                                     background: C.panel,
                                                     border: `1px solid ${C.border}`,
                                                     borderRadius: 6,
-                                                    padding: '4px 7px',
+                                                    padding: '5px 10px',
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'space-between',
-                                                    gap: 6,
-                                                    fontSize: 11.5,
+                                                    gap: 8,
+                                                    fontSize: 12,
+                                                    width: '100%',
+                                                    boxSizing: 'border-box',
                                                   }}
                                                 >
-                                                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, minWidth: 0, flex: 1 }}>
-                                                    <span>{sub.icona || '📦'}</span>
-                                                    <span style={{ fontWeight: 600, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={sub.nome}>
+                                                  <div style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0, flex: 1 }}>
+                                                    <span style={{ fontSize: 13 }}>{sub.icona || '📦'}</span>
+                                                    <span style={{ fontWeight: 600, color: C.ink, fontSize: 12 }} title={sub.nome}>
                                                       {sub.nome}
                                                     </span>
                                                     {sub.peso > 0 && (
-                                                      <span style={{ fontSize: 10, color: C.inkDim, whiteSpace: 'nowrap' }}>
+                                                      <span style={{ fontSize: 10.5, color: C.inkDim, whiteSpace: 'nowrap', marginLeft: 4 }}>
                                                         ({((sub.peso || 0) * (sub.qta || 1)).toFixed(1)} kg)
                                                       </span>
                                                     )}
                                                   </div>
 
-                                                  <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+                                                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
                                                     <button
                                                       type="button"
-                                                      style={{ ...styles.buttonMini, padding: '0 4px', fontSize: 10, height: 20, minWidth: 20 }}
+                                                      style={{ ...styles.buttonMini, padding: '0 5px', fontSize: 11, height: 22, minWidth: 22 }}
                                                       title={t('tip.diminuisci')}
                                                       onClick={() => modSub({ qta: Math.max(0, (Number(sub.qta) || 1) - 1) })}
                                                     >−</button>
-                                                    <strong style={{ minWidth: 16, textAlign: 'center', fontSize: 11 }}>{sub.qta || 1}</strong>
+                                                    <strong style={{ minWidth: 18, textAlign: 'center', fontSize: 11.5 }}>{sub.qta || 1}</strong>
                                                     <button
                                                       type="button"
-                                                      style={{ ...styles.buttonMini, padding: '0 4px', fontSize: 10, height: 20, minWidth: 20 }}
+                                                      style={{ ...styles.buttonMini, padding: '0 5px', fontSize: 11, height: 22, minWidth: 22 }}
                                                       title={t('tip.aumenta')}
                                                       onClick={() => modSub({ qta: (Number(sub.qta) || 1) + 1 })}
                                                     >＋</button>
 
                                                     <button
                                                       type="button"
-                                                      style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 10, color: C.goldDark, borderColor: C.goldDark, height: 20 }}
+                                                      style={{ ...styles.buttonMini, padding: '2px 8px', fontSize: 11, color: C.goldDark, borderColor: C.goldDark, height: 22 }}
                                                       title={t('inv.estrai_tip')}
                                                       onClick={estraiSub}
                                                     >
@@ -12066,7 +12068,7 @@ export default function App() {
                                                     </button>
                                                     <button
                                                       type="button"
-                                                      style={{ ...styles.buttonMini, padding: '0 4px', fontSize: 10, color: C.red, height: 20 }}
+                                                      style={{ ...styles.buttonMini, padding: '0 6px', fontSize: 11, color: C.red, height: 22 }}
                                                       title={t('modal.elimina')}
                                                       onClick={rimuoviSub}
                                                     >
