@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.49',
+    voci: {
+      it: [
+        'Design Tiri Morte & Filigrana Carisma: caselle Successi/Fallimenti ridisegnate, pulsanti e testi ingranditi e meglio spaziati per sfruttare l\'intero riquadro; incrementata la visibilità dell\'icona teatrale 🎭 di sfondo per la caratteristica Carisma.',
+      ],
+      en: [
+        'Death Saves Layout & Charisma Watermark: redesigned Success/Failure boxes, larger and well-spaced typography/buttons to fully leverage the box space; enhanced visibility of the 🎭 theatrical mask background watermark for Charisma.',
+      ],
+    },
+  },
+  {
     versione: '4.0.48',
     voci: {
       it: [

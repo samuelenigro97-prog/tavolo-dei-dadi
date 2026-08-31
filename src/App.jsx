@@ -9546,62 +9546,104 @@ export default function App() {
                   {/* Linea divisoria centrata tra Punti Ferita e Tiri Morte */}
                   <div style={{ width: '100%', height: 1, background: C.border, margin: '4px 0', opacity: 0.65, flexShrink: 0 }} />
 
-                  {/* Sezione Inferiore: Tiri Morte / Death Saves — perfettamente centrata */}
-                  <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 4, padding: '2px 0' }}>
-                    <div style={{ ...styles.vitalLabel, position: 'static', margin: 0, fontSize: 12 }}>
-                      💀 {lingua === 'en' ? 'Death Saves' : 'Tiri Morte'}
+                  {/* Sezione Inferiore: Tiri Morte / Death Saves — perfettamente centrata e ben dimensionata */}
+                  <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 6, padding: '4px 0' }}>
+                    <div style={{ ...styles.vitalLabel, position: 'static', margin: 0, fontSize: 13, fontWeight: 800, letterSpacing: 1 }}>
+                      💀 {lingua === 'en' ? 'DEATH SAVES' : 'TIRI MORTE'}
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>
                         {/* 3 sopra: Successi */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span style={{ fontSize: 10.5, fontWeight: 700, color: C.green, width: 68, textAlign: 'right' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ fontSize: 12.5, fontWeight: 700, color: C.green, minWidth: 76, textAlign: 'right' }}>
                             ✔ {lingua === 'en' ? 'Successes' : 'Successi'}
                           </span>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            {[1, 2, 3].map((n) => (
-                              <input
-                                key={`s-${n}`}
-                                type="checkbox"
-                                style={{ width: 15, height: 15, margin: 0, cursor: 'pointer', accentColor: C.green }}
-                                checked={(scheda.tsMorte?.successi || 0) >= n}
-                                onChange={() => {
-                                  const att = scheda.tsMorte?.successi || 0;
-                                  aggiorna({ tsMorte: { ...scheda.tsMorte, successi: att === n ? n - 1 : n } });
-                                }}
-                              />
-                            ))}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            {[1, 2, 3].map((n) => {
+                              const check = (scheda.tsMorte?.successi || 0) >= n;
+                              return (
+                                <button
+                                  key={`s-${n}`}
+                                  type="button"
+                                  onClick={() => {
+                                    const att = scheda.tsMorte?.successi || 0;
+                                    aggiorna({ tsMorte: { ...scheda.tsMorte, successi: att === n ? n - 1 : n } });
+                                  }}
+                                  title={lingua === 'en' ? `Death Save Success ${n}` : `Successo Tiro Morte ${n}`}
+                                  style={{
+                                    width: 22,
+                                    height: 22,
+                                    borderRadius: 5,
+                                    border: `2px solid ${check ? C.green : C.border}`,
+                                    background: check ? C.green : 'transparent',
+                                    color: '#fff',
+                                    fontSize: 13,
+                                    fontWeight: 900,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer',
+                                    padding: 0,
+                                    transition: 'all 0.15s ease',
+                                    boxShadow: check ? '0 0 6px rgba(46,125,50,0.5)' : 'none',
+                                  }}
+                                >
+                                  {check ? '✔' : ''}
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
 
                         {/* 3 sotto: Fallimenti */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span style={{ fontSize: 10.5, fontWeight: 700, color: C.red, width: 68, textAlign: 'right' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ fontSize: 12.5, fontWeight: 700, color: C.red, minWidth: 76, textAlign: 'right' }}>
                             ✘ {lingua === 'en' ? 'Failures' : 'Fallimenti'}
                           </span>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            {[1, 2, 3].map((n) => (
-                              <input
-                                key={`f-${n}`}
-                                type="checkbox"
-                                style={{ width: 15, height: 15, margin: 0, cursor: 'pointer', accentColor: C.red }}
-                                checked={(scheda.tsMorte?.fallimenti || 0) >= n}
-                                onChange={() => {
-                                  const att = scheda.tsMorte?.fallimenti || 0;
-                                  aggiorna({ tsMorte: { ...scheda.tsMorte, fallimenti: att === n ? n - 1 : n } });
-                                }}
-                              />
-                            ))}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            {[1, 2, 3].map((n) => {
+                              const check = (scheda.tsMorte?.fallimenti || 0) >= n;
+                              return (
+                                <button
+                                  key={`f-${n}`}
+                                  type="button"
+                                  onClick={() => {
+                                    const att = scheda.tsMorte?.fallimenti || 0;
+                                    aggiorna({ tsMorte: { ...scheda.tsMorte, fallimenti: att === n ? n - 1 : n } });
+                                  }}
+                                  title={lingua === 'en' ? `Death Save Failure ${n}` : `Fallimento Tiro Morte ${n}`}
+                                  style={{
+                                    width: 22,
+                                    height: 22,
+                                    borderRadius: 5,
+                                    border: `2px solid ${check ? C.red : C.border}`,
+                                    background: check ? C.red : 'transparent',
+                                    color: '#fff',
+                                    fontSize: 13,
+                                    fontWeight: 900,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer',
+                                    padding: 0,
+                                    transition: 'all 0.15s ease',
+                                    boxShadow: check ? '0 0 6px rgba(198,40,40,0.5)' : 'none',
+                                  }}
+                                >
+                                  {check ? '✘' : ''}
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
                       </div>
 
                       {/* Reset e Tiro */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'center', justifyContent: 'center' }}>
                         <button
                           className="ts-morte-reset"
-                          style={{ ...styles.buttonMini, fontSize: 10.5, padding: '3px 8px', alignSelf: 'center' }}
+                          style={{ ...styles.buttonMini, fontSize: 12, padding: '4px 10px', fontWeight: 600, borderRadius: 6 }}
                           onClick={() => aggiorna({ tsMorte: { successi: 0, fallimenti: 0 } })}
                           title={t("vital.reset_ts")}
                         >
@@ -9609,7 +9651,7 @@ export default function App() {
                         </button>
                         {scheda.pfAttuali <= 0 && (
                           <button
-                            style={{ ...styles.buttonMini, fontSize: 10, color: C.red, borderColor: C.red, fontWeight: 700, padding: '2px 6px' }}
+                            style={{ ...styles.buttonMini, fontSize: 11.5, color: C.red, borderColor: C.red, fontWeight: 700, padding: '3px 8px', borderRadius: 6, background: 'rgba(231,76,60,0.08)' }}
                             onClick={tiroSalvezzaMorte}
                             disabled={rolling || (scheda.tsMorte?.successi || 0) >= 3 || (scheda.tsMorte?.fallimenti || 0) >= 3}
                             title="Tira 1d20 TS Morte"
@@ -9856,11 +9898,11 @@ export default function App() {
                   {/* Sfondo emoji opaco che rappresenta la caratteristica */}
                   {sfondoCar && (
                     <span aria-hidden style={{
-                      position: 'absolute', right: -2, bottom: -8,
-                      fontSize: 58, opacity: 0.07, pointerEvents: 'none',
+                      position: 'absolute', right: 2, bottom: -4,
+                      fontSize: 66, opacity: 0.13, pointerEvents: 'none',
                       lineHeight: 1, userSelect: 'none',
                       transform: 'rotate(-8deg)',
-                      filter: 'grayscale(20%)',
+                      filter: 'grayscale(10%)',
                     }}>
                       {sfondoCar.symbol}
                     </span>
