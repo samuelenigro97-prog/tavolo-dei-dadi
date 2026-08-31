@@ -782,6 +782,18 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   width: 100%;
   margin: 0 0 8px 0 !important;
 }
+.barra-superiore-fissa {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 100 !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  background: color-mix(in srgb, var(--c-panel) 94%, transparent) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+  margin-top: 0 !important;
+}
 /* testata: titolo centrato in alto, i due gruppi di pulsanti sotto (ciascuno una
    griglia ordinata). Su desktop MOLTO largo i pulsanti passano in colonna a
    sinistra (vedi @media min-width:1440px), lasciando spazio verticale in cima. */
