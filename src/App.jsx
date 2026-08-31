@@ -1468,7 +1468,7 @@ const TIPI_ARMATURA = [
  * usa il modificatore di caratteristica appropriato (FOR, o DES se a distanza
  * o Accurata e più alta). Restituisce un patch { nome, danno, tipoDanno, note, bonus }.
  */
-function attaccoDaArma(arma, scheda) {
+function attaccoDaArma(arma, scheda, customNome) {
   const forza = modificatore(punteggioCaratteristica(scheda, 'forza'));
   const destr = modificatore(punteggioCaratteristica(scheda, 'destrezza'));
   let mod;
@@ -1476,13 +1476,32 @@ function attaccoDaArma(arma, scheda) {
   else if (arma.finesse) mod = Math.max(forza, destr);
   else mod = forza;
   const comp = scheda.bonusCompetenza || 0;
-  const danno = mod === 0 ? arma.danno : `${arma.danno}${mod > 0 ? '+' : ''}${mod}`;
+  
+  // Riconosci eventuale bonus magico nel nome (es. "+1", "+2", "+3")
+  const nomeUsato = customNome || arma.nome;
+  const matchBonusMagico = String(nomeUsato).match(/\+([123])/);
+  const bonusMagico = matchBonusMagico ? parseInt(matchBonusMagico[1], 10) : 0;
+  const modTot = mod + bonusMagico;
+  const danno = modTot === 0 ? arma.danno : `${arma.danno}${modTot > 0 ? '+' : ''}${modTot}`;
   // La maestria delle armi esiste solo nelle regole 2024: la aggiungiamo alle note.
   const usa2024 = (scheda.versione || '2024') === '2024';
   const note = usa2024 && arma.maestria
     ? [arma.note, `Maestria: ${arma.maestria}`].filter(Boolean).join(' · ')
     : arma.note;
-  return { nome: arma.nome, danno, tipoDanno: arma.tipo, note, bonus: mod + comp };
+  return { nome: nomeUsato, danno, tipoDanno: arma.tipo, note, bonus: modTot + comp };
+}
+
+/** Riconosce un'arma dal nome dell'oggetto: restituisce la definizione da ARMI_5E o null. */
+function trovaArma(nome) {
+  const n = String(nome || '').trim().toLowerCase();
+  if (!n) return null;
+  const esatta = ARMI_5E.find((w) => w.nome.toLowerCase() === n);
+  if (esatta) return esatta;
+  const ordinata = [...ARMI_5E].sort((a, b) => b.nome.length - a.nome.length);
+  for (const w of ordinata) {
+    if (n.includes(w.nome.toLowerCase())) return w;
+  }
+  return null;
 }
 
 // Dotazione iniziale indicativa per classe (armi che diventano attacchi +
@@ -10163,8 +10182,24 @@ export default function App() {
                                     incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === a.idIncantesimo ? { ...x, ...cleanPatch } : x)),
                                   });
                                 } else {
+                                  const inv = scheda.inventario || [];
+                                  let newInv = inv;
+                                  if (patch.nome && patch.nome !== a.nome) {
+                                    const idxVecchio = inv.findIndex((x) => x.nome.toLowerCase() === a.nome.toLowerCase());
+                                    if (idxVecchio >= 0) {
+                                      newInv = inv.map((x, i) => (i === idxVecchio ? { ...x, nome: patch.nome, equip: true, peso: pesoStimato(patch.nome) || x.peso } : x));
+                                    } else {
+                                      const idxNuovo = inv.findIndex((x) => x.nome.toLowerCase() === patch.nome.toLowerCase());
+                                      if (idxNuovo >= 0) {
+                                        newInv = inv.map((x, i) => (i === idxNuovo ? { ...x, equip: true } : x));
+                                      } else {
+                                        newInv = [...inv, completaUtilizziOggetto({ id: `inv-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`, nome: patch.nome, qta: 1, peso: pesoStimato(patch.nome), equip: true, categoria: 'Arma' })];
+                                      }
+                                    }
+                                  }
                                   aggiorna({
                                     attacchi: scheda.attacchi.map((x) => (x.id === a.id ? { ...x, ...patch } : x)),
+                                    inventario: newInv,
                                   });
                                 }
                               };
@@ -10214,7 +10249,29 @@ export default function App() {
                                               }
                                             } else {
                                               const arma = ARMI_5E.find((w) => w.nome === v);
-                                              if (arma) aggiornaAttacco(attaccoDaArma(arma, scheda));
+                                              if (arma) {
+                                                const vecchioNome = a.nome;
+                                                const nuovoAttacco = attaccoDaArma(arma, scheda);
+                                                const inv = scheda.inventario || [];
+                                                const esisteNuovo = inv.some((x) => x.nome.toLowerCase() === arma.nome.toLowerCase());
+                                                let newInv;
+                                                if (esisteNuovo) {
+                                                  newInv = inv.map((x) => {
+                                                    if (x.nome.toLowerCase() === arma.nome.toLowerCase()) return { ...x, equip: true };
+                                                    if (x.nome.toLowerCase() === vecchioNome.toLowerCase()) return { ...x, equip: false };
+                                                    return x;
+                                                  });
+                                                } else {
+                                                  newInv = [
+                                                    ...inv.map((x) => (x.nome.toLowerCase() === vecchioNome.toLowerCase() ? { ...x, equip: false } : x)),
+                                                    completaUtilizziOggetto({ id: `inv-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`, nome: arma.nome, qta: 1, peso: pesoStimato(arma.nome), equip: true, categoria: 'Arma' })
+                                                  ];
+                                                }
+                                                aggiorna({
+                                                  attacchi: scheda.attacchi.map((x) => (x.id === a.id ? { ...x, ...nuovoAttacco } : x)),
+                                                  inventario: newInv,
+                                                });
+                                              }
                                             }
                                           }}
                                           style={{ ...styles.inlineInput, appearance: 'none', width: 22, height: 22, padding: 0, textAlign: 'center', cursor: 'pointer', flexShrink: 0 }}
@@ -10323,7 +10380,7 @@ export default function App() {
                                               const inv = scheda.inventario || [];
                                               aggiorna({
                                                 attacchi: scheda.attacchi.filter((x) => x.id !== a.id),
-                                                inventario: inv.map((x) => (x.nome === a.nome ? { ...x, equip: false } : x))
+                                                inventario: inv.map((x) => (x.nome.toLowerCase() === a.nome.toLowerCase() ? { ...x, equip: false } : x))
                                               });
                                             }
                                           }
@@ -10354,28 +10411,35 @@ export default function App() {
                               if (e.key === 'Enter' && e.target.value.trim()) {
                                 const nomeInserito = e.target.value.trim();
                                 let nuova;
+                                const armaTrovata = trovaArma(nomeInserito);
                                 if (cat === 'Reazione') {
                                   const r = REAZIONI_5E.find((x) => x.nome.toLowerCase() === nomeInserito.toLowerCase() || x.nome.toLowerCase().startsWith(nomeInserito.toLowerCase()));
                                   nuova = r
                                     ? { nome: r.nome, bonus: 0, danno: r.danno || '', tipoDanno: r.tipoDanno || '', note: r.note || '' }
-                                    : { nome: nomeInserito, bonus: 0, danno: '', tipoDanno: '', note: '' };
+                                    : (armaTrovata ? attaccoDaArma(armaTrovata, scheda, nomeInserito) : { nome: nomeInserito, bonus: 0, danno: '', tipoDanno: '', note: '' });
                                 } else if (cat === 'Bonus') {
                                   const b = AZIONI_BONUS_5E.find((x) => x.nome.toLowerCase() === nomeInserito.toLowerCase() || x.nome.toLowerCase().startsWith(nomeInserito.toLowerCase()));
                                   nuova = b
                                     ? { nome: b.nome, bonus: 0, danno: b.danno || '', tipoDanno: b.tipoDanno || '', note: b.note || '' }
-                                    : { nome: nomeInserito, bonus: 0, danno: '', tipoDanno: '', note: '' };
+                                    : (armaTrovata ? attaccoDaArma(armaTrovata, scheda, nomeInserito) : { nome: nomeInserito, bonus: 0, danno: '', tipoDanno: '', note: '' });
                                 } else {
-                                  const arma = ARMI_5E.find((w) => w.nome.toLowerCase() === nomeInserito.toLowerCase());
-                                  nuova = arma ? attaccoDaArma(arma, scheda) : { nome: nomeInserito, bonus: 0, danno: '', tipoDanno: '', note: '' };
+                                  nuova = armaTrovata ? attaccoDaArma(armaTrovata, scheda, nomeInserito) : { nome: nomeInserito, bonus: 0, danno: '', tipoDanno: '', note: '' };
                                 }
                                 const inv = scheda.inventario || [];
-                                const patch = {
-                                  attacchi: [...scheda.attacchi, { ...nuova, id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, categoria: cat }],
-                                };
-                                if (cat === 'Azione' && !inv.some((x) => x.nome === nuova.nome)) {
-                                  patch.inventario = [...inv, { nome: nuova.nome, qta: 1, peso: pesoStimato(nuova.nome), equip: true }];
+                                let newInv = inv;
+                                const isArma = Boolean(armaTrovata || cat === 'Azione' || ARMI_5E.some((w) => w.nome.toLowerCase() === nuova.nome.toLowerCase()));
+                                if (isArma) {
+                                  const idx = inv.findIndex((x) => x.nome.toLowerCase() === nuova.nome.toLowerCase());
+                                  if (idx >= 0) {
+                                    newInv = inv.map((x, i) => (i === idx ? { ...x, equip: true } : x));
+                                  } else {
+                                    newInv = [...inv, completaUtilizziOggetto({ id: `inv-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`, nome: nuova.nome, qta: 1, peso: pesoStimato(nuova.nome), equip: true, categoria: 'Arma' })];
+                                  }
                                 }
-                                aggiorna(patch);
+                                aggiorna({
+                                  attacchi: [...scheda.attacchi, { ...nuova, id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, categoria: cat }],
+                                  inventario: newInv,
+                                });
                                 e.target.value = '';
                               }
                             }}
@@ -11521,15 +11585,19 @@ export default function App() {
                 const rinominaItem = (o, nome) => {
                   const indice = indiceSintonia(o.nome);
                   const nuovaSintonia = indice < 0 ? sintoniaArr : sintoniaArr.map((s, i) => (i === indice ? nome : s));
+                  const newAttacchi = (scheda.attacchi || []).map((a) => (a.nome.toLowerCase() === o.nome.toLowerCase() ? { ...a, nome } : a));
                   aggiorna({
                     inventario: inv.map((x) => (x.id === o.id ? completaUtilizziOggetto({ ...x, nome }) : x)),
+                    attacchi: newAttacchi,
                     sintonia: nuovaSintonia,
                   });
                 };
                 const eliminaItem = (o) => {
                   const indice = indiceSintonia(o.nome);
+                  const newAttacchi = (scheda.attacchi || []).filter((a) => a.nome.toLowerCase() !== o.nome.toLowerCase());
                   aggiorna({
                     inventario: inv.filter((x) => x.id !== o.id),
+                    attacchi: newAttacchi,
                     ...(indice >= 0 ? { sintonia: sintoniaArr.filter((_, i) => i !== indice) } : {}),
                   });
                 };
@@ -11562,14 +11630,20 @@ export default function App() {
                     return;
                   }
                   // 3) Arma: come prima, la aggiunge/rimuove dalla sezione Combattimento.
-                  const isWeapon = ARMI_5E.find((w) => w.nome === o.nome) || (scheda.attacchi?.find((a) => a.nome === o.nome) ? { nome: o.nome, danno: '1d6', tipoDanno: 'Contundente', categoria: 'Mischia' } : null);
+                  const armaNota = trovaArma(o.nome) || ARMI_5E.find((w) => w.nome.toLowerCase() === o.nome.toLowerCase());
+                  const isWeapon = Boolean(armaNota || o.categoria === 'Arma' || (scheda.attacchi?.some((a) => a.nome.toLowerCase() === o.nome.toLowerCase())));
                   let newAttacchi = Array.isArray(scheda.attacchi) ? [...scheda.attacchi] : [];
-                  if (checked && isWeapon) {
-                    if (!newAttacchi.find((a) => a.nome === o.nome)) {
-                      newAttacchi.push({ id: Date.now(), categoria: 'Azione', ...attaccoDaArma(isWeapon, scheda) });
+                  if (checked) {
+                    if (isWeapon) {
+                      if (!newAttacchi.some((a) => a.nome.toLowerCase() === o.nome.toLowerCase())) {
+                        const attackData = armaNota
+                          ? attaccoDaArma(armaNota, scheda, o.nome)
+                          : { nome: o.nome, bonus: 0, danno: '1d6', tipoDanno: 'Contundente', note: '' };
+                        newAttacchi.push({ id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, categoria: 'Azione', ...attackData });
+                      }
                     }
-                  } else if (!checked) {
-                    newAttacchi = newAttacchi.filter((a) => a.nome !== o.nome);
+                  } else {
+                    newAttacchi = newAttacchi.filter((a) => a.nome.toLowerCase() !== o.nome.toLowerCase());
                   }
                   aggiorna({
                     inventario: inv.map((x) => (x.id === o.id ? { ...x, equip: checked } : x)),
