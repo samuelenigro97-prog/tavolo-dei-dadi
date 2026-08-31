@@ -1140,56 +1140,70 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .griglia-scheda { grid-template-columns: 1fr; }
   .selettore-personaggio { width: 100%; }
 }
-@media (max-width: 560px) {
-  .selettore-personaggio {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 8px !important;
-    width: 100% !important;
-    padding: 8px !important;
+@media (max-width: 680px) {
+  .barra-superiore-fissa {
+    padding: 6px 8px !important;
+    overflow-x: hidden !important;
   }
-  .selettore-personaggio > div:first-of-type {
-    width: 100% !important;
-    flex: 1 1 100% !important;
-  }
+  .barra-superiore-fissa .selettore-personaggio-azioni,
   .selettore-personaggio-azioni {
     display: flex !important;
     flex-direction: column !important;
     width: 100% !important;
-    justify-content: center !important;
-    gap: 6px !important;
-    align-items: center !important;
+    gap: 4px !important;
+    align-items: stretch !important;
     margin: 0 auto !important;
+    white-space: normal !important;
+  }
+  .selettore-macro-riga-1 {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    gap: 4px !important;
+  }
+  .selettore-macro-riga-2 {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    gap: 3px !important;
   }
   .selettore-riga-1,
-  .selettore-riga-2 {
+  .selettore-riga-2,
+  .selettore-riga-3 {
     display: flex !important;
-    flex-wrap: wrap !important;
+    flex-wrap: nowrap !important;
     align-items: center !important;
-    justify-content: center !important;
-    gap: 6px !important;
-    width: 100% !important;
+    gap: 2.5px !important;
   }
-  .selettore-divisore-desktop {
+  .selettore-testo-etichetta {
     display: none !important;
   }
+  .selettore-etichetta {
+    font-size: 13px !important;
+    margin-right: 1px !important;
+  }
+  .selettore-divisore {
+    display: inline-block !important;
+    margin: 0 1.5px !important;
+    height: 16px !important;
+    opacity: 0.4 !important;
+  }
   .selettore-personaggio-azioni button {
-    flex: 0 0 36px !important;
-    width: 36px !important;
-    min-width: 36px !important;
-    max-width: 36px !important;
-    height: 36px !important;
-    min-height: 36px !important;
-    max-height: 36px !important;
+    flex: 0 0 28px !important;
+    width: 28px !important;
+    min-width: 28px !important;
+    max-width: 28px !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    max-height: 28px !important;
     padding: 0 !important;
-    font-size: 16px !important;
+    font-size: 13.5px !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    border-radius: 8px !important;
-  }
-  .selettore-divisore {
-    display: none !important;
+    border-radius: 6px !important;
   }
   .anagrafica > div:last-child > div:last-child { grid-template-columns: repeat(2, 1fr) !important; }
   /* su telefono i riquadri anagrafica e vitali passano a 2 colonne (leggibili,

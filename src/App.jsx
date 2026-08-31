@@ -8634,169 +8634,174 @@ export default function App() {
                   gap: 6,
                 }}
               >
-                {/* Nome tutto a sinistra con versione più piccola */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5, userSelect: 'none', flexShrink: 0 }}>
-                  <span style={{ fontSize: 15 }}>🎲</span>
-                  <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 13, fontWeight: 700, color: C.goldDark, letterSpacing: 0.3, whiteSpace: 'nowrap' }}>
-                    Tavolo dei Dadi
-                  </span>
-                  <span style={{ fontSize: 9, color: C.inkDim, opacity: 0.7, fontWeight: 600, marginLeft: 1, whiteSpace: 'nowrap' }}>
-                    v{APP_VERSION}
-                  </span>
-                </div>
+                {/* Riga 1 su Mobile / Sinistra su Desktop: Brand + Scheda */}
+                <div className="selettore-macro-riga-1" style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, userSelect: 'none', flexShrink: 0 }}>
+                    <span style={{ fontSize: 15 }}>🎲</span>
+                    <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 13, fontWeight: 700, color: C.goldDark, letterSpacing: 0.3, whiteSpace: 'nowrap' }}>
+                      Tavolo dei Dadi
+                    </span>
+                    <span style={{ fontSize: 9, color: C.inkDim, opacity: 0.7, fontWeight: 600, marginLeft: 1, whiteSpace: 'nowrap' }}>
+                      v{APP_VERSION}
+                    </span>
+                  </div>
 
-                {divisoreVerticale}
+                  {divisoreVerticale}
 
-                {/* Gruppo 1: GESTIONE SCHEDA */}
-                <div className="selettore-riga-1" style={{ display: 'flex', alignItems: 'center', gap: 2.5, flexShrink: 0 }}>
-                  <span style={stileEtichettaInline}>
-                    <span>👤</span> {lingua === 'en' ? 'Sheet' : 'Scheda'}
-                  </span>
-                  <button
-                    style={btnAzione}
-                    onClick={() => {
-                      setBozzaCrea({
-                        nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '',
-                        livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [],
-                        competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {},
-                        multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '',
-                        multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '',
-                        dotazione: 'pacchetto'
-                      });
-                      setMostraCrea(true);
-                    }}
-                    title={t('tip.nuovo_pg')}
-                  >
-                    ＋
-                  </button>
-                  <button
-                    style={btnAzione}
-                    onClick={() => setRinominando(!rinominando)}
-                    title={t('tip.rinomina')}
-                  >
-                    ✎
-                  </button>
-                  <button
-                    style={btnAzione}
-                    title={t('tip.levelup')}
-                    onClick={() => {
-                      const dvMatch = String(scheda.dadiVita || '').match(/d(\d+)/i);
-                      const facceDV = dvMatch ? parseInt(dvMatch[1]) : 8;
-                      const modCos = modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10) || 0;
-                      const avgHpGain = Math.floor(facceDV / 2) + 1 + modCos;
-                      setLevelUpBozza({
-                        metodo: 'media', hpGainMedia: Math.max(1, avgHpGain), facceDV, modCos, tiroFatto: 0,
-                        asiMode: 'aumento', asiA: '', asiB: '', talento: '',
-                        sottoclasse: scheda.sottoclasse || '',
-                      });
-                      setMostraLevelUp(true);
-                    }}
-                  >
-                    🆙
-                  </button>
-                  <button
-                    style={btnAzione}
-                    onClick={eliminaPersonaggio}
-                    title={t('tip.elimina_pg')}
-                  >
-                    🗑
-                  </button>
-                </div>
-
-                {divisoreVerticale}
-
-                {/* Gruppo 2: SISTEMA */}
-                <div className="selettore-riga-2" style={{ display: 'flex', alignItems: 'center', gap: 2.5, flexShrink: 0 }}>
-                  <span style={stileEtichettaInline}>
-                    <span>⚙️</span> {lingua === 'en' ? 'System' : 'Sistema'}
-                  </span>
-                  <button style={btnAzione} title={t('tip.menu_iniziale')} onClick={() => setMostraMenu(true)}>
-                    🏠
-                  </button>
-                  <button style={btnAzione} title="Importa JSON, PDF o immagini" onClick={() => jsonRef.current?.click()}>
-                    ⬇️
-                  </button>
-                  <button
-                    ref={esportaBtnRef}
-                    style={{ ...btnAzione, ...(mostraMenuEsporta ? { borderColor: C.goldDark, color: C.goldDark } : {}) }}
-                    title={t('tip.esporta')}
-                    onClick={() => {
-                      if (!mostraMenuEsporta) {
-                        const r = esportaBtnRef.current?.getBoundingClientRect();
-                        if (r) setPosEsporta({
-                          top: Math.max(8, Math.min(window.innerHeight - 200, r.bottom + 5)),
-                          left: Math.max(8, Math.min(window.innerWidth - 240, r.left)),
+                  {/* Gruppo 1: GESTIONE SCHEDA */}
+                  <div className="selettore-riga-1" style={{ display: 'flex', alignItems: 'center', gap: 2.5, flexShrink: 0 }}>
+                    <span style={stileEtichettaInline} className="selettore-etichetta">
+                      <span>👤</span> <span className="selettore-testo-etichetta">{lingua === 'en' ? 'Sheet' : 'Scheda'}</span>
+                    </span>
+                    <button
+                      style={btnAzione}
+                      onClick={() => {
+                        setBozzaCrea({
+                          nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '',
+                          livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [],
+                          competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {},
+                          multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '',
+                          multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '',
+                          dotazione: 'pacchetto'
                         });
-                      }
-                      setMostraMenuEsporta((v) => !v);
-                    }}
-                  >
-                    ⬆️
-                  </button>
-                  <button
-                    style={{ ...btnAzione, color: C.goldDark, borderColor: C.goldDark }}
-                    title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato') : 'Sincronizza sul Cloud'}
-                    onClick={() => { setCloudStatus({ text: '', type: '' }); setSyncCodiceStatus({ text: '', type: '' }); setMostraCloud(true); }}
-                  >
-                    ☁️
-                    {sincronizzando ? (
-                      <span style={{ fontSize: 10, marginLeft: 1 }}>🔄</span>
-                    ) : (githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice) ? (
-                      <span style={{ color: '#2e9d4d', fontWeight: 900, marginLeft: 1, fontSize: 12 }}>✓</span>
-                    ) : (
-                      <span style={{ color: '#c0392b', fontSize: 12, marginLeft: 1, fontWeight: 900 }}>!</span>
-                    )}
-                  </button>
-                  <button
-                    ref={notificheBtnRef}
-                    className={daNotificare ? 'btn-notifiche-lampeggia' : ''}
-                    style={{
-                      ...btnAzione,
-                      position: 'relative',
-                      ...(daNotificare ? { color: C.goldDark, borderColor: C.goldDark } : {}),
-                    }}
-                    title={daNotificare ? (controlliAttivi.length > 0 ? `${controlliAttivi.length} avvisi sulla scheda` : t('notifiche.novita_presenti')) : t('notifiche.titolo')}
-                    onClick={apriNotifiche}
-                  >
-                    🔔
-                    {daNotificare && (
-                      <span className="avvisi-pallino" aria-label={`${nAvvisi} notifiche`}>
-                        {controlliAttivi.length > 0 ? controlliAttivi.length : '!'}
-                      </span>
-                    )}
-                  </button>
-                  <button
-                    style={btnAzione}
-                    title={lingua === 'it' ? 'Cambia in inglese' : 'Switch to Italian'}
-                    onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
-                  >
-                    {lingua === 'it' ? '🇮🇹' : '🇬🇧'}
-                  </button>
+                        setMostraCrea(true);
+                      }}
+                      title={t('tip.nuovo_pg')}
+                    >
+                      ＋
+                    </button>
+                    <button
+                      style={btnAzione}
+                      onClick={() => setRinominando(!rinominando)}
+                      title={t('tip.rinomina')}
+                    >
+                      ✎
+                    </button>
+                    <button
+                      style={btnAzione}
+                      title={t('tip.levelup')}
+                      onClick={() => {
+                        const dvMatch = String(scheda.dadiVita || '').match(/d(\d+)/i);
+                        const facceDV = dvMatch ? parseInt(dvMatch[1]) : 8;
+                        const modCos = modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10) || 0;
+                        const avgHpGain = Math.floor(facceDV / 2) + 1 + modCos;
+                        setLevelUpBozza({
+                          metodo: 'media', hpGainMedia: Math.max(1, avgHpGain), facceDV, modCos, tiroFatto: 0,
+                          asiMode: 'aumento', asiA: '', asiB: '', talento: '',
+                          sottoclasse: scheda.sottoclasse || '',
+                        });
+                        setMostraLevelUp(true);
+                      }}
+                    >
+                      🆙
+                    </button>
+                    <button
+                      style={btnAzione}
+                      onClick={eliminaPersonaggio}
+                      title={t('tip.elimina_pg')}
+                    >
+                      🗑
+                    </button>
+                  </div>
                 </div>
 
                 {divisoreVerticale}
 
-                {/* Gruppo 3: SESSIONE */}
-                <div className="selettore-riga-3" style={{ display: 'flex', alignItems: 'center', gap: 2.5, flexShrink: 0 }}>
-                  <span style={stileEtichettaInline}>
-                    <span>🧭</span> {lingua === 'en' ? 'Session' : 'Sessione'}
-                  </span>
-                  <button
-                    style={{ ...btnAzione, ...(mostraDadiModal ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }}
-                    onClick={() => setMostraDadiModal(true)}
-                    title={t('roll.tavolo_dadi')}
-                  >
-                    🎲
-                  </button>
-                  <button style={btnAzione} title={t('tooltip.tema')} onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}>{tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'}</button>
-                  <button ref={ambientazioneBtnRef} style={btnAzione} title={t('luogo.tooltip')} onClick={() => { if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
-                  <button style={{ ...btnAzione, ...(mostraDiarioModal ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }} onClick={() => setMostraDiarioModal(true)} title={`${t('sez.diario')} (${(Array.isArray(scheda.diario) ? scheda.diario.length : 0)})`}>📜</button>
-                  <button style={btnAzione} onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())} title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}>🗺️</button>
-                  <button style={btnAzione} onClick={() => {
-                    if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
-                    else if (combat.combattenti.length) setCombat((c) => ({ ...c, attivo: true, aperto: true }));
-                    else aggiungiPgAlCombat();
-                  }} title={(combat.attivo && combat.aperto ? t('ct.minimizza') : t('ct.apri')) + (combat.combattenti.length ? ` (${combat.combattenti.length})` : '')}>⚔️</button>
+                {/* Riga 2 su Mobile / Destra su Desktop: Sistema + Sessione */}
+                <div className="selettore-macro-riga-2" style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                  {/* Gruppo 2: SISTEMA */}
+                  <div className="selettore-riga-2" style={{ display: 'flex', alignItems: 'center', gap: 2.5, flexShrink: 0 }}>
+                    <span style={stileEtichettaInline} className="selettore-etichetta">
+                      <span>⚙️</span> <span className="selettore-testo-etichetta">{lingua === 'en' ? 'System' : 'Sistema'}</span>
+                    </span>
+                    <button style={btnAzione} title={t('tip.menu_iniziale')} onClick={() => setMostraMenu(true)}>
+                      🏠
+                    </button>
+                    <button style={btnAzione} title="Importa JSON, PDF o immagini" onClick={() => jsonRef.current?.click()}>
+                      ⬇️
+                    </button>
+                    <button
+                      ref={esportaBtnRef}
+                      style={{ ...btnAzione, ...(mostraMenuEsporta ? { borderColor: C.goldDark, color: C.goldDark } : {}) }}
+                      title={t('tip.esporta')}
+                      onClick={() => {
+                        if (!mostraMenuEsporta) {
+                          const r = esportaBtnRef.current?.getBoundingClientRect();
+                          if (r) setPosEsporta({
+                            top: Math.max(8, Math.min(window.innerHeight - 200, r.bottom + 5)),
+                            left: Math.max(8, Math.min(window.innerWidth - 240, r.left)),
+                          });
+                        }
+                        setMostraMenuEsporta((v) => !v);
+                      }}
+                    >
+                      ⬆️
+                    </button>
+                    <button
+                      style={{ ...btnAzione, color: C.goldDark, borderColor: C.goldDark }}
+                      title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato') : 'Sincronizza sul Cloud'}
+                      onClick={() => { setCloudStatus({ text: '', type: '' }); setSyncCodiceStatus({ text: '', type: '' }); setMostraCloud(true); }}
+                    >
+                      ☁️
+                      {sincronizzando ? (
+                        <span style={{ fontSize: 10, marginLeft: 1 }}>🔄</span>
+                      ) : (githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice) ? (
+                        <span style={{ color: '#2e9d4d', fontWeight: 900, marginLeft: 1, fontSize: 12 }}>✓</span>
+                      ) : (
+                        <span style={{ color: '#c0392b', fontSize: 12, marginLeft: 1, fontWeight: 900 }}>!</span>
+                      )}
+                    </button>
+                    <button
+                      ref={notificheBtnRef}
+                      className={daNotificare ? 'btn-notifiche-lampeggia' : ''}
+                      style={{
+                        ...btnAzione,
+                        position: 'relative',
+                        ...(daNotificare ? { color: C.goldDark, borderColor: C.goldDark } : {}),
+                      }}
+                      title={daNotificare ? (controlliAttivi.length > 0 ? `${controlliAttivi.length} avvisi sulla scheda` : t('notifiche.novita_presenti')) : t('notifiche.titolo')}
+                      onClick={apriNotifiche}
+                    >
+                      🔔
+                      {daNotificare && (
+                        <span className="avvisi-pallino" aria-label={`${nAvvisi} notifiche`}>
+                          {controlliAttivi.length > 0 ? controlliAttivi.length : '!'}
+                        </span>
+                      )}
+                    </button>
+                    <button
+                      style={btnAzione}
+                      title={lingua === 'it' ? 'Cambia in inglese' : 'Switch to Italian'}
+                      onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
+                    >
+                      {lingua === 'it' ? '🇮🇹' : '🇬🇧'}
+                    </button>
+                  </div>
+
+                  {divisoreVerticale}
+
+                  {/* Gruppo 3: SESSIONE */}
+                  <div className="selettore-riga-3" style={{ display: 'flex', alignItems: 'center', gap: 2.5, flexShrink: 0 }}>
+                    <span style={stileEtichettaInline} className="selettore-etichetta">
+                      <span>🧭</span> <span className="selettore-testo-etichetta">{lingua === 'en' ? 'Session' : 'Sessione'}</span>
+                    </span>
+                    <button
+                      style={{ ...btnAzione, ...(mostraDadiModal ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }}
+                      onClick={() => setMostraDadiModal(true)}
+                      title={t('roll.tavolo_dadi')}
+                    >
+                      🎲
+                    </button>
+                    <button style={btnAzione} title={t('tooltip.tema')} onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}>{tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'}</button>
+                    <button ref={ambientazioneBtnRef} style={btnAzione} title={t('luogo.tooltip')} onClick={() => { if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
+                    <button style={{ ...btnAzione, ...(mostraDiarioModal ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }} onClick={() => setMostraDiarioModal(true)} title={`${t('sez.diario')} (${(Array.isArray(scheda.diario) ? scheda.diario.length : 0)})`}>📜</button>
+                    <button style={btnAzione} onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())} title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}>🗺️</button>
+                    <button style={btnAzione} onClick={() => {
+                      if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
+                      else if (combat.combattenti.length) setCombat((c) => ({ ...c, attivo: true, aperto: true }));
+                      else aggiungiPgAlCombat();
+                    }} title={(combat.attivo && combat.aperto ? t('ct.minimizza') : t('ct.apri')) + (combat.combattenti.length ? ` (${combat.combattenti.length})` : '')}>⚔️</button>
+                  </div>
                 </div>
               </div>
             );
