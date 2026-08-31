@@ -2984,7 +2984,6 @@ export default function App() {
   const [filtroInventario, setFiltroInventario] = useState('');
   const [filtroVistaInventario, setFiltroVistaInventario] = useState('tutti'); // 'tutti' | 'equip' | 'zaino'
   const [filtroCatInventario, setFiltroCatInventario] = useState('tutti'); // 'tutti' | 'armi_armature' | 'pozioni' | 'magici' | 'attrezzi'
-  const [schedaPrivilegiTab, setSchedaPrivilegiTab] = useState('tutti'); // 'tutti' | 'classe' | 'specie' | 'talenti'
   const [effettoInventarioAperto, setEffettoInventarioAperto] = useState(null);
   const [apertiContenitori, setApertiContenitori] = useState({});
   const [bestiaDettaglio, setBestiaDettaglio] = useState(null); // bestia aperta in modale statblock
@@ -11352,150 +11351,111 @@ export default function App() {
                 titolo={lingua === 'en' ? 'Features, Traits & Feats' : 'Privilegi, Tratti & Talenti'}
                 {...apertoProps('privilegi', true)}
               >
-                <div>
-                  {/* Segmented Tab Switcher */}
-                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', justifyContent: 'center', borderBottom: `1px solid ${C.border}`, paddingBottom: 8 }}>
-                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
-                      {[
-                        ['tutti', lingua === 'en' ? '📋 All' : '📋 Tutti'],
-                        ['classe', lingua === 'en' ? '🛡️ Class' : '🛡️ Classe & Sottoclasse'],
-                        ['specie', lingua === 'en' ? '🧬 Species' : '🧬 Tratti di Specie'],
-                        ['talenti', lingua === 'en' ? '⭐ Feats' : '⭐ Talenti'],
-                      ].map(([k, label]) => (
-                        <button
-                          key={k}
-                          type="button"
-                          onClick={() => setSchedaPrivilegiTab(k)}
-                          style={{
-                            ...styles.buttonMini,
-                            fontSize: 11.5,
-                            padding: '4px 10px',
-                            borderRadius: 8,
-                            borderColor: schedaPrivilegiTab === k ? C.goldDark : C.border,
-                            background: schedaPrivilegiTab === k ? 'rgba(200,140,20,0.18)' : C.panel,
-                            color: schedaPrivilegiTab === k ? C.goldDark : C.ink,
-                            fontWeight: schedaPrivilegiTab === k ? 700 : 500,
-                          }}
-                        >
-                          {label}
-                        </button>
-                      ))}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {/* Blocco 1: Classe e Sottoclasse */}
+                  <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5, textAlign: 'center' }}>
+                      🛡️ {lingua === 'en' ? 'Class & Subclass Features' : 'Privilegi di Classe & Sottoclasse'}
                     </div>
+                    {(() => {
+                      const tutteLeSub = [
+                        ...(scheda.sottoclasse ? [{ classe: scheda.classe, livello: scheda.livello || 1, sottoclasse: scheda.sottoclasse }] : []),
+                        ...((scheda.multiclasse || []).filter((m) => m.sottoclasse).map((m) => ({ classe: m.classe, livello: m.livello || 1, sottoclasse: m.sottoclasse }))),
+                      ];
+                      const classiSenzaSubMaPronte = [
+                        ...((!scheda.sottoclasse && (scheda.livello || 1) >= livelloSceltaSottoclasse(scheda.classe, versione)) ? [{ classe: scheda.classe, livello: scheda.livello || 1, isMain: true }] : []),
+                        ...((scheda.multiclasse || []).filter((m) => !m.sottoclasse && (m.livello || 1) >= livelloSceltaSottoclasse(m.classe, versione)).map((m) => ({ classe: m.classe, livello: m.livello || 1, isMain: false }))),
+                      ];
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {classiSenzaSubMaPronte.length > 0 && (
+                            <div style={{ background: 'rgba(200,140,20,0.1)', border: `1px dashed ${C.gold}`, borderRadius: 6, padding: '6px 8px' }}>
+                              {classiSenzaSubMaPronte.map((c, idx) => (
+                                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                                  <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 600 }}>{traduciDato(c.classe)}:</span>
+                                  <select
+                                    style={{ ...styles.inlineInput, fontSize: 12, padding: '3px 6px', flex: 1, minWidth: 130 }}
+                                    value=""
+                                    onChange={(e) => {
+                                      const sub = e.target.value;
+                                      if (!sub) return;
+                                      if (c.isMain) {
+                                        aggiorna({ sottoclasse: sub, privilegiSottoclasse: privilegiSottoclasseFinoA(sub, c.livello) });
+                                      } else {
+                                        aggiorna({
+                                          multiclasse: (scheda.multiclasse || []).map((m) => (m.classe === c.classe ? { ...m, sottoclasse: sub } : m)),
+                                        });
+                                      }
+                                    }}
+                                  >
+                                    <option value="">{lingua === 'en' ? 'Choose subclass…' : 'Scegli sottoclasse…'}</option>
+                                    {sottoclassiPerClasse(c.classe).map((sc) => (
+                                      <option key={sc} value={sc}>{traduciDato(sc)}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            <button
+                              style={{ ...styles.button, flex: 1, minWidth: 140, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                              onClick={() => setMostraPrivilegi(true)}
+                              title={t('tip.panoramica_priv')}
+                            >
+                              📖 {t("priv.panoramica_btn")} ({scheda.classe || t('profilo.nessuna')} Liv. {scheda.livello || 1})
+                            </button>
+                            {tutteLeSub.length > 0 ? (
+                              tutteLeSub.map((subItem, sIdx) => (
+                                <button
+                                  key={sIdx}
+                                  style={{ ...styles.button, flex: 1, minWidth: 140, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                                  onClick={() => setMostraPrivilegiSub(subItem.sottoclasse || true)}
+                                  title={t('tip.panoramica_priv_sub')}
+                                >
+                                  📖 {traduciDato(subItem.sottoclasse)} ({traduciDato(subItem.classe)} Liv. {subItem.livello})
+                                </button>
+                              ))
+                            ) : (
+                              <div style={{ ...styles.detail, fontSize: 11.5, display: 'flex', alignItems: 'center' }}>
+                                {t('priv.sub_nessuna')}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
 
-                  {/* Contenuto in base al Tab selezionato */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {/* Blocco 1: Classe e Sottoclasse */}
-                    {(schedaPrivilegiTab === 'tutti' || schedaPrivilegiTab === 'classe') && (
-                      <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
-                        <div style={{ fontSize: 12.5, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5, textAlign: 'center' }}>
-                          🛡️ {lingua === 'en' ? 'Class & Subclass Features' : 'Privilegi di Classe & Sottoclasse'}
-                        </div>
-                        {(() => {
-                          const tutteLeSub = [
-                            ...(scheda.sottoclasse ? [{ classe: scheda.classe, livello: scheda.livello || 1, sottoclasse: scheda.sottoclasse }] : []),
-                            ...((scheda.multiclasse || []).filter((m) => m.sottoclasse).map((m) => ({ classe: m.classe, livello: m.livello || 1, sottoclasse: m.sottoclasse }))),
-                          ];
-                          const classiSenzaSubMaPronte = [
-                            ...((!scheda.sottoclasse && (scheda.livello || 1) >= livelloSceltaSottoclasse(scheda.classe, versione)) ? [{ classe: scheda.classe, livello: scheda.livello || 1, isMain: true }] : []),
-                            ...((scheda.multiclasse || []).filter((m) => !m.sottoclasse && (m.livello || 1) >= livelloSceltaSottoclasse(m.classe, versione)).map((m) => ({ classe: m.classe, livello: m.livello || 1, isMain: false }))),
-                          ];
-                          return (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                              {classiSenzaSubMaPronte.length > 0 && (
-                                <div style={{ background: 'rgba(200,140,20,0.1)', border: `1px dashed ${C.gold}`, borderRadius: 6, padding: '6px 8px' }}>
-                                  {classiSenzaSubMaPronte.map((c, idx) => (
-                                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                                      <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 600 }}>{traduciDato(c.classe)}:</span>
-                                      <select
-                                        style={{ ...styles.inlineInput, fontSize: 12, padding: '3px 6px', flex: 1, minWidth: 130 }}
-                                        value=""
-                                        onChange={(e) => {
-                                          const sub = e.target.value;
-                                          if (!sub) return;
-                                          if (c.isMain) {
-                                            aggiorna({ sottoclasse: sub, privilegiSottoclasse: privilegiSottoclasseFinoA(sub, c.livello) });
-                                          } else {
-                                            aggiorna({
-                                              multiclasse: (scheda.multiclasse || []).map((m) => (m.classe === c.classe ? { ...m, sottoclasse: sub } : m)),
-                                            });
-                                          }
-                                        }}
-                                      >
-                                        <option value="">{lingua === 'en' ? 'Choose subclass…' : 'Scegli sottoclasse…'}</option>
-                                        {sottoclassiPerClasse(c.classe).map((sc) => (
-                                          <option key={sc} value={sc}>{traduciDato(sc)}</option>
-                                        ))}
-                                      </select>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                                <button
-                                  style={{ ...styles.button, flex: 1, minWidth: 140, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-                                  onClick={() => setMostraPrivilegi(true)}
-                                  title={t('tip.panoramica_priv')}
-                                >
-                                  📖 {t("priv.panoramica_btn")} ({scheda.classe || t('profilo.nessuna')} Liv. {scheda.livello || 1})
-                                </button>
-                                {tutteLeSub.length > 0 ? (
-                                  tutteLeSub.map((subItem, sIdx) => (
-                                    <button
-                                      key={sIdx}
-                                      style={{ ...styles.button, flex: 1, minWidth: 140, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-                                      onClick={() => setMostraPrivilegiSub(subItem.sottoclasse || true)}
-                                      title={t('tip.panoramica_priv_sub')}
-                                    >
-                                      📖 {traduciDato(subItem.sottoclasse)} ({traduciDato(subItem.classe)} Liv. {subItem.livello})
-                                    </button>
-                                  ))
-                                ) : (
-                                  <div style={{ ...styles.detail, fontSize: 11.5, display: 'flex', alignItems: 'center' }}>
-                                    {t('priv.sub_nessuna')}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })()}
+                  {/* Blocchi 2 e 3: Tratti di Specie e Talenti affiancati */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                    gap: 10
+                  }}>
+                    <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
+                        🧬 {t("sez.tratti_specie")}{scheda.specie ? ` (${traduciDato(scheda.specie)})` : ''}
                       </div>
-                    )}
+                      <ListaQuadratini
+                        value={scheda.trattiSpecie}
+                        lookup={spiegaTratto}
+                        placeholder={t("tratti.ph")}
+                        onChange={(v) => aggiorna({ trattiSpecie: v })}
+                      />
+                    </div>
 
-                    {/* Blocchi 2 e 3: Tratti di Specie e Talenti affiancati quando il tab è 'tutti' */}
-                    <div style={{
-                      display: (schedaPrivilegiTab === 'tutti') ? 'grid' : 'block',
-                      gridTemplateColumns: (schedaPrivilegiTab === 'tutti') ? 'repeat(auto-fit, minmax(280px, 1fr))' : undefined,
-                      gap: 10
-                    }}>
-                      {(schedaPrivilegiTab === 'tutti' || schedaPrivilegiTab === 'specie') && (
-                        <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column' }}>
-                          <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
-                            🧬 {t("sez.tratti_specie")}{scheda.specie ? ` (${traduciDato(scheda.specie)})` : ''}
-                          </div>
-                          <ListaQuadratini
-                            value={scheda.trattiSpecie}
-                            lookup={spiegaTratto}
-                            placeholder={t("tratti.ph")}
-                            onChange={(v) => aggiorna({ trattiSpecie: v })}
-                          />
-                        </div>
-                      )}
-
-                      {(schedaPrivilegiTab === 'tutti' || schedaPrivilegiTab === 'talenti') && (
-                        <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column' }}>
-                          <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
-                            ⭐ {t("sez.talenti")}
-                          </div>
-                          <ListaQuadratini
-                            value={scheda.talenti}
-                            lookup={spiegaTalento}
-                            opzioni={TALENTI_5E}
-                            placeholder={t("talenti.ph")}
-                            onChange={(v) => aggiorna({ talenti: v })}
-                          />
-                        </div>
-                      )}
+                    <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
+                        ⭐ {t("sez.talenti")}
+                      </div>
+                      <ListaQuadratini
+                        value={scheda.talenti}
+                        lookup={spiegaTalento}
+                        opzioni={TALENTI_5E}
+                        placeholder={t("talenti.ph")}
+                        onChange={(v) => aggiorna({ talenti: v })}
+                      />
                     </div>
                   </div>
                 </div>
