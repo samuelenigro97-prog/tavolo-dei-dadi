@@ -8754,16 +8754,13 @@ export default function App() {
                 right: 0,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                fontSize: 11,
+                fontSize: 11.5,
                 color: C.goldDark,
                 fontWeight: 800,
-                letterSpacing: 0.5,
+                letterSpacing: 0.6,
                 fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                padding: '2px 8px',
-                borderRadius: 6,
-                background: 'rgba(201,162,39,0.08)',
-                border: `1px solid ${C.goldDark}`,
                 userSelect: 'none',
+                opacity: 0.9,
               }}
               title={`Tavolo dei Dadi v${APP_VERSION}`}
             >
