@@ -793,6 +793,13 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   border-top-left-radius: 0 !important;
   border-top-right-radius: 0 !important;
   margin-top: 0 !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: thin;
+}
+.barra-superiore-fissa .selettore-personaggio-azioni {
+  flex-wrap: nowrap !important;
+  white-space: nowrap !important;
 }
 /* testata: titolo centrato in alto, i due gruppi di pulsanti sotto (ciascuno una
    griglia ordinata). Su desktop MOLTO largo i pulsanti passano in colonna a

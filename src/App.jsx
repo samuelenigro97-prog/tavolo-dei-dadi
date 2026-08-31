@@ -8530,7 +8530,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Barra superiore fissa: Brand a sinistra + sezioni tasti */}
+        {/* Barra superiore fissa: Brand a sinistra + sezioni tasti (Tutto su 1 riga) */}
         <section
           className="selettore-personaggio barra-superiore-fissa"
           style={{
@@ -8538,27 +8538,27 @@ export default function App() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: 10,
-            flexWrap: 'wrap',
-            padding: '8px 12px',
+            gap: 6,
+            flexWrap: 'nowrap',
+            padding: '5px 8px',
             marginBottom: 10,
           }}
         >
           {(() => {
             const btnAzione = {
               ...styles.buttonMini,
-              width: 38,
-              minWidth: 38,
-              maxWidth: 38,
-              height: 38,
-              minHeight: 38,
-              maxHeight: 38,
+              width: 32,
+              minWidth: 32,
+              maxWidth: 32,
+              height: 32,
+              minHeight: 32,
+              maxHeight: 32,
               padding: 0,
-              fontSize: 17,
+              fontSize: 14.5,
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              borderRadius: 8,
+              borderRadius: 6,
               cursor: 'pointer',
               boxSizing: 'border-box',
               flexShrink: 0,
@@ -8569,10 +8569,10 @@ export default function App() {
                 className="selettore-divisore"
                 style={{
                   width: 1,
-                  height: 24,
+                  height: 20,
                   background: C.border,
-                  opacity: 0.6,
-                  margin: '0 4px',
+                  opacity: 0.5,
+                  margin: '0 2px',
                   alignSelf: 'center',
                   flexShrink: 0,
                 }}
@@ -8580,18 +8580,18 @@ export default function App() {
             );
 
             const stileEtichettaInline = {
-              fontSize: 10,
+              fontSize: 9,
               fontWeight: 800,
-              letterSpacing: 0.9,
+              letterSpacing: 0.6,
               textTransform: 'uppercase',
               color: C.goldDark,
-              marginRight: 2,
+              marginRight: 1,
               userSelect: 'none',
               whiteSpace: 'nowrap',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: 4,
-              opacity: 0.95,
+              gap: 3,
+              opacity: 0.9,
               fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
             };
 
@@ -8603,17 +8603,17 @@ export default function App() {
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   width: '100%',
-                  flexWrap: 'wrap',
-                  gap: 8,
+                  flexWrap: 'nowrap',
+                  gap: 6,
                 }}
               >
                 {/* Nome tutto a sinistra con versione più piccola */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, userSelect: 'none', flexShrink: 0 }}>
-                  <span style={{ fontSize: 16 }}>🎲</span>
-                  <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 14, fontWeight: 700, color: C.goldDark, letterSpacing: 0.4, whiteSpace: 'nowrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, userSelect: 'none', flexShrink: 0 }}>
+                  <span style={{ fontSize: 15 }}>🎲</span>
+                  <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 13, fontWeight: 700, color: C.goldDark, letterSpacing: 0.3, whiteSpace: 'nowrap' }}>
                     Tavolo dei Dadi
                   </span>
-                  <span style={{ fontSize: 9.5, color: C.inkDim, opacity: 0.75, fontWeight: 600, marginLeft: 2, whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: 9, color: C.inkDim, opacity: 0.7, fontWeight: 600, marginLeft: 1, whiteSpace: 'nowrap' }}>
                     v{APP_VERSION}
                   </span>
                 </div>
@@ -8621,7 +8621,7 @@ export default function App() {
                 {divisoreVerticale}
 
                 {/* Gruppo 1: GESTIONE SCHEDA */}
-                <div className="selettore-riga-1" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <div className="selettore-riga-1" style={{ display: 'flex', alignItems: 'center', gap: 2.5, flexShrink: 0 }}>
                   <span style={stileEtichettaInline}>
                     <span>👤</span> {lingua === 'en' ? 'Sheet' : 'Scheda'}
                   </span>
@@ -8679,7 +8679,7 @@ export default function App() {
                 {divisoreVerticale}
 
                 {/* Gruppo 2: SISTEMA */}
-                <div className="selettore-riga-2" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <div className="selettore-riga-2" style={{ display: 'flex', alignItems: 'center', gap: 2.5, flexShrink: 0 }}>
                   <span style={stileEtichettaInline}>
                     <span>⚙️</span> {lingua === 'en' ? 'System' : 'Sistema'}
                   </span>
@@ -8713,11 +8713,11 @@ export default function App() {
                   >
                     ☁️
                     {sincronizzando ? (
-                      <span style={{ fontSize: 11, marginLeft: 2 }}>🔄</span>
+                      <span style={{ fontSize: 10, marginLeft: 1 }}>🔄</span>
                     ) : (githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice) ? (
-                      <span style={{ color: '#2e9d4d', fontWeight: 900, marginLeft: 2, fontSize: 13 }}>✓</span>
+                      <span style={{ color: '#2e9d4d', fontWeight: 900, marginLeft: 1, fontSize: 12 }}>✓</span>
                     ) : (
-                      <span style={{ color: '#c0392b', fontSize: 13, marginLeft: 2, fontWeight: 900 }}>!</span>
+                      <span style={{ color: '#c0392b', fontSize: 12, marginLeft: 1, fontWeight: 900 }}>!</span>
                     )}
                   </button>
                   <button
@@ -8750,7 +8750,7 @@ export default function App() {
                 {divisoreVerticale}
 
                 {/* Gruppo 3: SESSIONE */}
-                <div className="selettore-riga-3" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <div className="selettore-riga-3" style={{ display: 'flex', alignItems: 'center', gap: 2.5, flexShrink: 0 }}>
                   <span style={stileEtichettaInline}>
                     <span>🧭</span> {lingua === 'en' ? 'Session' : 'Sessione'}
                   </span>
