@@ -9414,7 +9414,7 @@ export default function App() {
                     })()}
 
                     {/* PF Temporanei — centrati sotto la barra */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, margin: '1px 0 2px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, margin: '3px 0 4px' }}>
                       <span
                         style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#42a5f5', background: 'rgba(66,165,245,0.12)', border: '1px solid rgba(66,165,245,0.45)', borderRadius: 10, padding: '1px 8px' }}
                         title={t('vital.temporanei')}
@@ -9447,15 +9447,15 @@ export default function App() {
                         }
                       };
                       return (
-                        <div style={{ display: 'flex', gap: 3, margin: '2px 0', justifyContent: 'center', flexWrap: 'wrap' }}>
-                          <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => applicaDannoRapido(20)} title={t('vital.danno')}>-20</button>
-                          <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => applicaDannoRapido(10)} title={t('vital.danno')}>-10</button>
-                          <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => applicaDannoRapido(5)} title={t('vital.danno')}>-5</button>
-                          <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => applicaDannoRapido(1)} title={t('vital.danno')}>-1</button>
-                          <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, (Number(scheda.pfAttuali) || 0) + 1) }); }} title={t('vital.cura')}>+1</button>
-                          <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, (Number(scheda.pfAttuali) || 0) + 5) }); }} title={t('vital.cura')}>+5</button>
-                          <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, (Number(scheda.pfAttuali) || 0) + 10) }); }} title={t('vital.cura')}>+10</button>
-                          <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, (Number(scheda.pfAttuali) || 0) + 20) }); }} title={t('vital.cura')}>+20</button>
+                        <div style={{ display: 'flex', gap: 3.5, margin: '8px 0 6px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                          <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 6px', fontWeight: 'bold', fontSize: 11 }} onClick={() => applicaDannoRapido(20)} title={t('vital.danno')}>-20</button>
+                          <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 6px', fontWeight: 'bold', fontSize: 11 }} onClick={() => applicaDannoRapido(10)} title={t('vital.danno')}>-10</button>
+                          <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 6px', fontWeight: 'bold', fontSize: 11 }} onClick={() => applicaDannoRapido(5)} title={t('vital.danno')}>-5</button>
+                          <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 6px', fontWeight: 'bold', fontSize: 11 }} onClick={() => applicaDannoRapido(1)} title={t('vital.danno')}>-1</button>
+                          <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 6px', fontWeight: 'bold', fontSize: 11 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, (Number(scheda.pfAttuali) || 0) + 1) }); }} title={t('vital.cura')}>+1</button>
+                          <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 6px', fontWeight: 'bold', fontSize: 11 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, (Number(scheda.pfAttuali) || 0) + 5) }); }} title={t('vital.cura')}>+5</button>
+                          <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 6px', fontWeight: 'bold', fontSize: 11 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, (Number(scheda.pfAttuali) || 0) + 10) }); }} title={t('vital.cura')}>+10</button>
+                          <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 6px', fontWeight: 'bold', fontSize: 11 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, (Number(scheda.pfAttuali) || 0) + 20) }); }} title={t('vital.cura')}>+20</button>
                         </div>
                       );
                     })()}
@@ -9465,7 +9465,7 @@ export default function App() {
                       const gruppiDV = gruppiDadoVita(scheda.dadiVita);
                       const spesiMapDV = dadiVitaSpesiNormalizzati(scheda);
                       return (
-                        <div style={{ ...styles.detail, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, flexWrap: 'wrap', margin: 0 }}>
+                        <div style={{ ...styles.detail, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, flexWrap: 'wrap', margin: '2px 0 4px' }}>
                           {gruppiDV.map((g) => (
                             <span key={g.facce} style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
                               {t('vital.dadi_vita')}{' '}
