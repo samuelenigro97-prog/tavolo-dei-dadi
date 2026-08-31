@@ -10191,12 +10191,20 @@ export default function App() {
                               const castBloccato = a.isSpell && bloccaSpell;
                               const isUltimoCrit = (tiro?.attacco && (tiro.attacco.id === a.id || tiro.attacco.nome === a.nome) && (tiro.critico || tiro.naturale >= 20))
                                 || (ultimoAttaccoCritico && (ultimoAttaccoCritico.id === a.id || ultimoAttaccoCritico.nome === a.nome));
+                              const cleanNome = String(a.nome || '').replace(/^✨\s*/, '').trim();
+                              const spiegazioneEffetto = spiegaIncantesimo(cleanNome) || (dettagliIncantesimo(cleanNome)?.desc) || spiegaPrivilegio(cleanNome) || spiegaTratto(cleanNome) || spiegaTalento(cleanNome) || a.note || '';
+                              const titoloRiga = spiegazioneEffetto ? `${cleanNome}: ${spiegazioneEffetto}` : undefined;
                               return (
-                                <tr key={a.id} className="attacchi-riga">
+                                <tr key={a.id} className="attacchi-riga" title={titoloRiga}>
                                   <td style={styles.td} className="attacchi-nome">
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, width: '100%' }}>
                                       {a.isSpell ? (
-                                        <span style={{ fontSize: 16, cursor: 'help', display: 'inline-block', width: 22, textAlign: 'center' }} title={t('attacchi.incantesimo_integrato_tip')}>✨</span>
+                                        <button
+                                          type="button"
+                                          style={{ background: 'transparent', border: 'none', padding: 0, fontSize: 16, cursor: 'help', display: 'inline-block', width: 22, textAlign: 'center' }}
+                                          title={titoloRiga || t('attacchi.incantesimo_integrato_tip')}
+                                          onClick={() => spiegazioneEffetto && setInfo({ titolo: cleanNome, testo: spiegazioneEffetto })}
+                                        >✨</button>
                                       ) : (
                                         <select
                                           value=""
@@ -10213,12 +10221,14 @@ export default function App() {
                                             if (cat === 'Reazione') {
                                               const r = REAZIONI_5E.find((x) => x.nome === v);
                                               if (r) {
-                                                aggiornaAttacco({ nome: r.nome, bonus: 0, danno: r.danno || '', tipoDanno: r.tipoDanno || '', note: r.note || '' });
+                                                const desc = r.note || spiegaIncantesimo(r.nome) || spiegaPrivilegio(r.nome) || '';
+                                                aggiornaAttacco({ nome: r.nome, bonus: 0, danno: r.danno || '', tipoDanno: r.tipoDanno || '', note: desc });
                                               }
                                             } else if (cat === 'Bonus') {
                                               const b = AZIONI_BONUS_5E.find((x) => x.nome === v);
                                               if (b) {
-                                                aggiornaAttacco({ nome: b.nome, bonus: 0, danno: b.danno || '', tipoDanno: b.tipoDanno || '', note: b.note || '' });
+                                                const desc = b.note || spiegaIncantesimo(b.nome) || spiegaPrivilegio(b.nome) || '';
+                                                aggiornaAttacco({ nome: b.nome, bonus: 0, danno: b.danno || '', tipoDanno: b.tipoDanno || '', note: desc });
                                               }
                                             } else {
                                               const arma = ARMI_5E.find((w) => w.nome === v);
@@ -10231,19 +10241,19 @@ export default function App() {
                                           {cat === 'Reazione' ? (
                                             <>
                                               <optgroup label="Incantesimi di Reazione">
-                                                {REAZIONI_5E.filter((x) => x.tipo === 'incantesimo').map((r) => <option key={r.nome} value={r.nome}>{r.nome}</option>)}
+                                                {REAZIONI_5E.filter((x) => x.tipo === 'incantesimo').map((r) => <option key={r.nome} value={r.nome} title={r.note || spiegaIncantesimo(r.nome)}>{r.nome}</option>)}
                                               </optgroup>
                                               <optgroup label="Reazioni e Privilegi">
-                                                {REAZIONI_5E.filter((x) => x.tipo !== 'incantesimo').map((r) => <option key={r.nome} value={r.nome}>{r.nome}</option>)}
+                                                {REAZIONI_5E.filter((x) => x.tipo !== 'incantesimo').map((r) => <option key={r.nome} value={r.nome} title={r.note || spiegaPrivilegio(r.nome)}>{r.nome}</option>)}
                                               </optgroup>
                                             </>
                                           ) : cat === 'Bonus' ? (
                                             <>
                                               <optgroup label="Azioni Bonus & Armi">
-                                                {AZIONI_BONUS_5E.filter((x) => x.tipo === 'combattimento' || x.tipo === 'talento' || x.tipo === 'privilegio').map((b) => <option key={b.nome} value={b.nome}>{b.nome}</option>)}
+                                                {AZIONI_BONUS_5E.filter((x) => x.tipo === 'combattimento' || x.tipo === 'talento' || x.tipo === 'privilegio').map((b) => <option key={b.nome} value={b.nome} title={b.note || spiegaPrivilegio(b.nome)}>{b.nome}</option>)}
                                               </optgroup>
                                               <optgroup label="Incantesimi Azione Bonus">
-                                                {AZIONI_BONUS_5E.filter((x) => x.tipo === 'incantesimo').map((b) => <option key={b.nome} value={b.nome}>{b.nome}</option>)}
+                                                {AZIONI_BONUS_5E.filter((x) => x.tipo === 'incantesimo').map((b) => <option key={b.nome} value={b.nome} title={b.note || spiegaIncantesimo(b.nome)}>{b.nome}</option>)}
                                               </optgroup>
                                             </>
                                           ) : (
@@ -10256,6 +10266,7 @@ export default function App() {
                                         width={130}
                                         onChange={(v) => aggiornaAttacco({ nome: v })}
                                         onRoll={castBloccato ? undefined : () => tiraColpoArma(a)}
+                                        title={titoloRiga || (castBloccato ? 'Equipaggia un focus per lanciare questo incantesimo' : undefined)}
                                       />
                                     </div>
                                   </td>
@@ -10277,6 +10288,7 @@ export default function App() {
                                           width={44}
                                           onChange={(v) => aggiornaAttacco({ bonus: Number(String(v).replace('+', '')) || 0 })}
                                           onRoll={castBloccato ? undefined : () => tiraColpoArma(a)}
+                                          title={titoloRiga}
                                         />
                                       </div>
                                     )}
@@ -10304,13 +10316,13 @@ export default function App() {
                                           tiraDanniPerAttacco(a, !!isUltimoCrit);
                                           setUltimoAttaccoCritico(null);
                                         }}
-                                        title={isUltimoCrit ? `⚔️ Critico attivo: doppio click per tirare i danni CRITICI (${a.danno} ×2)` : t('tip.click_mod_danni')}
+                                        title={isUltimoCrit ? `⚔️ Critico attivo: doppio click per tirare i danni CRITICI (${a.danno} ×2)` : (titoloRiga || t('tip.click_mod_danni'))}
                                       />
-                                      <Editable value={a.tipoDanno} width={75} onChange={(v) => aggiornaAttacco({ tipoDanno: v })} />
+                                      <Editable value={a.tipoDanno} width={75} onChange={(v) => aggiornaAttacco({ tipoDanno: v })} title={titoloRiga} />
                                     </div>
                                   </td>
                                   <td style={styles.td} className="attacchi-note" data-label={t('combat.col_note')}>
-                                    <Editable value={a.note} width={130} onChange={(v) => aggiornaAttacco({ note: v })} />
+                                    <Editable value={a.note} width={130} onChange={(v) => aggiornaAttacco({ note: v })} title={titoloRiga || a.note || t('tip.click_modifica')} />
                                   </td>
                                   <td className="col-azioni attacchi-azioni" style={{ ...styles.td, textAlign: 'right' }}>
                                     <button
@@ -11761,7 +11773,17 @@ export default function App() {
                                   </td>
                                   <td data-label={t('inv.nome')} style={{ ...styles.td, ...((mostraEffetto || mostraUtilizzi || mostraContenuto) && senzaBordo) }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                                      <Editable value={o.nome} width={150} onChange={(v) => rinominaItem(o, v)} />
+                                      {(() => {
+                                        const spItem = o.effetto || spiegaIncantesimo(o.nome) || (EFFETTI_OGGETTO.find(([id]) => id === o.effettoMeccanico)?.[lingua === 'en' ? 2 : 1]);
+                                        return (
+                                          <Editable
+                                            value={o.nome}
+                                            width={150}
+                                            onChange={(v) => rinominaItem(o, v)}
+                                            title={spItem ? `${o.nome}: ${spItem}` : undefined}
+                                          />
+                                        );
+                                      })()}
                                       {isContainer && (
                                         <button
                                           type="button"
