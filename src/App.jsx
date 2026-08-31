@@ -2946,21 +2946,6 @@ export default function App() {
   const [filtroLivelloInc, setFiltroLivelloInc] = useState('');
   const [filtroScuolaInc, setFiltroScuolaInc] = useState('');
   const [filtroClasseInc, setFiltroClasseInc] = useState('');
-  const lastRosterAttivoRef = useRef(roster.attivo);
-  useEffect(() => {
-    if (lastRosterAttivoRef.current !== roster.attivo) {
-      lastRosterAttivoRef.current = roster.attivo;
-      if (scheda?.classe) {
-        setFiltroClasseInc(scheda.classe);
-      }
-    }
-  }, [roster.attivo, scheda?.classe]);
-
-  useEffect(() => {
-    if (!filtroClasseInc && scheda?.classe) {
-      setFiltroClasseInc(scheda.classe);
-    }
-  }, [scheda?.classe]);
   const [soloRitualiInc, setSoloRitualiInc] = useState(false);
   const [soloPreparatiInc, setSoloPreparatiInc] = useState(false);
   const [soloConcInc, setSoloConcInc] = useState(false);
@@ -3481,6 +3466,22 @@ export default function App() {
   // Allinea SUBITO le spiegazioni all'edizione del PG: le voci che cambiano fra
   // 5.0 e 5.5 mostrano solo le regole dell'edizione di questo personaggio.
   setEdizioneAttuale(versione);
+
+  const lastRosterAttivoRef = useRef(roster.attivo);
+  useEffect(() => {
+    if (lastRosterAttivoRef.current !== roster.attivo) {
+      lastRosterAttivoRef.current = roster.attivo;
+      if (scheda?.classe) {
+        setFiltroClasseInc(scheda.classe);
+      }
+    }
+  }, [roster.attivo, scheda?.classe]);
+
+  useEffect(() => {
+    if (!filtroClasseInc && scheda?.classe) {
+      setFiltroClasseInc(scheda.classe);
+    }
+  }, [scheda?.classe]);
 
   // Le risorse tipiche della classe devono esserci anche nelle schede vecchie
   // o importate e devono seguire automaticamente livello e caratteristiche.
@@ -10860,7 +10861,7 @@ export default function App() {
                           {spells.map((s) => {
                             const d = datiIncantesimo(s.nome);
                             const eff = s.note || d?.desc || '';
-                            const tempoLabel = traduciTempoIncantesimo(s.tempo, lingua);
+                            const tempoLabel = traduciDato(s.tempo || d?.tempo || '');
                             const gittata = s.gittata || d?.gittata || '';
                             const scuola = s.scuola || d?.scuola || '';
                             const area = s.area || d?.area || '';
@@ -12092,7 +12093,7 @@ export default function App() {
                     {t('sez.diario')}
                   </h2>
                   <div style={{ ...styles.detail, fontSize: 12, color: C.goldDark, fontWeight: 700 }}>
-                    {scheda.info?.nome || (lingua === 'en' ? 'Character' : 'Personaggio')}
+                    {scheda.nome || (lingua === 'en' ? 'Character' : 'Personaggio')}
                   </div>
                 </div>
               </div>
@@ -12130,12 +12131,12 @@ export default function App() {
               };
 
               const scaricaDiario = () => {
-                const nomePG = (scheda.info?.nome || 'Personaggio').replace(/[^a-zA-Z0-9_-]/g, '_');
+                const nomePG = (scheda.nome || 'Personaggio').replace(/[^a-zA-Z0-9_-]/g, '_');
                 const righe = diario.map((v, i) => {
                   const num = diario.length - i;
                   return `# Sessione ${num}: ${v.titolo || 'Senza titolo'} (${v.data || 'Nessuna data'})\n\n${v.testo || ''}\n`;
                 }).join('\n---\n\n');
-                const contenuto = `# Diario di Viaggio — ${scheda.info?.nome || 'Personaggio'}\n\n${righe}`;
+                const contenuto = `# Diario di Viaggio — ${scheda.nome || 'Personaggio'}\n\n${righe}`;
                 const blob = new Blob([contenuto], { type: 'text/markdown;charset=utf-8' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');

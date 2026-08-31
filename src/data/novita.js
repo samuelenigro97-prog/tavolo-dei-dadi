@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.51',
+    voci: {
+      it: [
+        'Risoluzione Errore di Caricamento: corretto il riferimento anticipato all\'inizializzazione dei filtri e delle etichette incantesimo all\'avvio dell\'applicazione.',
+      ],
+      en: [
+        'Loading Error Fix: resolved initialization timing for spell filters and spell tags on application startup.',
+      ],
+    },
+  },
+  {
     versione: '4.0.50',
     voci: {
       it: [
