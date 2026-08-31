@@ -50,13 +50,9 @@ const SFONDO_CARATTERISTICA = {
 
 // Simbolo di sfondo opaco per i riquadri vitali (come nelle caratteristiche):
 // un'emoji grande e sfumata nell'angolo, che evoca il riquadro senza disturbare.
-function SfondoVit({ children }) {
+function SfondoVit({ children, style }) {
   return (
-    <span aria-hidden style={{
-      position: 'absolute', right: -2, bottom: -8, fontSize: 52, opacity: 0.12,
-      pointerEvents: 'none', lineHeight: 1, userSelect: 'none',
-      transform: 'rotate(-8deg)', filter: 'grayscale(20%)',
-    }}>{children}</span>
+    <span aria-hidden className="sfondo-vit-emoji" style={style}>{children}</span>
   );
 }
 
@@ -9873,13 +9869,7 @@ export default function App() {
                 <div key={key} className="blocco-car" style={{ ...styles.abilityBlock, position: 'relative', overflow: 'hidden' }}>
                   {/* Sfondo emoji opaco che rappresenta la caratteristica */}
                   {sfondoCar && (
-                    <span aria-hidden style={{
-                      position: 'absolute', right: 2, bottom: -4,
-                      fontSize: 66, opacity: 0.13, pointerEvents: 'none',
-                      lineHeight: 1, userSelect: 'none',
-                      transform: 'rotate(-8deg)',
-                      filter: 'grayscale(10%)',
-                    }}>
+                    <span aria-hidden className="sfondo-car-emoji">
                       {sfondoCar.symbol}
                     </span>
                   )}

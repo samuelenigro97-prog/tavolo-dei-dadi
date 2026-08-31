@@ -830,6 +830,49 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   background: transparent !important;
   color: var(--c-ink-dim); font: 600 12px/1 Georgia, serif; letter-spacing: .35px;
 }
+/* Simboli di sfondo ed emoji opachi nei riquadri vitali e caratteristiche */
+.sfondo-vit-emoji {
+  position: absolute;
+  right: -2px;
+  bottom: -8px;
+  font-size: 52px;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  transform: rotate(-8deg);
+  opacity: 0.24;
+  filter: grayscale(10%);
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+[data-tema="chiaro"] .sfondo-vit-emoji {
+  opacity: 0.32 !important;
+  filter: grayscale(0%) saturate(1.15) !important;
+}
+[data-tema="scuro"] .sfondo-vit-emoji {
+  opacity: 0.18 !important;
+  filter: grayscale(15%) !important;
+}
+.sfondo-car-emoji {
+  position: absolute;
+  right: 2px;
+  bottom: -4px;
+  font-size: 66px;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  transform: rotate(-8deg);
+  opacity: 0.22;
+  filter: grayscale(10%);
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+[data-tema="chiaro"] .sfondo-car-emoji {
+  opacity: 0.30 !important;
+  filter: grayscale(0%) saturate(1.15) !important;
+}
+[data-tema="scuro"] .sfondo-car-emoji {
+  opacity: 0.18 !important;
+  filter: grayscale(15%) !important;
+}
 /* Tutti i tasti su UNA riga sotto il titolo: i gruppi si sciolgono con
    display:contents, così i bottoni sono figli diretti della riga. */
 .app-header-side {
