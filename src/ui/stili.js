@@ -804,10 +804,11 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   text-shadow: 0 1px 0 color-mix(in srgb, var(--c-panel) 70%, transparent);
 }
 .app-version {
-  display: inline-flex; align-items: center; justify-content: center; min-height: 22px;
-  padding: 3px 9px;
-  border: 1px solid color-mix(in srgb, var(--c-border) 75%, transparent);
-  border-radius: 999px; background: color-mix(in srgb, var(--c-panel) 82%, transparent);
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0 4px;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
   color: var(--c-ink-dim); font: 600 12px/1 Georgia, serif; letter-spacing: .35px;
 }
 /* Tutti i tasti su UNA riga sotto il titolo: i gruppi si sciolgono con

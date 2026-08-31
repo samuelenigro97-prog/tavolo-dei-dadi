@@ -8545,18 +8545,22 @@ export default function App() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              padding: '6px 14px',
+              padding: '7px 14px',
               cursor: 'pointer',
               borderRadius: 8,
+              marginBottom: 10,
               transition: 'all 0.15s ease',
             }}
             onClick={() => setToolbarMinimizzata(false)}
             title={lingua === 'en' ? 'Click to expand toolbar' : 'Clicca per espandere la barra comandi'}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 11.5, color: C.goldDark, fontWeight: 800, letterSpacing: 0.5, userSelect: 'none' }}>
-              <span>⚡ {lingua === 'en' ? 'TOOLBAR' : 'BARRA STRUMENTI'}</span>
-              <span style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 500 }}>
-                👤 {lingua === 'en' ? 'Sheet' : 'Scheda'} · ⚙️ {lingua === 'en' ? 'System' : 'Sistema'} · 🧭 {lingua === 'en' ? 'Session' : 'Sessione'}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, userSelect: 'none' }}>
+              <span style={{ fontSize: 16 }}>🎲</span>
+              <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 15, fontWeight: 700, color: C.goldDark, letterSpacing: 0.4 }}>
+                Tavolo dei Dadi
+              </span>
+              <span style={{ fontSize: 11, color: C.inkDim, opacity: 0.85, fontWeight: 600 }}>
+                v{APP_VERSION}
               </span>
             </div>
             <button
@@ -8575,7 +8579,7 @@ export default function App() {
                 setToolbarMinimizzata(false);
               }}
             >
-              ▼ {lingua === 'en' ? 'Expand' : 'Espandi'}
+              ▼ {lingua === 'en' ? 'Toolbar' : 'Barra Comandi'}
             </button>
           </section>
         ) : (
@@ -8658,6 +8662,30 @@ export default function App() {
                     gap: 8,
                   }}
                 >
+                  {/* Tasto Riduci posizionato prima della sezione Scheda */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <button
+                      style={{
+                        ...btnAzione,
+                        width: 'auto',
+                        padding: '0 8px',
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: C.goldDark,
+                        borderColor: C.goldDark,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 4,
+                      }}
+                      onClick={() => setToolbarMinimizzata(true)}
+                      title={lingua === 'en' ? 'Minimize toolbar' : 'Riduci la barra comandi'}
+                    >
+                      ▲ {lingua === 'en' ? 'Hide' : 'Riduci'}
+                    </button>
+                  </div>
+
+                  {divisoreVerticale}
+
                   {/* Gruppo 1: GESTIONE SCHEDA */}
                   <div className="selettore-riga-1" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                     <span style={stileEtichettaInline}>
@@ -8808,24 +8836,6 @@ export default function App() {
                       else if (combat.combattenti.length) setCombat((c) => ({ ...c, attivo: true, aperto: true }));
                       else aggiungiPgAlCombat();
                     }} title={(combat.attivo && combat.aperto ? t('ct.minimizza') : t('ct.apri')) + (combat.combattenti.length ? ` (${combat.combattenti.length})` : '')}>⚔️</button>
-
-                    {/* Tasto Minimizza Toolbar */}
-                    <button
-                      style={{
-                        ...btnAzione,
-                        width: 24,
-                        minWidth: 24,
-                        maxWidth: 24,
-                        height: 38,
-                        fontSize: 10.5,
-                        opacity: 0.65,
-                        marginLeft: 4,
-                      }}
-                      onClick={() => setToolbarMinimizzata(true)}
-                      title={lingua === 'en' ? 'Minimize toolbar' : 'Minimizza barra comandi'}
-                    >
-                      ▲
-                    </button>
                   </div>
                 </div>
               );
