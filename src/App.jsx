@@ -9476,7 +9476,7 @@ export default function App() {
                         }
                       };
                       return (
-                        <div style={{ display: 'flex', gap: 3.5, margin: '8px 0 6px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', gap: 3.5, margin: '14px 0 8px', justifyContent: 'center', flexWrap: 'wrap' }}>
                           <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 6px', fontWeight: 'bold', fontSize: 11 }} onClick={() => applicaDannoRapido(20)} title={t('vital.danno')}>-20</button>
                           <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 6px', fontWeight: 'bold', fontSize: 11 }} onClick={() => applicaDannoRapido(10)} title={t('vital.danno')}>-10</button>
                           <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 6px', fontWeight: 'bold', fontSize: 11 }} onClick={() => applicaDannoRapido(5)} title={t('vital.danno')}>-5</button>
@@ -9494,7 +9494,7 @@ export default function App() {
                       const gruppiDV = gruppiDadoVita(scheda.dadiVita);
                       const spesiMapDV = dadiVitaSpesiNormalizzati(scheda);
                       return (
-                        <div style={{ ...styles.detail, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, flexWrap: 'wrap', margin: '2px 0 4px' }}>
+                        <div style={{ ...styles.detail, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, flexWrap: 'wrap', margin: '6px 0 10px' }}>
                           {gruppiDV.map((g) => (
                             <span key={g.facce} style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
                               {t('vital.dadi_vita')}{' '}
@@ -9533,7 +9533,7 @@ export default function App() {
                   </div>
 
                   {/* Linea divisoria centrata tra Punti Ferita e Tiri Morte */}
-                  <div style={{ width: '100%', height: 1, background: C.border, margin: '4px 0', opacity: 0.65, flexShrink: 0 }} />
+                  <div style={{ width: '100%', height: 1, background: C.border, margin: '6px 0', opacity: 0.65, flexShrink: 0 }} />
 
                   {/* Sezione Inferiore: Tiri Morte / Death Saves — perfettamente centrata e ben dimensionata */}
                   <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '4px 0' }}>
