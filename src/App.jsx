@@ -9211,9 +9211,9 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="profilo-anagrafica-campi" style={{ width: '100%' }}>
-                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.85fr 1.15fr 1.7fr 0.8fr', gap: '6px 10px', alignItems: 'end' }}>
-                    {/* Riga 1: Sesso, Specie/Razza, Taglia, Allineamento */}
+                <div className="profilo-anagrafica-campi" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {/* Riga 1: Sesso, Specie/Razza, Taglia (compatta), Allineamento (largo) */}
+                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.8fr 1.2fr 0.65fr 1.55fr', gap: 10, alignItems: 'end' }}>
                     <CampoModulo label={t("profilo.sesso")}>
                       <select
                         value={scheda.sesso || ''}
@@ -9236,8 +9236,10 @@ export default function App() {
                     <CampoModulo label={t("profilo.allineamento")}>
                       <CampoTendina value={scheda.allineamento} opzioni={ALLINEAMENTI_5E} onChange={(v) => aggiorna({ allineamento: v })} title={t('tip.scegli_allineamento')} />
                     </CampoModulo>
+                  </div>
 
-                    {/* Riga 2: Background, Classe, Sottoclasse, P.E. */}
+                  {/* Riga 2: Background, Classe, Sottoclasse (molto larga), P.E. (compatto) */}
+                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.8fr 1.2fr 1.75fr 0.45fr', gap: 10, alignItems: 'end' }}>
                     <CampoModulo label={t("profilo.background")} boxClassName={String(scheda.background || '').length > 12 ? 'testo-compatto' : undefined}>
                       <CampoBloccato
                         valore={traduciDato(scheda.background) || t('profilo.nessuno')}
@@ -9250,7 +9252,7 @@ export default function App() {
                         title={t('profilo.classe_bloccata')}
                       />
                     </CampoModulo>
-                    <CampoModulo label={t("profilo.sottoclasse")} boxClassName={String(scheda.sottoclasse || '').length > 18 ? 'testo-compatto' : undefined}>
+                    <CampoModulo label={t("profilo.sottoclasse")} boxClassName={String(scheda.sottoclasse || '').length > 25 ? 'testo-compatto' : undefined}>
                       {campoSottoclasse(scheda.classe, scheda.livello, scheda.sottoclasse, (v) => {
                         const patch = { sottoclasse: v };
                         const auto = privilegiSottoclasseFinoA(v, scheda.livello || 1);
