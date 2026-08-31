@@ -9072,8 +9072,8 @@ export default function App() {
                               type="button"
                               title={spiegazione}
                               onClick={() => setInfo({ titolo: r.nome, testo: spiegazione })}
-                              style={{ padding: 0, border: 0, background: 'transparent', color: C.ink, font: 'inherit', fontWeight: 600, textAlign: 'left', cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3, marginRight: 'auto', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
-                            >{r.nome} ⓘ</button>
+                              style={{ padding: 0, border: 0, background: 'transparent', color: C.ink, font: 'inherit', fontWeight: 600, textAlign: 'left', cursor: 'pointer', textDecoration: 'none', marginRight: 'auto', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
+                            >{r.nome}</button>
                           ) : (
                             <span style={{ marginRight: 'auto', minWidth: 0 }}><Editable value={r.nome} onChange={(v) => modifica({ nome: v })} width={110} title={t('tip.nome_risorsa')} /></span>
                           )}
