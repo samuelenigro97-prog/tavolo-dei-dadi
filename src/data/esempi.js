@@ -315,7 +315,7 @@ export const VAELION_JSON = {
     { id: "v-inv-10", nome: "Pozione di Respirare sott'Acqua", qta: 2, peso: 0.5, equip: false, dentroBorsa: true, categoria: "Consumabile" },
     { id: "v-inv-11", nome: "Pozione Antitossina", qta: 1, peso: 0.5, equip: false, dentroBorsa: true, categoria: "Consumabile" },
     { id: "v-inv-12", nome: "Unguento di Resistenza al Veleno", qta: 1, peso: 0.5, equip: false, dentroBorsa: true, categoria: "Consumabile" },
-    { id: "v-inv-13", nome: "Sonaglio di zucca essiccata con bacche di agrifoglio", qta: 1, peso: 0.2, equip: false, categoria: "Trastullo", descrizione: "Oggetto prezioso e focus druidico legato alla sua infanzia tra le Montagne Rauvin." }
+    { id: "v-inv-13", nome: "Sonaglio di zucca essiccata con bacche di agrifoglio", qta: 1, peso: 0.2, equip: true, categoria: "Focus", descrizione: "Oggetto prezioso e focus druidico legato alla sua infanzia tra le Montagne Rauvin." }
   ],
   risorse: [
     { id: "auto-forma-selvatica", nome: "Forma Selvatica", attuali: 4, max: 4, reset: "breve" },

@@ -2243,6 +2243,7 @@ function normalizeImported(rawDati) {
       // in precedenza non deve nascondere l'equipaggiamento testuale da migrare
       // (bug: gli oggetti sparivano perché [] aveva la precedenza sul testo).
       if (Array.isArray(dati.inventario) && dati.inventario.length > 0) {
+        const hasAnyEquip = dati.inventario.some((o) => o && o.equip === true);
         return dati.inventario.map((o, i) => {
           // Se il nome contiene ancora "×N" (dati vecchi), lo riporto nella quantità
           // così il nome combacia con le armi note (es. "Pugnale ×2" → "Pugnale" ×2).
@@ -2250,10 +2251,14 @@ function normalizeImported(rawDati) {
           const nomeVal = parsed.nome;
           const qtaVal = parsed.qta > 1 ? parsed.qta : Math.max(1, num(o.qta, 1));
           let pesoVal = Math.max(0, Number(o.peso) || 0);
+          const isFocus = /focus|simbolo sacro|borsa (da )?componenti|bacchetta|cristallo|totem|bastone runico|feticcio|strumento musicale|liuto|flauto|arpa|tamburo|cornamusa|lira/i.test(nomeVal);
+          // Se nessun oggetto ha flag equip (import grezzo o legacy) e l'oggetto è un focus, lo equipaggiamo di default
+          const autoEquip = !hasAnyEquip && isFocus;
+          const equipVal = typeof o.equip === 'boolean' ? o.equip : autoEquip;
           const base = completaUtilizziOggetto({
             id: o.id || `inv-${i}-${Math.random().toString(36).slice(2, 6)}`,
             nome: nomeVal, qta: qtaVal, peso: pesoVal,
-            equip: !!o.equip, categoria: str(o.categoria),
+            equip: equipVal, categoria: str(o.categoria) || (isFocus ? 'Focus' : ''),
             usi: Number.isFinite(Number(o.usi)) ? Math.max(0, Number(o.usi)) : undefined,
             usiMax: Number.isFinite(Number(o.usiMax)) ? Math.max(0, Number(o.usiMax)) : undefined,
             ricarica: ['alba', 'breve', 'lungo', 'manuale'].includes(o.ricarica) ? o.ricarica : '',
@@ -2273,7 +2278,8 @@ function normalizeImported(rawDati) {
       if (!testo) return [];
       return testo.split(/[;,\n]/).map((s) => s.trim()).filter(Boolean).map((raw, i) => {
         const { nome, qta } = separaQtaOggetto(raw);
-        const base = completaUtilizziOggetto({ id: `inv-mig-${i}`, nome, qta, peso: 0, equip: false, categoria: '' });
+        const isFocus = /focus|simbolo sacro|borsa (da )?componenti|bacchetta|cristallo|totem|bastone runico|feticcio|strumento musicale|liuto|flauto|arpa|tamburo|cornamusa|lira/i.test(nome);
+        const base = completaUtilizziOggetto({ id: `inv-mig-${i}`, nome, qta, peso: 0, equip: isFocus, categoria: isFocus ? 'Focus' : '' });
         return { ...base, peso: pesoStimato(base.nome) };
       });
     })(),
@@ -3811,7 +3817,7 @@ export default function App() {
       // Inizializza l'inventario strutturato ed equipaggia in automatico il Focus arcano/druidico, simbolo sacro o borsa componenti
       s.inventario = kit.equip.map((raw, i) => {
         const { nome, qta } = separaQtaOggetto(raw);
-        const isFocus = /focus|simbolo sacro|borsa (da )?componenti|bacchetta|cristallo|totem|bastone runico|feticcio/i.test(nome);
+        const isFocus = /focus|simbolo sacro|borsa (da )?componenti|bacchetta|cristallo|totem|bastone runico|feticcio|strumento musicale|liuto|flauto|arpa|tamburo|cornamusa|lira/i.test(nome);
         const base = completaUtilizziOggetto({
           id: `inv-init-${Date.now()}-${i}`,
           nome,
@@ -10186,7 +10192,7 @@ export default function App() {
                   const listaAttacchiCompleta = [...attacchiFisici, ...attacchiSpettro];
                   // Per lanciare incantesimi in combattimento serve un focus (o
                   // borsa da componenti / simbolo sacro) EQUIPAGGIATO nell'inventario.
-                  const haFocus = (scheda.inventario || []).some((o) => o.equip && /focus|simbolo sacro|borsa (da )?componenti|bacchetta|cristallo|totem|bastone runico|feticcio/i.test(o.nome || ''));
+                  const haFocus = (scheda.inventario || []).some((o) => o.equip && /focus|simbolo sacro|borsa (da )?componenti|bacchetta|cristallo|totem|bastone runico|feticcio|strumento musicale|liuto|flauto|arpa|tamburo|cornamusa|lira/i.test(o.nome || ''));
                   const serveFocus = Boolean(caratteristicaIncantatore) && attacchiSpettro.length > 0;
                   const bloccaSpell = serveFocus && !haFocus;
                   const avvisoFocus = bloccaSpell ? (
