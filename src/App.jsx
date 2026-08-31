@@ -48,13 +48,7 @@ const SFONDO_CARATTERISTICA = {
   carisma:      { symbol: '🎭', label: 'Carisma' },
 };
 
-// Simbolo di sfondo opaco per i riquadri vitali (come nelle caratteristiche):
-// un'emoji grande e sfumata nell'angolo, che evoca il riquadro senza disturbare.
-function SfondoVit({ children, style }) {
-  return (
-    <span aria-hidden className="sfondo-vit-emoji" style={style}>{children}</span>
-  );
-}
+
 
 function IconaMonetaOro({ size = 20 }) {
   return (
@@ -9371,8 +9365,6 @@ export default function App() {
               {/* Riga 2 — Punti Ferita e Tiri Morte (spaziature bilanciate e sezioni centrate) */}
               <div className="pm-pf profilo-pf-box">
                 <div style={{ ...styles.vitalBox, gridColumn: 'span 4', padding: '8px 12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', minHeight: 'auto', height: '100%', boxSizing: 'border-box' }}>
-                  <SfondoVit>🩸</SfondoVit>
-
                   {/* Sezione Superiore: Punti Ferita — perfettamente centrata nello spazio disponibile */}
                   <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2px 0' }}>
                     <div style={{ ...styles.vitalLabel, position: 'static', margin: 0, marginBottom: 6, fontSize: 12 }}>❤️ {t("vital.pf")}</div>
@@ -9632,7 +9624,6 @@ export default function App() {
                 <div className="pm-tier-2">
                   <div className="vitali pm-gruppo">
             <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
-              <SfondoVit>🛡️</SfondoVit>
               <div style={styles.vitalLabel}>{t("vital.ca")}</div>
               <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={styles.vitalValue}>
@@ -9693,7 +9684,6 @@ export default function App() {
               </div>
             </div>
             <div style={{ ...styles.vitalBox, gridColumn: 'span 2' }}>
-              <SfondoVit>☕</SfondoVit>
               <div style={styles.vitalLabel}>{t("vital.riposo")}</div>
               <div style={{ flex: 1, width: '100%', display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
                 <button style={{ ...styles.buttonMini, fontSize: 11, padding: '4px 10px' }} onClick={() => riposoBreve()} title={t('vital.riposo_breve_tip')}>☕ {t("vital.breve")}</button>
@@ -9701,7 +9691,6 @@ export default function App() {
               </div>
             </div>
             <div style={{ ...styles.vitalBox }}>
-              <SfondoVit>✨</SfondoVit>
               <div style={styles.vitalLabel}>{t("vital.competenza")}</div>
               <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={styles.vitalValue}>
@@ -9717,7 +9706,6 @@ export default function App() {
               </div>
             </div>
             <div style={{ ...styles.vitalBox }}>
-              <SfondoVit>⚡</SfondoVit>
               <div style={styles.vitalLabel}>{t("vital.iniziativa")}</div>
               <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={styles.vitalValue}>
@@ -9731,7 +9719,6 @@ export default function App() {
               style={{ ...styles.vitalBox }}
               title={`🏃 Salto in Lungo (con rincorsa): ${punteggioCaratteristica(scheda, 'forza') || 10} piedi (${((punteggioCaratteristica(scheda, 'forza') || 10) * 0.3).toFixed(1)} m) • ⬆️ Salto in Alto: ${3 + modificatore(punteggioCaratteristica(scheda, 'forza') || 10)} piedi (${((3 + modificatore(punteggioCaratteristica(scheda, 'forza') || 10)) * 0.3).toFixed(1)} m) • 🫁 Trattenere il Respiro: ${Math.max(1, 1 + modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10))} minuti`}
             >
-              <SfondoVit>🏃</SfondoVit>
               <div style={styles.vitalLabel}>{t("vital.movimento")}</div>
               <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={styles.vitalValue}>
@@ -9744,7 +9731,6 @@ export default function App() {
               </div>
             </div>
             <div style={{ ...styles.vitalBox }}>
-              <SfondoVit>🥱</SfondoVit>
               <div style={styles.vitalLabel}>{t("vital.sfinimento")}</div>
               <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={styles.vitalValue}>
@@ -9767,7 +9753,6 @@ export default function App() {
             <div className="vitali-sezioni-4 pm-gruppo">
               {/* 1. Box Visione */}
               <div style={{ ...styles.vitalBox }}>
-                <SfondoVit>👁️</SfondoVit>
                 <div style={styles.vitalLabel}>{t("vital.visione")}</div>
                 <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                   <CampoConTendina
@@ -9781,7 +9766,6 @@ export default function App() {
 
               {/* 2. Box Percezione Passiva */}
               <div style={{ ...styles.vitalBox }} title={t('vital.passive_tooltip')}>
-                <SfondoVit>👂</SfondoVit>
                 <div style={styles.vitalLabel}>{t("vital.percezione_passiva")}</div>
                 <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                   <div style={styles.vitalValue}>
@@ -9792,7 +9776,6 @@ export default function App() {
 
               {/* 3. Box Resistenze */}
               <div style={{ ...styles.vitalBox }}>
-                <SfondoVit>🧪</SfondoVit>
                 <div style={styles.vitalLabel}>{t("vital.resistenze")}</div>
                 <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                   <CampoConTendina
@@ -9806,7 +9789,6 @@ export default function App() {
 
               {/* 4. Box Condizioni */}
               <div style={{ ...styles.vitalBox }}>
-                <SfondoVit>⚠️</SfondoVit>
                 <div style={styles.vitalLabel}>{t("vital.condizioni")}</div>
                 <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center', justifyContent: 'center' }}>
                   {scheda.condizioni.length > 0 && (
