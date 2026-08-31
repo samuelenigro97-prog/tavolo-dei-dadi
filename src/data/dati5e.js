@@ -17,18 +17,18 @@ export const ALLINEAMENTI_5E = [
   'Legale Malvagio', 'Neutrale Malvagio', 'Caotico Malvagio',
 ];
 export const SOTTOCLASSI_5E = {
-  barbaro: ['Berserker', 'Cuore Selvaggio', 'Albero del Mondo', 'Zelota'],
-  bardo: ['Collegio della Danza', 'Collegio del Fascino', 'Collegio della Sapienza', 'Collegio del Valore'],
-  chierico: ['Dominio della Vita', 'Dominio della Luce', 'Dominio dell’Inganno', 'Dominio della Guerra'],
-  druido: ['Circolo della Terra', 'Circolo della Luna', 'Circolo del Mare', 'Circolo del Pastore', 'Circolo delle Stelle'],
-  guerriero: ['Maestro di Battaglia', 'Campione', 'Cavaliere Mistico', 'Guerriero Psionico'],
-  ladro: ['Mistificatore Arcano', 'Assassino', 'Lama Spirituale', 'Furfante'],
-  mago: ['Abiuratore', 'Divinatore', 'Invocatore', 'Illusionista'],
-  monaco: ['Guerriero della Misericordia', 'Guerriero dell’Ombra', 'Guerriero degli Elementi', 'Guerriero della Mano Aperta'],
-  paladino: ['Giuramento di Devozione', 'Giuramento di Gloria', 'Giuramento degli Antichi', 'Giuramento di Vendetta'],
-  ranger: ['Signore delle Bestie', 'Viandante Fatato', 'Cacciatore delle Tenebre', 'Cacciatore'],
-  stregone: ['Stregoneria Aberrante', 'Stregoneria Meccanica', 'Stregoneria Draconica', 'Stregoneria della Magia Selvaggia'],
-  warlock: ['Patrono Signore Fatato', 'Patrono Celestiale', 'Patrono Immondo', 'Patrono Grande Antico'],
+  barbaro: ['Berserker', 'Cuore Selvaggio', 'Albero del Mondo', 'Zelota', 'Cammino della Bestia', 'Cammino della Magia Selvaggia', 'Guardiano Ancestrale', 'Guerriero Totemico'],
+  bardo: ['Collegio della Danza', 'Collegio del Fascino', 'Collegio della Sapienza', 'Collegio del Valore', 'Collegio della Creazione', 'Collegio dell’Eloquenza', 'Collegio delle Spade', 'Collegio dei Sussurri'],
+  chierico: ['Dominio della Vita', 'Dominio della Luce', 'Dominio dell’Inganno', 'Dominio della Guerra', 'Dominio dell’Ordine', 'Dominio della Pace', 'Dominio del Crepuscolo', 'Dominio della Tempesta', 'Dominio della Natura', 'Dominio della Forgia', 'Dominio della Tomba'],
+  druido: ['Circolo della Terra', 'Circolo della Luna', 'Circolo del Mare', 'Circolo del Pastore', 'Circolo delle Stelle', 'Circolo delle Spore', 'Circolo del Fuoco Selvaggio', 'Circolo dei Sogni'],
+  guerriero: ['Maestro di Battaglia', 'Campione', 'Cavaliere Mistico', 'Guerriero Psionico', 'Cavaliere Runico', 'Arciere Arcano', 'Cavaliere', 'Samurai'],
+  ladro: ['Mistificatore Arcano', 'Assassino', 'Lama Spirituale', 'Furfante', 'Fantasma', 'Inquisitore', 'Pianificatore', 'Spadaccino', 'Scout'],
+  mago: ['Abiuratore', 'Divinatore', 'Invocatore', 'Illusionista', 'Cantore della Lama', 'Ordine degli Scribi', 'Necromante', 'Trasmutatore', 'Ammaliatore', 'Evocatore', 'Mago della Guerra'],
+  monaco: ['Guerriero della Misericordia', 'Guerriero dell’Ombra', 'Guerriero degli Elementi', 'Guerriero della Mano Aperta', 'Via del Sé Astrale', 'Via del Maestro Ubriaco', 'Via del Kensei', 'Via dell’Anima Solare'],
+  paladino: ['Giuramento di Devozione', 'Giuramento di Gloria', 'Giuramento degli Antichi', 'Giuramento di Vendetta', 'Giuramento degli Osservatori', 'Giuramento di Conquista', 'Giuramento di Redenzione', 'Giuramento della Corona'],
+  ranger: ['Signore delle Bestie', 'Viandante Fatato', 'Cacciatore delle Tenebre', 'Cacciatore', 'Custode dello Sciame', 'Uccisore di Mostri', 'Guardiano dell’Orizzonte'],
+  stregone: ['Stregoneria Aberrante', 'Stregoneria Meccanica', 'Stregoneria Draconica', 'Stregoneria della Magia Selvaggia', 'Stregoneria delle Ombre', 'Anima Divina', 'Stregoneria della Tempesta'],
+  warlock: ['Patrono Signore Fatato', 'Patrono Celestiale', 'Patrono Immondo', 'Patrono Grande Antico', 'Patrono delle Profondità', 'Patrono del Genio', 'Lama del Sortilegio', 'L’Immortale'],
 };
 export const INCANTESIMI_CLASSE = {
   stregone: {

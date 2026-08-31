@@ -45,7 +45,7 @@ const SFONDO_CARATTERISTICA = {
   costituzione: { symbol: '🛡️', label: 'Costituzione' },
   intelligenza: { symbol: '📚', label: 'Intelligenza' },
   saggezza:     { symbol: '🔮', label: 'Saggezza' },
-  carisma:      { symbol: '✨', label: 'Carisma' },
+  carisma:      { symbol: '🎭', label: 'Carisma' },
 };
 
 // Simbolo di sfondo opaco per i riquadri vitali (come nelle caratteristiche):
@@ -995,6 +995,9 @@ function effettoOggettoNoto(nome) {
   if (/mantello (?:della |di )?prot(?:ezione|\.)?/i.test(n)) {
     return { nome: 'Mantello della Protezione', effettoMeccanico: 'classe_armatura_tiri_salvezza_1', richiedeSintonia: true };
   }
+  if (/perla del pot(?:ere)?\.?/i.test(n)) {
+    return { nome: 'Perla del Potere', effettoMeccanico: 'recupera_slot_3', richiedeSintonia: true };
+  }
   return null;
 }
 
@@ -1019,7 +1022,7 @@ function completaUtilizziOggetto(oggetto) {
 }
 
 const EFFETTI_OGGETTO = [
-  ['', 'Nessun effetto meccanico', 'No mechanical effect'],
+  ['', 'Nessun effetto', 'No effect'],
   ['classe_armatura_1', 'Classe Armatura +1', 'Armor Class +1'],
   ['classe_armatura_2', 'Classe Armatura +2', 'Armor Class +2'],
   ['classe_armatura_3', 'Classe Armatura +3', 'Armor Class +3'],
@@ -1030,6 +1033,7 @@ const EFFETTI_OGGETTO = [
   ['costituzione_impostata_19', 'Costituzione impostata a 19', 'Constitution set to 19'],
   ['forza_impostata_19', 'Forza impostata a 19', 'Strength set to 19'],
   ['intelligenza_impostata_19', 'Intelligenza impostata a 19', 'Intelligence set to 19'],
+  ['recupera_slot_3', 'Perla del Potere (recupera 1 slot fino al 3° liv.)', 'Pearl of Power (recover 1 slot up to 3rd lvl)'],
 ];
 
 /** Arma da tiro che consuma munizioni (arco, balestra, fionda: proprietà "Munizioni"). */
@@ -1754,7 +1758,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.47';
+const APP_VERSION = '4.0.48';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2910,6 +2914,7 @@ export default function App() {
   const [tipoDadoInUso, setTipoDadoInUso] = useState(20);
   const [tiro, setTiro] = useState(null);
   const [danni, setDanni] = useState(null);
+  const [ultimoAttaccoCritico, setUltimoAttaccoCritico] = useState(null);
 
   const [erroreImport, setErroreImport] = useState('');
   // Import da PDF con l'IA: endpoint configurabile (Cloudflare Worker o server
@@ -2941,6 +2946,21 @@ export default function App() {
   const [filtroLivelloInc, setFiltroLivelloInc] = useState('');
   const [filtroScuolaInc, setFiltroScuolaInc] = useState('');
   const [filtroClasseInc, setFiltroClasseInc] = useState('');
+  const lastRosterAttivoRef = useRef(roster.attivo);
+  useEffect(() => {
+    if (lastRosterAttivoRef.current !== roster.attivo) {
+      lastRosterAttivoRef.current = roster.attivo;
+      if (scheda?.classe) {
+        setFiltroClasseInc(scheda.classe);
+      }
+    }
+  }, [roster.attivo, scheda?.classe]);
+
+  useEffect(() => {
+    if (!filtroClasseInc && scheda?.classe) {
+      setFiltroClasseInc(scheda.classe);
+    }
+  }, [scheda?.classe]);
   const [soloRitualiInc, setSoloRitualiInc] = useState(false);
   const [soloPreparatiInc, setSoloPreparatiInc] = useState(false);
   const [soloConcInc, setSoloConcInc] = useState(false);
@@ -4105,22 +4125,50 @@ export default function App() {
     const penSfinimento = versione === '2024' ? 2 * scheda.sfinimento : 0;
     const bonusEff = bonus - penSfinimento;
     const { naturale, dadi } = tiraD20(modalita);
+    const sogliaCrit = (() => {
+      const sottoclasse = String(scheda.sottoclasse || '').toLowerCase();
+      const liv = Number(scheda.livello) || 1;
+      const privs = Array.isArray(scheda.privilegi) ? scheda.privilegi.map((p) => (typeof p === 'string' ? p : p?.nome || '').toLowerCase()) : [];
+      if (privs.some((p) => p.includes('critico superiore')) || (sottoclasse.includes('campione') && liv >= 15)) return 18;
+      if (privs.some((p) => p.includes('critico migliorato')) || (sottoclasse.includes('campione') && liv >= 3)) return 19;
+      return 20;
+    })();
+    const isCritico = naturale >= sogliaCrit;
+
     setTimeout(() => {
       clearInterval(intervalRef.current);
       setFaccia(naturale);
       setRolling(false);
       if (suoniEffOn) {
-        if (naturale === 20) eseguiEffettoSonoro('critico', volumeEffetti);
+        if (isCritico) eseguiEffettoSonoro('critico', volumeEffetti);
         else if (naturale === 1) eseguiEffettoSonoro('fallimento', volumeEffetti);
       }
-      setTiro({ etichetta, naturale, dadi, bonus: bonusEff, totale: naturale + bonusEff, modalita, sfinimento: penSfinimento, ...restExtra });
+      if (restExtra.attacco) {
+        if (isCritico) {
+          setUltimoAttaccoCritico({ id: restExtra.attacco.id, nome: restExtra.attacco.nome });
+        } else {
+          setUltimoAttaccoCritico(null);
+        }
+      }
+      setTiro({
+        etichetta,
+        naturale,
+        dadi,
+        bonus: bonusEff,
+        totale: naturale + bonusEff,
+        modalita,
+        sfinimento: penSfinimento,
+        critico: isCritico,
+        fumble: naturale === 1,
+        ...restExtra,
+      });
       registra({
         etichetta,
         tipo: 'd20',
         naturale,
         totale: naturale + bonusEff,
         dettaglio: `d20 [${naturale}]${bonusEff ? ` ${conSegno(bonusEff)}` : ''}${penSfinimento ? ` · sfin. −${penSfinimento}` : ''}`,
-        critico: naturale === 20,
+        critico: isCritico,
         fumble: naturale === 1,
       });
       if (dopoTiro) dopoTiro(naturale + bonusEff, naturale);
@@ -4181,23 +4229,26 @@ export default function App() {
     const maxFacce = Math.max(...parsata.termini.map((p) => p.facce).filter(Boolean));
     const nome = attacco.nome;
     const esito = tiraDanni(parsata, critico);
-    // Suono coerente col tipo d'attacco: incantesimo → magia; arco/balestra/fionda
+    // Suono coerente col tipo d'attacco: critico → critico; incantesimo → magia; arco/balestra/fionda
     // → colpo a distanza; tutto il resto (mischia) → colpo di spada.
-    const suonoDanno = attacco?.isSpell
-      ? 'magia'
-      : /arco|balestra|fionda/i.test(nome || '')
-        ? 'arco'
-        : 'arma';
+    const suonoDanno = critico
+      ? 'critico'
+      : attacco?.isSpell
+        ? 'magia'
+        : /arco|balestra|fionda/i.test(nome || '')
+          ? 'arco'
+          : 'arma';
     conAnimazione(() => {
-      setDanni({ etichetta: `Danni: ${nome}`, ...esito, critico });
-      registra({ etichetta: `${t('log.danni')}: ${nome}`, tipo: 'danni', totale: esito.totale, dettaglio: esito.dettaglio, critico });
+      setDanni({ etichetta: `${critico ? '⚔ Danni CRITICI' : 'Danni'}: ${nome}`, ...esito, critico });
+      registra({ etichetta: `${critico ? '⚔ CRITICO ' : ''}${t('log.danni')}: ${nome}`, tipo: 'danni', totale: esito.totale, dettaglio: esito.dettaglio, critico });
     }, esito.totale, maxFacce || 20, false, suonoDanno);
   }
 
   /** Danni dell'attacco corrente (dal tiro per colpire in corso). */
   function lanciaDanniAttacco() {
     if (!tiro?.attacco) return;
-    tiraDanniPerAttacco(tiro.attacco, tiro.naturale === 20);
+    tiraDanniPerAttacco(tiro.attacco, !!(tiro.critico || tiro.naturale >= 20));
+    setUltimoAttaccoCritico(null);
   }
 
   /** Scala di 1 la munizione adatta (se l'arma la usa e ne hai in inventario). */
@@ -5338,17 +5389,31 @@ export default function App() {
   const maxLivelloPreparabile = Math.max(0, ...Object.entries(scheda?.slotIncantesimo || {})
     .filter(([, slot]) => Number(slot?.totale) > 0)
     .map(([livello]) => Number(livello) || 0));
-  const chiaviIncantesimiSalvati = new Set(incLista
-    .filter((s) => s.livello >= 1)
-    .map((s) => `${s.livello}:${String(s.nome || '').toLocaleLowerCase('it')}`));
-  const incantesimiVisualizzati = classePreparata
-    ? [
-        ...incLista,
-        ...catalogoIncantesimiPreparabili(scheda?.classe)
-          .filter((s) => s.livello <= maxLivelloPreparabile && !chiaviIncantesimiSalvati.has(`${s.livello}:${s.nome.toLocaleLowerCase('it')}`))
-          .map((s) => ({ ...s, id: `catalogo-${s.livello}-${s.nome}`, catalogo: true, preparato: false })),
-      ]
-    : incLista;
+  const targetFiltroClasse = filtroClasseInc || (classePreparata ? (scheda?.classe || '') : '');
+  const catalogoMostrato = useMemo(() => {
+    const res = [];
+    const chiaviSalvate = new Set(incLista.map((s) => `${s.livello}:${String(s.nome || '').toLocaleLowerCase('it')}`));
+    for (const [nome, d] of Object.entries(INCANTESIMI_DB)) {
+      const liv = Number(d.livello) || 0;
+      if (chiaviSalvate.has(`${liv}:${nome.toLocaleLowerCase('it')}`)) continue;
+      if (targetFiltroClasse) {
+        if (!(d.classi || []).some((c) => c.toLowerCase() === targetFiltroClasse.toLowerCase())) continue;
+      }
+      res.push({
+        ...d,
+        nome,
+        id: `catalogo-${liv}-${nome}`,
+        catalogo: true,
+        preparato: false,
+      });
+    }
+    return res;
+  }, [incLista, targetFiltroClasse]);
+
+  const incantesimiVisualizzati = [
+    ...incLista,
+    ...catalogoMostrato,
+  ];
   const nPreparati = incLista.filter((s) => s.livello > 0 && !s.bonus && s.preparato !== false).length;
   // base = override manuale (>0) oppure automatico da classe/livello/versione
   const baseTrucchetti = (scheda?.maxTrucchetti > 0) ? scheda.maxTrucchetti : (scheda ? trucchettiMax(scheda.classe, scheda.livello, scheda.sottoclasse) : null);
@@ -6073,7 +6138,14 @@ export default function App() {
               <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
                 <button
                   style={{ ...styles.buttonDanger, flex: 1 }}
-                  onClick={() => { aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) }); setDettaglioInc(null); }}
+                  onClick={() => setConferma({
+                    titolo: t('spell.elimina_titolo') || 'Elimina incantesimo',
+                    testo: `Vuoi eliminare "${s.nome || 'questo incantesimo'}" dalla lista incantesimi?`,
+                    onConferma: () => {
+                      aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) });
+                      setDettaglioInc(null);
+                    },
+                  })}
                 >🗑 {t('modal.elimina')}</button>
                 <button style={{ ...styles.buttonPrimary, flex: 1 }} onClick={() => setDettaglioInc(null)}>Fatto</button>
               </div>
@@ -8609,140 +8681,151 @@ export default function App() {
               />
             );
             return (
-              <div className="selettore-personaggio-azioni" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
-                <div className="selettore-riga-1">
-                  {/* Gruppo 1 (4 tasti): Gestione PG (Nuovo PG, Modifica Nome, Level Up, Cestino) */}
-                  <button
-                    style={btnAzione}
-                    onClick={() => {
-                      setBozzaCrea({
-                        nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '',
-                        livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [],
-                        competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {},
-                        multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '',
-                        multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '',
-                        dotazione: 'pacchetto'
-                      });
-                      setMostraCrea(true);
-                    }}
-                    title={t('tip.nuovo_pg')}
-                  >
-                    ＋
-                  </button>
-                  <button
-                    style={btnAzione}
-                    onClick={() => setRinominando(!rinominando)}
-                    title={t('tip.rinomina')}
-                  >
-                    ✎
-                  </button>
-                  <button
-                    style={btnAzione}
-                    title={t('tip.levelup')}
-                    onClick={() => {
-                      const dvMatch = String(scheda.dadiVita || '').match(/d(\d+)/i);
-                      const facceDV = dvMatch ? parseInt(dvMatch[1]) : 8;
-                      const modCos = modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10) || 0;
-                      const avgHpGain = Math.floor(facceDV / 2) + 1 + modCos;
-                      setLevelUpBozza({
-                        metodo: 'media', hpGainMedia: Math.max(1, avgHpGain), facceDV, modCos, tiroFatto: 0,
-                        asiMode: 'aumento', asiA: '', asiB: '', talento: '',
-                        sottoclasse: scheda.sottoclasse || '',
-                      });
-                      setMostraLevelUp(true);
-                    }}
-                  >
-                    🆙
-                  </button>
-                  <button
-                    style={btnAzione}
-                    onClick={eliminaPersonaggio}
-                    title={t('tip.elimina_pg')}
-                  >
-                    🗑
-                  </button>
-
-                  {/* Separatore dopo PG */}
-                  {separatore}
-
-                  {/* Gruppo 2 (6 tasti): File & Cloud + Notifiche & Lingua */}
-                  <button style={btnAzione} title={t('tip.menu_iniziale')} onClick={() => setMostraMenu(true)}>
-                    🏠
-                  </button>
-                  <button style={btnAzione} title="Importa JSON, PDF o immagini" onClick={() => jsonRef.current?.click()}>
-                    ⬇️
-                  </button>
-                  <button
-                    ref={esportaBtnRef}
-                    style={{ ...btnAzione, ...(mostraMenuEsporta ? { borderColor: C.goldDark, color: C.goldDark } : {}) }}
-                    title={t('tip.esporta')}
-                    onClick={() => {
-                      if (!mostraMenuEsporta) {
-                        const r = esportaBtnRef.current?.getBoundingClientRect();
-                        if (r) setPosEsporta({
-                          top: Math.max(8, Math.min(window.innerHeight - 200, r.bottom + 5)),
-                          left: Math.max(8, Math.min(window.innerWidth - 240, r.left)),
+              <div className="selettore-personaggio-azioni" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: 12 }}>
+                {/* Blocco 1 (Sinistra): GESTIONE SCHEDA */}
+                <div className="selettore-blocco-1" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, marginRight: 'auto' }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.8, color: C.goldDark, textTransform: 'uppercase', userSelect: 'none' }}>
+                    {t('nav.gestione_scheda')}
+                  </span>
+                  <div className="selettore-riga-1" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <button
+                      style={btnAzione}
+                      onClick={() => {
+                        setBozzaCrea({
+                          nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '',
+                          livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [],
+                          competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {},
+                          multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '',
+                          multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '',
+                          dotazione: 'pacchetto'
                         });
-                      }
-                      setMostraMenuEsporta((v) => !v);
-                    }}
-                  >
-                    ⬆️
-                  </button>
-                  <button
-                    style={{ ...btnAzione, color: C.goldDark, borderColor: C.goldDark }}
-                    title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato') : 'Sincronizza sul Cloud'}
-                    onClick={() => { setCloudStatus({ text: '', type: '' }); setSyncCodiceStatus({ text: '', type: '' }); setMostraCloud(true); }}
-                  >
-                    ☁️
-                    {sincronizzando ? (
-                      <span style={{ fontSize: 11, marginLeft: 2 }}>🔄</span>
-                    ) : (githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice) ? (
-                      <span style={{ color: '#2e9d4d', fontWeight: 900, marginLeft: 2, fontSize: 13 }}>✓</span>
-                    ) : (
-                      <span style={{ color: '#c0392b', fontSize: 13, marginLeft: 2, fontWeight: 900 }}>!</span>
-                    )}
-                  </button>
-                  <button
-                    ref={notificheBtnRef}
-                    className={daNotificare ? 'btn-notifiche-lampeggia' : ''}
-                    style={{
-                      ...btnAzione,
-                      position: 'relative',
-                      ...(daNotificare ? { color: C.goldDark, borderColor: C.goldDark } : {}),
-                    }}
-                    title={daNotificare ? (controlliAttivi.length > 0 ? `${controlliAttivi.length} avvisi sulla scheda` : t('notifiche.novita_presenti')) : t('notifiche.titolo')}
-                    onClick={apriNotifiche}
-                  >
-                    🔔
-                    {daNotificare && (
-                      <span className="avvisi-pallino" aria-label={`${nAvvisi} notifiche`}>
-                        {controlliAttivi.length > 0 ? controlliAttivi.length : '!'}
-                      </span>
-                    )}
-                  </button>
-                  <button
-                    style={btnAzione}
-                    title={lingua === 'it' ? 'Cambia in inglese' : 'Switch to Italian'}
-                    onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
-                  >
-                    {lingua === 'it' ? '🇮🇹' : '🇬🇧'}
-                  </button>
+                        setMostraCrea(true);
+                      }}
+                      title={t('tip.nuovo_pg')}
+                    >
+                      ＋
+                    </button>
+                    <button
+                      style={btnAzione}
+                      onClick={() => setRinominando(!rinominando)}
+                      title={t('tip.rinomina')}
+                    >
+                      ✎
+                    </button>
+                    <button
+                      style={btnAzione}
+                      title={t('tip.levelup')}
+                      onClick={() => {
+                        const dvMatch = String(scheda.dadiVita || '').match(/d(\d+)/i);
+                        const facceDV = dvMatch ? parseInt(dvMatch[1]) : 8;
+                        const modCos = modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10) || 0;
+                        const avgHpGain = Math.floor(facceDV / 2) + 1 + modCos;
+                        setLevelUpBozza({
+                          metodo: 'media', hpGainMedia: Math.max(1, avgHpGain), facceDV, modCos, tiroFatto: 0,
+                          asiMode: 'aumento', asiA: '', asiB: '', talento: '',
+                          sottoclasse: scheda.sottoclasse || '',
+                        });
+                        setMostraLevelUp(true);
+                      }}
+                    >
+                      🆙
+                    </button>
+                    <button
+                      style={btnAzione}
+                      onClick={eliminaPersonaggio}
+                      title={t('tip.elimina_pg')}
+                    >
+                      🗑
+                    </button>
+                  </div>
                 </div>
 
-                {/* Separatore dopo le lingue */}
-                {separatore}
+                {/* Blocco 2 (Centro): SISTEMA */}
+                <div className="selettore-blocco-2" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, margin: '0 auto' }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.8, color: C.goldDark, textTransform: 'uppercase', userSelect: 'none' }}>
+                    {t('nav.sistema')}
+                  </span>
+                  <div className="selettore-riga-2" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <button style={btnAzione} title={t('tip.menu_iniziale')} onClick={() => setMostraMenu(true)}>
+                      🏠
+                    </button>
+                    <button style={btnAzione} title="Importa JSON, PDF o immagini" onClick={() => jsonRef.current?.click()}>
+                      ⬇️
+                    </button>
+                    <button
+                      ref={esportaBtnRef}
+                      style={{ ...btnAzione, ...(mostraMenuEsporta ? { borderColor: C.goldDark, color: C.goldDark } : {}) }}
+                      title={t('tip.esporta')}
+                      onClick={() => {
+                        if (!mostraMenuEsporta) {
+                          const r = esportaBtnRef.current?.getBoundingClientRect();
+                          if (r) setPosEsporta({
+                            top: Math.max(8, Math.min(window.innerHeight - 200, r.bottom + 5)),
+                            left: Math.max(8, Math.min(window.innerWidth - 240, r.left)),
+                          });
+                        }
+                        setMostraMenuEsporta((v) => !v);
+                      }}
+                    >
+                      ⬆️
+                    </button>
+                    <button
+                      style={{ ...btnAzione, color: C.goldDark, borderColor: C.goldDark }}
+                      title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato') : 'Sincronizza sul Cloud'}
+                      onClick={() => { setCloudStatus({ text: '', type: '' }); setSyncCodiceStatus({ text: '', type: '' }); setMostraCloud(true); }}
+                    >
+                      ☁️
+                      {sincronizzando ? (
+                        <span style={{ fontSize: 11, marginLeft: 2 }}>🔄</span>
+                      ) : (githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice) ? (
+                        <span style={{ color: '#2e9d4d', fontWeight: 900, marginLeft: 2, fontSize: 13 }}>✓</span>
+                      ) : (
+                        <span style={{ color: '#c0392b', fontSize: 13, marginLeft: 2, fontWeight: 900 }}>!</span>
+                      )}
+                    </button>
+                    <button
+                      ref={notificheBtnRef}
+                      className={daNotificare ? 'btn-notifiche-lampeggia' : ''}
+                      style={{
+                        ...btnAzione,
+                        position: 'relative',
+                        ...(daNotificare ? { color: C.goldDark, borderColor: C.goldDark } : {}),
+                      }}
+                      title={daNotificare ? (controlliAttivi.length > 0 ? `${controlliAttivi.length} avvisi sulla scheda` : t('notifiche.novita_presenti')) : t('notifiche.titolo')}
+                      onClick={apriNotifiche}
+                    >
+                      🔔
+                      {daNotificare && (
+                        <span className="avvisi-pallino" aria-label={`${nAvvisi} notifiche`}>
+                          {controlliAttivi.length > 0 ? controlliAttivi.length : '!'}
+                        </span>
+                      )}
+                    </button>
+                    <button
+                      style={btnAzione}
+                      title={lingua === 'it' ? 'Cambia in inglese' : 'Switch to Italian'}
+                      onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
+                    >
+                      {lingua === 'it' ? '🇮🇹' : '🇬🇧'}
+                    </button>
+                  </div>
+                </div>
 
-                <div className="selettore-riga-2">
-                  {/* Gruppo 3 (4 tasti): Audio, Tema, Mappa, Combattimento (senza divisori interni) */}
-                  <button ref={ambientazioneBtnRef} style={btnAzione} title={t('luogo.tooltip')} onClick={() => { sbloccaAudio(); if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
-                  <button style={btnAzione} title={t('tooltip.tema')} onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}>{tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'}</button>
-                  <button style={btnAzione} onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())} title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}>🗺️</button>
-                  <button style={btnAzione} onClick={() => {
-                    if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
-                    else if (combat.combattenti.length) setCombat((c) => ({ ...c, attivo: true, aperto: true }));
-                    else aggiungiPgAlCombat();
-                  }} title={(combat.attivo && combat.aperto ? t('ct.minimizza') : t('ct.apri')) + (combat.combattenti.length ? ` (${combat.combattenti.length})` : '')}>⚔️</button>
+                {/* Blocco 3 (Destra): SESSIONE */}
+                <div className="selettore-blocco-3" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, marginLeft: 'auto' }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.8, color: C.goldDark, textTransform: 'uppercase', userSelect: 'none' }}>
+                    {t('nav.sessione')}
+                  </span>
+                  <div className="selettore-riga-3" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <button ref={ambientazioneBtnRef} style={btnAzione} title={t('luogo.tooltip')} onClick={() => { if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
+                    <button style={btnAzione} title={t('tooltip.tema')} onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}>{tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'}</button>
+                    <button style={btnAzione} onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())} title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}>🗺️</button>
+                    <button style={btnAzione} onClick={() => {
+                      if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
+                      else if (combat.combattenti.length) setCombat((c) => ({ ...c, attivo: true, aperto: true }));
+                      else aggiungiPgAlCombat();
+                    }} title={(combat.attivo && combat.aperto ? t('ct.minimizza') : t('ct.apri')) + (combat.combattenti.length ? ` (${combat.combattenti.length})` : '')}>⚔️</button>
+                  </div>
                 </div>
               </div>
             );
@@ -8993,7 +9076,11 @@ export default function App() {
                             <button
                               style={{ ...styles.buttonMini, padding: '0 6px', color: C.red, flexShrink: 0 }}
                               title={t('tip.rimuovi_risorsa')}
-                              onClick={() => aggiorna({ risorse: scheda.risorse.filter((x) => x.id !== r.id) })}
+                              onClick={() => setConferma({
+                                titolo: 'Elimina risorsa',
+                                testo: `Vuoi eliminare la risorsa "${r.nome || 'questa risorsa'}"?`,
+                                onConferma: () => aggiorna({ risorse: scheda.risorse.filter((x) => x.id !== r.id) }),
+                              })}
                             >✕</button>
                           )}
                         </div>
@@ -9104,7 +9191,7 @@ export default function App() {
 
                 <div className="profilo-anagrafica-campi" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {/* Riga 1: Sesso, Specie/Razza, Taglia, Allineamento */}
-                  <div className="campi-anagrafica campi-anagrafica-riga1" style={{ display: 'grid', gridTemplateColumns: '0.85fr 1.25fr 1.35fr 0.95fr', gap: '6px 10px', alignItems: 'end' }}>
+                  <div className="campi-anagrafica campi-anagrafica-riga1" style={{ display: 'grid', gridTemplateColumns: '0.7fr 1.05fr 1.6fr 1.15fr', gap: '6px 10px', alignItems: 'end' }}>
                     <CampoModulo label={t("profilo.sesso")}>
                       <select
                         value={scheda.sesso || ''}
@@ -9130,7 +9217,7 @@ export default function App() {
                   </div>
 
                   {/* Riga 2: Background, Classe, Sottoclasse, P.E. (allineata a colonna 1-to-1 con Riga 1) */}
-                  <div className="campi-anagrafica campi-anagrafica-riga2" style={{ display: 'grid', gridTemplateColumns: '0.85fr 1.25fr 1.35fr 0.95fr', gap: '6px 10px', alignItems: 'end' }}>
+                  <div className="campi-anagrafica campi-anagrafica-riga2" style={{ display: 'grid', gridTemplateColumns: '0.7fr 1.05fr 1.6fr 1.15fr', gap: '6px 10px', alignItems: 'end' }}>
                     <CampoModulo label={t("profilo.background")}>
                       <CampoBloccato
                         valore={traduciDato(scheda.background) || t('profilo.nessuno')}
@@ -9286,7 +9373,11 @@ export default function App() {
                       <button
                         style={{ ...styles.buttonMini, color: C.red, height: 26, marginBottom: 4 }}
                         title={t('modal.elimina')}
-                        onClick={() => setMc(mc.filter((_, j) => j !== i))}
+                        onClick={() => setConferma({
+                          titolo: 'Elimina classe secondaria',
+                          testo: `Vuoi rimuovere ${m.classe || 'questa classe'} dal multiclasse?`,
+                          onConferma: () => setMc(mc.filter((_, j) => j !== i)),
+                        })}
                       >
                         🗑
                       </button>
@@ -9374,16 +9465,40 @@ export default function App() {
                     </div>
 
                     {/* Pulsanti Rapidi Danno / Cura */}
-                    <div style={{ display: 'flex', gap: 3, margin: '2px 0', justifyContent: 'center', flexWrap: 'wrap' }}>
-                      <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 20) }); }} title={t('vital.danno')}>-20</button>
-                      <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 10) }); }} title={t('vital.danno')}>-10</button>
-                      <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 5) }); }} title={t('vital.danno')}>-5</button>
-                      <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio); aggiorna({ pfAttuali: Math.max(0, scheda.pfAttuali - 1) }); }} title={t('vital.danno')}>-1</button>
-                      <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 1) }); }} title={t('vital.cura')}>+1</button>
-                      <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 5) }); }} title={t('vital.cura')}>+5</button>
-                      <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 10) }); }} title={t('vital.cura')}>+10</button>
-                      <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, scheda.pfAttuali + 20) }); }} title={t('vital.cura')}>+20</button>
-                    </div>
+                    {(() => {
+                      const applicaDannoRapido = (quantita) => {
+                        if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio);
+                        const temp = Number(scheda.pfTemp) || 0;
+                        const att = Number(scheda.pfAttuali) || 0;
+                        let patch = {};
+                        if (temp > 0) {
+                          if (quantita <= temp) {
+                            patch = { pfTemp: temp - quantita };
+                          } else {
+                            const rim = quantita - temp;
+                            patch = { pfTemp: 0, pfAttuali: Math.max(0, att - rim) };
+                          }
+                        } else {
+                          patch = { pfAttuali: Math.max(0, att - quantita) };
+                        }
+                        aggiorna(patch);
+                        if (scheda.concentrazione) {
+                          setCheckConc({ danno: quantita, cd: Math.max(10, Math.floor(quantita / 2)), spell: scheda.concentrazione, esito: null });
+                        }
+                      };
+                      return (
+                        <div style={{ display: 'flex', gap: 3, margin: '2px 0', justifyContent: 'center', flexWrap: 'wrap' }}>
+                          <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => applicaDannoRapido(20)} title={t('vital.danno')}>-20</button>
+                          <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => applicaDannoRapido(10)} title={t('vital.danno')}>-10</button>
+                          <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => applicaDannoRapido(5)} title={t('vital.danno')}>-5</button>
+                          <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => applicaDannoRapido(1)} title={t('vital.danno')}>-1</button>
+                          <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, (Number(scheda.pfAttuali) || 0) + 1) }); }} title={t('vital.cura')}>+1</button>
+                          <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, (Number(scheda.pfAttuali) || 0) + 5) }); }} title={t('vital.cura')}>+5</button>
+                          <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, (Number(scheda.pfAttuali) || 0) + 10) }); }} title={t('vital.cura')}>+10</button>
+                          <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 5px', fontWeight: 'bold', fontSize: 10.5 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, (Number(scheda.pfAttuali) || 0) + 20) }); }} title={t('vital.cura')}>+20</button>
+                        </div>
+                      );
+                    })()}
 
                     {/* Dadi Vita */}
                     {(() => {
@@ -9960,7 +10075,14 @@ export default function App() {
           <div style={{ display: 'contents' }}>
             {/* Armi e attacchi — sezione collassabile */}
             <Sezione titolo={t("sez.combattimento")} {...propsSez('attacchi')} {...apertoProps('attacchi')}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8, gap: 8, flexWrap: 'wrap' }}>
+                <button
+                  style={{ ...styles.buttonMini, fontSize: 11, padding: '3px 8px', color: scheda.mostraArmiAttacco !== false ? C.accentDark : C.inkDim, border: `1px solid ${scheda.mostraArmiAttacco !== false ? C.accentDark : C.border}` }}
+                  onClick={() => aggiorna({ mostraArmiAttacco: scheda.mostraArmiAttacco === false })}
+                  title={t('attacchi.armi_tip')}
+                >
+                  {t('attacchi.armi')}: {scheda.mostraArmiAttacco !== false ? 'ON' : 'OFF'}
+                </button>
                 <button
                   style={{ ...styles.buttonMini, fontSize: 11, padding: '3px 8px', color: scheda.mostraIncantesimiAttacco !== false ? C.accentDark : C.inkDim, border: `1px solid ${scheda.mostraIncantesimiAttacco !== false ? C.accentDark : C.border}` }}
                   onClick={() => aggiorna({ mostraIncantesimiAttacco: scheda.mostraIncantesimiAttacco === false })}
@@ -10009,7 +10131,8 @@ export default function App() {
                       note
                     };
                   });
-                  const listaAttacchiCompleta = [...(scheda.attacchi || []), ...attacchiSpettro];
+                  const attacchiFisici = (scheda.attacchi || []).filter(() => scheda.mostraArmiAttacco !== false);
+                  const listaAttacchiCompleta = [...attacchiFisici, ...attacchiSpettro];
                   // Per lanciare incantesimi in combattimento serve un focus (o
                   // borsa da componenti / simbolo sacro) EQUIPAGGIATO nell'inventario.
                   const haFocus = (scheda.inventario || []).some((o) => o.equip && /focus|simbolo sacro|borsa (da )?componenti|bacchetta|cristallo|totem|bastone runico|feticcio/i.test(o.nome || ''));
@@ -10058,6 +10181,8 @@ export default function App() {
                               const dannoValido = a.danno.trim() === '' || parseEspressioneDado(a.danno);
                               // Incantesimo senza focus equipaggiato: tiri disabilitati.
                               const castBloccato = a.isSpell && bloccaSpell;
+                              const isUltimoCrit = (tiro?.attacco && (tiro.attacco.id === a.id || tiro.attacco.nome === a.nome) && (tiro.critico || tiro.naturale >= 20))
+                                || (ultimoAttaccoCritico && (ultimoAttaccoCritico.id === a.id || ultimoAttaccoCritico.nome === a.nome));
                               return (
                                 <tr key={a.id} className="attacchi-riga">
                                   <td style={styles.td} className="attacchi-nome">
@@ -10149,20 +10274,29 @@ export default function App() {
                                     )}
                                   </td>
                                   <td style={{ ...styles.td, color: dannoValido ? undefined : C.red }} className="attacchi-danno" data-label={t('combat.col_danno')}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
-                                      {parseEspressioneDado(a.danno) && (
-                                        <button
-                                          style={{ ...styles.buttonMini, padding: '1px 6px', opacity: castBloccato ? 0.4 : 1, cursor: castBloccato ? 'not-allowed' : 'pointer' }}
-                                          title={castBloccato ? 'Equipaggia un focus per lanciare questo incantesimo' : `Tira i danni (${a.danno})`}
-                                          disabled={castBloccato}
-                                          onClick={() => { if (!castBloccato) tiraDanniPerAttacco(a, false); }}
-                                        >🎲</button>
-                                      )}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                      <button
+                                        style={{ ...styles.buttonMini, padding: '1px 6px', opacity: castBloccato ? 0.4 : 1, cursor: castBloccato ? 'not-allowed' : 'pointer', ...(isUltimoCrit ? { background: C.goldDark, color: '#fff', borderColor: C.goldDark, fontWeight: 700 } : {}) }}
+                                        title={castBloccato ? 'Equipaggia un focus per lanciare questo incantesimo' : isUltimoCrit ? `⚔️ Tira i danni CRITICI raddoppiati (${a.danno} ×2)` : `Tira i danni (${a.danno})`}
+                                        disabled={castBloccato}
+                                        onClick={() => {
+                                          if (!castBloccato) {
+                                            tiraDanniPerAttacco(a, !!isUltimoCrit);
+                                            setUltimoAttaccoCritico(null);
+                                          }
+                                        }}
+                                      >
+                                        {isUltimoCrit ? '⚔️' : '🎲'}
+                                      </button>
                                       <Editable
                                         value={a.danno}
                                         width={65}
                                         onChange={(v) => aggiornaAttacco({ danno: v })}
-                                        title={t('tip.click_mod_danni')}
+                                        onRoll={castBloccato ? undefined : () => {
+                                          tiraDanniPerAttacco(a, !!isUltimoCrit);
+                                          setUltimoAttaccoCritico(null);
+                                        }}
+                                        title={isUltimoCrit ? `⚔️ Critico attivo: doppio click per tirare i danni CRITICI (${a.danno} ×2)` : t('tip.click_mod_danni')}
                                       />
                                       <Editable value={a.tipoDanno} width={75} onChange={(v) => aggiornaAttacco({ tipoDanno: v })} />
                                     </div>
@@ -10175,17 +10309,23 @@ export default function App() {
                                       style={styles.buttonDanger}
                                       title={a.isSpell ? "Nascondi questo incantesimo dalla sezione Armi e attacchi" : "Elimina attacco"}
                                       onClick={() => {
-                                        if (a.isSpell) {
-                                          aggiorna({
-                                            incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === a.idIncantesimo ? { ...x, nascondiAttacco: true } : x))
-                                          });
-                                        } else {
-                                          const inv = scheda.inventario || [];
-                                          aggiorna({
-                                            attacchi: scheda.attacchi.filter((x) => x.id !== a.id),
-                                            inventario: inv.map((x) => (x.nome === a.nome ? { ...x, equip: false } : x))
-                                          });
-                                        }
+                                        setConferma({
+                                          titolo: a.isSpell ? 'Nascondi attacco' : 'Elimina attacco',
+                                          testo: a.isSpell ? `Nascondere "${a.nome}" dalla lista attacchi?` : `Vuoi eliminare l'attacco "${a.nome}"?`,
+                                          onConferma: () => {
+                                            if (a.isSpell) {
+                                              aggiorna({
+                                                incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === a.idIncantesimo ? { ...x, nascondiAttacco: true } : x))
+                                              });
+                                            } else {
+                                              const inv = scheda.inventario || [];
+                                              aggiorna({
+                                                attacchi: scheda.attacchi.filter((x) => x.id !== a.id),
+                                                inventario: inv.map((x) => (x.nome === a.nome ? { ...x, equip: false } : x))
+                                              });
+                                            }
+                                          }
+                                        });
                                       }}
                                     >
                                       ×
@@ -10252,11 +10392,6 @@ export default function App() {
                     );
                   })];
                 })()}
-              </div>
-              <div style={{ marginTop: 4, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                <span style={styles.detail}>
-                  {t('combat.hint')}
-                </span>
               </div>
             </Sezione>
 
@@ -10347,38 +10482,9 @@ export default function App() {
                 })()}
               </div>
 
-              {/* Conteggi (compatti) + ricerca + collasso livelli */}
+              {/* Ricerca + filtri incantesimi */}
               <div style={{ marginTop: 14, marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-                  <span style={{ ...styles.detail, fontSize: 11, opacity: 0.75 }}>{t('spell.tocca_nome')}</span>
-                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const allClosed = Array.from({ length: 10 }, (_, i) => i).every((l) => livelliIncChiusi[l]);
-                        if (allClosed) setLivelliIncChiusi({});
-                        else {
-                          const obj = {};
-                          for (let i = 0; i <= 9; i++) obj[i] = true;
-                          setLivelliIncChiusi(obj);
-                        }
-                      }}
-                      title={t('spell.toggle_livelli_tip')}
-                      style={{ ...styles.buttonMini, padding: '2px 8px', fontSize: 11 }}
-                    >
-                      {Array.from({ length: 10 }, (_, i) => i).every((l) => livelliIncChiusi[l]) ? t('spell.espandi_tutti_livelli') : t('spell.riduci_tutti_livelli')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setListaMagicaMinimizzata((v) => !v)}
-                      title={listaMagicaMinimizzata ? t('spell.espandi_lista_tip') : t('spell.minimizza_lista_tip')}
-                      style={{ ...styles.buttonMini, padding: '2px 8px', fontSize: 11 }}
-                    >
-                      {listaMagicaMinimizzata ? `▸ ${t('spell.espandi_lista')}` : `▾ ${t('spell.minimizza_lista')}`}
-                    </button>
-                  </div>
-                </div>
-                <div className="spell-filters" style={{ display: 'grid', gridTemplateColumns: 'minmax(150px, 2fr) repeat(3, minmax(105px, 1fr)) auto', gap: 6, alignItems: 'center' }}>
+                <div className="spell-filters" style={{ display: 'grid', gridTemplateColumns: 'minmax(150px, 2fr) repeat(3, minmax(105px, 1fr))', gap: 6, alignItems: 'center' }}>
                   <input
                     value={filtroIncantesimo}
                     onChange={(e) => setFiltroIncantesimo(e.target.value)}
@@ -10397,142 +10503,168 @@ export default function App() {
                   </select>
                   <select value={filtroClasseInc} onChange={(e) => setFiltroClasseInc(e.target.value)} style={{ ...styles.inlineInput, padding: '6px 7px' }} aria-label={t('spell.filtro_classe')}>
                     <option value="">{t('spell.tutte_classi')}</option>
-                    {[...new Set(incantesimiVisualizzati.flatMap((s) => s.classi || datiIncantesimo(s.nome)?.classi || []))].sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((classe) => <option key={classe} value={classe}>{traduciDato(classe)}</option>)}
+                    {['Bardo', 'Chierico', 'Druido', 'Mago', 'Paladino', 'Ranger', 'Stregone', 'Warlock', 'Artefice'].map((classe) => <option key={classe} value={classe}>{traduciDato(classe)}</option>)}
                   </select>
-                  {filtroIncantesimo && (
-                    <button type="button" onClick={() => setFiltroIncantesimo('')} style={{ ...styles.buttonMini, padding: '6px 8px' }}>✕</button>
-                  )}
                 </div>
 
-                {/* Barra Filtri Rapidi di Combattimento (Pills) */}
-                <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center', marginTop: 2 }}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSoloPreparatiInc(false);
-                      setSoloConcInc(false);
-                      setSoloRitualiInc(false);
-                      setFiltroTempoInc('');
-                      setFiltroLivelloInc('');
-                      setFiltroScuolaInc('');
-                      setFiltroClasseInc('');
-                      setFiltroIncantesimo('');
-                    }}
-                    style={{
-                      ...styles.buttonMini,
-                      fontSize: 11,
-                      padding: '3px 8px',
-                      borderRadius: 14,
-                      borderColor: (!filtroIncantesimo && !filtroLivelloInc && !filtroScuolaInc && !filtroClasseInc && !soloRitualiInc && !soloPreparatiInc && !soloConcInc && !filtroTempoInc) ? C.goldDark : C.border,
-                      background: (!filtroIncantesimo && !filtroLivelloInc && !filtroScuolaInc && !filtroClasseInc && !soloRitualiInc && !soloPreparatiInc && !soloConcInc && !filtroTempoInc) ? 'rgba(200,140,20,0.18)' : 'transparent',
-                      color: (!filtroIncantesimo && !filtroLivelloInc && !filtroScuolaInc && !filtroClasseInc && !soloRitualiInc && !soloPreparatiInc && !soloConcInc && !filtroTempoInc) ? C.goldDark : C.inkDim,
-                      fontWeight: (!filtroIncantesimo && !filtroLivelloInc && !filtroScuolaInc && !filtroClasseInc && !soloRitualiInc && !soloPreparatiInc && !soloConcInc && !filtroTempoInc) ? 700 : 500,
-                    }}
-                  >
-                    🎯 {lingua === 'en' ? 'All' : 'Tutti'}
-                  </button>
+                {/* Barra Filtri Rapidi di Combattimento (Pills a sinistra) + Tasti Azioni Vista (a destra sotto le classi) */}
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSoloPreparatiInc(false);
+                        setSoloConcInc(false);
+                        setSoloRitualiInc(false);
+                        setFiltroTempoInc('');
+                        setFiltroLivelloInc('');
+                        setFiltroScuolaInc('');
+                        setFiltroClasseInc(scheda.classe || '');
+                        setFiltroIncantesimo('');
+                      }}
+                      style={{
+                        ...styles.buttonMini,
+                        fontSize: 12,
+                        padding: '5px 12px',
+                        borderRadius: 16,
+                        borderColor: (!filtroIncantesimo && !filtroLivelloInc && !filtroScuolaInc && (filtroClasseInc === (scheda.classe || '')) && !soloRitualiInc && !soloPreparatiInc && !soloConcInc && !filtroTempoInc) ? C.goldDark : C.border,
+                        background: (!filtroIncantesimo && !filtroLivelloInc && !filtroScuolaInc && (filtroClasseInc === (scheda.classe || '')) && !soloRitualiInc && !soloPreparatiInc && !soloConcInc && !filtroTempoInc) ? 'rgba(200,140,20,0.18)' : 'transparent',
+                        color: (!filtroIncantesimo && !filtroLivelloInc && !filtroScuolaInc && (filtroClasseInc === (scheda.classe || '')) && !soloRitualiInc && !soloPreparatiInc && !soloConcInc && !filtroTempoInc) ? C.goldDark : C.inkDim,
+                        fontWeight: (!filtroIncantesimo && !filtroLivelloInc && !filtroScuolaInc && (filtroClasseInc === (scheda.classe || '')) && !soloRitualiInc && !soloPreparatiInc && !soloConcInc && !filtroTempoInc) ? 700 : 500,
+                      }}
+                    >
+                      🎯 {lingua === 'en' ? 'All' : 'Tutti'}
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setSoloPreparatiInc((v) => !v)}
-                    style={{
-                      ...styles.buttonMini,
-                      fontSize: 11,
-                      padding: '3px 8px',
-                      borderRadius: 14,
-                      borderColor: soloPreparatiInc ? C.goldDark : C.border,
-                      background: soloPreparatiInc ? 'rgba(200,140,20,0.22)' : 'transparent',
-                      color: soloPreparatiInc ? C.goldDark : C.ink,
-                      fontWeight: soloPreparatiInc ? 700 : 500,
-                    }}
-                  >
-                    ⭐ {lingua === 'en' ? 'Prepared only' : 'Solo Preparati'}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setSoloPreparatiInc((v) => !v)}
+                      style={{
+                        ...styles.buttonMini,
+                        fontSize: 12,
+                        padding: '5px 12px',
+                        borderRadius: 16,
+                        borderColor: soloPreparatiInc ? C.goldDark : C.border,
+                        background: soloPreparatiInc ? 'rgba(200,140,20,0.22)' : 'transparent',
+                        color: soloPreparatiInc ? C.goldDark : C.ink,
+                        fontWeight: soloPreparatiInc ? 700 : 500,
+                      }}
+                    >
+                      ⭐ {lingua === 'en' ? 'Prepared only' : 'Solo Preparati'}
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setFiltroTempoInc((v) => (v === 'azione' ? '' : 'azione'))}
-                    style={{
-                      ...styles.buttonMini,
-                      fontSize: 11,
-                      padding: '3px 8px',
-                      borderRadius: 14,
-                      borderColor: filtroTempoInc === 'azione' ? '#2e9d4d' : C.border,
-                      background: filtroTempoInc === 'azione' ? 'rgba(46,157,77,0.2)' : 'transparent',
-                      color: filtroTempoInc === 'azione' ? '#2e9d4d' : C.ink,
-                      fontWeight: filtroTempoInc === 'azione' ? 700 : 500,
-                    }}
-                  >
-                    ⚡ {lingua === 'en' ? 'Action' : 'Azione'}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setFiltroTempoInc((v) => (v === 'azione' ? '' : 'azione'))}
+                      style={{
+                        ...styles.buttonMini,
+                        fontSize: 12,
+                        padding: '5px 12px',
+                        borderRadius: 16,
+                        borderColor: filtroTempoInc === 'azione' ? '#2e9d4d' : C.border,
+                        background: filtroTempoInc === 'azione' ? 'rgba(46,157,77,0.2)' : 'transparent',
+                        color: filtroTempoInc === 'azione' ? '#2e9d4d' : C.ink,
+                        fontWeight: filtroTempoInc === 'azione' ? 700 : 500,
+                      }}
+                    >
+                      ⚡ {lingua === 'en' ? 'Action' : 'Azione'}
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setFiltroTempoInc((v) => (v === 'bonus' ? '' : 'bonus'))}
-                    style={{
-                      ...styles.buttonMini,
-                      fontSize: 11,
-                      padding: '3px 8px',
-                      borderRadius: 14,
-                      borderColor: filtroTempoInc === 'bonus' ? '#d48806' : C.border,
-                      background: filtroTempoInc === 'bonus' ? 'rgba(212,136,6,0.2)' : 'transparent',
-                      color: filtroTempoInc === 'bonus' ? '#d48806' : C.ink,
-                      fontWeight: filtroTempoInc === 'bonus' ? 700 : 500,
-                    }}
-                  >
-                    ⏳ {lingua === 'en' ? 'Bonus Action' : 'Azione Bonus'}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setFiltroTempoInc((v) => (v === 'bonus' ? '' : 'bonus'))}
+                      style={{
+                        ...styles.buttonMini,
+                        fontSize: 12,
+                        padding: '5px 12px',
+                        borderRadius: 16,
+                        borderColor: filtroTempoInc === 'bonus' ? '#d48806' : C.border,
+                        background: filtroTempoInc === 'bonus' ? 'rgba(212,136,6,0.2)' : 'transparent',
+                        color: filtroTempoInc === 'bonus' ? '#d48806' : C.ink,
+                        fontWeight: filtroTempoInc === 'bonus' ? 700 : 500,
+                      }}
+                    >
+                      ⏳ {lingua === 'en' ? 'Bonus Action' : 'Azione Bonus'}
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setFiltroTempoInc((v) => (v === 'reazione' ? '' : 'reazione'))}
-                    style={{
-                      ...styles.buttonMini,
-                      fontSize: 11,
-                      padding: '3px 8px',
-                      borderRadius: 14,
-                      borderColor: filtroTempoInc === 'reazione' ? '#1890ff' : C.border,
-                      background: filtroTempoInc === 'reazione' ? 'rgba(24,144,255,0.2)' : 'transparent',
-                      color: filtroTempoInc === 'reazione' ? '#1890ff' : C.ink,
-                      fontWeight: filtroTempoInc === 'reazione' ? 700 : 500,
-                    }}
-                  >
-                    🛡️ {lingua === 'en' ? 'Reaction' : 'Reazione'}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setFiltroTempoInc((v) => (v === 'reazione' ? '' : 'reazione'))}
+                      style={{
+                        ...styles.buttonMini,
+                        fontSize: 12,
+                        padding: '5px 12px',
+                        borderRadius: 16,
+                        borderColor: filtroTempoInc === 'reazione' ? '#1890ff' : C.border,
+                        background: filtroTempoInc === 'reazione' ? 'rgba(24,144,255,0.2)' : 'transparent',
+                        color: filtroTempoInc === 'reazione' ? '#1890ff' : C.ink,
+                        fontWeight: filtroTempoInc === 'reazione' ? 700 : 500,
+                      }}
+                    >
+                      🛡️ {lingua === 'en' ? 'Reaction' : 'Reazione'}
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setSoloConcInc((v) => !v)}
-                    style={{
-                      ...styles.buttonMini,
-                      fontSize: 11,
-                      padding: '3px 8px',
-                      borderRadius: 14,
-                      borderColor: soloConcInc ? '#9e4be6' : C.border,
-                      background: soloConcInc ? 'rgba(158,75,230,0.2)' : 'transparent',
-                      color: soloConcInc ? '#9e4be6' : C.ink,
-                      fontWeight: soloConcInc ? 700 : 500,
-                    }}
-                  >
-                    🧠 {lingua === 'en' ? 'Concentration' : 'Concentrazione'}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setSoloConcInc((v) => !v)}
+                      style={{
+                        ...styles.buttonMini,
+                        fontSize: 12,
+                        padding: '5px 12px',
+                        borderRadius: 16,
+                        borderColor: soloConcInc ? '#9e4be6' : C.border,
+                        background: soloConcInc ? 'rgba(158,75,230,0.2)' : 'transparent',
+                        color: soloConcInc ? '#9e4be6' : C.ink,
+                        fontWeight: soloConcInc ? 700 : 500,
+                      }}
+                    >
+                      🧠 {lingua === 'en' ? 'Concentration' : 'Concentrazione'}
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setSoloRitualiInc((v) => !v)}
-                    style={{
-                      ...styles.buttonMini,
-                      fontSize: 11,
-                      padding: '3px 8px',
-                      borderRadius: 14,
-                      borderColor: soloRitualiInc ? C.goldDark : C.border,
-                      background: soloRitualiInc ? 'rgba(200,140,20,0.18)' : 'transparent',
-                      color: soloRitualiInc ? C.goldDark : C.ink,
-                      fontWeight: soloRitualiInc ? 700 : 500,
-                    }}
-                  >
-                    📜 {lingua === 'en' ? 'Rituals' : 'Rituali'}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setSoloRitualiInc((v) => !v)}
+                      style={{
+                        ...styles.buttonMini,
+                        fontSize: 12,
+                        padding: '5px 12px',
+                        borderRadius: 16,
+                        borderColor: soloRitualiInc ? C.goldDark : C.border,
+                        background: soloRitualiInc ? 'rgba(200,140,20,0.18)' : 'transparent',
+                        color: soloRitualiInc ? C.goldDark : C.ink,
+                        fontWeight: soloRitualiInc ? 700 : 500,
+                      }}
+                    >
+                      📜 {lingua === 'en' ? 'Rituals' : 'Rituali'}
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginLeft: 'auto' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const allClosed = Array.from({ length: 10 }, (_, i) => i).every((l) => livelliIncChiusi[l]);
+                        if (allClosed) setLivelliIncChiusi({});
+                        else {
+                          const obj = {};
+                          for (let i = 0; i <= 9; i++) obj[i] = true;
+                          setLivelliIncChiusi(obj);
+                        }
+                      }}
+                      title={t('spell.toggle_livelli_tip')}
+                      style={{ ...styles.buttonMini, padding: '5px 10px', fontSize: 11.5, whiteSpace: 'nowrap' }}
+                    >
+                      {Array.from({ length: 10 }, (_, i) => i).every((l) => livelliIncChiusi[l]) ? t('spell.espandi_tutti_livelli') : t('spell.riduci_tutti_livelli')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setListaMagicaMinimizzata((v) => !v)}
+                      title={listaMagicaMinimizzata ? t('spell.espandi_lista_tip') : t('spell.minimizza_lista_tip')}
+                      style={{ ...styles.buttonMini, padding: '5px 10px', fontSize: 11.5, whiteSpace: 'nowrap' }}
+                    >
+                      {listaMagicaMinimizzata ? `▸ ${t('spell.espandi_lista')}` : `▾ ${t('spell.minimizza_lista')}`}
+                    </button>
+                  </div>
                 </div>
               </div>
               <div>
@@ -10563,7 +10695,7 @@ export default function App() {
                 };
                 const maxSpellLiv = Math.max(0, ...incantesimiVisualizzati.map(s => s.livello || 0));
                 const maxSlotLiv = Math.max(0, ...Object.entries(scheda.slotIncantesimo || {}).filter(([_, v]) => v.totale > 0).map(([k]) => parseInt(k, 10)));
-                const maxLiv = Math.min(9, Math.max(caratteristicaIncantatore ? 1 : 0, maxSpellLiv, maxSlotLiv + 1));
+                const maxLiv = Math.min(9, Math.max(maxSpellLiv, maxSlotLiv, (caratteristicaIncantatore && maxSlotLiv > 0) ? maxSlotLiv : 0));
                 const aggiungiInc = (nome, liv, manuale, bonus) => {
                   const d = dettagliIncantesimo(nome) || { tempo: manuale ? '1 Az.' : 'AZ', gittata: '', note: '' };
                   aggiorna({ incantesimiLista: [...scheda.incantesimiLista,
@@ -10583,20 +10715,16 @@ export default function App() {
                   }
                   aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, preparato: x.preparato === false } : x)) });
                 };
-                // Tastino piccolo di aggiunta sotto ogni livello: menu compatto con
-                // i suggerimenti di quel livello + "scrivi a mano", e toggle ✦ bonus.
+                // Tastino di aggiunta sotto ogni livello
                 const AddControl = (liv) => {
                   const suggeriti = incantesimiClasseLivello(scheda.classe, liv, scheda.sottoclasse, versione);
                   const gia = new Set(scheda.incantesimiLista.filter((s) => s.livello === liv).map((s) => (s.nome || '').toLowerCase()));
-                  const pieno = liv === 0 ? trucchettiPieno : incantesimiPieno;
-                  const bloccato = pieno && !addBonusIncantesimo;
                   return (
                     <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
-                      <select className="add-spell" value="" disabled={bloccato}
-                        title={bloccato ? t('spell.max_tooltip') : undefined}
-                        style={{ ...styles.buttonMini, fontSize: 12, padding: '5px 10px', fontWeight: 600, cursor: bloccato ? 'not-allowed' : 'pointer', opacity: bloccato ? 0.55 : 1, maxWidth: '100%' }}
+                      <select className="add-spell" value=""
+                        style={{ ...styles.buttonMini, fontSize: 12, padding: '5px 10px', fontWeight: 600, cursor: 'pointer', maxWidth: '100%' }}
                         onChange={(e) => { const v = e.target.value; if (!v) return; aggiungiInc(v === '__manuale__' ? 'Nuovo incantesimo' : v, liv, v === '__manuale__', addBonusIncantesimo); e.target.value = ''; }}>
-                        <option value="">{bloccato ? (liv === 0 ? t('spell.max_trucchetti') : t('spell.max_incantesimi')) : `➕ ${t('spell.aggiungi')}`}…</option>
+                        <option value="">➕ {t('spell.aggiungi')}…</option>
                         <option value="__manuale__">{t('spell.scrivi_mano')}</option>
                         {suggeriti.length > 0 && (
                           <optgroup label={t('spell.incantesimi_da', { classe: scheda.classe })}>
@@ -10604,10 +10732,6 @@ export default function App() {
                           </optgroup>
                         )}
                       </select>
-                      <button type="button" title={t('spell.bonus_tooltip')} onClick={() => setAddBonusIncantesimo(!addBonusIncantesimo)}
-                        style={{ ...styles.buttonMini, fontSize: 12, padding: '5px 8px', cursor: 'pointer', borderColor: addBonusIncantesimo ? C.goldDark : C.border, color: addBonusIncantesimo ? C.goldDark : C.inkDim, fontWeight: addBonusIncantesimo ? 700 : 400 }}>
-                        ✦ {t('spell.bonus_badge')}
-                      </button>
                     </div>
                   );
                 };
@@ -10615,11 +10739,14 @@ export default function App() {
                   const spells = incantesimiVisualizzati
                     .filter((s) => s.livello === liv && match(s))
                     .sort((a, b) => Number(b.preparato !== false) - Number(a.preparato !== false) || String(a.nome || '').localeCompare(String(b.nome || ''), lingua));
+                  const slot = liv >= 1 ? (scheda.slotIncantesimo?.[liv] || { totale: 0, spesi: 0 }) : null;
+                  // Se non ci sono incantesimi e non ci sono slot per questo livello, non mostrarlo a meno che non ci sia una ricerca esplicita
+                  if (spells.length === 0 && (!slot || Number(slot.totale) === 0) && !filtriAttivi) return null;
                   if (filtriAttivi && spells.length === 0) return null;
+
                   const countLiv = spells.length;
                   const chiuso = Boolean(livelliIncChiusi[liv]);
                   const numPrep = spells.filter((s) => s.preparato !== false).length;
-                  const slot = liv >= 1 ? (scheda.slotIncantesimo?.[liv] || { totale: 0, spesi: 0 }) : null;
                   const aggiornaSlot = (patch) => aggiorna({ slotIncantesimo: { ...scheda.slotIncantesimo, [liv]: { ...slot, ...patch } } });
 
                   return (
@@ -10641,137 +10768,175 @@ export default function App() {
                           </span>
                           {liv >= 1 && slot && slot.totale > 0 && (
                             <span style={{ fontSize: 11, color: C.inkDim, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 4, padding: '1px 5px' }}>
-                              Slot: {slot.totale - slot.spesi}/{slot.totale}
+                              Slot: <strong style={{ color: (slot.totale - slot.spesi) > 0 ? C.goldDark : C.red }}>{slot.totale - slot.spesi}</strong>/{slot.totale}
                             </span>
                           )}
+                          <span style={{ fontSize: 11, color: C.inkDim, opacity: 0.8 }}>({countLiv}{liv >= 1 && classePreparata ? ` · ${numPrep} prep.` : ''})</span>
                         </div>
-                        <div style={{ fontSize: 11, color: C.inkDim, display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span>{countLiv} {countLiv === 1 ? 'incantesimo' : 'incantesimi'}</span>
-                          {classePreparata && liv >= 1 && (
-                            <span style={{ color: numPrep > 0 ? C.goldDark : C.inkDim, fontWeight: 600 }}>({numPrep} prep.)</span>
-                          )}
-                        </div>
+
+                        {liv >= 1 && slot && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={(e) => e.stopPropagation()}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                              {Array.from({ length: slot.totale }, (_, i) => (
+                                <button
+                                  key={i}
+                                  type="button"
+                                  onClick={() => aggiornaSlot({ spesi: i < slot.spesi ? i : i + 1 })}
+                                  title={i < slot.spesi ? t('spell.slot_speso_tip') : t('spell.slot_disp_tip')}
+                                  style={{
+                                    width: 14, height: 14, borderRadius: '50%',
+                                    border: `1px solid ${C.goldDark}`,
+                                    background: i < slot.spesi ? 'transparent' : C.goldDark,
+                                    cursor: 'pointer', padding: 0,
+                                  }}
+                                />
+                              ))}
+                            </div>
+                            <button
+                              type="button"
+                              className="no-stampa"
+                              onClick={() => aggiornaSlot({ totale: slot.totale + 1 })}
+                              style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 10 }}
+                              title={t('spell.slot_piu_tip')}
+                            >+</button>
+                            <button
+                              type="button"
+                              className="no-stampa"
+                              onClick={() => aggiornaSlot({ totale: Math.max(0, slot.totale - 1), spesi: Math.min(Math.max(0, slot.totale - 1), slot.spesi) })}
+                              style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 10 }}
+                              title={t('spell.slot_meno_tip')}
+                            >−</button>
+                          </div>
+                        )}
                       </div>
 
+                      {/* Lista incantesimi del livello */}
                       {!chiuso && (
-                        <>
-                          {liv >= 1 && slot && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, opacity: slot.totale > 0 ? 1 : 0.6 }}>
-                              <span style={{ fontSize: 12, color: C.inkDim, fontWeight: 500 }}>{t('spell.slot')}:</span>
-                              <Editable value={slot.totale} tipo="numero" width={26} onChange={(v) => aggiornaSlot({ totale: Math.max(0, Math.min(9, v)), spesi: Math.min(slot.spesi, Math.max(0, v)) })} title={t('tip.slot_totali')} />
-                              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
-                                {Array.from({ length: slot.totale }, (_, i) => i + 1).map((i) => (
-                                  <span key={i} style={styles.pip(slot.spesi >= i, COLORE_DADO[6])} title={`Spesi: ${slot.spesi}/${slot.totale} (click per segnare)`} onClick={() => aggiornaSlot({ spesi: slot.spesi >= i ? i - 1 : i })} />
-                                ))}
-                              </div>
-                              {/(warlock|patto)/i.test(scheda.classe || '') && (
-                                <span style={{ fontSize: 11, color: C.goldDark, fontWeight: 700, marginLeft: 'auto' }} title={t('spell.pact_tip')}>🌙 {t('spell.pact')}</span>
-                              )}
-                            </div>
-                          )}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          {spells.map((s) => {
+                            const d = datiIncantesimo(s.nome);
+                            const eff = s.note || d?.desc || '';
+                            const tempoLabel = traduciTempoIncantesimo(s.tempo, lingua);
+                            const gittata = s.gittata || d?.gittata || '';
+                            const scuola = s.scuola || d?.scuola || '';
+                            const area = s.area || d?.area || '';
+                            const danno = s.danno || d?.danno || '';
+                            const tipoDanno = s.tipoDanno || d?.tipoDanno || '';
+                            const note = s.note || '';
+                            const chip = (icona, label, val) => val ? (
+                              <span key={label} style={{ fontSize: 11, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 4, padding: '1px 5px', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 3 }} title={`${label}: ${val}`}>
+                                <span>{icona}</span>
+                                <span style={{ color: C.inkDim }}>{val}</span>
+                              </span>
+                            ) : null;
 
-                          {spells.length > 0 && (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                              {spells.map((s) => {
-                                const eff = spiegaIncantesimo(s.nome);
-                                const dbInc = datiIncantesimo(s.nome) || {};
-                                const det = dettagliIncantesimo(s.nome) || {};
-                                const tp = s.tempo || dbInc.tempo || det.tempo || '1 Az.';
-                                const tempoLabel = /reaz/i.test(tp) ? t('spell.tempo_reazione')
-                                  : /bonus/i.test(tp) ? t('spell.tempo_bonus')
-                                  : /^(az|1 az|azione)/i.test(tp) ? t('spell.tempo_azione')
-                                  : tp;
-                                const gittata = s.gittata || dbInc.gittata || det.gittata || 'Personale';
-                                const scuola = s.scuola || dbInc.scuola || det.scuola || '';
-                                const area = s.area || dbInc.area || det.area || '';
-                                const danno = s.danno || dbInc.danno || det.danno || '';
-                                const tipoDanno = s.tipoDanno || dbInc.tipoDanno || det.tipoDanno || '';
-                                const note = s.note || det.note || '';
-                                const chip = (icona, etichetta, testo) => (
-                                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, color: C.inkDim, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 4, padding: '1px 6px', flexShrink: 0, whiteSpace: 'nowrap' }}>
-                                    <span aria-hidden style={{ opacity: 0.75 }}>{icona}</span>
-                                    <span style={{ opacity: 0.7 }}>{etichetta}:</span> <span style={{ color: C.ink }}>{testo}</span>
-                                  </span>
-                                );
-                                return (
-                                  <div key={s.id} style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 8px', background: C.panelLight, opacity: (classePreparata && s.livello >= 1 && s.preparato === false) ? 0.5 : 1 }}>
-                                    <div className="spell-row" style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: 4 }}>
-                                      <button
-                                        style={{ background: 'transparent', border: 'none', color: C.ink, fontWeight: 700, cursor: 'help', textAlign: 'left', padding: 0, fontSize: 14, lineHeight: 1.2, textDecoration: 'underline dotted', textUnderlineOffset: 3, whiteSpace: 'nowrap', flexShrink: 0 }}
-                                        title={eff || t('tip.cosa_fa_inc')}
-                                        onClick={() => setInfo({ titolo: `${s.nome || 'Incantesimo'}${s.livello === 0 ? ' · Trucchetto' : ` · ${s.livello}° livello`}`, testo: eff || 'Nessuna descrizione disponibile per questo incantesimo. Aprilo con ✎ per aggiungere delle note.' })}
-                                      >
-                                        {s.nome || t('menu.senza_nome')}
-                                      </button>
-                                      {s.bonus && (
-                                        <span
-                                          title={t('spell.bonus_badge_tooltip')}
-                                          style={{ fontSize: 10, fontWeight: 700, color: C.goldDark, border: `1px solid ${C.goldDark}`, borderRadius: 6, padding: '0 4px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}
-                                          onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, bonus: false } : x)) })}
-                                        >✦ {t('spell.bonus_badge')}</span>
-                                      )}
-                                      <div className="spell-chips" style={{ display: 'flex', flexWrap: 'nowrap', gap: 4, alignItems: 'center', overflowX: 'auto', flex: '1 1 auto', minWidth: 0 }}>
-                                        {chip('⏱', t('spell.chip_tempo'), tempoLabel)}
-                                        {chip('🎯', t('spell.chip_gittata'), gittata)}
-                                        {scuola && chip('🔮', 'Scuola', traduciDato(scuola))}
-                                        {area && chip('📐', 'Area', area)}
-                                        {(danno || tipoDanno) && !parseEspressioneDado(danno) && (
-                                          chip('💥', 'Danno', [danno, tipoDanno].filter(Boolean).join(' '))
-                                        )}
-                                        {note && chip('📝', t('spell.chip_note'), note)}
-                                      </div>
-                                      {parseEspressioneDado(danno) && (
-                                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-                                          {modIncantatore !== null && (
-                                            <button
-                                              className="tirabile"
-                                              style={{ ...styles.buttonMini, padding: '2px 6px', fontSize: 11, fontWeight: 700, color: C.goldDark, borderColor: C.goldDark, display: 'inline-flex', alignItems: 'center', gap: 2 }}
-                                              title={t('spell.tira_attacco')}
-                                              onClick={() => lanciaD20(`${t('spell.attacco_inc')}: ${s.nome}`, scheda.bonusCompetenza + modIncantatore, { magia: true })}
-                                            >
-                                              🎯 {conSegno(scheda.bonusCompetenza + modIncantatore)}
-                                            </button>
-                                          )}
-                                          <button
-                                            className="tirabile"
-                                            style={{ ...styles.buttonMini, padding: '2px 6px', fontSize: 11, fontWeight: 700, color: C.red, borderColor: C.red, display: 'inline-flex', alignItems: 'center', gap: 2 }}
-                                            title={t('tip.tira_danno_inc')}
-                                            onClick={() => lanciaDanno(s.nome, danno, tipoDanno)}
-                                          >
-                                            💥 {danno}{tipoDanno ? ` ${tipoDanno}` : ''}
-                                            <span aria-hidden style={{ fontSize: 9, opacity: 0.6 }}>🎲</span>
-                                          </button>
-                                        </div>
-                                      )}
-                                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0, marginLeft: 'auto' }}>
-                                        {classePreparata && s.livello >= 1 && (
-                                          <button
-                                            style={{
-                                              ...styles.buttonMini,
-                                              padding: '2px 7px',
-                                              borderRadius: 6,
-                                              fontSize: 11,
-                                              fontWeight: 700,
-                                              color: s.preparato !== false ? C.goldDark : C.inkDim,
-                                              background: s.preparato !== false ? 'rgba(201,162,39,0.12)' : 'transparent',
-                                              borderColor: s.preparato !== false ? C.goldDark : C.border,
-                                            }}
-                                            title={s.preparato === false && preparatiPieni && !s.bonus ? t('spell.max_tooltip') : (s.preparato !== false ? t('spell.preparato_si') : t('spell.preparato_no'))}
-                                            disabled={s.preparato === false && preparatiPieni && !s.bonus}
-                                            onClick={() => cambiaPreparazione(s)}
-                                          >{s.preparato !== false ? '⭐ Prep.' : '☆ Non prep.'}</button>
-                                        )}
-                                        {!s.catalogo && <button style={{ ...styles.buttonMini, padding: '2px 6px' }} title={t('tip.modifica')} onClick={() => setDettaglioInc(s.id)}>✎</button>}
-                                        {!s.catalogo && <button style={{ ...styles.buttonMini, padding: '2px 6px', color: C.red }} title={t('tip.elimina_inc')} onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) })}>🗑</button>}
-                                      </div>
-                                    </div>
+                            const isUltimoCritInc = ultimoAttaccoCritico && (ultimoAttaccoCritico.id === s.id || ultimoAttaccoCritico.nome === s.nome);
+
+                            return (
+                              <div key={s.id} style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 8px', background: C.panelLight, opacity: (classePreparata && s.livello >= 1 && s.preparato === false) ? 0.5 : 1 }}>
+                                <div className="spell-row" style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: 4 }}>
+                                  <button
+                                    style={{ background: 'transparent', border: 'none', color: C.ink, fontWeight: 700, cursor: 'help', textAlign: 'left', padding: 0, fontSize: 14, lineHeight: 1.2, textDecoration: 'underline dotted', textUnderlineOffset: 3, whiteSpace: 'nowrap', flexShrink: 0 }}
+                                    title={eff || t('tip.cosa_fa_inc')}
+                                    onClick={() => setInfo({ titolo: `${s.nome || 'Incantesimo'}${s.livello === 0 ? ' · Trucchetto' : ` · ${s.livello}° livello`}`, testo: eff || 'Nessuna descrizione disponibile per questo incantesimo. Aprilo con ✎ per aggiungere delle note.' })}
+                                  >
+                                    {s.nome || t('menu.senza_nome')}
+                                  </button>
+                                  {s.bonus && (
+                                    <span
+                                      title={t('spell.bonus_badge_tooltip')}
+                                      style={{ fontSize: 10, fontWeight: 700, color: C.goldDark, border: `1px solid ${C.goldDark}`, borderRadius: 6, padding: '0 4px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}
+                                      onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, bonus: false } : x)) })}
+                                    >✦ {t('spell.bonus_badge')}</span>
+                                  )}
+                                  <div className="spell-chips" style={{ display: 'flex', flexWrap: 'nowrap', gap: 4, alignItems: 'center', overflowX: 'auto', flex: '1 1 auto', minWidth: 0 }}>
+                                    {chip('⏱', t('spell.chip_tempo'), tempoLabel)}
+                                    {chip('🎯', t('spell.chip_gittata'), gittata)}
+                                    {scuola && chip('🔮', 'Scuola', traduciDato(scuola))}
+                                    {area && chip('📐', 'Area', area)}
+                                    {(danno || tipoDanno) && !parseEspressioneDado(danno) && (
+                                      chip('💥', 'Danno', [danno, tipoDanno].filter(Boolean).join(' '))
+                                    )}
+                                    {note && chip('📝', t('spell.chip_note'), note)}
                                   </div>
-                                );
-                              })}
-                            </div>
-                          )}
-                          {!filtriAttivi && AddControl(liv)}
-                        </>
+                                  {parseEspressioneDado(danno) && (
+                                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                                      {modIncantatore !== null && (
+                                        <button
+                                          className="tirabile"
+                                          style={{ ...styles.buttonMini, padding: '2px 6px', fontSize: 11, fontWeight: 700, color: C.goldDark, borderColor: C.goldDark, display: 'inline-flex', alignItems: 'center', gap: 2 }}
+                                          title={t('spell.tira_attacco')}
+                                          onClick={() => lanciaD20(`${t('spell.attacco_inc')}: ${s.nome}`, scheda.bonusCompetenza + modIncantatore, { magia: true, attacco: { id: s.id, nome: s.nome, danno, tipoDanno, isSpell: true } })}
+                                        >
+                                          🎯 {conSegno(scheda.bonusCompetenza + modIncantatore)}
+                                        </button>
+                                      )}
+                                      <button
+                                        className="tirabile"
+                                        style={{
+                                          ...styles.buttonMini,
+                                          padding: '2px 6px',
+                                          fontSize: 11,
+                                          fontWeight: 700,
+                                          color: isUltimoCritInc ? '#fff' : C.red,
+                                          borderColor: isUltimoCritInc ? C.goldDark : C.red,
+                                          background: isUltimoCritInc ? C.goldDark : 'transparent',
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          gap: 2
+                                        }}
+                                        title={isUltimoCritInc ? `⚔️ Critico attivo: tira danni CRITICI raddoppiati (${danno} ×2)` : t('tip.tira_danno_inc')}
+                                        onClick={() => {
+                                          tiraDanniPerAttacco({ id: s.id, nome: s.nome, danno, tipoDanno, isSpell: true }, !!isUltimoCritInc);
+                                          setUltimoAttaccoCritico(null);
+                                        }}
+                                      >
+                                        {isUltimoCritInc ? '⚔️' : '💥'} {danno}{tipoDanno ? ` ${tipoDanno}` : ''}
+                                        <span aria-hidden style={{ fontSize: 9, opacity: 0.6 }}>🎲</span>
+                                      </button>
+                                    </div>
+                                  )}
+                                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0, marginLeft: 'auto' }}>
+                                    {classePreparata && s.livello >= 1 && (
+                                      <button
+                                        style={{
+                                          ...styles.buttonMini,
+                                          padding: '2px 7px',
+                                          borderRadius: 6,
+                                          fontSize: 11,
+                                          fontWeight: 700,
+                                          color: s.preparato !== false ? C.goldDark : C.inkDim,
+                                          background: s.preparato !== false ? 'rgba(201,162,39,0.12)' : 'transparent',
+                                          borderColor: s.preparato !== false ? C.goldDark : C.border,
+                                        }}
+                                        title={s.preparato === false && preparatiPieni && !s.bonus ? t('spell.max_tooltip') : (s.preparato !== false ? t('spell.preparato_si') : t('spell.preparato_no'))}
+                                        disabled={s.preparato === false && preparatiPieni && !s.bonus}
+                                        onClick={() => cambiaPreparazione(s)}
+                                      >{s.preparato !== false ? '⭐ Prep.' : '☆ Non prep.'}</button>
+                                    )}
+                                    {!s.catalogo && <button style={{ ...styles.buttonMini, padding: '2px 6px' }} title={t('tip.modifica')} onClick={() => setDettaglioInc(s.id)}>✎</button>}
+                                    {!s.catalogo && (
+                                      <button
+                                        style={{ ...styles.buttonMini, padding: '2px 6px', color: C.red }}
+                                        title={t('tip.elimina_inc')}
+                                        onClick={() => {
+                                          setConferma({
+                                            titolo: t('spell.elimina_titolo') || 'Elimina incantesimo',
+                                            testo: `Vuoi eliminare "${s.nome}" dalla lista incantesimi?`,
+                                            onConferma: () => aggiorna({ incantesimiLista: scheda.incantesimiLista.filter((x) => x.id !== s.id) }),
+                                          });
+                                        }}
+                                      >
+                                        🗑
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                          {AddControl(liv)}
+                        </div>
                       )}
                     </div>
                   );
@@ -10846,73 +11011,77 @@ export default function App() {
                   );
                 })()}
 
-                {/* Fonte di Magia: converte i Punti Stregoneria in slot già
-                    spesi e viceversa. Tocca sia i punti (una risorsa) sia gli
-                    slot, quindi scrive con un solo aggiorna() per non perdere
-                    una delle due modifiche. */}
-                {(() => {
-                  const risorse = scheda.risorse || [];
-                  const idx = risorse.findIndex((r) => /stregoneria/i.test(r.nome || ''));
-                  if (idx < 0) return null;
-                  const r = risorse[idx];
-                  const applica = (esito) => {
-                    if (!esito.ok) { setInfo({ titolo: '✨ Fonte di Magia', testo: esito.motivo }); return; }
-                    aggiorna({
-                      slotIncantesimo: esito.slotIncantesimo,
-                      risorse: risorse.map((x, i) => (i === idx ? { ...x, attuali: esito.punti } : x)),
-                    });
-                  };
-                  const slotOra = scheda.slotIncantesimo || {};
-                  return (
-                    <div style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', marginBottom: 10 }}>
-                      <div style={{ ...styles.detail, fontWeight: 700, marginBottom: 2 }}>🔄 Fonte di Magia</div>
-                      <div style={{ ...styles.detail, fontSize: 11, marginBottom: 8 }}>
-                        Converti i punti in uno slot già speso, o brucia uno slot per riavere punti.
-                      </div>
-                      <div style={{ ...styles.detail, fontSize: 11, marginBottom: 4 }}>Punti → slot (recupera uno slot speso):</div>
-                      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 8 }}>
-                        {LIVELLI_CONVERTIBILI.map((liv) => {
-                          const costo = COSTO_SLOT_IN_PUNTI[liv];
-                          const possibile = puntiVersoSlot(slotOra, r.attuali, liv).ok;
-                          return (
-                            <button
-                              key={liv}
-                              style={{ ...styles.buttonMini, padding: '2px 7px', opacity: possibile ? 1 : 0.45 }}
-                              title={`Spendi ${costo} punti per recuperare uno slot di ${liv}° livello`}
-                              onClick={() => applica(puntiVersoSlot(slotOra, r.attuali, liv))}
-                            >{liv}° <span style={{ opacity: 0.7 }}>({costo}p)</span></button>
-                          );
-                        })}
-                      </div>
-                      <div style={{ ...styles.detail, fontSize: 11, marginBottom: 4 }}>Slot → punti (spendi uno slot disponibile):</div>
-                      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-                        {Object.keys(slotOra)
-                          .map(Number)
-                          .filter((liv) => liv >= 1 && (slotOra[liv]?.totale || 0) > 0)
-                          .sort((a, b) => a - b)
-                          .map((liv) => {
-                            const possibile = slotVersoPunti(slotOra, r.attuali, r.max, liv).ok;
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12, alignItems: 'start' }}>
+                  {/* Fonte di Magia: a sinistra */}
+                  {(() => {
+                    const risorse = scheda.risorse || [];
+                    const idx = risorse.findIndex((r) => /stregoneria/i.test(r.nome || ''));
+                    if (idx < 0) return null;
+                    const r = risorse[idx];
+                    const applica = (esito) => {
+                      if (!esito.ok) { setInfo({ titolo: '✨ Fonte di Magia', testo: esito.motivo }); return; }
+                      aggiorna({
+                        slotIncantesimo: esito.slotIncantesimo,
+                        risorse: risorse.map((x, i) => (i === idx ? { ...x, attuali: esito.punti } : x)),
+                      });
+                    };
+                    const slotOra = scheda.slotIncantesimo || {};
+                    return (
+                      <div style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', background: C.panelLight }}>
+                        <div style={{ ...styles.detail, fontWeight: 700, marginBottom: 2 }}>🔄 Fonte di Magia</div>
+                        <div style={{ ...styles.detail, fontSize: 11, marginBottom: 8 }}>
+                          Converti i punti in uno slot già speso, o brucia uno slot per riavere punti.
+                        </div>
+                        <div style={{ ...styles.detail, fontSize: 11, marginBottom: 4 }}>Punti → slot (recupera uno slot speso):</div>
+                        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 8 }}>
+                          {LIVELLI_CONVERTIBILI.map((liv) => {
+                            const costo = COSTO_SLOT_IN_PUNTI[liv];
+                            const possibile = puntiVersoSlot(slotOra, r.attuali, liv).ok;
                             return (
                               <button
                                 key={liv}
                                 style={{ ...styles.buttonMini, padding: '2px 7px', opacity: possibile ? 1 : 0.45 }}
-                                title={`Spendi uno slot di ${liv}° livello per ottenere ${liv} Punti Stregoneria`}
-                                onClick={() => applica(slotVersoPunti(slotOra, r.attuali, r.max, liv))}
-                              >{liv}° <span style={{ opacity: 0.7 }}>(+{liv}p)</span></button>
+                                title={`Spendi ${costo} punti per recuperare uno slot di ${liv}° livello`}
+                                onClick={() => applica(puntiVersoSlot(slotOra, r.attuali, liv))}
+                              >{liv}° <span style={{ opacity: 0.7 }}>({costo}p)</span></button>
                             );
                           })}
+                        </div>
+                        <div style={{ ...styles.detail, fontSize: 11, marginBottom: 4 }}>Slot → punti (spendi uno slot disponibile):</div>
+                        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                          {Object.keys(slotOra)
+                            .map(Number)
+                            .filter((liv) => liv >= 1 && (slotOra[liv]?.totale || 0) > 0)
+                            .sort((a, b) => a - b)
+                            .map((liv) => {
+                              const possibile = slotVersoPunti(slotOra, r.attuali, r.max, liv).ok;
+                              return (
+                                <button
+                                  key={liv}
+                                  style={{ ...styles.buttonMini, padding: '2px 7px', opacity: possibile ? 1 : 0.45 }}
+                                  title={`Spendi uno slot di ${liv}° livello per ottenere ${liv} Punti Stregoneria`}
+                                  onClick={() => applica(slotVersoPunti(slotOra, r.attuali, r.max, liv))}
+                                >{liv}° <span style={{ opacity: 0.7 }}>(+{liv}p)</span></button>
+                              );
+                            })}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })()}
-                <CampoConTendina
-                  value={scheda.metamagie}
-                  opzioni={METAMAGIA_5E}
-                  onChange={(v) => aggiorna({ metamagie: v })}
-                  lookup={spiegaMetamagia}
-                  setInfo={setInfo}
-                  title={t('tip.metamagia_attive')}
-                />
+                    );
+                  })()}
+
+                  {/* Opzioni Metamagia apprese: a destra */}
+                  <div style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', background: C.panelLight }}>
+                    <div style={{ ...styles.detail, fontWeight: 700, marginBottom: 6 }}>✨ Opzioni Metamagia</div>
+                    <CampoConTendina
+                      value={scheda.metamagie}
+                      opzioni={METAMAGIA_5E}
+                      onChange={(v) => aggiorna({ metamagie: v })}
+                      lookup={spiegaMetamagia}
+                      setInfo={setInfo}
+                      title={t('tip.metamagia_attive')}
+                    />
+                  </div>
+                </div>
               </Sezione>
             )}
 
@@ -11026,8 +11195,8 @@ export default function App() {
               >
                 <div>
                   {/* Segmented Tab Switcher */}
-                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', justifyContent: 'space-between', borderBottom: `1px solid ${C.border}`, paddingBottom: 8 }}>
-                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', justifyContent: 'center', borderBottom: `1px solid ${C.border}`, paddingBottom: 8 }}>
+                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
                       {[
                         ['tutti', lingua === 'en' ? '📋 All' : '📋 Tutti'],
                         ['classe', lingua === 'en' ? '🛡️ Class' : '🛡️ Classe & Sottoclasse'],
@@ -11053,33 +11222,6 @@ export default function App() {
                         </button>
                       ))}
                     </div>
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                      <button
-                        type="button"
-                        style={{ ...styles.buttonMini, fontSize: 11, color: C.goldDark, borderColor: C.goldDark }}
-                        onClick={() => setMostraPrivilegi(true)}
-                        title={t('tip.panoramica_priv')}
-                      >
-                        📖 {t("priv.panoramica_btn")}
-                      </button>
-                      {(() => {
-                        const tutteLeSubTop = [
-                          ...(scheda.sottoclasse ? [{ classe: scheda.classe, livello: scheda.livello || 1, sottoclasse: scheda.sottoclasse }] : []),
-                          ...((scheda.multiclasse || []).filter((m) => m.sottoclasse).map((m) => ({ classe: m.classe, livello: m.livello || 1, sottoclasse: m.sottoclasse }))),
-                        ];
-                        return tutteLeSubTop.map((subItem, sIdx) => (
-                          <button
-                            key={sIdx}
-                            type="button"
-                            style={{ ...styles.buttonMini, fontSize: 11, color: C.goldDark, borderColor: C.goldDark }}
-                            onClick={() => setMostraPrivilegiSub(subItem.sottoclasse || true)}
-                            title={t('tip.panoramica_priv_sub')}
-                          >
-                            📖 {traduciDato(subItem.sottoclasse)}
-                          </button>
-                        ));
-                      })()}
-                    </div>
                   </div>
 
                   {/* Contenuto in base al Tab selezionato */}
@@ -11087,7 +11229,7 @@ export default function App() {
                     {/* Blocco 1: Classe e Sottoclasse */}
                     {(schedaPrivilegiTab === 'tutti' || schedaPrivilegiTab === 'classe') && (
                       <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
+                        <div style={{ fontSize: 12.5, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5, textAlign: 'center' }}>
                           🛡️ {lingua === 'en' ? 'Class & Subclass Features' : 'Privilegi di Classe & Sottoclasse'}
                         </div>
                         {(() => {
@@ -11573,7 +11715,17 @@ export default function App() {
                                         }
                                       }}
                                     >⚡</button>{' '}
-                                    <button style={{ ...styles.buttonMini, color: C.red }} title={t('modal.elimina')} onClick={() => eliminaItem(o)}>🗑</button>
+                                    <button
+                                      style={{ ...styles.buttonMini, color: C.red }}
+                                      title={t('modal.elimina')}
+                                      onClick={() => setConferma({
+                                        titolo: 'Elimina oggetto',
+                                        testo: `Vuoi eliminare "${o.nome}" dall'inventario?`,
+                                        onConferma: () => eliminaItem(o),
+                                      })}
+                                    >
+                                      🗑
+                                    </button>
                                   </td>
                                 </tr>
                                 {(mostraEffetto || mostraUtilizzi) && (
@@ -11670,6 +11822,39 @@ export default function App() {
                                                 ⓘ
                                               </button>
                                             )}
+                                            {o.effettoMeccanico === 'recupera_slot_3' && effettoAttivo && (
+                                              <button
+                                                type="button"
+                                                style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.14)', fontWeight: 600 }}
+                                                title="Recupera 1 slot incantesimo speso di 1°, 2° o 3° livello"
+                                                onClick={() => {
+                                                  const curUsi = o.usi != null ? Number(o.usi) : 1;
+                                                  if (curUsi <= 0) {
+                                                    alert(lingua === 'en' ? 'The Pearl of Power has already been used today (recharges at dawn).' : 'La Perla del Potere è già stata usata oggi (si ricarica all’alba).');
+                                                    return;
+                                                  }
+                                                  const slotOra = scheda.slotIncantesimo || {};
+                                                  const livDaRecuperare = [3, 2, 1].find((l) => (slotOra[l]?.spesi || 0) > 0);
+                                                  if (!livDaRecuperare) {
+                                                    alert(lingua === 'en' ? 'You have no expended spell slots of level 1, 2, or 3 to recover.' : 'Non hai slot incantesimo spesi di 1°, 2° o 3° livello da recuperare.');
+                                                    return;
+                                                  }
+                                                  const slotLiv = slotOra[livDaRecuperare];
+                                                  aggiorna({
+                                                    slotIncantesimo: {
+                                                      ...slotOra,
+                                                      [livDaRecuperare]: { ...slotLiv, spesi: Math.max(0, (slotLiv.spesi || 0) - 1) },
+                                                    },
+                                                  });
+                                                  modInv(o.id, { usi: Math.max(0, curUsi - 1) });
+                                                  alert(lingua === 'en'
+                                                    ? `Pearl of Power used: recovered 1 spell slot of level ${livDaRecuperare}!`
+                                                    : `Perla del Potere utilizzata: recuperato 1 slot incantesimo di ${livDaRecuperare}° livello!`);
+                                                }}
+                                              >
+                                                🔮 {lingua === 'en' ? 'Recover Slot (1-3)' : 'Recupera Slot (1°-3°)'}
+                                              </button>
+                                            )}
                                           </div>
                                         )}
                                       </div>
@@ -11697,27 +11882,29 @@ export default function App() {
                         </table>
                       </div>
                     )}
-                    {/* Aggiungi oggetto: puoi SCRIVERLO nel campo (autocomplete +
-                        Invio o tasto Aggiungi) OPPURE SCEGLIERLO dal menu a
-                        tendina, che lo inserisce subito con il peso noto. */}
-                    <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                    {/* Aggiungi oggetto: campo singolo unificato con autocompletamento */}
+                    <div style={{ display: 'flex', gap: 6, marginTop: 8, alignItems: 'center' }}>
                       <input
                         id="inv-add-input"
                         list="inv-presets"
                         placeholder={t('inv.aggiungi_ph')}
-                        style={{ ...styles.inlineInput, flex: 1, minWidth: 140, padding: '6px 8px' }}
+                        style={{ ...styles.inlineInput, flex: 1, minWidth: 140, padding: '6px 10px' }}
                         onKeyDown={(e) => { if (e.key === 'Enter' && e.target.value.trim()) { addItem(e.target.value.trim()); e.target.value = ''; } }}
                       />
                       <datalist id="inv-presets">{NOMI_OGGETTI.map((n) => <option key={n} value={n} />)}</datalist>
-                      <select
-                        value=""
-                        onChange={(e) => { if (e.target.value) addItem(e.target.value); }}
-                        style={{ ...styles.inlineInput, flex: '0 1 230px', minWidth: 180, padding: '6px 28px 6px 8px' }}
-                        aria-label={t('inv.scegli_oggetto')}
+                      <button
+                        type="button"
+                        style={{ ...styles.buttonPrimary, padding: '6px 14px', fontSize: 12, whiteSpace: 'nowrap' }}
+                        onClick={() => {
+                          const el = document.getElementById('inv-add-input');
+                          if (el && el.value.trim()) {
+                            addItem(el.value.trim());
+                            el.value = '';
+                          }
+                        }}
                       >
-                        <option value="">▾ {t('inv.scegli_oggetto')}</option>
-                        {NOMI_OGGETTI.map((n) => <option key={n} value={n}>{n}</option>)}
-                      </select>
+                        ➕ {t('comune.aggiungi') || 'Aggiungi'}
+                      </button>
                     </div>
                   </div>
                 );
@@ -11727,13 +11914,10 @@ export default function App() {
                 const arr = Array.isArray(scheda.sintonia) ? scheda.sintonia : (scheda.sintonia ? [scheda.sintonia] : []);
                 const slots = [String(arr[0] || ''), String(arr[1] || ''), String(arr[2] || '')];
                 const setSlot = (i, v) => { const n = [...slots]; n[i] = v; aggiorna({ sintonia: n }); };
-                const usati = slots.filter((x) => String(x || '').trim()).length;
                 return (
-                  // I due pannelli si allungano alla stessa altezza (alignItems
-                  // stretch): niente spazio morto sotto quello più corto.
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20, alignItems: 'stretch', marginTop: 24, paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
                     <div style={{ background: C.panelLight, padding: '12px 14px', borderRadius: 8, border: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column' }}>
-                      <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700, fontSize: 13 }}>{t("equip.sintonia")} <span style={{ color: usati >= 3 ? C.gold : C.inkDim }}>({usati}/3)</span></div>
+                      <div style={{ ...styles.panelTitle, marginBottom: 8 }}>{t("equip.sintonia")}</div>
                       {[0, 1, 2].map((i) => (
                         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                           <span style={{ ...styles.detail, minWidth: 16, fontWeight: 600 }}>{i + 1}.</span>
@@ -11855,12 +12039,23 @@ export default function App() {
                   URL.revokeObjectURL(url);
                 };
 
-                const inserisciTag = (v, tagTesto) => {
-                  const vecchio = v.testo || '';
-                  const separatore = vecchio.length > 0 && !vecchio.endsWith('\n') ? '\n' : '';
-                  const nuovo = `${vecchio}${separatore}• ${tagTesto}: `;
-                  modificaVoce(v.id, { testo: nuovo });
-                };
+                const TEMPLATE_DIARIO = [
+                  '🗺️ Luogo: ',
+                  '',
+                  '👑 Mandante: ',
+                  '',
+                  '📜 Obiettivo: ',
+                  '',
+                  '👤 PNG: ',
+                  '',
+                  '💡 Indizio: ',
+                  '',
+                  '⚔️ Scontro: ',
+                  '',
+                  '💰 Bottino: ',
+                  '',
+                  '📝 Note: ',
+                ].join('\n');
 
                 const toggleTutteVoci = () => {
                   const allClosed = diario.every((v) => vociDiarioChiuse[v.id]);
@@ -11871,15 +12066,6 @@ export default function App() {
                     setVociDiarioChiuse(obj);
                   }
                 };
-
-                const TAG_RAPIDI = [
-                  { icona: '🗺️', label: lingua === 'en' ? 'Location' : 'Luogo' },
-                  { icona: '📜', label: lingua === 'en' ? 'Quest' : 'Obiettivo' },
-                  { icona: '👤', label: 'PNG' },
-                  { icona: '💡', label: lingua === 'en' ? 'Clue' : 'Indizio' },
-                  { icona: '⚔️', label: lingua === 'en' ? 'Combat' : 'Scontro' },
-                  { icona: '💰', label: lingua === 'en' ? 'Loot' : 'Bottino' },
-                ];
 
                 return (
                   <div>
@@ -11892,7 +12078,7 @@ export default function App() {
                           onClick={() => {
                             const newId = `d-${Date.now()}`;
                             aggiorna({
-                              diario: [{ id: newId, data: oggi, titolo: '', testo: '' }, ...diario],
+                              diario: [{ id: newId, data: oggi, titolo: '', testo: TEMPLATE_DIARIO }, ...diario],
                             });
                             setVociDiarioChiuse((prev) => ({ ...prev, [newId]: false }));
                           }}
@@ -11962,7 +12148,7 @@ export default function App() {
                           style={{ ...styles.buttonPrimary, padding: '6px 14px', fontSize: 12 }}
                           onClick={() => {
                             const newId = `d-${Date.now()}`;
-                            aggiorna({ diario: [{ id: newId, data: oggi, titolo: '', testo: '' }] });
+                            aggiorna({ diario: [{ id: newId, data: oggi, titolo: '', testo: TEMPLATE_DIARIO }] });
                           }}
                         >
                           ✍️ {lingua === 'en' ? 'Start First Session' : 'Inizia la Prima Sessione'}
@@ -12085,41 +12271,11 @@ export default function App() {
                               </div>
                             ) : (
                               <div style={{ padding: '10px 10px 8px' }}>
-                                {/* Toolbar inserimento rapido Tag D&D */}
-                                <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginBottom: 8, flexWrap: 'wrap' }}>
-                                  <span style={{ fontSize: 10, color: C.inkDim, fontWeight: 700, textTransform: 'uppercase', marginRight: 2 }}>
-                                    {lingua === 'en' ? 'Quick Tag:' : 'Tag Rapidi:'}
-                                  </span>
-                                  {TAG_RAPIDI.map((tag) => (
-                                    <button
-                                      key={tag.label}
-                                      type="button"
-                                      onClick={() => inserisciTag(v, tag.label)}
-                                      style={{
-                                        ...styles.buttonMini,
-                                        fontSize: 11,
-                                        padding: '2px 7px',
-                                        borderRadius: 14,
-                                        background: C.panelLight,
-                                        border: `1px solid ${C.border}`,
-                                        color: C.ink,
-                                        cursor: 'pointer',
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        gap: 3,
-                                      }}
-                                      title={`Aggiungi riga ${tag.label}`}
-                                    >
-                                      <span>{tag.icona}</span> <span>{tag.label}</span>
-                                    </button>
-                                  ))}
-                                </div>
-
                                 <AreaTesto
-                                  value={v.testo || ''}
+                                  value={v.testo != null ? v.testo : TEMPLATE_DIARIO}
                                   placeholder={t('diario.testo_ph')}
                                   onChange={(nuovo) => modificaVoce(v.id, { testo: nuovo })}
-                                  style={{ minHeight: 110, fontSize: 13, lineHeight: 1.5 }}
+                                  style={{ minHeight: 180, fontSize: 13, lineHeight: 1.5 }}
                                 />
                               </div>
                             )}

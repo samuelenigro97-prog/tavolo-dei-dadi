@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.48',
+    voci: {
+      it: [
+        'Organizzazione Toolbar & Combattimento: 3 blocchi con etichette (Gestione Scheda, Sistema, Sessione), filtri incantesimi riorganizzati, toggle per mostrare/nascondere le armi in combattimento, effetto Perla del Potere con recupero slot interattivo e diciture effetti semplificate.',
+      ],
+      en: [
+        'Toolbar & Combat Layout: 3 labeled blocks (Sheet Management, System, Session), reorganized spell filters, toggle for weapons visibility in combat table, Pearl of Power effect with interactive spell slot recovery, and simplified effect labels.',
+      ],
+    },
+  },
+  {
     versione: '3.9.91',
     voci: {
       it: [

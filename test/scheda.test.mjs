@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, punteggioCaratteristica, formattaNomePg } from '../src/rules/scheda.js';
 import { ABILITA, CARATTERISTICHE } from '../src/data/caratteristiche.js';
 import { spiegaIncantesimo } from '../src/data/spiegazioni.js';
+import { tiraDanni, parseEspressioneDado } from '../src/rules/dadi.js';
 
 // Scheda minima di prova: DES 16 (+3), FOR 8 (-1), bonus competenza +3.
 function schedaBase(patch = {}) {
@@ -207,4 +208,17 @@ test('spiegaIncantesimo: funziona per tutti gli incantesimi (inclusi quelli dal 
   assert.ok(spiegaIncantesimo('Passo Senza Tracce'));
   assert.equal(spiegaIncantesimo('Incantesimo Non Esistente 999'), null);
 });
+
+test('tiraDanni: critico raddoppia i dadi ma non i modificatori fissi', () => {
+  const parsata = parseEspressioneDado('1d8+3');
+  assert.ok(parsata);
+  const normale = tiraDanni(parsata, false);
+  assert.ok(normale.totale >= 4 && normale.totale <= 11);
+  assert.match(normale.dettaglio, /1d8/);
+
+  const critico = tiraDanni(parsata, true);
+  assert.ok(critico.totale >= 5 && critico.totale <= 19);
+  assert.match(critico.dettaglio, /2d8/);
+});
+
 
