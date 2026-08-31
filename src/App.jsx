@@ -1758,7 +1758,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.48';
+const APP_VERSION = '4.0.53';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2978,6 +2978,7 @@ export default function App() {
   const [espressioneLibera, setEspressioneLibera] = useState('');
   const [erroreEspressione, setErroreEspressione] = useState(false);
   const [storico, setStorico] = useState([]);
+  const [mostraDadiModal, setMostraDadiModal] = useState(false);
   // Combat tracker (barra fissa in basso, stile Fantasy Grounds)
   const [combat, setCombat] = useState(() => {
     try {
@@ -8388,10 +8389,10 @@ export default function App() {
 
       <main style={styles.main}>
 
-        {/* Barra del tiro */}
-        <div className="barra-tiro no-stampa" style={styles.rollBar}>
-          {(rolling || tiro || danni) && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', paddingBottom: 6, borderBottom: `1px solid ${C.border}`, marginBottom: 2 }}>
+        {/* Banner animato del tiro (appare solo quando si effettua un tiro) */}
+        {(rolling || tiro || danni) && (
+          <div className="barra-tiro no-stampa" style={{ ...styles.rollBar, marginBottom: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%' }}>
               <div style={styles.dado(rolling, !rolling && (tiro?.naturale === 20 || danni?.critico), !rolling && (tiro?.naturale === 1), tipoDadoInUso)}>{faccia}</div>
               <div style={{ flex: 1, minWidth: 200, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 {rolling ? (
@@ -8410,9 +8411,6 @@ export default function App() {
                     {tiro.esito && <span style={styles.badge(C.goldDark)}>{tiro.esito}</span>}
                     {tiro.attacco && tiro.naturale !== 1 && (
                       parseEspressioneDado(tiro.attacco.danno || '') ? (
-                        // Anche sul critico serve il pulsante: prima compariva solo
-                        // la scritta "tiro i danni raddoppiati…" e i danni non
-                        // venivano mai tirati.
                         <button
                           style={{
                             ...styles.buttonPrimary, marginTop: 6,
@@ -8451,143 +8449,7 @@ export default function App() {
                 onClick={() => { setTiro(null); setDanni(null); }}
               >✖</button>
             </div>
-          )}
-
-          <div className="dadi-riga" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', width: '100%', padding: '1px 0' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
-              <span style={{ ...styles.detail, marginRight: 2, flexShrink: 0, fontWeight: 700, fontSize: 13 }}>{t('roll.dado')}:</span>
-              {[4, 6, 8, 10, 12, 20, 100].map((facce) => {
-                let pts = "";
-                if (facce === 4) pts = "20,4 36,36 4,36";
-                else if (facce === 6) pts = "6,6 34,6 34,34 6,34";
-                else if (facce === 8) pts = "20,4 36,20 20,36 4,20";
-                else if (facce === 10) pts = "20,4 36,16 20,36 4,16";
-                else if (facce === 12) pts = "20,4 36,14 30,36 10,36 4,14";
-                else if (facce === 20) pts = "10,4 30,4 38,20 30,36 10,36 2,20";
-                return (
-                  <button
-                    key={facce}
-                    className="dado-btn"
-                    onClick={() => tiroLibero(facce)}
-                    style={{
-                      position: 'relative', width: 30, height: 30, background: 'none', border: 'none', cursor: 'pointer',
-                      padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.1s'
-                    }}
-                    onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.9)'}
-                    onMouseUp={(e) => e.currentTarget.style.transform = 'none'}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
-                  >
-                    <svg width="30" height="30" viewBox="0 0 40 40" style={{ position: 'absolute', top: 0, left: 0 }}>
-                      {facce === 100 ? (
-                        <circle cx="20" cy="20" r="16" fill="var(--c-gold)" stroke="var(--c-gold-dark)" strokeWidth="2" />
-                      ) : (
-                        <polygon points={pts} fill="var(--c-gold)" stroke="var(--c-gold-dark)" strokeWidth="2" strokeLinejoin="round" />
-                      )}
-                    </svg>
-                    <span style={{ position: 'relative', zIndex: 1, fontWeight: 800, color: '#fff', fontSize: 10, marginTop: facce === 4 ? 4 : facce === 10 ? 2 : 0, textShadow: '0 1px 2px rgba(0,0,0,0.7)' }}>
-                      d{facce}
-                    </span>
-                  </button>
-                );
-              })}
-              <input
-                className="dadi-espressione"
-                style={{
-                  ...styles.inlineInput,
-                  flex: '0 1 80px', minWidth: 55, maxWidth: 100,
-                  padding: '2px 6px', height: 24, fontSize: 12,
-                  marginLeft: 3,
-                  ...(erroreEspressione ? { borderColor: C.red } : {}),
-                }}
-                placeholder={t('roll.espr_placeholder') || 'Es. 1d6+2'}
-                title="Premi Invio per tirare"
-                value={espressioneLibera}
-                onChange={(e) => {
-                  setEspressioneLibera(e.target.value);
-                  setErroreEspressione(false);
-                }}
-                onKeyDown={(e) => e.key === 'Enter' && tiroEspressione()}
-              />
-            </div>
-
-            {/* Titolo centrato nella barra */}
-            <h1 className="app-header-title" style={{ ...styles.title, fontSize: 18, whiteSpace: 'nowrap', color: 'var(--c-title)', display: 'inline-flex', alignItems: 'baseline', gap: 0 }}>
-              <span>
-                <span className="app-header-title-desktop">Tavolo dei Dadi</span>
-                <span className="app-header-title-mobile">{scheda?.nome ? scheda.nome : 'Tavolo dei Dadi'}</span>
-              </span>
-              <span className="app-version" style={{ fontSize: 9, color: 'var(--c-ink-dim)', fontWeight: 500, marginLeft: 3, position: 'relative', top: 0, letterSpacing: 0.3, lineHeight: 1, border: 'none', background: 'transparent', padding: 0, minHeight: 'auto', borderRadius: 0, display: 'inline-block', verticalAlign: 'baseline', fontVariantNumeric: 'tabular-nums lining-nums', fontFeatureSettings: '"lnum" 1, "tnum" 1', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>v{APP_VERSION}</span>
-            </h1>
-
-            {/* Modi di tiro: 4 colonne uguali */}
-            <div className="dadi-modi" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 6, alignItems: 'center', flex: '1 1 280px', maxWidth: 360 }}>
-              {['normale', 'vantaggio', 'svantaggio'].map((m) => (
-                <button key={m} style={{ ...styles.modeButton(modalita === m), width: '100%', minWidth: 0, textAlign: 'center', whiteSpace: 'nowrap' }} onClick={() => setModalita(m)}>
-                  {m === 'normale' ? t('roll.normale') : m === 'vantaggio' ? t('roll.vantaggio') : t('roll.svantaggio')}
-                </button>
-              ))}
-              <button
-                style={{ ...styles.modeButton(storicoAperto), width: '100%', minWidth: 0, textAlign: 'center', whiteSpace: 'nowrap' }}
-                title={t('roll.cronologia_tooltip')}
-                onClick={() => setStoricoAperto(!storicoAperto)}
-              >
-                {t('roll.cronologia')}
-              </button>
-            </div>
           </div>
-          {erroreEspressione && <div style={{ color: C.red, fontSize: 13, width: '100%' }}>{t('roll.espr_invalida')}</div>}
-        </div>
-
-        {storicoAperto && (
-          <section style={{ ...styles.panel, padding: '10px 16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
-              <h2 style={{ ...styles.panelTitle, fontSize: 13, margin: 0 }}>{t('roll.cronologia')}</h2>
-              {storico.length > 0 && (
-                <button style={{ ...styles.buttonMini, color: C.red }} title={t('log.svuota_tooltip')} onClick={() => setStorico([])}>🧹 {t('log.svuota')}</button>
-              )}
-            </div>
-            {storico.length === 0 ? (
-              <div style={styles.detail}>{t('roll.nessun_tiro')}</div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 360, overflowY: 'auto' }}>
-                {storico.map((voce) => {
-                  const isObj = voce && typeof voce === 'object';
-                  if (!isObj) {
-                    return <div key={String(voce)} style={{ ...styles.detail, padding: '2px 0' }}>{voce}</div>;
-                  }
-                  const colore = voce.critico ? C.green : voce.fumble ? C.red : voce.tipo === 'cura' ? C.green : C.gold;
-                  const ora = new Date(voce.ts || Date.now()).toLocaleTimeString(lingua === 'it' ? 'it-IT' : 'en-GB', { hour: '2-digit', minute: '2-digit' });
-                  return (
-                    <div key={voce.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 8px', borderRadius: 6, background: 'rgba(0,0,0,0.04)', border: `1px solid ${voce.critico ? C.green : voce.fumble ? C.red : C.border}` }}>
-                      <div style={{ minWidth: 40, textAlign: 'center' }}>
-                        <div style={{ fontSize: 20, fontWeight: 800, lineHeight: 1, color: colore }}>{voce.totale != null ? voce.totale : '—'}</div>
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 13, color: C.ink, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                          <span>{voce.etichetta}</span>
-                          {voce.critico && <span style={styles.badge(C.green)}>{t('log.critico')}</span>}
-                          {voce.fumble && <span style={styles.badge(C.red)}>{t('log.fallimento')}</span>}
-                          {voce.tipo === 'd20' && voce.modalita && voce.modalita !== 'normale' && (
-                            <span style={styles.badge(C.goldDark)}>{voce.modalita === 'vantaggio' ? t('roll.vantaggio') : t('roll.svantaggio')}</span>
-                          )}
-                        </div>
-                        <div style={{ ...styles.detail, fontSize: 11 }}>
-                          {ora}{voce.personaggio ? ` · ${voce.personaggio}` : ''}{voce.dettaglio ? ` · ${voce.dettaglio}` : ''}
-                        </div>
-                        <input
-                          value={voce.nota || ''}
-                          onChange={(e) => setStorico((s) => s.map((x) => (x.id === voce.id ? { ...x, nota: e.target.value } : x)))}
-                          placeholder={t('log.nota_ph')}
-                          style={{ ...styles.inlineInput, marginTop: 3, fontSize: 11, padding: '2px 6px', width: '100%', maxWidth: 260 }}
-                        />
-                      </div>
-                      <button style={{ ...styles.buttonMini, color: C.red, alignSelf: 'flex-start' }} title={t('log.elimina_tooltip')} onClick={() => setStorico((s) => s.filter((x) => x.id !== voce.id))}>×</button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </section>
         )}
 
         {!scheda ? (
@@ -8838,6 +8700,13 @@ export default function App() {
                     <span>🎲</span> {t('nav.sessione')}
                   </span>
                   <div className="selettore-riga-3" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <button
+                      style={{ ...btnAzione, ...(mostraDadiModal ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }}
+                      onClick={() => setMostraDadiModal(true)}
+                      title={t('roll.tavolo_dadi')}
+                    >
+                      🎲
+                    </button>
                     <button ref={ambientazioneBtnRef} style={btnAzione} title={t('luogo.tooltip')} onClick={() => { if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
                     <button style={btnAzione} title={t('tooltip.tema')} onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}>{tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'}</button>
                     <button style={{ ...btnAzione, ...(mostraDiarioModal ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }} onClick={() => setMostraDiarioModal(true)} title={`${t('sez.diario')} (${(Array.isArray(scheda.diario) ? scheda.diario.length : 0)})`}>📜</button>
@@ -8856,7 +8725,31 @@ export default function App() {
 
         {/* Testata: anagrafica + riquadri vitali uniformi */}
         <section style={styles.panel}>
-          <h2 style={styles.panelTitle}>{t("profilo.titolo")}</h2>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', width: '100%', marginBottom: 10 }}>
+            <h2 style={{ ...styles.panelTitle, margin: 0, width: '100%', textAlign: 'center' }}>{t("profilo.titolo")}</h2>
+            <span
+              className="app-version"
+              style={{
+                position: 'absolute',
+                right: 0,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                fontSize: 11,
+                color: C.goldDark,
+                fontWeight: 800,
+                letterSpacing: 0.5,
+                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                padding: '2px 8px',
+                borderRadius: 6,
+                background: 'rgba(201,162,39,0.08)',
+                border: `1px solid ${C.goldDark}`,
+                userSelect: 'none',
+              }}
+              title={`Tavolo dei Dadi v${APP_VERSION}`}
+            >
+              v{APP_VERSION}
+            </span>
+          </div>
           {/* Con il ritratto ridotto, Addestramento/Risorse si prendono lo spazio libero. */}
           <div className="profilo-griglia">
             {/* COLONNA SINISTRA: Ritratto + Competenze + Risorse di classe */}
@@ -12412,6 +12305,227 @@ export default function App() {
                 </div>
               );
             })()}
+          </div>
+        </div>
+      )}
+
+      {/* ===== Modale Tavolo dei Dadi ===== */}
+      {mostraDadiModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 2500,
+            padding: 16,
+            background: 'rgba(0,0,0,0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setMostraDadiModal(false); }}
+        >
+          <div
+            style={{
+              ...styles.panel,
+              maxWidth: 560,
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+              border: `2px solid ${C.goldDark}`,
+              borderRadius: 12,
+              padding: '16px 20px',
+              gap: 16,
+            }}
+          >
+            {/* Header Modale Dadi */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${C.border}`, paddingBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 28, lineHeight: 1 }}>🎲</span>
+                <div>
+                  <h2 style={{ ...styles.title, margin: 0, fontSize: 18, color: C.ink }}>
+                    {t('roll.tavolo_dadi')}
+                  </h2>
+                  <div style={{ ...styles.detail, fontSize: 11.5, color: C.inkDim }}>
+                    {lingua === 'en' ? 'Quick dice roller, advantage & custom rolls' : 'Lancio rapido dadi, vantaggio/svantaggio e formule'}
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                style={{ ...styles.buttonMini, fontSize: 16, padding: '2px 10px', color: C.inkDim, borderRadius: 6 }}
+                onClick={() => setMostraDadiModal(false)}
+                title={t('modal.chiudi')}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modalità di tiro (Normale / Vantaggio / Svantaggio) */}
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: C.inkDim, marginBottom: 6 }}>
+                {lingua === 'en' ? 'D20 Roll Mode' : 'Modalità tiro d20'}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                {['normale', 'vantaggio', 'svantaggio'].map((m) => (
+                  <button
+                    key={m}
+                    style={{
+                      ...styles.modeButton(modalita === m),
+                      width: '100%',
+                      padding: '8px 4px',
+                      fontSize: 13,
+                      fontWeight: 700,
+                      textAlign: 'center',
+                    }}
+                    onClick={() => setModalita(m)}
+                  >
+                    {m === 'normale' ? t('roll.normale') : m === 'vantaggio' ? t('roll.vantaggio') : t('roll.svantaggio')}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Dadi Cliccabili SVG */}
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: C.inkDim, marginBottom: 6 }}>
+                {t('roll.dado')}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, flexWrap: 'wrap', background: 'rgba(0,0,0,0.03)', padding: '10px 12px', borderRadius: 8, border: `1px solid ${C.border}` }}>
+                {[4, 6, 8, 10, 12, 20, 100].map((facce) => {
+                  let pts = "";
+                  if (facce === 4) pts = "20,4 36,36 4,36";
+                  else if (facce === 6) pts = "6,6 34,6 34,34 6,34";
+                  else if (facce === 8) pts = "20,4 36,20 20,36 4,20";
+                  else if (facce === 10) pts = "20,4 36,16 20,36 4,16";
+                  else if (facce === 12) pts = "20,4 36,14 30,36 10,36 4,14";
+                  else if (facce === 20) pts = "10,4 30,4 38,20 30,36 10,36 2,20";
+                  return (
+                    <button
+                      key={facce}
+                      className="dado-btn"
+                      onClick={() => {
+                        tiroLibero(facce);
+                        setMostraDadiModal(false);
+                      }}
+                      title={`Tira 1d${facce}`}
+                      style={{
+                        position: 'relative', width: 44, height: 44, background: 'none', border: 'none', cursor: 'pointer',
+                        padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.1s'
+                      }}
+                      onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.9)'}
+                      onMouseUp={(e) => e.currentTarget.style.transform = 'none'}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
+                    >
+                      <svg width="44" height="44" viewBox="0 0 40 40" style={{ position: 'absolute', top: 0, left: 0 }}>
+                        {facce === 100 ? (
+                          <circle cx="20" cy="20" r="16" fill="var(--c-gold)" stroke="var(--c-gold-dark)" strokeWidth="2" />
+                        ) : (
+                          <polygon points={pts} fill="var(--c-gold)" stroke="var(--c-gold-dark)" strokeWidth="2" strokeLinejoin="round" />
+                        )}
+                      </svg>
+                      <span style={{ position: 'relative', zIndex: 1, fontWeight: 800, color: '#fff', fontSize: 12, marginTop: facce === 4 ? 4 : facce === 10 ? 2 : 0, textShadow: '0 1px 2px rgba(0,0,0,0.7)' }}>
+                        d{facce}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Espressione Personalizzata */}
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: C.inkDim, marginBottom: 6 }}>
+                {lingua === 'en' ? 'Custom Formula / Expression' : 'Formula personalizzata'}
+              </div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <input
+                  style={{
+                    ...styles.inlineInput,
+                    flex: 1,
+                    padding: '8px 12px',
+                    fontSize: 14,
+                    height: 38,
+                    borderRadius: 6,
+                    border: `1px solid ${erroreEspressione ? C.red : C.border}`,
+                  }}
+                  placeholder={t('roll.espr_placeholder') || 'Es. 3d6+2, 1d12+5, 4d8'}
+                  value={espressioneLibera}
+                  onChange={(e) => {
+                    setEspressioneLibera(e.target.value);
+                    setErroreEspressione(false);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      tiroEspressione();
+                      setMostraDadiModal(false);
+                    }
+                  }}
+                />
+                <button
+                  style={{ ...styles.buttonPrimary, height: 38, padding: '0 18px', fontSize: 14 }}
+                  onClick={() => {
+                    tiroEspressione();
+                    setMostraDadiModal(false);
+                  }}
+                >
+                  🎲 {t('roll.tira')}
+                </button>
+              </div>
+              {erroreEspressione && (
+                <div style={{ color: C.red, fontSize: 12, marginTop: 4 }}>
+                  {t('roll.espr_invalida')}
+                </div>
+              )}
+            </div>
+
+            {/* Cronologia Tiri */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: C.inkDim }}>
+                  {t('roll.cronologia')} ({storico.length})
+                </div>
+                {storico.length > 0 && (
+                  <button style={{ ...styles.buttonMini, color: C.red, fontSize: 11, padding: '2px 8px' }} onClick={() => setStorico([])}>
+                    🧹 {t('log.svuota')}
+                  </button>
+                )}
+              </div>
+              {storico.length === 0 ? (
+                <div style={{ ...styles.detail, fontSize: 12, padding: '8px 0', textAlign: 'center' }}>
+                  {t('roll.nessun_tiro')}
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 180, overflowY: 'auto' }}>
+                  {storico.map((voce) => {
+                    const isObj = voce && typeof voce === 'object';
+                    if (!isObj) return <div key={String(voce)} style={styles.detail}>{voce}</div>;
+                    const colore = voce.critico ? C.green : voce.fumble ? C.red : voce.tipo === 'cura' ? C.green : C.gold;
+                    const ora = new Date(voce.ts || Date.now()).toLocaleTimeString(lingua === 'it' ? 'it-IT' : 'en-GB', { hour: '2-digit', minute: '2-digit' });
+                    return (
+                      <div key={voce.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 8px', borderRadius: 6, background: 'rgba(0,0,0,0.03)', border: `1px solid ${voce.critico ? C.green : voce.fumble ? C.red : C.border}` }}>
+                        <div style={{ minWidth: 32, textAlign: 'center', fontSize: 18, fontWeight: 800, color: colore }}>
+                          {voce.totale != null ? voce.totale : '—'}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: C.ink, display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                            <span>{voce.etichetta}</span>
+                            {voce.critico && <span style={styles.badge(C.green)}>{t('log.critico')}</span>}
+                            {voce.fumble && <span style={styles.badge(C.red)}>{t('log.fallimento')}</span>}
+                          </div>
+                          <div style={{ ...styles.detail, fontSize: 10.5 }}>
+                            {ora}{voce.personaggio ? ` · ${voce.personaggio}` : ''}{voce.dettaglio ? ` · ${voce.dettaglio}` : ''}
+                          </div>
+                        </div>
+                        <button style={{ ...styles.buttonMini, color: C.red, padding: '1px 6px', fontSize: 12 }} onClick={() => setStorico((s) => s.filter((x) => x.id !== voce.id))}>×</button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

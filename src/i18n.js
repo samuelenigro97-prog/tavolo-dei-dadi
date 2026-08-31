@@ -246,6 +246,7 @@ export const DIZIONARIO = {
     'roll.espr_placeholder': 'es. 3d6+2',
     'roll.tira': 'Tira',
     'roll.tiro_libero': 'Tiro libero d20',
+    'roll.tavolo_dadi': 'Lancia Dadi',
     'roll.espr_invalida': 'Espressione non valida',
     // Profilo
     'profilo.titolo': 'Profilo',
@@ -1017,6 +1018,7 @@ export const DIZIONARIO = {
     'roll.espr_placeholder': 'e.g. 3d6+2',
     'roll.tira': 'Roll',
     'roll.tiro_libero': 'Free d20 roll',
+    'roll.tavolo_dadi': 'Dice Roller',
     'roll.espr_invalida': 'Invalid expression',
     // Profile
     'profilo.titolo': 'Profile',

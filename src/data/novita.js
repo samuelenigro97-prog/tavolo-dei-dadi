@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.53',
+    voci: {
+      it: [
+        'Tavolo dei Dadi su Richiesta & Versione in Vista: rimossa la barra fissa dei dadi per dare massimo spazio alla scheda. I dadi (d4–d100, formule e cronologia) sono ora accessibili dal tasto 🎲 nella sezione Sessione. La versione dell\'app è ora sempre visibile nel riquadro Profilo.',
+      ],
+      en: [
+        'On-Demand Dice Roller & Always Visible Version: persistent top dice bar converted to a dedicated 🎲 button in the Session toolbar. App version is now always in plain sight in the Profile panel header.',
+      ],
+    },
+  },
+  {
     versione: '4.0.52',
     voci: {
       it: [
