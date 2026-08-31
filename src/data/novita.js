@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.50',
+    voci: {
+      it: [
+        'Diario di Sessione nella Toolbar: la sezione Diario non è più in fondo alla scheda ma è ora accessibile direttamente dal tasto 📜 nel blocco "SESSIONE" della toolbar, aprendo un pannello modale dedicato e lasciando la scheda più pulita e ordinata.',
+      ],
+      en: [
+        'Session Journal in Toolbar: the Journal section is no longer at the bottom of the sheet but now opens directly via the 📜 button in the "SESSION" toolbar block in a dedicated modal panel, keeping the sheet clean and organized.',
+      ],
+    },
+  },
+  {
     versione: '4.0.49',
     voci: {
       it: [
