@@ -5739,7 +5739,7 @@ export default function App() {
                   🐾 {lingua === 'en' ? bestiaDettaglio.nomeEn : bestiaDettaglio.nome}
                 </h2>
                 <div style={{ fontSize: 12, color: C.inkDim, fontStyle: 'italic' }}>
-                  {bestiaDettaglio.taglia} bestia · GS {bestiaDettaglio.gs} ({bestiaDettaglio.gsNum * 200 || 10} PE)
+                  {bestiaDettaglio.taglia} {bestiaDettaglio.tipo || 'bestia'}{bestiaDettaglio.gs != null ? ` · GS ${bestiaDettaglio.gs} (${bestiaDettaglio.gsNum * 200 || 10} PE)` : ''}
                 </div>
               </div>
               <button style={styles.buttonMini} onClick={() => setBestiaDettaglio(null)} title={t('tip.chiudi')}>✕</button>
@@ -5757,7 +5757,7 @@ export default function App() {
               <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
                 <div style={{ fontSize: 10, color: C.inkDim, textTransform: 'uppercase', fontWeight: 700 }}>{t('stat.velocita')}</div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginTop: 2 }}>
-                  {bestiaDettaglio.velocita.terra}m{bestiaDettaglio.velocita.nuoto ? ` · 🏊${bestiaDettaglio.velocita.nuoto}m` : ''}{bestiaDettaglio.velocita.volo ? ` · 🦅${bestiaDettaglio.velocita.volo}m` : ''}{bestiaDettaglio.velocita.scalata ? ` · 🧗${bestiaDettaglio.velocita.scalata}m` : ''}
+                  {bestiaDettaglio.velocita?.terra != null ? `${bestiaDettaglio.velocita.terra}m` : ''}{bestiaDettaglio.velocita?.nuoto ? ` · 🏊${bestiaDettaglio.velocita.nuoto}m` : ''}{bestiaDettaglio.velocita?.volo ? ` · 🦅${bestiaDettaglio.velocita.volo}m` : ''}{bestiaDettaglio.velocita?.scalata ? ` · 🧗${bestiaDettaglio.velocita.scalata}m` : ''}{bestiaDettaglio.velocita?.scavo ? ` · ⛏️${bestiaDettaglio.velocita.scavo}m` : ''}
                 </div>
               </div>
             </div>
@@ -5765,7 +5765,7 @@ export default function App() {
             {/* Caratteristiche Bestia */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 4, background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '6px 4px', marginBottom: 12, textAlign: 'center' }}>
               {['forza', 'destrezza', 'costituzione', 'intelligenza', 'saggezza', 'carisma'].map((k) => {
-                const val = bestiaDettaglio.car[k] || 10;
+                const val = bestiaDettaglio.car?.[k] || 10;
                 const mod = Math.floor((val - 10) / 2);
                 return (
                   <div key={k}>
@@ -5816,17 +5816,25 @@ export default function App() {
             )}
 
             <div style={{ marginTop: 14, display: 'flex', gap: 8 }}>
+              {bestiaDettaglio.gs != null && (
+                <button
+                  style={{ ...styles.button, flex: 1, fontWeight: 700, borderColor: C.goldDark, color: C.goldDark }}
+                  onClick={() => {
+                    aggiorna({
+                      pfTemp: Math.max(scheda.pfTemp || 0, bestiaDettaglio.pf),
+                      note: [scheda.note, `Forma Selvatica attiva: ${bestiaDettaglio.nome} (CA ${bestiaDettaglio.ca}, ${bestiaDettaglio.pf} PF temp)`].filter(Boolean).join('\n')
+                    });
+                    setBestiaDettaglio(null);
+                  }}
+                >
+                  🐾 Trasformati ({bestiaDettaglio.pf} PF Temp)
+                </button>
+              )}
               <button
-                style={{ ...styles.button, flex: 1, fontWeight: 700, borderColor: C.goldDark, color: C.goldDark }}
-                onClick={() => {
-                  aggiorna({
-                    pfTemp: Math.max(scheda.pfTemp || 0, bestiaDettaglio.pf),
-                    note: [scheda.note, `Forma Selvatica attiva: ${bestiaDettaglio.nome} (CA ${bestiaDettaglio.ca}, ${bestiaDettaglio.pf} PF temp)`].filter(Boolean).join('\n')
-                  });
-                  setBestiaDettaglio(null);
-                }}
+                style={{ ...styles.button, flex: 1 }}
+                onClick={() => setBestiaDettaglio(null)}
               >
-                🐾 Trasformati ({bestiaDettaglio.pf} PF Temp)
+                Chiudi
               </button>
             </div>
           </div>
@@ -11297,51 +11305,64 @@ export default function App() {
               </Sezione>
             )}
 
-            {/* Famigli & Creature Evocate: compare SOLO se il PG possiede incantesimi o abilità specifiche di evocazione/famigli nel grimorio, oppure è un Warlock con Patto della Catena */}
+            {/* Famigli & Creature Evocate: compare se il PG possiede incantesimi o abilità specifiche di evocazione/famigli */}
             {Boolean(
               (/warlock/i.test(scheda.classe || '') && /catena|chain/i.test(scheda.sottoclasse || '')) ||
-              (scheda.incantesimiLista || []).some((s) => /famiglio|evoca|spiriti|spirit|elementale|summon|conjure/i.test(s.nome || ''))
+              (/ranger/i.test(scheda.classe || '') && /bestie|beast|fey|drake|swarm/i.test(scheda.sottoclasse || '')) ||
+              (/artificiere|artificer/i.test(scheda.classe || '')) ||
+              (scheda.incantesimiLista || []).some((s) => /famiglio|evoca|spiriti|spirit|elementale|summon|conjure|destriero|steed|trova|omuncolo|guardiano/i.test(s.nome || ''))
             ) && (
               <Sezione titolo={lingua === 'en' ? 'Familiars & Summons' : 'Famigli & Evocazioni'} style={{ order: ordineSezioni.indexOf('incantesimi') }} {...apertoProps('famigliEvocazioni', false)}>
-                <div>
-                  <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8 }}>
-                    {lingua === 'en' ? 'Quick statblocks for your active familiars and summoned creatures:' : 'Statblock rapidi per i tuoi famigli e creature evocate:'}
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 }}>
-                    {[
-                      ...(/warlock/i.test(scheda.classe || '') && /catena|chain/i.test(scheda.sottoclasse || '') ? FAMIGLI : (scheda.incantesimiLista || []).some((s) => /famiglio|familiar/i.test(s.nome || '')) ? FAMIGLI : []),
-                      ...(scheda.incantesimiLista || []).some((s) => /evoca|spiriti|spirit|elementale|summon|conjure/i.test(s.nome || '')) ? EVOCAZIONI : (FAMIGLI.length > 0 ? [] : EVOCAZIONI),
-                    ].map((c) => (
-                      <div
-                        key={c.nome}
-                        onClick={() => setBestiaDettaglio(c)}
-                        style={{
-                          background: C.panelLight,
-                          border: `1px solid ${C.border}`,
-                          borderRadius: 8,
-                          padding: '8px 10px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 3,
-                          transition: 'transform 0.15s ease, border-color 0.15s ease',
-                        }}
-                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.goldDark; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.transform = 'none'; }}
-                      >
-                        <div style={{ fontWeight: 700, fontSize: 12.5, color: C.ink, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span>{lingua === 'en' ? c.nomeEn : c.nome}</span>
-                        </div>
-                        <div style={{ fontSize: 11, color: C.inkDim }}>
-                          🛡️ CA {c.ca} · ❤️ {c.pf} PF
-                        </div>
-                        <div style={{ fontSize: 10, color: C.goldDark, opacity: 0.9 }}>
-                          {c.tipo || c.taglia}
-                        </div>
+                {(() => {
+                  const haFam = (/warlock/i.test(scheda.classe || '') && /catena|chain/i.test(scheda.sottoclasse || '')) ||
+                    /artificiere|artificer/i.test(scheda.classe || '') ||
+                    (scheda.incantesimiLista || []).some((s) => /famiglio|familiar|omuncolo|difensore/i.test(s.nome || ''));
+                  const haEvo = (scheda.incantesimiLista || []).some((s) => /evoca|spiriti|spirit|elementale|summon|conjure|destriero|steed|guardiano/i.test(s.nome || ''));
+                  const listaCreature = [
+                    ...(haFam ? FAMIGLI : []),
+                    ...(haEvo ? EVOCAZIONI : []),
+                    ...(!haFam && !haEvo ? [...FAMIGLI, ...EVOCAZIONI] : []),
+                  ];
+                  return (
+                    <div>
+                      <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+                        <span>{lingua === 'en' ? 'Quick statblocks for your active familiars and summoned creatures:' : 'Statblock rapidi per i tuoi famigli e creature evocate:'}</span>
+                        <span style={{ opacity: 0.8 }}>{listaCreature.length} creature</span>
                       </div>
-                    ))}
-                  </div>
-                </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 }}>
+                        {listaCreature.map((c) => (
+                          <div
+                            key={c.nome}
+                            onClick={() => setBestiaDettaglio(c)}
+                            style={{
+                              background: C.panelLight,
+                              border: `1px solid ${C.border}`,
+                              borderRadius: 8,
+                              padding: '8px 10px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 3,
+                              transition: 'transform 0.15s ease, border-color 0.15s ease',
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.goldDark; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.transform = 'none'; }}
+                          >
+                            <div style={{ fontWeight: 700, fontSize: 12.5, color: C.ink, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span>{lingua === 'en' ? c.nomeEn : c.nome}</span>
+                            </div>
+                            <div style={{ fontSize: 11, color: C.inkDim }}>
+                              🛡️ CA {c.ca} · ❤️ {c.pf} PF
+                            </div>
+                            <div style={{ fontSize: 10, color: C.goldDark, opacity: 0.9 }}>
+                              {c.tipo || c.taglia}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
               </Sezione>
             )}
 
