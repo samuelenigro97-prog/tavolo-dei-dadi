@@ -12344,7 +12344,16 @@ export default function App() {
             </Sezione>
 
             <Sezione titolo={t("sez.aspetto")} {...propsSez('aspetto')} {...apertoProps('aspetto', false)}>
-              <div style={styles.moduloLabel}>{t("aspetto.background")}</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, flexWrap: 'wrap', gap: 6 }}>
+                <div style={styles.moduloLabel}>
+                  {t("aspetto.background")}{scheda.background ? `: ${traduciDato(scheda.background)}` : ''}
+                </div>
+                {scheda.background && (
+                  <span style={{ fontSize: 11.5, fontWeight: 700, color: C.accentDark, background: 'rgba(201,162,39,0.12)', border: `1px solid ${C.accentDark}`, borderRadius: 6, padding: '2px 8px' }}>
+                    📜 {traduciDato(scheda.background)}
+                  </span>
+                )}
+              </div>
               <AreaTesto
                 value={scheda.note}
                 placeholder={t("aspetto.background_ph")}
