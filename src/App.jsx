@@ -9194,9 +9194,9 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="profilo-anagrafica-campi" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {/* Riga 1: Sesso, Specie/Razza, Taglia, Allineamento */}
-                  <div className="campi-anagrafica campi-anagrafica-riga1" style={{ display: 'grid', gridTemplateColumns: '0.85fr 1.25fr 0.6fr 1.3fr', gap: '6px 10px', alignItems: 'end' }}>
+                <div className="profilo-anagrafica-campi" style={{ width: '100%' }}>
+                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.85fr 1.15fr 1.7fr 0.8fr', gap: '6px 10px', alignItems: 'end' }}>
+                    {/* Riga 1: Sesso, Specie/Razza, Taglia, Allineamento */}
                     <CampoModulo label={t("profilo.sesso")}>
                       <select
                         value={scheda.sesso || ''}
@@ -9219,10 +9219,8 @@ export default function App() {
                     <CampoModulo label={t("profilo.allineamento")}>
                       <CampoTendina value={scheda.allineamento} opzioni={ALLINEAMENTI_5E} onChange={(v) => aggiorna({ allineamento: v })} title={t('tip.scegli_allineamento')} />
                     </CampoModulo>
-                  </div>
 
-                  {/* Riga 2: Background, Classe, Sottoclasse, P.E. */}
-                  <div className="campi-anagrafica campi-anagrafica-riga2" style={{ display: 'grid', gridTemplateColumns: '0.92fr 1.05fr 2.33fr 0.4fr', gap: '6px 10px', alignItems: 'end' }}>
+                    {/* Riga 2: Background, Classe, Sottoclasse, P.E. */}
                     <CampoModulo label={t("profilo.background")} boxClassName={String(scheda.background || '').length > 12 ? 'testo-compatto' : undefined}>
                       <CampoBloccato
                         valore={traduciDato(scheda.background) || t('profilo.nessuno')}
@@ -9258,6 +9256,7 @@ export default function App() {
                       />
                     </CampoModulo>
                   </div>
+
           {/* Multiclasse (opzionale, non invasivo): quando vuoto è solo un
               tastino; aggiungendo classi secondarie puoi applicare competenza e
               slot incantesimo combinati (regola 5e). */}
