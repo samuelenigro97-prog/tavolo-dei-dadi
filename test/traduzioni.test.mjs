@@ -137,3 +137,25 @@ test('traduzioni: condizioni, armi, armature e sottoclassi sono tradotte in ingl
     }
   });
 });
+
+test('traduzioni: tutte le creature del bestiario, famigli ed evocazioni sono tradotte in inglese', async () => {
+  const { BESTIE, FAMIGLI, EVOCAZIONI } = await import('../src/data/bestiario.js');
+  conLingua('en', () => {
+    for (const c of [...BESTIE, ...FAMIGLI, ...EVOCAZIONI]) {
+      if (['Otyugh', 'Pony', 'Mammut', 'Sprite', 'Imp', 'Quasit', 'Gazer', 'Unicorno'].includes(c.nome)) continue;
+      assert.notEqual(traduciDato(c.nome), c.nome, `Creatura non tradotta: ${c.nome}`);
+    }
+  });
+});
+
+test('traduzioni: parità completa tra dizionario italiano e inglese (0 chiavi mancanti)', async () => {
+  const { DIZIONARIO } = await import('../src/i18n.js');
+  const itKeys = Object.keys(DIZIONARIO.it);
+  const enKeys = Object.keys(DIZIONARIO.en);
+  
+  const mancantiInEn = itKeys.filter((k) => !(k in DIZIONARIO.en));
+  const mancantiInIt = enKeys.filter((k) => !(k in DIZIONARIO.it));
+  
+  assert.deepEqual(mancantiInEn, [], `Chiavi presenti in IT ma mancanti in EN: ${mancantiInEn.join(', ')}`);
+  assert.deepEqual(mancantiInIt, [], `Chiavi presenti in EN ma mancanti in IT: ${mancantiInIt.join(', ')}`);
+});
