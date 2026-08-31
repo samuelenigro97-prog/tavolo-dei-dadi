@@ -8551,13 +8551,29 @@ export default function App() {
                 className="selettore-divisore"
                 style={{
                   width: 1,
-                  height: 24,
+                  height: 22,
                   background: C.border,
                   opacity: 0.65,
                   margin: '0 4px',
                 }}
               />
             );
+
+            const stileEtichettaInline = {
+              fontSize: 10,
+              fontWeight: 800,
+              letterSpacing: 0.9,
+              textTransform: 'uppercase',
+              color: C.goldDark,
+              marginRight: 2,
+              userSelect: 'none',
+              whiteSpace: 'nowrap',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              opacity: 0.95,
+              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+            };
 
             return (
               <div
@@ -8573,6 +8589,9 @@ export default function App() {
               >
                 {/* Gruppo 1: GESTIONE SCHEDA */}
                 <div className="selettore-riga-1" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={stileEtichettaInline}>
+                    <span>👤</span> {lingua === 'en' ? 'Sheet' : 'Scheda'}
+                  </span>
                   <button
                     style={btnAzione}
                     onClick={() => {
@@ -8628,6 +8647,9 @@ export default function App() {
 
                 {/* Gruppo 2: SISTEMA */}
                 <div className="selettore-riga-2" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={stileEtichettaInline}>
+                    <span>⚙️</span> {lingua === 'en' ? 'System' : 'Sistema'}
+                  </span>
                   <button style={btnAzione} title={t('tip.menu_iniziale')} onClick={() => setMostraMenu(true)}>
                     🏠
                   </button>
@@ -8696,6 +8718,9 @@ export default function App() {
 
                 {/* Gruppo 3: SESSIONE */}
                 <div className="selettore-riga-3" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={stileEtichettaInline}>
+                    <span>🧭</span> {lingua === 'en' ? 'Session' : 'Sessione'}
+                  </span>
                   <button
                     style={{ ...btnAzione, ...(mostraDadiModal ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }}
                     onClick={() => setMostraDadiModal(true)}
