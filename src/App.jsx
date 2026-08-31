@@ -8546,177 +8546,172 @@ export default function App() {
                 aria-hidden="true"
               />
             );
-            const stileTarghetta = {
-              fontSize: 9.5,
-              fontWeight: 700,
-              letterSpacing: 0.6,
-              color: C.inkDim,
-              textTransform: 'uppercase',
-              userSelect: 'none',
-              fontFamily: 'inherit',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 3.5,
-              padding: '1px 6px',
-              borderRadius: 6,
-              background: 'rgba(0,0,0,0.03)',
-              border: `1px solid ${C.border}`,
-            };
+            const divisoreVerticale = (
+              <div
+                className="selettore-divisore"
+                style={{
+                  width: 1,
+                  height: 24,
+                  background: C.border,
+                  opacity: 0.65,
+                  margin: '0 4px',
+                }}
+              />
+            );
 
             return (
-              <div className="selettore-personaggio-azioni" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: 10 }}>
-                {/* Blocco 1 (Sinistra): GESTIONE SCHEDA */}
-                <div className="selettore-blocco-1" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                  <span style={stileTarghetta}>
-                    <span>👤</span> {t('nav.gestione_scheda')}
-                  </span>
-                  <div className="selettore-riga-1" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <button
-                      style={btnAzione}
-                      onClick={() => {
-                        setBozzaCrea({
-                          nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '',
-                          livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [],
-                          competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {},
-                          multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '',
-                          multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '',
-                          dotazione: 'pacchetto'
-                        });
-                        setMostraCrea(true);
-                      }}
-                      title={t('tip.nuovo_pg')}
-                    >
-                      ＋
-                    </button>
-                    <button
-                      style={btnAzione}
-                      onClick={() => setRinominando(!rinominando)}
-                      title={t('tip.rinomina')}
-                    >
-                      ✎
-                    </button>
-                    <button
-                      style={btnAzione}
-                      title={t('tip.levelup')}
-                      onClick={() => {
-                        const dvMatch = String(scheda.dadiVita || '').match(/d(\d+)/i);
-                        const facceDV = dvMatch ? parseInt(dvMatch[1]) : 8;
-                        const modCos = modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10) || 0;
-                        const avgHpGain = Math.floor(facceDV / 2) + 1 + modCos;
-                        setLevelUpBozza({
-                          metodo: 'media', hpGainMedia: Math.max(1, avgHpGain), facceDV, modCos, tiroFatto: 0,
-                          asiMode: 'aumento', asiA: '', asiB: '', talento: '',
-                          sottoclasse: scheda.sottoclasse || '',
-                        });
-                        setMostraLevelUp(true);
-                      }}
-                    >
-                      🆙
-                    </button>
-                    <button
-                      style={btnAzione}
-                      onClick={eliminaPersonaggio}
-                      title={t('tip.elimina_pg')}
-                    >
-                      🗑
-                    </button>
-                  </div>
+              <div
+                className="selettore-personaggio-azioni"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                  flexWrap: 'wrap',
+                  gap: 8,
+                }}
+              >
+                {/* Gruppo 1: GESTIONE SCHEDA */}
+                <div className="selettore-riga-1" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <button
+                    style={btnAzione}
+                    onClick={() => {
+                      setBozzaCrea({
+                        nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '',
+                        livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [],
+                        competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {},
+                        multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '',
+                        multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '',
+                        dotazione: 'pacchetto'
+                      });
+                      setMostraCrea(true);
+                    }}
+                    title={t('tip.nuovo_pg')}
+                  >
+                    ＋
+                  </button>
+                  <button
+                    style={btnAzione}
+                    onClick={() => setRinominando(!rinominando)}
+                    title={t('tip.rinomina')}
+                  >
+                    ✎
+                  </button>
+                  <button
+                    style={btnAzione}
+                    title={t('tip.levelup')}
+                    onClick={() => {
+                      const dvMatch = String(scheda.dadiVita || '').match(/d(\d+)/i);
+                      const facceDV = dvMatch ? parseInt(dvMatch[1]) : 8;
+                      const modCos = modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10) || 0;
+                      const avgHpGain = Math.floor(facceDV / 2) + 1 + modCos;
+                      setLevelUpBozza({
+                        metodo: 'media', hpGainMedia: Math.max(1, avgHpGain), facceDV, modCos, tiroFatto: 0,
+                        asiMode: 'aumento', asiA: '', asiB: '', talento: '',
+                        sottoclasse: scheda.sottoclasse || '',
+                      });
+                      setMostraLevelUp(true);
+                    }}
+                  >
+                    🆙
+                  </button>
+                  <button
+                    style={btnAzione}
+                    onClick={eliminaPersonaggio}
+                    title={t('tip.elimina_pg')}
+                  >
+                    🗑
+                  </button>
                 </div>
 
-                {/* Blocco 2 (Centro): SISTEMA */}
-                <div className="selettore-blocco-2" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                  <span style={stileTarghetta}>
-                    <span>⚙️</span> {t('nav.sistema')}
-                  </span>
-                  <div className="selettore-riga-2" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <button style={btnAzione} title={t('tip.menu_iniziale')} onClick={() => setMostraMenu(true)}>
-                      🏠
-                    </button>
-                    <button style={btnAzione} title="Importa JSON, PDF o immagini" onClick={() => jsonRef.current?.click()}>
-                      ⬇️
-                    </button>
-                    <button
-                      ref={esportaBtnRef}
-                      style={{ ...btnAzione, ...(mostraMenuEsporta ? { borderColor: C.goldDark, color: C.goldDark } : {}) }}
-                      title={t('tip.esporta')}
-                      onClick={() => {
-                        if (!mostraMenuEsporta) {
-                          const r = esportaBtnRef.current?.getBoundingClientRect();
-                          if (r) setPosEsporta({
-                            top: Math.max(8, Math.min(window.innerHeight - 200, r.bottom + 5)),
-                            left: Math.max(8, Math.min(window.innerWidth - 240, r.left)),
-                          });
-                        }
-                        setMostraMenuEsporta((v) => !v);
-                      }}
-                    >
-                      ⬆️
-                    </button>
-                    <button
-                      style={{ ...btnAzione, color: C.goldDark, borderColor: C.goldDark }}
-                      title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato') : 'Sincronizza sul Cloud'}
-                      onClick={() => { setCloudStatus({ text: '', type: '' }); setSyncCodiceStatus({ text: '', type: '' }); setMostraCloud(true); }}
-                    >
-                      ☁️
-                      {sincronizzando ? (
-                        <span style={{ fontSize: 11, marginLeft: 2 }}>🔄</span>
-                      ) : (githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice) ? (
-                        <span style={{ color: '#2e9d4d', fontWeight: 900, marginLeft: 2, fontSize: 13 }}>✓</span>
-                      ) : (
-                        <span style={{ color: '#c0392b', fontSize: 13, marginLeft: 2, fontWeight: 900 }}>!</span>
-                      )}
-                    </button>
-                    <button
-                      ref={notificheBtnRef}
-                      className={daNotificare ? 'btn-notifiche-lampeggia' : ''}
-                      style={{
-                        ...btnAzione,
-                        position: 'relative',
-                        ...(daNotificare ? { color: C.goldDark, borderColor: C.goldDark } : {}),
-                      }}
-                      title={daNotificare ? (controlliAttivi.length > 0 ? `${controlliAttivi.length} avvisi sulla scheda` : t('notifiche.novita_presenti')) : t('notifiche.titolo')}
-                      onClick={apriNotifiche}
-                    >
-                      🔔
-                      {daNotificare && (
-                        <span className="avvisi-pallino" aria-label={`${nAvvisi} notifiche`}>
-                          {controlliAttivi.length > 0 ? controlliAttivi.length : '!'}
-                        </span>
-                      )}
-                    </button>
-                    <button
-                      style={btnAzione}
-                      title={lingua === 'it' ? 'Cambia in inglese' : 'Switch to Italian'}
-                      onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
-                    >
-                      {lingua === 'it' ? '🇮🇹' : '🇬🇧'}
-                    </button>
-                  </div>
+                {divisoreVerticale}
+
+                {/* Gruppo 2: SISTEMA */}
+                <div className="selettore-riga-2" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <button style={btnAzione} title={t('tip.menu_iniziale')} onClick={() => setMostraMenu(true)}>
+                    🏠
+                  </button>
+                  <button style={btnAzione} title="Importa JSON, PDF o immagini" onClick={() => jsonRef.current?.click()}>
+                    ⬇️
+                  </button>
+                  <button
+                    ref={esportaBtnRef}
+                    style={{ ...btnAzione, ...(mostraMenuEsporta ? { borderColor: C.goldDark, color: C.goldDark } : {}) }}
+                    title={t('tip.esporta')}
+                    onClick={() => {
+                      if (!mostraMenuEsporta) {
+                        const r = esportaBtnRef.current?.getBoundingClientRect();
+                        if (r) setPosEsporta({
+                          top: Math.max(8, Math.min(window.innerHeight - 200, r.bottom + 5)),
+                          left: Math.max(8, Math.min(window.innerWidth - 240, r.left)),
+                        });
+                      }
+                      setMostraMenuEsporta((v) => !v);
+                    }}
+                  >
+                    ⬆️
+                  </button>
+                  <button
+                    style={{ ...btnAzione, color: C.goldDark, borderColor: C.goldDark }}
+                    title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato') : 'Sincronizza sul Cloud'}
+                    onClick={() => { setCloudStatus({ text: '', type: '' }); setSyncCodiceStatus({ text: '', type: '' }); setMostraCloud(true); }}
+                  >
+                    ☁️
+                    {sincronizzando ? (
+                      <span style={{ fontSize: 11, marginLeft: 2 }}>🔄</span>
+                    ) : (githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice) ? (
+                      <span style={{ color: '#2e9d4d', fontWeight: 900, marginLeft: 2, fontSize: 13 }}>✓</span>
+                    ) : (
+                      <span style={{ color: '#c0392b', fontSize: 13, marginLeft: 2, fontWeight: 900 }}>!</span>
+                    )}
+                  </button>
+                  <button
+                    ref={notificheBtnRef}
+                    className={daNotificare ? 'btn-notifiche-lampeggia' : ''}
+                    style={{
+                      ...btnAzione,
+                      position: 'relative',
+                      ...(daNotificare ? { color: C.goldDark, borderColor: C.goldDark } : {}),
+                    }}
+                    title={daNotificare ? (controlliAttivi.length > 0 ? `${controlliAttivi.length} avvisi sulla scheda` : t('notifiche.novita_presenti')) : t('notifiche.titolo')}
+                    onClick={apriNotifiche}
+                  >
+                    🔔
+                    {daNotificare && (
+                      <span className="avvisi-pallino" aria-label={`${nAvvisi} notifiche`}>
+                        {controlliAttivi.length > 0 ? controlliAttivi.length : '!'}
+                      </span>
+                    )}
+                  </button>
+                  <button
+                    style={btnAzione}
+                    title={lingua === 'it' ? 'Cambia in inglese' : 'Switch to Italian'}
+                    onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
+                  >
+                    {lingua === 'it' ? '🇮🇹' : '🇬🇧'}
+                  </button>
                 </div>
 
-                {/* Blocco 3 (Destra): SESSIONE */}
-                <div className="selettore-blocco-3" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                  <span style={stileTarghetta}>
-                    <span>🎲</span> {t('nav.sessione')}
-                  </span>
-                  <div className="selettore-riga-3" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <button
-                      style={{ ...btnAzione, ...(mostraDadiModal ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }}
-                      onClick={() => setMostraDadiModal(true)}
-                      title={t('roll.tavolo_dadi')}
-                    >
-                      🎲
-                    </button>
-                    <button ref={ambientazioneBtnRef} style={btnAzione} title={t('luogo.tooltip')} onClick={() => { if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
-                    <button style={btnAzione} title={t('tooltip.tema')} onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}>{tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'}</button>
-                    <button style={{ ...btnAzione, ...(mostraDiarioModal ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }} onClick={() => setMostraDiarioModal(true)} title={`${t('sez.diario')} (${(Array.isArray(scheda.diario) ? scheda.diario.length : 0)})`}>📜</button>
-                    <button style={btnAzione} onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())} title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}>🗺️</button>
-                    <button style={btnAzione} onClick={() => {
-                      if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
-                      else if (combat.combattenti.length) setCombat((c) => ({ ...c, attivo: true, aperto: true }));
-                      else aggiungiPgAlCombat();
-                    }} title={(combat.attivo && combat.aperto ? t('ct.minimizza') : t('ct.apri')) + (combat.combattenti.length ? ` (${combat.combattenti.length})` : '')}>⚔️</button>
-                  </div>
+                {divisoreVerticale}
+
+                {/* Gruppo 3: SESSIONE */}
+                <div className="selettore-riga-3" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <button
+                    style={{ ...btnAzione, ...(mostraDadiModal ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }}
+                    onClick={() => setMostraDadiModal(true)}
+                    title={t('roll.tavolo_dadi')}
+                  >
+                    🎲
+                  </button>
+                  <button ref={ambientazioneBtnRef} style={btnAzione} title={t('luogo.tooltip')} onClick={() => { if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
+                  <button style={btnAzione} title={t('tooltip.tema')} onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}>{tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'}</button>
+                  <button style={{ ...btnAzione, ...(mostraDiarioModal ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }} onClick={() => setMostraDiarioModal(true)} title={`${t('sez.diario')} (${(Array.isArray(scheda.diario) ? scheda.diario.length : 0)})`}>📜</button>
+                  <button style={btnAzione} onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())} title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}>🗺️</button>
+                  <button style={btnAzione} onClick={() => {
+                    if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
+                    else if (combat.combattenti.length) setCombat((c) => ({ ...c, attivo: true, aperto: true }));
+                    else aggiungiPgAlCombat();
+                  }} title={(combat.attivo && combat.aperto ? t('ct.minimizza') : t('ct.apri')) + (combat.combattenti.length ? ` (${combat.combattenti.length})` : '')}>⚔️</button>
                 </div>
               </div>
             );
