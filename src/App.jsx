@@ -18,6 +18,7 @@ import { creaStanza, apriStanza, normalizzaCodiceStanza, formattaCodiceStanza, D
 import { generaCodiceSync, normalizzaCodiceSync, formattaCodiceSync, salvaSync, caricaSync, messaggioErroreSync } from './utils/sync.js';
 import { posizionePopover, stilePopover } from './utils/popover.js';
 import { salvaJson, rosterSenzaImmagini, riagganciaImmagini, salvaImmaginiRoster, caricaImmaginiRoster, rimuoviImmaginePersonaggio, preservaImmaginiSeMancanti } from './utils/persistenza.js';
+import { datiTabelleBackground, TABELLE_BACKGROUND } from './data/tabelleBackground.js';
 
 // ---------------------------------------------------------------------------
 // Palette e stili
@@ -3023,6 +3024,10 @@ export default function App() {
   const [erroreEspressione, setErroreEspressione] = useState(false);
   const [storico, setStorico] = useState([]);
   const [mostraDadiModal, setMostraDadiModal] = useState(false);
+  const [mostraIspirazioneBgModal, setMostraIspirazioneBgModal] = useState(false);
+  const [bgIspirazioneScelto, setBgIspirazioneScelto] = useState('');
+  const [bozzaIspirazione, setBozzaIspirazione] = useState({ tratto: '', ideale: '', legame: '', difetto: '' });
+  const [menuTendinaBg, setMenuTendinaBg] = useState(null); // null | { tipo, top, left }
   // Combat tracker (barra fissa in basso, stile Fantasy Grounds)
   const [combat, setCombat] = useState(() => {
     try {
@@ -4495,6 +4500,82 @@ export default function App() {
       setDanni({ etichetta: `Tiro libero: ${testo}`, ...esito, libero: true });
       registra({ etichetta: testo, tipo: 'libero', totale: esito.totale, dettaglio: esito.dettaglio });
     }, esito.totale, maxFacce || 20);
+  }
+
+  /** Tiro da tabella ufficiale del Background 5e (d8 o d6). */
+  function tiraTabellaBackground(tipo) {
+    const bgNome = scheda.background || 'Accolito';
+    const bgDati = datiTabelleBackground(bgNome, lingua);
+    if (!bgDati) return;
+    let facce = 6;
+    let opzioni = bgDati.ideali;
+    let campo = 'ideali';
+    let etichetta = t('aspetto.ideali');
+
+    if (tipo === 'trattiCaratteriali') {
+      facce = 8;
+      opzioni = bgDati.tratti;
+      campo = 'trattiCaratteriali';
+      etichetta = t('aspetto.tratti_caratteriali');
+    } else if (tipo === 'legami') {
+      facce = 6;
+      opzioni = bgDati.legami;
+      campo = 'legami';
+      etichetta = t('aspetto.legami');
+    } else if (tipo === 'difetti') {
+      facce = 6;
+      opzioni = bgDati.difetti;
+      campo = 'difetti';
+      etichetta = t('aspetto.difetti');
+    }
+
+    const valore = tiraDado(facce);
+    const frase = opzioni[valore - 1] || '';
+    conAnimazione(() => {
+      aggiorna({ [campo]: frase });
+      setDanni({ etichetta: `${etichetta} (${bgDati.nome})`, totale: valore, dettaglio: `1d${facce} [${valore}] → ${frase}`, libero: true });
+      registra({ etichetta: `${etichetta} (${bgDati.nome})`, tipo: 'background', totale: valore, dettaglio: `1d${facce} [${valore}] → ${frase}` });
+    }, valore, facce);
+  }
+
+  function tiraTuttoIspirazione(bgNome) {
+    const bgDati = datiTabelleBackground(bgNome || bgIspirazioneScelto || scheda.background || 'Accolito', lingua);
+    if (!bgDati) return;
+    const rTratto = tiraDado(8);
+    const rIdeale = tiraDado(6);
+    const rLegame = tiraDado(6);
+    const rDifetto = tiraDado(6);
+    
+    setBozzaIspirazione({
+      tratto: bgDati.tratti[rTratto - 1] || '',
+      ideale: bgDati.ideali[rIdeale - 1] || '',
+      legame: bgDati.legami[rLegame - 1] || '',
+      difetto: bgDati.difetti[rDifetto - 1] || '',
+    });
+  }
+
+  function apriModalIspirazioneBg() {
+    const bgAttuale = scheda.background || 'Accolito';
+    setBgIspirazioneScelto(bgAttuale);
+    const bgDati = datiTabelleBackground(bgAttuale, lingua);
+    setBozzaIspirazione({
+      tratto: scheda.trattiCaratteriali || (bgDati?.tratti[0] || ''),
+      ideale: scheda.ideali || (bgDati?.ideali[0] || ''),
+      legame: scheda.legami || (bgDati?.legami[0] || ''),
+      difetto: scheda.difetti || (bgDati?.difetti[0] || ''),
+    });
+    setMostraIspirazioneBgModal(true);
+  }
+
+  function applicaIspirazioneBg() {
+    aggiorna({
+      trattiCaratteriali: bozzaIspirazione.tratto,
+      ideali: bozzaIspirazione.ideale,
+      legami: bozzaIspirazione.legame,
+      difetti: bozzaIspirazione.difetto,
+      ...(bgIspirazioneScelto && !scheda.background ? { background: bgIspirazioneScelto } : {})
+    });
+    setMostraIspirazioneBgModal(false);
   }
 
   /** Carica l'immagine del personaggio: ridimensionata e salvata nella scheda. */
@@ -12367,51 +12448,186 @@ export default function App() {
             </Sezione>
 
             <Sezione titolo={t("sez.aspetto")} {...propsSez('aspetto')} {...apertoProps('aspetto', false)}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, flexWrap: 'wrap', gap: 6 }}>
-                <div style={styles.moduloLabel}>
-                  {t("aspetto.background")}{scheda.background ? `: ${traduciDato(scheda.background)}` : ''}
-                </div>
-                {scheda.background && (
-                  <span style={{ fontSize: 11.5, fontWeight: 700, color: C.accentDark, background: 'rgba(201,162,39,0.12)', border: `1px solid ${C.accentDark}`, borderRadius: 6, padding: '2px 8px' }}>
-                    📜 {traduciDato(scheda.background)}
-                  </span>
-                )}
-              </div>
-              <AreaTesto
-                value={scheda.note}
-                placeholder={t("aspetto.background_ph")}
-                onChange={(v) => aggiorna({ note: v })}
-              />
-              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>{t("aspetto.tratti_caratteriali")}</div>
-              <AreaTesto
-                value={scheda.trattiCaratteriali}
-                placeholder={t("aspetto.tratti_caratteriali_ph")}
-                onChange={(v) => aggiorna({ trattiCaratteriali: v })}
-              />
-              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>{t("aspetto.ideali")}</div>
-              <AreaTesto
-                value={scheda.ideali}
-                placeholder={t("aspetto.ideali_ph")}
-                onChange={(v) => aggiorna({ ideali: v })}
-              />
-              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>{t("aspetto.legami")}</div>
-              <AreaTesto
-                value={scheda.legami}
-                placeholder={t("aspetto.legami_ph")}
-                onChange={(v) => aggiorna({ legami: v })}
-              />
-              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>{t("aspetto.difetti")}</div>
-              <AreaTesto
-                value={scheda.difetti}
-                placeholder={t("aspetto.difetti_ph")}
-                onChange={(v) => aggiorna({ difetti: v })}
-              />
-              <div style={{ ...styles.moduloLabel, marginTop: 10 }}>{t("aspetto.nemici")}</div>
-              <AreaTesto
-                value={scheda.nemici}
-                placeholder={t("aspetto.nemici_ph")}
-                onChange={(v) => aggiorna({ nemici: v })}
-              />
+              {(() => {
+                const bgDati = datiTabelleBackground(scheda.background || 'Accolito', lingua);
+                return (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        <div style={styles.moduloLabel}>
+                          {t("aspetto.background")}{scheda.background ? `: ${traduciDato(scheda.background)}` : ''}
+                        </div>
+                        {scheda.background && (
+                          <span style={{ fontSize: 11.5, fontWeight: 700, color: C.accentDark, background: 'rgba(201,162,39,0.12)', border: `1px solid ${C.accentDark}`, borderRadius: 6, padding: '2px 8px' }}>
+                            📜 {traduciDato(scheda.background)}
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        style={{ ...styles.buttonMini, fontSize: 12, padding: '4px 10px', color: C.goldDark, border: `1px solid ${C.gold}`, background: 'rgba(201,162,39,0.1)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}
+                        onClick={apriModalIspirazioneBg}
+                        title={t('aspetto.ispirazione_sottotitolo')}
+                      >
+                        {t('aspetto.ispirazione_btn')} 5e
+                      </button>
+                    </div>
+                    <AreaTesto
+                      value={scheda.note}
+                      placeholder={t("aspetto.background_ph")}
+                      onChange={(v) => aggiorna({ note: v })}
+                    />
+
+                    {/* Tratto Caratteriale (d8) */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12, marginBottom: 4, flexWrap: 'wrap', gap: 6 }}>
+                      <div style={{ ...styles.moduloLabel, margin: 0 }}>👤 {t("aspetto.tratti_caratteriali")}</div>
+                      {bgDati && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <button
+                            type="button"
+                            style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.accentDark, border: `1px solid ${C.accentDark}`, background: 'rgba(201,162,39,0.08)', fontWeight: 700 }}
+                            onClick={() => tiraTabellaBackground('trattiCaratteriali')}
+                            title={`Tira 1d8 dalla tabella ${bgDati.nome}`}
+                          >
+                            🎲 d8
+                          </button>
+                          <select
+                            style={{ ...styles.inlineInput, fontSize: 11, padding: '2px 6px', maxWidth: 160, color: C.inkDim }}
+                            value=""
+                            onChange={(e) => {
+                              if (e.target.value) aggiorna({ trattiCaratteriali: e.target.value });
+                            }}
+                            title="Scegli un tratto dalla tabella del manuale"
+                          >
+                            <option value="">{t('aspetto.scegli_opzione')}</option>
+                            {bgDati.tratti.map((tVoce, idx) => (
+                              <option key={idx} value={tVoce}>{idx + 1}. {tVoce}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                    <AreaTesto
+                      value={scheda.trattiCaratteriali}
+                      placeholder={t("aspetto.tratti_caratteriali_ph")}
+                      onChange={(v) => aggiorna({ trattiCaratteriali: v })}
+                    />
+
+                    {/* Ideale (d6) */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12, marginBottom: 4, flexWrap: 'wrap', gap: 6 }}>
+                      <div style={{ ...styles.moduloLabel, margin: 0 }}>⚖️ {t("aspetto.ideali")}</div>
+                      {bgDati && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <button
+                            type="button"
+                            style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.accentDark, border: `1px solid ${C.accentDark}`, background: 'rgba(201,162,39,0.08)', fontWeight: 700 }}
+                            onClick={() => tiraTabellaBackground('ideali')}
+                            title={`Tira 1d6 dalla tabella ${bgDati.nome}`}
+                          >
+                            🎲 d6
+                          </button>
+                          <select
+                            style={{ ...styles.inlineInput, fontSize: 11, padding: '2px 6px', maxWidth: 160, color: C.inkDim }}
+                            value=""
+                            onChange={(e) => {
+                              if (e.target.value) aggiorna({ ideali: e.target.value });
+                            }}
+                            title="Scegli un ideale dalla tabella del manuale"
+                          >
+                            <option value="">{t('aspetto.scegli_opzione')}</option>
+                            {bgDati.ideali.map((iVoce, idx) => (
+                              <option key={idx} value={iVoce}>{idx + 1}. {iVoce}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                    <AreaTesto
+                      value={scheda.ideali}
+                      placeholder={t("aspetto.ideali_ph")}
+                      onChange={(v) => aggiorna({ ideali: v })}
+                    />
+
+                    {/* Legame (d6) */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12, marginBottom: 4, flexWrap: 'wrap', gap: 6 }}>
+                      <div style={{ ...styles.moduloLabel, margin: 0 }}>🔗 {t("aspetto.legami")}</div>
+                      {bgDati && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <button
+                            type="button"
+                            style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.accentDark, border: `1px solid ${C.accentDark}`, background: 'rgba(201,162,39,0.08)', fontWeight: 700 }}
+                            onClick={() => tiraTabellaBackground('legami')}
+                            title={`Tira 1d6 dalla tabella ${bgDati.nome}`}
+                          >
+                            🎲 d6
+                          </button>
+                          <select
+                            style={{ ...styles.inlineInput, fontSize: 11, padding: '2px 6px', maxWidth: 160, color: C.inkDim }}
+                            value=""
+                            onChange={(e) => {
+                              if (e.target.value) aggiorna({ legami: e.target.value });
+                            }}
+                            title="Scegli un legame dalla tabella del manuale"
+                          >
+                            <option value="">{t('aspetto.scegli_opzione')}</option>
+                            {bgDati.legami.map((lVoce, idx) => (
+                              <option key={idx} value={lVoce}>{idx + 1}. {lVoce}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                    <AreaTesto
+                      value={scheda.legami}
+                      placeholder={t("aspetto.legami_ph")}
+                      onChange={(v) => aggiorna({ legami: v })}
+                    />
+
+                    {/* Difetto (d6) */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12, marginBottom: 4, flexWrap: 'wrap', gap: 6 }}>
+                      <div style={{ ...styles.moduloLabel, margin: 0 }}>⚡ {t("aspetto.difetti")}</div>
+                      {bgDati && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <button
+                            type="button"
+                            style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.accentDark, border: `1px solid ${C.accentDark}`, background: 'rgba(201,162,39,0.08)', fontWeight: 700 }}
+                            onClick={() => tiraTabellaBackground('difetti')}
+                            title={`Tira 1d6 dalla tabella ${bgDati.nome}`}
+                          >
+                            🎲 d6
+                          </button>
+                          <select
+                            style={{ ...styles.inlineInput, fontSize: 11, padding: '2px 6px', maxWidth: 160, color: C.inkDim }}
+                            value=""
+                            onChange={(e) => {
+                              if (e.target.value) aggiorna({ difetti: e.target.value });
+                            }}
+                            title="Scegli un difetto dalla tabella del manuale"
+                          >
+                            <option value="">{t('aspetto.scegli_opzione')}</option>
+                            {bgDati.difetti.map((dVoce, idx) => (
+                              <option key={idx} value={dVoce}>{idx + 1}. {dVoce}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                    <AreaTesto
+                      value={scheda.difetti}
+                      placeholder={t("aspetto.difetti_ph")}
+                      onChange={(v) => aggiorna({ difetti: v })}
+                    />
+
+                    {/* Nemici */}
+                    <div style={{ ...styles.moduloLabel, marginTop: 12 }}>⚔️ {t("aspetto.nemici")}</div>
+                    <AreaTesto
+                      value={scheda.nemici}
+                      placeholder={t("aspetto.nemici_ph")}
+                      onChange={(v) => aggiorna({ nemici: v })}
+                    />
+                  </>
+                );
+              })()}
             </Sezione>
           </div>
         </div>
@@ -12425,6 +12641,316 @@ export default function App() {
         </footer>
         <div style={{ height: combat.attivo && combat.aperto ? 220 : 0 }} />
       </main>
+
+      {/* ===== Modale Ispirazione Background (Tabelle 5e) ===== */}
+      {mostraIspirazioneBgModal && (() => {
+        const bgDati = datiTabelleBackground(bgIspirazioneScelto || scheda.background || 'Accolito', lingua);
+        const elencoBg = Object.values(TABELLE_BACKGROUND);
+
+        return (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 2500,
+              padding: 16,
+              background: 'rgba(0,0,0,0.7)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            onClick={(e) => { if (e.target === e.currentTarget) setMostraIspirazioneBgModal(false); }}
+          >
+            <div
+              style={{
+                ...styles.panel,
+                maxWidth: 960,
+                width: '100%',
+                maxHeight: '90vh',
+                overflowY: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+                border: `2px solid ${C.goldDark}`,
+                borderRadius: 12,
+                padding: '16px 20px',
+              }}
+            >
+              {/* Header Modale */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, borderBottom: `1px solid ${C.border}`, paddingBottom: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 28, lineHeight: 1 }}>🎲</span>
+                  <div>
+                    <h2 style={{ ...styles.title, margin: 0, fontSize: 18, letterSpacing: 0.5, color: C.ink }}>
+                      {t('aspetto.ispirazione_titolo')}
+                    </h2>
+                    <div style={{ ...styles.detail, fontSize: 12, color: C.goldDark, fontWeight: 600 }}>
+                      {t('aspetto.ispirazione_sottotitolo')}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  style={{ ...styles.buttonMini, fontSize: 16, padding: '2px 10px', color: C.inkDim, borderRadius: 6 }}
+                  onClick={() => setMostraIspirazioneBgModal(false)}
+                  title={t('modal.chiudi')}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Selettore Background & Azione Rapida Tira Tutto */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 14, background: 'rgba(0,0,0,0.03)', padding: '10px 12px', borderRadius: 8, border: `1px solid ${C.border}` }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>📜 {t('aspetto.background')}:</span>
+                  <select
+                    style={{ ...styles.inlineInput, fontSize: 13, padding: '4px 8px', fontWeight: 600, minWidth: 160 }}
+                    value={bgIspirazioneScelto || scheda.background || 'Accolito'}
+                    onChange={(e) => {
+                      const nuovoBg = e.target.value;
+                      setBgIspirazioneScelto(nuovoBg);
+                      const d = datiTabelleBackground(nuovoBg, lingua);
+                      if (d) {
+                        setBozzaIspirazione({
+                          tratto: d.tratti[0] || '',
+                          ideale: d.ideali[0] || '',
+                          legame: d.legami[0] || '',
+                          difetto: d.difetti[0] || '',
+                        });
+                      }
+                    }}
+                  >
+                    {elencoBg.map((bg) => {
+                      const nomeVisualizzato = lingua === 'en' ? bg.nome_en : bg.nome;
+                      return (
+                        <option key={bg.nome} value={bg.nome}>{nomeVisualizzato}</option>
+                      );
+                    })}
+                  </select>
+                </div>
+                <button
+                  type="button"
+                  style={{ ...styles.button, background: C.gold, color: '#fff', fontSize: 12.5, fontWeight: 700, padding: '6px 14px', border: 'none', borderRadius: 6, display: 'flex', alignItems: 'center', gap: 6 }}
+                  onClick={() => tiraTuttoIspirazione(bgIspirazioneScelto)}
+                >
+                  {t('aspetto.tira_tutto')} (d8, d6, d6, d6)
+                </button>
+              </div>
+
+              {/* Griglia delle 4 Tabelle */}
+              {bgDati && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12, marginBottom: 16 }}>
+                  {/* Card 1: Tratto Caratteriale (d8) */}
+                  <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: C.goldDark }}>👤 {t('aspetto.tratti_caratteriali')} (d8)</span>
+                      <button
+                        type="button"
+                        style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.accentDark, border: `1px solid ${C.accentDark}`, background: 'rgba(201,162,39,0.08)', fontWeight: 700 }}
+                        onClick={() => {
+                          const r = tiraDado(8);
+                          setBozzaIspirazione((b) => ({ ...b, tratto: bgDati.tratti[r - 1] || '' }));
+                        }}
+                      >
+                        🎲 {t('aspetto.tira_dado')} d8
+                      </button>
+                    </div>
+                    <textarea
+                      style={{ ...styles.areaTesto, fontSize: 12, minHeight: 48, marginBottom: 8, padding: '6px 8px' }}
+                      value={bozzaIspirazione.tratto}
+                      onChange={(e) => setBozzaIspirazione((b) => ({ ...b, tratto: e.target.value }))}
+                      placeholder={t('aspetto.tratti_caratteriali_ph')}
+                    />
+                    <div style={{ fontSize: 11, fontWeight: 600, color: C.inkDim, marginBottom: 4 }}>Opzioni della tabella (1-8):</div>
+                    <div style={{ maxHeight: 130, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4, paddingRight: 4 }}>
+                      {bgDati.tratti.map((tVoce, idx) => {
+                        const sel = bozzaIspirazione.tratto === tVoce;
+                        return (
+                          <div
+                            key={idx}
+                            style={{
+                              fontSize: 11.5,
+                              padding: '4px 6px',
+                              borderRadius: 4,
+                              cursor: 'pointer',
+                              background: sel ? 'rgba(201,162,39,0.18)' : 'transparent',
+                              border: sel ? `1px solid ${C.gold}` : '1px solid transparent',
+                              color: sel ? C.goldDark : C.ink,
+                              fontWeight: sel ? 700 : 400,
+                            }}
+                            onClick={() => setBozzaIspirazione((b) => ({ ...b, tratto: tVoce }))}
+                          >
+                            <strong>{idx + 1}.</strong> {tVoce}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Card 2: Ideale (d6) */}
+                  <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: C.goldDark }}>⚖️ {t('aspetto.ideali')} (d6)</span>
+                      <button
+                        type="button"
+                        style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.accentDark, border: `1px solid ${C.accentDark}`, background: 'rgba(201,162,39,0.08)', fontWeight: 700 }}
+                        onClick={() => {
+                          const r = tiraDado(6);
+                          setBozzaIspirazione((b) => ({ ...b, ideale: bgDati.ideali[r - 1] || '' }));
+                        }}
+                      >
+                        🎲 {t('aspetto.tira_dado')} d6
+                      </button>
+                    </div>
+                    <textarea
+                      style={{ ...styles.areaTesto, fontSize: 12, minHeight: 48, marginBottom: 8, padding: '6px 8px' }}
+                      value={bozzaIspirazione.ideale}
+                      onChange={(e) => setBozzaIspirazione((b) => ({ ...b, ideale: e.target.value }))}
+                      placeholder={t('aspetto.ideali_ph')}
+                    />
+                    <div style={{ fontSize: 11, fontWeight: 600, color: C.inkDim, marginBottom: 4 }}>Opzioni della tabella (1-6):</div>
+                    <div style={{ maxHeight: 130, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4, paddingRight: 4 }}>
+                      {bgDati.ideali.map((iVoce, idx) => {
+                        const sel = bozzaIspirazione.ideale === iVoce;
+                        return (
+                          <div
+                            key={idx}
+                            style={{
+                              fontSize: 11.5,
+                              padding: '4px 6px',
+                              borderRadius: 4,
+                              cursor: 'pointer',
+                              background: sel ? 'rgba(201,162,39,0.18)' : 'transparent',
+                              border: sel ? `1px solid ${C.gold}` : '1px solid transparent',
+                              color: sel ? C.goldDark : C.ink,
+                              fontWeight: sel ? 700 : 400,
+                            }}
+                            onClick={() => setBozzaIspirazione((b) => ({ ...b, ideale: iVoce }))}
+                          >
+                            <strong>{idx + 1}.</strong> {iVoce}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Card 3: Legame (d6) */}
+                  <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: C.goldDark }}>🔗 {t('aspetto.legami')} (d6)</span>
+                      <button
+                        type="button"
+                        style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.accentDark, border: `1px solid ${C.accentDark}`, background: 'rgba(201,162,39,0.08)', fontWeight: 700 }}
+                        onClick={() => {
+                          const r = tiraDado(6);
+                          setBozzaIspirazione((b) => ({ ...b, legame: bgDati.legami[r - 1] || '' }));
+                        }}
+                      >
+                        🎲 {t('aspetto.tira_dado')} d6
+                      </button>
+                    </div>
+                    <textarea
+                      style={{ ...styles.areaTesto, fontSize: 12, minHeight: 48, marginBottom: 8, padding: '6px 8px' }}
+                      value={bozzaIspirazione.legame}
+                      onChange={(e) => setBozzaIspirazione((b) => ({ ...b, legame: e.target.value }))}
+                      placeholder={t('aspetto.legami_ph')}
+                    />
+                    <div style={{ fontSize: 11, fontWeight: 600, color: C.inkDim, marginBottom: 4 }}>Opzioni della tabella (1-6):</div>
+                    <div style={{ maxHeight: 130, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4, paddingRight: 4 }}>
+                      {bgDati.legami.map((lVoce, idx) => {
+                        const sel = bozzaIspirazione.legame === lVoce;
+                        return (
+                          <div
+                            key={idx}
+                            style={{
+                              fontSize: 11.5,
+                              padding: '4px 6px',
+                              borderRadius: 4,
+                              cursor: 'pointer',
+                              background: sel ? 'rgba(201,162,39,0.18)' : 'transparent',
+                              border: sel ? `1px solid ${C.gold}` : '1px solid transparent',
+                              color: sel ? C.goldDark : C.ink,
+                              fontWeight: sel ? 700 : 400,
+                            }}
+                            onClick={() => setBozzaIspirazione((b) => ({ ...b, legame: lVoce }))}
+                          >
+                            <strong>{idx + 1}.</strong> {lVoce}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Card 4: Difetto (d6) */}
+                  <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: C.goldDark }}>⚡ {t('aspetto.difetti')} (d6)</span>
+                      <button
+                        type="button"
+                        style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.accentDark, border: `1px solid ${C.accentDark}`, background: 'rgba(201,162,39,0.08)', fontWeight: 700 }}
+                        onClick={() => {
+                          const r = tiraDado(6);
+                          setBozzaIspirazione((b) => ({ ...b, difetto: bgDati.difetti[r - 1] || '' }));
+                        }}
+                      >
+                        🎲 {t('aspetto.tira_dado')} d6
+                      </button>
+                    </div>
+                    <textarea
+                      style={{ ...styles.areaTesto, fontSize: 12, minHeight: 48, marginBottom: 8, padding: '6px 8px' }}
+                      value={bozzaIspirazione.difetto}
+                      onChange={(e) => setBozzaIspirazione((b) => ({ ...b, difetto: e.target.value }))}
+                      placeholder={t('aspetto.difetti_ph')}
+                    />
+                    <div style={{ fontSize: 11, fontWeight: 600, color: C.inkDim, marginBottom: 4 }}>Opzioni della tabella (1-6):</div>
+                    <div style={{ maxHeight: 130, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4, paddingRight: 4 }}>
+                      {bgDati.difetti.map((dVoce, idx) => {
+                        const sel = bozzaIspirazione.difetto === dVoce;
+                        return (
+                          <div
+                            key={idx}
+                            style={{
+                              fontSize: 11.5,
+                              padding: '4px 6px',
+                              borderRadius: 4,
+                              cursor: 'pointer',
+                              background: sel ? 'rgba(201,162,39,0.18)' : 'transparent',
+                              border: sel ? `1px solid ${C.gold}` : '1px solid transparent',
+                              color: sel ? C.goldDark : C.ink,
+                              fontWeight: sel ? 700 : 400,
+                            }}
+                            onClick={() => setBozzaIspirazione((b) => ({ ...b, difetto: dVoce }))}
+                          >
+                            <strong>{idx + 1}.</strong> {dVoce}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Footer Modale con Azioni */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, borderTop: `1px solid ${C.border}`, paddingTop: 12 }}>
+                <button
+                  type="button"
+                  style={{ ...styles.button, fontSize: 13, padding: '6px 14px' }}
+                  onClick={() => setMostraIspirazioneBgModal(false)}
+                >
+                  {t('modal.chiudi')}
+                </button>
+                <button
+                  type="button"
+                  style={{ ...styles.button, background: C.accentDark, color: '#fff', fontSize: 13, fontWeight: 700, padding: '6px 18px' }}
+                  onClick={applicaIspirazioneBg}
+                >
+                  {t('aspetto.applica')}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ===== Modale Diario di Sessione ===== */}
       {mostraDiarioModal && (

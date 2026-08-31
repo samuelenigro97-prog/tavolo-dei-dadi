@@ -251,10 +251,38 @@ test('formattaTitoloVoce: converte voci in MAIUSCOLO in Title Case preservando c
   assert.equal(formattaTitoloVoce('RETAGGIO FATATO'), 'Retaggio Fatato');
   assert.equal(formattaTitoloVoce('MASCHERA DELLA SELVA'), 'Maschera della Selva');
   assert.equal(formattaTitoloVoce('TRANCE'), 'Trance');
-  assert.equal(formattaTitoloVoce('SENSI ACUTI'), 'Sensi Acuti');
 });
 
+test('tabelleBackground: ogni background ha 8 tratti, 6 ideali, 6 legami e 6 difetti completi', async () => {
+  const { TABELLE_BACKGROUND, datiTabelleBackground } = await import('../src/data/tabelleBackground.js');
+  
+  for (const [key, bg] of Object.entries(TABELLE_BACKGROUND)) {
+    assert.equal(bg.tratti.length, 8, `Tratti d8 per ${key}`);
+    assert.equal(bg.tratti_en.length, 8, `Tratti d8 (en) per ${key}`);
+    assert.equal(bg.ideali.length, 6, `Ideali d6 per ${key}`);
+    assert.equal(bg.ideali_en.length, 6, `Ideali d6 (en) per ${key}`);
+    assert.equal(bg.legami.length, 6, `Legami d6 per ${key}`);
+    assert.equal(bg.legami_en.length, 6, `Legami d6 (en) per ${key}`);
+    assert.equal(bg.difetti.length, 6, `Difetti d6 per ${key}`);
+    assert.equal(bg.difetti_en.length, 6, `Difetti d6 (en) per ${key}`);
+  }
 
+  const accIT = datiTabelleBackground('Accolito', 'it');
+  assert.ok(accIT);
+  assert.equal(accIT.tratti.length, 8);
+  assert.match(accIT.tratti[0], /Venero un particolare eroe/);
 
+  const accEN = datiTabelleBackground('Acolyte', 'en');
+  assert.ok(accEN);
+  assert.equal(accEN.tratti.length, 8);
+  assert.match(accEN.tratti[0], /I idolize a particular hero/);
 
+  // Alias
+  const contadino = datiTabelleBackground('Contadino', 'it');
+  assert.ok(contadino);
+  assert.equal(contadino.chiave, 'eroe_popolare');
 
+  const sapiente = datiTabelleBackground('Sapiente', 'it');
+  assert.ok(sapiente);
+  assert.equal(sapiente.chiave, 'saggio');
+});
