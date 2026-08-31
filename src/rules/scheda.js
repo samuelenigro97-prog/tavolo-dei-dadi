@@ -10,6 +10,26 @@ export function formattaNomePg(nome) {
   return pulito.replace(/(^|[\s\-(/'"])[a-zà-öø-ÿ]/gu, (m) => m.toUpperCase());
 }
 
+export function formattaTitoloVoce(str) {
+  if (!str || typeof str !== 'string') return '';
+  const pulito = str.trim();
+  if (!pulito) return '';
+  const base = (pulito === pulito.toUpperCase() && /[A-ZÀ-ÖØ-ß]/.test(pulito))
+    ? pulito.toLowerCase()
+    : pulito;
+
+  const minuscole = new Set(['di', 'a', 'da', 'in', 'con', 'su', 'per', 'tra', 'fra', 'il', 'lo', 'la', 'i', 'gli', 'le', 'del', 'dello', 'della', 'dei', 'degli', 'delle', 'al', 'allo', 'alla', 'ai', 'agli', 'alle', 'dal', 'dallo', 'dalla', 'dai', 'dagli', 'dalle', 'nel', 'nello', 'nella', 'nei', 'negli', 'nelle', 'sul', 'sullo', 'sulla', 'sui', 'sugli', 'sulle', 'e', 'ed', 'o', 'od', 'of', 'and', 'the', 'in', 'on', 'at', 'to', 'for', 'with', 'by']);
+
+  return base.split(/(\s+|[-/()])/).map((token, idx) => {
+    if (!token || /^\s+$/.test(token) || /^[-/()]$/.test(token)) return token;
+    const lower = token.toLowerCase();
+    if (idx > 0 && minuscole.has(lower)) {
+      return lower;
+    }
+    return lower.charAt(0).toUpperCase() + lower.slice(1);
+  }).join('');
+}
+
 function nomeNormalizzato(v) {
   return String(v || '').toLocaleLowerCase('it').replace(/[^a-zà-ÿ0-9]/gi, ' ').replace(/\s+/g, ' ').trim();
 }

@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { t, traduciDato } from '../i18n';
 import { C } from './tema.js';
 import { styles } from './stili.js';
+import { formattaTitoloVoce } from '../rules/scheda.js';
 
 /** Ordine coerente per tutte le tendine testuali riusabili. */
 function ordinaAlfabeticamente(opzioni, etichetta = traduciDato) {
@@ -380,13 +381,13 @@ export function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni,
     if (idx > 0 && idx <= 40) {
       const nome = s.slice(0, idx).trim();
       const desc = s.slice(idx + 1).trim();
-      if (desc) return { nome, desc };
+      if (desc) return { nome: formattaTitoloVoce(nome), desc };
     }
     const matchParen = s.match(/^([^(]+)\s*\(([^)]+)\)$/);
     if (matchParen && matchParen[1].trim().length <= 35) {
-      return { nome: matchParen[1].trim(), desc: matchParen[2].trim() };
+      return { nome: formattaTitoloVoce(matchParen[1].trim()), desc: matchParen[2].trim() };
     }
-    return { nome: s, desc: '' };
+    return { nome: formattaTitoloVoce(s), desc: '' };
   };
 
   // Le opzioni possono arrivare come stringhe o come oggetti { nome, desc }.
@@ -395,7 +396,7 @@ export function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni,
     .sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'it', { sensitivity: 'base' }));
   const chip = { background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '5px 10px', fontSize: 13, cursor: 'pointer', color: C.ink, whiteSpace: unicaRiga ? 'nowrap' : 'normal' };
   const spEdit = edit
-    ? (lookup ? lookup(edit.valore) : null) || estraiNomeVoce(edit.valore).desc || null
+    ? (lookup ? lookup(edit.valore) || lookup(formattaTitoloVoce(edit.valore)) : null) || estraiNomeVoce(edit.valore).desc || null
     : null;
   return (
     <>
@@ -403,7 +404,7 @@ export function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni,
         {righe.length === 0 && <span style={{ ...styles.detail, fontStyle: 'italic' }}>{placeholder || 'Nessuna voce.'}</span>}
         {righe.map((r, i) => {
           const { nome, desc } = estraiNomeVoce(r);
-          const sp = (lookup ? lookup(r) || lookup(nome) : null) || desc;
+          const sp = (lookup ? lookup(r) || lookup(nome) || lookup(formattaTitoloVoce(r)) : null) || desc;
           const isMagiaSelvaggia = /magia selvaggia/i.test(nome) && onRoll;
           return (
             <div key={i} style={{ display: 'flex', alignItems: 'center', flexShrink: unicaRiga ? 0 : 1 }}>

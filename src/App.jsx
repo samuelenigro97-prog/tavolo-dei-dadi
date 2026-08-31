@@ -7,7 +7,7 @@ import { avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro, s
 import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI } from './ui/tema.js';
 import { styles, GLOBAL_CSS } from './ui/stili.js';
 import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, Sezione, CampoBloccato } from './ui/componenti.jsx';
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg } from './rules/scheda.js';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from './data/condizioni.js';
@@ -2244,11 +2244,29 @@ function normalizeImported(rawDati) {
     privilegiSottoclasse: str(dati.privilegiSottoclasse),
     trattiSpecie: (() => {
       const ts = str(dati.trattiSpecie).trim();
-      if (ts) return ts;
+      if (ts) {
+        return ts.split('\n').map((line) => {
+          const colonIdx = line.indexOf(':');
+          if (colonIdx > 0 && colonIdx <= 40) {
+            return `${formattaTitoloVoce(line.slice(0, colonIdx))}: ${line.slice(colonIdx + 1).trim()}`;
+          }
+          return formattaTitoloVoce(line);
+        }).join('\n');
+      }
       const compSp = COMPETENZE_SPECIE[traduciEN(str(dati.specie))];
-      return Array.isArray(compSp) ? compSp.join(', ') : '';
+      return Array.isArray(compSp) ? compSp.map(formattaTitoloVoce).join(', ') : '';
     })(),
-    talenti: str(dati.talenti),
+    talenti: (() => {
+      const tal = str(dati.talenti).trim();
+      if (!tal) return '';
+      return tal.split('\n').map((line) => {
+        const colonIdx = line.indexOf(':');
+        if (colonIdx > 0 && colonIdx <= 40) {
+          return `${formattaTitoloVoce(line.slice(0, colonIdx))}: ${line.slice(colonIdx + 1).trim()}`;
+        }
+        return formattaTitoloVoce(line);
+      }).join('\n');
+    })(),
     metamagie: str(dati.metamagie),
     equipaggiamento: str(dati.equipaggiamento),
     inventario: (() => {

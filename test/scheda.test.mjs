@@ -245,6 +245,16 @@ test('classificaIncantesimoCombattimento: Frusta di Spine e Morsa del Gelo ricon
   assert.equal(sp2.isTS, true); // Tiro salvezza su Costituzione
 });
 
+test('formattaTitoloVoce: converte voci in MAIUSCOLO in Title Case preservando congiunzioni/preposizioni', async () => {
+  const { formattaTitoloVoce } = await import('../src/rules/scheda.js');
+  assert.equal(formattaTitoloVoce('LINGUA DEI BOSCHI'), 'Lingua dei Boschi');
+  assert.equal(formattaTitoloVoce('RETAGGIO FATATO'), 'Retaggio Fatato');
+  assert.equal(formattaTitoloVoce('MASCHERA DELLA SELVA'), 'Maschera della Selva');
+  assert.equal(formattaTitoloVoce('TRANCE'), 'Trance');
+  assert.equal(formattaTitoloVoce('SENSI ACUTI'), 'Sensi Acuti');
+});
+
+
 
 
 
