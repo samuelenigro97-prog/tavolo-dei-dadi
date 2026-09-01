@@ -321,17 +321,17 @@ function TendinaCompetenzaCustom({
 function TendinaArmature({ armature, onModifica }) {
   const arm = armature || {};
   const tipi = [
-    { id: 'leggera', label: 'Armatura Leggera' },
-    { id: 'media', label: 'Armatura Media' },
-    { id: 'pesante', label: 'Armatura Pesante' },
-    { id: 'scudi', label: 'Scudi' },
+    { id: 'leggera', label: t('armatura.leggera') || 'Armatura Leggera' },
+    { id: 'media', label: t('armatura.media') || 'Armatura Media' },
+    { id: 'pesante', label: t('armatura.pesante') || 'Armatura Pesante' },
+    { id: 'scudi', label: t('armatura.scudi') || 'Scudi' },
   ];
   const attive = tipi.filter((t) => !!arm[t.id]);
   const anteprima = attive.length === 0
-    ? 'Nessuna armatura'
+    ? (t('train.nessuna_armatura') || 'Nessuna armatura')
     : attive.length === 4
-      ? 'Tutte (Leggere, Medie, Pesanti, Scudi)'
-      : attive.map((t) => t.label.replace('Armatura ', '')).join(', ');
+      ? (t('train.tutte_armature') || 'Tutte (Leggere, Medie, Pesanti, Scudi)')
+      : attive.map((t) => traduciDato(t.label.replace(/^Armatura\s+|^Armor\s+/i, ''))).join(', ');
 
   const voci = tipi.map((t) => ({
     id: t.id,
@@ -357,20 +357,20 @@ function TendinaCategorieArmi({ valoreArmi, onImpostaCategoria }) {
   const haGuerra = /armi\s*da\s*guerra|martial\s*weapons/i.test(raw);
   const haEntrambe = haSemplici && haGuerra;
 
-  let anteprima = 'Nessuna categoria';
-  if (haEntrambe) anteprima = 'Armi semplici e da guerra';
-  else if (haSemplici) anteprima = 'Armi semplici';
-  else if (haGuerra) anteprima = 'Armi da guerra';
+  let anteprima = t('train.nessuna_categoria') || 'Nessuna categoria';
+  if (haEntrambe) anteprima = t('train.semplici_guerra') || 'Armi semplici e da guerra';
+  else if (haSemplici) anteprima = t('train.semplici') || 'Armi semplici';
+  else if (haGuerra) anteprima = t('train.guerra') || 'Armi da guerra';
 
   const opzioni = [
-    { id: 'entrambe', label: 'Armi semplici e da guerra', attivo: haEntrambe },
-    { id: 'semplici', label: 'Armi semplici', attivo: haSemplici && !haGuerra },
-    { id: 'guerra', label: 'Armi da guerra', attivo: haGuerra && !haSemplici },
+    { id: 'entrambe', label: t('train.semplici_guerra') || 'Armi semplici e da guerra', attivo: haEntrambe },
+    { id: 'semplici', label: t('train.semplici') || 'Armi semplici', attivo: haSemplici && !haGuerra },
+    { id: 'guerra', label: t('train.guerra') || 'Armi da guerra', attivo: haGuerra && !haSemplici },
   ];
 
   return (
     <TendinaCompetenzaCustom
-      label="CATEGORIE ARMI"
+      label={t('train.categorie_armi') || 'CATEGORIE ARMI'}
       anteprima={anteprima}
       voci={opzioni}
       onToggle={(id) => {
@@ -397,10 +397,10 @@ function TendinaArmiSpecifiche({ valoreArmi, onToggleArmaSingola }) {
   };
 
   const gruppi = GRUPPI_ARMI_5E.map((g) => ({
-    titolo: g.titolo,
+    titolo: traduciDato(g.titolo),
     voci: g.voci.map((nome) => ({
       id: nome,
-      label: nome,
+      label: traduciDato(nome),
       attivo: isArmaAttiva(nome),
     })),
   }));
@@ -408,7 +408,9 @@ function TendinaArmiSpecifiche({ valoreArmi, onToggleArmaSingola }) {
   const tutteVoci = gruppi.flatMap((g) => g.voci);
   const competenti = tutteVoci.filter((v) => v.attivo);
 
-  const anteprima = competenti.length === 0 ? 'Nessuna arma' : competenti.map((c) => c.label).join(', ');
+  const anteprima = competenti.length === 0
+    ? (t('train.nessuna_arma') || 'Nessuna arma')
+    : competenti.map((c) => c.label).join(', ');
 
   return (
     <TendinaCompetenzaCustom
@@ -432,26 +434,28 @@ function TendinaStrumenti({ valoreStrumenti, onToggleStrumento }) {
   const customItems = listaAttuale.filter((x) => !standardInGruppi.has(x.toLowerCase()));
 
   const gruppi = GRUPPI_STRUMENTI_5E.map((g) => ({
-    titolo: g.titolo,
+    titolo: traduciDato(g.titolo),
     voci: g.voci.map((nome) => ({
       id: nome,
-      label: nome,
+      label: traduciDato(nome),
       attivo: isStrumentoAttivo(nome),
     })),
   }));
 
   if (customItems.length > 0) {
     gruppi.push({
-      titolo: '✨ Personalizzati',
+      titolo: t('train.personalizzati') || '✨ Personalizzati',
       voci: customItems.map((nome) => ({
         id: nome,
-        label: nome,
+        label: traduciDato(nome),
         attivo: true,
       })),
     });
   }
 
-  const anteprima = listaAttuale.length === 0 ? 'Nessuno strumento' : listaAttuale.join(', ');
+  const anteprima = listaAttuale.length === 0
+    ? (t('train.nessuno_strumento') || 'Nessuno strumento')
+    : listaAttuale.map((s) => traduciDato(s)).join(', ');
 
   return (
     <TendinaCompetenzaCustom
@@ -478,26 +482,28 @@ function TendinaLingue({ valoreLingue, onToggleLingua }) {
   const customItems = listaAttuale.filter((x) => !standardInGruppi.has(x.toLowerCase()));
 
   const gruppi = GRUPPI_LINGUE_5E.map((g) => ({
-    titolo: g.titolo,
+    titolo: traduciDato(g.titolo),
     voci: g.voci.map((nome) => ({
       id: nome,
-      label: nome,
+      label: traduciDato(nome),
       attivo: isLinguaAttiva(nome),
     })),
   }));
 
   if (customItems.length > 0) {
     gruppi.push({
-      titolo: '✨ Personalizzate',
+      titolo: t('train.personalizzate') || '✨ Personalizzate',
       voci: customItems.map((nome) => ({
         id: nome,
-        label: nome,
+        label: traduciDato(nome),
         attivo: true,
       })),
     });
   }
 
-  const anteprima = listaAttuale.length === 0 ? 'Nessuna lingua' : listaAttuale.join(', ');
+  const anteprima = listaAttuale.length === 0
+    ? (t('train.nessuna_lingua') || 'Nessuna lingua')
+    : listaAttuale.map((l) => traduciDato(l)).join(', ');
 
   return (
     <TendinaCompetenzaCustom
@@ -9622,7 +9628,7 @@ export default function App() {
                 <Sezione titolo={t("sez.risorse")} {...apertoProps('risorse')}>
                   {scheda.risorse.length === 0 && (
                     <p style={{ ...styles.detail, marginTop: 0, fontSize: 11 }}>
-                      Nessuna risorsa. Aggiungi Ki, punti stregoneria, ira, ispirazione bardica, usi dei privilegi…
+                      {t('res.nessuna_risorsa')}
                     </p>
                   )}
                   {scheda.risorse.map((r) => {
@@ -9630,6 +9636,7 @@ export default function App() {
                       aggiorna({ risorse: scheda.risorse.map((x) => (x.id === r.id ? { ...x, ...patch } : x)) });
                     const spiegazione = spiegaRisorsa(r.nome);
                     const automatica = String(r.id || '').startsWith('auto-');
+                    const nomeVisualizzato = traduciDato(r.nome);
                     return (
                       <div key={r.id} style={{ marginBottom: 8, fontSize: 12, paddingBottom: 8, borderBottom: `1px dotted ${C.border}` }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
@@ -9637,19 +9644,19 @@ export default function App() {
                             <button
                               type="button"
                               title={spiegazione}
-                              onClick={() => setInfo({ titolo: r.nome, testo: spiegazione })}
+                              onClick={() => setInfo({ titolo: nomeVisualizzato, testo: spiegazione })}
                               style={{ padding: 0, border: 0, background: 'transparent', color: C.ink, font: 'inherit', fontWeight: 600, textAlign: 'left', cursor: 'pointer', textDecoration: 'none', marginRight: 'auto', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
-                            >{r.nome}</button>
+                            >{nomeVisualizzato}</button>
                           ) : (
-                            <span style={{ marginRight: 'auto', minWidth: 0 }}><Editable value={r.nome} onChange={(v) => modifica({ nome: v })} width={110} title={t('tip.nome_risorsa')} /></span>
+                            <span style={{ marginRight: 'auto', minWidth: 0 }}><Editable value={nomeVisualizzato} onChange={(v) => modifica({ nome: v })} width={110} title={t('tip.nome_risorsa')} /></span>
                           )}
                           {!automatica && (
                             <button
                               style={{ ...styles.buttonMini, padding: '0 6px', color: C.red, flexShrink: 0 }}
                               title={t('tip.rimuovi_risorsa')}
                               onClick={() => setConferma({
-                                titolo: 'Elimina risorsa',
-                                testo: `Vuoi eliminare la risorsa "${r.nome || 'questa risorsa'}"?`,
+                                titolo: t('res.elimina_titolo') || 'Elimina risorsa',
+                                testo: `${t('modal.elimina')} "${nomeVisualizzato || '?'}"?`,
                                 onConferma: () => aggiorna({ risorse: scheda.risorse.filter((x) => x.id !== r.id) }),
                               })}
                             >✕</button>
@@ -10335,7 +10342,9 @@ export default function App() {
             </div>
             <div
               style={{ ...styles.vitalBox }}
-              title={`🏃 Salto in Lungo (con rincorsa): ${punteggioCaratteristica(scheda, 'forza') || 10} piedi (${((punteggioCaratteristica(scheda, 'forza') || 10) * 0.3).toFixed(1)} m) • ⬆️ Salto in Alto: ${3 + modificatore(punteggioCaratteristica(scheda, 'forza') || 10)} piedi (${((3 + modificatore(punteggioCaratteristica(scheda, 'forza') || 10)) * 0.3).toFixed(1)} m) • 🫁 Trattenere il Respiro: ${Math.max(1, 1 + modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10))} minuti`}
+              title={linguaAttuale === 'en'
+                ? `🏃 Long Jump (running): ${punteggioCaratteristica(scheda, 'forza') || 10} ft (${((punteggioCaratteristica(scheda, 'forza') || 10) * 0.3).toFixed(1)} m) • ⬆️ High Jump: ${3 + modificatore(punteggioCaratteristica(scheda, 'forza') || 10)} ft (${((3 + modificatore(punteggioCaratteristica(scheda, 'forza') || 10)) * 0.3).toFixed(1)} m) • 🫁 Hold Breath: ${Math.max(1, 1 + modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10))} minutes`
+                : `🏃 Salto in Lungo (con rincorsa): ${punteggioCaratteristica(scheda, 'forza') || 10} piedi (${((punteggioCaratteristica(scheda, 'forza') || 10) * 0.3).toFixed(1)} m) • ⬆️ Salto in Alto: ${3 + modificatore(punteggioCaratteristica(scheda, 'forza') || 10)} piedi (${((3 + modificatore(punteggioCaratteristica(scheda, 'forza') || 10)) * 0.3).toFixed(1)} m) • 🫁 Trattenere il Respiro: ${Math.max(1, 1 + modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10))} minuti`}
             >
               <div style={styles.vitalLabel}>{t("vital.movimento")}</div>
               <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
@@ -10344,7 +10353,7 @@ export default function App() {
                   <span style={{ fontSize: 17, color: C.inkDim, marginLeft: 2, fontWeight: 600 }}> m</span>
                 </div>
                 <div style={{ fontSize: 10, color: C.goldDark, textAlign: 'center', fontWeight: 600, marginTop: 2 }}>
-                  🏃 Salto: {((punteggioCaratteristica(scheda, 'forza') || 10) * 0.3).toFixed(1)}m
+                  🏃 {t('vital.salto') || 'Salto'}: {((punteggioCaratteristica(scheda, 'forza') || 10) * 0.3).toFixed(1)}m
                 </div>
               </div>
             </div>
