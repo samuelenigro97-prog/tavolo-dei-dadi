@@ -15219,7 +15219,7 @@ export default function App() {
                         key={cb.id}
                         style={{
                           flex: '0 0 auto',
-                          width: 220,
+                          width: 236,
                           border: inTurno
                             ? `2.5px solid var(--c-gold-dark)`
                             : prossimo
@@ -15264,20 +15264,50 @@ export default function App() {
                         <div style={{ padding: 8, display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
                           {/* Riga 1: Iniziativa, Nome e Rimuovi */}
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            {/* Box Iniziativa */}
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: C.bg, border: `1px solid ${C.border}`, borderRadius: 6, padding: '1px 3px', minWidth: 36 }} title={t('ct.iniziativa')}>
-                              <span style={{ fontSize: 8.5, fontWeight: 800, color: C.inkDim, lineHeight: 1 }}>INIZ</span>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            {/* Box Iniziativa leggibile e spazioso */}
+                            <div
+                              style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                background: C.bg,
+                                border: `1.5px solid ${inTurno ? 'var(--c-gold-dark)' : C.border}`,
+                                borderRadius: 6,
+                                padding: '1px 4px',
+                                minWidth: 48,
+                                flexShrink: 0,
+                              }}
+                              title={t('ct.iniziativa')}
+                            >
+                              <span style={{ fontSize: 9, fontWeight: 900, color: C.inkDim, lineHeight: 1, letterSpacing: 0.5 }}>INIZ</span>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
                                 <input
-                                  type="number"
+                                  type="text"
+                                  inputMode="numeric"
+                                  pattern="[0-9]*"
                                   value={cb.iniziativa ?? 0}
-                                  onChange={(e) => modCombat(cb.id, { iniziativa: parseInt(e.target.value, 10) || 0 })}
+                                  onChange={(e) => {
+                                    const val = parseInt(e.target.value.replace(/[^0-9-]/g, ''), 10);
+                                    modCombat(cb.id, { iniziativa: isNaN(val) ? 0 : val });
+                                  }}
                                   onBlur={() => ordinaIniziativa()}
                                   onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
-                                  style={{ width: 26, textAlign: 'center', fontWeight: 800, fontSize: 14, color: col, padding: 0, border: 'none', background: 'transparent', height: 18 }}
+                                  style={{
+                                    width: 26,
+                                    textAlign: 'center',
+                                    fontWeight: 900,
+                                    fontSize: 15,
+                                    color: col,
+                                    padding: 0,
+                                    border: 'none',
+                                    background: 'transparent',
+                                    height: 19,
+                                    outline: 'none',
+                                  }}
                                 />
                                 <button
-                                  style={{ padding: 0, fontSize: 10, border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.7 }}
+                                  type="button"
+                                  style={{ padding: 0, fontSize: 12, border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.85, lineHeight: 1 }}
                                   title="Tira d20 Iniziativa"
                                   onClick={() => {
                                     const roll = tiraDado(20) + (cb.tipo === 'pg' ? modificatore(punteggioCaratteristica(scheda, 'destrezza') || 10) : Math.floor(Math.random() * 5));
@@ -15333,28 +15363,82 @@ export default function App() {
                             </span>
                           </div>
 
-                          {/* Riga 3: Punti Ferita e Barra Vita */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+                          {/* Riga 3: Punti Ferita, PF Temporanei e Barra Vita */}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
                               <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
                                 <strong style={{ fontSize: 17, color: morto ? C.red : pctVita > 50 ? C.green : pctVita > 25 ? C.goldDark : C.red }}>
                                   <Editable value={cb.pfAttuali} tipo="numero" width={32} onChange={(v) => modCombat(cb.id, { pfAttuali: Math.max(0, v) })} />
                                 </strong>
                                 <span style={{ color: C.inkDim, fontSize: 12 }}>/ <Editable value={cb.pfMax} tipo="numero" width={32} onChange={(v) => modCombat(cb.id, { pfMax: Math.max(1, v) })} /> PF</span>
                               </div>
-                              {cb.pfTemp > 0 ? (
-                                <span style={{ color: '#0066cc', fontSize: 11, fontWeight: 700 }} title="PF Temporanei">
-                                  +<Editable value={cb.pfTemp} tipo="numero" width={20} onChange={(v) => modCombat(cb.id, { pfTemp: Math.max(0, v) })} /> Temp
-                                </span>
-                              ) : (
-                                <span style={{ color: C.inkDim, fontSize: 10 }} title="Aggiungi PF Temporanei">
-                                  ➕<Editable value={cb.pfTemp} tipo="numero" width={16} onChange={(v) => modCombat(cb.id, { pfTemp: Math.max(0, v) })} />
-                                </span>
-                              )}
+
+                              {/* Chip PF Temporanei chiaro e interattivo */}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                {cb.pfTemp > 0 ? (
+                                  <span
+                                    style={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: 3,
+                                      background: 'rgba(43,117,203,0.14)',
+                                      border: '1px solid #2b75cb',
+                                      borderRadius: 6,
+                                      padding: '1px 5px',
+                                      color: '#2b75cb',
+                                      fontSize: 11,
+                                      fontWeight: 800,
+                                    }}
+                                    title="PF Temporanei attivi (clicca per modificare o × per rimuovere)"
+                                  >
+                                    <span>🛡️+</span>
+                                    <Editable
+                                      value={cb.pfTemp}
+                                      tipo="numero"
+                                      width={22}
+                                      onChange={(v) => modCombat(cb.id, { pfTemp: Math.max(0, v) })}
+                                      style={{ fontWeight: 800, color: '#2b75cb' }}
+                                    />
+                                    <button
+                                      type="button"
+                                      style={{ border: 'none', background: 'transparent', color: '#2b75cb', padding: 0, fontSize: 11, cursor: 'pointer', fontWeight: 800, lineHeight: 1 }}
+                                      title="Azzera PF Temporanei"
+                                      onClick={() => modCombat(cb.id, { pfTemp: 0 })}
+                                    >
+                                      ×
+                                    </button>
+                                  </span>
+                                ) : (
+                                  <span
+                                    style={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: 2,
+                                      background: 'rgba(0,0,0,0.03)',
+                                      border: `1px dashed ${C.border}`,
+                                      borderRadius: 6,
+                                      padding: '1px 5px',
+                                      color: C.inkDim,
+                                      fontSize: 10.5,
+                                    }}
+                                    title="Aggiungi PF Temporanei (clicca sul numero per impostare)"
+                                  >
+                                    <span>🛡️</span>
+                                    <Editable
+                                      value={cb.pfTemp || 0}
+                                      tipo="numero"
+                                      width={20}
+                                      onChange={(v) => modCombat(cb.id, { pfTemp: Math.max(0, v) })}
+                                      style={{ color: C.inkDim }}
+                                    />
+                                    <span style={{ fontSize: 9.5 }}>Temp</span>
+                                  </span>
+                                )}
+                              </div>
                             </div>
 
-                            {/* Barra della Vita */}
-                            <div style={{ height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.15)', overflow: 'hidden', width: '100%' }}>
+                            {/* Barra della Vita con indicatore PF Temp */}
+                            <div style={{ height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.15)', overflow: 'hidden', width: '100%', position: 'relative', display: 'flex' }}>
                               <div
                                 style={{
                                   width: `${pctVita}%`,
@@ -15363,10 +15447,21 @@ export default function App() {
                                   transition: 'width 0.25s ease',
                                 }}
                               />
+                              {cb.pfTemp > 0 && (
+                                <div
+                                  style={{
+                                    width: `${Math.min(100 - pctVita, Math.max(5, (cb.pfTemp / Math.max(1, cb.pfMax)) * 100))}%`,
+                                    height: '100%',
+                                    background: '#2b75cb',
+                                    transition: 'width 0.25s ease',
+                                  }}
+                                  title={`PF Temporanei: +${cb.pfTemp}`}
+                                />
+                              )}
                             </div>
                           </div>
 
-                          {/* Riga 4: Danno e Cura Rapidi */}
+                          {/* Riga 4: Danno, Cura e PF Temp Rapidi */}
                           <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
                             <input
                               type="number"
@@ -15374,21 +15469,34 @@ export default function App() {
                               onChange={(e) => setCtDmg((d) => ({ ...d, [cb.id]: e.target.value }))}
                               onKeyDown={(e) => e.key === 'Enter' && applica(-1)}
                               placeholder={t('ct.danno_ph')}
-                              style={{ ...styles.inlineInput, flex: 1, minWidth: 0, padding: '3px 5px', fontSize: 12, height: 24 }}
+                              style={{ ...styles.inlineInput, width: 44, padding: '3px 4px', fontSize: 12, height: 24, textAlign: 'center' }}
                             />
                             <button
-                              style={{ ...styles.buttonMini, color: '#b03a2e', borderColor: '#b03a2e', padding: '2px 6px', fontWeight: 700, fontSize: 11, height: 24 }}
+                              style={{ ...styles.buttonMini, color: '#b03a2e', borderColor: '#b03a2e', padding: '2px 4px', fontWeight: 700, fontSize: 10.5, height: 24, flex: 1, whiteSpace: 'nowrap' }}
                               title={t('ct.danno')}
                               onClick={() => applica(-1)}
                             >
                               − Danno
                             </button>
                             <button
-                              style={{ ...styles.buttonMini, color: '#2e8b57', borderColor: '#2e8b57', padding: '2px 6px', fontWeight: 700, fontSize: 11, height: 24 }}
+                              style={{ ...styles.buttonMini, color: '#2e8b57', borderColor: '#2e8b57', padding: '2px 4px', fontWeight: 700, fontSize: 10.5, height: 24, flex: 1, whiteSpace: 'nowrap' }}
                               title={t('ct.cura')}
                               onClick={() => applica(1)}
                             >
                               ＋ Cura
+                            </button>
+                            <button
+                              style={{ ...styles.buttonMini, color: '#2b75cb', borderColor: '#2b75cb', padding: '2px 4px', fontWeight: 700, fontSize: 10.5, height: 24, flex: 1, whiteSpace: 'nowrap' }}
+                              title="Imposta PF Temporanei"
+                              onClick={() => {
+                                const v = Math.abs(parseInt(ctDmg[cb.id], 10) || 0);
+                                if (v > 0) {
+                                  modCombat(cb.id, { pfTemp: v });
+                                  setCtDmg((d) => ({ ...d, [cb.id]: '' }));
+                                }
+                              }}
+                            >
+                              🛡️ Temp
                             </button>
                           </div>
 
