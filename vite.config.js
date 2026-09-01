@@ -26,8 +26,8 @@ const scriveVersionJson = {
 };
 
 export default defineConfig({
-  // su GitHub Pages l'app vive in /tavolo-dei-dadi/ (vedi workflow deploy.yml)
-  base: process.env.BASE_PATH || '/',
+  // su GitHub Pages l'app vive in /tavolo-dei-dadi/ o root, con ./ funziona ovunque
+  base: process.env.BASE_PATH || './',
   define: { __BUILD_ID__: JSON.stringify(BUILD_ID) },
   plugins: [
     react(),

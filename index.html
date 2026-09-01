@@ -14,7 +14,34 @@
     <title>Tavolo dei Dadi</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <noscript>
+        <div style="font-family:system-ui,sans-serif; text-align:center; padding:40px; color:#2c1e14;">
+          <h2>JavaScript è richiesto per utilizzare Tavolo dei Dadi</h2>
+        </div>
+      </noscript>
+    </div>
+    <script>
+      // Protezione pagina bianca: se React non monta entro 3.5s per cache obsoleta o errore di rete, offre recupero automatico
+      setTimeout(function() {
+        try {
+          var r = document.getElementById('root');
+          if (r && (!r.childNodes || r.childNodes.length === 0 || (r.childNodes.length === 1 && r.childNodes[0].nodeName === 'NOSCRIPT'))) {
+            r.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#f4f1ea;font-family:system-ui,-apple-system,sans-serif;text-align:center;">' +
+              '<div style="max-width:440px;width:100%;padding:24px;background:#fff;border:1.5px solid #d4af37;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.1);">' +
+                '<div style="font-size:38px;margin-bottom:10px;">🎲</div>' +
+                '<h3 style="margin:0 0 8px;color:#2c1e14;font-size:18px;">Caricamento in corso...</h3>' +
+                '<p style="font-size:13px;color:#666;margin:0 0 16px;line-height:1.4;">Se la pagina rimane bianca dopo un aggiornamento, tocca il pulsante qui sotto per pulire la cache.</p>' +
+                '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">' +
+                  '<button onclick="window.location.reload(true)" style="background:#d4af37;color:#fff;border:none;padding:9px 18px;border-radius:6px;font-weight:700;font-size:13.5px;cursor:pointer;">🔄 Ricarica Pagina</button>' +
+                  '<button onclick="if(\'serviceWorker\' in navigator){navigator.serviceWorker.getRegistrations().then(function(regs){for(var i=0;i<regs.length;i++){regs[i].unregister();}if(\'caches\' in window){caches.keys().then(function(k){for(var j=0;j<k.length;j++){caches.delete(k[j]);}})}});}setTimeout(function(){window.location.reload(true);},400);" style="background:#f4f1ea;color:#2c1e14;border:1px solid #ccc;padding:9px 18px;border-radius:6px;font-weight:600;font-size:13.5px;cursor:pointer;">🧹 Svuota Cache PWA</button>' +
+                '</div>' +
+              '</div>' +
+            '</div>';
+          }
+        } catch (e) {}
+      }, 3500);
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
