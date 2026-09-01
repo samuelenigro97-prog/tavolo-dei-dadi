@@ -14725,177 +14725,343 @@ export default function App() {
 
       {/* ===== Combat tracker: barra fissa in basso (stile Fantasy Grounds) ===== */}
       {combat.attivo && combat.aperto ? (
-        <div style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 1500, background: C.panel, borderTop: `2px solid var(--c-gold-dark)`, boxShadow: '0 -4px 20px rgba(0,0,0,0.4)' }}>
-          <div style={{ maxWidth: 1180, margin: '0 auto', padding: '8px 12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
-              <strong style={{ color: 'var(--c-title)', fontSize: 15, whiteSpace: 'nowrap' }}>⚔️ {t('ct.round')} {combat.round}</strong>
-              <button style={styles.buttonMini} onClick={turnoPrecedente} title={t('ct.prec')}>◀</button>
-              <button style={{ ...styles.buttonMini, fontWeight: 700 }} onClick={prossimoTurno} title={t('ct.succ')}>{t('ct.turno')} ▶</button>
-              <span style={{ flex: 1 }} />
-              <button style={styles.buttonMini} onClick={ordinaIniziativa} title="Ordina i combattenti per iniziativa decrescente">🔃 Ordina</button>
-              <button
-                style={{ ...styles.buttonMini, color: C.goldDark, borderColor: C.goldDark }}
-                title="Tira automaticamente 1d20 per tutti i combattenti che hanno Iniziativa a 0, poi ordina la lista"
-                onClick={() => {
-                  setCombat((c) => ({
-                    ...c,
-                    combattenti: c.combattenti.map((cb) => ({
-                      ...cb,
-                      iniziativa: cb.iniziativa ? cb.iniziativa : tiraDado(20) + (cb.tipo === 'pg' ? modificatore(punteggioCaratteristica(scheda, 'destrezza') || 10) : Math.floor(Math.random() * 5))
-                    }))
-                  }));
-                  setTimeout(ordinaIniziativa, 50);
-                }}
-              >
-                🎲 Tira Iniziative (0)
-              </button>
-              <button
-                style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }}
-                title="Applica un danno ad area (Es. Palla di Fuoco) a tutti i nemici presenti nel Combat Tracker"
-                onClick={() => {
-                  const dmg = parseInt(window.prompt("Inserisci i danni ad area da applicare a TUTTI i nemici:"), 10);
-                  if (dmg > 0) {
+        <div style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 1500, background: C.panel, borderTop: `2px solid var(--c-gold-dark)`, boxShadow: '0 -6px 24px rgba(0,0,0,0.45)' }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto', padding: '8px 12px' }}>
+            {/* BARRA SUPERIORE CONTROLLI COMBAT TRACKER */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 8, paddingBottom: 6, borderBottom: `1px solid ${C.border}` }}>
+              {/* Gruppo 1: Round & Turno */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(214,169,15,0.18)', border: `1.5px solid ${C.goldDark}`, color: C.goldDark, padding: '3px 10px', borderRadius: 8, fontWeight: 800, fontSize: 13.5, letterSpacing: 0.5 }}>
+                  ⚔️ {t('ct.round').toUpperCase()} {combat.round}
+                </span>
+                <button
+                  style={{ ...styles.buttonMini, padding: '4px 8px', fontSize: 12 }}
+                  onClick={turnoPrecedente}
+                  title={t('ct.prec')}
+                >
+                  ◀ {t('ct.prec')}
+                </button>
+                <button
+                  style={{ ...styles.buttonMini, background: 'var(--c-gold-dark)', color: '#ffffff', borderColor: 'var(--c-gold-dark)', fontWeight: 800, padding: '4px 12px', fontSize: 12.5 }}
+                  onClick={prossimoTurno}
+                  title={t('ct.succ')}
+                >
+                  {t('ct.succ')} ▶
+                </button>
+              </div>
+
+              {/* Gruppo 2: Aggiungi Combattenti */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
+                <button
+                  style={{ ...styles.buttonMini, background: 'rgba(214,169,15,0.12)', color: C.goldDark, borderColor: C.goldDark, fontWeight: 700 }}
+                  onClick={aggiungiPgAlCombat}
+                  title={t('ct.aggiungi_pg')}
+                >
+                  ＋ {t('ct.pg')} ({scheda.nome || 'Attivo'})
+                </button>
+                <button
+                  style={{ ...styles.buttonMini, background: 'rgba(46,139,87,0.1)', color: '#2e8b57', borderColor: '#2e8b57', fontWeight: 700 }}
+                  onClick={() => aggiungiCombattente('alleato')}
+                >
+                  ＋ {t('ct.alleato')}
+                </button>
+                <button
+                  style={{ ...styles.buttonMini, background: 'rgba(176,58,46,0.1)', color: '#b03a2e', borderColor: '#b03a2e', fontWeight: 700 }}
+                  onClick={() => aggiungiCombattente('nemico')}
+                >
+                  ＋ {t('ct.nemico')}
+                </button>
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const nome = e.target.value;
+                    if (!nome) return;
+                    const b = BESTIE.find((x) => x.nome === nome);
+                    if (b) {
+                      const initRoll = tiraDado(20) + Math.floor(((b.car?.destrezza || 10) - 10) / 2);
+                      aggiungiCombattente('nemico', {
+                        nome: b.nome,
+                        pfMax: b.pf,
+                        pfAttuali: b.pf,
+                        ca: b.ca,
+                        iniziativa: initRoll,
+                      });
+                    }
+                    e.target.value = '';
+                  }}
+                  style={{ ...styles.inlineInput, fontSize: 11.5, padding: '3px 8px', maxWidth: 140, height: 26, fontWeight: 600 }}
+                  title="Aggiungi una creatura o mostro dal bestiario al combattimento"
+                >
+                  <option value="">🐾 + Mostro...</option>
+                  {BESTIE.map((b) => (
+                    <option key={b.nome} value={b.nome}>
+                      {b.nome} (GS {b.gs})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Gruppo 3: Strumenti & Gestione */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <button
+                  style={{ ...styles.buttonMini, color: C.goldDark, borderColor: C.goldDark }}
+                  title="Tira automaticamente 1d20 per tutti i combattenti che hanno Iniziativa a 0, poi ordina la lista"
+                  onClick={() => {
                     setCombat((c) => ({
                       ...c,
-                      combattenti: c.combattenti.map((cb) => cb.tipo === 'nemico' ? { ...cb, pfAttuali: Math.max(0, cb.pfAttuali - dmg) } : cb)
+                      combattenti: c.combattenti.map((cb) => ({
+                        ...cb,
+                        iniziativa: cb.iniziativa ? cb.iniziativa : tiraDado(20) + (cb.tipo === 'pg' ? modificatore(punteggioCaratteristica(scheda, 'destrezza') || 10) : Math.floor(Math.random() * 5))
+                      }))
                     }));
-                  }
-                }}
-              >
-                💥 Danno ad Area (Nemici)
-              </button>
-              <button style={styles.buttonMini} onClick={aggiungiPgAlCombat} title={t('ct.aggiungi_pg')}>➕ {t('ct.pg')}</button>
-              <button style={styles.buttonMini} onClick={() => aggiungiCombattente('alleato')}>➕ {t('ct.alleato')}</button>
-              <button style={styles.buttonMini} onClick={() => aggiungiCombattente('nemico')}>➕ {t('ct.nemico')}</button>
-              <select
-                value=""
-                onChange={(e) => {
-                  const nome = e.target.value;
-                  if (!nome) return;
-                  const b = BESTIE.find((x) => x.nome === nome);
-                  if (b) {
-                    const initRoll = tiraDado(20) + Math.floor(((b.car?.destrezza || 10) - 10) / 2);
-                    aggiungiCombattente('nemico', {
-                      nome: b.nome,
-                      pfMax: b.pf,
-                      pfAttuali: b.pf,
-                      ca: b.ca,
-                      iniziativa: initRoll,
-                    });
-                  }
-                  e.target.value = '';
-                }}
-                style={{ ...styles.inlineInput, fontSize: 11, padding: '3px 6px', maxWidth: 120, height: 26 }}
-                title="Aggiungi una creatura o mostro dal bestiario al combattimento"
-              >
-                <option value="">🐾 + Mostro...</option>
-                {BESTIE.map((b) => (
-                  <option key={b.nome} value={b.nome}>
-                    {b.nome} (GS {b.gs})
-                  </option>
-                ))}
-              </select>
-              <button style={styles.buttonMini} onClick={() => setCombat((c) => ({ ...c, aperto: false }))} title={t('ct.minimizza')}>▁</button>
-              <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }} onClick={() => { if (window.confirm(t('ct.fine_conferma'))) setCombat({ attivo: false, aperto: true, round: 1, turno: 0, combattenti: [] }); }} title={t('ct.fine')}>✕</button>
+                    setTimeout(ordinaIniziativa, 50);
+                  }}
+                >
+                  🎲 Tira Iniziative
+                </button>
+                <button
+                  style={styles.buttonMini}
+                  onClick={ordinaIniziativa}
+                  title="Ordina i combattenti per iniziativa decrescente"
+                >
+                  🔃 Ordina
+                </button>
+                <button
+                  style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }}
+                  title="Applica un danno ad area (Es. Palla di Fuoco) a tutti i nemici presenti nel Combat Tracker"
+                  onClick={() => {
+                    const dmg = parseInt(window.prompt("Inserisci i danni ad area da applicare a TUTTI i nemici:"), 10);
+                    if (dmg > 0) {
+                      setCombat((c) => ({
+                        ...c,
+                        combattenti: c.combattenti.map((cb) => cb.tipo === 'nemico' ? { ...cb, pfAttuali: Math.max(0, cb.pfAttuali - dmg) } : cb)
+                      }));
+                    }
+                  }}
+                >
+                  💥 Area
+                </button>
+                <button
+                  style={styles.buttonMini}
+                  onClick={() => setCombat((c) => ({ ...c, aperto: false }))}
+                  title={t('ct.minimizza')}
+                >
+                  ▁
+                </button>
+                <button
+                  style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }}
+                  onClick={() => { if (window.confirm(t('ct.fine_conferma'))) setCombat({ attivo: false, aperto: true, round: 1, turno: 0, combattenti: [] }); }}
+                  title={t('ct.fine')}
+                >
+                  ✕
+                </button>
+              </div>
             </div>
+
+            {/* LISTA COMBATTENTI */}
             {combat.combattenti.length === 0 ? (
-              <div style={{ ...styles.detail, padding: '10px 0' }}>{t('ct.vuoto')}</div>
+              <div style={{ ...styles.detail, padding: '16px 8px', textAlign: 'center', background: 'rgba(0,0,0,0.02)', borderRadius: 8, border: `1px dashed ${C.border}`, color: C.inkDim }}>
+                ⚔️ <strong>Nessun combattente in questo scontro.</strong> Usa i pulsanti sopra (<strong>＋ PG</strong>, <strong>＋ Alleato</strong>, <strong>＋ Nemico</strong> o <strong>Mostro</strong>) per iniziare.
+              </div>
             ) : (
-              <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 6, alignItems: 'stretch' }}>
+              <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 6, alignItems: 'stretch' }}>
                 {combat.combattenti.map((cb, idx) => {
                   const attivoTurno = idx === combat.turno;
                   const col = cb.tipo === 'nemico' ? C.red : cb.tipo === 'alleato' ? C.green : C.gold;
+                  const colBg = cb.tipo === 'nemico' ? 'rgba(176,58,46,0.12)' : cb.tipo === 'alleato' ? 'rgba(46,139,87,0.12)' : 'rgba(214,169,15,0.12)';
                   const morto = cb.pfAttuali <= 0;
+                  const pctVita = Math.min(100, Math.max(0, (cb.pfAttuali / Math.max(1, cb.pfMax)) * 100));
                   const applica = (segno) => { const v = Math.abs(parseInt(ctDmg[cb.id], 10) || 0); if (v) { dannoCura(cb.id, segno * v); setCtDmg((d) => ({ ...d, [cb.id]: '' })); } };
+
                   return (
-                    <div key={cb.id} style={{ flex: '0 0 auto', width: 196, border: `2px solid ${attivoTurno ? 'var(--c-gold-dark)' : col}`, borderRadius: 10, padding: 8, background: attivoTurno ? C.panelLight : C.panel, display: 'flex', flexDirection: 'column', gap: 5 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 2, background: C.bg, border: `1.5px solid ${col}`, borderRadius: 6, padding: '1px 4px' }} title={t('ct.iniziativa')}>
-                          <span style={{ fontSize: 11, color: col, fontWeight: 800 }}>⚡</span>
-                          <input
-                            type="number"
-                            value={cb.iniziativa ?? 0}
-                            onChange={(e) => modCombat(cb.id, { iniziativa: parseInt(e.target.value, 10) || 0 })}
-                            onBlur={() => ordinaIniziativa()}
-                            onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
-                            style={{ ...styles.inlineInput, width: 34, textAlign: 'center', fontWeight: 800, fontSize: 15, color: col, padding: 0, border: 'none', background: 'transparent', height: 22 }}
-                          />
-                          <button
-                            style={{ ...styles.buttonMini, padding: '0 3px', fontSize: 11, border: 'none', color: C.inkDim, height: 20 }}
-                            title="Tira d20 per iniziativa e ordina"
-                            onClick={() => {
-                              const roll = tiraDado(20) + (cb.tipo === 'pg' ? modificatore(punteggioCaratteristica(scheda, 'destrezza') || 10) : Math.floor(Math.random() * 5));
-                              modCombat(cb.id, { iniziativa: roll });
-                              setTimeout(ordinaIniziativa, 10);
-                            }}
-                          >🎲</button>
+                    <div
+                      key={cb.id}
+                      style={{
+                        flex: '0 0 auto',
+                        width: 218,
+                        border: `2px solid ${attivoTurno ? 'var(--c-gold-dark)' : C.border}`,
+                        borderRadius: 10,
+                        background: attivoTurno ? 'rgba(214,169,15,0.08)' : C.panelLight,
+                        boxShadow: attivoTurno ? '0 0 12px 2px rgba(214,169,15,0.35)' : '0 2px 6px rgba(0,0,0,0.05)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflow: 'hidden',
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      {/* Banner Ruolo o Turno Attivo */}
+                      {attivoTurno ? (
+                        <div style={{ background: 'var(--c-gold-dark)', color: '#ffffff', fontSize: 10.5, fontWeight: 800, textAlign: 'center', padding: '3px 6px', letterSpacing: 0.6, textTransform: 'uppercase' }}>
+                          👉 IN TURNO
                         </div>
-                        <span style={{ flex: 1, minWidth: 0, fontWeight: 700, fontSize: 13, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          <Editable value={cb.nome} onChange={(v) => modCombat(cb.id, { nome: v })} width={100} />
-                        </span>
-                        <button style={{ ...styles.buttonMini, color: C.red, padding: '0 5px' }} title={t('ct.rimuovi')} onClick={() => setCombat((c) => ({ ...c, combattenti: c.combattenti.filter((x) => x.id !== cb.id) }))}>×</button>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: C.inkDim }}>
-                        <span title={t("vital.ca")} style={{ fontWeight: 700 }}>CA <Editable value={cb.ca} tipo="numero" width={24} onChange={(v) => modCombat(cb.id, { ca: v })} /></span>
-                        <span
-                          className="tirabile"
-                          style={{ cursor: 'pointer', color: cb.concentrazione ? C.gold : C.inkDim, fontWeight: cb.concentrazione ? 700 : 400 }}
-                          title={t('ct.concentrazione')}
-                          onClick={() => modCombat(cb.id, { concentrazione: !cb.concentrazione })}
-                        >🧠 {cb.concentrazione ? t('ct.conc_on') : t('ct.conc_off')}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 3, justifyContent: 'center' }}>
-                        <strong style={{ fontSize: 20, color: morto ? C.red : cb.pfAttuali / Math.max(1, cb.pfMax) > 0.5 ? C.green : C.gold }}>
-                          <Editable value={cb.pfAttuali} tipo="numero" width={34} onChange={(v) => modCombat(cb.id, { pfAttuali: Math.max(0, v) })} />
-                        </strong>
-                        <span style={{ color: C.inkDim, fontSize: 13 }}>/ <Editable value={cb.pfMax} tipo="numero" width={34} onChange={(v) => modCombat(cb.id, { pfMax: Math.max(1, v) })} /></span>
-                        {cb.pfTemp > 0 && <span style={{ color: '#4A90E2', fontSize: 12 }}>+{cb.pfTemp}</span>}
-                        <span style={{ marginLeft: 4, color: C.inkDim, fontSize: 11 }} title={t('vital.temporanei')}>➕<Editable value={cb.pfTemp} tipo="numero" width={20} onChange={(v) => modCombat(cb.id, { pfTemp: Math.max(0, v) })} /></span>
-                      </div>
-                      <div style={{ height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.35)', border: `1px solid ${C.border}`, overflow: 'hidden', margin: '2px 0 4px', display: 'flex', width: '100%' }}>
-                        <div style={{ width: `${Math.min(100, Math.max(0, (cb.pfAttuali / Math.max(1, cb.pfMax)) * 100))}%`, height: '100%', background: cb.pfAttuali / Math.max(1, cb.pfMax) > 0.5 ? C.green : cb.pfAttuali / Math.max(1, cb.pfMax) > 0.25 ? C.gold : C.red, transition: 'width 0.2s' }} />
-                      </div>
-                      <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
-                        <input
-                          type="number"
-                          value={ctDmg[cb.id] || ''}
-                          onChange={(e) => setCtDmg((d) => ({ ...d, [cb.id]: e.target.value }))}
-                          onKeyDown={(e) => e.key === 'Enter' && applica(-1)}
-                          placeholder={t('ct.danno_ph')}
-                          style={{ ...styles.inlineInput, flex: 1, minWidth: 0, padding: '2px 4px', fontSize: 12 }}
-                        />
-                        <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 6px' }} title={t('ct.danno')} onClick={() => applica(-1)}>−</button>
-                        <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 6px' }} title={t('ct.cura')} onClick={() => applica(1)}>＋</button>
-                      </div>
-                      {(morto || cb.tipo === 'pg') && (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 11 }} title={t('vital.ts_morte')}>
-                          <span style={{ color: C.inkDim }}>💀</span>
-                          {[1, 2, 3].map((i) => (
-                            <span key={`s${i}`} style={styles.pip(cb.tsMorte.successi >= i, C.green)} onClick={() => modCombat(cb.id, { tsMorte: { ...cb.tsMorte, successi: cb.tsMorte.successi >= i ? i - 1 : i } })} />
-                          ))}
-                          <span style={{ color: C.border }}>|</span>
-                          {[1, 2, 3].map((i) => (
-                            <span key={`f${i}`} style={styles.pip(cb.tsMorte.fallimenti >= i, C.red)} onClick={() => modCombat(cb.id, { tsMorte: { ...cb.tsMorte, fallimenti: cb.tsMorte.fallimenti >= i ? i - 1 : i } })} />
-                          ))}
+                      ) : (
+                        <div style={{ background: colBg, color: col, fontSize: 10, fontWeight: 700, textAlign: 'center', padding: '2px 6px', textTransform: 'uppercase', letterSpacing: 0.4 }}>
+                          {cb.tipo === 'pg' ? '👤 Personaggio' : cb.tipo === 'alleato' ? '🛡️ Alleato' : '⚔️ Nemico'}
                         </div>
                       )}
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'center' }}>
-                        {cb.condizioni.map((cond) => (
-                          <span key={cond} onClick={() => modCombat(cb.id, { condizioni: cb.condizioni.filter((x) => x !== cond) })}
-                            style={{ fontSize: 10, background: 'rgba(176,58,46,0.12)', color: C.red, border: `1px solid ${C.red}`, borderRadius: 6, padding: '0 5px', cursor: 'pointer' }} title={t('ct.rimuovi_cond')}>
-                            {cond} ×
+
+                      <div style={{ padding: 8, display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+                        {/* Riga 1: Iniziativa, Nome e Rimuovi */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          {/* Box Iniziativa */}
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: C.bg, border: `1px solid ${C.border}`, borderRadius: 6, padding: '1px 3px', minWidth: 36 }} title={t('ct.iniziativa')}>
+                            <span style={{ fontSize: 8.5, fontWeight: 800, color: C.inkDim, lineHeight: 1 }}>INIZ</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <input
+                                type="number"
+                                value={cb.iniziativa ?? 0}
+                                onChange={(e) => modCombat(cb.id, { iniziativa: parseInt(e.target.value, 10) || 0 })}
+                                onBlur={() => ordinaIniziativa()}
+                                onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
+                                style={{ width: 26, textAlign: 'center', fontWeight: 800, fontSize: 14, color: col, padding: 0, border: 'none', background: 'transparent', height: 18 }}
+                              />
+                              <button
+                                style={{ padding: 0, fontSize: 10, border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.7 }}
+                                title="Tira d20 Iniziativa"
+                                onClick={() => {
+                                  const roll = tiraDado(20) + (cb.tipo === 'pg' ? modificatore(punteggioCaratteristica(scheda, 'destrezza') || 10) : Math.floor(Math.random() * 5));
+                                  modCombat(cb.id, { iniziativa: roll });
+                                  setTimeout(ordinaIniziativa, 10);
+                                }}
+                              >
+                                🎲
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Nome */}
+                          <div style={{ flex: 1, minWidth: 0, fontWeight: 700, fontSize: 13, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <Editable value={cb.nome} onChange={(v) => modCombat(cb.id, { nome: v })} width={110} />
+                          </div>
+
+                          {/* Rimuovi */}
+                          <button
+                            style={{ ...styles.buttonMini, color: C.red, padding: '1px 5px', fontSize: 12, lineHeight: 1 }}
+                            title={t('ct.rimuovi')}
+                            onClick={() => setCombat((c) => ({ ...c, combattenti: c.combattenti.filter((x) => x.id !== cb.id) }))}
+                          >
+                            ×
+                          </button>
+                        </div>
+
+                        {/* Riga 2: CA e Concentrazione */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11.5, color: C.inkDim, background: 'rgba(0,0,0,0.02)', padding: '2px 6px', borderRadius: 6 }}>
+                          <span title={t("vital.ca")} style={{ fontWeight: 700, color: C.ink }}>
+                            🛡️ CA <Editable value={cb.ca} tipo="numero" width={22} onChange={(v) => modCombat(cb.id, { ca: v })} />
                           </span>
-                        ))}
-                        <select
-                          value=""
-                          onChange={(e) => { if (e.target.value) modCombat(cb.id, { condizioni: [...cb.condizioni, e.target.value] }); }}
-                          style={{ ...styles.inlineInput, fontSize: 10, padding: '1px 2px' }}
-                        >
-                          <option value="">＋ {t('ct.condizione')}</option>
-                          {CONDIZIONI_5E.filter((c) => !cb.condizioni.includes(c)).sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((c) => (
-                            <option key={c} value={c}>{c}</option>
+                          <span
+                            className="tirabile"
+                            style={{
+                              cursor: 'pointer',
+                              color: cb.concentrazione ? C.goldDark : C.inkDim,
+                              fontWeight: cb.concentrazione ? 800 : 500,
+                              background: cb.concentrazione ? 'rgba(214,169,15,0.18)' : 'transparent',
+                              padding: '1px 5px',
+                              borderRadius: 4,
+                            }}
+                            title={t('ct.concentrazione')}
+                            onClick={() => modCombat(cb.id, { concentrazione: !cb.concentrazione })}
+                          >
+                            🧠 {cb.concentrazione ? t('ct.conc_on') : t('ct.conc_off')}
+                          </span>
+                        </div>
+
+                        {/* Riga 3: Punti Ferita e Barra Vita */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+                              <strong style={{ fontSize: 17, color: morto ? C.red : pctVita > 50 ? C.green : pctVita > 25 ? C.goldDark : C.red }}>
+                                <Editable value={cb.pfAttuali} tipo="numero" width={32} onChange={(v) => modCombat(cb.id, { pfAttuali: Math.max(0, v) })} />
+                              </strong>
+                              <span style={{ color: C.inkDim, fontSize: 12 }}>/ <Editable value={cb.pfMax} tipo="numero" width={32} onChange={(v) => modCombat(cb.id, { pfMax: Math.max(1, v) })} /> PF</span>
+                            </div>
+                            {cb.pfTemp > 0 ? (
+                              <span style={{ color: '#0066cc', fontSize: 11, fontWeight: 700 }} title="PF Temporanei">
+                                +<Editable value={cb.pfTemp} tipo="numero" width={20} onChange={(v) => modCombat(cb.id, { pfTemp: Math.max(0, v) })} /> Temp
+                              </span>
+                            ) : (
+                              <span style={{ color: C.inkDim, fontSize: 10 }} title="Aggiungi PF Temporanei">
+                                ➕<Editable value={cb.pfTemp} tipo="numero" width={16} onChange={(v) => modCombat(cb.id, { pfTemp: Math.max(0, v) })} />
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Barra della Vita */}
+                          <div style={{ height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.15)', overflow: 'hidden', width: '100%' }}>
+                            <div
+                              style={{
+                                width: `${pctVita}%`,
+                                height: '100%',
+                                background: morto ? '#666' : pctVita > 50 ? '#2e8b57' : pctVita > 25 ? '#d6a90f' : '#b03a2e',
+                                transition: 'width 0.25s ease',
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Riga 4: Danno e Cura Rapidi */}
+                        <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
+                          <input
+                            type="number"
+                            value={ctDmg[cb.id] || ''}
+                            onChange={(e) => setCtDmg((d) => ({ ...d, [cb.id]: e.target.value }))}
+                            onKeyDown={(e) => e.key === 'Enter' && applica(-1)}
+                            placeholder={t('ct.danno_ph')}
+                            style={{ ...styles.inlineInput, flex: 1, minWidth: 0, padding: '3px 5px', fontSize: 12, height: 24 }}
+                          />
+                          <button
+                            style={{ ...styles.buttonMini, color: '#b03a2e', borderColor: '#b03a2e', padding: '2px 6px', fontWeight: 700, fontSize: 11, height: 24 }}
+                            title={t('ct.danno')}
+                            onClick={() => applica(-1)}
+                          >
+                            − Danno
+                          </button>
+                          <button
+                            style={{ ...styles.buttonMini, color: '#2e8b57', borderColor: '#2e8b57', padding: '2px 6px', fontWeight: 700, fontSize: 11, height: 24 }}
+                            title={t('ct.cura')}
+                            onClick={() => applica(1)}
+                          >
+                            ＋ Cura
+                          </button>
+                        </div>
+
+                        {/* TS Morte (se a 0 PF o PG) */}
+                        {(morto || cb.tipo === 'pg') && (
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 11, background: 'rgba(0,0,0,0.02)', padding: '2px 4px', borderRadius: 4 }} title={t('vital.ts_morte')}>
+                            <span style={{ color: C.inkDim, fontSize: 10 }}>💀</span>
+                            {[1, 2, 3].map((i) => (
+                              <span key={`s${i}`} style={styles.pip(cb.tsMorte.successi >= i, C.green)} onClick={() => modCombat(cb.id, { tsMorte: { ...cb.tsMorte, successi: cb.tsMorte.successi >= i ? i - 1 : i } })} />
+                            ))}
+                            <span style={{ color: C.border }}>|</span>
+                            {[1, 2, 3].map((i) => (
+                              <span key={`f${i}`} style={styles.pip(cb.tsMorte.fallimenti >= i, C.red)} onClick={() => modCombat(cb.id, { tsMorte: { ...cb.tsMorte, fallimenti: cb.tsMorte.fallimenti >= i ? i - 1 : i } })} />
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Condizioni */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'center', marginTop: 'auto' }}>
+                          {cb.condizioni.map((cond) => (
+                            <span
+                              key={cond}
+                              onClick={() => modCombat(cb.id, { condizioni: cb.condizioni.filter((x) => x !== cond) })}
+                              style={{ fontSize: 9.5, background: 'rgba(176,58,46,0.1)', color: C.red, border: `1px solid ${C.red}`, borderRadius: 4, padding: '0 4px', cursor: 'pointer', fontWeight: 600 }}
+                              title={t('ct.rimuovi_cond')}
+                            >
+                              {cond} ×
+                            </span>
                           ))}
-                        </select>
+                          <select
+                            value=""
+                            onChange={(e) => { if (e.target.value) modCombat(cb.id, { condizioni: [...cb.condizioni, e.target.value] }); }}
+                            style={{ ...styles.inlineInput, fontSize: 9.5, padding: '1px 3px', height: 20 }}
+                          >
+                            <option value="">＋ {t('ct.condizione')}</option>
+                            {CONDIZIONI_5E.filter((c) => !cb.condizioni.includes(c)).sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((c) => (
+                              <option key={c} value={c}>{c}</option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
                     </div>
                   );
