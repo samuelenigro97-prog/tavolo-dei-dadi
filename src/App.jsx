@@ -9259,6 +9259,10 @@ export default function App() {
           className="selettore-personaggio barra-superiore-fissa"
           style={{
             ...styles.panel,
+            borderTopLeftRadius: 0,
+            borderTopRightRadius: 12,
+            borderBottomRightRadius: 0,
+            borderBottomLeftRadius: 12,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',

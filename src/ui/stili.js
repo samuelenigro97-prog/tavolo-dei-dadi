@@ -1117,7 +1117,9 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   background: color-mix(in srgb, var(--c-panel) 95%, transparent) !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.16), 0 1px 4px rgba(0, 0, 0, 0.08) !important;
   border-top-left-radius: 0 !important;
-  border-top-right-radius: 0 !important;
+  border-top-right-radius: 12px !important;
+  border-bottom-right-radius: 0 !important;
+  border-bottom-left-radius: 12px !important;
   margin-top: 0 !important;
   overflow-x: auto !important;
   overflow-y: hidden !important;
@@ -1507,7 +1509,10 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     padding: 3px 6px !important;
     margin-bottom: 6px !important;
     overflow: hidden !important;
-    border-radius: 0 0 8px 8px !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 10px !important;
+    border-bottom-right-radius: 0 !important;
+    border-bottom-left-radius: 10px !important;
     min-height: 36px !important;
     box-sizing: border-box !important;
   }
