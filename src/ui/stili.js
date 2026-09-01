@@ -1172,14 +1172,16 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     align-items: center !important;
     justify-content: space-between !important;
     width: 100% !important;
-    gap: 6px !important;
+    box-sizing: border-box !important;
+    gap: 4px !important;
   }
   .barra-superiore-fissa {
-    padding: 4px 8px !important;
+    padding: 3px 6px !important;
     margin-bottom: 6px !important;
-    overflow-x: hidden !important;
+    overflow: hidden !important;
     border-radius: 0 0 8px 8px !important;
-    min-height: 38px !important;
+    min-height: 36px !important;
+    box-sizing: border-box !important;
   }
   .anagrafica > div:last-child > div:last-child { grid-template-columns: repeat(2, 1fr) !important; }
   .anagrafica > div:last-child > div:last-child { grid-template-columns: repeat(2, 1fr) !important; }

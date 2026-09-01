@@ -8910,29 +8910,30 @@ export default function App() {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     width: '100%',
-                    gap: 6,
+                    boxSizing: 'border-box',
+                    gap: 4,
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, userSelect: 'none' }}>
-                    <span style={{ fontSize: 15 }}>🎲</span>
-                    <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 13.5, fontWeight: 700, color: C.goldDark, letterSpacing: 0.2, whiteSpace: 'nowrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, userSelect: 'none', flexShrink: 0 }}>
+                    <span style={{ fontSize: 14 }}>🎲</span>
+                    <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 13, fontWeight: 700, color: C.goldDark, letterSpacing: 0.2, whiteSpace: 'nowrap' }}>
                       Tavolo dei Dadi
                     </span>
-                    <span style={{ fontSize: 9, color: C.inkDim, opacity: 0.7, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    <span style={{ fontSize: 8.5, color: C.inkDim, opacity: 0.6, fontWeight: 600, whiteSpace: 'nowrap' }}>
                       v{APP_VERSION}
                     </span>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
                     <button
-                      style={{ ...btnAzione, width: 30, height: 30, fontSize: 14 }}
+                      style={{ ...btnAzione, width: 28, height: 28, minWidth: 28, maxWidth: 28, minHeight: 28, maxHeight: 28, fontSize: 13 }}
                       onClick={() => setMostraDadiModal(true)}
                       title={t('roll.tavolo_dadi')}
                     >
                       🎲
                     </button>
                     <button
-                      style={{ ...btnAzione, width: 30, height: 30, fontSize: 14 }}
+                      style={{ ...btnAzione, width: 28, height: 28, minWidth: 28, maxWidth: 28, minHeight: 28, maxHeight: 28, fontSize: 13 }}
                       onClick={() => {
                         if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
                         else if (combat.combattenti.length) setCombat((c) => ({ ...c, attivo: true, aperto: true }));
@@ -8946,23 +8947,29 @@ export default function App() {
                       style={{
                         ...btnAzione,
                         width: 'auto',
-                        height: 30,
+                        minWidth: 'auto',
+                        maxWidth: 'none',
+                        height: 28,
+                        minHeight: 28,
+                        maxHeight: 28,
                         padding: '0 8px',
-                        fontSize: 12.5,
+                        fontSize: 12,
                         fontWeight: 700,
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: 4,
+                        gap: 3,
                         position: 'relative',
                         background: mostraMenuHubMobile ? 'rgba(201,162,39,0.2)' : C.gold,
                         color: mostraMenuHubMobile ? C.goldDark : '#ffffff',
                         border: 'none',
                         borderRadius: 6,
+                        flexShrink: 0,
+                        marginRight: 2,
                       }}
                       onClick={() => setMostraMenuHubMobile(true)}
                       title="Apri Menu Hub"
                     >
-                      <span style={{ fontSize: 14, lineHeight: 1 }}>☰</span>
+                      <span style={{ fontSize: 13, lineHeight: 1 }}>☰</span>
                       <span>Menu</span>
                       {daNotificare && (
                         <span className="avvisi-pallino" style={{ top: -3, right: -3 }}>
