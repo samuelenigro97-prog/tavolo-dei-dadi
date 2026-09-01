@@ -379,3 +379,27 @@ test('Taglia 5e: calcolo taglia effettiva con Forma Bestiale, Ingrandire e Ridur
   assert.equal(MOLTIPLICATORI_TAGLIA[tagliaEffettiva(pg)], 4);
 });
 
+test('Level Up: dettagli progressione e multiclasse 5e', async () => {
+  const { dettagliProgressioneLivello, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E } = await import('../src/rules/regole.js');
+
+  // Ladro da liv 2 a liv 3: Attacco furtivo aumenta a 2d6
+  const progLadro = dettagliProgressioneLivello('Ladro', 2, 3);
+  assert.ok(progLadro.some((p) => p.nome === 'Attacco Furtivo' && p.desc.includes('2d6')));
+
+  // Guerriero da liv 4 a liv 5: Attacco Extra
+  const progGuerriero = dettagliProgressioneLivello('Guerriero', 4, 5);
+  assert.ok(progGuerriero.some((p) => p.nome === 'Attacco Extra'));
+
+  // Paladino da liv 1 a liv 2: Punizione Divina e Imposizione delle mani
+  const progPala = dettagliProgressioneLivello('Paladino', 1, 2);
+  assert.ok(progPala.some((p) => p.nome === 'Imposizione delle Mani' && p.desc.includes('10 PF')));
+  assert.ok(progPala.some((p) => p.nome === 'Punizione Divina'));
+
+  // Requisiti e competenze multiclasse
+  assert.equal(MULTICLASSE_REQUISITI_5E.guerriero, 'FOR 13 o DES 13');
+  assert.equal(MULTICLASSE_REQUISITI_5E.paladino, 'FOR 13 e CAR 13');
+  assert.ok(MULTICLASSE_COMPETENZE_5E.ladro.armature.leggera);
+  assert.ok(MULTICLASSE_COMPETENZE_5E.ladro.strumenti.includes('scasso'));
+});
+
+

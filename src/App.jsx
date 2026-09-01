@@ -1260,7 +1260,7 @@ const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(I
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -7089,15 +7089,16 @@ export default function App() {
       })()}
 
       {mostraLevelUp && (() => {
-        // --- Target del Level Up: classe principale o secondaria (True Multiclassing) ---
+        // --- Target del Level Up: classe principale, secondaria esistente o nuova classe (True Multiclassing) ---
         const targetMode = levelUpBozza.target !== undefined ? levelUpBozza.target : 'main';
         const isNewMc = targetMode === 'new';
         const isSecMc = typeof targetMode === 'number';
         const mcArray = scheda.multiclasse || [];
         const secMcObj = isSecMc ? mcArray[targetMode] : null;
 
+        const firstAvailableNewClass = NOMI_CLASSI.find((n) => n !== scheda.classe && !mcArray.some((x) => x.classe === n)) || NOMI_CLASSI[0];
         const targetClasse = isNewMc
-          ? (levelUpBozza.nuovaClasseMc || NOMI_CLASSI.find((n) => n !== scheda.classe && !mcArray.some((x) => x.classe === n)) || NOMI_CLASSI[0])
+          ? (levelUpBozza.nuovaClasseMc || firstAvailableNewClass)
           : (isSecMc ? (secMcObj?.classe || scheda.classe) : scheda.classe);
 
         const targetLivelloVecchio = isNewMc
@@ -7112,14 +7113,23 @@ export default function App() {
         // Dadi Vita ed HP Gain per LA CLASSE SCELTA
         const facceTargetDV = dadoVitaClasse(targetClasse);
         const modCos = modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10) || 0;
-        const avgHpGainTarget = Math.floor(facceTargetDV / 2) + 1 + modCos;
+        const avgHpGainTarget = Math.max(1, Math.floor(facceTargetDV / 2) + 1 + modCos);
 
         const gain = levelUpBozza.metodo === 'media'
           ? (levelUpBozza.hpGainMedia != null ? levelUpBozza.hpGainMedia : avgHpGainTarget)
           : (levelUpBozza.tiroFatto > 0 ? Math.max(1, levelUpBozza.tiroFatto + modCos) : null);
 
-        const bcVecchio = scheda.bonusCompetenza;
+        const bcVecchio = scheda.bonusCompetenza || bonusCompetenzaDaLivello(livTotVecchio);
         const bcNuovo = bonusCompetenzaDaLivello(nuovoLivello);
+        const haSaltoBC = bcNuovo > bcVecchio;
+
+        // Multiclasse regole & requisiti
+        const kTarget = chiaveClasse(targetClasse);
+        const reqMc = kTarget ? MULTICLASSE_REQUISITI_5E[kTarget] : '';
+        const compMc = kTarget ? MULTICLASSE_COMPETENZE_5E[kTarget] : null;
+
+        // Progressioni scalabili di classe (es. Attacco Furtivo, Ira, Arti Marziali, Ki, ecc.)
+        const progressioni = dettagliProgressioneLivello(targetClasse, targetLivelloVecchio, targetLivelloNuovo, versione);
 
         // Configurazione classi per calcolo slot unificati
         const classiNuove = isNewMc
@@ -7128,10 +7138,7 @@ export default function App() {
               ? [{ classe: scheda.classe, livello: Math.max(1, num(scheda.livello, 1)) }, ...mcArray.map((m, idx) => idx === targetMode ? { ...m, livello: Math.max(1, num(m.livello, 1)) + 1 } : m)]
               : [{ classe: scheda.classe, livello: Math.max(1, num(scheda.livello, 1)) + 1 }, ...mcArray]);
 
-        // La sottoclasse "terzo incantatore" (Cavaliere Mistico/Mistificatore
-        // Arcano) è nota solo per la classe principale: le classi secondarie da
-        // multiclasse non hanno un campo sottoclasse proprio in questa app.
-        const targetSottoclasse = (!isNewMc && !isSecMc) ? scheda.sottoclasse : undefined;
+        const targetSottoclasse = (!isNewMc && !isSecMc) ? scheda.sottoclasse : (isSecMc ? secMcObj?.sottoclasse : undefined);
 
         const isTotMc = classiNuove.filter((c) => c && c.classe).length > 1;
         const slotNuovi = isTotMc ? slotMulticlasse(classiNuove) : slotDaClasseLivello(targetClasse, targetLivelloNuovo, targetSottoclasse);
@@ -7151,7 +7158,7 @@ export default function App() {
         const nuovoLivInc = slotNuovi && maxLivSlot(slotNuovi) > maxLivSlot(slotVecchi) ? maxLivSlot(slotNuovi) : 0;
 
         const privNuoviTutti = isNewMc && targetLivelloNuovo === 1
-          ? privilegiClasseL1(targetClasse, versione)
+          ? (versione === '2014' ? (PRIVILEGI_CLASSE_L1_2014[kTarget] || '') : (PRIVILEGI_CLASSE_L1[kTarget] || ''))
           : privilegiClasseLivello(targetClasse, targetLivelloNuovo, versione);
         const attualiPriv = (scheda.privilegi || '');
         const privNuovi = privNuoviTutti
@@ -7174,30 +7181,38 @@ export default function App() {
             ? !!(levelUpBozza.talento || '').trim()
             : !!(levelUpBozza.asiA && levelUpBozza.asiB));
         const hpOk = !(levelUpBozza.metodo === 'tiro' && !levelUpBozza.tiroFatto);
-        const rigaCambio = { display: 'flex', justifyContent: 'space-between', gap: 8, padding: '3px 0', borderBottom: `1px solid ${C.border}` };
+        const rigaCambio = { display: 'flex', justifyContent: 'space-between', gap: 8, padding: '4px 0', borderBottom: `1px solid ${C.border}` };
 
         return (
         <div
           style={{
             position: 'fixed', inset: 0, zIndex: 1002, padding: 16,
-            background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
           onClick={(e) => { if (e.target === e.currentTarget) setMostraLevelUp(false); }}
         >
-          <div style={{ ...styles.panel, maxWidth: 440, width: '100%', maxHeight: '88vh', overflowY: 'auto' }}>
-            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 12 }}>⬆️ {t('levelup.titolo')}</h1>
-            <div style={{ textAlign: 'center', marginBottom: 14 }}>
-              Livello Personaggio: <strong>{livTotVecchio}</strong> → <strong>{nuovoLivello}</strong>
+          <div style={{ ...styles.panel, maxWidth: 500, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <h1 style={{ ...styles.title, margin: 0, fontSize: 20 }}>⬆️ {t('levelup.titolo')}</h1>
+              <span style={{ fontSize: 13, background: 'rgba(214,169,15,0.18)', border: `1px solid ${C.goldDark}`, color: C.goldDark, padding: '2px 10px', borderRadius: 12, fontWeight: 'bold' }}>
+                Livello {livTotVecchio} ➔ <strong>{nuovoLivello}</strong>
+              </span>
             </div>
 
-            {/* Selettore Classe (True Multiclassing) */}
-            <div style={{ marginBottom: 16, background: 'rgba(255,255,255,0.04)', border: `1px solid ${C.goldDark}`, borderRadius: 8, padding: '10px 12px' }}>
+            {haSaltoBC && (
+              <div style={{ background: 'rgba(46,139,87,0.15)', border: '1px solid #2e8b57', borderRadius: 8, padding: '6px 12px', marginBottom: 12, fontSize: 13, color: C.green, display: 'flex', alignItems: 'center', gap: 6, fontWeight: 'bold' }}>
+                ⭐ {t('levelup.salto_pb')} {conSegno(bcVecchio)} ➔ {conSegno(bcNuovo)}!
+              </div>
+            )}
+
+            {/* SELETTORE CLASSE PER L'AVANZAMENTO */}
+            <div style={{ marginBottom: 16, background: 'rgba(0,0,0,0.03)', border: `1.5px solid ${C.goldDark}`, borderRadius: 10, padding: '10px 12px' }}>
               <label style={{ ...styles.detail, display: 'block', marginBottom: 8, fontWeight: 'bold', color: C.goldDark, fontSize: 13 }}>
-                ⚔️ Scegli la classe per questo avanzamento:
+                ⚔️ {t('levelup.scegli_classe_avanzamento')}
               </label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {/* 1) Classe Principale */}
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, background: targetMode === 'main' ? 'rgba(214,169,15,0.15)' : 'transparent', padding: '6px 8px', borderRadius: 6, border: targetMode === 'main' ? `1px solid ${C.goldDark}` : '1px solid transparent' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 13, background: targetMode === 'main' ? 'rgba(214,169,15,0.2)' : 'rgba(255,255,255,0.03)', padding: '8px 10px', borderRadius: 8, border: targetMode === 'main' ? `1.5px solid ${C.goldDark}` : `1px solid ${C.border}`, transition: 'all 0.15s ease' }}>
                   <input
                     type="radio"
                     name="mc_target"
@@ -7207,13 +7222,16 @@ export default function App() {
                       setLevelUpBozza((b) => ({ ...b, target: 'main', facceDV: fDV, hpGainMedia: Math.max(1, Math.floor(fDV/2) + 1 + modCos), tiroFatto: 0 }));
                     }}
                   />
-                  <span>🥇 <strong>{scheda.classe}</strong> (da Liv. {scheda.livello || 1} → <strong>Liv. {(scheda.livello || 1) + 1}</strong>)</span>
-                  <span style={{ marginLeft: 'auto', fontSize: 11, opacity: 0.85, fontWeight: 'bold' }}>DV: d{dadoVitaClasse(scheda.classe)}</span>
+                  <div>
+                    <div style={{ fontWeight: 'bold', fontSize: 14 }}>🥇 {traduciDato(scheda.classe)} ({t('levelup.classe_principale')})</div>
+                    <div style={{ fontSize: 11, color: C.inkDim }}>Avanza da Liv. {scheda.livello || 1} → <strong style={{ color: C.goldDark }}>Liv. {(scheda.livello || 1) + 1}</strong></div>
+                  </div>
+                  <span style={{ marginLeft: 'auto', fontSize: 12, color: C.goldDark, fontWeight: 'bold' }}>DV: d{dadoVitaClasse(scheda.classe)}</span>
                 </label>
 
-                {/* 2) Classi Secondarie esistenti */}
+                {/* 2) Classi Secondarie Esistenti */}
                 {mcArray.map((m, idx) => (
-                  <label key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, background: targetMode === idx ? 'rgba(214,169,15,0.15)' : 'transparent', padding: '6px 8px', borderRadius: 6, border: targetMode === idx ? `1px solid ${C.goldDark}` : '1px solid transparent' }}>
+                  <label key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 13, background: targetMode === idx ? 'rgba(214,169,15,0.2)' : 'rgba(255,255,255,0.03)', padding: '8px 10px', borderRadius: 8, border: targetMode === idx ? `1.5px solid ${C.goldDark}` : `1px solid ${C.border}`, transition: 'all 0.15s ease' }}>
                     <input
                       type="radio"
                       name="mc_target"
@@ -7223,80 +7241,106 @@ export default function App() {
                         setLevelUpBozza((b) => ({ ...b, target: idx, facceDV: fDV, hpGainMedia: Math.max(1, Math.floor(fDV/2) + 1 + modCos), tiroFatto: 0 }));
                       }}
                     />
-                    <span>{idx === 0 ? '🥈' : idx === 1 ? '🥉' : '🎖️'} <strong>{m.classe}</strong> (da Liv. {m.livello || 1} → <strong>Liv. {(num(m.livello, 1)) + 1}</strong>)</span>
-                    <span style={{ marginLeft: 'auto', fontSize: 11, opacity: 0.85, fontWeight: 'bold' }}>DV: d{dadoVitaClasse(m.classe)}</span>
+                    <div>
+                      <div style={{ fontWeight: 'bold', fontSize: 14 }}>{idx === 0 ? '🥈' : idx === 1 ? '🥉' : '🎖️'} {traduciDato(m.classe)} ({t('levelup.classe_secondaria')})</div>
+                      <div style={{ fontSize: 11, color: C.inkDim }}>Avanza da Liv. {m.livello || 1} → <strong style={{ color: C.goldDark }}>Liv. {(num(m.livello, 1)) + 1}</strong></div>
+                    </div>
+                    <span style={{ marginLeft: 'auto', fontSize: 12, color: C.goldDark, fontWeight: 'bold' }}>DV: d{dadoVitaClasse(m.classe)}</span>
                   </label>
                 ))}
 
-                {/* 3) Nuova Classe Secondaria (Multiclasse) */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: targetMode === 'new' ? 'rgba(214,169,15,0.15)' : 'transparent', padding: '6px 8px', borderRadius: 6, border: targetMode === 'new' ? `1px solid ${C.goldDark}` : '1px solid transparent', flexWrap: 'wrap' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13 }}>
+                {/* 3) Nuova Classe (Multiclasse) */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, background: targetMode === 'new' ? 'rgba(214,169,15,0.2)' : 'rgba(255,255,255,0.03)', padding: '8px 10px', borderRadius: 8, border: targetMode === 'new' ? `1.5px solid ${C.goldDark}` : `1px solid ${C.border}`, transition: 'all 0.15s ease' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 13 }}>
                     <input
                       type="radio"
                       name="mc_target"
                       checked={targetMode === 'new'}
                       onChange={() => {
-                        const firstNew = NOMI_CLASSI.find((n) => n !== scheda.classe && !mcArray.some((x) => x.classe === n)) || NOMI_CLASSI[0];
-                        const fDV = dadoVitaClasse(levelUpBozza.nuovaClasseMc || firstNew);
-                        setLevelUpBozza((b) => ({ ...b, target: 'new', nuovaClasseMc: b.nuovaClasseMc || firstNew, facceDV: fDV, hpGainMedia: Math.max(1, Math.floor(fDV/2) + 1 + modCos), tiroFatto: 0 }));
+                        const fDV = dadoVitaClasse(levelUpBozza.nuovaClasseMc || firstAvailableNewClass);
+                        setLevelUpBozza((b) => ({ ...b, target: 'new', nuovaClasseMc: b.nuovaClasseMc || firstAvailableNewClass, facceDV: fDV, hpGainMedia: Math.max(1, Math.floor(fDV/2) + 1 + modCos), tiroFatto: 0 }));
                       }}
                     />
-                    <span>➕ <strong>Nuova Classe:</strong></span>
+                    <span style={{ fontWeight: 'bold', fontSize: 14 }}>➕ {t('levelup.nuova_classe_mc')}</span>
                   </label>
                   {targetMode === 'new' && (
-                    <select
-                      value={levelUpBozza.nuovaClasseMc || ''}
-                      onChange={(e) => {
-                        const nc = e.target.value;
-                        const fDV = dadoVitaClasse(nc);
-                        setLevelUpBozza((b) => ({ ...b, nuovaClasseMc: nc, facceDV: fDV, hpGainMedia: Math.max(1, Math.floor(fDV/2) + 1 + modCos), tiroFatto: 0 }));
-                      }}
-                      style={{ ...styles.inlineInput, padding: '3px 8px', fontSize: 13, fontWeight: 'bold' }}
-                    >
-                      {NOMI_CLASSI.map((n) => (
-                        <option key={n} value={n} disabled={n === scheda.classe || mcArray.some((x) => x.classe === n)}>{traduciDato(n)}</option>
-                      ))}
-                    </select>
-                  )}
-                  {targetMode === 'new' && (
-                    <span style={{ fontSize: 12, color: C.goldDark, marginLeft: 'auto', fontWeight: 'bold' }}>→ Liv. 1 (DV: d{dadoVitaClasse(levelUpBozza.nuovaClasseMc || 'Guerriero')})</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                      <select
+                        value={levelUpBozza.nuovaClasseMc || firstAvailableNewClass}
+                        onChange={(e) => {
+                          const nc = e.target.value;
+                          const fDV = dadoVitaClasse(nc);
+                          setLevelUpBozza((b) => ({ ...b, nuovaClasseMc: nc, facceDV: fDV, hpGainMedia: Math.max(1, Math.floor(fDV/2) + 1 + modCos), tiroFatto: 0 }));
+                        }}
+                        style={{ ...styles.inlineInput, flex: 1, padding: '5px 8px', fontSize: 14, fontWeight: 'bold' }}
+                      >
+                        {NOMI_CLASSI.map((n) => (
+                          <option key={n} value={n} disabled={n === scheda.classe || mcArray.some((x) => x.classe === n)}>{traduciDato(n)}</option>
+                        ))}
+                      </select>
+                      <span style={{ fontSize: 12, color: C.goldDark, fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                        → Liv. 1 (DV: d{dadoVitaClasse(levelUpBozza.nuovaClasseMc || firstAvailableNewClass)})
+                      </span>
+                    </div>
                   )}
                 </div>
               </div>
             </div>
 
-            <p style={{ ...styles.detail, marginBottom: 14, lineHeight: 1.4 }}>
-              {t('levelup.desc_hp', { cos: conSegno(modCos) })}
-            </p>
-
-            <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-              <div
-                style={{ ...styles.button, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, borderColor: levelUpBozza.metodo === 'media' ? C.goldDark : C.border, background: levelUpBozza.metodo === 'media' ? 'rgba(255,215,0,0.1)' : 'transparent' }}
-                onClick={() => setLevelUpBozza((b) => ({ ...b, metodo: 'media' }))}
-              >
-                <div style={{ fontWeight: 'bold' }}>{t('levelup.media_fissa')}</div>
-                <div style={{ fontSize: 20, color: C.goldDark }}>+{levelUpBozza.hpGainMedia != null ? levelUpBozza.hpGainMedia : avgHpGainTarget} PF</div>
-                <div style={{ fontSize: 11, opacity: 0.8 }}>({Math.floor(facceTargetDV / 2) + 1} {modCos !== 0 ? conSegno(modCos) : ''})</div>
-              </div>
-
-              <div
-                style={{ ...styles.button, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, borderColor: levelUpBozza.metodo === 'tiro' ? C.goldDark : C.border, background: levelUpBozza.metodo === 'tiro' ? 'rgba(255,215,0,0.1)' : 'transparent' }}
-                onClick={() => setLevelUpBozza((b) => ({ ...b, metodo: 'tiro' }))}
-              >
-                <div style={{ fontWeight: 'bold' }}>{t('levelup.tira_dado', { facce: facceTargetDV })}</div>
-                <div style={{ fontSize: 20, color: C.goldDark }}>
-                  {levelUpBozza.tiroFatto > 0 ? `+${Math.max(1, levelUpBozza.tiroFatto + modCos)} PF` : '? PF'}
+            {/* SE NUOVA CLASSE MULTICLASSE: REQUISITI E COMPETENZE 5E */}
+            {isNewMc && compMc && (
+              <div style={{ background: 'rgba(0,102,204,0.08)', border: '1px solid rgba(0,102,204,0.4)', borderRadius: 8, padding: '10px 12px', marginBottom: 14, fontSize: 12.5 }}>
+                <div style={{ fontWeight: 'bold', color: '#0066cc', marginBottom: 4 }}>
+                  📜 {t('levelup.nuova_classe_info')}: {traduciDato(targetClasse)}
                 </div>
+                {reqMc && (
+                  <div style={{ marginBottom: 3 }}>
+                    <strong>{t('levelup.requisiti')}</strong> {reqMc}
+                  </div>
+                )}
                 <div>
-                  {levelUpBozza.tiroFatto > 0 ? t('levelup.hai_tirato', { n: levelUpBozza.tiroFatto }) : <button style={{ ...styles.buttonMini, fontSize: 12 }} onClick={(e) => { e.stopPropagation(); setLevelUpBozza((b) => ({ ...b, tiroFatto: Math.floor(Math.random() * b.facceDV) + 1, metodo: 'tiro' })); }}>{t('levelup.tira_ora')}</button>}
+                  <strong>{t('levelup.competenze_ottenute')}</strong> {lingua === 'en' && compMc.descEn ? compMc.descEn : compMc.desc}
+                </div>
+              </div>
+            )}
+
+            {/* PUNTI FERITA (MEDIA O TIRO) */}
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ ...styles.detail, marginBottom: 6, fontSize: 12.5 }}>
+                {t('levelup.desc_hp', { cos: conSegno(modCos) })}
+              </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <div
+                  style={{ ...styles.button, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '8px 6px', cursor: 'pointer', borderColor: levelUpBozza.metodo === 'media' ? C.goldDark : C.border, background: levelUpBozza.metodo === 'media' ? 'rgba(255,215,0,0.12)' : 'transparent', borderRadius: 8 }}
+                  onClick={() => setLevelUpBozza((b) => ({ ...b, metodo: 'media' }))}
+                >
+                  <div style={{ fontWeight: 'bold', fontSize: 13 }}>{t('levelup.media_fissa')}</div>
+                  <div style={{ fontSize: 18, color: C.goldDark, fontWeight: 'bold' }}>+{levelUpBozza.hpGainMedia != null ? levelUpBozza.hpGainMedia : avgHpGainTarget} PF</div>
+                  <div style={{ fontSize: 10.5, color: C.inkDim }}>({Math.floor(facceTargetDV / 2) + 1} {modCos !== 0 ? conSegno(modCos) : ''})</div>
+                </div>
+
+                <div
+                  style={{ ...styles.button, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '8px 6px', cursor: 'pointer', borderColor: levelUpBozza.metodo === 'tiro' ? C.goldDark : C.border, background: levelUpBozza.metodo === 'tiro' ? 'rgba(255,215,0,0.12)' : 'transparent', borderRadius: 8 }}
+                  onClick={() => setLevelUpBozza((b) => ({ ...b, metodo: 'tiro' }))}
+                >
+                  <div style={{ fontWeight: 'bold', fontSize: 13 }}>{t('levelup.tira_dado', { facce: facceTargetDV })}</div>
+                  <div style={{ fontSize: 18, color: C.goldDark, fontWeight: 'bold' }}>
+                    {levelUpBozza.tiroFatto > 0 ? `+${Math.max(1, levelUpBozza.tiroFatto + modCos)} PF` : '? PF'}
+                  </div>
+                  <div>
+                    {levelUpBozza.tiroFatto > 0
+                      ? <span style={{ fontSize: 11, color: C.green }}>{t('levelup.hai_tirato', { n: levelUpBozza.tiroFatto })}</span>
+                      : <button style={{ ...styles.buttonMini, fontSize: 11, padding: '1px 8px' }} onClick={(e) => { e.stopPropagation(); setLevelUpBozza((b) => ({ ...b, tiroFatto: Math.floor(Math.random() * facceTargetDV) + 1, metodo: 'tiro' })); }}>🎲 {t('levelup.tira_ora')}</button>}
+                  </div>
                 </div>
               </div>
             </div>
 
+            {/* SCELTA SOTTOCLASSE (SE AL LIVELLO DI SOTTOCLASSE) */}
             {mostraSceltaSub && (
-              <div style={{ marginBottom: 14 }}>
-                <label style={{ ...styles.detail, display: 'block', marginBottom: 4, fontWeight: 'bold' }}>
-                  🌟 {t('levelup.scegli_sub')} ({targetClasse}):
+              <div style={{ marginBottom: 14, background: 'rgba(255,215,0,0.06)', border: `1px solid ${C.goldDark}`, borderRadius: 8, padding: '8px 10px' }}>
+                <label style={{ ...styles.detail, display: 'block', marginBottom: 4, fontWeight: 'bold', color: C.goldDark }}>
+                  🌟 {t('levelup.scegli_sub')} ({traduciDato(targetClasse)}):
                 </label>
                 <select
                   style={{ ...styles.inlineInput, width: '100%', padding: '6px 8px', fontSize: 14 }}
@@ -7309,9 +7353,10 @@ export default function App() {
               </div>
             )}
 
+            {/* ASI O TALENTO (SE AL LIVELLO ASI) */}
             {haASI && (
-              <div style={{ marginBottom: 14, background: 'rgba(0,0,0,0.03)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px' }}>
-                <div style={{ fontWeight: 'bold', marginBottom: 6 }}>🎯 {t('levelup.asi_o_talento')} ({targetClasse})</div>
+              <div style={{ marginBottom: 14, background: 'rgba(0,0,0,0.03)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
+                <div style={{ fontWeight: 'bold', marginBottom: 6, color: C.goldDark }}>🎯 {t('levelup.asi_o_talento')} ({traduciDato(targetClasse)} Liv. {targetLivelloNuovo})</div>
                 <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
                   {[['aumento', t('levelup.aumento_car')], ['talento', t('levelup.talento')]].map(([m, lab]) => (
                     <button key={m} style={levelUpBozza.asiMode === m ? styles.modeButton(true) : styles.modeButton(false)} onClick={() => setLevelUpBozza((b) => ({ ...b, asiMode: m }))}>{lab}</button>
@@ -7364,49 +7409,117 @@ export default function App() {
               </div>
             )}
 
-            {/* Riepilogo: cosa cambia salendo di livello */}
-            <div style={{ ...styles.panelSoft || {}, background: 'rgba(0,0,0,0.03)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 12px', marginBottom: 14, fontSize: 13 }}>
-              <div style={{ fontWeight: 'bold', color: C.goldDark, marginBottom: 6 }}>📋 {t('levelup.cosa_cambia')}</div>
-              <div style={rigaCambio}><span>{t('levelup.pf_massimi')}</span><strong>{gain != null ? `+${gain}` : '—'}</strong></div>
-              <div style={rigaCambio}><span>{t('levelup.dadi_vita')}</span><strong>{calcolaFormulaDadiVita(scheda.classe, isNewMc || isSecMc ? Math.max(1, num(scheda.livello, 1)) : targetLivelloNuovo, classiNuove.slice(1))}</strong></div>
-              {bcNuovo !== bcVecchio && (
-                <div style={rigaCambio}><span>{t('levelup.bonus_comp')}</span><strong>{conSegno(bcVecchio)} → {conSegno(bcNuovo)} ⬆️</strong></div>
-              )}
-              {slotStr && (
-                <div style={{ padding: '3px 0', borderBottom: `1px solid ${C.border}` }}>
-                  <div>{t('levelup.slot_inc', { n: nuovoLivello })}</div>
-                  <div style={{ color: C.inkDim, marginTop: 2 }}>{slotStr}</div>
-                  {nuovoLivInc > 0 && <div style={{ color: C.green, marginTop: 2 }}>{t('levelup.sblocchi', { n: nuovoLivInc })}</div>}
+            {/* PANORAMICA DETTAGLIATA AVANZAMENTO ("COSA OTTIENI CON QUESTO LIVELLO") */}
+            <div style={{ background: 'rgba(0,0,0,0.03)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', marginBottom: 16, fontSize: 13 }}>
+              <div style={{ fontWeight: 'bold', color: C.goldDark, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span>✨ {t('levelup.anteprima_titolo')} ({traduciDato(targetClasse)} → Liv. {targetLivelloNuovo})</span>
+              </div>
+
+              {/* PF & Dado Vita */}
+              <div style={rigaCambio}>
+                <span>{t('levelup.pf_massimi')} ({t('levelup.dado_vita_classe')} d{facceTargetDV})</span>
+                <strong>{gain != null ? `+${gain} PF` : '—'}</strong>
+              </div>
+
+              {/* Dadi Vita Formula Totale */}
+              <div style={rigaCambio}>
+                <span>{t('levelup.dadi_vita')} (Totali)</span>
+                <strong>{calcolaFormulaDadiVita(scheda.classe, isNewMc || isSecMc ? Math.max(1, num(scheda.livello, 1)) : targetLivelloNuovo, classiNuove.slice(1))}</strong>
+              </div>
+
+              {/* Bonus Competenza */}
+              {haSaltoBC && (
+                <div style={rigaCambio}>
+                  <span>{t('levelup.bonus_comp')}</span>
+                  <strong style={{ color: C.green }}>{conSegno(bcVecchio)} → {conSegno(bcNuovo)} ⬆️</strong>
                 </div>
               )}
+
+              {/* Privilegi di Classe Sbloccati */}
+              {privNuovi && (
+                <div style={{ padding: '6px 0', borderBottom: `1px solid ${C.border}` }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: 4, color: C.goldDark }}>
+                    🌟 {t('levelup.privilegi_ottenuti')}
+                  </div>
+                  {privNuovi.split('\n').filter(Boolean).map((r, i) => {
+                    const sp = spiegaPrivilegio(r);
+                    return (
+                      <div key={i} style={{ marginBottom: 4 }}>
+                        <div style={{ color: C.green, fontWeight: 'bold' }}>• {r}</div>
+                        {sp && typeof sp === 'string' && (
+                          <div style={{ fontSize: 11.5, color: C.inkDim, marginLeft: 12, lineHeight: 1.3 }}>
+                            {sp}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Privilegi Sottoclasse Sbloccati */}
+              {subPrivNuovi ? (
+                <div style={{ padding: '6px 0', borderBottom: `1px solid ${C.border}` }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: 4, color: C.goldDark }}>
+                    🌟 {t('levelup.nuovi_priv_sub')} ({subSel || 'Sottoclasse'}):
+                  </div>
+                  {subPrivNuovi.split('\n').filter(Boolean).map((r, i) => {
+                    const sp = spiegaPrivilegio(r);
+                    return (
+                      <div key={i} style={{ marginBottom: 4 }}>
+                        <div style={{ color: C.green, fontWeight: 'bold' }}>• {r}</div>
+                        {sp && typeof sp === 'string' && (
+                          <div style={{ fontSize: 11.5, color: C.inkDim, marginLeft: 12, lineHeight: 1.3 }}>
+                            {sp}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : haSub && !mostraSceltaSub ? (
+                <div style={{ padding: '5px 0', color: C.inkDim }}>🌟 {t('levelup.sub_guadagna')} ({traduciDato(targetClasse)})</div>
+              ) : null}
+
+              {/* Progressioni Meccaniche & Risorse */}
+              {progressioni.length > 0 && (
+                <div style={{ padding: '6px 0', borderBottom: `1px solid ${C.border}` }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: 4, color: C.goldDark }}>
+                    ⚡ {t('levelup.risorse_potenziate')}
+                  </div>
+                  {progressioni.map((p, idx) => (
+                    <div key={idx} style={{ fontSize: 12.5, marginBottom: 2 }}>
+                      <span>{p.icon} <strong>{p.nome}:</strong> {p.desc}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Slot Incantesimi & Progressione Magica */}
+              {slotStr && (
+                <div style={{ padding: '6px 0', borderBottom: `1px solid ${C.border}` }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: 2, color: C.goldDark }}>
+                    🔮 {t('levelup.incantesimi_progressione')}
+                  </div>
+                  <div style={{ color: C.inkDim }}>{slotStr}</div>
+                  {nuovoLivInc > 0 && <div style={{ color: C.green, marginTop: 3, fontWeight: 'bold' }}>{t('levelup.sblocchi', { n: nuovoLivInc })}</div>}
+                </div>
+              )}
+
+              {/* Nuovi Trucchetti o Incantesimi Conosciuti / Preparabili */}
               {(nuoviTrucchetti > 0 || nuoviIncantesimi > 0) && (
-                <div style={{ padding: '3px 0', borderBottom: `1px solid ${C.border}` }}>
-                  <div>{t('levelup.nuovi_inc')}</div>
+                <div style={{ padding: '6px 0', borderBottom: `1px solid ${C.border}` }}>
+                  <div style={{ fontWeight: 'bold', color: C.goldDark }}>{t('levelup.nuovi_inc')}</div>
                   {nuoviTrucchetti > 0 && <div style={{ color: C.green, marginTop: 2 }}>• {t('levelup.piu_trucchetti', { n: nuoviTrucchetti })}</div>}
                   {nuoviIncantesimi > 0 && <div style={{ color: C.green, marginTop: 2 }}>• {t('levelup.piu_incantesimi', { n: nuoviIncantesimi })}</div>}
                   <div style={{ ...styles.detail, fontSize: 11, color: C.inkDim, marginTop: 2 }}>{t('levelup.aggiungi_dopo')}</div>
                 </div>
               )}
-              {privNuovi && (
-                <div style={{ padding: '5px 0', borderBottom: `1px solid ${C.border}` }}>
-                  <div style={{ marginBottom: 2 }}>{t('levelup.nuovi_priv')} ({targetClasse}):</div>
-                  {privNuovi.split('\n').map((r, i) => <div key={i} style={{ color: C.green }}>• {r}</div>)}
-                </div>
-              )}
-              {mostraSceltaSub && (
-                <div style={rigaCambio}><span>{t('levelup.sottoclasse')} ({targetClasse})</span><strong>{levelUpBozza.sottoclasse || t('levelup.da_scegliere')}</strong></div>
-              )}
-              {subPrivNuovi ? (
-                <div style={{ padding: '5px 0', borderBottom: `1px solid ${C.border}` }}>
-                  <div style={{ marginBottom: 2 }}>{t('levelup.nuovi_priv_sub')}</div>
-                  {subPrivNuovi.split('\n').map((r, i) => <div key={i} style={{ color: C.green }}>• {r}</div>)}
-                </div>
-              ) : haSub && !mostraSceltaSub ? (
-                <div style={{ padding: '5px 0', color: C.inkDim }}>🌟 {t('levelup.sub_guadagna')} ({targetClasse})</div>
-              ) : null}
+
+              {/* ASI o Talento Riepilogo */}
               {haASI && (
                 <div style={rigaCambio}>
-                  <span>{t('levelup.aumento_talento')} ({targetClasse})</span>
+                  <span>{t('levelup.aumento_talento')} ({traduciDato(targetClasse)})</span>
                   <strong>{levelUpBozza.asiMode === 'talento'
                     ? ((levelUpBozza.talento || '').trim() || t('levelup.talento_da_indicare'))
                     : ((levelUpBozza.asiA || levelUpBozza.asiB)
@@ -7417,7 +7530,7 @@ export default function App() {
             </div>
 
             <button
-              style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 12 }}
+              style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 8, padding: '10px 14px', fontSize: 15 }}
               disabled={!hpOk || !asiCompleto}
               onClick={() => {
                 const g = levelUpBozza.metodo === 'media' ? (levelUpBozza.hpGainMedia != null ? levelUpBozza.hpGainMedia : avgHpGainTarget) : Math.max(1, levelUpBozza.tiroFatto + modCos);
@@ -7431,6 +7544,26 @@ export default function App() {
                   const newMcItem = { classe: targetClasse, livello: 1 };
                   if (mostraSceltaSub && levelUpBozza.sottoclasse) newMcItem.sottoclasse = levelUpBozza.sottoclasse;
                   patch.multiclasse = [...mcArray, newMcItem];
+
+                  // Se nuova classe multiclasse, integra le competenze concesse dalle regole 5e
+                  if (compMc) {
+                    const addestramentoAttuale = scheda.addestramento || {};
+                    const patchAdd = { ...addestramentoAttuale };
+                    if (compMc.armature) {
+                      patchAdd.armature = { ...(addestramentoAttuale.armature || {}), ...compMc.armature };
+                    }
+                    if (compMc.armi) {
+                      const armiSet = new Set((addestramentoAttuale.armi || '').split(/[,\n]/).map((s) => s.trim()).filter(Boolean));
+                      compMc.armi.split(/[,\n]/).forEach((w) => armiSet.add(w.trim()));
+                      patchAdd.armi = [...armiSet].join(', ');
+                    }
+                    if (compMc.strumenti) {
+                      const strSet = new Set((addestramentoAttuale.strumenti || '').split(/[,\n]/).map((s) => s.trim()).filter(Boolean));
+                      compMc.strumenti.split(/[,\n]/).forEach((st) => strSet.add(st.trim()));
+                      patchAdd.strumenti = [...strSet].join(', ');
+                    }
+                    patch.addestramento = patchAdd;
+                  }
                 } else if (isSecMc) {
                   patch.multiclasse = mcArray.map((m, idx) => {
                     if (idx === targetMode) {
@@ -7469,13 +7602,18 @@ export default function App() {
                     patch.caratteristiche = nuoveCar;
                   }
                 }
+
+                // Sincronizza automaticamente anche le risorse di classe (Ki, Ira, Imposizione delle Mani, ecc.)
+                const schedaAggiornata = { ...scheda, ...patch };
+                patch.risorse = sincronizzaRisorseClasse(schedaAggiornata, versione);
+
                 aggiorna(patch);
                 setMostraLevelUp(false);
               }}
             >
-              🚀 Conferma Level Up ({targetClasse})
+              {t('levelup.applica_btn')} ({traduciDato(targetClasse)} Liv. {targetLivelloNuovo})
             </button>
-            <button style={{ ...styles.button, width: '100%' }} onClick={() => setMostraLevelUp(false)}>Annulla</button>
+            <button style={{ ...styles.button, width: '100%' }} onClick={() => setMostraLevelUp(false)}>{t('modal.annulla')}</button>
           </div>
         </div>
         );

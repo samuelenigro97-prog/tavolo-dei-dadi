@@ -5,7 +5,8 @@ import { CLASSI, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, SLOT_FULL_CASTER, SLOT
   PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, PESI_OGGETTI, PESO_ARMATURA_TIPO,
   INCANTESIMI_CLASSE, CARATT_INCANTATORE, SOTTOCLASSE_TERZO_CASTER,
   SCUOLE_TERZO_CASTER_2014, SLOT_TERZO_CASTER, INC_MAX_TERZO, TRUCCHETTI_TERZO_CASTER,
-  TS_CLASSE, COMPETENZE_CLASSE, COMPETENZE_SPECIE, BACKGROUND_COMPETENZE } from '../data/dati5e.js';
+  TS_CLASSE, COMPETENZE_CLASSE, COMPETENZE_SPECIE, BACKGROUND_COMPETENZE,
+  MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E } from '../data/dati5e.js';
 import { modificatore, conSegno, bonusCompetenzaDaLivello } from './dadi.js';
 import { spiegaIncantesimo } from '../data/spiegazioni.js';
 import { INCANTESIMI_DB, datiIncantesimo } from '../data/incantesimi.js';
@@ -159,6 +160,148 @@ export function privilegiClasseFinoA(classe, livello, versione = '2024') {
 export function asiAlLivello(classe, livello) {
   const k = chiaveClasse(classe);
   return ((k && ASI_LIV[k]) || ASI_LIV._default).includes(livello);
+}
+
+export { MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E };
+
+/**
+ * Restituisce i dettagli specifici di progressione e potenziamenti di risorsa
+ * per un passaggio di livello in una classe (da vecchioLivello a nuovoLivello).
+ */
+export function dettagliProgressioneLivello(classe, vecchioLivello, nuovoLivello, versione = '2024') {
+  const k = chiaveClasse(classe);
+  if (!k) return [];
+  const v24 = String(versione) !== '2014';
+  const out = [];
+
+  switch (k) {
+    case 'barbaro': {
+      const rageOld = vecchioLivello >= 17 ? 6 : vecchioLivello >= 12 ? 5 : vecchioLivello >= 6 ? 4 : vecchioLivello >= 3 ? 3 : vecchioLivello >= 1 ? 2 : 0;
+      const rageNew = nuovoLivello >= 17 ? 6 : nuovoLivello >= 12 ? 5 : nuovoLivello >= 6 ? 4 : nuovoLivello >= 3 ? 3 : 2;
+      if (rageNew > rageOld) {
+        out.push({ icon: '🔥', nome: 'Ira', desc: `Usi aumentati a ${rageNew} per riposo` });
+      }
+      const rageDmgOld = vecchioLivello >= 16 ? 4 : vecchioLivello >= 9 ? 3 : vecchioLivello >= 1 ? 2 : 0;
+      const rageDmgNew = nuovoLivello >= 16 ? 4 : nuovoLivello >= 9 ? 3 : 2;
+      if (rageDmgNew > rageDmgOld) {
+        out.push({ icon: '⚔️', nome: 'Danno d’Ira', desc: `Bonus danno aumentato a +${rageDmgNew}` });
+      }
+      break;
+    }
+    case 'bardo': {
+      if (nuovoLivello === 5) {
+        out.push({ icon: '🎲', nome: 'Ispirazione Bardica', desc: 'Dado aumentato a d8 e recupero con Riposo Breve' });
+      } else if (nuovoLivello === 10) {
+        out.push({ icon: '🎲', nome: 'Ispirazione Bardica', desc: 'Dado aumentato a d10' });
+      } else if (nuovoLivello === 15) {
+        out.push({ icon: '🎲', nome: 'Ispirazione Bardica', desc: 'Dado aumentato a d12' });
+      }
+      if (nuovoLivello === 10 || nuovoLivello === 14 || nuovoLivello === 18) {
+        out.push({ icon: '✨', nome: 'Segreti Magici', desc: 'Sblocchi 2 incantesimi da qualsiasi lista di classe' });
+      }
+      break;
+    }
+    case 'chierico': {
+      if (nuovoLivello === 6) {
+        out.push({ icon: '✨', nome: 'Incanalare Divinità', desc: 'Usi aumentati a 2 per riposo' });
+      } else if (nuovoLivello === 18) {
+        out.push({ icon: '✨', nome: 'Incanalare Divinità', desc: 'Usi aumentati a 3 per riposo' });
+      }
+      break;
+    }
+    case 'druido': {
+      if (nuovoLivello === 2) {
+        out.push({ icon: '🐾', nome: 'Forma Selvatica', desc: '2 utilizzi per riposo breve' });
+      } else if (nuovoLivello === 4) {
+        out.push({ icon: '🐟', nome: 'Forma Selvatica (Nuoto)', desc: 'Puoi trasformarti in bestie con velocità di nuoto' });
+      } else if (nuovoLivello === 8) {
+        out.push({ icon: '🦅', nome: 'Forma Selvatica (Volo)', desc: 'Puoi trasformarti in bestie con velocità di volo' });
+      }
+      break;
+    }
+    case 'guerriero': {
+      if (nuovoLivello === 2) {
+        out.push({ icon: '⚡', nome: 'Azione Impetuosa', desc: '1 azione aggiuntiva nel tuo turno per riposo' });
+      } else if (nuovoLivello === 5) {
+        out.push({ icon: '⚔️', nome: 'Attacco Extra', desc: 'Attacchi 2 volte per azione di Attacco' });
+      } else if (nuovoLivello === 11) {
+        out.push({ icon: '⚔️', nome: 'Attacco Extra (3 attacchi)', desc: 'Attacchi 3 volte per azione di Attacco' });
+      } else if (nuovoLivello === 20) {
+        out.push({ icon: '⚔️', nome: 'Attacco Extra Supremo', desc: 'Attacchi 4 volte per azione di Attacco' });
+      }
+      if (nuovoLivello === 9) {
+        out.push({ icon: '🛡️', nome: 'Indomito', desc: 'Ritira un tiro salvezza fallito (1 uso per riposo lungo)' });
+      } else if (nuovoLivello === 13) {
+        out.push({ icon: '🛡️', nome: 'Indomito', desc: 'Usi aumentati a 2 per riposo lungo' });
+      } else if (nuovoLivello === 17) {
+        out.push({ icon: '🛡️', nome: 'Indomito & Azione Impetuosa', desc: 'Indomito 3 usi, Azione Impetuosa 2 usi' });
+      }
+      break;
+    }
+    case 'ladro': {
+      const sneakOld = Math.ceil(vecchioLivello / 2);
+      const sneakNew = Math.ceil(nuovoLivello / 2);
+      if (sneakNew > sneakOld || vecchioLivello === 0) {
+        out.push({ icon: '🗡️', nome: 'Attacco Furtivo', desc: `Danno furtivo: ${sneakNew}d6` });
+      }
+      if (nuovoLivello === 5) {
+        out.push({ icon: '💨', nome: 'Schivata Prodigiosa', desc: 'Reazione: dimezza il danno di un attacco subito' });
+      } else if (nuovoLivello === 7) {
+        out.push({ icon: '🤸', nome: 'Elusione', desc: 'TS Destrezza: 0 danni se superato, metà se fallito' });
+      }
+      break;
+    }
+    case 'monaco': {
+      const maDie = nuovoLivello >= 17 ? '1d10' : nuovoLivello >= 11 ? '1d8' : nuovoLivello >= 5 ? '1d6' : '1d4';
+      const maDie24 = nuovoLivello >= 17 ? '1d12' : nuovoLivello >= 11 ? '1d10' : nuovoLivello >= 5 ? '1d8' : '1d6';
+      if (nuovoLivello === 1 || nuovoLivello === 5 || nuovoLivello === 11 || nuovoLivello === 17) {
+        out.push({ icon: '👊', nome: 'Arti Marziali', desc: `Dado arti marziali: ${v24 ? maDie24 : maDie}` });
+      }
+      out.push({ icon: '☯️', nome: v24 ? 'Punti Focus' : 'Punti Ki', desc: `Riserva totale: ${nuovoLivello} punti` });
+      if (nuovoLivello === 5) {
+        out.push({ icon: '⚔️', nome: 'Attacco Extra & Colpo Stordente', desc: 'Attacchi 2 volte + Colpo Stordente' });
+      }
+      break;
+    }
+    case 'paladino': {
+      out.push({ icon: '✋', nome: 'Imposizione delle Mani', desc: `Riserva curativa aumentata a ${nuovoLivello * 5} PF (+5 PF)` });
+      if (nuovoLivello === 2) {
+        out.push({ icon: '⚡', nome: 'Punizione Divina', desc: 'Spendi slot incantesimo per infliggere danni radiosi extra' });
+      }
+      if (nuovoLivello === 5) {
+        out.push({ icon: '⚔️', nome: 'Attacco Extra', desc: 'Attacchi 2 volte per azione di Attacco' });
+      } else if (nuovoLivello === 6) {
+        out.push({ icon: '🛡️', nome: 'Aura di Protezione', desc: 'Aggiungi il mod. Carisma a tutti i tuoi TS e a quelli degli alleati vicini' });
+      }
+      break;
+    }
+    case 'ranger': {
+      if (nuovoLivello === 5) {
+        out.push({ icon: '⚔️', nome: 'Attacco Extra', desc: 'Attacchi 2 volte per azione di Attacco' });
+      }
+      break;
+    }
+    case 'stregone': {
+      if (nuovoLivello >= 2) {
+        out.push({ icon: '🔮', nome: 'Punti Stregoneria', desc: `Riserva magica aumentata a ${nuovoLivello} punti` });
+      }
+      break;
+    }
+    case 'warlock': {
+      if (nuovoLivello === 2 || nuovoLivello === 3 || nuovoLivello === 5 || nuovoLivello === 7 || nuovoLivello === 9 || nuovoLivello === 11 || nuovoLivello === 17) {
+        const numSlot = nuovoLivello >= 17 ? 4 : nuovoLivello >= 11 ? 3 : 2;
+        const livSlot = Math.min(5, Math.ceil(nuovoLivello / 2));
+        out.push({ icon: '📜', nome: 'Magia del Patto', desc: `${numSlot} slot di ${livSlot}° livello (recupero su riposo breve)` });
+      }
+      break;
+    }
+    case 'mago': {
+      out.push({ icon: '📖', nome: 'Recupero Arcano', desc: `Recuperi fino a ${Math.ceil(nuovoLivello / 2)} livelli di slot su riposo breve` });
+      break;
+    }
+  }
+
+  return out;
 }
 
 export function slotDaClasseLivello(classe, livello, sottoclasse) {

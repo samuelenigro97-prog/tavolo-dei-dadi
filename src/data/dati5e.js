@@ -540,6 +540,93 @@ export const ADDESTRAMENTO_CLASSE = {
   stregone: { armature: { leggera: false, media: false, pesante: false, scudi: false }, armi: 'Armi semplici' },
   warlock: { armature: { leggera: true, media: false, pesante: false, scudi: false }, armi: 'Armi semplici' },
 };
+export const MULTICLASSE_REQUISITI_5E = {
+  barbaro: 'FOR 13',
+  bardo: 'CAR 13',
+  chierico: 'SAG 13',
+  druido: 'SAG 13',
+  guerriero: 'FOR 13 o DES 13',
+  ladro: 'DES 13',
+  mago: 'INT 13',
+  monaco: 'DES 13 e SAG 13',
+  paladino: 'FOR 13 e CAR 13',
+  ranger: 'DES 13 e SAG 13',
+  stregone: 'CAR 13',
+  warlock: 'CAR 13',
+};
+
+export const MULTICLASSE_COMPETENZE_5E = {
+  barbaro: {
+    armature: { scudi: true },
+    armi: 'Armi semplici, Armi da guerra',
+    desc: 'Scudi, Armi semplici e da guerra',
+    descEn: 'Shields, Simple weapons, Martial weapons',
+  },
+  bardo: {
+    armature: { leggera: true },
+    strumenti: 'Un qualsiasi strumento musicale',
+    abilita: '1 abilità a scelta',
+    desc: 'Armature leggere, 1 abilità a scelta, 1 strumento musicale',
+    descEn: 'Light armor, 1 skill of your choice, 1 musical instrument',
+  },
+  chierico: {
+    armature: { leggera: true, media: true, scudi: true },
+    desc: 'Armature leggere, Medie, Scudi',
+    descEn: 'Light armor, Medium armor, Shields',
+  },
+  druido: {
+    armature: { leggera: true, media: true, scudi: true },
+    strumenti: 'Borsa da erborista',
+    desc: 'Armature leggere, Medie, Scudi, Borsa da erborista',
+    descEn: 'Light armor, Medium armor, Shields, Herbalism kit',
+  },
+  guerriero: {
+    armature: { leggera: true, media: true, scudi: true },
+    armi: 'Armi semplici, Armi da guerra',
+    desc: 'Armature leggere, Medie, Scudi, Armi semplici e da guerra',
+    descEn: 'Light armor, Medium armor, Shields, Simple and martial weapons',
+  },
+  ladro: {
+    armature: { leggera: true },
+    strumenti: 'Arnesi da scasso',
+    abilita: '1 abilità dalla lista del ladro',
+    desc: 'Armature leggere, 1 abilità dalla lista del Ladro, Arnesi da scasso',
+    descEn: 'Light armor, 1 skill from Rogue list, Thieves’ tools',
+  },
+  mago: {
+    desc: 'Nessuna competenza aggiuntiva in armature o armi',
+    descEn: 'No additional armor or weapon proficiencies',
+  },
+  monaco: {
+    armi: 'Armi semplici, Spada corta',
+    desc: 'Armi semplici, Spada corta',
+    descEn: 'Simple weapons, Shortswords',
+  },
+  paladino: {
+    armature: { leggera: true, media: true, scudi: true },
+    armi: 'Armi semplici, Armi da guerra',
+    desc: 'Armature leggere, Medie, Scudi, Armi semplici e da guerra',
+    descEn: 'Light armor, Medium armor, Shields, Simple and martial weapons',
+  },
+  ranger: {
+    armature: { leggera: true, media: true, scudi: true },
+    armi: 'Armi semplici, Armi da guerra',
+    abilita: '1 abilità dalla lista del ranger',
+    desc: 'Armature leggere, Medie, Scudi, Armi semplici e da guerra, 1 abilità dalla lista del Ranger',
+    descEn: 'Light armor, Medium armor, Shields, Simple and martial weapons, 1 skill from Ranger list',
+  },
+  stregone: {
+    desc: 'Nessuna competenza aggiuntiva in armature o armi',
+    descEn: 'No additional armor or weapon proficiencies',
+  },
+  warlock: {
+    armature: { leggera: true },
+    armi: 'Armi semplici',
+    desc: 'Armature leggere, Armi semplici',
+    descEn: 'Light armor, Simple weapons',
+  },
+};
+
 export const COMPETENZE_CLASSE = {
   barbaro: { numero: 2, lista: ['addestrareAnimali', 'atletica', 'intimidire', 'natura', 'percezione', 'sopravvivenza'] },
   bardo: { numero: 3, lista: 'tutte' },
