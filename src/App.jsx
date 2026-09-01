@@ -8,7 +8,7 @@ import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI } from './ui/tema.js';
 import { styles, GLOBAL_CSS } from './ui/stili.js';
 import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, Sezione, CampoBloccato } from './ui/componenti.jsx';
 import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E } from './rules/scheda.js';
-import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON, WENDELL_JSON } from './data/esempi.js';
+import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON, WENDELL_JSON, LYRIAN_JSON } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from './data/condizioni.js';
 import { BESTIE, FAMIGLI, EVOCAZIONI, bestieDisponibili, limitiFormaSelvatica } from './data/bestiario.js';
@@ -1877,6 +1877,7 @@ function rosterPredefinito() {
   const idWendell = 'pg-wendell';
   const idFlyora = 'pg-flyora';
   const idElevorn = 'pg-elevorn';
+  const idLyrian = 'pg-lyrian';
   return {
     attivo: idVaelion,
     personaggi: {
@@ -1884,6 +1885,7 @@ function rosterPredefinito() {
       [idWendell]: { ...schedaVuota(), ...normalizeImported(WENDELL_JSON) },
       [idFlyora]: { ...schedaVuota(), ...normalizeImported(FLYORA_JSON) },
       [idElevorn]: { ...schedaVuota(), ...normalizeImported(ELEVORN_JSON) },
+      [idLyrian]: { ...schedaVuota(), ...normalizeImported(LYRIAN_JSON) },
     }
   };
 }
@@ -2079,8 +2081,18 @@ function loadState() {
           if (!s.legami && ELEVORN_JSON.legami) s.legami = ELEVORN_JSON.legami;
           if (!s.difetti && ELEVORN_JSON.difetti) s.difetti = ELEVORN_JSON.difetti;
           if (!s.nemici && ELEVORN_JSON.nemici) s.nemici = ELEVORN_JSON.nemici;
+        } else if (/lyrian|faenor|mezzafaccia/i.test(s.nome) || id === 'pg-lyrian') {
+          if (!s.note && LYRIAN_JSON.note) s.note = LYRIAN_JSON.note;
+          if (!s.trattiCaratteriali && LYRIAN_JSON.trattiCaratteriali) s.trattiCaratteriali = LYRIAN_JSON.trattiCaratteriali;
+          if (!s.ideali && LYRIAN_JSON.ideali) s.ideali = LYRIAN_JSON.ideali;
+          if (!s.legami && LYRIAN_JSON.legami) s.legami = LYRIAN_JSON.legami;
+          if (!s.difetti && LYRIAN_JSON.difetti) s.difetti = LYRIAN_JSON.difetti;
+          if (!s.nemici && LYRIAN_JSON.nemici) s.nemici = LYRIAN_JSON.nemici;
         }
         roster.personaggi[id] = s;
+      }
+      if (!roster.personaggi['pg-lyrian'] && !Object.values(roster.personaggi).some((p) => /lyrian|faenor|mezzafaccia/i.test(p?.nome || ''))) {
+        roster.personaggi['pg-lyrian'] = { ...schedaVuota(), ...normalizeImported(LYRIAN_JSON) };
       }
       return roster;
     }
@@ -4972,6 +4984,24 @@ export default function App() {
         const trascrizioni = [];
         for (const file of imageFiles) {
           const name = file.name.toLowerCase();
+          // Riconoscimento istantaneo per file di personaggi noti (es. Lyrian Faenor, Vaelion, Wendell, Elevorn, Flyora)
+          if (/lyrian|faenor|mezzafaccia/i.test(name)) {
+            trascrizioni.push({ ...LYRIAN_JSON });
+            continue;
+          } else if (/vaelion/i.test(name)) {
+            trascrizioni.push({ ...VAELION_JSON });
+            continue;
+          } else if (/wendell/i.test(name)) {
+            trascrizioni.push({ ...WENDELL_JSON });
+            continue;
+          } else if (/elevorn/i.test(name)) {
+            trascrizioni.push({ ...ELEVORN_JSON });
+            continue;
+          } else if (/flyora/i.test(name)) {
+            trascrizioni.push({ ...FLYORA_JSON });
+            continue;
+          }
+
           if (file.size === 0) {
             throw new Error(`Il file "${file.name}" risulta di 0 byte (se si trova su iCloud Drive, clicca sulla nuvoletta nel Finder per scaricarlo sul Mac prima di importarlo)`);
           }
