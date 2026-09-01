@@ -4949,33 +4949,43 @@ export default function App() {
         const trascrizioni = [];
         for (const file of imageFiles) {
           const name = file.name.toLowerCase();
-          let fileBase64 = await new Promise((risolvi, rifiuta) => {
-            const fr = new FileReader();
-            fr.onload = () => {
-              const res = String(fr.result || '');
-              const comma = res.indexOf(',');
-              risolvi(comma >= 0 ? res.slice(comma + 1).trim() : res.trim());
-            };
-            fr.onerror = () => rifiuta(new Error('lettura del file fallita'));
-            fr.readAsDataURL(file);
-          });
+          if (file.size === 0) {
+            throw new Error(`Il file "${file.name}" risulta di 0 byte (se si trova su iCloud Drive, clicca sulla nuvoletta nel Finder per scaricarlo sul Mac prima di importarlo)`);
+          }
+          let fileBase64 = '';
+          try {
+            fileBase64 = await new Promise((risolvi, rifiuta) => {
+              const fr = new FileReader();
+              fr.onload = () => {
+                const res = String(fr.result || '');
+                const comma = res.indexOf(',');
+                risolvi(comma >= 0 ? res.slice(comma + 1).trim() : res.trim());
+              };
+              fr.onerror = () => rifiuta(new Error('lettura del file fallita'));
+              fr.readAsDataURL(file);
+            });
+          } catch (err) {
+            console.warn('readAsDataURL fallito:', err);
+          }
           if (!fileBase64) {
             try {
               const buf = await file.arrayBuffer();
-              let bin = '';
-              const bytes = new Uint8Array(buf);
-              const chunkSize = 8192;
-              for (let i = 0; i < bytes.byteLength; i += chunkSize) {
-                const chunk = bytes.subarray(i, i + chunkSize);
-                bin += String.fromCharCode.apply(null, chunk);
+              if (buf && buf.byteLength > 0) {
+                let bin = '';
+                const bytes = new Uint8Array(buf);
+                const chunkSize = 16384;
+                for (let i = 0; i < bytes.byteLength; i += chunkSize) {
+                  const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.byteLength));
+                  bin += String.fromCharCode.apply(null, chunk);
+                }
+                fileBase64 = btoa(bin);
               }
-              fileBase64 = btoa(bin);
             } catch (err) {
               console.error('Fallback arrayBuffer failed', err);
             }
           }
           if (!fileBase64) {
-            throw new Error(`Il file "${file.name}" è vuoto o non è stato possibile leggerlo.`);
+            throw new Error(`Il file "${file.name}" non ha restituito dati leggibili. Prova a convertirlo o fare uno screenshot PNG/JPG.`);
           }
           const mediaType = (() => {
             if (file.type) return file.type;
