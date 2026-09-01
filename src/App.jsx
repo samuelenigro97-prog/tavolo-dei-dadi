@@ -3209,6 +3209,12 @@ export default function App() {
     try { localStorage.setItem('scheda-interattiva:preset-colori', presetColori); } catch { /* niente */ }
   }, [presetColori]);
 
+  // Tema Cornici & Bordi di Classe
+  const [temaCornici, setTemaCornici] = useState(() => localStorage.getItem('scheda-interattiva:tema-cornici') || 'auto');
+  useEffect(() => {
+    try { localStorage.setItem('scheda-interattiva:tema-cornici', temaCornici); } catch { /* niente */ }
+  }, [temaCornici]);
+
   // Audio e Sottofondo Ambientale
   const [ambienteAudio, setAmbienteAudio] = useState(() => localStorage.getItem('scheda-interattiva:ambiente-audio') || 'spento');
   const [volumeAudio, setVolumeAudio] = useState(() => Number(localStorage.getItem('scheda-interattiva:volume-audio') || 0.5));
@@ -3521,6 +3527,12 @@ export default function App() {
     const root = document.documentElement;
     root.dataset.tema = modo;
     root.dataset.preset = presetColori;
+    const classeEffettiva = temaCornici === 'disattivato'
+      ? 'nessuna'
+      : temaCornici === 'auto'
+        ? (chiaveClasse(classeAttiva) || 'generico')
+        : temaCornici;
+    root.dataset.classe = classeEffettiva;
     const set = (k, v) => root.style.setProperty(k, v);
     set('--c-bg', t.bg); set('--c-panel', t.panel); set('--c-panel-light', t.panelLight);
     set('--c-border', t.border); set('--c-ink', t.ink); set('--c-ink-dim', t.inkDim);
@@ -3572,7 +3584,7 @@ export default function App() {
     } catch {
       // storage non disponibile: pazienza
     }
-  }, [tema, sistemaScuro, oraTick, classeAttiva, presetColori]);
+  }, [tema, sistemaScuro, oraTick, classeAttiva, presetColori, temaCornici]);
   const intervalRef = useRef(null);
   const jsonRef = useRef(null);
   const pdfRef = useRef(null);
@@ -6546,6 +6558,33 @@ export default function App() {
                 >
                   <span>☁️</span> <span>Sincronizzazione Cloud</span>
                 </button>
+                <div style={{ gridColumn: 'span 2', marginTop: 4 }}>
+                  <div style={{ fontSize: 11, color: C.inkDim, marginBottom: 4, fontWeight: 600 }}>
+                    🎭 {lingua === 'en' ? 'Class Frames & Themes' : 'Cornici & Temi di Classe'}
+                  </div>
+                  <select
+                    value={temaCornici}
+                    onChange={(e) => setTemaCornici(e.target.value)}
+                    style={{ ...styles.inlineInput, width: '100%', height: 32, padding: '4px 8px', borderRadius: 6, background: C.panel, color: C.ink, fontSize: 12, border: `1px solid ${C.border}` }}
+                    title={lingua === 'en' ? 'Choose custom class section borders style' : 'Scegli lo stile delle cornici e dei bordi delle sezioni'}
+                  >
+                    <option value="auto">✨ {lingua === 'en' ? `Auto (Active: ${scheda.classe || 'Default'})` : `Automatico (in base al PG: ${scheda.classe || 'Default'})`}</option>
+                    <option value="druido">🌿 Druido (Rami & Foglie)</option>
+                    <option value="mago">🔮 Mago (Rune Arcanee & Stelle)</option>
+                    <option value="guerriero">⚔️ Guerriero (Piastre Rivettate)</option>
+                    <option value="ladro">🗡️ Ladro (Lame & Ombra)</option>
+                    <option value="chierico">☀️ Chierico (Reliquiario & Luce)</option>
+                    <option value="paladino">🛡️ Paladino (Scudo Araldico)</option>
+                    <option value="bardo">🎵 Bardo (Volute Barocche & Note)</option>
+                    <option value="barbaro">🪓 Barbaro (Artigli & Zanne)</option>
+                    <option value="ranger">🏹 Ranger (Frecce & Nodi Silvestri)</option>
+                    <option value="stregone">⚡ Stregone (Mana & Fulmini)</option>
+                    <option value="warlock">👁️ Warlock (Spire Eldritch & Occhi)</option>
+                    <option value="monaco">☯️ Monaco (Cerchio Zen & Giada)</option>
+                    <option value="artefice">⚙️ Artefice (Ingranaggi & Ottone)</option>
+                    <option value="disattivato">🔒 {lingua === 'en' ? 'Classic Minimal (No frames)' : 'Classico Minimal (Senza cornici)'}</option>
+                  </select>
+                </div>
               </div>
             </div>
 

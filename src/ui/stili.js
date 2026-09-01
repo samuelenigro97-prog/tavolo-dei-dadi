@@ -432,6 +432,200 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .sezione-titolo-sinistra { justify-self: start; display: inline-flex; align-items: center; gap: 6px; }
 .sezione-titolo-testo { justify-self: center; text-align: center; }
 .sezione-titolo-azioni { justify-self: end; display: inline-flex; align-items: center; gap: 6px; }
+
+/* ===================== TEMI & CORNICI DI CLASSE ===================== */
+.sezione {
+  position: relative;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.sezione::before, .sezione::after {
+  content: '';
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  pointer-events: none;
+  background-size: contain;
+  background-repeat: no-repeat;
+  z-index: 1;
+}
+.sezione::before {
+  top: -1px;
+  left: -1px;
+}
+.sezione::after {
+  top: -1px;
+  right: -1px;
+}
+
+/* 1. Druido: Rami intrecciati, foglie, nodi silvestri 🌿 */
+[data-classe="druido"] .sezione {
+  border-color: rgba(64, 145, 108, 0.5) !important;
+  box-shadow: 0 2px 10px rgba(27, 67, 50, 0.1) !important;
+}
+[data-classe="druido"] .sezione::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%2340916c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M2 14C2 7.4 7.4 2 14 2M2 2c4.5 0 8 3.5 8 8M2 2c0 4.5 3.5 8 8 8'/><circle cx='14' cy='6' r='1.5' fill='%2352b788'/><circle cx='6' cy='14' r='1.5' fill='%2352b788'/></svg>");
+}
+[data-classe="druido"] .sezione::after {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%2340916c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M26 14C26 7.4 20.6 2 14 2M26 2c-4.5 0-8 3.5-8 8M26 2c0 4.5-3.5 8-8 8'/><circle cx='14' cy='6' r='1.5' fill='%2352b788'/><circle cx='22' cy='14' r='1.5' fill='%2352b788'/></svg>");
+}
+[data-classe="druido"] .sezione-titolo {
+  border-bottom: 1.5px solid rgba(64, 145, 108, 0.7) !important;
+}
+
+/* 2. Mago: Rune arcanee, cerchi cosmici, stelle ✦ 🔮 */
+[data-classe="mago"] .sezione {
+  border-color: rgba(114, 9, 183, 0.5) !important;
+  box-shadow: 0 2px 10px rgba(94, 96, 206, 0.1) !important;
+}
+[data-classe="mago"] .sezione::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%239d4edd' stroke-width='1.8'><path d='M2 2h10M2 2v10M2 2l10 10M7 7l4-4M7 7l-4 4'/><circle cx='4' cy='4' r='2' fill='%239d4edd'/></svg>");
+}
+[data-classe="mago"] .sezione::after {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%239d4edd' stroke-width='1.8'><path d='M26 2h-10M26 2v10M26 2l-10 10M21 7l-4-4M21 7l4 4'/><circle cx='24' cy='4' r='2' fill='%239d4edd'/></svg>");
+}
+[data-classe="mago"] .sezione-titolo {
+  border-bottom: 1.5px solid rgba(157, 78, 221, 0.7) !important;
+}
+
+/* 3. Guerriero: Piastre rivettate in acciaio e biselli di ferro ⚔️ */
+[data-classe="guerriero"] .sezione {
+  border-color: rgba(108, 117, 125, 0.6) !important;
+  box-shadow: 0 2px 8px rgba(33, 37, 41, 0.12) !important;
+}
+[data-classe="guerriero"] .sezione::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='%236c757d'><polygon points='2,2 16,2 2,16'/><circle cx='6' cy='6' r='2' fill='%23dee2e6'/><circle cx='6' cy='6' r='1' fill='%23495057'/></svg>");
+}
+[data-classe="guerriero"] .sezione::after {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='%236c757d'><polygon points='26,2 12,2 26,16'/><circle cx='22' cy='6' r='2' fill='%23dee2e6'/><circle cx='22' cy='6' r='1' fill='%23495057'/></svg>");
+}
+
+/* 4. Ladro: Cuoio cesellato, punte di pugnale e ombre 🗡️ */
+[data-classe="ladro"] .sezione {
+  border-color: rgba(52, 58, 64, 0.55) !important;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.14) !important;
+}
+[data-classe="ladro"] .sezione::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%23495057' stroke-width='2'><path d='M2 2h14L2 16z' fill='rgba(73,80,87,0.15)'/><path d='M5 12l7-7'/></svg>");
+}
+[data-classe="ladro"] .sezione::after {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%23495057' stroke-width='2'><path d='M26 2h-14l14 14z' fill='rgba(73,80,87,0.15)'/><path d='M23 12l-7-7'/></svg>");
+}
+
+/* 5. Chierico: Cuspide solare, reliquiario sacro e luce ☀️ */
+[data-classe="chierico"] .sezione {
+  border-color: rgba(224, 159, 62, 0.55) !important;
+  box-shadow: 0 2px 10px rgba(158, 102, 17, 0.12) !important;
+}
+[data-classe="chierico"] .sezione::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%23e09f3e' stroke-width='2'><path d='M2 2h12M2 2v12M2 2l10 10M6 2v8M2 6h8'/><circle cx='6' cy='6' r='1.5' fill='%23fff3b0'/></svg>");
+}
+[data-classe="chierico"] .sezione::after {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%23e09f3e' stroke-width='2'><path d='M26 2h-12M26 2v12M26 2l-10 10M22 2v8M26 6h-8'/><circle cx='22' cy='6' r='1.5' fill='%23fff3b0'/></svg>");
+}
+
+/* 6. Paladino: Scudo araldico cesellato e gigli d'onore 🛡️ */
+[data-classe="paladino"] .sezione {
+  border-color: rgba(184, 134, 11, 0.55) !important;
+  box-shadow: 0 2px 10px rgba(184, 134, 11, 0.14) !important;
+}
+[data-classe="paladino"] .sezione::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%23b8860b' stroke-width='2'><polygon points='2,2 16,2 16,10 10,16 2,16' fill='rgba(184,134,11,0.12)'/><circle cx='8' cy='8' r='2' fill='%23b8860b'/></svg>");
+}
+[data-classe="paladino"] .sezione::after {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%23b8860b' stroke-width='2'><polygon points='26,2 12,2 12,10 18,16 26,16' fill='rgba(184,134,11,0.12)'/><circle cx='20' cy='8' r='2' fill='%23b8860b'/></svg>");
+}
+
+/* 7. Bardo: Volute barocche sinuose e fregi musicali 🎵 */
+[data-classe="bardo"] .sezione {
+  border-color: rgba(181, 23, 158, 0.5) !important;
+  box-shadow: 0 2px 10px rgba(114, 9, 183, 0.1) !important;
+}
+[data-classe="bardo"] .sezione::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%23b5179e' stroke-width='2' stroke-linecap='round'><path d='M2 16c0-7.7 5.3-14 14-14M2 2c5 0 10 5 10 10'/><circle cx='12' cy='12' r='2' fill='%23b5179e'/></svg>");
+}
+[data-classe="bardo"] .sezione::after {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%23b5179e' stroke-width='2' stroke-linecap='round'><path d='M26 16c0-7.7-5.3-14-14-14M26 2c-5 0-10 5-10 10'/><circle cx='16' cy='12' r='2' fill='%23b5179e'/></svg>");
+}
+
+/* 8. Barbaro: Graffi d'artiglio, zanne e ferro insanguinato 🪓 */
+[data-classe="barbaro"] .sezione {
+  border-color: rgba(208, 0, 0, 0.5) !important;
+  box-shadow: 0 2px 10px rgba(157, 2, 8, 0.12) !important;
+}
+[data-classe="barbaro"] .sezione::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%23d00000' stroke-width='2.2' stroke-linecap='round'><line x1='2' y1='2' x2='14' y2='14'/><line x1='2' y1='8' x2='10' y2='16'/><line x1='8' y1='2' x2='16' y2='10'/></svg>");
+}
+[data-classe="barbaro"] .sezione::after {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%23d00000' stroke-width='2.2' stroke-linecap='round'><line x1='26' y1='2' x2='14' y2='14'/><line x1='26' y1='8' x2='18' y2='16'/><line x1='20' y1='2' x2='12' y2='10'/></svg>");
+}
+
+/* 9. Ranger: Nodi da cacciatore e frecce intagliate 🏹 */
+[data-classe="ranger"] .sezione {
+  border-color: rgba(43, 147, 72, 0.5) !important;
+  box-shadow: 0 2px 10px rgba(0, 114, 0, 0.1) !important;
+}
+[data-classe="ranger"] .sezione::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%232b9348' stroke-width='2' stroke-linecap='round'><path d='M2 2h12M2 2v12M2 2l14 14M6 12l6-6'/></svg>");
+}
+[data-classe="ranger"] .sezione::after {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%232b9348' stroke-width='2' stroke-linecap='round'><path d='M26 2h-12M26 2v12M26 2l-14 14M22 12l-6-6'/></svg>");
+}
+
+/* 10. Stregone: Mana grezzo e fulmini elementali ⚡ */
+[data-classe="stregone"] .sezione {
+  border-color: rgba(247, 37, 133, 0.5) !important;
+  box-shadow: 0 2px 10px rgba(181, 23, 158, 0.1) !important;
+}
+[data-classe="stregone"] .sezione::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%23f72585' stroke-width='2' stroke-linecap='round'><path d='M2 2l10 0-5 7 7 0-10 9'/></svg>");
+}
+[data-classe="stregone"] .sezione::after {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%23f72585' stroke-width='2' stroke-linecap='round'><path d='M26 2l-10 0 5 7-7 0 10 9'/></svg>");
+}
+
+/* 11. Warlock: Spire eldritch, occhi occulti e abisso 👁️ */
+[data-classe="warlock"] .sezione {
+  border-color: rgba(114, 9, 183, 0.5) !important;
+  box-shadow: 0 2px 10px rgba(58, 12, 163, 0.12) !important;
+}
+[data-classe="warlock"] .sezione::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%237209b7' stroke-width='2'><path d='M2 2c7 0 12 5 12 12M2 2c0 7 5 12 12 12'/><circle cx='7' cy='7' r='2' fill='%234361ee'/></svg>");
+}
+[data-classe="warlock"] .sezione::after {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%237209b7' stroke-width='2'><path d='M26 2c-7 0-12 5-12 12M26 2c0 7-5 12-12 12'/><circle cx='21' cy='7' r='2' fill='%234361ee'/></svg>");
+}
+
+/* 12. Monaco: Cerchio Zen (Enso) e giada ☯️ */
+[data-classe="monaco"] .sezione {
+  border-color: rgba(56, 176, 0, 0.5) !important;
+  box-shadow: 0 2px 10px rgba(0, 114, 0, 0.08) !important;
+}
+[data-classe="monaco"] .sezione::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%2338b000' stroke-width='2.2' stroke-linecap='round'><path d='M2 14A12 12 0 0 1 14 2'/><circle cx='10' cy='10' r='2.5' fill='%2370e000'/></svg>");
+}
+[data-classe="monaco"] .sezione::after {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%2338b000' stroke-width='2.2' stroke-linecap='round'><path d='M26 14A12 12 0 0 0 14 2'/><circle cx='18' cy='10' r='2.5' fill='%2370e000'/></svg>");
+}
+
+/* 13. Artefice: Ingranaggi di bronzo e ottone ⚙️ */
+[data-classe="artefice"] .sezione {
+  border-color: rgba(181, 101, 29, 0.55) !important;
+  box-shadow: 0 2px 10px rgba(127, 85, 57, 0.12) !important;
+}
+[data-classe="artefice"] .sezione::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%23b5651d' stroke-width='2'><rect x='2' y='2' width='12' height='12' rx='2' fill='rgba(181,101,29,0.15)'/><circle cx='8' cy='8' r='2.5' fill='%23d4a373'/></svg>");
+}
+[data-classe="artefice"] .sezione::after {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%23b5651d' stroke-width='2'><rect x='14' y='2' width='12' height='12' rx='2' fill='rgba(181,101,29,0.15)'/><circle cx='20' cy='8' r='2.5' fill='%23d4a373'/></svg>");
+}
+
+/* Disattivazione bordi speciali */
+[data-classe="nessuna"] .sezione::before,
+[data-classe="nessuna"] .sezione::after,
+[data-classe="generico"] .sezione::before,
+[data-classe="generico"] .sezione::after {
+  display: none !important;
+}
 /* Corpo scheda: le sezioni ora sono a PIENA LARGHEZZA, impilate in verticale.
    L'ordine è controllato con 'order' (Combattimento/Magia prima, poi il resto). */
 .griglia-scheda {
