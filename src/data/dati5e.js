@@ -940,18 +940,154 @@ export const COMPETENZE_SPECIE = {
   Mezzorco: { numero: 1, lista: ['intimidire'], tratto: 'Minaccioso' },
 };
 export const NOMI_SPECIE = {
-  elfo: ['Aelar', 'Faelyn', 'Thalindra', 'Miriel', 'Erevan', 'Sylvaris', 'Caelynn', 'Lithael', 'Naivara', 'Aramil', 'Enna', 'Vaeril'],
-  nano: ['Durgan', 'Baldrek', 'Thora', 'Helga', 'Grunnar', 'Kildrak', 'Barundra', 'Dwalin', 'Morgrym', 'Vistra', 'Kaddra', 'Rurik'],
-  orco: ['Grosh', 'Karg', 'Ushka', 'Mogru', 'Thurgok', 'Renk', 'Grukka', 'Vola', 'Dragok', 'Yarzol', 'Romok', 'Shautha'],
-  umano: ['Aldric', 'Elena', 'Marcus', 'Sera', 'Gareth', 'Lyra', 'Rowan', 'Mira', 'Corin', 'Talia', 'Emeric', 'Dara'],
-  tiefling: ['Malakar', 'Nyx', 'Ember', 'Vex', 'Karrin', 'Damaia', 'Kallista', 'Mordai', 'Sered', 'Akta', 'Barakas', 'Rieta'],
-  drago: ['Rhogar', 'Balasar', 'Kava', 'Sora', 'Nadarr', 'Pandjed', 'Arjhan', 'Mishann', 'Torinn', 'Kriv', 'Farideh', 'Harann'],
-  gnomo: ['Fizwick', 'Namfudl', 'Roondar', 'Ella', 'Bimble', 'Wren', 'Dabbek', 'Nissa', 'Zook', 'Ellywick', 'Boddynock', 'Lorra'],
-  halfling: ['Milo', 'Pip', 'Rosanna', 'Cade', 'Wenna', 'Lidda', 'Finnan', 'Nedda', 'Corrin', 'Seraphina', 'Osborn', 'Verna'],
-  aasimar: ['Seraphel', 'Aurelia', 'Cael', 'Lumen', 'Nova', 'Ysera', 'Ilias', 'Elenya', 'Raziel', 'Solara'],
-  goliath: ['Kavaki', 'Thruun', 'Vaunea', 'Ilikan', 'Ovak', 'Nalla', 'Gae-Al', 'Keothi', 'Uthal', 'Manneo'],
+  elfo: [
+    'Aelar', 'Faelyn', 'Thalindra', 'Miriel', 'Erevan', 'Sylvaris', 'Caelynn', 'Lithael', 'Naivara', 'Aramil',
+    'Enna', 'Vaeril', 'Adran', 'Aust', 'Beiro', 'Berrian', 'Carric', 'Dayereth', 'Enialis', 'Erdan',
+    'Galinndan', 'Hadarai', 'Heian', 'Himo', 'Immeral', 'Ivellios', 'Laucian', 'Mindartis', 'Paelias', 'Peren',
+    'Quarion', 'Riardon', 'Rolen', 'Soveliss', 'Thamior', 'Tharivol', 'Varis', 'Adrie', 'Althaea', 'Anastrianna',
+    'Andraste', 'Antinua', 'Bethrynna', 'Birel', 'Drusilia', 'Felosial', 'Ielenia', 'Jelenneth', 'Keyleth', 'Leshanna',
+    'Lia', 'Meriele', 'Mialee', 'Quelenna', 'Quillathe', 'Sariel', 'Shanairra', 'Shava', 'Silaqui', 'Theirastra',
+    'Thia', 'Vadania', 'Valanthe', 'Xanaphia', 'Drizzt', 'Jarlaxle', 'Zaknafein', 'Viconia', 'Liriel', 'Pharaun',
+    'Gromph', 'Malice', 'Vaelion', 'Ilyrana', 'Celeborn', 'Fëanor', 'Legolas', 'Tauriel', 'Aranel', 'Elrond',
+    'Galadriel', 'Thranduil', 'Alluin', 'Sylas', 'Theron', 'Zephyr', 'Faelar', 'Kaelen', 'Morwen', 'Nyxaris',
+  ],
+  nano: [
+    'Durgan', 'Baldrek', 'Thora', 'Helga', 'Grunnar', 'Kildrak', 'Barundra', 'Dwalin', 'Morgrym', 'Vistra',
+    'Kaddra', 'Rurik', 'Adrik', 'Alberich', 'Baern', 'Barendd', 'Brottor', 'Bruenor', 'Dain', 'Darrak',
+    'Delg', 'Eberk', 'Einkil', 'Fargrim', 'Flint', 'Gardain', 'Gimli', 'Harbek', 'Krag', 'Morgran',
+    'Orsik', 'Oskar', 'Rangrim', 'Rustik', 'Taklinn', 'Thoradin', 'Thorin', 'Thorik', 'Thror', 'Tordek',
+    'Traubon', 'Travok', 'Ulfgar', 'Veit', 'Vondal', 'Amber', 'Artin', 'Audhild', 'Bardryn', 'Dagnal',
+    'Diesa', 'Eldeth', 'Falkrunn', 'Finellen', 'Gunnloda', 'Gurdis', 'Helja', 'Hlin', 'Kathra', 'Kristryd',
+    'Ilde', 'Liftrasa', 'Mardred', 'Riswynn', 'Sannl', 'Torbera', 'Torgga', 'Bofur', 'Bombur', 'Balin',
+    'Gloin', 'Oin', 'Dori', 'Nori', 'Ori', 'Magni', 'Muradin', 'Brann', 'Thorbardin', 'Grumbar',
+    'Korgan', 'Dwommar', 'Khazad', 'Skorri', 'Gundrik', 'Hrolf', 'Ironbeard', 'Balgor',
+  ],
+  orco: [
+    'Grosh', 'Karg', 'Ushka', 'Mogru', 'Thurgok', 'Renk', 'Grukka', 'Vola', 'Dragok', 'Yarzol',
+    'Romok', 'Shautha', 'Dench', 'Feng', 'Gell', 'Henk', 'Holg', 'Imsh', 'Keth', 'Krusk',
+    'Mhurren', 'Ront', 'Shump', 'Thokk', 'Baggi', 'Emen', 'Engong', 'Kansif', 'Myev', 'Neega',
+    'Ovak', 'Ownka', 'Sutha', 'Volen', 'Yevelda', 'Gorrok', 'Azmog', 'Gorgar', 'Morgok', 'Kragh',
+    'Brak', 'Dorn', 'Grimnak', 'Horgar', 'Jarg', 'Krog', 'Lugnut', 'Murg', 'Narsh', 'Ogg',
+    'Rokk', 'Skarr', 'Torg', 'Ulgor', 'Vark', 'Wurg', 'Zark', 'Zorath', 'Urghat', 'Grishnakh',
+    'Ugluk', 'Azog', 'Bolg', 'Durotan', 'Thrall', 'Garrosh', 'Grommash', 'Orgrim', 'Bakk',
+  ],
+  umano: [
+    'Aldric', 'Elena', 'Marcus', 'Sera', 'Gareth', 'Lyra', 'Rowan', 'Mira', 'Corin', 'Talia',
+    'Emeric', 'Dara', 'Alistair', 'Valerius', 'Julian', 'Cassandra', 'Vivienne', 'Roderick', 'Leona', 'Tristan',
+    'Morgana', 'Sean', 'Diana', 'Roland', 'Victor', 'Helena', 'Conrad', 'Beatrice', 'Lucas', 'Evelyn',
+    'Derek', 'Sophia', 'Gabriel', 'Fiona', 'Arthur', 'Galahad', 'Lancelot', 'Gawain', 'Percival', 'Bors',
+    'Guinevere', 'Iseult', 'Isolde', 'Yvaine', 'Brandon', 'Caelan', 'Darian', 'Edric', 'Godric', 'Lorcan',
+    'Theron', 'Althea', 'Brigid', 'Cordelia', 'Elowen', 'Gwen', 'Morrigan', 'Rhiannon', 'Rowena', 'Kaelen',
+    'Dante', 'Vito', 'Alessio', 'Federico', 'Gennaro', 'Leonardo', 'Massimo', 'Matteo', 'Raffaele', 'Adriana',
+    'Chiara', 'Ginevra', 'Livia', 'Lucia', 'Silvia', 'Valeria', 'Vittoria', 'Talon', 'Baelor', 'Gendry',
+    'Jorah', 'Stannis', 'Davos', 'Brienne', 'Lyanna', 'Catelyn', 'Arya', 'Lyrian', 'Vael', 'Wendell',
+  ],
+  tiefling: [
+    'Malakar', 'Nyx', 'Ember', 'Vex', 'Karrin', 'Damaia', 'Kallista', 'Mordai', 'Sered', 'Akta',
+    'Barakas', 'Rieta', 'Akmenos', 'Amnon', 'Damakos', 'Ekemon', 'Iados', 'Kairon', 'Leucis', 'Melech',
+    'Morthos', 'Pelaios', 'Skamos', 'Therai', 'Anakis', 'Bryseis', 'Criella', 'Ea', 'Lerissa', 'Makaria',
+    'Nemeia', 'Orianna', 'Phelaia', 'Arte', 'Carrion', 'Chant', 'Creep', 'Despair', 'Excellence', 'Fear',
+    'Glory', 'Hope', 'Ideal', 'Music', 'Nowhere', 'Open', 'Poetry', 'Quest', 'Random', 'Reverence',
+    'Sorrow', 'Torment', 'Valiance', 'Weary', 'Zeal', 'Azazel', 'Belial', 'Lilith', 'Morrigan', 'Ravana',
+    'Kali', 'Mephistopheles', 'Asmodea', 'Baal', 'Malice', 'Hellion', 'Ignis', 'Pyre', 'Obsidian', 'Brimstone',
+  ],
+  drago: [
+    'Rhogar', 'Balasar', 'Kava', 'Sora', 'Nadarr', 'Pandjed', 'Arjhan', 'Mishann', 'Torinn', 'Kriv',
+    'Farideh', 'Harann', 'Bharash', 'Donaar', 'Ghesh', 'Heskan', 'Medrash', 'Mehen', 'Patrin', 'Shamash',
+    'Shedinn', 'Tarhun', 'Akra', 'Biri', 'Daar', 'Havilar', 'Jheri', 'Korinn', 'Nala', 'Perra',
+    'Raiann', 'Surina', 'Thava', 'Uadjit', 'Ancalagon', 'Smaug', 'Glaurung', 'Balerion', 'Vhagar', 'Caraxes',
+    'Vermithrax', 'Draco', 'Ignis', 'Bahamut', 'Tiamat', 'Pyroth', 'Scaleshield', 'Flametongue', 'Drakar', 'Khorvash',
+    'Zarkon', 'Gorvath', 'Sarkhan', 'Vrak', 'Tyrannus', 'Vyrm', 'Aurelion', 'Caelum', 'Zephyros', 'Eldarion',
+  ],
+  gnomo: [
+    'Fizwick', 'Namfudl', 'Roondar', 'Ella', 'Bimble', 'Wren', 'Dabbek', 'Nissa', 'Zook', 'Ellywick',
+    'Boddynock', 'Lorra', 'Dimble', 'Fonkin', 'Gimble', 'Gribble', 'Kellen', 'Namfoodle', 'Orryn', 'Seebo',
+    'Sindri', 'Warryn', 'Wrenn', 'Bimpnottin', 'Breena', 'Caramip', 'Carlin', 'Donella', 'Ellyjobell', 'Lilli',
+    'Loopmottin', 'Lorilla', 'Mardnab', 'Nyx', 'Oda', 'Orla', 'Roywyn', 'Shamil', 'Tana', 'Waywocket',
+    'Zanna', 'Cogsworth', 'Tinkertop', 'Sprocket', 'Gearloose', 'Clockwise', 'Pinchpenny', 'Copperkettle', 'Gimbal', 'Fizban',
+    'Alston', 'Alvyn', 'Brocc', 'Burgell', 'Eldon', 'Erky', 'Gerd', 'Jebeddo', 'Pebble', 'Pip',
+    'Rondel', 'Tink', 'Wiggle', 'Whistle', 'Zib', 'Zapper', 'Fizzle', 'Sparky', 'Gasket', 'Widget',
+    'Spring', 'Ratchet', 'Bebop', 'Whirly', 'Quirke',
+  ],
+  halfling: [
+    'Milo', 'Pip', 'Rosanna', 'Cade', 'Wenna', 'Lidda', 'Finnan', 'Nedda', 'Corrin', 'Seraphina',
+    'Osborn', 'Verna', 'Alton', 'Ander', 'Bernie', 'Bobbin', 'Bree', 'Callie', 'Cora', 'Drogo',
+    'Eldon', 'Errich', 'Euphemia', 'Garrett', 'Jillian', 'Kithri', 'Lavinia', 'Lindal', 'Lyle', 'Merla',
+    'Merric', 'Paela', 'Perrin', 'Portia', 'Reed', 'Roscoe', 'Samwise', 'Frodo', 'Bilbo', 'Peregrin',
+    'Meriadoc', 'Shaena', 'Sylvie', 'Tansy', 'Tarragon', 'Teagan', 'Tilly', 'Trym', 'Vani', 'Wellby',
+    'Werry', 'Wilby', 'Bramble', 'Chirrup', 'Dapple', 'Gaffer', 'Hobbie', 'Mungo', 'Pippin', 'Poppy',
+    'Primula', 'Robin', 'Rose', 'Tobias', 'Wilibald', 'Zaccheus', 'Brandybuck', 'Took',
+  ],
+  aasimar: [
+    'Seraphel', 'Aurelia', 'Cael', 'Lumen', 'Nova', 'Ysera', 'Ilias', 'Elenya', 'Raziel', 'Solara',
+    'Aethel', 'Celestine', 'Castiel', 'Dawn', 'Gabriel', 'Gideon', 'Illyria', 'Lux', 'Michael', 'Mira',
+    'Orion', 'Raphael', 'Seraphina', 'Solaire', 'Uriel', 'Valerius', 'Zephyr', 'Astra', 'Celeste', 'Divinus',
+    'Eos', 'Helios', 'Hyperion', 'Ignatius', 'Luminary', 'Mikael', 'Radiance', 'Solarius', 'Valeria', 'Vesper',
+  ],
+  goliath: [
+    'Kavaki', 'Thruun', 'Vaunea', 'Ilikan', 'Ovak', 'Nalla', 'Gae-Al', 'Keothi', 'Uthal', 'Manneo',
+    'Aukan', 'Eglath', 'Gauthak', 'Kuori', 'Lo-Kag', 'Maveith', 'Orilo', 'Paavu', 'Pethani', 'Thalai',
+    'Thotham', 'Vimak', 'Stonecrag', 'Frostwalker', 'Thunderclap', 'Peakstride', 'Cliffgazer', 'Stormborn', 'Bearfist', 'Ironbrow',
+  ],
+  tabaxi: [
+    'Artiglio di Luna', 'Ombra nella Notte', 'Salto di Nuvola', 'Fumo Silenzioso', 'Guizzo Rapido',
+    'Cinque Piume', 'Due Fiumi', 'Canto del Vento', 'Occhi di Giada', 'Foglia Danzante',
+    'Passo di Velluto', 'Raggio di Sole', 'Manto d\'Ambra', 'Zampa Veloce', 'Eco della Foresta',
+    'Nebbia Mattutina', 'Sussurro della Giungla', 'Fiamma Dorata', 'Graffio Cortese', 'Cacciatore Silente',
+  ],
+  goblin: [
+    'Droop', 'Snik', 'Grib', 'Skrap', 'Fiz', 'Taz', 'Krik', 'Poz', 'Nib', 'Snagg',
+    'Rax', 'Grix', 'Clak', 'Zix', 'Skrit', 'Vexil', 'Nox', 'Pik', 'Brak', 'Snick',
+    'Klag', 'Zib', 'Gerk', 'Sprock', 'Splint', 'Snaggle', 'Pebble', 'Glint', 'Rubble', 'Spark',
+  ],
 };
-export const NOMI_GENERICI = ['Aldric', 'Lyra', 'Corin', 'Sera', 'Rowan', 'Mira', 'Talon', 'Enna', 'Kael', 'Nira'];
+
+export const COGNOMI_SPECIE = {
+  elfo: [
+    'Sussurro Lunare', 'Crestavento', 'Ombrabosco', 'Stella d\'Argento', 'Frondadoro', 'Alba Radiosa',
+    'Canto della Notte', 'Lama Verde', 'Petalochiaro', 'Passolieve', 'Moonwhisper', 'Silverleaf',
+    'Stargazer', 'Shadowsong', 'Nightbreeze', 'Sunstrider', 'Willowshade', 'Faerwind', 'Evenwood',
+    'Starfall', 'Dewdrop', 'Sunwatcher', 'Leafwhisper', 'Whisperwind', 'Silverglades',
+  ],
+  nano: [
+    'Spaccamontagne', 'Forgiaferro', 'Barbadargento', 'Scudosaldo', 'Martelloduro', 'Cuordiroccia',
+    'Piccainfranta', 'Incudinodorata', 'Pietrafitta', 'Venerapietra', 'Ironbreaker', 'Stoneforge',
+    'Battlehammer', 'Frostbeard', 'Goldseeker', 'Anvilmar', 'Deepdelver', 'Coppervein', 'Thunderforge', 'Firebeard',
+  ],
+  halfling: [
+    'Sottocolle', 'Foglia di Tè', 'Piedelesto', 'Botteverde', 'Meladoro', 'Tostapane',
+    'Spicchiobuono', 'Boscofiorito', 'Pennadoca', 'Cottocotto', 'Underhill', 'Tealeaf',
+    'Goodbarrel', 'Greenbottle', 'Tosscobble', 'Brushgather', 'High-hill', 'Brambleberry', 'Sweetwater', 'Buttercup',
+  ],
+  umano: [
+    'Fierobraccio', 'Nerosole', 'Corvospina', 'Falcoceleste', 'Valdor', 'Sterling', 'Blackwood',
+    'Vance', 'Thorne', 'Ravencroft', 'Winterfall', 'Hawthorne', 'Ashford', 'Castellano',
+    'Altavilla', 'Montegrigio', 'Silverstone', 'Redmane', 'Ironwood', 'Lionheart', 'Brightwood', 'Stormbringer',
+  ],
+  orco: [
+    'Spaccateschi', 'Zannaguzza', 'Occhiodisangue', 'Mano di Ferro', 'Furia Grigia', 'Grugno d\'Acciaio',
+    'Lama Mozza', 'Pelle di Pietra', 'Skullcrusher', 'Bloodtooth', 'Ironhide', 'Bonegnawer', 'Gorehowl', 'Doomhammer', 'Hellscream',
+  ],
+  tiefling: [
+    'delle Ombre', 'dall\'Abisso', 'Senzanome', 'dal Patto Oscuro', 'del Fuoco Infernale',
+    'Cenere', 'Brinaeterna', 'Nottefonda', 'Animeperse', 'delle Fiamme Eterne',
+  ],
+  drago: [
+    'Clethtinthiallor', 'Daardendrian', 'Delmirev', 'Drachedandion', 'Fenkenkabradon', 'Kepeshkmolik',
+    'Kerrhylon', 'Kimbatuul', 'Linxakasendalor', 'Myastan', 'Nemmonis', 'Norixius', 'Ophinshtalajiir',
+    'Prexijandilin', 'Shestendeliath', 'Turnuroth', 'Verthisathurgiesh', 'Yarjerit', 'Scalesoul', 'Flameheart',
+  ],
+  goliath: [
+    'Cercatore d\'Alba', 'Squartacornifero', 'Cacciatore d\'Orsi', 'Pietrafredda', 'Guardiano dei Ghiacci',
+    'Manoferma', 'Dawncaller', 'Bearkiller', 'Flintfinder', 'Horncarver', 'Rootbreaker', 'Skywatcher', 'Steadyhand', 'Threadtwister', 'Stormpeaks',
+  ],
+};
+
+export const NOMI_GENERICI = [
+  'Aldric', 'Lyra', 'Corin', 'Sera', 'Rowan', 'Mira', 'Talon', 'Enna', 'Kael', 'Nira',
+  'Alistair', 'Valerius', 'Elena', 'Emeric', 'Gareth', 'Talia', 'Cassandra', 'Julian', 'Fiona', 'Derek',
+  'Tristan', 'Evelyn', 'Roland', 'Morgana', 'Cedric', 'Diana', 'Sean', 'Victor', 'Helena', 'Conrad',
+];
 // Aumenti di caratteristica dati dalla razza nelle regole 2014 (5.0).
 // Nelle regole 2024 (5.5) questi bonus arrivano invece dal background.
 // 'sceltaExtra' = quante caratteristiche a scelta ricevono +1 (Mezzelfo).
