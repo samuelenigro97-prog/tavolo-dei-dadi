@@ -11820,17 +11820,22 @@ export default function App() {
                   const chiuso = Boolean(livelliIncChiusi[liv]);
                   const numPrep = spells.filter((s) => s.preparato !== false).length;
                   const aggiornaSlot = (patch) => aggiorna({ slotIncantesimo: { ...scheda.slotIncantesimo, [liv]: { ...slot, ...patch } } });
+                  // Quando la sezione è minimizzata (chiuso === true), mostriamo SOLO gli incantesimi preparati (e i trucchetti), nascondendo quelli non preparati / di catalogo
+                  const spellsDaMostrare = chiuso
+                    ? spells.filter((s) => (liv === 0 || s.preparato !== false) && !s.catalogo)
+                    : spells;
 
                   return (
                     <div key={liv} style={{ marginBottom: 8, border: `1px solid ${C.border}`, borderRadius: 8, padding: 8, background: 'rgba(0,0,0,0.015)' }}>
                       {/* Intestazione livello collassabile */}
                       <div
                         onClick={() => setLivelliIncChiusi((prev) => ({ ...prev, [liv]: !prev[liv] }))}
+                        title={chiuso ? (lingua === 'en' ? 'Click to show all spells (including unprepared)' : 'Clicca per mostrare tutti gli incantesimi (inclusi i non preparati)') : (lingua === 'en' ? 'Click to minimize and show only prepared spells' : 'Clicca per minimizzare e mostrare solo i preparati')}
                         style={{
                           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                           cursor: 'pointer', userSelect: 'none', padding: '2px 4px',
-                          borderBottom: chiuso ? 'none' : `1px solid ${C.border}`,
-                          paddingBottom: chiuso ? 2 : 6, marginBottom: chiuso ? 0 : 8,
+                          borderBottom: (chiuso && spellsDaMostrare.length === 0) ? 'none' : `1px solid ${C.border}`,
+                          paddingBottom: (chiuso && spellsDaMostrare.length === 0) ? 2 : 6, marginBottom: (chiuso && spellsDaMostrare.length === 0) ? 0 : 8,
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
@@ -11843,7 +11848,9 @@ export default function App() {
                               Slot: <strong style={{ color: (slot.totale - (slot.spesi || 0)) > 0 ? C.goldDark : C.red }}>{Math.max(0, slot.totale - (slot.spesi || 0))}</strong>/<Editable value={slot.totale} tipo="numero" width={18} onChange={(v) => aggiornaSlot({ totale: Math.max(0, parseInt(v, 10) || 0) })} />
                             </span>
                           )}
-                          <span style={{ fontSize: 11, color: C.inkDim, opacity: 0.8 }}>({countLiv}{liv >= 1 && classePreparata ? ` · ${numPrep} prep.` : ''})</span>
+                          <span style={{ fontSize: 11, color: C.inkDim, opacity: 0.8 }}>
+                            ({countLiv}{liv >= 1 && classePreparata ? ` · ${numPrep} prep.` : ''}{chiuso && countLiv > spellsDaMostrare.length ? ` · ${countLiv - spellsDaMostrare.length} non prep. nascosti` : ''})
+                          </span>
                         </div>
 
                         {liv >= 1 && slot && slot.totale > 0 && (
@@ -11897,9 +11904,9 @@ export default function App() {
                       </div>
 
                       {/* Lista incantesimi del livello */}
-                      {!chiuso && (
+                      {spellsDaMostrare.length > 0 && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                          {spells.map((s) => {
+                          {spellsDaMostrare.map((s) => {
                             const d = datiIncantesimo(s.nome);
                             const spieg = s.note || spiegaIncantesimo(s.nome) || d?.desc || '';
                             const tempoLabel = traduciDato(s.tempo || d?.tempo || '');
@@ -12103,6 +12110,11 @@ export default function App() {
                               </div>
                             );
                           })}
+                          {!chiuso && AddControl(liv)}
+                        </div>
+                      )}
+                      {spellsDaMostrare.length === 0 && !chiuso && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
                           {AddControl(liv)}
                         </div>
                       )}
