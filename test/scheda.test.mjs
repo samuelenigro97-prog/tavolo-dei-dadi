@@ -321,3 +321,20 @@ test('Forma Bestiale: sostituisce FOR, DES, COS e CA con le statistiche della be
   assert.equal(punteggioCaratteristica(druido, 'costituzione'), 12);
   assert.equal(caTotale(druido), 13);
 });
+
+test('Forma Bestiale: genera avatar SVG e icone coerenti per ogni animale', async () => {
+  const { iconaBestia, generaAvatarBestia } = await import('../src/ritratti.js');
+  
+  assert.equal(iconaBestia('Orso bruno'), '🐻');
+  assert.equal(iconaBestia('Lupo crudele'), '🐺');
+  assert.equal(iconaBestia('Aquila gigante'), '🦅');
+  assert.equal(iconaBestia('Squalo cacciatore'), '🦈');
+  assert.equal(iconaBestia('Serpente velenoso'), '🐍');
+  assert.equal(iconaBestia('Ragno gigante'), '🕷️');
+  assert.equal(iconaBestia('Scorpione gigante'), '🦂');
+
+  const svgOrso = generaAvatarBestia({ nome: 'Orso bruno', gs: 1 });
+  assert.ok(svgOrso.startsWith('data:image/svg+xml,'));
+  assert.ok(svgOrso.includes('ORSO%20BRUNO'));
+  assert.ok(svgOrso.includes('GS%201'));
+});

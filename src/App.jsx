@@ -1173,6 +1173,73 @@ function avatarSvgFallback(classe, specie, nome) {
   return 'data:image/svg+xml,' + encodeURIComponent(svg);
 }
 
+export function iconaBestia(nome) {
+  const n = (nome || '').toLowerCase();
+  if (n.includes('orso')) return '🐻';
+  if (n.includes('lupo') || n.includes('sciacallo') || n.includes('mastino')) return '🐺';
+  if (n.includes('iena')) return '🐺';
+  if (n.includes('tigre') || n.includes('denti a sciabola')) return '🐅';
+  if (n.includes('leone')) return '🦁';
+  if (n.includes('pantera') || n.includes('leopardo') || n.includes('gatto')) return '🐆';
+  if (n.includes('aquila') || n.includes('falco') || n.includes('avvoltoio') || n.includes('condor')) return '🦅';
+  if (n.includes('gufo')) return '🦉';
+  if (n.includes('corvo')) return '🦅';
+  if (n.includes('serpente') || n.includes('costrittore') || n.includes('vipera')) return '🐍';
+  if (n.includes('squalo') || n.includes('plesiosauro') || n.includes('delfino')) return '🦈';
+  if (n.includes('polpo') || n.includes('calamaro')) return '🐙';
+  if (n.includes('coccodrillo') || n.includes('alligatore')) return '🐊';
+  if (n.includes('rana') || n.includes('rospo')) return '🐸';
+  if (n.includes('ragno')) return '🕷️';
+  if (n.includes('scorpione')) return '🦂';
+  if (n.includes('cinghiale') || n.includes('maiale')) return '🐗';
+  if (n.includes('cavallo') || n.includes('pony') || n.includes('galoppo') || n.includes('mulo') || n.includes('asino')) return '🐎';
+  if (n.includes('alce') || n.includes('cervo')) return '🦌';
+  if (n.includes('rinoceronte')) return '🦏';
+  if (n.includes('elefante') || n.includes('mammut')) return '🐘';
+  if (n.includes('capra') || n.includes('ariete')) return '🐐';
+  if (n.includes('tasso') || n.includes('donnola') || n.includes('furetto')) return '🦡';
+  if (n.includes('pipistrello')) return '🦇';
+  if (n.includes('ratto') || n.includes('topo')) return '🐀';
+  if (n.includes('granchio')) return '🦀';
+  if (n.includes('vespa') || n.includes('ape') || n.includes('millepiedi')) return '🐝';
+  if (n.includes('anchilosauro') || n.includes('sauro') || n.includes('tirannosauro') || n.includes('dinosauro') || n.includes('lucertola')) return '🦖';
+  return '🐾';
+}
+
+export function generaAvatarBestia(forma) {
+  const nome = forma?.nome || 'Bestia';
+  const gs = forma?.gs != null ? (forma.gs === 0.25 ? '1/4' : forma.gs === 0.5 ? '1/2' : forma.gs) : '';
+  const ico = iconaBestia(nome);
+  
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">` +
+    `<defs>` +
+    `<radialGradient id="bgBestia" cx="50%" cy="38%" r="75%">` +
+    `<stop offset="0%" stop-color="#40916c"/>` +
+    `<stop offset="65%" stop-color="#1b4332"/>` +
+    `<stop offset="100%" stop-color="#081c15"/>` +
+    `</radialGradient>` +
+    `</defs>` +
+    `<rect width="512" height="512" fill="url(#bgBestia)"/>` +
+    `<!-- Zampa silvestre di sfondo -->` +
+    `<g opacity="0.16" fill="#fff" transform="translate(106, 60) scale(0.6)">` +
+    `<circle cx="150" cy="110" r="35"/>` +
+    `<circle cx="230" cy="80" r="35"/>` +
+    `<circle cx="310" cy="80" r="35"/>` +
+    `<circle cx="390" cy="110" r="35"/>` +
+    `<ellipse cx="270" cy="270" rx="140" ry="110"/>` +
+    `</g>` +
+    `<!-- Icona centrale dell'animale -->` +
+    `<text x="256" y="240" font-size="180" text-anchor="middle" dominant-baseline="middle">${ico}</text>` +
+    `<!-- Targhetta badge inferiore -->` +
+    `<rect x="32" y="394" width="448" height="92" rx="18" fill="rgba(8, 28, 21, 0.9)" stroke="#52b788" stroke-width="4"/>` +
+    `<text x="256" y="434" font-size="28" font-weight="bold" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" fill="#d8f3dc" text-anchor="middle">🐾 ${nome.toUpperCase()}</text>` +
+    `<text x="256" y="468" font-size="19" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" fill="#74c69d" text-anchor="middle">${gs ? `GS ${gs} · ` : ''}FORMA BESTIALE</text>` +
+    `</svg>`;
+    
+  return 'data:image/svg+xml,' + encodeURIComponent(svg);
+}
+
 
 
 // ---------------------------------------------------------------------------
@@ -9220,14 +9287,18 @@ export default function App() {
                       className="ritratto-box"
                       style={{
                         borderRadius: 14, overflow: 'hidden',
-                        // emblema auto (foto assente o SVG): sfondo col colore classe, si fonde coi bordi
-                        background: (!scheda.ritratto || scheda.ritratto.startsWith('data:image/svg')) ? (coloreClasse(scheda.classe)?.chiaro || C.panel) : C.panel,
+                        background: scheda.formaBestiale?.attiva
+                          ? '#1b4332'
+                          : ((!scheda.ritratto || scheda.ritratto.startsWith('data:image/svg')) ? (coloreClasse(scheda.classe)?.chiaro || C.panel) : C.panel),
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: 'inset 0 0 8px rgba(0,0,0,0.2)', border: `2px solid ${coloreClasse(scheda.classe) ? C.gold : C.border}`,
-                        cursor: 'pointer', position: 'relative',
+                        boxShadow: scheda.formaBestiale?.attiva ? '0 0 16px rgba(46,125,50,0.6)' : 'inset 0 0 8px rgba(0,0,0,0.2)',
+                        border: scheda.formaBestiale?.attiva ? '2.5px solid #52b788' : `2px solid ${coloreClasse(scheda.classe) ? C.gold : C.border}`,
+                        cursor: scheda.formaBestiale?.attiva ? 'default' : 'pointer', position: 'relative',
                       }}
-                      title={scheda.ritratto ? 'Click: cambia immagine' : 'Click: carica l’immagine del personaggio'}
-                      onClick={() => ritrattoRef.current?.click()}
+                      title={scheda.formaBestiale?.attiva ? `🐾 Forma Bestiale attiva: ${scheda.formaBestiale.nome}` : (scheda.ritratto ? 'Click: cambia immagine' : 'Click: carica l’immagine del personaggio')}
+                      onClick={() => {
+                        if (!scheda.formaBestiale?.attiva) ritrattoRef.current?.click();
+                      }}
                     >
                       {/* Freccia di riduzione */}
                       <button
@@ -9272,30 +9343,43 @@ export default function App() {
                         </span>
                       </button>
 
-                      {scheda.ritratto ? (
-                        <img
-                          src={scheda.ritratto}
-                          alt={`Ritratto di ${scheda.nome}`}
-                          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-                          onError={(e) => {
-                            if (!e.currentTarget.dataset.fallback) {
-                              e.currentTarget.dataset.fallback = '1';
-                              e.currentTarget.src = avatarSvgFallback(scheda.classe, scheda.specie, scheda.nome);
-                            }
-                          }}
-                        />
-                      ) : (
-                        <div style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} title={t('tip.carica_img')}>
+                      {scheda.formaBestiale?.attiva ? (
+                        <div style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
                           <img
-                            src={generaAvatar(scheda.classe, scheda.specie, scheda.nome)}
-                            alt={`Ritratto di ${scheda.nome}`}
+                            src={generaAvatarBestia(scheda.formaBestiale)}
+                            alt={`Forma Bestiale: ${scheda.formaBestiale.nome}`}
                             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                           />
-                          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.35)', color: '#fff', fontSize: 9, letterSpacing: 1, textAlign: 'center', padding: '2px 0' }}>{t("profilo.ritratto")}</div>
+                          <div style={{ position: 'absolute', top: 6, right: 6, zIndex: 3, background: 'rgba(8, 28, 21, 0.9)', color: '#d8f3dc', border: '1px solid #52b788', borderRadius: 6, fontSize: 9.5, fontWeight: 800, padding: '2px 6px', textTransform: 'uppercase', letterSpacing: 0.5, boxShadow: '0 2px 6px rgba(0,0,0,0.4)' }}>
+                            🐾 {lingua === 'en' ? 'Beast' : 'Bestia'}
+                          </div>
                         </div>
+                      ) : (
+                        scheda.ritratto ? (
+                          <img
+                            src={scheda.ritratto}
+                            alt={`Ritratto di ${scheda.nome}`}
+                            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                            onError={(e) => {
+                              if (!e.currentTarget.dataset.fallback) {
+                                e.currentTarget.dataset.fallback = '1';
+                                e.currentTarget.src = avatarSvgFallback(scheda.classe, scheda.specie, scheda.nome);
+                              }
+                            }}
+                          />
+                        ) : (
+                          <div style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} title={t('tip.carica_img')}>
+                            <img
+                              src={generaAvatar(scheda.classe, scheda.specie, scheda.nome)}
+                              alt={`Ritratto di ${scheda.nome}`}
+                              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                            />
+                            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.35)', color: '#fff', fontSize: 9, letterSpacing: 1, textAlign: 'center', padding: '2px 0' }}>{t("profilo.ritratto")}</div>
+                          </div>
+                        )
                       )}
                     </div>
-                    {scheda.ritratto && (
+                    {scheda.ritratto && !scheda.formaBestiale?.attiva && (
                       <button
                         style={{ ...styles.buttonDanger, position: 'absolute', bottom: -6, right: -6, padding: '0 6px', background: C.panel, zIndex: 4 }}
                         title={t('tip.rimuovi_img')}
