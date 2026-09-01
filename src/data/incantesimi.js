@@ -250,7 +250,7 @@ export const INCANTESIMI_DB = {
 };
 
 // Mappa alias e varianti di nomi comuni (inclusi nomi inglesi e vecchie traduzioni)
-const ALIAS_INCANTESIMI = {
+export const ALIAS_INCANTESIMI = {
   'aggiustare': 'Riparare',
   'mending': 'Riparare',
   'bastone incantato': 'Randello Incantato',
@@ -326,6 +326,8 @@ export function datiIncantesimo(nome) {
   if (!key) return null;
   const d = INCANTESIMI_DB[key];
   return {
+    nome: key,
+    livello: d.livello ?? 0,
     scuola: d.scuola || '',
     area: d.area || '',
     danno: d.danno || '',
@@ -333,5 +335,8 @@ export function datiIncantesimo(nome) {
     tempo: d.tempo || '',
     gittata: d.gittata || '',
     classi: d.classi || [],
+    conc: !!d.conc,
+    rituale: !!d.rituale,
+    desc: d.desc || '',
   };
 }

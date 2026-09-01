@@ -1,5 +1,5 @@
 // Spiegazioni brevi per la "nuvoletta" informativa (privilegi, incantesimi, tratti).
-import { INCANTESIMI_DB } from './incantesimi.js';
+import { INCANTESIMI_DB, ALIAS_INCANTESIMI } from './incantesimi.js';
 
 const SPIEG_PRIVILEGI = {
   'Lancio di incantesimi': 'Puoi lanciare incantesimi della tua classe, usando la caratteristica da incantatore per CD e attacchi.',
@@ -987,14 +987,19 @@ const SPIEG_INCANTESIMI_LC = _lcMap(SPIEG_INCANTESIMI);
 export const INCANTESIMI_NOMI = Object.keys(SPIEG_INCANTESIMI).sort((a, b) => a.localeCompare(b, 'it'));
 export function spiegaIncantesimo(nome) {
   const n = String(nome || '').trim();
+  if (!n) return null;
   const searchName = n.toLowerCase();
   const clean = searchName.replace(/\s*\(.*$/, '').trim();
+  const alias = (ALIAS_INCANTESIMI && (ALIAS_INCANTESIMI[searchName] || ALIAS_INCANTESIMI[clean])) || null;
+  const target = alias ? alias.toLowerCase() : searchName;
   
   if (SPIEG_INCANTESIMI_LC[searchName]) return _ed(_en(EN_INCANTESIMI_LC, searchName) || SPIEG_INCANTESIMI_LC[searchName]);
   if (SPIEG_INCANTESIMI_LC[clean]) return _ed(_en(EN_INCANTESIMI_LC, clean) || SPIEG_INCANTESIMI_LC[clean]);
+  if (alias && SPIEG_INCANTESIMI_LC[target]) return _ed(_en(EN_INCANTESIMI_LC, target) || SPIEG_INCANTESIMI_LC[target]);
 
   // Cerca in INCANTESIMI_DB come fallback
-  const dbKey = Object.keys(INCANTESIMI_DB).find(k => k.toLowerCase() === searchName) ||
+  const dbKey = Object.keys(INCANTESIMI_DB).find(k => k.toLowerCase() === target) ||
+                Object.keys(INCANTESIMI_DB).find(k => k.toLowerCase() === searchName) ||
                 Object.keys(INCANTESIMI_DB).find(k => k.toLowerCase() === clean) ||
                 Object.keys(INCANTESIMI_DB).sort((a, b) => a.length - b.length).find(k => k.toLowerCase().includes(clean) || clean.includes(k.toLowerCase()));
   if (dbKey && INCANTESIMI_DB[dbKey].desc) {

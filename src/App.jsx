@@ -6290,7 +6290,7 @@ export default function App() {
         const s = scheda.incantesimiLista.find((x) => x.id === dettaglioInc);
         if (!s) return null;
         const upd = (patch) => aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, ...patch } : x)) });
-        const eff = spiegaIncantesimo(s.nome);
+        const eff = spiegaIncantesimo(s.nome) || datiIncantesimo(s.nome)?.desc || s.note || '';
         const campo = { ...styles.inlineInput, width: '100%', padding: '6px 8px', fontSize: 14, marginTop: 2 };
         const etichetta = { ...styles.detail, display: 'block', marginBottom: 1, marginTop: 8, fontWeight: 600 };
         return (
@@ -10804,7 +10804,25 @@ export default function App() {
                               const isUltimoCrit = (tiro?.attacco && (tiro.attacco.id === a.id || tiro.attacco.nome === a.nome) && (tiro.critico || tiro.naturale >= 20))
                                 || (ultimoAttaccoCritico && (ultimoAttaccoCritico.id === a.id || ultimoAttaccoCritico.nome === a.nome));
                               const cleanNome = String(a.nome || '').replace(/^✨\s*/, '').trim();
-                              const spiegazioneEffetto = spiegaIncantesimo(cleanNome) || (dettagliIncantesimo(cleanNome)?.desc) || spiegaPrivilegio(cleanNome) || spiegaTratto(cleanNome) || spiegaTalento(cleanNome) || a.note || '';
+                              const spSpell = datiIncantesimo(cleanNome);
+                              const spiegazioneEffetto = spiegaIncantesimo(cleanNome) || spSpell?.desc || (dettagliIncantesimo(cleanNome)?.desc) || spiegaPrivilegio(cleanNome) || spiegaTratto(cleanNome) || spiegaTalento(cleanNome) || a.note || '';
+                              
+                              let testoAttacco = spiegazioneEffetto;
+                              if (spSpell) {
+                                const dTags = [];
+                                if (spSpell.scuola) dTags.push(`🔮 **${lingua === 'en' ? 'School' : 'Scuola'}**: ${traduciDato(spSpell.scuola)}`);
+                                if (spSpell.tempo) dTags.push(`⏱ **${lingua === 'en' ? 'Casting Time' : 'Tempo di lancio'}**: ${traduciDato(spSpell.tempo)}`);
+                                if (spSpell.gittata) dTags.push(`🎯 **${lingua === 'en' ? 'Range' : 'Gittata'}**: ${spSpell.gittata}`);
+                                if (spSpell.area) dTags.push(`📐 **${lingua === 'en' ? 'Area' : 'Area'}**: ${spSpell.area}`);
+                                if (spSpell.danno || spSpell.tipoDanno) dTags.push(`💥 **${lingua === 'en' ? 'Damage' : 'Danno'}**: ${spSpell.danno || ''} ${spSpell.tipoDanno ? `(${traduciDato(spSpell.tipoDanno)})` : ''}`.trim());
+                                if (spSpell.conc) dTags.push(`⏳ **${lingua === 'en' ? 'Concentration' : 'Concentrazione'}**: ${lingua === 'en' ? 'Yes' : 'Sì'}`);
+                                if (spSpell.rituale) dTags.push(`📜 **${lingua === 'en' ? 'Ritual' : 'Rituale'}**: ${lingua === 'en' ? 'Yes' : 'Sì'}`);
+                                if (dTags.length > 0) testoAttacco = (testoAttacco ? testoAttacco + '\n\n' : '') + dTags.join('\n');
+                              }
+                              if (a.note && a.note !== spiegazioneEffetto) {
+                                testoAttacco = (testoAttacco ? testoAttacco + '\n\n' : '') + `📝 **${lingua === 'en' ? 'Personal Notes' : 'Note personali'}**: ${a.note}`;
+                              }
+                              
                               const titoloRiga = spiegazioneEffetto ? `${cleanNome}: ${spiegazioneEffetto}` : undefined;
                               return (
                                 <tr key={a.id} className="attacchi-riga" title={titoloRiga}>
@@ -10815,7 +10833,7 @@ export default function App() {
                                           type="button"
                                           style={{ background: 'transparent', border: 'none', padding: 0, fontSize: 16, cursor: 'help', display: 'inline-block', width: 22, textAlign: 'center' }}
                                           title={titoloRiga || t('attacchi.incantesimo_integrato_tip')}
-                                          onClick={() => spiegazioneEffetto && setInfo({ titolo: cleanNome, testo: spiegazioneEffetto })}
+                                          onClick={() => setInfo({ titolo: cleanNome, testo: testoAttacco || spiegazioneEffetto || (lingua === 'en' ? 'No description available.' : 'Nessuna descrizione disponibile.') })}
                                         >✨</button>
                                       ) : (
                                         <select
@@ -11473,7 +11491,7 @@ export default function App() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                           {spells.map((s) => {
                             const d = datiIncantesimo(s.nome);
-                            const eff = s.note || d?.desc || '';
+                            const spieg = s.note || spiegaIncantesimo(s.nome) || d?.desc || '';
                             const tempoLabel = traduciDato(s.tempo || d?.tempo || '');
                             const gittata = s.gittata || d?.gittata || '';
                             const scuola = s.scuola || d?.scuola || '';
@@ -11481,6 +11499,25 @@ export default function App() {
                             const danno = s.danno || d?.danno || '';
                             const tipoDanno = s.tipoDanno || d?.tipoDanno || '';
                             const note = s.note || '';
+
+                            const dettagliTecnici = [];
+                            if (scuola) dettagliTecnici.push(`🔮 **${lingua === 'en' ? 'School' : 'Scuola'}**: ${traduciDato(scuola)}`);
+                            if (tempoLabel) dettagliTecnici.push(`⏱ **${lingua === 'en' ? 'Casting Time' : 'Tempo di lancio'}**: ${tempoLabel}`);
+                            if (gittata) dettagliTecnici.push(`🎯 **${lingua === 'en' ? 'Range' : 'Gittata'}**: ${gittata}`);
+                            if (area) dettagliTecnici.push(`📐 **${lingua === 'en' ? 'Area' : 'Area'}**: ${area}`);
+                            if (danno || tipoDanno) dettagliTecnici.push(`💥 **${lingua === 'en' ? 'Damage' : 'Danno'}**: ${danno || ''} ${tipoDanno ? `(${traduciDato(tipoDanno)})` : ''}`.trim());
+                            if (d?.conc || /concentrazione/i.test(spieg)) dettagliTecnici.push(`⏳ **${lingua === 'en' ? 'Concentration' : 'Concentrazione'}**: ${lingua === 'en' ? 'Yes' : 'Sì'}`);
+                            if (d?.rituale) dettagliTecnici.push(`📜 **${lingua === 'en' ? 'Ritual' : 'Rituale'}**: ${lingua === 'en' ? 'Yes' : 'Sì'}`);
+                            if (d?.classi && d.classi.length > 0) dettagliTecnici.push(`🧙‍♂️ **${lingua === 'en' ? 'Classes' : 'Classi'}**: ${d.classi.join(', ')}`);
+
+                            let testoModal = spieg;
+                            if (dettagliTecnici.length > 0) {
+                              testoModal = (testoModal ? testoModal + '\n\n' : '') + dettagliTecnici.join('\n');
+                            }
+                            if (s.note && s.note !== spieg) {
+                              testoModal = (testoModal ? testoModal + '\n\n' : '') + `📝 **${lingua === 'en' ? 'Personal Notes' : 'Note personali'}**: ${s.note}`;
+                            }
+
                             const chip = (icona, label, val) => val ? (
                               <span key={label} style={{ fontSize: 11, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 4, padding: '1px 5px', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 3 }} title={`${label}: ${val}`}>
                                 <span>{icona}</span>
@@ -11495,8 +11532,8 @@ export default function App() {
                                 <div className="spell-row" style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: 4 }}>
                                   <button
                                     style={{ background: 'transparent', border: 'none', color: C.ink, fontWeight: 700, cursor: 'help', textAlign: 'left', padding: 0, fontSize: 14, lineHeight: 1.2, textDecoration: 'underline dotted', textUnderlineOffset: 3, whiteSpace: 'nowrap', flexShrink: 0 }}
-                                    title={eff || t('tip.cosa_fa_inc')}
-                                    onClick={() => setInfo({ titolo: `${s.nome || 'Incantesimo'}${s.livello === 0 ? ' · Trucchetto' : ` · ${s.livello}° livello`}`, testo: eff || 'Nessuna descrizione disponibile per questo incantesimo. Aprilo con ✎ per aggiungere delle note.' })}
+                                    title={spieg || t('tip.cosa_fa_inc')}
+                                    onClick={() => setInfo({ titolo: `${s.nome || 'Incantesimo'}${s.livello === 0 ? ' · Trucchetto' : ` · ${s.livello}° livello`}`, testo: testoModal || (lingua === 'en' ? 'No description available for this spell. Click ✎ to add notes.' : 'Nessuna descrizione disponibile per questo incantesimo. Aprilo con ✎ per aggiungere delle note.') })}
                                   >
                                     {s.nome || t('menu.senza_nome')}
                                   </button>

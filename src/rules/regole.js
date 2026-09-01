@@ -233,6 +233,7 @@ export function dettagliIncantesimo(nome) {
     area: db.area || '',
     danno: db.danno || '',
     tipoDanno: db.tipoDanno || '',
+    desc: desc || db.desc || '',
   };
 }
 
