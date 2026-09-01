@@ -15053,216 +15053,263 @@ export default function App() {
               </div>
             </div>
 
-            {/* LISTA COMBATTENTI */}
+            {/* LISTA COMBATTENTI (Ordinati a scorrimento naturale: PG in turno -> Prossimo -> Successivi) */}
             {combat.combattenti.length === 0 ? (
               <div style={{ ...styles.detail, padding: '16px 8px', textAlign: 'center', background: 'rgba(0,0,0,0.02)', borderRadius: 8, border: `1px dashed ${C.border}`, color: C.inkDim }}>
                 ⚔️ <strong>Nessun combattente in questo scontro.</strong> Usa i pulsanti sopra (<strong>＋ PG</strong>, <strong>＋ Alleato</strong>, <strong>＋ Nemico</strong> o <strong>Mostro</strong>) per iniziare.
               </div>
-            ) : (
-              <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 6, alignItems: 'stretch' }}>
-                {combat.combattenti.map((cb, idx) => {
-                  const attivoTurno = idx === combat.turno;
-                  const col = cb.tipo === 'nemico' ? C.red : cb.tipo === 'alleato' ? C.green : C.gold;
-                  const colBg = cb.tipo === 'nemico' ? 'rgba(176,58,46,0.12)' : cb.tipo === 'alleato' ? 'rgba(46,139,87,0.12)' : 'rgba(214,169,15,0.12)';
-                  const morto = cb.pfAttuali <= 0;
-                  const pctVita = Math.min(100, Math.max(0, (cb.pfAttuali / Math.max(1, cb.pfMax)) * 100));
-                  const applica = (segno) => { const v = Math.abs(parseInt(ctDmg[cb.id], 10) || 0); if (v) { dannoCura(cb.id, segno * v); setCtDmg((d) => ({ ...d, [cb.id]: '' })); } };
+            ) : (() => {
+              // Master list ordinata per iniziativa decrescente
+              const ordinati = [...combat.combattenti].sort((a, b) => (Number(b.iniziativa) || 0) - (Number(a.iniziativa) || 0));
+              const n = ordinati.length;
+              const curTurno = Math.min(Math.max(0, combat.turno), Math.max(0, n - 1));
 
-                  return (
-                    <div
-                      key={cb.id}
-                      style={{
-                        flex: '0 0 auto',
-                        width: 218,
-                        border: `2px solid ${attivoTurno ? 'var(--c-gold-dark)' : C.border}`,
-                        borderRadius: 10,
-                        background: attivoTurno ? 'rgba(214,169,15,0.08)' : C.panelLight,
-                        boxShadow: attivoTurno ? '0 0 12px 2px rgba(214,169,15,0.35)' : '0 2px 6px rgba(0,0,0,0.05)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        overflow: 'hidden',
-                        transition: 'all 0.2s ease',
-                      }}
-                    >
-                      {/* Banner Ruolo o Turno Attivo */}
-                      {attivoTurno ? (
-                        <div style={{ background: 'var(--c-gold-dark)', color: '#ffffff', fontSize: 10.5, fontWeight: 800, textAlign: 'center', padding: '3px 6px', letterSpacing: 0.6, textTransform: 'uppercase' }}>
-                          👉 IN TURNO
-                        </div>
-                      ) : (
-                        <div style={{ background: colBg, color: col, fontSize: 10, fontWeight: 700, textAlign: 'center', padding: '2px 6px', textTransform: 'uppercase', letterSpacing: 0.4 }}>
-                          {cb.tipo === 'pg' ? '👤 Personaggio' : cb.tipo === 'alleato' ? '🛡️ Alleato' : '⚔️ Nemico'}
-                        </div>
-                      )}
+              // Coda circolare: parte dal combattente attivo e scorre in ordine di iniziativa
+              const coda = ordinati.map((_, offset) => {
+                const idxReale = (curTurno + offset) % n;
+                const roundRelativo = combat.round + Math.floor((curTurno + offset) / n);
+                const cb = ordinati[idxReale];
+                return {
+                  cb,
+                  idxReale,
+                  offset,
+                  inTurno: offset === 0,
+                  prossimo: offset === 1 && n > 1,
+                  roundRelativo,
+                };
+              });
 
-                      <div style={{ padding: 8, display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
-                        {/* Riga 1: Iniziativa, Nome e Rimuovi */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          {/* Box Iniziativa */}
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: C.bg, border: `1px solid ${C.border}`, borderRadius: 6, padding: '1px 3px', minWidth: 36 }} title={t('ct.iniziativa')}>
-                            <span style={{ fontSize: 8.5, fontWeight: 800, color: C.inkDim, lineHeight: 1 }}>INIZ</span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <input
-                                type="number"
-                                value={cb.iniziativa ?? 0}
-                                onChange={(e) => modCombat(cb.id, { iniziativa: parseInt(e.target.value, 10) || 0 })}
-                                onBlur={() => ordinaIniziativa()}
-                                onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
-                                style={{ width: 26, textAlign: 'center', fontWeight: 800, fontSize: 14, color: col, padding: 0, border: 'none', background: 'transparent', height: 18 }}
-                              />
-                              <button
-                                style={{ padding: 0, fontSize: 10, border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.7 }}
-                                title="Tira d20 Iniziativa"
-                                onClick={() => {
-                                  const roll = tiraDado(20) + (cb.tipo === 'pg' ? modificatore(punteggioCaratteristica(scheda, 'destrezza') || 10) : Math.floor(Math.random() * 5));
-                                  modCombat(cb.id, { iniziativa: roll });
-                                  setTimeout(ordinaIniziativa, 10);
-                                }}
-                              >
-                                🎲
-                              </button>
-                            </div>
+              return (
+                <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 6, alignItems: 'stretch' }}>
+                  {coda.map(({ cb, offset, inTurno, prossimo, roundRelativo }) => {
+                    const col = cb.tipo === 'nemico' ? C.red : cb.tipo === 'alleato' ? C.green : C.gold;
+                    const colBg = cb.tipo === 'nemico' ? 'rgba(176,58,46,0.12)' : cb.tipo === 'alleato' ? 'rgba(46,139,87,0.12)' : 'rgba(214,169,15,0.12)';
+                    const morto = cb.pfAttuali <= 0;
+                    const pctVita = Math.min(100, Math.max(0, (cb.pfAttuali / Math.max(1, cb.pfMax)) * 100));
+                    const applica = (segno) => { const v = Math.abs(parseInt(ctDmg[cb.id], 10) || 0); if (v) { dannoCura(cb.id, segno * v); setCtDmg((d) => ({ ...d, [cb.id]: '' })); } };
+
+                    return (
+                      <div
+                        key={cb.id}
+                        style={{
+                          flex: '0 0 auto',
+                          width: 220,
+                          border: inTurno
+                            ? `2.5px solid var(--c-gold-dark)`
+                            : prossimo
+                            ? `2px solid #2b75cb`
+                            : `1.5px solid ${C.border}`,
+                          borderRadius: 10,
+                          background: inTurno
+                            ? 'rgba(214,169,15,0.08)'
+                            : prossimo
+                            ? 'rgba(43,117,203,0.04)'
+                            : C.panelLight,
+                          boxShadow: inTurno
+                            ? '0 0 14px 2px rgba(214,169,15,0.45)'
+                            : prossimo
+                            ? '0 0 8px rgba(43,117,203,0.25)'
+                            : '0 2px 6px rgba(0,0,0,0.05)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          overflow: 'hidden',
+                          transition: 'all 0.25s ease',
+                        }}
+                      >
+                        {/* Banner Ruolo / Turno Attivo / Prossimo Turno */}
+                        {inTurno ? (
+                          <div style={{ background: 'var(--c-gold-dark)', color: '#ffffff', fontSize: 10.5, fontWeight: 800, textAlign: 'center', padding: '3px 6px', letterSpacing: 0.6, textTransform: 'uppercase' }}>
+                            {t('ct.in_turno')}
                           </div>
-
-                          {/* Nome */}
-                          <div style={{ flex: 1, minWidth: 0, fontWeight: 700, fontSize: 13, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            <Editable value={cb.nome} onChange={(v) => modCombat(cb.id, { nome: v })} width={110} />
+                        ) : prossimo ? (
+                          <div style={{ background: '#2b75cb', color: '#ffffff', fontSize: 10, fontWeight: 800, textAlign: 'center', padding: '2px 6px', letterSpacing: 0.5, textTransform: 'uppercase' }}>
+                            {t('ct.prossimo_turno')}
                           </div>
-
-                          {/* Rimuovi */}
-                          <button
-                            style={{ ...styles.buttonMini, color: C.red, padding: '1px 5px', fontSize: 12, lineHeight: 1 }}
-                            title={t('ct.rimuovi')}
-                            onClick={() => setCombat((c) => ({ ...c, combattenti: c.combattenti.filter((x) => x.id !== cb.id) }))}
-                          >
-                            ×
-                          </button>
-                        </div>
-
-                        {/* Riga 2: CA e Concentrazione */}
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11.5, color: C.inkDim, background: 'rgba(0,0,0,0.02)', padding: '2px 6px', borderRadius: 6 }}>
-                          <span title={t("vital.ca")} style={{ fontWeight: 700, color: C.ink }}>
-                            🛡️ CA <Editable value={cb.ca} tipo="numero" width={22} onChange={(v) => modCombat(cb.id, { ca: v })} />
-                          </span>
-                          <span
-                            className="tirabile"
-                            style={{
-                              cursor: 'pointer',
-                              color: cb.concentrazione ? C.goldDark : C.inkDim,
-                              fontWeight: cb.concentrazione ? 800 : 500,
-                              background: cb.concentrazione ? 'rgba(214,169,15,0.18)' : 'transparent',
-                              padding: '1px 5px',
-                              borderRadius: 4,
-                            }}
-                            title={t('ct.concentrazione')}
-                            onClick={() => modCombat(cb.id, { concentrazione: !cb.concentrazione })}
-                          >
-                            🧠 {cb.concentrazione ? t('ct.conc_on') : t('ct.conc_off')}
-                          </span>
-                        </div>
-
-                        {/* Riga 3: Punti Ferita e Barra Vita */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
-                              <strong style={{ fontSize: 17, color: morto ? C.red : pctVita > 50 ? C.green : pctVita > 25 ? C.goldDark : C.red }}>
-                                <Editable value={cb.pfAttuali} tipo="numero" width={32} onChange={(v) => modCombat(cb.id, { pfAttuali: Math.max(0, v) })} />
-                              </strong>
-                              <span style={{ color: C.inkDim, fontSize: 12 }}>/ <Editable value={cb.pfMax} tipo="numero" width={32} onChange={(v) => modCombat(cb.id, { pfMax: Math.max(1, v) })} /> PF</span>
-                            </div>
-                            {cb.pfTemp > 0 ? (
-                              <span style={{ color: '#0066cc', fontSize: 11, fontWeight: 700 }} title="PF Temporanei">
-                                +<Editable value={cb.pfTemp} tipo="numero" width={20} onChange={(v) => modCombat(cb.id, { pfTemp: Math.max(0, v) })} /> Temp
-                              </span>
-                            ) : (
-                              <span style={{ color: C.inkDim, fontSize: 10 }} title="Aggiungi PF Temporanei">
-                                ➕<Editable value={cb.pfTemp} tipo="numero" width={16} onChange={(v) => modCombat(cb.id, { pfTemp: Math.max(0, v) })} />
-                              </span>
-                            )}
+                        ) : offset > 0 && roundRelativo > combat.round ? (
+                          <div style={{ background: 'rgba(0,0,0,0.06)', color: C.inkDim, fontSize: 9.5, fontWeight: 700, textAlign: 'center', padding: '2px 6px' }}>
+                            🔄 Round {roundRelativo} · {cb.tipo === 'pg' ? '👤 Personaggio' : cb.tipo === 'alleato' ? '🛡️ Alleato' : '⚔️ Nemico'}
                           </div>
-
-                          {/* Barra della Vita */}
-                          <div style={{ height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.15)', overflow: 'hidden', width: '100%' }}>
-                            <div
-                              style={{
-                                width: `${pctVita}%`,
-                                height: '100%',
-                                background: morto ? '#666' : pctVita > 50 ? '#2e8b57' : pctVita > 25 ? '#d6a90f' : '#b03a2e',
-                                transition: 'width 0.25s ease',
-                              }}
-                            />
-                          </div>
-                        </div>
-
-                        {/* Riga 4: Danno e Cura Rapidi */}
-                        <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
-                          <input
-                            type="number"
-                            value={ctDmg[cb.id] || ''}
-                            onChange={(e) => setCtDmg((d) => ({ ...d, [cb.id]: e.target.value }))}
-                            onKeyDown={(e) => e.key === 'Enter' && applica(-1)}
-                            placeholder={t('ct.danno_ph')}
-                            style={{ ...styles.inlineInput, flex: 1, minWidth: 0, padding: '3px 5px', fontSize: 12, height: 24 }}
-                          />
-                          <button
-                            style={{ ...styles.buttonMini, color: '#b03a2e', borderColor: '#b03a2e', padding: '2px 6px', fontWeight: 700, fontSize: 11, height: 24 }}
-                            title={t('ct.danno')}
-                            onClick={() => applica(-1)}
-                          >
-                            − Danno
-                          </button>
-                          <button
-                            style={{ ...styles.buttonMini, color: '#2e8b57', borderColor: '#2e8b57', padding: '2px 6px', fontWeight: 700, fontSize: 11, height: 24 }}
-                            title={t('ct.cura')}
-                            onClick={() => applica(1)}
-                          >
-                            ＋ Cura
-                          </button>
-                        </div>
-
-                        {/* TS Morte (se a 0 PF o PG) */}
-                        {(morto || cb.tipo === 'pg') && (
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 11, background: 'rgba(0,0,0,0.02)', padding: '2px 4px', borderRadius: 4 }} title={t('vital.ts_morte')}>
-                            <span style={{ color: C.inkDim, fontSize: 10 }}>💀</span>
-                            {[1, 2, 3].map((i) => (
-                              <span key={`s${i}`} style={styles.pip(cb.tsMorte.successi >= i, C.green)} onClick={() => modCombat(cb.id, { tsMorte: { ...cb.tsMorte, successi: cb.tsMorte.successi >= i ? i - 1 : i } })} />
-                            ))}
-                            <span style={{ color: C.border }}>|</span>
-                            {[1, 2, 3].map((i) => (
-                              <span key={`f${i}`} style={styles.pip(cb.tsMorte.fallimenti >= i, C.red)} onClick={() => modCombat(cb.id, { tsMorte: { ...cb.tsMorte, fallimenti: cb.tsMorte.fallimenti >= i ? i - 1 : i } })} />
-                            ))}
+                        ) : (
+                          <div style={{ background: colBg, color: col, fontSize: 10, fontWeight: 700, textAlign: 'center', padding: '2px 6px', textTransform: 'uppercase', letterSpacing: 0.4 }}>
+                            {cb.tipo === 'pg' ? '👤 Personaggio' : cb.tipo === 'alleato' ? '🛡️ Alleato' : '⚔️ Nemico'}
                           </div>
                         )}
 
-                        {/* Condizioni */}
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'center', marginTop: 'auto' }}>
-                          {cb.condizioni.map((cond) => (
-                            <span
-                              key={cond}
-                              onClick={() => modCombat(cb.id, { condizioni: cb.condizioni.filter((x) => x !== cond) })}
-                              style={{ fontSize: 9.5, background: 'rgba(176,58,46,0.1)', color: C.red, border: `1px solid ${C.red}`, borderRadius: 4, padding: '0 4px', cursor: 'pointer', fontWeight: 600 }}
-                              title={t('ct.rimuovi_cond')}
+                        <div style={{ padding: 8, display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+                          {/* Riga 1: Iniziativa, Nome e Rimuovi */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            {/* Box Iniziativa */}
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: C.bg, border: `1px solid ${C.border}`, borderRadius: 6, padding: '1px 3px', minWidth: 36 }} title={t('ct.iniziativa')}>
+                              <span style={{ fontSize: 8.5, fontWeight: 800, color: C.inkDim, lineHeight: 1 }}>INIZ</span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <input
+                                  type="number"
+                                  value={cb.iniziativa ?? 0}
+                                  onChange={(e) => modCombat(cb.id, { iniziativa: parseInt(e.target.value, 10) || 0 })}
+                                  onBlur={() => ordinaIniziativa()}
+                                  onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
+                                  style={{ width: 26, textAlign: 'center', fontWeight: 800, fontSize: 14, color: col, padding: 0, border: 'none', background: 'transparent', height: 18 }}
+                                />
+                                <button
+                                  style={{ padding: 0, fontSize: 10, border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.7 }}
+                                  title="Tira d20 Iniziativa"
+                                  onClick={() => {
+                                    const roll = tiraDado(20) + (cb.tipo === 'pg' ? modificatore(punteggioCaratteristica(scheda, 'destrezza') || 10) : Math.floor(Math.random() * 5));
+                                    modCombat(cb.id, { iniziativa: roll });
+                                    setTimeout(ordinaIniziativa, 10);
+                                  }}
+                                >
+                                  🎲
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Nome */}
+                            <div style={{ flex: 1, minWidth: 0, fontWeight: 700, fontSize: 13, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              <Editable value={cb.nome} onChange={(v) => modCombat(cb.id, { nome: v })} width={110} />
+                            </div>
+
+                            {/* Rimuovi */}
+                            <button
+                              style={{ ...styles.buttonMini, color: C.red, padding: '1px 5px', fontSize: 12, lineHeight: 1 }}
+                              title={t('ct.rimuovi')}
+                              onClick={() => {
+                                setCombat((c) => {
+                                  const rimasti = c.combattenti.filter((x) => x.id !== cb.id);
+                                  const curT = Math.max(0, Math.min(c.turno, rimasti.length - 1));
+                                  return { ...c, combattenti: rimasti, turno: curT };
+                                });
+                              }}
                             >
-                              {cond} ×
+                              ×
+                            </button>
+                          </div>
+
+                          {/* Riga 2: CA e Concentrazione */}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11.5, color: C.inkDim, background: 'rgba(0,0,0,0.02)', padding: '2px 6px', borderRadius: 6 }}>
+                            <span title={t("vital.ca")} style={{ fontWeight: 700, color: C.ink }}>
+                              🛡️ CA <Editable value={cb.ca} tipo="numero" width={22} onChange={(v) => modCombat(cb.id, { ca: v })} />
                             </span>
-                          ))}
-                          <select
-                            value=""
-                            onChange={(e) => { if (e.target.value) modCombat(cb.id, { condizioni: [...cb.condizioni, e.target.value] }); }}
-                            style={{ ...styles.inlineInput, fontSize: 9.5, padding: '1px 3px', height: 20 }}
-                          >
-                            <option value="">＋ {t('ct.condizione')}</option>
-                            {CONDIZIONI_5E.filter((c) => !cb.condizioni.includes(c)).sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((c) => (
-                              <option key={c} value={c}>{c}</option>
+                            <span
+                              className="tirabile"
+                              style={{
+                                cursor: 'pointer',
+                                color: cb.concentrazione ? C.goldDark : C.inkDim,
+                                fontWeight: cb.concentrazione ? 800 : 500,
+                                background: cb.concentrazione ? 'rgba(214,169,15,0.18)' : 'transparent',
+                                padding: '1px 5px',
+                                borderRadius: 4,
+                              }}
+                              title={t('ct.concentrazione')}
+                              onClick={() => modCombat(cb.id, { concentrazione: !cb.concentrazione })}
+                            >
+                              🧠 {cb.concentrazione ? t('ct.conc_on') : t('ct.conc_off')}
+                            </span>
+                          </div>
+
+                          {/* Riga 3: Punti Ferita e Barra Vita */}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+                              <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+                                <strong style={{ fontSize: 17, color: morto ? C.red : pctVita > 50 ? C.green : pctVita > 25 ? C.goldDark : C.red }}>
+                                  <Editable value={cb.pfAttuali} tipo="numero" width={32} onChange={(v) => modCombat(cb.id, { pfAttuali: Math.max(0, v) })} />
+                                </strong>
+                                <span style={{ color: C.inkDim, fontSize: 12 }}>/ <Editable value={cb.pfMax} tipo="numero" width={32} onChange={(v) => modCombat(cb.id, { pfMax: Math.max(1, v) })} /> PF</span>
+                              </div>
+                              {cb.pfTemp > 0 ? (
+                                <span style={{ color: '#0066cc', fontSize: 11, fontWeight: 700 }} title="PF Temporanei">
+                                  +<Editable value={cb.pfTemp} tipo="numero" width={20} onChange={(v) => modCombat(cb.id, { pfTemp: Math.max(0, v) })} /> Temp
+                                </span>
+                              ) : (
+                                <span style={{ color: C.inkDim, fontSize: 10 }} title="Aggiungi PF Temporanei">
+                                  ➕<Editable value={cb.pfTemp} tipo="numero" width={16} onChange={(v) => modCombat(cb.id, { pfTemp: Math.max(0, v) })} />
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Barra della Vita */}
+                            <div style={{ height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.15)', overflow: 'hidden', width: '100%' }}>
+                              <div
+                                style={{
+                                  width: `${pctVita}%`,
+                                  height: '100%',
+                                  background: morto ? '#666' : pctVita > 50 ? '#2e8b57' : pctVita > 25 ? '#d6a90f' : '#b03a2e',
+                                  transition: 'width 0.25s ease',
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Riga 4: Danno e Cura Rapidi */}
+                          <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
+                            <input
+                              type="number"
+                              value={ctDmg[cb.id] || ''}
+                              onChange={(e) => setCtDmg((d) => ({ ...d, [cb.id]: e.target.value }))}
+                              onKeyDown={(e) => e.key === 'Enter' && applica(-1)}
+                              placeholder={t('ct.danno_ph')}
+                              style={{ ...styles.inlineInput, flex: 1, minWidth: 0, padding: '3px 5px', fontSize: 12, height: 24 }}
+                            />
+                            <button
+                              style={{ ...styles.buttonMini, color: '#b03a2e', borderColor: '#b03a2e', padding: '2px 6px', fontWeight: 700, fontSize: 11, height: 24 }}
+                              title={t('ct.danno')}
+                              onClick={() => applica(-1)}
+                            >
+                              − Danno
+                            </button>
+                            <button
+                              style={{ ...styles.buttonMini, color: '#2e8b57', borderColor: '#2e8b57', padding: '2px 6px', fontWeight: 700, fontSize: 11, height: 24 }}
+                              title={t('ct.cura')}
+                              onClick={() => applica(1)}
+                            >
+                              ＋ Cura
+                            </button>
+                          </div>
+
+                          {/* TS Morte (se a 0 PF o PG) */}
+                          {(morto || cb.tipo === 'pg') && (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 11, background: 'rgba(0,0,0,0.02)', padding: '2px 4px', borderRadius: 4 }} title={t('vital.ts_morte')}>
+                              <span style={{ color: C.inkDim, fontSize: 10 }}>💀</span>
+                              {[1, 2, 3].map((i) => (
+                                <span key={`s${i}`} style={styles.pip(cb.tsMorte.successi >= i, C.green)} onClick={() => modCombat(cb.id, { tsMorte: { ...cb.tsMorte, successi: cb.tsMorte.successi >= i ? i - 1 : i } })} />
+                              ))}
+                              <span style={{ color: C.border }}>|</span>
+                              {[1, 2, 3].map((i) => (
+                                <span key={`f${i}`} style={styles.pip(cb.tsMorte.fallimenti >= i, C.red)} onClick={() => modCombat(cb.id, { tsMorte: { ...cb.tsMorte, fallimenti: cb.tsMorte.fallimenti >= i ? i - 1 : i } })} />
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Condizioni */}
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'center', marginTop: 'auto' }}>
+                            {cb.condizioni.map((cond) => (
+                              <span
+                                key={cond}
+                                onClick={() => modCombat(cb.id, { condizioni: cb.condizioni.filter((x) => x !== cond) })}
+                                style={{ fontSize: 9.5, background: 'rgba(176,58,46,0.1)', color: C.red, border: `1px solid ${C.red}`, borderRadius: 4, padding: '0 4px', cursor: 'pointer', fontWeight: 600 }}
+                                title={t('ct.rimuovi_cond')}
+                              >
+                                {cond} ×
+                              </span>
                             ))}
-                          </select>
+                            <select
+                              value=""
+                              onChange={(e) => { if (e.target.value) modCombat(cb.id, { condizioni: [...cb.condizioni, e.target.value] }); }}
+                              style={{ ...styles.inlineInput, fontSize: 9.5, padding: '1px 3px', height: 20 }}
+                            >
+                              <option value="">＋ {t('ct.condizione')}</option>
+                              {CONDIZIONI_5E.filter((c) => !cb.condizioni.includes(c)).sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((c) => (
+                                <option key={c} value={c}>{c}</option>
+                              ))}
+                            </select>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
         </div>
       ) : null}
