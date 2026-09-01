@@ -7278,27 +7278,22 @@ export default function App() {
           onClick={(e) => { if (e.target === e.currentTarget) setMostraLevelUp(false); }}
         >
           <div style={{ ...styles.panel, maxWidth: 500, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <h1 style={{ ...styles.title, margin: 0, fontSize: 20 }}>⬆️ {t('levelup.titolo')}</h1>
-              <span style={{ fontSize: 13, background: 'rgba(214,169,15,0.18)', border: `1px solid ${C.goldDark}`, color: C.goldDark, padding: '2px 10px', borderRadius: 12, fontWeight: 'bold' }}>
+            {/* INTESTAZIONE MODALE */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, paddingBottom: 10, borderBottom: `1px solid ${C.border}` }}>
+              <h1 style={{ ...styles.title, margin: 0, fontSize: 20 }}>{t('levelup.titolo')}</h1>
+              <span style={{ fontSize: 13, background: 'rgba(214,169,15,0.14)', border: `1px solid ${C.goldDark}`, color: C.goldDark, padding: '3px 12px', borderRadius: 14, fontWeight: 700 }}>
                 Livello {livTotVecchio} ➔ <strong>{nuovoLivello}</strong>
               </span>
             </div>
 
-            {haSaltoBC && (
-              <div style={{ background: 'rgba(46,139,87,0.15)', border: '1px solid #2e8b57', borderRadius: 8, padding: '6px 12px', marginBottom: 12, fontSize: 13, color: C.green, display: 'flex', alignItems: 'center', gap: 6, fontWeight: 'bold' }}>
-                ⭐ {t('levelup.salto_pb')} {conSegno(bcVecchio)} ➔ {conSegno(bcNuovo)}!
-              </div>
-            )}
-
             {/* SELETTORE CLASSE PER L'AVANZAMENTO */}
-            <div style={{ marginBottom: 16, background: 'rgba(0,0,0,0.03)', border: `1.5px solid ${C.goldDark}`, borderRadius: 10, padding: '10px 12px' }}>
-              <label style={{ ...styles.detail, display: 'block', marginBottom: 8, fontWeight: 'bold', color: C.goldDark, fontSize: 13 }}>
-                ⚔️ {t('levelup.scegli_classe_avanzamento')}
+            <div style={{ marginBottom: 16, background: 'rgba(0,0,0,0.02)', border: `1px solid ${C.border}`, borderRadius: 10, padding: '12px' }}>
+              <label style={{ ...styles.detail, display: 'block', marginBottom: 8, fontWeight: 700, color: C.goldDark, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                {t('levelup.scegli_classe_avanzamento')}
               </label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {/* 1) Classe Principale */}
-                <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 13, background: targetMode === 'main' ? 'rgba(214,169,15,0.2)' : 'rgba(255,255,255,0.03)', padding: '8px 10px', borderRadius: 8, border: targetMode === 'main' ? `1.5px solid ${C.goldDark}` : `1px solid ${C.border}`, transition: 'all 0.15s ease' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 13, background: targetMode === 'main' ? 'rgba(214,169,15,0.15)' : C.panelLight, padding: '9px 12px', borderRadius: 8, border: targetMode === 'main' ? `1.5px solid ${C.goldDark}` : `1px solid ${C.border}`, transition: 'all 0.15s ease' }}>
                   <input
                     type="radio"
                     name="mc_target"
@@ -7308,16 +7303,16 @@ export default function App() {
                       setLevelUpBozza((b) => ({ ...b, target: 'main', facceDV: fDV, hpGainMedia: Math.max(1, Math.floor(fDV/2) + 1 + modCos), tiroFatto: 0 }));
                     }}
                   />
-                  <div>
-                    <div style={{ fontWeight: 'bold', fontSize: 14 }}>🥇 {traduciDato(scheda.classe)} ({t('levelup.classe_principale')})</div>
-                    <div style={{ fontSize: 11, color: C.inkDim }}>Avanza da Liv. {scheda.livello || 1} → <strong style={{ color: C.goldDark }}>Liv. {(scheda.livello || 1) + 1}</strong></div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14 }}>{traduciDato(scheda.classe)} <span style={{ fontSize: 11.5, fontWeight: 500, color: C.inkDim }}>({t('levelup.classe_principale')})</span></div>
+                    <div style={{ fontSize: 11.5, color: C.inkDim }}>Avanza da Liv. {scheda.livello || 1} → <strong style={{ color: C.goldDark }}>Liv. {(scheda.livello || 1) + 1}</strong></div>
                   </div>
-                  <span style={{ marginLeft: 'auto', fontSize: 12, color: C.goldDark, fontWeight: 'bold' }}>DV: d{dadoVitaClasse(scheda.classe)}</span>
+                  <span style={{ fontSize: 12, color: C.goldDark, fontWeight: 700, background: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: 6 }}>DV: d{dadoVitaClasse(scheda.classe)}</span>
                 </label>
 
                 {/* 2) Classi Secondarie Esistenti */}
                 {mcArray.map((m, idx) => (
-                  <label key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 13, background: targetMode === idx ? 'rgba(214,169,15,0.2)' : 'rgba(255,255,255,0.03)', padding: '8px 10px', borderRadius: 8, border: targetMode === idx ? `1.5px solid ${C.goldDark}` : `1px solid ${C.border}`, transition: 'all 0.15s ease' }}>
+                  <label key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 13, background: targetMode === idx ? 'rgba(214,169,15,0.15)' : C.panelLight, padding: '9px 12px', borderRadius: 8, border: targetMode === idx ? `1.5px solid ${C.goldDark}` : `1px solid ${C.border}`, transition: 'all 0.15s ease' }}>
                     <input
                       type="radio"
                       name="mc_target"
@@ -7327,16 +7322,16 @@ export default function App() {
                         setLevelUpBozza((b) => ({ ...b, target: idx, facceDV: fDV, hpGainMedia: Math.max(1, Math.floor(fDV/2) + 1 + modCos), tiroFatto: 0 }));
                       }}
                     />
-                    <div>
-                      <div style={{ fontWeight: 'bold', fontSize: 14 }}>{idx === 0 ? '🥈' : idx === 1 ? '🥉' : '🎖️'} {traduciDato(m.classe)} ({t('levelup.classe_secondaria')})</div>
-                      <div style={{ fontSize: 11, color: C.inkDim }}>Avanza da Liv. {m.livello || 1} → <strong style={{ color: C.goldDark }}>Liv. {(num(m.livello, 1)) + 1}</strong></div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, fontSize: 14 }}>{traduciDato(m.classe)} <span style={{ fontSize: 11.5, fontWeight: 500, color: C.inkDim }}>({t('levelup.classe_secondaria')})</span></div>
+                      <div style={{ fontSize: 11.5, color: C.inkDim }}>Avanza da Liv. {m.livello || 1} → <strong style={{ color: C.goldDark }}>Liv. {(num(m.livello, 1)) + 1}</strong></div>
                     </div>
-                    <span style={{ marginLeft: 'auto', fontSize: 12, color: C.goldDark, fontWeight: 'bold' }}>DV: d{dadoVitaClasse(m.classe)}</span>
+                    <span style={{ fontSize: 12, color: C.goldDark, fontWeight: 700, background: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: 6 }}>DV: d{dadoVitaClasse(m.classe)}</span>
                   </label>
                 ))}
 
                 {/* 3) Nuova Classe (Multiclasse) */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, background: targetMode === 'new' ? 'rgba(214,169,15,0.2)' : 'rgba(255,255,255,0.03)', padding: '8px 10px', borderRadius: 8, border: targetMode === 'new' ? `1.5px solid ${C.goldDark}` : `1px solid ${C.border}`, transition: 'all 0.15s ease' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, background: targetMode === 'new' ? 'rgba(214,169,15,0.15)' : C.panelLight, padding: '9px 12px', borderRadius: 8, border: targetMode === 'new' ? `1.5px solid ${C.goldDark}` : `1px solid ${C.border}`, transition: 'all 0.15s ease' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 13 }}>
                     <input
                       type="radio"
@@ -7347,7 +7342,7 @@ export default function App() {
                         setLevelUpBozza((b) => ({ ...b, target: 'new', nuovaClasseMc: b.nuovaClasseMc || firstAvailableNewClass, facceDV: fDV, hpGainMedia: Math.max(1, Math.floor(fDV/2) + 1 + modCos), tiroFatto: 0 }));
                       }}
                     />
-                    <span style={{ fontWeight: 'bold', fontSize: 14 }}>➕ {t('levelup.nuova_classe_mc')}</span>
+                    <span style={{ fontWeight: 700, fontSize: 14 }}>+ {t('levelup.nuova_classe_mc')}</span>
                   </label>
                   {targetMode === 'new' && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
@@ -7358,13 +7353,13 @@ export default function App() {
                           const fDV = dadoVitaClasse(nc);
                           setLevelUpBozza((b) => ({ ...b, nuovaClasseMc: nc, facceDV: fDV, hpGainMedia: Math.max(1, Math.floor(fDV/2) + 1 + modCos), tiroFatto: 0 }));
                         }}
-                        style={{ ...styles.inlineInput, flex: 1, padding: '5px 8px', fontSize: 14, fontWeight: 'bold' }}
+                        style={{ ...styles.inlineInput, flex: 1, padding: '5px 8px', fontSize: 14, fontWeight: 700 }}
                       >
                         {NOMI_CLASSI.map((n) => (
                           <option key={n} value={n} disabled={n === scheda.classe || mcArray.some((x) => x.classe === n)}>{traduciDato(n)}</option>
                         ))}
                       </select>
-                      <span style={{ fontSize: 12, color: C.goldDark, fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                      <span style={{ fontSize: 12, color: C.goldDark, fontWeight: 700, whiteSpace: 'nowrap' }}>
                         → Liv. 1 (DV: d{dadoVitaClasse(levelUpBozza.nuovaClasseMc || firstAvailableNewClass)})
                       </span>
                     </div>
@@ -7375,9 +7370,9 @@ export default function App() {
 
             {/* SE NUOVA CLASSE MULTICLASSE: REQUISITI E COMPETENZE 5E */}
             {isNewMc && compMc && (
-              <div style={{ background: 'rgba(0,102,204,0.08)', border: '1px solid rgba(0,102,204,0.4)', borderRadius: 8, padding: '10px 12px', marginBottom: 14, fontSize: 12.5 }}>
-                <div style={{ fontWeight: 'bold', color: '#0066cc', marginBottom: 4 }}>
-                  📜 {t('levelup.nuova_classe_info')}: {traduciDato(targetClasse)}
+              <div style={{ background: 'rgba(0,102,204,0.06)', border: '1px solid rgba(0,102,204,0.35)', borderRadius: 8, padding: '10px 12px', marginBottom: 14, fontSize: 12.5 }}>
+                <div style={{ fontWeight: 700, color: '#0066cc', marginBottom: 4 }}>
+                  {t('levelup.nuova_classe_info')}: {traduciDato(targetClasse)}
                 </div>
                 {reqMc && (
                   <div style={{ marginBottom: 3 }}>
@@ -7392,31 +7387,43 @@ export default function App() {
 
             {/* PUNTI FERITA (MEDIA O TIRO) */}
             <div style={{ marginBottom: 16 }}>
-              <div style={{ ...styles.detail, marginBottom: 6, fontSize: 12.5 }}>
+              <div style={{ ...styles.detail, marginBottom: 6, fontSize: 12 }}>
                 {t('levelup.desc_hp', { cos: conSegno(modCos) })}
               </div>
-              <div style={{ display: 'flex', gap: 10 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <div
-                  style={{ ...styles.button, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '8px 6px', cursor: 'pointer', borderColor: levelUpBozza.metodo === 'media' ? C.goldDark : C.border, background: levelUpBozza.metodo === 'media' ? 'rgba(255,215,0,0.12)' : 'transparent', borderRadius: 8 }}
+                  style={{
+                    ...styles.button,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '10px 8px', cursor: 'pointer',
+                    borderColor: levelUpBozza.metodo === 'media' ? C.goldDark : C.border,
+                    background: levelUpBozza.metodo === 'media' ? 'rgba(214,169,15,0.12)' : C.panelLight,
+                    borderRadius: 8, textAlign: 'center'
+                  }}
                   onClick={() => setLevelUpBozza((b) => ({ ...b, metodo: 'media' }))}
                 >
-                  <div style={{ fontWeight: 'bold', fontSize: 13 }}>{t('levelup.media_fissa')}</div>
-                  <div style={{ fontSize: 18, color: C.goldDark, fontWeight: 'bold' }}>+{levelUpBozza.hpGainMedia != null ? levelUpBozza.hpGainMedia : avgHpGainTarget} PF</div>
-                  <div style={{ fontSize: 10.5, color: C.inkDim }}>({Math.floor(facceTargetDV / 2) + 1} {modCos !== 0 ? conSegno(modCos) : ''})</div>
+                  <div style={{ fontWeight: 700, fontSize: 13 }}>{t('levelup.media_fissa')}</div>
+                  <div style={{ fontSize: 20, color: C.goldDark, fontWeight: 800 }}>+{levelUpBozza.hpGainMedia != null ? levelUpBozza.hpGainMedia : avgHpGainTarget} PF</div>
+                  <div style={{ fontSize: 11, color: C.inkDim }}>({Math.floor(facceTargetDV / 2) + 1} {modCos !== 0 ? conSegno(modCos) : ''})</div>
                 </div>
 
                 <div
-                  style={{ ...styles.button, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '8px 6px', cursor: 'pointer', borderColor: levelUpBozza.metodo === 'tiro' ? C.goldDark : C.border, background: levelUpBozza.metodo === 'tiro' ? 'rgba(255,215,0,0.12)' : 'transparent', borderRadius: 8 }}
+                  style={{
+                    ...styles.button,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '10px 8px', cursor: 'pointer',
+                    borderColor: levelUpBozza.metodo === 'tiro' ? C.goldDark : C.border,
+                    background: levelUpBozza.metodo === 'tiro' ? 'rgba(214,169,15,0.12)' : C.panelLight,
+                    borderRadius: 8, textAlign: 'center'
+                  }}
                   onClick={() => setLevelUpBozza((b) => ({ ...b, metodo: 'tiro' }))}
                 >
-                  <div style={{ fontWeight: 'bold', fontSize: 13 }}>{t('levelup.tira_dado', { facce: facceTargetDV })}</div>
-                  <div style={{ fontSize: 18, color: C.goldDark, fontWeight: 'bold' }}>
+                  <div style={{ fontWeight: 700, fontSize: 13 }}>{t('levelup.tira_dado', { facce: facceTargetDV })}</div>
+                  <div style={{ fontSize: 20, color: C.goldDark, fontWeight: 800 }}>
                     {levelUpBozza.tiroFatto > 0 ? `+${Math.max(1, levelUpBozza.tiroFatto + modCos)} PF` : '? PF'}
                   </div>
                   <div>
                     {levelUpBozza.tiroFatto > 0
-                      ? <span style={{ fontSize: 11, color: C.green }}>{t('levelup.hai_tirato', { n: levelUpBozza.tiroFatto })}</span>
-                      : <button style={{ ...styles.buttonMini, fontSize: 11, padding: '1px 8px' }} onClick={(e) => { e.stopPropagation(); setLevelUpBozza((b) => ({ ...b, tiroFatto: Math.floor(Math.random() * facceTargetDV) + 1, metodo: 'tiro' })); }}>🎲 {t('levelup.tira_ora')}</button>}
+                      ? <span style={{ fontSize: 11, color: C.green, fontWeight: 600 }}>{t('levelup.hai_tirato', { n: levelUpBozza.tiroFatto })}</span>
+                      : <button style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 10px' }} onClick={(e) => { e.stopPropagation(); setLevelUpBozza((b) => ({ ...b, tiroFatto: Math.floor(Math.random() * facceTargetDV) + 1, metodo: 'tiro' })); }}>{t('levelup.tira_ora')}</button>}
                   </div>
                 </div>
               </div>
@@ -7424,9 +7431,9 @@ export default function App() {
 
             {/* SCELTA SOTTOCLASSE (SE AL LIVELLO DI SOTTOCLASSE) */}
             {mostraSceltaSub && (
-              <div style={{ marginBottom: 14, background: 'rgba(255,215,0,0.06)', border: `1px solid ${C.goldDark}`, borderRadius: 8, padding: '8px 10px' }}>
-                <label style={{ ...styles.detail, display: 'block', marginBottom: 4, fontWeight: 'bold', color: C.goldDark }}>
-                  🌟 {t('levelup.scegli_sub')} ({traduciDato(targetClasse)}):
+              <div style={{ marginBottom: 14, background: 'rgba(214,169,15,0.06)', border: `1px solid ${C.goldDark}`, borderRadius: 8, padding: '10px 12px' }}>
+                <label style={{ ...styles.detail, display: 'block', marginBottom: 4, fontWeight: 700, color: C.goldDark, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.4 }}>
+                  {t('levelup.scegli_sub')} ({traduciDato(targetClasse)}):
                 </label>
                 <select
                   style={{ ...styles.inlineInput, width: '100%', padding: '6px 8px', fontSize: 14 }}
@@ -7441,8 +7448,8 @@ export default function App() {
 
             {/* ASI O TALENTO (SE AL LIVELLO ASI) */}
             {haASI && (
-              <div style={{ marginBottom: 14, background: 'rgba(0,0,0,0.03)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
-                <div style={{ fontWeight: 'bold', marginBottom: 6, color: C.goldDark }}>🎯 {t('levelup.asi_o_talento')} ({traduciDato(targetClasse)} Liv. {targetLivelloNuovo})</div>
+              <div style={{ marginBottom: 14, background: 'rgba(0,0,0,0.02)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
+                <div style={{ fontWeight: 700, marginBottom: 6, color: C.goldDark, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.4 }}>{t('levelup.asi_o_talento')} ({traduciDato(targetClasse)} Liv. {targetLivelloNuovo})</div>
                 <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
                   {[['aumento', t('levelup.aumento_car')], ['talento', t('levelup.talento')]].map(([m, lab]) => (
                     <button key={m} style={levelUpBozza.asiMode === m ? styles.modeButton(true) : styles.modeButton(false)} onClick={() => setLevelUpBozza((b) => ({ ...b, asiMode: m }))}>{lab}</button>
@@ -7496,115 +7503,138 @@ export default function App() {
             )}
 
             {/* PANORAMICA DETTAGLIATA AVANZAMENTO ("COSA OTTIENI CON QUESTO LIVELLO") */}
-            <div style={{ background: 'rgba(0,0,0,0.03)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', marginBottom: 16, fontSize: 13 }}>
-              <div style={{ fontWeight: 'bold', color: C.goldDark, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span>✨ {t('levelup.anteprima_titolo')} ({traduciDato(targetClasse)} → Liv. {targetLivelloNuovo})</span>
+            <div style={{ background: 'rgba(0,0,0,0.02)', border: `1px solid ${C.border}`, borderRadius: 10, padding: '12px 14px', marginBottom: 16, fontSize: 13 }}>
+              <div style={{ fontWeight: 700, color: C.goldDark, marginBottom: 10, fontSize: 13.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${C.border}`, paddingBottom: 6 }}>
+                <span>{t('levelup.anteprima_titolo')}</span>
+                <span style={{ fontSize: 12, color: C.inkDim, fontWeight: 500 }}>{traduciDato(targetClasse)} → Liv. {targetLivelloNuovo}</span>
               </div>
 
-              {/* PF & Dado Vita */}
-              <div style={rigaCambio}>
-                <span>{t('levelup.pf_massimi')} ({t('levelup.dado_vita_classe')} d{facceTargetDV})</span>
-                <strong>{gain != null ? `+${gain} PF` : '—'}</strong>
-              </div>
+              {/* Statistiche Base */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingBottom: 10, borderBottom: `1px solid ${C.border}` }}>
+                {/* PF & Dado Vita */}
+                <div style={rigaCambio}>
+                  <span>{t('levelup.pf_massimi')} ({t('levelup.dado_vita_classe')} d{facceTargetDV})</span>
+                  <strong style={{ color: C.goldDark }}>{gain != null ? `+${gain} PF` : '—'}</strong>
+                </div>
 
-              {/* Dadi Vita Formula Totale */}
-              <div style={rigaCambio}>
-                <span>{t('levelup.dadi_vita')} (Totali)</span>
-                <strong>{calcolaFormulaDadiVita(scheda.classe, isNewMc || isSecMc ? Math.max(1, num(scheda.livello, 1)) : targetLivelloNuovo, classiNuove.slice(1))}</strong>
-              </div>
+                {/* Dadi Vita Formula Totale */}
+                <div style={rigaCambio}>
+                  <span>{t('levelup.dadi_vita')} (Totali)</span>
+                  <strong>{calcolaFormulaDadiVita(scheda.classe, isNewMc || isSecMc ? Math.max(1, num(scheda.livello, 1)) : targetLivelloNuovo, classiNuove.slice(1))}</strong>
+                </div>
 
-              {/* Bonus Competenza */}
-              {haSaltoBC && (
+                {/* Bonus Competenza Integrato */}
                 <div style={rigaCambio}>
                   <span>{t('levelup.bonus_comp')}</span>
-                  <strong style={{ color: C.green }}>{conSegno(bcVecchio)} → {conSegno(bcNuovo)} ⬆️</strong>
+                  {haSaltoBC ? (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ textDecoration: 'line-through', opacity: 0.6, fontSize: 12 }}>{conSegno(bcVecchio)}</span>
+                      <strong style={{ color: '#2e9d4d', background: 'rgba(46,157,77,0.12)', padding: '1px 7px', borderRadius: 6, fontWeight: 800 }}>
+                        {conSegno(bcNuovo)} (+1)
+                      </strong>
+                    </span>
+                  ) : (
+                    <strong>{conSegno(bcNuovo)}</strong>
+                  )}
                 </div>
-              )}
+              </div>
 
               {/* Privilegi di Classe Sbloccati */}
               {privNuovi && (
-                <div style={{ padding: '6px 0', borderBottom: `1px solid ${C.border}` }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: 4, color: C.goldDark }}>
-                    🌟 {t('levelup.privilegi_ottenuti')}
+                <div style={{ padding: '10px 0', borderBottom: `1px solid ${C.border}` }}>
+                  <div style={{ fontWeight: 700, marginBottom: 6, color: C.goldDark, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.4 }}>
+                    {t('levelup.privilegi_ottenuti')}
                   </div>
-                  {privNuovi.split('\n').filter(Boolean).map((r, i) => {
-                    const sp = spiegaPrivilegio(r);
-                    return (
-                      <div key={i} style={{ marginBottom: 4 }}>
-                        <div style={{ color: C.green, fontWeight: 'bold' }}>• {r}</div>
-                        {sp && typeof sp === 'string' && (
-                          <div style={{ fontSize: 11.5, color: C.inkDim, marginLeft: 12, lineHeight: 1.3 }}>
-                            {sp}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {privNuovi.split('\n').filter(Boolean).map((r, i) => {
+                      const sp = spiegaPrivilegio(r);
+                      return (
+                        <div key={i} style={{ paddingLeft: 10, borderLeft: `2.5px solid ${C.goldDark}` }}>
+                          <div style={{ fontWeight: 700, color: C.ink }}>{r}</div>
+                          {sp && typeof sp === 'string' && (
+                            <div style={{ fontSize: 12, color: C.inkDim, marginTop: 2, lineHeight: 1.4 }}>
+                              {sp}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
               {/* Privilegi Sottoclasse Sbloccati */}
               {subPrivNuovi ? (
-                <div style={{ padding: '6px 0', borderBottom: `1px solid ${C.border}` }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: 4, color: C.goldDark }}>
-                    🌟 {t('levelup.nuovi_priv_sub')} ({subSel || 'Sottoclasse'}):
+                <div style={{ padding: '10px 0', borderBottom: `1px solid ${C.border}` }}>
+                  <div style={{ fontWeight: 700, marginBottom: 6, color: C.goldDark, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.4 }}>
+                    {t('levelup.nuovi_priv_sub')} ({subSel || 'Sottoclasse'}):
                   </div>
-                  {subPrivNuovi.split('\n').filter(Boolean).map((r, i) => {
-                    const sp = spiegaPrivilegio(r);
-                    return (
-                      <div key={i} style={{ marginBottom: 4 }}>
-                        <div style={{ color: C.green, fontWeight: 'bold' }}>• {r}</div>
-                        {sp && typeof sp === 'string' && (
-                          <div style={{ fontSize: 11.5, color: C.inkDim, marginLeft: 12, lineHeight: 1.3 }}>
-                            {sp}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {subPrivNuovi.split('\n').filter(Boolean).map((r, i) => {
+                      const sp = spiegaPrivilegio(r);
+                      return (
+                        <div key={i} style={{ paddingLeft: 10, borderLeft: `2.5px solid ${C.goldDark}` }}>
+                          <div style={{ fontWeight: 700, color: C.ink }}>{r}</div>
+                          {sp && typeof sp === 'string' && (
+                            <div style={{ fontSize: 12, color: C.inkDim, marginTop: 2, lineHeight: 1.4 }}>
+                              {sp}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               ) : haSub && !mostraSceltaSub ? (
-                <div style={{ padding: '5px 0', color: C.inkDim }}>🌟 {t('levelup.sub_guadagna')} ({traduciDato(targetClasse)})</div>
+                <div style={{ padding: '6px 0', color: C.inkDim, fontSize: 12.5 }}>{t('levelup.sub_guadagna')} ({traduciDato(targetClasse)})</div>
               ) : null}
 
               {/* Progressioni Meccaniche & Risorse */}
               {progressioni.length > 0 && (
-                <div style={{ padding: '6px 0', borderBottom: `1px solid ${C.border}` }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: 4, color: C.goldDark }}>
-                    ⚡ {t('levelup.risorse_potenziate')}
+                <div style={{ padding: '10px 0', borderBottom: `1px solid ${C.border}` }}>
+                  <div style={{ fontWeight: 700, marginBottom: 6, color: C.goldDark, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.4 }}>
+                    {t('levelup.risorse_potenziate')}
                   </div>
-                  {progressioni.map((p, idx) => (
-                    <div key={idx} style={{ fontSize: 12.5, marginBottom: 2 }}>
-                      <span>{p.icon} <strong>{p.nome}:</strong> {p.desc}</span>
-                    </div>
-                  ))}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {progressioni.map((p, idx) => (
+                      <div key={idx} style={{ fontSize: 12.5, color: C.ink }}>
+                        <strong>{p.nome}:</strong> {p.desc}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
               {/* Slot Incantesimi & Progressione Magica */}
               {slotStr && (
-                <div style={{ padding: '6px 0', borderBottom: `1px solid ${C.border}` }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: 2, color: C.goldDark }}>
-                    🔮 {t('levelup.incantesimi_progressione')}
+                <div style={{ padding: '10px 0', borderBottom: (nuoviTrucchetti > 0 || nuoviIncantesimi > 0 || haASI) ? `1px solid ${C.border}` : 'none' }}>
+                  <div style={{ fontWeight: 700, marginBottom: 4, color: C.goldDark, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.4 }}>
+                    {t('levelup.incantesimi_progressione')}
                   </div>
-                  <div style={{ color: C.inkDim }}>{slotStr}</div>
-                  {nuovoLivInc > 0 && <div style={{ color: C.green, marginTop: 3, fontWeight: 'bold' }}>{t('levelup.sblocchi', { n: nuovoLivInc })}</div>}
+                  <div style={{ fontSize: 12.5, color: C.ink }}>{slotStr}</div>
+                  {nuovoLivInc > 0 && (
+                    <div style={{ color: '#2e9d4d', marginTop: 4, fontWeight: 700, fontSize: 12.5 }}>
+                      {t('levelup.sblocchi', { n: nuovoLivInc })}
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* Nuovi Trucchetti o Incantesimi Conosciuti / Preparabili */}
               {(nuoviTrucchetti > 0 || nuoviIncantesimi > 0) && (
-                <div style={{ padding: '6px 0', borderBottom: `1px solid ${C.border}` }}>
-                  <div style={{ fontWeight: 'bold', color: C.goldDark }}>{t('levelup.nuovi_inc')}</div>
-                  {nuoviTrucchetti > 0 && <div style={{ color: C.green, marginTop: 2 }}>• {t('levelup.piu_trucchetti', { n: nuoviTrucchetti })}</div>}
-                  {nuoviIncantesimi > 0 && <div style={{ color: C.green, marginTop: 2 }}>• {t('levelup.piu_incantesimi', { n: nuoviIncantesimi })}</div>}
-                  <div style={{ ...styles.detail, fontSize: 11, color: C.inkDim, marginTop: 2 }}>{t('levelup.aggiungi_dopo')}</div>
+                <div style={{ padding: '10px 0', borderBottom: haASI ? `1px solid ${C.border}` : 'none' }}>
+                  <div style={{ fontWeight: 700, color: C.goldDark, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 4 }}>
+                    {t('levelup.nuovi_inc')}
+                  </div>
+                  {nuoviTrucchetti > 0 && <div style={{ color: C.ink, fontSize: 12.5 }}>• {t('levelup.piu_trucchetti', { n: nuoviTrucchetti })}</div>}
+                  {nuoviIncantesimi > 0 && <div style={{ color: C.ink, fontSize: 12.5 }}>• {t('levelup.piu_incantesimi', { n: nuoviIncantesimi })}</div>}
+                  <div style={{ ...styles.detail, fontSize: 11, color: C.inkDim, marginTop: 3 }}>{t('levelup.aggiungi_dopo')}</div>
                 </div>
               )}
 
               {/* ASI o Talento Riepilogo */}
               {haASI && (
-                <div style={rigaCambio}>
+                <div style={{ ...rigaCambio, paddingTop: 8 }}>
                   <span>{t('levelup.aumento_talento')} ({traduciDato(targetClasse)})</span>
                   <strong>{levelUpBozza.asiMode === 'talento'
                     ? ((levelUpBozza.talento || '').trim() || t('levelup.talento_da_indicare'))
