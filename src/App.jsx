@@ -9134,7 +9134,11 @@ export default function App() {
         </section>
 
         {/* Testata: anagrafica + riquadri vitali uniformi */}
-        <section style={styles.panel}>
+        <section className="sezione profilo-sezione" style={{ ...styles.panel, position: 'relative' }}>
+          <span className="angolo-ornamento angolo-tl" aria-hidden="true" />
+          <span className="angolo-ornamento angolo-tr" aria-hidden="true" />
+          <span className="angolo-ornamento angolo-bl" aria-hidden="true" />
+          <span className="angolo-ornamento angolo-br" aria-hidden="true" />
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', width: '100%', marginBottom: 10 }}>
             <h2 style={{ ...styles.panelTitle, margin: 0, width: '100%', textAlign: 'center' }}>{t("profilo.titolo")}</h2>
             <span
