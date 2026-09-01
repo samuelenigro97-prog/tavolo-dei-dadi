@@ -1130,6 +1130,21 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   flex-wrap: nowrap !important;
   white-space: nowrap !important;
 }
+.barra-tiro {
+  position: sticky !important;
+  top: 48px !important;
+  z-index: 1100 !important;
+  backdrop-filter: blur(14px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(140%) !important;
+  background: color-mix(in srgb, var(--c-panel) 96%, transparent) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+  animation: apparizioneDolce 0.2s cubic-bezier(0.2, 0.9, 0.3, 1) !important;
+}
+@media (max-width: 768px) {
+  .barra-tiro {
+    top: 42px !important;
+  }
+}
 /* testata: titolo centrato in alto, i due gruppi di pulsanti sotto (ciascuno una
    griglia ordinata). Su desktop MOLTO largo i pulsanti passano in colonna a
    sinistra (vedi @media min-width:1440px), lasciando spazio verticale in cima. */

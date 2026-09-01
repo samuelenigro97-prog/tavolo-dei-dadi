@@ -8688,69 +8688,6 @@ export default function App() {
 
       <main style={styles.main}>
 
-        {/* Banner animato del tiro (appare solo quando si effettua un tiro) */}
-        {(rolling || tiro || danni) && (
-          <div className="barra-tiro no-stampa" style={{ ...styles.rollBar, marginBottom: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%' }}>
-              <div style={styles.dado(rolling, !rolling && (tiro?.naturale === 20 || danni?.critico), !rolling && (tiro?.naturale === 1), tipoDadoInUso)}>{faccia}</div>
-              <div style={{ flex: 1, minWidth: 200, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                {rolling ? (
-                  <div style={{ fontSize: 24, fontWeight: 'bold', color: C.inkDim, marginLeft: 8 }}>Tirando...</div>
-                ) : tiro ? (
-                  <div style={{ marginLeft: 8 }}>
-                    <div style={{ fontSize: 13, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>{tiro.etichetta}</div>
-                    <div style={{ fontSize: 28, fontWeight: 'bold', display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                      {tiro.naturale} {tiro.bonus !== 0 && `${conSegno(tiro.bonus)} `}= <strong>{tiro.totale}</strong>
-                    </div>
-                    <div style={styles.detail}>
-                      {tiro.dadi.length > 1 && ` · ${tiro.modalita} [${tiro.dadi.join(', ')}] → ${tiro.naturale}`}
-                    </div>
-                    {tiro.naturale === 20 && <span style={styles.badge(C.goldDark)}>⚔ CRITICO! 20 naturale</span>}
-                    {tiro.naturale === 1 && <span style={styles.badge(C.red)}>💀 1 naturale</span>}
-                    {tiro.esito && <span style={styles.badge(C.goldDark)}>{tiro.esito}</span>}
-                    {tiro.attacco && tiro.naturale !== 1 && (
-                      parseEspressioneDado(tiro.attacco.danno || '') ? (
-                        <button
-                          style={{
-                            ...styles.buttonPrimary, marginTop: 6,
-                            ...(tiro.naturale === 20 ? { background: C.goldDark } : {}),
-                          }}
-                          onClick={lanciaDanniAttacco}
-                        >
-                          {tiro.naturale === 20
-                            ? `⚔ ${t('atk.tira_danni_critico')} (${tiro.attacco.danno} ×2)`
-                            : `🗡 ${t('atk.tira_danni')} (${tiro.attacco.danno})`}
-                        </button>
-                      ) : (
-                        <div style={styles.detail}>{t('atk.danno_invalido')}</div>
-                      )
-                    )}
-                  </div>
-                ) : danni ? (
-                  <div style={{ marginLeft: 8 }}>
-                    <div style={{ fontSize: 13, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>
-                      {danni.etichetta}
-                    </div>
-                    <div style={{ fontSize: 24, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 8 }}>
-                      {danni.libero || danni.tabella || /magia selvaggia/i.test(danni.etichetta) ? '✨' : danni.guarigione ? '✚' : '💥'} <strong>{danni.totale}</strong>
-                      {danni.libero || danni.tabella || /magia selvaggia/i.test(danni.etichetta) ? '' : danni.guarigione ? ' PF recuperati' : ' danni'}
-                      {danni.critico && <span style={styles.badge(C.goldDark)}>⚔ CRITICO!</span>}
-                    </div>
-                    <div style={{ ...styles.detail, marginTop: 4 }}>
-                      {t('roll.dettaglio')}: {danni.dettaglio}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-              <button
-                style={{ ...styles.buttonMini, color: C.inkDim, alignSelf: 'flex-start', padding: '4px 8px' }}
-                title="Chiudi risultato tiro"
-                onClick={() => { setTiro(null); setDanni(null); }}
-              >✖</button>
-            </div>
-          </div>
-        )}
-
         {!scheda ? (
           <section style={{ ...styles.panel, textAlign: 'center', padding: '24px 16px' }}>
             <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--c-title)', marginBottom: 8 }}>{t('pg.nessun_pg')}</div>
@@ -9132,6 +9069,69 @@ export default function App() {
             );
           })()}
         </section>
+
+        {/* Banner animato del tiro (appare sempre ordinatamente SOTTO la barra fissa) */}
+        {(rolling || tiro || danni) && (
+          <div className="barra-tiro no-stampa" style={{ ...styles.rollBar, marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%' }}>
+              <div style={styles.dado(rolling, !rolling && (tiro?.naturale === 20 || danni?.critico), !rolling && (tiro?.naturale === 1), tipoDadoInUso)}>{faccia}</div>
+              <div style={{ flex: 1, minWidth: 200, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                {rolling ? (
+                  <div style={{ fontSize: 24, fontWeight: 'bold', color: C.inkDim, marginLeft: 8 }}>Tirando...</div>
+                ) : tiro ? (
+                  <div style={{ marginLeft: 8 }}>
+                    <div style={{ fontSize: 13, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>{tiro.etichetta}</div>
+                    <div style={{ fontSize: 28, fontWeight: 'bold', display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                      {tiro.naturale} {tiro.bonus !== 0 && `${conSegno(tiro.bonus)} `}= <strong>{tiro.totale}</strong>
+                    </div>
+                    <div style={styles.detail}>
+                      {tiro.dadi.length > 1 && ` · ${tiro.modalita} [${tiro.dadi.join(', ')}] → ${tiro.naturale}`}
+                    </div>
+                    {tiro.naturale === 20 && <span style={styles.badge(C.goldDark)}>⚔ CRITICO! 20 naturale</span>}
+                    {tiro.naturale === 1 && <span style={styles.badge(C.red)}>💀 1 naturale</span>}
+                    {tiro.esito && <span style={styles.badge(C.goldDark)}>{tiro.esito}</span>}
+                    {tiro.attacco && tiro.naturale !== 1 && (
+                      parseEspressioneDado(tiro.attacco.danno || '') ? (
+                        <button
+                          style={{
+                            ...styles.buttonPrimary, marginTop: 6,
+                            ...(tiro.naturale === 20 ? { background: C.goldDark } : {}),
+                          }}
+                          onClick={lanciaDanniAttacco}
+                        >
+                          {tiro.naturale === 20
+                            ? `⚔ ${t('atk.tira_danni_critico')} (${tiro.attacco.danno} ×2)`
+                            : `🗡 ${t('atk.tira_danni')} (${tiro.attacco.danno})`}
+                        </button>
+                      ) : (
+                        <div style={styles.detail}>{t('atk.danno_invalido')}</div>
+                      )
+                    )}
+                  </div>
+                ) : danni ? (
+                  <div style={{ marginLeft: 8 }}>
+                    <div style={{ fontSize: 13, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>
+                      {danni.etichetta}
+                    </div>
+                    <div style={{ fontSize: 24, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {danni.libero || danni.tabella || /magia selvaggia/i.test(danni.etichetta) ? '✨' : danni.guarigione ? '✚' : '💥'} <strong>{danni.totale}</strong>
+                      {danni.libero || danni.tabella || /magia selvaggia/i.test(danni.etichetta) ? '' : danni.guarigione ? ' PF recuperati' : ' danni'}
+                      {danni.critico && <span style={styles.badge(C.goldDark)}>⚔ CRITICO!</span>}
+                    </div>
+                    <div style={{ ...styles.detail, marginTop: 4 }}>
+                      {t('roll.dettaglio')}: {danni.dettaglio}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+              <button
+                style={{ ...styles.buttonMini, color: C.inkDim, alignSelf: 'flex-start', padding: '4px 8px' }}
+                title="Chiudi risultato tiro"
+                onClick={() => { setTiro(null); setDanni(null); }}
+              >✖</button>
+            </div>
+          </div>
+        )}
 
         {/* Testata: anagrafica + riquadri vitali uniformi */}
         <section className="sezione profilo-sezione" style={{ ...styles.panel, position: 'relative' }}>
