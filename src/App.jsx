@@ -8736,20 +8736,19 @@ export default function App() {
                     gap: 6,
                   }}
                 >
-                  {/* Sinistra su Desktop: Brand + Scheda */}
+                  {/* Sinistra su Desktop: Solo Brand */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, userSelect: 'none', flexShrink: 0 }}>
+                    <span style={{ fontSize: 15 }}>🎲</span>
+                    <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 13, fontWeight: 700, color: C.goldDark, letterSpacing: 0.3, whiteSpace: 'nowrap' }}>
+                      Tavolo dei Dadi
+                    </span>
+                    <span style={{ fontSize: 9, color: C.inkDim, opacity: 0.7, fontWeight: 600, marginLeft: 1, whiteSpace: 'nowrap' }}>
+                      v{APP_VERSION}
+                    </span>
+                  </div>
+
+                  {/* Destra su Desktop: Scheda + Sistema + Sessione tutti uniti a destra */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, userSelect: 'none', flexShrink: 0 }}>
-                      <span style={{ fontSize: 15 }}>🎲</span>
-                      <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 13, fontWeight: 700, color: C.goldDark, letterSpacing: 0.3, whiteSpace: 'nowrap' }}>
-                        Tavolo dei Dadi
-                      </span>
-                      <span style={{ fontSize: 9, color: C.inkDim, opacity: 0.7, fontWeight: 600, marginLeft: 1, whiteSpace: 'nowrap' }}>
-                        v{APP_VERSION}
-                      </span>
-                    </div>
-
-                    {divisoreVerticale}
-
                     {/* Gruppo 1: GESTIONE SCHEDA */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 2.5, flexShrink: 0 }}>
                       <span style={stileEtichettaInline}>
@@ -8812,12 +8811,8 @@ export default function App() {
                         🎲
                       </button>
                     </div>
-                  </div>
 
-                  {divisoreVerticale}
-
-                  {/* Destra su Desktop: Sistema + Sessione */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                    {divisoreVerticale}
                     {/* Gruppo 2: SISTEMA */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 2.5, flexShrink: 0 }}>
                       <span style={stileEtichettaInline}>
