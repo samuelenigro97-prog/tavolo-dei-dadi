@@ -56,7 +56,7 @@ export const INCANTESIMI_CLASSE = {
     5: ['Colonna di Fuoco', 'Ristorare Superiore', 'Cura Ferite di Massa', 'Rianimare Morti'],
   },
   druido: {
-    0: ['Arte Druidica', 'Guida', 'Aggiustare', 'Spruzzo di Veleno', 'Produrre Fiamma', 'Resistenza', 'Bastone Incantato', 'Frusta di Spine'],
+    0: ['Arte Druidica', 'Guida', 'Aggiustare', 'Spruzzo di Veleno', 'Produrre Fiamma', 'Resistenza', 'Randello Incantato', 'Frusta di Spine'],
     1: ['Cura Ferite', 'Parola di Guarigione', 'Intralciare', 'Fuoco Fatato', 'Bacche Nutrienti', 'Parlare con gli Animali', 'Onda Tonante', 'Nube di Nebbia', 'Passo Lungo'],
     2: ['Pelle Coriacea', 'Sfera Infuocata', 'Raggio di Luna', 'Metallo Rovente', 'Passo Senza Tracce', 'Crescita di Spine', 'Ristorare Inferiore', 'Blocca Persone'],
     3: ['Chiamare il Fulmine', 'Evocare Animali', 'Dissolvi Magie', 'Crescita Vegetale', 'Tempesta di Nevischio', 'Respirare sott’acqua', 'Muro di Vento'],

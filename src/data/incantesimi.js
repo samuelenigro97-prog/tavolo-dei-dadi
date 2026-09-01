@@ -6,7 +6,8 @@ export const INCANTESIMI_DB = {
   // ─── TRUCCHETTI (0) ───────────────────────────────────────────────
   'Aggiustare':            { livello:0, scuola:'Trasmutazione', classi:['Bardo','Chierico','Druido','Mago','Stregone'], tempo:'1 min', gittata:'Tocco', desc:'Ripara un oggetto rotto (max 30 cm). Istantaneo.' },
   'Arte Druidica':         { livello:0, scuola:'Trasmutazione', classi:['Druido'], tempo:'1 Azione', gittata:'9m', desc:'Piccoli effetti naturali: meteo, fiori, simboli.' },
-  'Bastone Incantato':     { livello:0, scuola:'Trasmutazione', classi:['Druido'], tempo:'1 Azione', gittata:'Mischia', danno:'1d8', tipoDanno:'Contundente', desc:'Un bastone usa mod. da incantatore. Concentrazione, 1 min.' },
+  'Randello Incantato':    { livello:0, scuola:'Trasmutazione', classi:['Druido'], tempo:'1 Azione Bonus', gittata:'Tocco', danno:'1d8', tipoDanno:'Contundente', desc:'Il legno di una clava o bastone ferrato viene intriso di magia naturale. Usa Saggezza invece di Forza e infligge 1d8 danni. 1 min.' },
+  'Bastone Incantato':     { livello:0, scuola:'Trasmutazione', classi:['Druido'], tempo:'1 Azione Bonus', gittata:'Tocco', danno:'1d8', tipoDanno:'Contundente', desc:'(Alias di Randello Incantato / Shillelagh) Usa Saggezza invece di Forza e infligge 1d8 danni.' },
   'Colpo Sicuro':          { livello:0, scuola:'Divinazione', classi:['Bardo','Mago','Stregone','Warlock'], tempo:'1 Azione', gittata:'Mischia', desc:'Vantaggio al prossimo tiro per colpire o usa caratteristica da incantatore.' },
   'Dardo Infuocato':       { livello:0, scuola:'Evocazione', classi:['Mago','Stregone'], tempo:'1 Azione', gittata:'36m', danno:'1d10', tipoDanno:'Fuoco', desc:'Attacco magico a distanza. Scala a liv 5/11/17.' },
   'Derisione Crudele':     { livello:0, scuola:'Ammaliamento', classi:['Bardo'], tempo:'1 Azione', gittata:'18m', danno:'1d6', tipoDanno:'Psichico', desc:'TS Saggezza o svantaggio al prossimo attacco.' },
