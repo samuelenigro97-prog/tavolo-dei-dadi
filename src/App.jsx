@@ -5632,8 +5632,9 @@ export default function App() {
     for (const [nome, d] of Object.entries(INCANTESIMI_DB)) {
       const liv = Number(d.livello) || 0;
       if (chiaviSalvate.has(`${liv}:${nome.toLocaleLowerCase('it')}`)) continue;
-      // Per le classi divine senza ricerca testuale, non mostrare livelli superiori agli slot posseduti
-      if (!q && isClasseDivina && (liv > maxLivelloPreparabile || maxLivelloPreparabile === 0)) continue;
+      // Per le classi divine senza ricerca testuale:
+      // I trucchetti (livello 0) sono a numero fisso e non fanno parte del catalogo di preparazione giornaliera.
+      if (!q && isClasseDivina && (liv === 0 || liv > maxLivelloPreparabile || maxLivelloPreparabile === 0)) continue;
       if (targetFiltroClasse) {
         if (!(d.classi || []).some((c) => c.toLowerCase() === targetFiltroClasse.toLowerCase())) continue;
       }
