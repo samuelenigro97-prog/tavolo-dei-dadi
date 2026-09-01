@@ -417,7 +417,7 @@ export const ELEVORN_JSON = {
   sensi: "Scurovisione 18 m (Darkvision 60), Percezione Passiva 16",
   addestramento: { armature: { leggera: true, media: true, pesante: true, scudi: true }, armi: "Armi semplici e da guerra", strumenti: "Borsa da erborista" },
   denari: { mr: 0, ma: 0, me: 0, mo: 50, mp: 0 },
-  sezioniAperte: { incantesimi: true, aspetto: false, diario: true },
+  sezioniAperte: { incantesimi: true, aspetto: true, diario: true },
   controlliIgnorati: [],
   mappaMarker: { x: 50, y: 50 }
 };

@@ -6654,6 +6654,20 @@ export default function App() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
                 <button
                   style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                  onClick={() => { setMostraMenu(false); setTimeout(() => apriNotifiche(), 50); }}
+                  title={t('notifiche.titolo')}
+                >
+                  <span>🔔</span> <span>{t('notifiche.titolo_breve')}{controlliAttivi.length > 0 ? ` (${controlliAttivi.length})` : novitaNonLette ? ' (!)' : ''}</span>
+                </button>
+                <button
+                  style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                  onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
+                  title={t('tooltip.lingua')}
+                >
+                  <span>{lingua === 'it' ? '🇮🇹' : '🇬🇧'}</span> <span>{t('common.lingua')}</span>
+                </button>
+                <button
+                  style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                   onClick={() => { setMostraMenu(false); setTimeout(() => jsonRef.current?.click(), 50); }}
                   title={t('tip.importa')}
                 >
@@ -6668,20 +6682,6 @@ export default function App() {
                   title={t('tip.esporta')}
                 >
                   <span>⬆️</span> <span>Esporta</span>
-                </button>
-                <button
-                  style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-                  onClick={() => { setMostraMenu(false); setTimeout(() => apriNotifiche(), 50); }}
-                  title={t('notifiche.titolo')}
-                >
-                  <span>🔔</span> <span>{t('notifiche.titolo_breve')}{controlliAttivi.length > 0 ? ` (${controlliAttivi.length})` : novitaNonLette ? ' (!)' : ''}</span>
-                </button>
-                <button
-                  style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-                  onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
-                  title={t('tooltip.lingua')}
-                >
-                  <span>{lingua === 'it' ? '🇮🇹' : '🇬🇧'}</span> <span>{t('common.lingua')}</span>
                 </button>
                 <button
                   style={{ ...styles.button, width: '100%', minHeight: 38, gridColumn: 'span 2', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
@@ -9174,6 +9174,31 @@ export default function App() {
                       <button style={btnAzione} title={t('tip.menu_iniziale')} onClick={() => setMostraMenu(true)}>
                         🏠
                       </button>
+                      <button
+                        ref={notificheBtnRef}
+                        className={daNotificare ? 'btn-notifiche-lampeggia' : ''}
+                        style={{
+                          ...btnAzione,
+                          position: 'relative',
+                          ...(daNotificare ? { color: C.goldDark, borderColor: C.goldDark } : {}),
+                        }}
+                        title={daNotificare ? (controlliAttivi.length > 0 ? `${controlliAttivi.length} avvisi sulla scheda` : t('notifiche.novita_presenti')) : t('notifiche.titolo')}
+                        onClick={apriNotifiche}
+                      >
+                        🔔
+                        {daNotificare && (
+                          <span className="avvisi-pallino" aria-label={`${nAvvisi} notifiche`}>
+                            {controlliAttivi.length > 0 ? controlliAttivi.length : '!'}
+                          </span>
+                        )}
+                      </button>
+                      <button
+                        style={btnAzione}
+                        title={lingua === 'it' ? 'Cambia in inglese' : 'Switch to Italian'}
+                        onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
+                      >
+                        {lingua === 'it' ? '🇮🇹' : '🇬🇧'}
+                      </button>
                       <button style={btnAzione} title="Importa JSON, PDF o immagini" onClick={() => jsonRef.current?.click()}>
                         ⬇️
                       </button>
@@ -9207,31 +9232,6 @@ export default function App() {
                         ) : (
                           <span style={{ color: '#c0392b', fontSize: 12, marginLeft: 1, fontWeight: 900 }}>!</span>
                         )}
-                      </button>
-                      <button
-                        ref={notificheBtnRef}
-                        className={daNotificare ? 'btn-notifiche-lampeggia' : ''}
-                        style={{
-                          ...btnAzione,
-                          position: 'relative',
-                          ...(daNotificare ? { color: C.goldDark, borderColor: C.goldDark } : {}),
-                        }}
-                        title={daNotificare ? (controlliAttivi.length > 0 ? `${controlliAttivi.length} avvisi sulla scheda` : t('notifiche.novita_presenti')) : t('notifiche.titolo')}
-                        onClick={apriNotifiche}
-                      >
-                        🔔
-                        {daNotificare && (
-                          <span className="avvisi-pallino" aria-label={`${nAvvisi} notifiche`}>
-                            {controlliAttivi.length > 0 ? controlliAttivi.length : '!'}
-                          </span>
-                        )}
-                      </button>
-                      <button
-                        style={btnAzione}
-                        title={lingua === 'it' ? 'Cambia in inglese' : 'Switch to Italian'}
-                        onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
-                      >
-                        {lingua === 'it' ? '🇮🇹' : '🇬🇧'}
                       </button>
                     </div>
 
@@ -13229,7 +13229,7 @@ export default function App() {
               })()}
             </Sezione>
 
-            <Sezione titolo={t("sez.aspetto")} {...propsSez('aspetto')} {...apertoProps('aspetto', false)}>
+            <Sezione titolo={t("sez.aspetto")} {...propsSez('aspetto')} {...apertoProps('aspetto', true)}>
               {(() => {
                 const bgDati = datiTabelleBackground(scheda.background || 'Accolito', lingua);
                 return (
@@ -13573,6 +13573,32 @@ export default function App() {
 
                 <button
                   type="button"
+                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: daNotificare ? 'rgba(201,162,39,0.18)' : C.panelLight, border: `1px solid ${daNotificare ? C.goldDark : C.border}`, color: C.ink }}
+                  onClick={() => {
+                    apriNotifiche();
+                    setMostraMenuHubMobile(false);
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>🔔</span>
+                  <span>
+                    {t('notifiche.titolo')}{' '}
+                    {controlliAttivi.length > 0 ? `(${controlliAttivi.length})` : ''}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
+                  onClick={() => {
+                    setLingua((l) => (l === 'it' ? 'en' : 'it'));
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>{lingua === 'it' ? '🇮🇹' : '🇬🇧'}</span>
+                  <span>{lingua === 'it' ? 'Italiano (IT)' : 'English (EN)'}</span>
+                </button>
+
+                <button
+                  type="button"
                   style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
                   onClick={() => {
                     jsonRef.current?.click();
@@ -13611,32 +13637,6 @@ export default function App() {
                     {lingua === 'en' ? 'Cloud Sync' : 'Salvataggio Cloud'}{' '}
                     {(githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice) ? '✓' : ''}
                   </span>
-                </button>
-
-                <button
-                  type="button"
-                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: daNotificare ? 'rgba(201,162,39,0.18)' : C.panelLight, border: `1px solid ${daNotificare ? C.goldDark : C.border}`, color: C.ink }}
-                  onClick={() => {
-                    apriNotifiche();
-                    setMostraMenuHubMobile(false);
-                  }}
-                >
-                  <span style={{ fontSize: 16 }}>🔔</span>
-                  <span>
-                    {t('notifiche.titolo')}{' '}
-                    {controlliAttivi.length > 0 ? `(${controlliAttivi.length})` : ''}
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
-                  onClick={() => {
-                    setLingua((l) => (l === 'it' ? 'en' : 'it'));
-                  }}
-                >
-                  <span style={{ fontSize: 16 }}>{lingua === 'it' ? '🇮🇹' : '🇬🇧'}</span>
-                  <span>{lingua === 'it' ? 'Italiano (IT)' : 'English (EN)'}</span>
                 </button>
               </div>
             </div>
