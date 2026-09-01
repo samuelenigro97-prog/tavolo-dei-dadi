@@ -9344,11 +9344,11 @@ export default function App() {
                   {/* Sinistra su Desktop: Solo Brand */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, userSelect: 'none', flexShrink: 0 }}>
                     <span style={{ fontSize: 18, lineHeight: 1 }}>🎲</span>
-                    <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 16.5, fontWeight: 800, color: 'var(--c-title)', letterSpacing: 0.5, whiteSpace: 'nowrap', transition: 'color 0.2s ease' }}>
+                    <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 16.5, fontWeight: 800, color: 'var(--c-title)', letterSpacing: 0.5, whiteSpace: 'nowrap', transition: 'color 0.2s ease', display: 'inline-flex', alignItems: 'baseline', gap: 4 }}>
                       Tavolo dei Dadi
-                    </span>
-                    <span className="app-version" style={{ fontSize: 8.5, color: C.inkDim, opacity: 0.75, fontWeight: 600, marginLeft: 2, whiteSpace: 'nowrap' }}>
-                      v{APP_VERSION}
+                      <span className="app-version" style={{ fontSize: 8.5, color: C.inkDim, opacity: 0.75, fontWeight: 600, fontVariantNumeric: 'tabular-nums', letterSpacing: 0.3, whiteSpace: 'nowrap', verticalAlign: 'baseline' }}>
+                        v{APP_VERSION}
+                      </span>
                     </span>
                   </div>
 
@@ -9531,11 +9531,11 @@ export default function App() {
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, userSelect: 'none', flexShrink: 0 }}>
                     <span style={{ fontSize: 16, lineHeight: 1 }}>🎲</span>
-                    <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 15, fontWeight: 800, color: 'var(--c-title)', letterSpacing: 0.4, whiteSpace: 'nowrap', transition: 'color 0.2s ease' }}>
+                    <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 15, fontWeight: 800, color: 'var(--c-title)', letterSpacing: 0.4, whiteSpace: 'nowrap', transition: 'color 0.2s ease', display: 'inline-flex', alignItems: 'baseline', gap: 3 }}>
                       Tavolo dei Dadi
-                    </span>
-                    <span className="app-version" style={{ fontSize: 8, color: C.inkDim, opacity: 0.7, fontWeight: 600, marginLeft: 1, whiteSpace: 'nowrap' }}>
-                      v{APP_VERSION}
+                      <span className="app-version" style={{ fontSize: 8, color: C.inkDim, opacity: 0.7, fontWeight: 600, fontVariantNumeric: 'tabular-nums', letterSpacing: 0.2, whiteSpace: 'nowrap', verticalAlign: 'baseline' }}>
+                        v{APP_VERSION}
+                      </span>
                     </span>
                   </div>
 
