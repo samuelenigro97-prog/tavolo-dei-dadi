@@ -6452,7 +6452,9 @@ export default function App() {
           onClick={(e) => { if (e.target === e.currentTarget) setMostraMenu(false); }}
         >
           <div style={{ ...styles.panel, maxWidth: 460, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
-            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 12 }}>Tavolo dei Dadi <span style={{ fontSize: 11, opacity: 0.55, fontWeight: 400, verticalAlign: 'middle' }}>v{APP_VERSION}</span></h1>
+            <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 12, fontSize: 24, fontWeight: 800, color: 'var(--c-title)' }}>
+              Tavolo dei Dadi <span style={{ fontSize: 9.5, opacity: 0.65, fontWeight: 600, verticalAlign: 'middle', color: C.inkDim }}>v{APP_VERSION}</span>
+            </h1>
 
             <button
               style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 10 }}
@@ -8883,12 +8885,12 @@ export default function App() {
                   }}
                 >
                   {/* Sinistra su Desktop: Solo Brand */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, userSelect: 'none', flexShrink: 0 }}>
-                    <span style={{ fontSize: 15 }}>🎲</span>
-                    <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 13, fontWeight: 700, color: C.goldDark, letterSpacing: 0.3, whiteSpace: 'nowrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, userSelect: 'none', flexShrink: 0 }}>
+                    <span style={{ fontSize: 18, lineHeight: 1 }}>🎲</span>
+                    <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 16.5, fontWeight: 800, color: 'var(--c-title)', letterSpacing: 0.5, whiteSpace: 'nowrap', transition: 'color 0.2s ease' }}>
                       Tavolo dei Dadi
                     </span>
-                    <span style={{ fontSize: 9, color: C.inkDim, opacity: 0.7, fontWeight: 600, marginLeft: 1, whiteSpace: 'nowrap' }}>
+                    <span style={{ fontSize: 8.5, color: C.inkDim, opacity: 0.75, fontWeight: 600, marginLeft: 2, whiteSpace: 'nowrap' }}>
                       v{APP_VERSION}
                     </span>
                   </div>
@@ -9060,12 +9062,12 @@ export default function App() {
                     gap: 4,
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, userSelect: 'none', flexShrink: 0 }}>
-                    <span style={{ fontSize: 14 }}>🎲</span>
-                    <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 13, fontWeight: 700, color: C.goldDark, letterSpacing: 0.2, whiteSpace: 'nowrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, userSelect: 'none', flexShrink: 0 }}>
+                    <span style={{ fontSize: 16, lineHeight: 1 }}>🎲</span>
+                    <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 15, fontWeight: 800, color: 'var(--c-title)', letterSpacing: 0.4, whiteSpace: 'nowrap', transition: 'color 0.2s ease' }}>
                       Tavolo dei Dadi
                     </span>
-                    <span style={{ fontSize: 8.5, color: C.inkDim, opacity: 0.6, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    <span style={{ fontSize: 8, color: C.inkDim, opacity: 0.7, fontWeight: 600, marginLeft: 1, whiteSpace: 'nowrap' }}>
                       v{APP_VERSION}
                     </span>
                   </div>
@@ -13171,8 +13173,8 @@ export default function App() {
                   <h2 style={{ ...styles.title, margin: 0, fontSize: 17, letterSpacing: 0.3, color: C.ink }}>
                     {lingua === 'en' ? 'Menu & Game Tools' : 'Menu & Strumenti'}
                   </h2>
-                  <div style={{ fontSize: 11, color: C.goldDark, fontWeight: 700 }}>
-                    Tavolo dei Dadi v{APP_VERSION}
+                  <div style={{ fontSize: 12, color: 'var(--c-title)', fontWeight: 800, fontFamily: "Georgia, 'Times New Roman', serif" }}>
+                    Tavolo dei Dadi <span style={{ fontSize: 8.5, color: C.inkDim, opacity: 0.75, fontWeight: 600 }}>v{APP_VERSION}</span>
                   </div>
                 </div>
               </div>
