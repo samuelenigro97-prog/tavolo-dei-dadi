@@ -5917,16 +5917,44 @@ export default function App() {
             <div style={{ marginTop: 14, display: 'flex', gap: 8 }}>
               {bestiaDettaglio.gs != null && (
                 <button
-                  style={{ ...styles.button, flex: 1, fontWeight: 700, borderColor: C.goldDark, color: C.goldDark }}
+                  style={{ ...styles.button, flex: 1, fontWeight: 700, borderColor: C.green || '#3e7d32', color: C.green || '#3e7d32' }}
                   onClick={() => {
+                    // Scala 1 uso da Forma Bestiale / Forma Selvatica nelle risorse di classe (se presente)
+                    let risorseNuove = Array.isArray(scheda.risorse) ? scheda.risorse.map((r) => {
+                      if (/forma\s*(bestiale|selvatica)|wild\s*shape/i.test(r.nome || '')) {
+                        const att = Number(r.usi) || 0;
+                        return { ...r, usi: Math.max(0, att - 1) };
+                      }
+                      return r;
+                    }) : scheda.risorse;
+
+                    const forma = {
+                      attiva: true,
+                      nome: bestiaDettaglio.nome,
+                      nomeEn: bestiaDettaglio.nomeEn || bestiaDettaglio.nome,
+                      taglia: bestiaDettaglio.taglia,
+                      tipo: bestiaDettaglio.tipo || 'bestia',
+                      gs: bestiaDettaglio.gs,
+                      ca: bestiaDettaglio.ca,
+                      pfMax: bestiaDettaglio.pf,
+                      pfAttuali: bestiaDettaglio.pf,
+                      pfFormula: bestiaDettaglio.pfFormula,
+                      velocita: bestiaDettaglio.velocita || { terra: 9 },
+                      car: bestiaDettaglio.car || { forza: 10, destrezza: 10, costituzione: 10 },
+                      abilita: bestiaDettaglio.abilita,
+                      sensi: bestiaDettaglio.sensi,
+                      tratti: bestiaDettaglio.tratti || [],
+                      azioni: bestiaDettaglio.azioni || [],
+                    };
+
                     aggiorna({
-                      pfTemp: Math.max(scheda.pfTemp || 0, bestiaDettaglio.pf),
-                      note: [scheda.note, `Forma Selvatica attiva: ${bestiaDettaglio.nome} (CA ${bestiaDettaglio.ca}, ${bestiaDettaglio.pf} PF temp)`].filter(Boolean).join('\n')
+                      formaBestiale: forma,
+                      ...(risorseNuove ? { risorse: risorseNuove } : {})
                     });
                     setBestiaDettaglio(null);
                   }}
                 >
-                  🐾 Trasformati ({bestiaDettaglio.pf} PF Temp)
+                  🐾 {lingua === 'en' ? `Assume Beast Form (${bestiaDettaglio.pf} HP)` : `Assumi Forma Bestiale (${bestiaDettaglio.pf} PF)`}
                 </button>
               )}
               <button
@@ -9008,6 +9036,167 @@ export default function App() {
               v{APP_VERSION}
             </span>
           </div>
+          {/* ===== BANNER FORMA BESTIALE ATTIVA (Regole Ufficiali 5e PHB) ===== */}
+          {scheda.formaBestiale?.attiva && (
+            <div
+              style={{
+                background: 'linear-gradient(135deg, rgba(46,125,50,0.18) 0%, rgba(201,162,39,0.15) 100%)',
+                border: `2px solid ${C.green || '#3e7d32'}`,
+                borderRadius: 12,
+                padding: '12px 16px',
+                marginBottom: 16,
+                boxShadow: '0 4px 18px rgba(0,0,0,0.12)',
+              }}
+            >
+              {/* Intestazione Banner */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, borderBottom: `1px solid ${C.border}`, paddingBottom: 8, marginBottom: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 26, lineHeight: 1 }}>🐾</span>
+                  <div>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: C.green || '#3e7d32', letterSpacing: 0.3 }}>
+                      {lingua === 'en' ? 'ACTIVE BEAST FORM' : 'FORMA BESTIALE ATTIVA'}: {lingua === 'en' ? (scheda.formaBestiale.nomeEn || scheda.formaBestiale.nome) : scheda.formaBestiale.nome}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: C.inkDim, fontWeight: 600 }}>
+                      {scheda.formaBestiale.taglia} {scheda.formaBestiale.tipo || 'bestia'} · GS {scheda.formaBestiale.gs} · 🛡️ CA {scheda.formaBestiale.ca} · 🐾 {scheda.formaBestiale.velocita?.terra || 9}m
+                      {scheda.formaBestiale.velocita?.nuoto ? ` · 🏊 ${scheda.formaBestiale.velocita.nuoto}m` : ''}
+                      {scheda.formaBestiale.velocita?.volo ? ` · 🦅 ${scheda.formaBestiale.velocita.volo}m` : ''}
+                      {scheda.formaBestiale.velocita?.scalata ? ` · 🧗 ${scheda.formaBestiale.velocita.scalata}m` : ''}
+                      {scheda.formaBestiale.velocita?.scavo ? ` · ⛏️ ${scheda.formaBestiale.velocita.scavo}m` : ''}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  style={{ ...styles.button, background: C.panel, borderColor: C.goldDark, color: C.ink, fontWeight: 700, fontSize: 12.5, padding: '6px 14px', borderRadius: 8 }}
+                  onClick={() => {
+                    aggiorna({
+                      formaBestiale: { ...scheda.formaBestiale, attiva: false }
+                    });
+                  }}
+                  title={lingua === 'en' ? 'Revert to normal humanoid form' : 'Ritorna alla tua forma umanoide normale'}
+                >
+                  👤 {lingua === 'en' ? 'Revert to Humanoid' : 'Ritorna alla Forma Umanoide'}
+                </button>
+              </div>
+
+              {/* Punti Ferita della Bestia (con barra e pulsanti di danno/cura) */}
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>
+                    ❤️ {lingua === 'en' ? 'Beast Hit Points' : 'Punti Ferita della Bestia'}
+                  </span>
+                  <span style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>
+                    {scheda.formaBestiale.pfAttuali} / {scheda.formaBestiale.pfMax} PF
+                  </span>
+                </div>
+                {/* Barra Vita Bestia */}
+                <div style={{ width: '100%', height: 16, background: 'rgba(0,0,0,0.12)', borderRadius: 8, overflow: 'hidden', border: `1px solid ${C.border}` }}>
+                  <div style={{
+                    width: `${Math.max(0, Math.min(100, ((Number(scheda.formaBestiale.pfAttuali) || 0) / (Number(scheda.formaBestiale.pfMax) || 1)) * 100))}%`,
+                    height: '100%',
+                    background: 'linear-gradient(90deg, #2e7d32, #4caf50)',
+                    transition: 'width 0.3s ease'
+                  }} />
+                </div>
+                {/* Tasti Rapidi Danno / Cura */}
+                <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', justifyContent: 'center', marginTop: 6 }}>
+                  {[-20, -10, -5, -1, 1, 5, 10, 20].map((delta) => (
+                    <button
+                      key={delta}
+                      type="button"
+                      style={{
+                        ...styles.buttonMini,
+                        padding: '4px 9px',
+                        fontSize: 12,
+                        fontWeight: 800,
+                        borderRadius: 6,
+                        color: delta < 0 ? '#d32f2f' : '#2e7d32',
+                        background: C.panel,
+                        border: `1px solid ${C.border}`,
+                      }}
+                      onClick={() => {
+                        const attuali = Number(scheda.formaBestiale.pfAttuali) || 0;
+                        const nuovo = attuali + delta;
+                        if (nuovo <= 0) {
+                          // Danni in eccesso passano ai PF del druido (Regola PHB)
+                          const eccesso = Math.abs(nuovo);
+                          const pfDruidoNuovi = Math.max(0, (Number(scheda.pf) || 0) - eccesso);
+                          aggiorna({
+                            pf: pfDruidoNuovi,
+                            formaBestiale: { ...scheda.formaBestiale, pfAttuali: 0, attiva: false }
+                          });
+                        } else {
+                          aggiorna({
+                            formaBestiale: {
+                              ...scheda.formaBestiale,
+                              pfAttuali: Math.min(scheda.formaBestiale.pfMax, nuovo)
+                            }
+                          });
+                        }
+                      }}
+                    >
+                      {delta > 0 ? `+${delta}` : delta}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Statistiche Fisiche Sostituite: FOR, DES, COS della bestia */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, background: C.panel, padding: '8px 12px', borderRadius: 8, border: `1px solid ${C.border}`, textAlign: 'center', marginBottom: 10 }}>
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: C.inkDim }}>FOR (Bestia)</div>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>
+                    {scheda.formaBestiale.car?.forza || 10}{' '}
+                    <span style={{ color: C.goldDark, fontSize: 12.5 }}>({conSegno(Math.floor(((scheda.formaBestiale.car?.forza || 10) - 10) / 2))})</span>
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: C.inkDim }}>DES (Bestia)</div>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>
+                    {scheda.formaBestiale.car?.destrezza || 10}{' '}
+                    <span style={{ color: C.goldDark, fontSize: 12.5 }}>({conSegno(Math.floor(((scheda.formaBestiale.car?.destrezza || 10) - 10) / 2))})</span>
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: C.inkDim }}>COS (Bestia)</div>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>
+                    {scheda.formaBestiale.car?.costituzione || 10}{' '}
+                    <span style={{ color: C.goldDark, fontSize: 12.5 }}>({conSegno(Math.floor(((scheda.formaBestiale.car?.costituzione || 10) - 10) / 2))})</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Azioni & Attacchi della Bestia */}
+              {scheda.formaBestiale.azioni && scheda.formaBestiale.azioni.length > 0 && (
+                <div>
+                  <div style={{ fontSize: 11.5, fontWeight: 800, textTransform: 'uppercase', color: C.goldDark, marginBottom: 5 }}>
+                    ⚔️ {lingua === 'en' ? 'Beast Attacks & Actions' : 'Azioni & Attacchi della Bestia'}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                    {scheda.formaBestiale.azioni.map((az, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          fontSize: 12.5,
+                          padding: '6px 10px',
+                          background: C.panel,
+                          border: `1px solid ${C.border}`,
+                          borderRadius: 6,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: 6,
+                        }}
+                      >
+                        <span>⚔️ <strong>{typeof az === 'string' ? az : az.nome}</strong></span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Con il ritratto ridotto, Addestramento/Risorse si prendono lo spazio libero. */}
           <div className="profilo-griglia">
             {/* COLONNA SINISTRA: Ritratto + Competenze + Risorse di classe */}
@@ -11450,9 +11639,9 @@ export default function App() {
               </Sezione>
             )}
 
-            {/* Forma Selvatica (solo Druido dal 2° livello): subito sotto la Magia */}
+            {/* Forma Bestiale (solo Druido dal 2° livello): subito sotto la Magia */}
             {/(druido|druid)/i.test(scheda.classe || '') && (Number(scheda.livello) || 1) >= 2 && (
-              <Sezione titolo={lingua === 'en' ? 'Wild Shape Bestiary' : 'Forma Selvatica & Bestiario'} style={{ order: ordineSezioni.indexOf('incantesimi') }} {...apertoProps('formaSelvatica', true)}>
+              <Sezione titolo={lingua === 'en' ? 'Beast Form' : 'Forma Bestiale'} style={{ order: ordineSezioni.indexOf('incantesimi') }} {...apertoProps('formaBestiale', true)}>
                 {(() => {
                   const disp = bestieDisponibili(scheda.livello, scheda.sottoclasse);
                   const lim = limitiFormaSelvatica(scheda.livello, scheda.sottoclasse);

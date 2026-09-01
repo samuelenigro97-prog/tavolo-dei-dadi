@@ -286,3 +286,38 @@ test('tabelleBackground: ogni background ha 8 tratti, 6 ideali, 6 legami e 6 dif
   assert.ok(sapiente);
   assert.equal(sapiente.chiave, 'saggio');
 });
+
+test('Forma Bestiale: sostituisce FOR, DES, COS e CA con le statistiche della bestia, preservando INT, SAG, CAR', () => {
+  const druido = schedaBase({
+    caratteristiche: { forza: 8, destrezza: 14, costituzione: 12, intelligenza: 10, saggezza: 18, carisma: 13 },
+    armatura: { tipo: 'leggera', base: 11 }, // CA normale = 11 + 2 = 13
+    formaBestiale: {
+      attiva: true,
+      nome: 'Orso bruno',
+      ca: 11,
+      pfMax: 34,
+      pfAttuali: 34,
+      car: { forza: 19, destrezza: 10, costituzione: 16 }
+    }
+  });
+
+  // Caratteristiche fisiche della bestia (Regole 5e PHB)
+  assert.equal(punteggioCaratteristica(druido, 'forza'), 19);
+  assert.equal(punteggioCaratteristica(druido, 'destrezza'), 10);
+  assert.equal(punteggioCaratteristica(druido, 'costituzione'), 16);
+
+  // Caratteristiche mentali del druido conservate
+  assert.equal(punteggioCaratteristica(druido, 'intelligenza'), 10);
+  assert.equal(punteggioCaratteristica(druido, 'saggezza'), 18);
+  assert.equal(punteggioCaratteristica(druido, 'carisma'), 13);
+
+  // CA naturale della bestia
+  assert.equal(caTotale(druido), 11);
+
+  // Quando la forma bestiale si disattiva (ritorno a forma umanoide)
+  druido.formaBestiale.attiva = false;
+  assert.equal(punteggioCaratteristica(druido, 'forza'), 8);
+  assert.equal(punteggioCaratteristica(druido, 'destrezza'), 14);
+  assert.equal(punteggioCaratteristica(druido, 'costituzione'), 12);
+  assert.equal(caTotale(druido), 13);
+});

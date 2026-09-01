@@ -66,6 +66,11 @@ export function bonusTiriSalvezzaOggetti(scheda) {
 }
 
 export function punteggioCaratteristica(scheda, caratteristica) {
+  // Se la Forma Bestiale è attiva, Forza, Destrezza e Costituzione sono sostituite dalle caratteristiche fisiche della bestia (Regole 5e PHB)
+  if (scheda?.formaBestiale?.attiva && ['forza', 'destrezza', 'costituzione'].includes(caratteristica)) {
+    const valBestia = scheda.formaBestiale.car?.[caratteristica];
+    if (valBestia != null) return Number(valBestia);
+  }
   const base = Number(scheda?.caratteristiche?.[caratteristica]) || 0;
   const valori = oggettiConEffettoAttivo(scheda)
     .map((o) => new RegExp(`^${caratteristica}_impostata_(\\d+)$`).exec(o.effettoMeccanico))
@@ -76,11 +81,15 @@ export function punteggioCaratteristica(scheda, caratteristica) {
 
 /**
  * CA totale in base all'equipaggiamento (regole 5e):
- * a mano = valore scritto · nessuna 10+DES · leggera base+DES ·
+ * se la Forma Bestiale è attiva, usa la CA naturale della bestia;
+ * altrimenti a mano = valore scritto · nessuna 10+DES · leggera base+DES ·
  * media base+min(DES,2) · pesante base. In tutti i casi si sommano
  * scudo (+2) ed eventuale bonus magico.
  */
 export function caTotale(scheda) {
+  if (scheda?.formaBestiale?.attiva && scheda.formaBestiale.ca != null) {
+    return Number(scheda.formaBestiale.ca) + bonusClasseArmaturaOggetti(scheda);
+  }
   const a = scheda.armatura || {};
   const des = modificatore(punteggioCaratteristica(scheda, 'destrezza'));
   let ca;
