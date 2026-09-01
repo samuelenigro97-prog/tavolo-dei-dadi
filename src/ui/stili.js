@@ -1152,88 +1152,36 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   .inventario-table tr:not(.inventario-riga) { display: block; margin: -8px 0 8px; }
   .inventario-table tr:not(.inventario-riga) td[colspan] { display: block; width: auto; padding: 8px !important; }
 }
+.selettore-personaggio-desktop {
+  display: flex !important;
+}
+.selettore-personaggio-mobile {
+  display: none !important;
+}
+
 @media (max-width: 820px) {
   .griglia-scheda { grid-template-columns: 1fr; }
   .selettore-personaggio { width: 100%; }
 }
 @media (max-width: 680px) {
+  .selettore-personaggio-desktop {
+    display: none !important;
+  }
+  .selettore-personaggio-mobile {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    gap: 6px !important;
+  }
   .barra-superiore-fissa {
-    padding: 3px 6px !important;
+    padding: 4px 8px !important;
     margin-bottom: 6px !important;
     overflow-x: hidden !important;
     border-radius: 0 0 8px 8px !important;
+    min-height: 38px !important;
   }
-  .barra-superiore-fissa .selettore-personaggio-azioni,
-  .selettore-personaggio-azioni {
-    display: flex !important;
-    flex-direction: column !important;
-    width: 100% !important;
-    gap: 2.5px !important;
-    align-items: stretch !important;
-    margin: 0 auto !important;
-    white-space: normal !important;
-  }
-  .selettore-macro-riga-1 {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    width: 100% !important;
-    gap: 3px !important;
-  }
-  .selettore-macro-riga-2 {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    width: 100% !important;
-    gap: 2px !important;
-  }
-  .selettore-riga-1,
-  .selettore-riga-2,
-  .selettore-riga-3 {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    align-items: center !important;
-    gap: 2px !important;
-  }
-  .selettore-testo-etichetta {
-    display: none !important;
-  }
-  .selettore-etichetta {
-    font-size: 12px !important;
-    margin-right: 0.5px !important;
-  }
-  .selettore-brand-icona {
-    font-size: 13px !important;
-  }
-  .selettore-brand-titolo {
-    font-size: 12px !important;
-    letter-spacing: 0.2px !important;
-  }
-  .selettore-brand-versione {
-    font-size: 8px !important;
-    opacity: 0.6 !important;
-  }
-  .selettore-divisore {
-    display: inline-block !important;
-    margin: 0 1px !important;
-    height: 14px !important;
-    opacity: 0.35 !important;
-  }
-  .selettore-personaggio-azioni button {
-    flex: 0 0 26px !important;
-    width: 26px !important;
-    min-width: 26px !important;
-    max-width: 26px !important;
-    height: 26px !important;
-    min-height: 26px !important;
-    max-height: 26px !important;
-    padding: 0 !important;
-    font-size: 13px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    border-radius: 5px !important;
-  }
+  .anagrafica > div:last-child > div:last-child { grid-template-columns: repeat(2, 1fr) !important; }
   .anagrafica > div:last-child > div:last-child { grid-template-columns: repeat(2, 1fr) !important; }
   /* su telefono i riquadri anagrafica e vitali passano a 2 colonne (leggibili,
      niente 5 colonne schiacciate); le altezze non sono più forzate uguali */

@@ -3024,6 +3024,7 @@ export default function App() {
   const [erroreEspressione, setErroreEspressione] = useState(false);
   const [storico, setStorico] = useState([]);
   const [mostraDadiModal, setMostraDadiModal] = useState(false);
+  const [mostraMenuHubMobile, setMostraMenuHubMobile] = useState(false);
   const [mostraIspirazioneBgModal, setMostraIspirazioneBgModal] = useState(false);
   const [bgIspirazioneScelto, setBgIspirazioneScelto] = useState('');
   const [bozzaIspirazione, setBozzaIspirazione] = useState({ tratto: '', ideale: '', legame: '', difetto: '' });
@@ -8656,7 +8657,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Barra superiore fissa: Brand a sinistra + sezioni tasti (Tutto su 1 riga) */}
+        {/* Barra superiore fissa: Desktop completa su 1 riga / Mobile super-compatta con Menu Hub */}
         <section
           className="selettore-personaggio barra-superiore-fissa"
           style={{
@@ -8722,187 +8723,261 @@ export default function App() {
             };
 
             return (
-              <div
-                className="selettore-personaggio-azioni"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  width: '100%',
-                  flexWrap: 'nowrap',
-                  gap: 6,
-                }}
-              >
-                {/* Riga 1 su Mobile / Sinistra su Desktop: Brand + Scheda */}
-                <div className="selettore-macro-riga-1" style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                  <div className="selettore-brand-box" style={{ display: 'flex', alignItems: 'center', gap: 4, userSelect: 'none', flexShrink: 0 }}>
-                    <span className="selettore-brand-icona" style={{ fontSize: 14 }}>🎲</span>
-                    <span className="selettore-brand-titolo" style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 13, fontWeight: 700, color: C.goldDark, letterSpacing: 0.3, whiteSpace: 'nowrap' }}>
-                      Tavolo dei Dadi
-                    </span>
-                    <span className="selettore-brand-versione" style={{ fontSize: 9, color: C.inkDim, opacity: 0.7, fontWeight: 600, marginLeft: 1, whiteSpace: 'nowrap' }}>
-                      v{APP_VERSION}
-                    </span>
+              <>
+                {/* ===== VERSIONE DESKTOP (Invariata: tutti i tasti divisi per sezioni su 1 riga) ===== */}
+                <div
+                  className="selettore-personaggio-desktop"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    width: '100%',
+                    flexWrap: 'nowrap',
+                    gap: 6,
+                  }}
+                >
+                  {/* Sinistra su Desktop: Brand + Scheda */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, userSelect: 'none', flexShrink: 0 }}>
+                      <span style={{ fontSize: 15 }}>🎲</span>
+                      <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 13, fontWeight: 700, color: C.goldDark, letterSpacing: 0.3, whiteSpace: 'nowrap' }}>
+                        Tavolo dei Dadi
+                      </span>
+                      <span style={{ fontSize: 9, color: C.inkDim, opacity: 0.7, fontWeight: 600, marginLeft: 1, whiteSpace: 'nowrap' }}>
+                        v{APP_VERSION}
+                      </span>
+                    </div>
+
+                    {divisoreVerticale}
+
+                    {/* Gruppo 1: GESTIONE SCHEDA */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 2.5, flexShrink: 0 }}>
+                      <span style={stileEtichettaInline}>
+                        <span>👤</span> <span>{lingua === 'en' ? 'Sheet' : 'Scheda'}</span>
+                      </span>
+                      <button
+                        style={btnAzione}
+                        onClick={() => {
+                          setBozzaCrea({
+                            nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '',
+                            livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [],
+                            competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {},
+                            multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '',
+                            multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '',
+                            dotazione: 'pacchetto'
+                          });
+                          setMostraCrea(true);
+                        }}
+                        title={t('tip.nuovo_pg')}
+                      >
+                        ＋
+                      </button>
+                      <button
+                        style={btnAzione}
+                        onClick={() => setRinominando(!rinominando)}
+                        title={t('tip.rinomina')}
+                      >
+                        ✎
+                      </button>
+                      <button
+                        style={btnAzione}
+                        title={t('tip.levelup')}
+                        onClick={() => {
+                          const dvMatch = String(scheda.dadiVita || '').match(/d(\d+)/i);
+                          const facceDV = dvMatch ? parseInt(dvMatch[1]) : 8;
+                          const modCos = modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10) || 0;
+                          const avgHpGain = Math.floor(facceDV / 2) + 1 + modCos;
+                          setLevelUpBozza({
+                            metodo: 'media', hpGainMedia: Math.max(1, avgHpGain), facceDV, modCos, tiroFatto: 0,
+                            asiMode: 'aumento', asiA: '', asiB: '', talento: '',
+                            sottoclasse: scheda.sottoclasse || '',
+                          });
+                          setMostraLevelUp(true);
+                        }}
+                      >
+                        🆙
+                      </button>
+                      <button
+                        style={btnAzione}
+                        onClick={eliminaPersonaggio}
+                        title={t('tip.elimina_pg')}
+                      >
+                        🗑
+                      </button>
+                      <button
+                        style={{ ...btnAzione, ...(mostraDadiModal ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }}
+                        onClick={() => setMostraDadiModal(true)}
+                        title={t('roll.tavolo_dadi')}
+                      >
+                        🎲
+                      </button>
+                    </div>
                   </div>
 
                   {divisoreVerticale}
 
-                  {/* Gruppo 1: GESTIONE SCHEDA (include il tasto Dadi a fine sezione) */}
-                  <div className="selettore-riga-1" style={{ display: 'flex', alignItems: 'center', gap: 2.5, flexShrink: 0 }}>
-                    <span style={stileEtichettaInline} className="selettore-etichetta">
-                      <span>👤</span> <span className="selettore-testo-etichetta">{lingua === 'en' ? 'Sheet' : 'Scheda'}</span>
+                  {/* Destra su Desktop: Sistema + Sessione */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                    {/* Gruppo 2: SISTEMA */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 2.5, flexShrink: 0 }}>
+                      <span style={stileEtichettaInline}>
+                        <span>⚙️</span> <span>{lingua === 'en' ? 'System' : 'Sistema'}</span>
+                      </span>
+                      <button style={btnAzione} title={t('tip.menu_iniziale')} onClick={() => setMostraMenu(true)}>
+                        🏠
+                      </button>
+                      <button style={btnAzione} title="Importa JSON, PDF o immagini" onClick={() => jsonRef.current?.click()}>
+                        ⬇️
+                      </button>
+                      <button
+                        ref={esportaBtnRef}
+                        style={{ ...btnAzione, ...(mostraMenuEsporta ? { borderColor: C.goldDark, color: C.goldDark } : {}) }}
+                        title={t('tip.esporta')}
+                        onClick={() => {
+                          if (!mostraMenuEsporta) {
+                            const r = esportaBtnRef.current?.getBoundingClientRect();
+                            if (r) setPosEsporta({
+                              top: Math.max(8, Math.min(window.innerHeight - 200, r.bottom + 5)),
+                              left: Math.max(8, Math.min(window.innerWidth - 240, r.left)),
+                            });
+                          }
+                          setMostraMenuEsporta((v) => !v);
+                        }}
+                      >
+                        ⬆️
+                      </button>
+                      <button
+                        style={{ ...btnAzione, color: C.goldDark, borderColor: C.goldDark }}
+                        title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato') : 'Sincronizza sul Cloud'}
+                        onClick={() => { setCloudStatus({ text: '', type: '' }); setSyncCodiceStatus({ text: '', type: '' }); setMostraCloud(true); }}
+                      >
+                        ☁️
+                        {sincronizzando ? (
+                          <span style={{ fontSize: 10, marginLeft: 1 }}>🔄</span>
+                        ) : (githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice) ? (
+                          <span style={{ color: '#2e9d4d', fontWeight: 900, marginLeft: 1, fontSize: 12 }}>✓</span>
+                        ) : (
+                          <span style={{ color: '#c0392b', fontSize: 12, marginLeft: 1, fontWeight: 900 }}>!</span>
+                        )}
+                      </button>
+                      <button
+                        ref={notificheBtnRef}
+                        className={daNotificare ? 'btn-notifiche-lampeggia' : ''}
+                        style={{
+                          ...btnAzione,
+                          position: 'relative',
+                          ...(daNotificare ? { color: C.goldDark, borderColor: C.goldDark } : {}),
+                        }}
+                        title={daNotificare ? (controlliAttivi.length > 0 ? `${controlliAttivi.length} avvisi sulla scheda` : t('notifiche.novita_presenti')) : t('notifiche.titolo')}
+                        onClick={apriNotifiche}
+                      >
+                        🔔
+                        {daNotificare && (
+                          <span className="avvisi-pallino" aria-label={`${nAvvisi} notifiche`}>
+                            {controlliAttivi.length > 0 ? controlliAttivi.length : '!'}
+                          </span>
+                        )}
+                      </button>
+                      <button
+                        style={btnAzione}
+                        title={lingua === 'it' ? 'Cambia in inglese' : 'Switch to Italian'}
+                        onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
+                      >
+                        {lingua === 'it' ? '🇮🇹' : '🇬🇧'}
+                      </button>
+                    </div>
+
+                    {divisoreVerticale}
+
+                    {/* Gruppo 3: SESSIONE */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 2.5, flexShrink: 0 }}>
+                      <span style={stileEtichettaInline}>
+                        <span>🧭</span> <span>{lingua === 'en' ? 'Session' : 'Sessione'}</span>
+                      </span>
+                      <button style={btnAzione} title={t('tooltip.tema')} onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}>{tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'}</button>
+                      <button ref={ambientazioneBtnRef} style={btnAzione} title={t('luogo.tooltip')} onClick={() => { if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
+                      <button style={{ ...btnAzione, ...(mostraDiarioModal ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }} onClick={() => setMostraDiarioModal(true)} title={`${t('sez.diario')} (${(Array.isArray(scheda.diario) ? scheda.diario.length : 0)})`}>📜</button>
+                      <button style={btnAzione} onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())} title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}>🗺️</button>
+                      <button style={btnAzione} onClick={() => {
+                        if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
+                        else if (combat.combattenti.length) setCombat((c) => ({ ...c, attivo: true, aperto: true }));
+                        else aggiungiPgAlCombat();
+                      }} title={(combat.attivo && combat.aperto ? t('ct.minimizza') : t('ct.apri')) + (combat.combattenti.length ? ` (${combat.combattenti.length})` : '')}>⚔️</button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ===== VERSIONE MOBILE (Ultra-snella a 1 riga: Brand + Tasti Rapidi + Tasto Menu Hub) ===== */}
+                <div
+                  className="selettore-personaggio-mobile"
+                  style={{
+                    display: 'none',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    width: '100%',
+                    gap: 6,
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, userSelect: 'none' }}>
+                    <span style={{ fontSize: 15 }}>🎲</span>
+                    <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 13.5, fontWeight: 700, color: C.goldDark, letterSpacing: 0.2, whiteSpace: 'nowrap' }}>
+                      Tavolo dei Dadi
                     </span>
+                    <span style={{ fontSize: 9, color: C.inkDim, opacity: 0.7, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                      v{APP_VERSION}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                     <button
-                      style={btnAzione}
-                      onClick={() => {
-                        setBozzaCrea({
-                          nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '',
-                          livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [],
-                          competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {},
-                          multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '',
-                          multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '',
-                          dotazione: 'pacchetto'
-                        });
-                        setMostraCrea(true);
-                      }}
-                      title={t('tip.nuovo_pg')}
-                    >
-                      ＋
-                    </button>
-                    <button
-                      style={btnAzione}
-                      onClick={() => setRinominando(!rinominando)}
-                      title={t('tip.rinomina')}
-                    >
-                      ✎
-                    </button>
-                    <button
-                      style={btnAzione}
-                      title={t('tip.levelup')}
-                      onClick={() => {
-                        const dvMatch = String(scheda.dadiVita || '').match(/d(\d+)/i);
-                        const facceDV = dvMatch ? parseInt(dvMatch[1]) : 8;
-                        const modCos = modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10) || 0;
-                        const avgHpGain = Math.floor(facceDV / 2) + 1 + modCos;
-                        setLevelUpBozza({
-                          metodo: 'media', hpGainMedia: Math.max(1, avgHpGain), facceDV, modCos, tiroFatto: 0,
-                          asiMode: 'aumento', asiA: '', asiB: '', talento: '',
-                          sottoclasse: scheda.sottoclasse || '',
-                        });
-                        setMostraLevelUp(true);
-                      }}
-                    >
-                      🆙
-                    </button>
-                    <button
-                      style={btnAzione}
-                      onClick={eliminaPersonaggio}
-                      title={t('tip.elimina_pg')}
-                    >
-                      🗑
-                    </button>
-                    <button
-                      style={{ ...btnAzione, ...(mostraDadiModal ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }}
+                      style={{ ...btnAzione, width: 30, height: 30, fontSize: 14 }}
                       onClick={() => setMostraDadiModal(true)}
                       title={t('roll.tavolo_dadi')}
                     >
                       🎲
                     </button>
-                  </div>
-                </div>
-
-                {divisoreVerticale}
-
-                {/* Riga 2 su Mobile / Destra su Desktop: Sistema + Sessione */}
-                <div className="selettore-macro-riga-2" style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                  {/* Gruppo 2: SISTEMA */}
-                  <div className="selettore-riga-2" style={{ display: 'flex', alignItems: 'center', gap: 2.5, flexShrink: 0 }}>
-                    <span style={stileEtichettaInline} className="selettore-etichetta">
-                      <span>⚙️</span> <span className="selettore-testo-etichetta">{lingua === 'en' ? 'System' : 'Sistema'}</span>
-                    </span>
-                    <button style={btnAzione} title={t('tip.menu_iniziale')} onClick={() => setMostraMenu(true)}>
-                      🏠
-                    </button>
-                    <button style={btnAzione} title="Importa JSON, PDF o immagini" onClick={() => jsonRef.current?.click()}>
-                      ⬇️
-                    </button>
                     <button
-                      ref={esportaBtnRef}
-                      style={{ ...btnAzione, ...(mostraMenuEsporta ? { borderColor: C.goldDark, color: C.goldDark } : {}) }}
-                      title={t('tip.esporta')}
+                      style={{ ...btnAzione, width: 30, height: 30, fontSize: 14 }}
                       onClick={() => {
-                        if (!mostraMenuEsporta) {
-                          const r = esportaBtnRef.current?.getBoundingClientRect();
-                          if (r) setPosEsporta({
-                            top: Math.max(8, Math.min(window.innerHeight - 200, r.bottom + 5)),
-                            left: Math.max(8, Math.min(window.innerWidth - 240, r.left)),
-                          });
-                        }
-                        setMostraMenuEsporta((v) => !v);
+                        if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
+                        else if (combat.combattenti.length) setCombat((c) => ({ ...c, attivo: true, aperto: true }));
+                        else aggiungiPgAlCombat();
                       }}
+                      title={combat.attivo && combat.aperto ? t('ct.minimizza') : t('ct.apri')}
                     >
-                      ⬆️
+                      ⚔️
                     </button>
                     <button
-                      style={{ ...btnAzione, color: C.goldDark, borderColor: C.goldDark }}
-                      title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato') : 'Sincronizza sul Cloud'}
-                      onClick={() => { setCloudStatus({ text: '', type: '' }); setSyncCodiceStatus({ text: '', type: '' }); setMostraCloud(true); }}
-                    >
-                      ☁️
-                      {sincronizzando ? (
-                        <span style={{ fontSize: 10, marginLeft: 1 }}>🔄</span>
-                      ) : (githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice) ? (
-                        <span style={{ color: '#2e9d4d', fontWeight: 900, marginLeft: 1, fontSize: 12 }}>✓</span>
-                      ) : (
-                        <span style={{ color: '#c0392b', fontSize: 12, marginLeft: 1, fontWeight: 900 }}>!</span>
-                      )}
-                    </button>
-                    <button
-                      ref={notificheBtnRef}
-                      className={daNotificare ? 'btn-notifiche-lampeggia' : ''}
                       style={{
                         ...btnAzione,
+                        width: 'auto',
+                        height: 30,
+                        padding: '0 8px',
+                        fontSize: 12.5,
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 4,
                         position: 'relative',
-                        ...(daNotificare ? { color: C.goldDark, borderColor: C.goldDark } : {}),
+                        background: mostraMenuHubMobile ? 'rgba(201,162,39,0.2)' : C.gold,
+                        color: mostraMenuHubMobile ? C.goldDark : '#ffffff',
+                        border: 'none',
+                        borderRadius: 6,
                       }}
-                      title={daNotificare ? (controlliAttivi.length > 0 ? `${controlliAttivi.length} avvisi sulla scheda` : t('notifiche.novita_presenti')) : t('notifiche.titolo')}
-                      onClick={apriNotifiche}
+                      onClick={() => setMostraMenuHubMobile(true)}
+                      title="Apri Menu Hub"
                     >
-                      🔔
+                      <span style={{ fontSize: 14, lineHeight: 1 }}>☰</span>
+                      <span>Menu</span>
                       {daNotificare && (
-                        <span className="avvisi-pallino" aria-label={`${nAvvisi} notifiche`}>
+                        <span className="avvisi-pallino" style={{ top: -3, right: -3 }}>
                           {controlliAttivi.length > 0 ? controlliAttivi.length : '!'}
                         </span>
                       )}
                     </button>
-                    <button
-                      style={btnAzione}
-                      title={lingua === 'it' ? 'Cambia in inglese' : 'Switch to Italian'}
-                      onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
-                    >
-                      {lingua === 'it' ? '🇮🇹' : '🇬🇧'}
-                    </button>
-                  </div>
-
-                  {divisoreVerticale}
-
-                  {/* Gruppo 3: SESSIONE */}
-                  <div className="selettore-riga-3" style={{ display: 'flex', alignItems: 'center', gap: 2.5, flexShrink: 0 }}>
-                    <span style={stileEtichettaInline} className="selettore-etichetta">
-                      <span>🧭</span> <span className="selettore-testo-etichetta">{lingua === 'en' ? 'Session' : 'Sessione'}</span>
-                    </span>
-                    <button style={btnAzione} title={t('tooltip.tema')} onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}>{tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'}</button>
-                    <button ref={ambientazioneBtnRef} style={btnAzione} title={t('luogo.tooltip')} onClick={() => { if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
-                    <button style={{ ...btnAzione, ...(mostraDiarioModal ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }} onClick={() => setMostraDiarioModal(true)} title={`${t('sez.diario')} (${(Array.isArray(scheda.diario) ? scheda.diario.length : 0)})`}>📜</button>
-                    <button style={btnAzione} onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())} title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}>🗺️</button>
-                    <button style={btnAzione} onClick={() => {
-                      if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
-                      else if (combat.combattenti.length) setCombat((c) => ({ ...c, attivo: true, aperto: true }));
-                      else aggiungiPgAlCombat();
-                    }} title={(combat.attivo && combat.aperto ? t('ct.minimizza') : t('ct.apri')) + (combat.combattenti.length ? ` (${combat.combattenti.length})` : '')}>⚔️</button>
                   </div>
                 </div>
-              </div>
+              </>
             );
           })()}
         </section>
@@ -12641,6 +12716,320 @@ export default function App() {
         </footer>
         <div style={{ height: combat.attivo && combat.aperto ? 220 : 0 }} />
       </main>
+
+      {/* ===== Modale Menu Hub per Mobile (Tutti gli strumenti in ordine e comodamente cliccabili) ===== */}
+      {mostraMenuHubMobile && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 2600,
+            padding: 14,
+            background: 'rgba(0,0,0,0.72)',
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setMostraMenuHubMobile(false); }}
+        >
+          <div
+            style={{
+              ...styles.panel,
+              maxWidth: 480,
+              width: '100%',
+              maxHeight: '88vh',
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
+              border: `2px solid ${C.goldDark}`,
+              borderRadius: 14,
+              padding: '16px 18px',
+              gap: 14,
+            }}
+          >
+            {/* Header Hub */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${C.border}`, paddingBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 24, lineHeight: 1 }}>🧭</span>
+                <div>
+                  <h2 style={{ ...styles.title, margin: 0, fontSize: 17, letterSpacing: 0.3, color: C.ink }}>
+                    {lingua === 'en' ? 'Menu & Game Tools' : 'Menu & Strumenti'}
+                  </h2>
+                  <div style={{ fontSize: 11, color: C.goldDark, fontWeight: 700 }}>
+                    Tavolo dei Dadi v{APP_VERSION}
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                style={{ ...styles.buttonMini, fontSize: 16, padding: '3px 10px', color: C.inkDim, borderRadius: 6 }}
+                onClick={() => setMostraMenuHubMobile(false)}
+                title={t('modal.chiudi')}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Sezione 1: Scheda Personaggio */}
+            <div>
+              <div style={{ fontSize: 11.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.6, color: C.goldDark, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span>👤</span> <span>{lingua === 'en' ? 'Character Sheet' : 'Scheda Personaggio'}</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+                <button
+                  type="button"
+                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
+                  onClick={() => {
+                    setBozzaCrea({
+                      nome: '', sesso: '', classe: '', sottoclasse: '', specie: '', background: '',
+                      livello: 1, metodo: 'auto', pool: null, assegna: {}, competenzeClasse: [],
+                      competenzeSpecie: [], maestria: [], talentoOrigine: '', asiTalenti: {},
+                      multiclasseClasse2: '', multiclasseLivello2: 1, sottoclasseMc2: '',
+                      multiclasseClasse3: '', multiclasseLivello3: 1, sottoclasseMc3: '',
+                      dotazione: 'pacchetto'
+                    });
+                    setMostraCrea(true);
+                    setMostraMenuHubMobile(false);
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>＋</span>
+                  <span>{t('tip.nuovo_pg')}</span>
+                </button>
+
+                <button
+                  type="button"
+                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
+                  onClick={() => {
+                    setRinominando(!rinominando);
+                    setMostraMenuHubMobile(false);
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>✎</span>
+                  <span>{t('tip.rinomina')}</span>
+                </button>
+
+                <button
+                  type="button"
+                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
+                  onClick={() => {
+                    const dvMatch = String(scheda.dadiVita || '').match(/d(\d+)/i);
+                    const facceDV = dvMatch ? parseInt(dvMatch[1]) : 8;
+                    const modCos = modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10) || 0;
+                    const avgHpGain = Math.floor(facceDV / 2) + 1 + modCos;
+                    setLevelUpBozza({
+                      metodo: 'media', hpGainMedia: Math.max(1, avgHpGain), facceDV, modCos, tiroFatto: 0,
+                      asiMode: 'aumento', asiA: '', asiB: '', talento: '',
+                      sottoclasse: scheda.sottoclasse || '',
+                    });
+                    setMostraLevelUp(true);
+                    setMostraMenuHubMobile(false);
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>🆙</span>
+                  <span>{t('tip.levelup')}</span>
+                </button>
+
+                <button
+                  type="button"
+                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: 'rgba(214,40,40,0.08)', border: '1px solid rgba(214,40,40,0.3)', color: '#d62828' }}
+                  onClick={() => {
+                    eliminaPersonaggio();
+                    setMostraMenuHubMobile(false);
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>🗑</span>
+                  <span>{t('tip.elimina_pg')}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Sezione 2: Sistema & Dati */}
+            <div>
+              <div style={{ fontSize: 11.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.6, color: C.goldDark, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span>⚙️</span> <span>{lingua === 'en' ? 'System & Data' : 'Sistema & Dati'}</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+                <button
+                  type="button"
+                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
+                  onClick={() => {
+                    setMostraMenu(true);
+                    setMostraMenuHubMobile(false);
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>🏠</span>
+                  <span>{t('tip.menu_iniziale')}</span>
+                </button>
+
+                <button
+                  type="button"
+                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
+                  onClick={() => {
+                    jsonRef.current?.click();
+                    setMostraMenuHubMobile(false);
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>⬇️</span>
+                  <span>{lingua === 'en' ? 'Import Sheet' : 'Importa Scheda'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
+                  onClick={() => {
+                    setPosEsporta({ top: 80, left: 20 });
+                    setMostraMenuEsporta(true);
+                    setMostraMenuHubMobile(false);
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>⬆️</span>
+                  <span>{t('tip.esporta')}</span>
+                </button>
+
+                <button
+                  type="button"
+                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
+                  onClick={() => {
+                    setCloudStatus({ text: '', type: '' });
+                    setSyncCodiceStatus({ text: '', type: '' });
+                    setMostraCloud(true);
+                    setMostraMenuHubMobile(false);
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>☁️</span>
+                  <span>
+                    {lingua === 'en' ? 'Cloud Sync' : 'Salvataggio Cloud'}{' '}
+                    {(githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice) ? '✓' : ''}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: daNotificare ? 'rgba(201,162,39,0.18)' : C.panelLight, border: `1px solid ${daNotificare ? C.goldDark : C.border}`, color: C.ink }}
+                  onClick={() => {
+                    apriNotifiche();
+                    setMostraMenuHubMobile(false);
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>🔔</span>
+                  <span>
+                    {t('notifiche.titolo')}{' '}
+                    {controlliAttivi.length > 0 ? `(${controlliAttivi.length})` : ''}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
+                  onClick={() => {
+                    setLingua((l) => (l === 'it' ? 'en' : 'it'));
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>{lingua === 'it' ? '🇮🇹' : '🇬🇧'}</span>
+                  <span>{lingua === 'it' ? 'Italiano (IT)' : 'English (EN)'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Sezione 3: Sessione & Strumenti */}
+            <div>
+              <div style={{ fontSize: 11.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.6, color: C.goldDark, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span>🧭</span> <span>{lingua === 'en' ? 'Session & Tools' : 'Sessione & Strumenti'}</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+                <button
+                  type="button"
+                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
+                  onClick={() => {
+                    setMostraDadiModal(true);
+                    setMostraMenuHubMobile(false);
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>🎲</span>
+                  <span>{t('roll.tavolo_dadi')}</span>
+                </button>
+
+                <button
+                  type="button"
+                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
+                  onClick={() => {
+                    setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto');
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>{tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'}</span>
+                  <span>{tema === 'auto' ? 'Tema: Auto' : tema === 'chiaro' ? 'Tema: Chiaro' : 'Tema: Scuro'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
+                  onClick={() => {
+                    setPosPannelloAudio({ top: 80, left: 20 });
+                    setMostraPannelloAudio(!mostraPannelloAudio);
+                    setMostraMenuHubMobile(false);
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>{iconaAmbientazione(presetColori)}</span>
+                  <span>{t('luogo.tooltip')}</span>
+                </button>
+
+                <button
+                  type="button"
+                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
+                  onClick={() => {
+                    setMostraDiarioModal(true);
+                    setMostraMenuHubMobile(false);
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>📜</span>
+                  <span>{t('sez.diario')} ({(Array.isArray(scheda.diario) ? scheda.diario.length : 0)})</span>
+                </button>
+
+                <button
+                  type="button"
+                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
+                  onClick={() => {
+                    if (mappaCampagna) setMappaAperta((v) => !v);
+                    else mappaRef.current?.click();
+                    setMostraMenuHubMobile(false);
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>🗺️</span>
+                  <span>{mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}</span>
+                </button>
+
+                <button
+                  type="button"
+                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: combat.attivo && combat.aperto ? 'rgba(201,162,39,0.18)' : C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
+                  onClick={() => {
+                    if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
+                    else if (combat.combattenti.length) setCombat((c) => ({ ...c, attivo: true, aperto: true }));
+                    else aggiungiPgAlCombat();
+                    setMostraMenuHubMobile(false);
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>⚔️</span>
+                  <span>{lingua === 'en' ? 'Combat Tracker' : 'Combattimento'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Footer Hub */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', borderTop: `1px solid ${C.border}`, paddingTop: 10 }}>
+              <button
+                type="button"
+                style={{ ...styles.button, fontSize: 13, fontWeight: 700, padding: '6px 16px' }}
+                onClick={() => setMostraMenuHubMobile(false)}
+              >
+                {t('modal.chiudi')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ===== Modale Ispirazione Background (Tabelle 5e) ===== */}
       {mostraIspirazioneBgModal && (() => {
