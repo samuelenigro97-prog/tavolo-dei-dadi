@@ -8735,19 +8735,19 @@ export default function App() {
               >
                 {/* Riga 1 su Mobile / Sinistra su Desktop: Brand + Scheda */}
                 <div className="selettore-macro-riga-1" style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, userSelect: 'none', flexShrink: 0 }}>
-                    <span style={{ fontSize: 15 }}>🎲</span>
-                    <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 13, fontWeight: 700, color: C.goldDark, letterSpacing: 0.3, whiteSpace: 'nowrap' }}>
+                  <div className="selettore-brand-box" style={{ display: 'flex', alignItems: 'center', gap: 4, userSelect: 'none', flexShrink: 0 }}>
+                    <span className="selettore-brand-icona" style={{ fontSize: 14 }}>🎲</span>
+                    <span className="selettore-brand-titolo" style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 13, fontWeight: 700, color: C.goldDark, letterSpacing: 0.3, whiteSpace: 'nowrap' }}>
                       Tavolo dei Dadi
                     </span>
-                    <span style={{ fontSize: 9, color: C.inkDim, opacity: 0.7, fontWeight: 600, marginLeft: 1, whiteSpace: 'nowrap' }}>
+                    <span className="selettore-brand-versione" style={{ fontSize: 9, color: C.inkDim, opacity: 0.7, fontWeight: 600, marginLeft: 1, whiteSpace: 'nowrap' }}>
                       v{APP_VERSION}
                     </span>
                   </div>
 
                   {divisoreVerticale}
 
-                  {/* Gruppo 1: GESTIONE SCHEDA */}
+                  {/* Gruppo 1: GESTIONE SCHEDA (include il tasto Dadi a fine sezione) */}
                   <div className="selettore-riga-1" style={{ display: 'flex', alignItems: 'center', gap: 2.5, flexShrink: 0 }}>
                     <span style={stileEtichettaInline} className="selettore-etichetta">
                       <span>👤</span> <span className="selettore-testo-etichetta">{lingua === 'en' ? 'Sheet' : 'Scheda'}</span>
@@ -8800,6 +8800,13 @@ export default function App() {
                       title={t('tip.elimina_pg')}
                     >
                       🗑
+                    </button>
+                    <button
+                      style={{ ...btnAzione, ...(mostraDadiModal ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }}
+                      onClick={() => setMostraDadiModal(true)}
+                      title={t('roll.tavolo_dadi')}
+                    >
+                      🎲
                     </button>
                   </div>
                 </div>
@@ -8884,13 +8891,6 @@ export default function App() {
                     <span style={stileEtichettaInline} className="selettore-etichetta">
                       <span>🧭</span> <span className="selettore-testo-etichetta">{lingua === 'en' ? 'Session' : 'Sessione'}</span>
                     </span>
-                    <button
-                      style={{ ...btnAzione, ...(mostraDadiModal ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }}
-                      onClick={() => setMostraDadiModal(true)}
-                      title={t('roll.tavolo_dadi')}
-                    >
-                      🎲
-                    </button>
                     <button style={btnAzione} title={t('tooltip.tema')} onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}>{tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'}</button>
                     <button ref={ambientazioneBtnRef} style={btnAzione} title={t('luogo.tooltip')} onClick={() => { if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
                     <button style={{ ...btnAzione, ...(mostraDiarioModal ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }} onClick={() => setMostraDiarioModal(true)} title={`${t('sez.diario')} (${(Array.isArray(scheda.diario) ? scheda.diario.length : 0)})`}>📜</button>
