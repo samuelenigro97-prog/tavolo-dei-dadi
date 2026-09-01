@@ -9125,7 +9125,7 @@ export default function App() {
               letterSpacing: 0.6,
               textTransform: 'uppercase',
               color: C.goldDark,
-              marginRight: 1,
+              marginRight: 6,
               userSelect: 'none',
               whiteSpace: 'nowrap',
               display: 'inline-flex',
