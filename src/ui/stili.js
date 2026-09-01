@@ -1562,25 +1562,42 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   50% { background: #2e8b57; border-color: #2e8b57; color: #fff; box-shadow: 0 0 12px 2px rgba(46,139,87,0.75); }
 }
 
-/* Pulsante Notifiche lampeggiante con colore Oro/Ambra coordinato con Cloud e Versione D&D */
+/* Pulsante Notifiche lampeggiante e scintillante con colore Oro/Ambra */
 .btn-notifiche-lampeggia {
-  animation: notifiche-oro-lampeggia 1.6s ease-in-out infinite !important;
+  animation: notifiche-oro-lampeggia 1.5s ease-in-out infinite !important;
   color: var(--c-gold-dark, #c07718) !important;
-  border-color: var(--c-gold-dark, #c07718) !important;
+  border-color: var(--c-gold, #e5a50a) !important;
+  position: relative;
+}
+.btn-notifiche-lampeggia .icona-campanello,
+.btn-notifiche-lampeggia > span:first-child {
+  display: inline-block;
+  animation: campanello-drin 1.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 5px rgba(255, 200, 50, 0.9));
+}
+@keyframes campanello-drin {
+  0%, 60%, 100% { transform: rotate(0deg) scale(1); }
+  10% { transform: rotate(-14deg) scale(1.15); }
+  20% { transform: rotate(14deg) scale(1.15); }
+  30% { transform: rotate(-10deg) scale(1.1); }
+  40% { transform: rotate(10deg) scale(1.1); }
+  50% { transform: rotate(0deg) scale(1); }
 }
 @keyframes notifiche-oro-lampeggia {
   0%, 100% {
     border-color: var(--c-gold-dark, #c07718);
-    box-shadow: 0 0 0 0 rgba(192, 119, 24, 0);
+    box-shadow: 0 0 0 0 rgba(229, 165, 10, 0);
   }
   50% {
-    border-color: var(--c-gold, #f0c43f);
-    box-shadow: 0 0 10px 2px rgba(240, 196, 63, 0.65);
-    background: rgba(240, 196, 63, 0.12);
+    border-color: #ffd700;
+    box-shadow: 0 0 14px 3px rgba(255, 215, 0, 0.75), 0 0 22px 6px rgba(240, 196, 63, 0.45);
+    background: rgba(255, 215, 0, 0.18);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .btn-notifiche-lampeggia { animation: none !important; }
+  .btn-notifiche-lampeggia,
+  .btn-notifiche-lampeggia .icona-campanello,
+  .btn-notifiche-lampeggia > span:first-child { animation: none !important; }
 }
 
 /* Puntino di notifica sul pulsante Avvisi: lampeggia finché c'è qualcosa da

@@ -5837,7 +5837,7 @@ export default function App() {
   const avvisoBackup = promemoriaBackup && !mostraGuida;
   const nAvvisi = (avvisoBackup ? 1 : 0) + controlliAttivi.length;
   const novitaNonLette = novitaViste !== ultimaVersioneNovita();
-  const daNotificare = nAvvisi > 0 || novitaNonLette;
+  const daNotificare = nAvvisi > 0 || novitaNonLette || !!nuovaVersione;
 
   function calcolaDettaglioCorrezione(r, pg, lang = lingua) {
     const isEn = lang === 'en';
@@ -9212,13 +9212,13 @@ export default function App() {
                           position: 'relative',
                           ...(daNotificare ? { color: C.goldDark, borderColor: C.goldDark } : {}),
                         }}
-                        title={daNotificare ? (controlliAttivi.length > 0 ? `${controlliAttivi.length} avvisi sulla scheda` : t('notifiche.novita_presenti')) : t('notifiche.titolo')}
+                        title={daNotificare ? (nuovaVersione ? 'Nuova versione di Tavolo dei Dadi disponibile!' : (controlliAttivi.length > 0 ? `${controlliAttivi.length} avvisi sulla scheda` : t('notifiche.novita_presenti'))) : t('notifiche.titolo')}
                         onClick={apriNotifiche}
                       >
-                        🔔
+                        <span className={daNotificare ? 'icona-campanello' : ''}>🔔</span>
                         {daNotificare && (
                           <span className="avvisi-pallino" aria-label={`${nAvvisi} notifiche`}>
-                            {controlliAttivi.length > 0 ? controlliAttivi.length : '!'}
+                            {nuovaVersione ? '★' : (controlliAttivi.length > 0 ? controlliAttivi.length : '!')}
                           </span>
                         )}
                       </button>
