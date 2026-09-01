@@ -237,12 +237,21 @@ test('Lyrian: Guerriero 4 / Warlock 1 (Totale 5, BC +3), CA 18, PF 36, Dadi Vita
   assert.equal(LYRIAN_JSON.incantesimiLista.length, 4);
 });
 
-test('spiegaIncantesimo: funziona per tutti gli incantesimi (inclusi quelli dal database) senza ReferenceError', () => {
+test('spiegaIncantesimo: funziona per tutti gli incantesimi (inclusi quelli dal database) senza ReferenceError', async () => {
   assert.ok(spiegaIncantesimo('Guida'));
   assert.ok(spiegaIncantesimo('Arte Druidica'));
   assert.ok(spiegaIncantesimo('Cura Ferite'));
   assert.ok(spiegaIncantesimo('Passo Senza Tracce'));
+  assert.ok(spiegaIncantesimo('Randello Incantato'));
+  assert.ok(spiegaIncantesimo('Bastone Incantato'));
+  assert.ok(spiegaIncantesimo('Shillelagh'));
   assert.equal(spiegaIncantesimo('Incantesimo Non Esistente 999'), null);
+
+  const { INCANTESIMI_CLASSE } = await import('../src/data/dati5e.js');
+  const druidoSpells = Object.values(INCANTESIMI_CLASSE.druido || {}).flat();
+  for (const s of druidoSpells) {
+    assert.ok(spiegaIncantesimo(s), `Descrizione mancante per incantesimo druido: ${s}`);
+  }
 });
 
 test('bestiario: tutte le bestie, famigli ed evocazioni hanno statistiche e velocità valide', async () => {

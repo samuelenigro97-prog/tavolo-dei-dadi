@@ -11908,7 +11908,7 @@ export default function App() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                           {spellsDaMostrare.map((s) => {
                             const d = datiIncantesimo(s.nome);
-                            const spieg = s.note || spiegaIncantesimo(s.nome) || d?.desc || '';
+                            const spieg = spiegaIncantesimo(s.nome) || d?.desc || s.note || '';
                             const tempoLabel = traduciDato(s.tempo || d?.tempo || '');
                             const gittata = s.gittata || d?.gittata || '';
                             const scuola = s.scuola || d?.scuola || '';
