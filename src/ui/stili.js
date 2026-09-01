@@ -77,11 +77,11 @@ export const styles = {
     clipPath: 'polygon(0% 0%, 100% 0%, 100% 62%, 50% 100%, 0% 62%)',
     border: `1px solid ${C.border}`,
   },
-  // Barra del tiro (sticky in alto)
+  // Barra del tiro (sticky in alto sotto la barra fissa)
   rollBar: {
     position: 'sticky',
-    top: 'max(4px, env(safe-area-inset-top))',
-    zIndex: 10,
+    top: 'max(46px, calc(env(safe-area-inset-top) + 42px))',
+    zIndex: 1100,
     background: C.panel,
     border: `1px solid ${C.gold}`,
     borderRadius: 8,
@@ -90,7 +90,7 @@ export const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: 4,
-    boxShadow: '0 2px 8px rgba(60,50,30,0.15)',
+    boxShadow: '0 4px 12px rgba(60,50,30,0.18)',
     minHeight: 38,
   },
   dado: (rolling, crit, fumble, facce = 20) => {
@@ -365,7 +365,7 @@ html, body {
   background: ${C.bg};
   -webkit-text-size-adjust: 100%;
   max-width: 100vw;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 body {
   -webkit-overflow-scrolling: touch;
@@ -995,17 +995,20 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .barra-superiore-fissa {
   position: sticky !important;
   top: 0 !important;
-  z-index: 100 !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  background: color-mix(in srgb, var(--c-panel) 94%, transparent) !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+  z-index: 1200 !important;
+  backdrop-filter: blur(14px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(140%) !important;
+  background: color-mix(in srgb, var(--c-panel) 95%, transparent) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.16), 0 1px 4px rgba(0, 0, 0, 0.08) !important;
   border-top-left-radius: 0 !important;
   border-top-right-radius: 0 !important;
   margin-top: 0 !important;
   overflow-x: auto !important;
   overflow-y: hidden !important;
-  scrollbar-width: thin;
+  scrollbar-width: none;
+}
+.barra-superiore-fissa::-webkit-scrollbar {
+  display: none;
 }
 .barra-superiore-fissa .selettore-personaggio-azioni {
   flex-wrap: nowrap !important;
