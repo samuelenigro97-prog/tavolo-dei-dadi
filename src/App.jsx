@@ -8,7 +8,7 @@ import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI } from './ui/tema.js';
 import { styles, GLOBAL_CSS } from './ui/stili.js';
 import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, Sezione, CampoBloccato } from './ui/componenti.jsx';
 import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E } from './rules/scheda.js';
-import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON } from './data/esempi.js';
+import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON, WENDELL_JSON } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from './data/condizioni.js';
 import { BESTIE, FAMIGLI, EVOCAZIONI, bestieDisponibili, limitiFormaSelvatica } from './data/bestiario.js';
@@ -1868,12 +1868,14 @@ function nuovoId() {
 
 function rosterPredefinito() {
   const idVaelion = 'pg-vaelion';
+  const idWendell = 'pg-wendell';
   const idFlyora = 'pg-flyora';
   const idElevorn = 'pg-elevorn';
   return {
     attivo: idVaelion,
     personaggi: {
       [idVaelion]: { ...schedaVuota(), ...normalizeImported(VAELION_JSON) },
+      [idWendell]: { ...schedaVuota(), ...normalizeImported(WENDELL_JSON) },
       [idFlyora]: { ...schedaVuota(), ...normalizeImported(FLYORA_JSON) },
       [idElevorn]: { ...schedaVuota(), ...normalizeImported(ELEVORN_JSON) },
     }

@@ -66,6 +66,7 @@ export const INCANTESIMI_DB = {
   'Identificare':          { livello:1, scuola:'Divinazione', classi:['Bardo','Mago'], tempo:'1 min', gittata:'Tocco', rituale:true, desc:'Scopri proprietà magiche di un oggetto.' },
   'Immagine Silenziosa':   { livello:1, scuola:'Illusione', classi:['Bardo','Mago','Stregone'], tempo:'1 Azione', gittata:'18m', area:'Cubo', desc:'Immagine visiva (max 4,5m). Concentrazione, 10 min.' },
   'Individuazione del Magico': { livello:1, scuola:'Divinazione', classi:['Bardo','Chierico','Druido','Mago','Paladino','Ranger','Stregone','Warlock'], tempo:'1 Azione', gittata:'Sé stesso', rituale:true, desc:'Percepisci aura magica entro 9m. Concentrazione, 10 min.' },
+  'Comprensione dei Linguaggi': { livello:1, scuola:'Divinazione', classi:['Bardo','Mago','Stregone','Warlock'], tempo:'1 Azione', gittata:'Sé stesso', rituale:true, desc:'Comprendi qualsiasi lingua parlata e scritta per 1 ora. Rituale.' },
   'Infliggere Ferite':     { livello:1, scuola:'Necromanzia', classi:['Chierico'], tempo:'1 Azione', gittata:'Mischia', danno:'3d10', tipoDanno:'Necrotico', desc:'Attacco magico in mischia. +1d10 per slot.' },
   'Intralciare':           { livello:1, scuola:'Invocazione', classi:['Druido','Ranger'], tempo:'1 Azione', gittata:'27m', area:'Cubo', desc:'Area 6m: erbacce trattengono (TS Forza). Concentrazione, 1 min.' },
   'Malocchio':             { livello:1, scuola:'Ammaliamento', classi:['Bardo','Mago','Stregone','Warlock'], tempo:'Azione Bonus', gittata:'27m', danno:'1d6', tipoDanno:'Necrotico', desc:'+1d6 necrotici agli attacchi + svantaggio a una caratteristica. Concentrazione.' },
@@ -163,6 +164,7 @@ export const INCANTESIMI_DB = {
   'Muro di Vento':         { livello:3, scuola:'Evocazione', classi:['Druido','Ranger'], tempo:'1 Azione', gittata:'36m', area:'Linea', danno:'3d8', tipoDanno:'Tuono', desc:'Raffiche: devia proiettili, danni a chi attraversa (TS Forza). Concentrazione, 1 min.' },
   'Nube Mefitica':         { livello:3, scuola:'Invocazione', classi:['Mago','Stregone','Warlock'], tempo:'1 Azione', gittata:'27m', area:'Sfera', danno:'5d8', tipoDanno:'Veleno', desc:'Nube velenosa 6m: TS Costituzione per metà. Concentrazione, 10 min.' },
   'Palla di Fuoco':        { livello:3, scuola:'Evocazione', classi:['Mago','Stregone'], tempo:'1 Azione', gittata:'45m', area:'Sfera', danno:'8d6', tipoDanno:'Fuoco', desc:'Esplosione raggio 6m: TS Destrezza per metà. +1d6 per slot.' },
+  'Parlare con i Morti':   { livello:3, scuola:'Necromanzia', classi:['Bardo','Chierico'], tempo:'1 Azione', gittata:'3m', desc:'Conferisci apparenza di vita a un cadavere e fai fino a 5 domande. 10 min.' },
   'Parola di Guarigione di Massa': { livello:3, scuola:'Evocazione', classi:['Bardo','Chierico'], tempo:'Azione Bonus', gittata:'18m', danno:'2d4', tipoDanno:'Guarigione', desc:'Fino a 6 creature: ognuna cura 2d4 + mod. da incantatore. +1d4 per slot.' },
   'Paura':                 { livello:3, scuola:'Illusione', classi:['Bardo','Mago','Stregone','Warlock'], tempo:'1 Azione', gittata:'Sé stesso', area:'Cono', desc:'Cono 9m: i nemici lasciano cadere ciò che tengono e fuggono (TS Saggezza). Concentrazione, 1 min.' },
   'Respirare sott\'Acqua': { livello:3, scuola:'Trasmutazione', classi:['Artefice','Druido','Mago','Ranger','Stregone'], tempo:'1 Azione', gittata:'9m', rituale:true, desc:'10 creature respirano sott\'acqua per 24 ore.' },
@@ -330,6 +332,14 @@ export const ALIAS_INCANTESIMI = {
   'earthbind': 'Vincolo della Terra',
   'cura ferite di massa': 'Cura Ferite di Massa',
   'mass cure wounds': 'Cura Ferite di Massa',
+  'scassinare': 'Bussare',
+  'knock': 'Bussare',
+  'parlare con i morti': 'Parlare con i Morti',
+  'speak with dead': 'Parlare con i Morti',
+  'trama ipnotica': 'Schema Ipnotico',
+  'hypnotic pattern': 'Schema Ipnotico',
+  'comprensione dei linguaggi': 'Comprensione dei Linguaggi',
+  'comprehend languages': 'Comprensione dei Linguaggi',
 };
 
 export function datiIncantesimo(nome) {

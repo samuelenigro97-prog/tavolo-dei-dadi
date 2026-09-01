@@ -201,6 +201,21 @@ test('Vaelion: CA con Corazza Legnoferro (media 14) + DES 15 (+2) + Mantello (+1
   assert.equal(competenteInArmatura(vaelion, 'media'), true);
 });
 
+// ========================= Wendell Cedric Thistletune =========================
+
+test('Wendell: CA Cuoio Borchiato (12) + DES 16 (+3) = 15, Maestria Inganno/Persuasione = +10, TS Des/Car = +6/+7', async () => {
+  const { WENDELL_JSON } = await import('../src/data/esempi.js');
+  assert.equal(caTotale(WENDELL_JSON), 15);
+  assert.equal(bonusTiroSalvezza(WENDELL_JSON, 'destrezza'), 6); // +3 DES + 3 comp
+  assert.equal(bonusTiroSalvezza(WENDELL_JSON, 'carisma'), 7); // +4 CAR + 3 comp
+  assert.equal(bonusAbilita(WENDELL_JSON, 'inganno'), 10); // +4 CAR + 6 maestria
+  assert.equal(bonusAbilita(WENDELL_JSON, 'persuasione'), 10); // +4 CAR + 6 maestria
+  assert.equal(bonusAbilita(WENDELL_JSON, 'intrattenere'), 7); // +4 CAR + 3 comp
+  assert.equal(bonusAbilita(WENDELL_JSON, 'rapiditaDiMano'), 6); // +3 DES + 3 comp
+  assert.equal(bonusAbilita(WENDELL_JSON, 'percezione'), 4); // +1 SAG + 3 comp
+  assert.equal(WENDELL_JSON.incantesimiLista.length, 12); // 3 trucchetti + 9 incantesimi
+});
+
 test('spiegaIncantesimo: funziona per tutti gli incantesimi (inclusi quelli dal database) senza ReferenceError', () => {
   assert.ok(spiegaIncantesimo('Guida'));
   assert.ok(spiegaIncantesimo('Arte Druidica'));
