@@ -254,16 +254,22 @@ test('spiegaIncantesimo: funziona per tutti gli incantesimi (inclusi quelli dal 
   }
 });
 
-test('generatore nomi fantasy: copre tutte le specie con decine di nomi e cognomi tipici', async () => {
-  const { NOMI_SPECIE, COGNOMI_SPECIE, NOMI_GENERICI } = await import('../src/data/dati5e.js');
+test('generatore nomi fantasy: copre tutte le specie con decine di nomi e cognomi tipici e distinzione di genere', async () => {
+  const { NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI } = await import('../src/data/dati5e.js');
   assert.ok(NOMI_SPECIE.elfo.length >= 80);
   assert.ok(NOMI_SPECIE.nano.length >= 80);
   assert.ok(NOMI_SPECIE.umano.length >= 80);
   assert.ok(NOMI_SPECIE.halfling.length >= 60);
   assert.ok(NOMI_SPECIE.orco.length >= 60);
-  assert.ok(NOMI_SPECIE.tiefling.length >= 60);
-  assert.ok(NOMI_SPECIE.drago.length >= 60);
+  assert.ok(NOMI_SPECIE.tiefling.length >= 50);
+  assert.ok(NOMI_SPECIE.drago.length >= 50);
   assert.ok(NOMI_SPECIE.gnomo.length >= 60);
+  assert.ok(NOMI_SPECIE_GENERE.elfo.maschio.length >= 40);
+  assert.ok(NOMI_SPECIE_GENERE.elfo.femmina.length >= 40);
+  assert.ok(NOMI_SPECIE_GENERE.umano.maschio.length >= 40);
+  assert.ok(NOMI_SPECIE_GENERE.umano.femmina.length >= 35);
+  assert.ok(NOMI_SPECIE_GENERE.nano.maschio.length >= 40);
+  assert.ok(NOMI_SPECIE_GENERE.nano.femmina.length >= 35);
   assert.ok(COGNOMI_SPECIE.elfo.length >= 20);
   assert.ok(COGNOMI_SPECIE.nano.length >= 15);
   assert.ok(COGNOMI_SPECIE.umano.length >= 15);

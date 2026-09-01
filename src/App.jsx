@@ -911,11 +911,25 @@ function competenzeSpecieDi(specie) {
 // Nomi fantasy per razza/specie (liste generiche) + cognomi occasionali.
 
 
-/** Nome fantasy casuale coerente con la specie scelta (con eventuale cognome o titolo/clan). */
-function nomeCasuale(specie) {
-  const s = (specie || '').toLowerCase();
-  const chiave = Object.keys(NOMI_SPECIE).find((k) => s.includes(k));
-  const lista = (chiave && NOMI_SPECIE[chiave]) || NOMI_GENERICI;
+/** Nome fantasy casuale coerente con la specie e il sesso scelti (con eventuale cognome o titolo/clan). */
+function nomeCasuale(specie, sesso) {
+  const sp = (specie || '').toLowerCase();
+  const sx = (sesso || '').toLowerCase();
+  const chiave = Object.keys(NOMI_SPECIE).find((k) => sp.includes(k));
+
+  let lista = null;
+  if (chiave && typeof NOMI_SPECIE_GENERE !== 'undefined' && NOMI_SPECIE_GENERE[chiave]) {
+    if (sx === 'maschio' && NOMI_SPECIE_GENERE[chiave].maschio) {
+      lista = NOMI_SPECIE_GENERE[chiave].maschio;
+    } else if (sx === 'femmina' && NOMI_SPECIE_GENERE[chiave].femmina) {
+      lista = NOMI_SPECIE_GENERE[chiave].femmina;
+    }
+  }
+
+  if (!lista || lista.length === 0) {
+    lista = (chiave && NOMI_SPECIE[chiave]) || NOMI_GENERICI;
+  }
+
   const nome = lista[Math.floor(Math.random() * lista.length)];
 
   // 45% di probabilità di aggiungere un cognome, clan o titolo tipico della razza (se non è un nome tabaxi composto)
@@ -1266,7 +1280,7 @@ import { INCANTESIMI_DB, datiIncantesimo } from './data/incantesimi.js';
 
 const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(INCANTESIMI_DB)])).sort((a, b) => a.localeCompare(b, 'it'));
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E } from './data/dati5e.js';
-import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
+import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
 import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello } from './rules/regole.js';
 
@@ -7942,12 +7956,6 @@ export default function App() {
                 ))}
               </div>
 
-              <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{t('crea.nome')}</label>
-              <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
-                <input style={{ ...stileSelect, flex: 1, marginBottom: 0 }} value={bozzaCrea.nome} placeholder={t('crea.nome_placeholder')} onChange={(e) => setB({ nome: e.target.value })} />
-                <button style={styles.buttonMini} title={t('crea.genera_nome')} onClick={() => setB({ nome: nomeCasuale(bozzaCrea.specie) })}>🎲</button>
-              </div>
-
               <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{t('profilo.sesso')}</label>
               <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.sesso} onChange={(e) => setB({ sesso: e.target.value })}>
                 <option value="">{t('profilo.sesso_non_specificato')}</option>
@@ -7979,6 +7987,12 @@ export default function App() {
                   </div>
                 );
               })()}
+
+              <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{t('crea.nome')}</label>
+              <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+                <input style={{ ...stileSelect, flex: 1, marginBottom: 0 }} value={bozzaCrea.nome} placeholder={t('crea.nome_placeholder')} onChange={(e) => setB({ nome: e.target.value })} />
+                <button style={styles.buttonMini} title={t('crea.genera_nome')} onClick={() => setB({ nome: nomeCasuale(bozzaCrea.specie, bozzaCrea.sesso) })}>🎲</button>
+              </div>
 
               <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{t('crea.classe')}</label>
               <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.classe} onChange={(e) => setB({ classe: e.target.value, sottoclasse: '', competenzeClasse: [] })}>
