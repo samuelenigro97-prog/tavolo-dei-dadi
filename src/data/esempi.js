@@ -322,10 +322,11 @@ export const VAELION_JSON = {
     { id: "auto-totem-spirituale", nome: "Totem Spirituale (Aura)", attuali: 1, max: 1, reset: "breve" }
   ],
   denari: { mr: 0, ma: 0, me: 0, mo: 250, mp: 0 },
-  trattiCaratteriali: "Vaelion è silenzioso e riservato, parla poco con gli estranei ma è profondamente leale con chi guadagna la sua fiducia.",
-  ideali: "La natura deve essere protetta dall'avidità degli esseri civili.",
-  legami: "I boschi ancestrali degli Elfi dei Boschi sono la sua vera casa.",
-  difetti: "Fatica a fidarsi di coloro che vivono nelle città o che sfruttano la natura.",
+  trattiCaratteriali: "Silenzioso e riservato, parla poco con gli estranei ma è leale con chi guadagna la sua fiducia. Si sente a suo agio solo immerso nella natura incontaminata.",
+  ideali: "Equilibrio naturale: La natura e le sue creature devono essere protette dall'avidità cieca e dalla corruzione.",
+  legami: "I boschi ancestrali delle Montagne Rauvin e il patto col Piccolo Popolo che gli ha donato la maschera d'alabastro.",
+  difetti: "Fatica a fidarsi di chi vive nelle grandi città o sfrutta le risorse naturali senza rispetto.",
+  nemici: "Orchi della tribù Many Arrows (responsabili dell'attacco al rifugio), cacciatori di frodo e la corruzione latente delle foreste.",
   trattiSpecie: "Retaggio Fatato: Vantaggio ai TS contro l'essere affascinato. La magia non può addormentarti.\nMaschera della Selva: Puoi tentare di nasconderti anche quando sei parzialmente oscurato da fenomeni naturali.\nScurovisione 18m\nLingua dei Boschi: Puoi parlare con bestie e folletti; conosci il Silvano.",
   privilegi: "PRIVILEGIO BACKGROUND (SCOPERTA):\nSei a conoscenza di un'unica e importantissima verità cosmica o segreto del mondo (il cerchio di pietre, il patto col Signore Fatato e la corruzione latente delle foreste).\n\nFORMA BESTIALE (Azione Bonus):\nGrado Sfida max: GS 3. Forme elementali al 10° livello.\n\nTOTEM SPIRITUALE (Azione Bonus):\nEvoca un'aura di 9m entro 18m per 1 minuto (Orso: +13 PF temp e vantaggio FOR; Unicorno: cure extra; Falco: vantaggio ad attacchi alleati).",
   note: "ORIGINI & BACKSTORY:\n• Origine: Montagne Rauvin (famiglia di pastori elfici)\n• Affiliazione: Arpisti (rete di studiosi e guerrieri per l'equilibrio)\n• Mentore: Un orso mannaro che gli ha insegnato a rispettare tutte le creature viventi\n• Aspetto Guida: Il fiume inarrestabile gli ricorda il ciclo eterno della natura\n• Oggetto Prezioso: Un sonaglio di zucca essiccata con bacche di agrifoglio\n\nLE ORIGINI & IL PATTO COL PICCOLO POPOLO:\nFin da bambino cercava tracce degli spiriti. Seguendo un agnello smarrito, trovò un cerchio di pietre muschiose e ricevette la maschera d'alabastro da un Signore Fatato. Da quel giorno le bestie divennero compagne e la natura gli parlò con voce primordiale.\n\nIL MASSACRO & GLI ARPISTI:\nDopo l'attacco degli orchi dei Many Arrows in cui morirono i suoi compagni, ha consacrato la vita a proteggere la natura a ogni costo. Si è unito agli Arpisti e ha indagato sulla corruzione delle foreste prima di essere richiamato al Concilio."

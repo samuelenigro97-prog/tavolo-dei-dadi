@@ -2057,6 +2057,29 @@ function loadState() {
           if (!(s.maxTrucchetti > 0) && baseTruc != null && nTruc > baseTruc) s.maxTrucchetti = nTruc;
           if (!(s.maxIncantesimi > 0) && baseInc != null && nInc > baseInc) s.maxIncantesimi = nInc;
         }
+        // Auto-idratazione campi background per personaggi predefiniti se vuoti
+        if (/vaelion/i.test(s.nome) || id === 'pg-vaelion') {
+          if (!s.note && VAELION_JSON.note) s.note = VAELION_JSON.note;
+          if (!s.trattiCaratteriali && VAELION_JSON.trattiCaratteriali) s.trattiCaratteriali = VAELION_JSON.trattiCaratteriali;
+          if (!s.ideali && VAELION_JSON.ideali) s.ideali = VAELION_JSON.ideali;
+          if (!s.legami && VAELION_JSON.legami) s.legami = VAELION_JSON.legami;
+          if (!s.difetti && VAELION_JSON.difetti) s.difetti = VAELION_JSON.difetti;
+          if (!s.nemici && VAELION_JSON.nemici) s.nemici = VAELION_JSON.nemici;
+        } else if (/wendell/i.test(s.nome) || id === 'pg-wendell') {
+          if (!s.note && WENDELL_JSON.note) s.note = WENDELL_JSON.note;
+          if (!s.trattiCaratteriali && WENDELL_JSON.trattiCaratteriali) s.trattiCaratteriali = WENDELL_JSON.trattiCaratteriali;
+          if (!s.ideali && WENDELL_JSON.ideali) s.ideali = WENDELL_JSON.ideali;
+          if (!s.legami && WENDELL_JSON.legami) s.legami = WENDELL_JSON.legami;
+          if (!s.difetti && WENDELL_JSON.difetti) s.difetti = WENDELL_JSON.difetti;
+          if (!s.nemici && WENDELL_JSON.nemici) s.nemici = WENDELL_JSON.nemici;
+        } else if (/elevorn/i.test(s.nome) || id === 'pg-elevorn') {
+          if (!s.note && ELEVORN_JSON.note) s.note = ELEVORN_JSON.note;
+          if (!s.trattiCaratteriali && ELEVORN_JSON.trattiCaratteriali) s.trattiCaratteriali = ELEVORN_JSON.trattiCaratteriali;
+          if (!s.ideali && ELEVORN_JSON.ideali) s.ideali = ELEVORN_JSON.ideali;
+          if (!s.legami && ELEVORN_JSON.legami) s.legami = ELEVORN_JSON.legami;
+          if (!s.difetti && ELEVORN_JSON.difetti) s.difetti = ELEVORN_JSON.difetti;
+          if (!s.nemici && ELEVORN_JSON.nemici) s.nemici = ELEVORN_JSON.nemici;
+        }
         roster.personaggi[id] = s;
       }
       return roster;
