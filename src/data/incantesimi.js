@@ -7,6 +7,7 @@ export const INCANTESIMI_DB = {
   'Riparare':              { livello:0, scuola:'Trasmutazione', classi:['Artefice','Bardo','Chierico','Druido','Mago','Stregone'], tempo:'1 min', gittata:'Tocco', desc:'Ripara un oggetto rotto o una crepa (max 30 cm). Istantaneo.' },
   'Artificio Druidico':    { livello:0, scuola:'Trasmutazione', classi:['Druido'], tempo:'1 Azione', gittata:'9m', desc:'Piccoli effetti naturali: meteo, fiori, simboli sensoriali.' },
   'Randello Incantato':    { livello:0, scuola:'Trasmutazione', classi:['Druido'], tempo:'1 Azione Bonus', gittata:'Tocco', danno:'1d8', tipoDanno:'Contundente', desc:'Il legno di una clava o bastone ferrato viene intriso di magia naturale. Usa Saggezza invece di Forza e infligge 1d8 danni. 1 min.' },
+  'Folata':                { livello:0, scuola:'Trasmutazione', classi:['Druido','Mago','Stregone'], tempo:'1 Azione', gittata:'9m', desc:'Raffica di vento: spingi una creatura di 1,5m (TS Forza) o muovi oggetti leggeri fino a 3m.' },
   'Colpo Accurato':        { livello:0, scuola:'Divinazione', classi:['Bardo','Mago','Stregone','Warlock'], tempo:'1 Azione', gittata:'Sé stesso / Mischia', danno:'1d6', tipoDanno:'Radiante', desc:'Attacco con arma usando la caratteristica da incantatore per tiro e danni. Danni radianti extra a 5/11/17.' },
   'Dardo Infuocato':       { livello:0, scuola:'Evocazione', classi:['Mago','Stregone'], tempo:'1 Azione', gittata:'36m', danno:'1d10', tipoDanno:'Fuoco', desc:'Attacco magico a distanza. Scala a liv 5/11/17.' },
   'Beffa Crudele':         { livello:0, scuola:'Ammaliamento', classi:['Bardo'], tempo:'1 Azione', gittata:'18m', danno:'1d6', tipoDanno:'Psichico', desc:'Insulti intrisi d\'incanto: TS Saggezza o subisce 1d6 psichici e svantaggio al prossimo attacco. Scala a 5/11/17.' },
@@ -39,6 +40,7 @@ export const INCANTESIMI_DB = {
 
   // ─── LIVELLO 1 ────────────────────────────────────────────────────
   'Ammaliare Persone':     { livello:1, scuola:'Ammaliamento', classi:['Bardo','Druido','Mago','Stregone','Warlock'], tempo:'1 Azione', gittata:'9m', desc:'TS Saggezza o amichevole per 1 ora.' },
+  'Assorbire Elementi':    { livello:1, scuola:'Abiurazione', classi:['Artefice','Druido','Mago','Ranger','Stregone'], tempo:'Reazione', gittata:'Sé stesso', danno:'1d6', tipoDanno:'Elementale', desc:'Reazione: resistenza al danno elementale subito e +1d6 al prossimo attacco in mischia (+1d6 per slot).' },
   'Armatura di Agathys':   { livello:1, scuola:'Abiurazione', classi:['Warlock'], tempo:'1 Azione', gittata:'Sé stesso', danno:'5', tipoDanno:'Freddo', desc:'5 PF temporanei; chi colpisce subisce 5 freddo. Scala con slot.' },
   'Armatura Magica':       { livello:1, scuola:'Abiurazione', classi:['Mago','Stregone'], tempo:'1 Azione', gittata:'Tocco', desc:'CA 13 + mod. Destrezza senza armatura per 8 ore.' },
   'Bacche Nutrienti':      { livello:1, scuola:'Trasmutazione', classi:['Druido','Ranger'], tempo:'1 Azione', gittata:'Sé stesso', desc:'10 bacche: ognuna cura 1 PF, nutre per un giorno.' },
@@ -129,12 +131,14 @@ export const INCANTESIMI_DB = {
   'Suggestione':           { livello:2, scuola:'Ammaliamento', classi:['Bardo','Mago','Stregone','Warlock'], tempo:'1 Azione', gittata:'9m', desc:'Corso d\'azione ragionevole (TS Saggezza). Concentrazione, 8 ore.' },
   'Trovare Destriero':     { livello:2, scuola:'Invocazione', classi:['Paladino'], tempo:'10 min', gittata:'Tocco', desc:'Cavalcatura celestiale/fatata/immonda fedele.' },
   'Vedere Invisibilità':   { livello:2, scuola:'Divinazione', classi:['Bardo','Mago','Stregone'], tempo:'1 Azione', gittata:'Sé stesso', desc:'Vedi invisibili e creature sul Piano Etereo per 1 ora.' },
+  'Vincolo della Terra':   { livello:2, scuola:'Trasmutazione', classi:['Druido','Mago','Stregone','Warlock'], tempo:'1 Azione', gittata:'90m', conc:true, desc:'Una creatura volante entro 90m perde la capacità di volare (TS Forza) e scende a terra. Concentrazione, 1 min.' },
   'Zona di Verità':        { livello:2, scuola:'Ammaliamento', classi:['Bardo','Chierico','Paladino'], tempo:'1 Azione', gittata:'18m', area:'Sfera', desc:'Area 4,5m: chi vi è non può mentire (TS Carisma). 10 min.' },
 
   // ─── LIVELLO 3 ────────────────────────────────────────────────────
   'Animare Morti':         { livello:3, scuola:'Necromanzia', classi:['Chierico','Mago','Warlock'], tempo:'1 min', gittata:'3m', desc:'Rianima ossa/cadavere come scheletro o zombie.' },
   'Arma Elementale':       { livello:3, scuola:'Trasmutazione', classi:['Druido','Mago','Paladino','Ranger'], tempo:'1 Azione', gittata:'Tocco', danno:'1d4', tipoDanno:'Variabile', desc:'+1 a colpire/danni e +1d4 elementali. Concentrazione, 1 ora.' },
   'Aura di Vitalità':      { livello:3, scuola:'Evocazione', classi:['Paladino'], tempo:'1 Azione', gittata:'Sé stesso', area:'Sfera', desc:'Aura 9m: azione bonus cura 2d6 PF a un alleato ogni turno. Concentrazione, 1 min.' },
+  'Camminare sull\'Acqua': { livello:3, scuola:'Trasmutazione', classi:['Artefice','Chierico','Druido','Ranger','Stregone'], tempo:'1 Azione', gittata:'9m', rituale:true, desc:'Fino a 10 creature possono camminare su liquidi come terreno solido per 1 ora. Rituale.' },
   'Chiamare il Fulmine':   { livello:3, scuola:'Invocazione', classi:['Druido'], tempo:'1 Azione', gittata:'36m', area:'Cilindro', danno:'3d10', tipoDanno:'Fulmine', desc:'Nube: ogni turno scagli fulmine (TS Destrezza). Concentrazione, 10 min.' },
   'Colpo Accecante':       { livello:3, scuola:'Evocazione', classi:['Paladino'], tempo:'Azione Bonus', gittata:'Sé stesso', danno:'3d8', tipoDanno:'Radiante', desc:'Prossimo colpo +3d8 radianti, può accecare (TS Costituzione). Concentrazione, 1 min.' },
   'Controincantesimo':     { livello:3, scuola:'Abiurazione', classi:['Mago','Stregone','Warlock'], tempo:'Reazione', gittata:'18m', desc:'Interrompi incantesimo altrui (auto fino al 3°). Istantaneo.' },
@@ -180,6 +184,7 @@ export const INCANTESIMI_DB = {
   'Evoca Costrutto':       { livello:4, scuola:'Invocazione', classi:['Artefice','Mago'], tempo:'1 Azione', gittata:'27m', desc:'Evochi un costrutto animato in argilla, metallo o pietra. Concentrazione, 1 ora.' },
   'Evoca Elementale':      { livello:4, scuola:'Invocazione', classi:['Druido','Mago','Ranger'], tempo:'1 Azione', gittata:'27m', desc:'Evochi uno spirito elementale dell\'aria, terra, fuoco o acqua. Concentrazione, 1 ora.' },
   'Guardiano della Fede':  { livello:4, scuola:'Invocazione', classi:['Chierico'], tempo:'1 Azione', gittata:'9m', danno:'20', tipoDanno:'Radiante', desc:'Guardiano spettrale: 20 danni radianti a chi entra/sta vicino (TS Destrezza per metà). 8 ore.' },
+  'Inaridire':             { livello:4, scuola:'Necromanzia', classi:['Chierico','Druido','Mago','Stregone','Warlock'], tempo:'1 Azione', gittata:'9m', danno:'8d8', tipoDanno:'Necrotico', desc:'Risucchio vitale: 8d8 danni necrotici (TS Costituzione per metà). Piante subiscono danno max. +1d8 per slot.' },
   'Invisibilità Superiore':{ livello:4, scuola:'Illusione', classi:['Bardo','Mago','Stregone'], tempo:'1 Azione', gittata:'Tocco', desc:'Invisibile anche attaccando o lanciando. Concentrazione, 1 min.' },
   'Libertà di Movimento':  { livello:4, scuola:'Abiurazione', classi:['Bardo','Chierico','Druido','Ranger'], tempo:'1 Azione', gittata:'Tocco', desc:'Ignora terreno difficile, non afferrabile. 1 ora.' },
   'Malanno':               { livello:4, scuola:'Necromanzia', classi:['Chierico','Druido','Mago','Stregone','Warlock'], tempo:'1 Azione', gittata:'9m', danno:'8d8', tipoDanno:'Necrotico', desc:'Risucchio vitale: 8d8 danni necrotici (TS Costituzione per metà). +1d8 per slot.' },
@@ -311,6 +316,20 @@ export const ALIAS_INCANTESIMI = {
   'summon draconic spirit': 'Evoca Drago',
   'summon fiend': 'Evoca Demone',
   'blade of disaster': 'Lama della Catastrofe',
+  'evoca animali': 'Evocare Animali',
+  'conjure animals': 'Evocare Animali',
+  'conjure elemental': 'Evocare Elementale',
+  'camminare sull’acqua': 'Camminare sull\'Acqua',
+  'water walk': 'Camminare sull\'Acqua',
+  'absorb elements': 'Assorbire Elementi',
+  'gust': 'Folata',
+  'blight': 'Inaridire',
+  'parola guaritrice': 'Parola di Guarigione',
+  'healing word': 'Parola di Guarigione',
+  'vincolo della terra': 'Vincolo della Terra',
+  'earthbind': 'Vincolo della Terra',
+  'cura ferite di massa': 'Cura Ferite di Massa',
+  'mass cure wounds': 'Cura Ferite di Massa',
 };
 
 export function datiIncantesimo(nome) {
