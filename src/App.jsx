@@ -2668,7 +2668,7 @@ function ArchivioDm({ url, onChiudi, onApri, onApriSolaLettura }) {
 
   const eliminaCopia = async (s) => {
     const nomeFmt = formattaNomePg(s.nome) || 'questa scheda';
-    if (!window.confirm(`Vuoi rimuovere definitivamente "${nomeFmt}" (${quando(s.aggiornato)}) dall'Archivio DM?`)) return;
+    if (!window.confirm(`Vuoi rimuovere definitivamente "${nomeFmt}" (${quando(s.aggiornato)}) dall'Archivio PG?`)) return;
     setStato('carico');
     try {
       const r = await fetch(`${base}/pg/${encodeURIComponent(s.id)}?key=${encodeURIComponent(chiave)}`, {
@@ -2725,7 +2725,7 @@ function ArchivioDm({ url, onChiudi, onApri, onApriSolaLettura }) {
     >
       <div style={{ ...styles.panel, maxWidth: 640, width: '100%', maxHeight: '88vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-          <strong style={{ color: C.goldDark, fontSize: 17 }}>🗂 Archivio DM</strong>
+          <strong style={{ color: C.goldDark, fontSize: 17 }}>🗂 Archivio PG</strong>
           <button style={styles.buttonMini} onClick={onChiudi}>✕</button>
         </div>
         <p style={{ ...styles.detail, marginTop: 0 }}>
@@ -2734,7 +2734,7 @@ function ArchivioDm({ url, onChiudi, onApri, onApriSolaLettura }) {
         <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
           <input
             type="password"
-            placeholder="Chiave DM"
+            placeholder="Chiave d'accesso"
             value={chiave}
             onChange={(e) => setChiave(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') carica(chiave); }}
@@ -2809,7 +2809,7 @@ function ArchivioDm({ url, onChiudi, onApri, onApriSolaLettura }) {
                           <button
                             style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '3px 6px' }}
                             onClick={() => eliminaCopia(s)}
-                            title="Elimina definitivamente questa copia dall'Archivio DM"
+                            title="Elimina definitivamente questa copia dall'Archivio PG"
                           >
                             🗑️
                           </button>
@@ -3530,7 +3530,7 @@ export default function App() {
   }, []);
 
   // scuro effettivo + tinta della classe → variabili CSS su :root
-  const classeAttiva = roster?.personaggi?.[roster?.attivo]?.classe;
+  const classeAttiva = schedaSolaLettura?.classe || roster?.personaggi?.[roster?.attivo]?.classe;
   useEffect(() => {
     const scuroEff =
       tema === 'scuro' || (tema === 'auto' && (sistemaScuro || eNotte()));
@@ -3615,7 +3615,7 @@ export default function App() {
     } catch {
       // storage non disponibile: pazienza
     }
-  }, [tema, sistemaScuro, oraTick, classeAttiva, presetColori, temaCornici]);
+  }, [tema, sistemaScuro, oraTick, classeAttiva, presetColori, temaCornici, schedaSolaLettura]);
   const intervalRef = useRef(null);
   const jsonRef = useRef(null);
   const pdfRef = useRef(null);
@@ -8953,7 +8953,7 @@ export default function App() {
               <span style={{ fontSize: 20 }}>🔒</span>
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontWeight: 800, fontSize: 13, textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>
-                  {lingua === 'en' ? 'DM Archive: Read-Only Character Sheet' : 'Archivio DM: Scheda in Sola Lettura'}
+                  {lingua === 'en' ? 'PG Archive: Read-Only Character Sheet' : 'Archivio PG: Scheda in Sola Lettura'}
                 </div>
                 <div style={{ fontSize: 11, opacity: 0.95, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {formattaNomePg(scheda.nome) || 'Personaggio'} · {lingua === 'en' ? 'No changes will be saved' : 'Consultazione sicura · nessuna modifica al cloud o al roster'}
@@ -8965,7 +8965,7 @@ export default function App() {
                 style={{ ...styles.buttonMini, background: 'rgba(255,255,255,0.2)', color: '#ffffff', borderColor: 'rgba(255,255,255,0.45)', padding: '4px 8px', fontSize: 11, fontWeight: 700 }}
                 onClick={() => setMostraArchivioDm(true)}
               >
-                🗂 {lingua === 'en' ? 'Archive' : 'Archivio DM'}
+                🗂 {lingua === 'en' ? 'PG Archive' : 'Archivio PG'}
               </button>
               <button
                 style={{ ...styles.buttonMini, background: '#c62828', color: '#ffffff', borderColor: '#e53935', padding: '4px 10px', fontSize: 11, fontWeight: 800 }}
