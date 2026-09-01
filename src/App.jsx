@@ -3803,6 +3803,78 @@ export default function App() {
     }
   }, [scheda?.classe, scheda?.sottoclasse, scheda?.incantatore?.caratteristica]);
 
+  // Sincronizza automaticamente PF, CA, TS Morte e Nome dalla scheda del PG e dagli Alleati al Combat Tracker
+  useEffect(() => {
+    if (!scheda || !combat?.combattenti || combat.combattenti.length === 0) return;
+    const curCa = caTotale(scheda);
+    setCombat((c) => {
+      let cambiato = false;
+      const nuoviCombattenti = c.combattenti.map((cb) => {
+        // Se è il PG attivo
+        if (cb.tipo === 'pg' && (cb.nome === scheda.nome || cb.id === 'pg-attivo' || c.combattenti.filter((x) => x.tipo === 'pg').length === 1)) {
+          const pfAtt = Number(scheda.pfAttuali ?? cb.pfAttuali);
+          const pfMax = Number(scheda.pfMax ?? cb.pfMax);
+          const pfTmp = Number(scheda.pfTemp ?? cb.pfTemp ?? 0);
+          const tsM = scheda.tsMorte || cb.tsMorte || { successi: 0, fallimenti: 0 };
+          const nm = scheda.nome || cb.nome;
+          if (
+            cb.pfAttuali !== pfAtt ||
+            cb.pfMax !== pfMax ||
+            cb.pfTemp !== pfTmp ||
+            cb.ca !== curCa ||
+            cb.nome !== nm ||
+            cb.tsMorte?.successi !== tsM?.successi ||
+            cb.tsMorte?.fallimenti !== tsM?.fallimenti
+          ) {
+            cambiato = true;
+            return {
+              ...cb,
+              nome: nm,
+              pfAttuali: pfAtt,
+              pfMax: pfMax,
+              pfTemp: pfTmp,
+              ca: curCa,
+              tsMorte: tsM,
+            };
+          }
+        }
+        // Se è un alleato presente nella scheda
+        if (cb.tipo === 'alleato' && Array.isArray(scheda.alleati)) {
+          const all = scheda.alleati.find((a) => a.id === cb.id || (a.nome && cb.nome && a.nome.toLowerCase() === cb.nome.toLowerCase()));
+          if (all) {
+            const pfAtt = Number(all.pfAttuali ?? cb.pfAttuali);
+            const pfMax = Number(all.pfMax ?? cb.pfMax);
+            const caAll = Number(all.ca ?? cb.ca);
+            const nm = all.nome || cb.nome;
+            if (cb.pfAttuali !== pfAtt || cb.pfMax !== pfMax || cb.ca !== caAll || cb.nome !== nm) {
+              cambiato = true;
+              return {
+                ...cb,
+                nome: nm,
+                pfAttuali: pfAtt,
+                pfMax: pfMax,
+                ca: caAll,
+              };
+            }
+          }
+        }
+        return cb;
+      });
+      return cambiato ? { ...c, combattenti: nuoviCombattenti } : c;
+    });
+  }, [
+    scheda?.nome,
+    scheda?.pfAttuali,
+    scheda?.pfMax,
+    scheda?.pfTemp,
+    scheda?.armatura,
+    scheda?.caratteristiche,
+    scheda?.oggetti,
+    scheda?.tsMorte?.successi,
+    scheda?.tsMorte?.fallimenti,
+    scheda?.alleati,
+  ]);
+
   // --- Archivio DM: deposita una copia della scheda attiva ---
   // Parte ~45 secondi dopo l'ultima modifica effettiva (anti-spreco Cloudflare KV)
   // e solo se la scheda ha un nome vero e i dati sono effettivamente cambiati.
@@ -4291,13 +4363,15 @@ export default function App() {
   function modCombat(id, patch) {
     setCombat((c) => {
       const cb = c.combattenti.find((x) => x.id === id);
-      if (cb && cb.tipo === 'pg' && cb.nome === scheda.nome) {
+      if (cb && cb.tipo === 'pg' && (cb.nome === scheda.nome || cb.id === 'pg-attivo' || c.combattenti.filter((x) => x.tipo === 'pg').length === 1)) {
         // Sincronizza verso la scheda del PG attivo
         const sPatch = {};
         if ('pfAttuali' in patch) sPatch.pfAttuali = patch.pfAttuali;
+        if ('pfMax' in patch) sPatch.pfMax = patch.pfMax;
         if ('pfTemp' in patch) sPatch.pfTemp = patch.pfTemp;
         if ('tsMorte' in patch) sPatch.tsMorte = patch.tsMorte;
         if ('ca' in patch && scheda.armatura?.tipo === 'manuale') sPatch.ca = patch.ca;
+        if ('nome' in patch && patch.nome?.trim()) sPatch.nome = patch.nome.trim();
         if (Object.keys(sPatch).length > 0) aggiorna(sPatch);
       } else if (cb && cb.tipo === 'alleato') {
         // Sincronizza verso scheda.alleati quando un alleato viene nominato o modificato
@@ -4324,17 +4398,23 @@ export default function App() {
   function dannoCura(id, delta) {
     setCombat((c) => {
       const cb = c.combattenti.find((x) => x.id === id);
-      if (cb && cb.tipo === 'alleato' && Array.isArray(scheda.alleati) && cb.nome) {
-        let newPf = cb.pfAttuali;
-        if (delta < 0) {
-          let dmg = -delta;
-          let temp = cb.pfTemp || 0;
-          const assorbito = Math.min(temp, dmg);
-          temp -= assorbito; dmg -= assorbito;
-          newPf = Math.max(0, cb.pfAttuali - dmg);
-        } else {
-          newPf = Math.min(cb.pfMax, cb.pfAttuali + delta);
-        }
+      if (!cb) return c;
+
+      let newPf = cb.pfAttuali;
+      let newTemp = cb.pfTemp || 0;
+      if (delta < 0) {
+        let dmg = -delta;
+        const assorbito = Math.min(newTemp, dmg);
+        newTemp -= assorbito;
+        dmg -= assorbito;
+        newPf = Math.max(0, cb.pfAttuali - dmg);
+      } else {
+        newPf = Math.min(cb.pfMax, cb.pfAttuali + delta);
+      }
+
+      if (cb.tipo === 'pg' && (cb.nome === scheda.nome || cb.id === 'pg-attivo' || c.combattenti.filter((x) => x.tipo === 'pg').length === 1)) {
+        aggiorna({ pfAttuali: newPf, pfTemp: newTemp });
+      } else if (cb.tipo === 'alleato' && Array.isArray(scheda.alleati) && cb.nome) {
         const alleatiAgg = scheda.alleati.map((a) =>
           (a.id === cb.id || a.nome.toLowerCase() === cb.nome.toLowerCase()) ? { ...a, pfAttuali: newPf } : a
         );
@@ -4345,14 +4425,7 @@ export default function App() {
         ...c,
         combattenti: c.combattenti.map((x) => {
           if (x.id !== id) return x;
-          if (delta < 0) {
-            let dmg = -delta;
-            let temp = x.pfTemp || 0;
-            const assorbito = Math.min(temp, dmg);
-            temp -= assorbito; dmg -= assorbito;
-            return { ...x, pfTemp: temp, pfAttuali: Math.max(0, x.pfAttuali - dmg) };
-          }
-          return { ...x, pfAttuali: Math.min(x.pfMax, x.pfAttuali + delta) };
+          return { ...x, pfTemp: newTemp, pfAttuali: newPf };
         }),
       };
     });
