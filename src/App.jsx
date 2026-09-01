@@ -9652,7 +9652,7 @@ export default function App() {
                   ) : (
                     <div style={{ position: 'relative', width: '100%', display: 'flex', overflow: 'hidden', borderRadius: 8, border: `1.5px solid ${C.goldDark}`, height: 38, background: 'rgba(0,0,0,0.03)', boxSizing: 'border-box' }}>
                       <select
-                        style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', padding: '4px 74px 4px 12px', textOverflow: 'ellipsis', background: 'transparent', position: 'relative', zIndex: 2, border: 'none', height: '100%' }}
+                        style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', padding: '4px 28px 4px 12px', textOverflow: 'ellipsis', background: 'transparent', position: 'relative', zIndex: 2, border: 'none', height: '100%' }}
                         value={roster.attivo}
                         onChange={(e) => { setSchedaSolaLettura(null); setRoster((r) => ({ ...r, attivo: e.target.value })); }}
                         title={t('nome.tooltip_selettore')}
@@ -9665,27 +9665,6 @@ export default function App() {
                       </select>
                     </div>
                   )}
-                  {/* Badge Versione D&D posizionato nel campo nome */}
-                  <div
-                    style={{
-                      position: 'absolute',
-                      right: 28,
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      zIndex: 3,
-                      pointerEvents: 'none',
-                      userSelect: 'none',
-                      fontFamily: "Georgia, 'Times New Roman', serif",
-                      fontWeight: 800,
-                      fontSize: 16,
-                      color: 'var(--c-title)',
-                      opacity: 0.9,
-                      letterSpacing: 0.6,
-                    }}
-                    title={`Versione Regole D&D: ${(scheda.versione || '2024') === '2024' ? '5.5 (2024)' : '5.0 (2014)'}`}
-                  >
-                    {(scheda.versione || '2024') === '2024' ? '5.5' : '5.0'}
-                  </div>
                 </div>
 
                 <div className="profilo-anagrafica-campi" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
