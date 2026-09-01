@@ -3620,6 +3620,29 @@ export default function App() {
   const jsonRef = useRef(null);
   const pdfRef = useRef(null);
   const ritrattoRef = useRef(null);
+  const barraTiroRef = useRef(null);
+
+  // Autochiusura banner tiro quando si clicca all'esterno del riquadro del risultato
+  useEffect(() => {
+    if (!tiro && !danni) return;
+    if (rolling) return;
+
+    function handleClickFuoriTiro(e) {
+      if (barraTiroRef.current && !barraTiroRef.current.contains(e.target)) {
+        setTiro(null);
+        setDanni(null);
+      }
+    }
+
+    const timer = setTimeout(() => {
+      document.addEventListener('pointerdown', handleClickFuoriTiro);
+    }, 50);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('pointerdown', handleClickFuoriTiro);
+    };
+  }, [tiro, danni, rolling]);
 
   const isSolaLettura = Boolean(schedaSolaLettura);
   const scheda = schedaSolaLettura || (roster?.personaggi && roster.personaggi[roster.attivo]) || creaPersonaggio();
@@ -9316,7 +9339,7 @@ export default function App() {
 
         {/* Banner animato del tiro (appare sempre ordinatamente SOTTO la barra fissa) */}
         {(rolling || tiro || danni) && (
-          <div className="barra-tiro no-stampa" style={{ ...styles.rollBar, marginBottom: 10 }}>
+          <div ref={barraTiroRef} className="barra-tiro no-stampa" style={{ ...styles.rollBar, marginBottom: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%' }}>
               <div style={styles.dado(rolling, !rolling && (tiro?.naturale === 20 || danni?.critico), !rolling && (tiro?.naturale === 1), tipoDadoInUso)}>{faccia}</div>
               <div style={{ flex: 1, minWidth: 200, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
