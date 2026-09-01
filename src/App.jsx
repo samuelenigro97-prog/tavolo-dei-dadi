@@ -1446,6 +1446,7 @@ function schedaVuota() {
     legami: '',
     difetti: '',
     nemici: '',
+    alleati: [], // lista alleati e compagni: [{ id, nome, pfMax, pfAttuali, ca, note }]
     diario: [], // diario di sessione: [{ id, data, titolo, testo }]
     note: '',
     // stato di gioco
@@ -4200,16 +4201,32 @@ export default function App() {
   function aggiungiCombattente(tipo, dati = {}) {
     const nome = dati.nome || (tipo === 'nemico' ? t('ct.nemico') : tipo === 'alleato' ? t('ct.alleato') : t('ct.pg'));
     const pfMax = dati.pfMax ?? 10;
+    const ca = dati.ca ?? 10;
+    const pfAttuali = dati.pfAttuali ?? pfMax;
     const initRandom = Math.floor(Math.random() * 20) + 1; // Tiro d20 default per png
     const nuovo = {
-      id: `c-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      id: dati.id || `c-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       nome, tipo,
       iniziativa: dati.iniziativa ?? initRandom,
-      pfMax, pfAttuali: dati.pfAttuali ?? pfMax, pfTemp: 0,
-      ca: dati.ca ?? 10,
-      condizioni: [], concentrazione: false,
-      tsMorte: { successi: 0, fallimenti: 0 },
+      pfMax, pfAttuali, pfTemp: dati.pfTemp || 0,
+      ca,
+      condizioni: dati.condizioni || [],
+      concentrazione: !!dati.concentrazione,
+      tsMorte: dati.tsMorte || { successi: 0, fallimenti: 0 },
     };
+
+    // Se è un alleato creato con un nome personalizzato, memorizzalo nella scheda
+    if (tipo === 'alleato' && dati.nome && dati.nome.trim()) {
+      const alleati = Array.isArray(scheda.alleati) ? [...scheda.alleati] : [];
+      const idx = alleati.findIndex((a) => a.id === nuovo.id || a.nome.toLowerCase() === dati.nome.toLowerCase());
+      if (idx >= 0) {
+        alleati[idx] = { ...alleati[idx], id: nuovo.id, nome: dati.nome, pfMax, pfAttuali, ca };
+      } else {
+        alleati.push({ id: nuovo.id, nome: dati.nome, pfMax, pfAttuali, ca, note: '' });
+      }
+      aggiorna({ alleati });
+    }
+
     setCombat((c) => {
       const lista = [...c.combattenti, nuovo].sort((a, b) => (Number(b.iniziativa) || 0) - (Number(a.iniziativa) || 0));
       const idAttivo = c.combattenti[c.turno]?.id;
@@ -4262,6 +4279,22 @@ export default function App() {
         if ('tsMorte' in patch) sPatch.tsMorte = patch.tsMorte;
         if ('ca' in patch && scheda.armatura?.tipo === 'manuale') sPatch.ca = patch.ca;
         if (Object.keys(sPatch).length > 0) aggiorna(sPatch);
+      } else if (cb && cb.tipo === 'alleato') {
+        // Sincronizza verso scheda.alleati quando un alleato viene nominato o modificato
+        const nomeFin = ('nome' in patch ? patch.nome : cb.nome) || '';
+        const pfMaxFin = 'pfMax' in patch ? patch.pfMax : (cb.pfMax ?? 10);
+        const pfAttFin = 'pfAttuali' in patch ? patch.pfAttuali : (cb.pfAttuali ?? pfMaxFin);
+        const caFin = 'ca' in patch ? patch.ca : (cb.ca ?? 10);
+        if (nomeFin.trim()) {
+          const alleati = Array.isArray(scheda.alleati) ? [...scheda.alleati] : [];
+          const idx = alleati.findIndex((a) => a.id === cb.id || a.nome.toLowerCase() === cb.nome.toLowerCase() || (patch.nome && a.nome.toLowerCase() === patch.nome.toLowerCase()));
+          if (idx >= 0) {
+            alleati[idx] = { ...alleati[idx], id: cb.id, nome: nomeFin, pfMax: pfMaxFin, pfAttuali: pfAttFin, ca: caFin };
+          } else {
+            alleati.push({ id: cb.id, nome: nomeFin, pfMax: pfMaxFin, pfAttuali: pfAttFin, ca: caFin, note: '' });
+          }
+          aggiorna({ alleati });
+        }
       }
       return { ...c, combattenti: c.combattenti.map((x) => (x.id === id ? { ...x, ...patch } : x)) };
     });
@@ -4269,20 +4302,40 @@ export default function App() {
 
   /** Applica danni (segno negativo) o cure (positivo) a un combattente, gestendo i PF temporanei. */
   function dannoCura(id, delta) {
-    setCombat((c) => ({
-      ...c,
-      combattenti: c.combattenti.map((x) => {
-        if (x.id !== id) return x;
+    setCombat((c) => {
+      const cb = c.combattenti.find((x) => x.id === id);
+      if (cb && cb.tipo === 'alleato' && Array.isArray(scheda.alleati) && cb.nome) {
+        let newPf = cb.pfAttuali;
         if (delta < 0) {
           let dmg = -delta;
-          let temp = x.pfTemp || 0;
+          let temp = cb.pfTemp || 0;
           const assorbito = Math.min(temp, dmg);
           temp -= assorbito; dmg -= assorbito;
-          return { ...x, pfTemp: temp, pfAttuali: Math.max(0, x.pfAttuali - dmg) };
+          newPf = Math.max(0, cb.pfAttuali - dmg);
+        } else {
+          newPf = Math.min(cb.pfMax, cb.pfAttuali + delta);
         }
-        return { ...x, pfAttuali: Math.min(x.pfMax, x.pfAttuali + delta) };
-      }),
-    }));
+        const alleatiAgg = scheda.alleati.map((a) =>
+          (a.id === cb.id || a.nome.toLowerCase() === cb.nome.toLowerCase()) ? { ...a, pfAttuali: newPf } : a
+        );
+        aggiorna({ alleati: alleatiAgg });
+      }
+
+      return {
+        ...c,
+        combattenti: c.combattenti.map((x) => {
+          if (x.id !== id) return x;
+          if (delta < 0) {
+            let dmg = -delta;
+            let temp = x.pfTemp || 0;
+            const assorbito = Math.min(temp, dmg);
+            temp -= assorbito; dmg -= assorbito;
+            return { ...x, pfTemp: temp, pfAttuali: Math.max(0, x.pfAttuali - dmg) };
+          }
+          return { ...x, pfAttuali: Math.min(x.pfMax, x.pfAttuali + delta) };
+        }),
+      };
+    });
   }
 
   function prossimoTurno() {
@@ -5581,6 +5634,7 @@ export default function App() {
       if (!pg.legami) pg.legami = '';
       if (!pg.difetti) pg.difetti = '';
       if (!pg.nemici) pg.nemici = '';
+      if (!Array.isArray(pg.alleati)) pg.alleati = [];
       if (!pg.diario) pg.diario = [];
       if (!pg.note) pg.note = '';
       if (!pg.resistenze) pg.resistenze = '';
@@ -13467,6 +13521,112 @@ export default function App() {
                       placeholder={t("aspetto.nemici_ph")}
                       onChange={(v) => aggiorna({ nemici: v })}
                     />
+
+                    {/* Alleati & Compagni */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, marginBottom: 6 }}>
+                      <div style={{ ...styles.moduloLabel, margin: 0 }}>🛡️ {t("aspetto.alleati")}</div>
+                      <button
+                        type="button"
+                        style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.accentDark, border: `1px solid ${C.accentDark}`, background: 'rgba(201,162,39,0.08)', fontWeight: 700 }}
+                        onClick={() => {
+                          const idNuovo = `all-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+                          const nuovaLista = [...(scheda.alleati || []), { id: idNuovo, nome: `Alleato ${(scheda.alleati || []).length + 1}`, pfMax: 10, pfAttuali: 10, ca: 10, note: '' }];
+                          aggiorna({ alleati: nuovaLista });
+                        }}
+                      >
+                        {t('aspetto.aggiungi_alleato')}
+                      </button>
+                    </div>
+
+                    {(!scheda.alleati || scheda.alleati.length === 0) ? (
+                      <div style={{ ...styles.detail, fontSize: 11.5, color: C.inkDim, padding: '8px 10px', background: 'rgba(0,0,0,0.02)', borderRadius: 6, border: `1px dashed ${C.border}` }}>
+                        {t("aspetto.alleati_ph")}
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {scheda.alleati.map((all, idx) => (
+                          <div
+                            key={all.id || idx}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              gap: 8,
+                              background: 'rgba(46,139,87,0.06)',
+                              border: '1px solid rgba(46,139,87,0.3)',
+                              borderRadius: 8,
+                              padding: '6px 10px',
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 0 }}>
+                              <span style={{ fontSize: 13 }}>🛡️</span>
+                              <strong style={{ fontSize: 13, color: C.ink }}>
+                                <Editable
+                                  value={all.nome}
+                                  onChange={(v) => {
+                                    const lista = [...scheda.alleati];
+                                    lista[idx] = { ...lista[idx], nome: v };
+                                    aggiorna({ alleati: lista });
+                                  }}
+                                  width={120}
+                                />
+                              </strong>
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: C.inkDim }}>
+                              <span title={t('vital.ca')}>
+                                CA <Editable value={all.ca ?? 10} tipo="numero" width={22} onChange={(v) => {
+                                  const lista = [...scheda.alleati];
+                                  lista[idx] = { ...lista[idx], ca: v };
+                                  aggiorna({ alleati: lista });
+                                }} />
+                              </span>
+                              <span title="Punti Ferita">
+                                PF <Editable value={all.pfAttuali ?? 10} tipo="numero" width={26} onChange={(v) => {
+                                  const lista = [...scheda.alleati];
+                                  lista[idx] = { ...lista[idx], pfAttuali: v };
+                                  aggiorna({ alleati: lista });
+                                }} /> / <Editable value={all.pfMax ?? 10} tipo="numero" width={26} onChange={(v) => {
+                                  const lista = [...scheda.alleati];
+                                  lista[idx] = { ...lista[idx], pfMax: v };
+                                  aggiorna({ alleati: lista });
+                                }} />
+                              </span>
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                              <button
+                                type="button"
+                                style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 6px', color: '#2e8b57', borderColor: '#2e8b57', fontWeight: 700 }}
+                                title={t('aspetto.invia_a_combat_tip')}
+                                onClick={() => {
+                                  aggiungiCombattente('alleato', {
+                                    id: all.id,
+                                    nome: all.nome,
+                                    pfMax: all.pfMax ?? 10,
+                                    pfAttuali: all.pfAttuali ?? all.pfMax ?? 10,
+                                    ca: all.ca ?? 10,
+                                  });
+                                }}
+                              >
+                                {t('aspetto.invia_a_combat')}
+                              </button>
+                              <button
+                                type="button"
+                                style={{ ...styles.buttonMini, color: C.red, padding: '2px 5px', fontSize: 11 }}
+                                title="Elimina alleato"
+                                onClick={() => {
+                                  const lista = scheda.alleati.filter((_, i) => i !== idx);
+                                  aggiorna({ alleati: lista });
+                                }}
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </>
                 );
               })()}
@@ -14759,12 +14919,47 @@ export default function App() {
                 >
                   ＋ {t('ct.pg')} ({scheda.nome || 'Attivo'})
                 </button>
-                <button
-                  style={{ ...styles.buttonMini, background: 'rgba(46,139,87,0.1)', color: '#2e8b57', borderColor: '#2e8b57', fontWeight: 700 }}
-                  onClick={() => aggiungiCombattente('alleato')}
-                >
-                  ＋ {t('ct.alleato')}
-                </button>
+                {scheda.alleati && scheda.alleati.length > 0 ? (
+                  <select
+                    value=""
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (!v) return;
+                      if (v === '__nuovo') {
+                        aggiungiCombattente('alleato');
+                      } else {
+                        const all = (scheda.alleati || []).find((a) => a.id === v || a.nome === v);
+                        if (all) {
+                          aggiungiCombattente('alleato', {
+                            id: all.id,
+                            nome: all.nome,
+                            pfMax: all.pfMax ?? 10,
+                            pfAttuali: all.pfAttuali ?? all.pfMax ?? 10,
+                            ca: all.ca ?? 10,
+                          });
+                        }
+                      }
+                      e.target.value = '';
+                    }}
+                    style={{ ...styles.inlineInput, fontSize: 11.5, padding: '3px 8px', maxWidth: 145, height: 26, fontWeight: 700, background: 'rgba(46,139,87,0.1)', color: '#2e8b57', borderColor: '#2e8b57' }}
+                    title="Aggiungi un alleato salvato nella scheda o creane uno nuovo"
+                  >
+                    <option value="">🛡️ ＋ {t('ct.alleato')}...</option>
+                    <option value="__nuovo">＋ {t('ct.alleato')} (Nuovo)</option>
+                    {scheda.alleati.map((a) => (
+                      <option key={a.id || a.nome} value={a.id || a.nome}>
+                        {a.nome} (PF {a.pfAttuali ?? a.pfMax ?? 10}/{a.pfMax ?? 10}, CA {a.ca ?? 10})
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <button
+                    style={{ ...styles.buttonMini, background: 'rgba(46,139,87,0.1)', color: '#2e8b57', borderColor: '#2e8b57', fontWeight: 700 }}
+                    onClick={() => aggiungiCombattente('alleato')}
+                  >
+                    ＋ {t('ct.alleato')}
+                  </button>
+                )}
                 <button
                   style={{ ...styles.buttonMini, background: 'rgba(176,58,46,0.1)', color: '#b03a2e', borderColor: '#b03a2e', fontWeight: 700 }}
                   onClick={() => aggiungiCombattente('nemico')}
