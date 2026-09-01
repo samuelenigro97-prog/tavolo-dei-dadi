@@ -15077,21 +15077,21 @@ export default function App() {
         <div ref={combatRef} style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 1500, background: C.panel, borderTop: `2px solid var(--c-gold-dark)`, boxShadow: '0 -6px 24px rgba(0,0,0,0.45)' }}>
           <div style={{ maxWidth: 1200, margin: '0 auto', padding: '8px 12px' }}>
             {/* BARRA SUPERIORE CONTROLLI COMBAT TRACKER */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 8, paddingBottom: 6, borderBottom: `1px solid ${C.border}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, flexWrap: 'nowrap', overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 8, paddingBottom: 6, borderBottom: `1px solid ${C.border}` }}>
               {/* Gruppo 1: Round & Turno */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(214,169,15,0.18)', border: `1.5px solid ${C.goldDark}`, color: C.goldDark, padding: '3px 10px', borderRadius: 8, fontWeight: 800, fontSize: 13.5, letterSpacing: 0.5 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(214,169,15,0.18)', border: `1.5px solid ${C.goldDark}`, color: C.goldDark, padding: '3px 8px', borderRadius: 8, fontWeight: 800, fontSize: 13, letterSpacing: 0.5, whiteSpace: 'nowrap' }}>
                   ⚔️ {t('ct.round').toUpperCase()} {combat.round}
                 </span>
                 <button
-                  style={{ ...styles.buttonMini, padding: '4px 8px', fontSize: 12 }}
+                  style={{ ...styles.buttonMini, padding: '4px 8px', fontSize: 12, whiteSpace: 'nowrap' }}
                   onClick={turnoPrecedente}
                   title={t('ct.prec')}
                 >
                   ◀ {t('ct.prec')}
                 </button>
                 <button
-                  style={{ ...styles.buttonMini, background: 'var(--c-gold-dark)', color: '#ffffff', borderColor: 'var(--c-gold-dark)', fontWeight: 800, padding: '4px 12px', fontSize: 12.5 }}
+                  style={{ ...styles.buttonMini, background: 'var(--c-gold-dark)', color: '#ffffff', borderColor: 'var(--c-gold-dark)', fontWeight: 800, padding: '4px 10px', fontSize: 12, whiteSpace: 'nowrap' }}
                   onClick={prossimoTurno}
                   title={t('ct.succ')}
                 >
@@ -15100,13 +15100,13 @@ export default function App() {
               </div>
 
               {/* Gruppo 2: Aggiungi Combattenti */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
                 <button
-                  style={{ ...styles.buttonMini, background: 'rgba(214,169,15,0.12)', color: C.goldDark, borderColor: C.goldDark, fontWeight: 700 }}
+                  style={{ ...styles.buttonMini, background: 'rgba(214,169,15,0.12)', color: C.goldDark, borderColor: C.goldDark, fontWeight: 700, whiteSpace: 'nowrap' }}
                   onClick={aggiungiPgAlCombat}
-                  title={t('ct.aggiungi_pg')}
+                  title={`${t('ct.aggiungi_pg')}: ${scheda.nome || 'Attivo'}`}
                 >
-                  ＋ {t('ct.pg')} ({scheda.nome || 'Attivo'})
+                  ＋ {t('ct.pg')}
                 </button>
                 {scheda.alleati && scheda.alleati.length > 0 ? (
                   <select
@@ -15130,7 +15130,7 @@ export default function App() {
                       }
                       e.target.value = '';
                     }}
-                    style={{ ...styles.inlineInput, fontSize: 11.5, padding: '3px 8px', maxWidth: 145, height: 26, fontWeight: 700, background: 'rgba(46,139,87,0.1)', color: '#2e8b57', borderColor: '#2e8b57' }}
+                    style={{ ...styles.inlineInput, fontSize: 11.5, padding: '3px 6px', maxWidth: 125, height: 26, fontWeight: 700, background: 'rgba(46,139,87,0.1)', color: '#2e8b57', borderColor: '#2e8b57' }}
                     title="Aggiungi un alleato salvato nella scheda o creane uno nuovo"
                   >
                     <option value="">🛡️ ＋ {t('ct.alleato')}...</option>
@@ -15143,14 +15143,14 @@ export default function App() {
                   </select>
                 ) : (
                   <button
-                    style={{ ...styles.buttonMini, background: 'rgba(46,139,87,0.1)', color: '#2e8b57', borderColor: '#2e8b57', fontWeight: 700 }}
+                    style={{ ...styles.buttonMini, background: 'rgba(46,139,87,0.1)', color: '#2e8b57', borderColor: '#2e8b57', fontWeight: 700, whiteSpace: 'nowrap' }}
                     onClick={() => aggiungiCombattente('alleato')}
                   >
                     ＋ {t('ct.alleato')}
                   </button>
                 )}
                 <button
-                  style={{ ...styles.buttonMini, background: 'rgba(176,58,46,0.1)', color: '#b03a2e', borderColor: '#b03a2e', fontWeight: 700 }}
+                  style={{ ...styles.buttonMini, background: 'rgba(176,58,46,0.1)', color: '#b03a2e', borderColor: '#b03a2e', fontWeight: 700, whiteSpace: 'nowrap' }}
                   onClick={() => aggiungiCombattente('nemico')}
                 >
                   ＋ {t('ct.nemico')}
@@ -15173,7 +15173,7 @@ export default function App() {
                     }
                     e.target.value = '';
                   }}
-                  style={{ ...styles.inlineInput, fontSize: 11.5, padding: '3px 8px', maxWidth: 140, height: 26, fontWeight: 600 }}
+                  style={{ ...styles.inlineInput, fontSize: 11.5, padding: '3px 6px', maxWidth: 115, height: 26, fontWeight: 600 }}
                   title="Aggiungi una creatura o mostro dal bestiario al combattimento"
                 >
                   <option value="">🐾 + Mostro...</option>
@@ -15186,9 +15186,9 @@ export default function App() {
               </div>
 
               {/* Gruppo 3: Strumenti & Gestione */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
                 <button
-                  style={{ ...styles.buttonMini, color: C.goldDark, borderColor: C.goldDark }}
+                  style={{ ...styles.buttonMini, color: C.goldDark, borderColor: C.goldDark, whiteSpace: 'nowrap', padding: '3px 8px' }}
                   title="Tira automaticamente 1d20 per tutti i combattenti che hanno Iniziativa a 0, poi ordina la lista"
                   onClick={() => {
                     setCombat((c) => ({
@@ -15201,17 +15201,17 @@ export default function App() {
                     setTimeout(ordinaIniziativa, 50);
                   }}
                 >
-                  🎲 Tira Iniziative
+                  🎲 Iniziative
                 </button>
                 <button
-                  style={styles.buttonMini}
+                  style={{ ...styles.buttonMini, whiteSpace: 'nowrap', padding: '3px 8px' }}
                   onClick={ordinaIniziativa}
                   title="Ordina i combattenti per iniziativa decrescente"
                 >
                   🔃 Ordina
                 </button>
                 <button
-                  style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }}
+                  style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, whiteSpace: 'nowrap', padding: '3px 8px' }}
                   title="Applica un danno ad area (Es. Palla di Fuoco) a tutti i nemici presenti nel Combat Tracker"
                   onClick={() => {
                     const dmg = parseInt(window.prompt("Inserisci i danni ad area da applicare a TUTTI i nemici:"), 10);
@@ -15226,14 +15226,14 @@ export default function App() {
                   💥 Area
                 </button>
                 <button
-                  style={styles.buttonMini}
+                  style={{ ...styles.buttonMini, padding: '3px 7px' }}
                   onClick={() => setCombat((c) => ({ ...c, aperto: false }))}
                   title={t('ct.minimizza')}
                 >
-                  ▁
+                  🗕
                 </button>
                 <button
-                  style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }}
+                  style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '3px 7px' }}
                   onClick={() => { if (window.confirm(t('ct.fine_conferma'))) setCombat({ attivo: false, aperto: true, round: 1, turno: 0, combattenti: [] }); }}
                   title={t('ct.fine')}
                 >
