@@ -556,14 +556,15 @@ export const WENDELL_JSON = {
 
 export const LYRIAN_JSON = {
   nome: 'Lyrian Faenor "Mezzafaccia"',
-  sesso: 'M',
+  sesso: 'maschio',
   background: 'Forestiero',
   classe: 'Guerriero',
   sottoclasse: 'Campione',
   livello: 4,
-  multiclasseClasse2: 'Warlock',
-  multiclasseLivello2: 1,
-  sottoclasseMc2: 'Lama Iettatrice',
+  multiclasse: [
+    { classe: 'Warlock', livello: 1, sottoclasse: 'Lama Iettatrice' }
+  ],
+  bonusCompetenza: 3,
   specie: 'Elfo dei Boschi',
   taglia: 'Media',
   allineamento: 'Neutrale',
@@ -593,7 +594,7 @@ export const LYRIAN_JSON = {
     intuizione: 0,
     medicina: 0,
     natura: 0,
-    percezione: 2,
+    percezione: 1,
     persuasione: 0,
     rapiditaDiMano: 0,
     religione: 0,

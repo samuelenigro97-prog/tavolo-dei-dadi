@@ -216,6 +216,27 @@ test('Wendell: CA Cuoio Borchiato (12) + DES 16 (+3) = 15, Maestria Inganno/Pers
   assert.equal(WENDELL_JSON.incantesimiLista.length, 12); // 3 trucchetti + 9 incantesimi
 });
 
+// ========================= Lyrian Faenor "Mezzafaccia" =========================
+
+test('Lyrian: Guerriero 4 / Warlock 1 (Totale 5, BC +3), CA 18, PF 36, Dadi Vita 4d10+1d8', async () => {
+  const { LYRIAN_JSON } = await import('../src/data/esempi.js');
+  assert.equal(LYRIAN_JSON.classe, 'Guerriero');
+  assert.equal(LYRIAN_JSON.livello, 4);
+  assert.equal(LYRIAN_JSON.multiclasse[0].classe, 'Warlock');
+  assert.equal(LYRIAN_JSON.multiclasse[0].livello, 1);
+  assert.equal(LYRIAN_JSON.bonusCompetenza, 3);
+  assert.equal(caTotale(LYRIAN_JSON), 18); // 12 cuoio + 4 DES + 2 scudo
+  assert.equal(LYRIAN_JSON.pfMax, 36);
+  assert.equal(bonusTiroSalvezza(LYRIAN_JSON, 'forza'), 3); // 0 FOR + 3 comp
+  assert.equal(bonusTiroSalvezza(LYRIAN_JSON, 'costituzione'), 5); // +2 COS + 3 comp
+  assert.equal(bonusAbilita(LYRIAN_JSON, 'atletica'), 3); // 0 FOR + 3 comp
+  assert.equal(bonusAbilita(LYRIAN_JSON, 'intimidire'), 6); // +3 CAR + 3 comp
+  assert.equal(bonusAbilita(LYRIAN_JSON, 'percezione'), 4); // +1 SAG + 3 comp
+  assert.equal(bonusAbilita(LYRIAN_JSON, 'sopravvivenza'), 4); // +1 SAG + 3 comp
+  assert.equal(LYRIAN_JSON.slotIncantesimo[1].totale, 1);
+  assert.equal(LYRIAN_JSON.incantesimiLista.length, 4);
+});
+
 test('spiegaIncantesimo: funziona per tutti gli incantesimi (inclusi quelli dal database) senza ReferenceError', () => {
   assert.ok(spiegaIncantesimo('Guida'));
   assert.ok(spiegaIncantesimo('Arte Druidica'));

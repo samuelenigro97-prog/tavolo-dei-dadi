@@ -2083,12 +2083,20 @@ function loadState() {
           if (!s.difetti && ELEVORN_JSON.difetti) s.difetti = ELEVORN_JSON.difetti;
           if (!s.nemici && ELEVORN_JSON.nemici) s.nemici = ELEVORN_JSON.nemici;
         } else if (/lyrian|faenor|mezzafaccia/i.test(s.nome) || id === 'pg-lyrian') {
+          if (!Array.isArray(s.multiclasse) || s.multiclasse.length === 0) {
+            s.multiclasse = [{ classe: 'Warlock', livello: 1, sottoclasse: 'Lama Iettatrice' }];
+          }
+          if (!s.bonusCompetenza || s.bonusCompetenza < 3) s.bonusCompetenza = 3;
           if (!s.note && LYRIAN_JSON.note) s.note = LYRIAN_JSON.note;
           if (!s.trattiCaratteriali && LYRIAN_JSON.trattiCaratteriali) s.trattiCaratteriali = LYRIAN_JSON.trattiCaratteriali;
           if (!s.ideali && LYRIAN_JSON.ideali) s.ideali = LYRIAN_JSON.ideali;
           if (!s.legami && LYRIAN_JSON.legami) s.legami = LYRIAN_JSON.legami;
           if (!s.difetti && LYRIAN_JSON.difetti) s.difetti = LYRIAN_JSON.difetti;
           if (!s.nemici && LYRIAN_JSON.nemici) s.nemici = LYRIAN_JSON.nemici;
+          if (!s.privilegi || s.privilegi.length < 200) s.privilegi = LYRIAN_JSON.privilegi;
+          if (!s.trattiSpecie || s.trattiSpecie.length < 50) s.trattiSpecie = LYRIAN_JSON.trattiSpecie;
+          if (!s.attacchi || s.attacchi.length < 4) s.attacchi = LYRIAN_JSON.attacchi;
+          if (!s.incantesimiLista || s.incantesimiLista.length < 4) s.incantesimiLista = LYRIAN_JSON.incantesimiLista;
         }
         roster.personaggi[id] = s;
       }
@@ -2272,12 +2280,23 @@ function normalizeImported(rawDati) {
   const maxTruccIniziale = num(dati.maxTrucchetti, 0) || (baseTruccPin != null && nTruccPin > baseTruccPin ? nTruccPin : 0);
   const maxIncIniziale = num(dati.maxIncantesimi, 0) || (baseIncPin != null && nIncPin > baseIncPin ? nIncPin : 0);
   const multiclassePin = Array.isArray(dati.multiclasse)
-    ? dati.multiclasse.map((m) => ({ classe: traduciEN(str(m && m.classe)), livello: Math.max(1, num(m && m.livello, 1)) })).filter((m) => m.classe)
-    : [];
+    ? dati.multiclasse.map((m) => ({
+        classe: traduciEN(str(m && m.classe)),
+        livello: Math.max(1, num(m && m.livello, 1)),
+        sottoclasse: traduciEN(str(m && m.sottoclasse))
+      })).filter((m) => m.classe)
+    : (dati.multiclasseClasse2
+        ? [{
+            classe: traduciEN(str(dati.multiclasseClasse2)),
+            livello: Math.max(1, num(dati.multiclasseLivello2, 1)),
+            sottoclasse: traduciEN(str(dati.sottoclasseMc2))
+          }]
+        : []);
   // Auto-correzione livello se il JSON ha messo il totale in "livello" (es. Elevorn: livello 10 con Ranger6/Ladro3 → totale 19 ma bonus 4 da 10)
   let livelloCorretto = num(dati.livello, base.livello);
+  const sommaMulti = multiclassePin.reduce((s, m) => s + (Number(m.livello) || 0), 0);
+  const livTotaleCalcolato = livelloCorretto + sommaMulti;
   {
-    const sommaMulti = multiclassePin.reduce((s, m) => s + (Number(m.livello) || 0), 0);
     const totaleDati = livelloCorretto + sommaMulti;
     const bonusDati = num(dati.bonusCompetenza, null);
     if (Number.isFinite(bonusDati) && sommaMulti > 0 && totaleDati > 12) {
@@ -2289,6 +2308,7 @@ function normalizeImported(rawDati) {
       }
     }
   }
+  const bonusCompetenzaEffettivo = num(dati.bonusCompetenza, null) || bonusCompetenzaDaLivello(livTotaleCalcolato);
   return {
     ...base,
     pfTemp: num(dati.pfTemp, 0),
@@ -2328,7 +2348,7 @@ function normalizeImported(rawDati) {
       : Math.max(0, num(dati.dadiVitaSpesi, 0)),
     velocita: num(dati.velocita, base.velocita),
     taglia: str(dati.taglia, base.taglia) || base.taglia,
-    bonusCompetenza: num(dati.bonusCompetenza, base.bonusCompetenza),
+    bonusCompetenza: bonusCompetenzaEffettivo,
     caratteristiche: car,
     tiriSalvezza: ts,
     abilita,
@@ -10631,13 +10651,20 @@ export default function App() {
                 <div style={styles.vitalValue}>
                   <Editable value={conSegno(scheda.bonusCompetenza)} onChange={(v) => aggiorna({ bonusCompetenza: parseInt(v, 10) || 0 })} width={48} title={t('tip.click_modifica')} />
                 </div>
-                {scheda.bonusCompetenza !== bonusCompetenzaDaLivello(scheda.livello) && (
-                  <span className="tirabile" style={{ fontSize: 9, color: C.goldDark, cursor: 'pointer', marginTop: 1 }}
-                    title={`Bonus corretto per liv. ${scheda.livello}: ${conSegno(bonusCompetenzaDaLivello(scheda.livello))}`}
-                    onClick={() => aggiorna({ bonusCompetenza: bonusCompetenzaDaLivello(scheda.livello) })}>
-                    auto {conSegno(bonusCompetenzaDaLivello(scheda.livello))}
-                  </span>
-                )}
+                {(() => {
+                  const livTot = (scheda.livello || 1) + (Array.isArray(scheda.multiclasse) ? scheda.multiclasse.reduce((a, m) => a + (m?.livello || 0), 0) : 0);
+                  const bcAtteso = bonusCompetenzaDaLivello(livTot);
+                  if (scheda.bonusCompetenza !== bcAtteso) {
+                    return (
+                      <span className="tirabile" style={{ fontSize: 9, color: C.goldDark, cursor: 'pointer', marginTop: 1 }}
+                        title={`Bonus corretto per liv. ${livTot}: ${conSegno(bcAtteso)}`}
+                        onClick={() => aggiorna({ bonusCompetenza: bcAtteso })}>
+                        auto {conSegno(bcAtteso)}
+                      </span>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             </div>
             <div style={{ ...styles.vitalBox }}>
