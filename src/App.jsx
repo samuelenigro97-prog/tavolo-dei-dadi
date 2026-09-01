@@ -3176,9 +3176,32 @@ export default function App() {
     } catch { /* niente */ }
     return { attivo: false, aperto: true, round: 1, turno: 0, combattenti: [] };
   });
+  const combatRef = useRef(null);
   useEffect(() => {
     try { localStorage.setItem('scheda-interattiva:combat', JSON.stringify(combat)); } catch { /* niente */ }
   }, [combat]);
+
+  // Minimizza il Combat Tracker quando si clicca all'esterno della barra, preservando lo stato esatto
+  useEffect(() => {
+    if (!combat.attivo || !combat.aperto) return;
+
+    function handleClickOutside(e) {
+      if (combatRef.current && combatRef.current.contains(e.target)) return;
+      if (e.target?.closest?.('[data-combat-toggle]')) return;
+      if (e.target?.closest?.('.modal-backdrop, [role="dialog"], [data-no-ct-close]')) return;
+      setCombat((c) => (c.aperto ? { ...c, aperto: false } : c));
+    }
+
+    const timer = setTimeout(() => {
+      document.addEventListener('pointerdown', handleClickOutside, true);
+    }, 80);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('pointerdown', handleClickOutside, true);
+    };
+  }, [combat.attivo, combat.aperto]);
+
   const [ctDmg, setCtDmg] = useState({}); // valore danno/cura per combattente (id → stringa)
   const [storicoAperto, setStoricoAperto] = useState(false);
   // Mappa della campagna: immagine caricata dal DM, apribile/chiudibile come il
@@ -9461,11 +9484,21 @@ export default function App() {
                       <button ref={ambientazioneBtnRef} style={btnAzione} title={t('luogo.tooltip')} onClick={() => { if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
                       <button style={{ ...btnAzione, ...(mostraDiarioModal ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }} onClick={() => setMostraDiarioModal(true)} title={`${t('sez.diario')} (${(Array.isArray(scheda.diario) ? scheda.diario.length : 0)})`}>📜</button>
                       <button style={btnAzione} onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())} title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}>🗺️</button>
-                      <button style={btnAzione} onClick={() => {
-                        if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
-                        else if (combat.combattenti.length) setCombat((c) => ({ ...c, attivo: true, aperto: true }));
-                        else aggiungiPgAlCombat();
-                      }} title={(combat.attivo && combat.aperto ? t('ct.minimizza') : t('ct.apri')) + (combat.combattenti.length ? ` (${combat.combattenti.length})` : '')}>⚔️</button>
+                      <button
+                        data-combat-toggle="true"
+                        style={{
+                          ...btnAzione,
+                          ...(combat.attivo ? { color: C.goldDark, borderColor: C.goldDark, background: combat.aperto ? 'rgba(201,162,39,0.22)' : 'rgba(201,162,39,0.12)', boxShadow: '0 0 8px rgba(201,162,39,0.3)' } : {}),
+                        }}
+                        onClick={() => {
+                          if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
+                          else if (combat.combattenti.length) setCombat((c) => ({ ...c, attivo: true, aperto: true }));
+                          else aggiungiPgAlCombat();
+                        }}
+                        title={(combat.attivo && combat.aperto ? t('ct.minimizza') : t('ct.apri')) + (combat.combattenti.length ? ` (${combat.combattenti.length})` : '')}
+                      >
+                        ⚔️
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -9501,7 +9534,18 @@ export default function App() {
                       🎲
                     </button>
                     <button
-                      style={{ ...btnAzione, width: 28, height: 28, minWidth: 28, maxWidth: 28, minHeight: 28, maxHeight: 28, fontSize: 13 }}
+                      data-combat-toggle="true"
+                      style={{
+                        ...btnAzione,
+                        width: 28,
+                        height: 28,
+                        minWidth: 28,
+                        maxWidth: 28,
+                        minHeight: 28,
+                        maxHeight: 28,
+                        fontSize: 13,
+                        ...(combat.attivo ? { color: C.goldDark, borderColor: C.goldDark, background: combat.aperto ? 'rgba(201,162,39,0.22)' : 'rgba(201,162,39,0.12)' } : {}),
+                      }}
                       onClick={() => {
                         if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
                         else if (combat.combattenti.length) setCombat((c) => ({ ...c, attivo: true, aperto: true }));
@@ -14064,6 +14108,7 @@ export default function App() {
 
                 <button
                   type="button"
+                  data-combat-toggle="true"
                   style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: combat.attivo && combat.aperto ? 'rgba(201,162,39,0.18)' : C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
                   onClick={() => {
                     if (combat.attivo && combat.aperto) setCombat((c) => ({ ...c, aperto: false }));
@@ -15019,7 +15064,7 @@ export default function App() {
 
       {/* ===== Combat tracker: barra fissa in basso (stile Fantasy Grounds) ===== */}
       {combat.attivo && combat.aperto ? (
-        <div style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 1500, background: C.panel, borderTop: `2px solid var(--c-gold-dark)`, boxShadow: '0 -6px 24px rgba(0,0,0,0.45)' }}>
+        <div ref={combatRef} style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 1500, background: C.panel, borderTop: `2px solid var(--c-gold-dark)`, boxShadow: '0 -6px 24px rgba(0,0,0,0.45)' }}>
           <div style={{ maxWidth: 1200, margin: '0 auto', padding: '8px 12px' }}>
             {/* BARRA SUPERIORE CONTROLLI COMBAT TRACKER */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 8, paddingBottom: 6, borderBottom: `1px solid ${C.border}` }}>
@@ -15553,6 +15598,39 @@ export default function App() {
               );
             })()}
           </div>
+        </div>
+      ) : combat.attivo && !combat.aperto && combat.combattenti.length > 0 ? (
+        <div
+          data-combat-toggle="true"
+          onClick={() => setCombat((c) => ({ ...c, aperto: true }))}
+          style={{
+            position: 'fixed',
+            bottom: 14,
+            right: 18,
+            zIndex: 1490,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            background: 'var(--c-panel)',
+            border: '2px solid var(--c-gold-dark)',
+            color: 'var(--c-gold-dark)',
+            padding: '7px 14px',
+            borderRadius: 24,
+            boxShadow: '0 4px 18px rgba(0,0,0,0.35)',
+            cursor: 'pointer',
+            fontWeight: 800,
+            fontSize: 12.5,
+            letterSpacing: 0.3,
+            transition: 'all 0.2s ease',
+            userSelect: 'none',
+          }}
+          title={t('ct.apri')}
+        >
+          <span style={{ fontSize: 14 }}>⚔️</span>
+          <span>
+            {t('ct.round')} {combat.round} · {t('ct.in_turno')}: {combat.combattenti[combat.turno]?.nome || 'PG'}
+          </span>
+          <span style={{ fontSize: 11, opacity: 0.9 }}>▲</span>
         </div>
       ) : null}
       <NuvolettaGlobale />
