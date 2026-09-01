@@ -137,3 +137,59 @@ export function bonusTiroSalvezza(scheda, car) {
     bonusTiriSalvezzaOggetti(scheda)
   );
 }
+
+// ---------------------------------------------------------------------------
+// Taglia 5e e modificatori dimensionali (Ingrandire / Ridurre / Forma Bestiale)
+// ---------------------------------------------------------------------------
+
+export const SCALE_TAGLIE_5E = ['Minuscola', 'Piccola', 'Media', 'Grande', 'Enorme', 'Mastodontica'];
+
+export const MOLTIPLICATORI_TAGLIA = {
+  Minuscola: 0.5,
+  Piccola: 1,
+  Media: 1,
+  Grande: 2,
+  Enorme: 4,
+  Mastodontica: 8,
+};
+
+export const SPAZIO_TAGLIA_5E = {
+  Minuscola: '75 cm (1/4 quadretto)',
+  Piccola: '1,5 m (1 quadretto)',
+  Media: '1,5 m (1 quadretto)',
+  Grande: '3 m × 3 m (4 quadretti)',
+  Enorme: '4,5 m × 4,5 m (9 quadretti)',
+  Mastodontica: '6 m × 6 m o più (16+ quadretti)',
+};
+
+export const LOTTA_MAX_TAGLIA_5E = {
+  Minuscola: 'Piccola',
+  Piccola: 'Media',
+  Media: 'Grande',
+  Grande: 'Enorme',
+  Enorme: 'Mastodontica',
+  Mastodontica: 'Mastodontica+',
+};
+
+/**
+ * Calcola la taglia effettiva del personaggio considerando:
+ * 1. Forma Bestiale attiva (prende la taglia della bestia)
+ * 2. Incantesimo Ingrandire/Ridurre o condizione 'Ingrandito' / 'Ridotto'
+ * 3. Taglia base della scheda
+ */
+export function tagliaEffettiva(scheda) {
+  if (scheda?.formaBestiale?.attiva && scheda.formaBestiale.taglia) {
+    return scheda.formaBestiale.taglia;
+  }
+  const base = scheda?.taglia || 'Media';
+  const idx = SCALE_TAGLIE_5E.indexOf(base);
+  if (idx === -1) return base;
+
+  if (scheda?.effettoTaglia === 'ingrandito' || (Array.isArray(scheda?.condizioni) && scheda.condizioni.includes('Ingrandito'))) {
+    return SCALE_TAGLIE_5E[Math.min(SCALE_TAGLIE_5E.length - 1, idx + 1)];
+  }
+  if (scheda?.effettoTaglia === 'ridotto' || (Array.isArray(scheda?.condizioni) && scheda.condizioni.includes('Ridotto'))) {
+    return SCALE_TAGLIE_5E[Math.max(0, idx - 1)];
+  }
+  return base;
+}

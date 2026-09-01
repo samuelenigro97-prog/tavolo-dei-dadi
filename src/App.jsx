@@ -7,7 +7,7 @@ import { avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro, s
 import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI } from './ui/tema.js';
 import { styles, GLOBAL_CSS } from './ui/stili.js';
 import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, Sezione, CampoBloccato } from './ui/componenti.jsx';
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce } from './rules/scheda.js';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from './data/condizioni.js';
@@ -4348,11 +4348,23 @@ export default function App() {
 
   /** Tira i danni di un attacco (con eventuale critico), indipendente dallo stato. */
   function tiraDanniPerAttacco(attacco, critico) {
-    const parsata = parseEspressioneDado(attacco?.danno || '');
+    let dannoExpr = attacco?.danno || '';
+    const isArma = !attacco?.isSpell;
+    let notaTaglia = '';
+    if (isArma && (scheda?.effettoTaglia === 'ingrandito' || (Array.isArray(scheda?.condizioni) && scheda.condizioni.includes('Ingrandito')))) {
+      dannoExpr = dannoExpr ? `${dannoExpr} + 1d4` : '1d4';
+      notaTaglia = ' (Ingrandito +1d4)';
+    } else if (isArma && (scheda?.effettoTaglia === 'ridotto' || (Array.isArray(scheda?.condizioni) && scheda.condizioni.includes('Ridotto')))) {
+      dannoExpr = dannoExpr ? `${dannoExpr} - 1d4` : '1d4';
+      notaTaglia = ' (Ridotto -1d4)';
+    }
+    const parsata = parseEspressioneDado(dannoExpr);
     if (!parsata) return;
     const maxFacce = Math.max(...parsata.termini.map((p) => p.facce).filter(Boolean));
     const nome = attacco.nome;
     const esito = tiraDanni(parsata, critico);
+    // In caso di riduzione con risultato <= 0, il danno minimo è 1 nelle regole 5e
+    if (esito.totale < 1) esito.totale = 1;
     // Suono coerente col tipo d'attacco: critico → critico; incantesimo → magia; arco/balestra/fionda
     // → colpo a distanza; tutto il resto (mischia) → colpo di spada.
     const suonoDanno = critico
@@ -4363,8 +4375,8 @@ export default function App() {
           ? 'arco'
           : 'arma';
     conAnimazione(() => {
-      setDanni({ etichetta: `${critico ? '⚔ Danni CRITICI' : 'Danni'}: ${nome}`, ...esito, critico });
-      registra({ etichetta: `${critico ? '⚔ CRITICO ' : ''}${t('log.danni')}: ${nome}`, tipo: 'danni', totale: esito.totale, dettaglio: esito.dettaglio, critico });
+      setDanni({ etichetta: `${critico ? '⚔ Danni CRITICI' : 'Danni'}: ${nome}${notaTaglia}`, ...esito, critico });
+      registra({ etichetta: `${critico ? '⚔ CRITICO ' : ''}${t('log.danni')}: ${nome}${notaTaglia}`, tipo: 'danni', totale: esito.totale, dettaglio: esito.dettaglio, critico });
     }, esito.totale, maxFacce || 20, false, suonoDanno);
   }
 
@@ -9654,8 +9666,32 @@ export default function App() {
                     <CampoModulo label={versione === "2024" ? t("profilo.specie") : t("profilo.razza")}>
                       <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} formattaOpzione={(v) => nomeSpeciePerSesso(v, scheda.sesso, lingua)} onChange={(v) => { const sp = datiSpecieDi(v); aggiorna({ specie: v, ...(sp ? { velocita: sp.velocita, sensi: sp.sensi, taglia: sp.taglia, trattiSpecie: trattiSpecieTesto(sp.tratti) } : {}), ...abilitaConSpecie(v), ...ritrattoAuto(scheda.classe, v, scheda.nome) }); }} title={t('tip.scegli_specie')} />
                     </CampoModulo>
-                    <CampoModulo label={t("profilo.taglia")}>
-                      <CampoTendina value={scheda.taglia} opzioni={TAGLIE_5E} onChange={(v) => aggiorna({ taglia: v })} title={t('tip.scegli_taglia')} />
+                    <CampoModulo label={t("profilo.taglia")} boxClassName={tagliaEffettiva(scheda) !== (scheda.taglia || 'Media') ? 'testo-compatto' : undefined}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <CampoTendina
+                          value={scheda.taglia}
+                          opzioni={TAGLIE_5E}
+                          onChange={(v) => aggiorna({ taglia: v })}
+                          title={`Taglia effettiva: ${tagliaEffettiva(scheda)} · Spazio: ${SPAZIO_TAGLIA_5E[tagliaEffettiva(scheda)] || '1,5m'} · Lotta fino a: ${LOTTA_MAX_TAGLIA_5E[tagliaEffettiva(scheda)] || 'Grande'}`}
+                        />
+                        {tagliaEffettiva(scheda) !== (scheda.taglia || 'Media') && (
+                          <span
+                            style={{
+                              fontSize: 9.5,
+                              fontWeight: 800,
+                              background: C.green || '#2e7d32',
+                              color: '#fff',
+                              borderRadius: 4,
+                              padding: '1px 5px',
+                              whiteSpace: 'nowrap',
+                              boxShadow: '0 1px 4px rgba(0,0,0,0.25)',
+                            }}
+                            title={`Effetto attivo! Taglia temporanea: ${tagliaEffettiva(scheda)} (Base: ${scheda.taglia || 'Media'})`}
+                          >
+                            ➔ {tagliaEffettiva(scheda)}
+                          </span>
+                        )}
+                      </div>
                     </CampoModulo>
                     <CampoModulo label={t("profilo.allineamento")}>
                       <CampoTendina value={scheda.allineamento} opzioni={ALLINEAMENTI_5E} onChange={(v) => aggiorna({ allineamento: v })} title={t('tip.scegli_allineamento')} />
@@ -10282,8 +10318,32 @@ export default function App() {
               <div style={{ ...styles.vitalBox }}>
                 <div style={styles.vitalLabel}>{t("vital.condizioni")}</div>
                 <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center', justifyContent: 'center' }}>
-                  {scheda.condizioni.length > 0 && (
+                  {(scheda.condizioni.length > 0 || scheda.effettoTaglia) && (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'center', justifyContent: 'center', maxHeight: 42, overflowY: 'auto' }}>
+                      {scheda.effettoTaglia && (
+                        <span
+                          style={{
+                            background: scheda.effettoTaglia === 'ingrandito' ? 'rgba(46,125,50,0.2)' : 'rgba(192,57,43,0.2)',
+                            border: `1px solid ${scheda.effettoTaglia === 'ingrandito' ? (C.green || '#2e7d32') : (C.red || '#c0392b')}`,
+                            borderRadius: 4,
+                            padding: '1px 5px',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 3,
+                            fontSize: 10,
+                          }}
+                        >
+                          <span style={{ color: scheda.effettoTaglia === 'ingrandito' ? (C.green || '#2e7d32') : (C.red || '#c0392b'), fontWeight: 700 }}>
+                            {scheda.effettoTaglia === 'ingrandito' ? '✨ Ingrandito (+1d4)' : '✨ Ridotto (−1d4)'}
+                          </span>
+                          <button
+                            type="button"
+                            style={{ background: 'none', border: 0, padding: 0, color: C.inkDim, cursor: 'pointer', fontSize: 10, lineHeight: 1 }}
+                            title="Rimuovi effetto taglia"
+                            onClick={() => aggiorna({ effettoTaglia: null })}
+                          >✕</button>
+                        </span>
+                      )}
                       {scheda.condizioni.map((c) => {
                         const col = COLORI_CONDIZIONI[c] || { bg: 'rgba(200,140,20,0.18)', border: C.goldDark, text: C.ink };
                         const ico = ICONE_CONDIZIONI[c] || '⚠️';
@@ -11459,6 +11519,44 @@ export default function App() {
                                     </div>
                                   )}
                                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0, marginLeft: 'auto' }}>
+                                    {/ingrandire|ridurre|enlarge|reduce/i.test(s.nome || '') && (
+                                      <div style={{ display: 'inline-flex', gap: 3, alignItems: 'center' }}>
+                                        <button
+                                          type="button"
+                                          style={{
+                                            ...styles.buttonMini,
+                                            padding: '2px 6px',
+                                            fontSize: 10,
+                                            fontWeight: 700,
+                                            color: scheda.effettoTaglia === 'ingrandito' ? '#fff' : (C.green || '#2e7d32'),
+                                            background: scheda.effettoTaglia === 'ingrandito' ? (C.green || '#2e7d32') : 'transparent',
+                                            borderColor: C.green || '#2e7d32',
+                                            cursor: 'pointer',
+                                          }}
+                                          title="Attiva Ingrandire: +1 taglia, +1d4 danni armi, vantaggio prove/TS FOR, carico raddoppiato"
+                                          onClick={() => aggiorna({ effettoTaglia: scheda.effettoTaglia === 'ingrandito' ? null : 'ingrandito' })}
+                                        >
+                                          {scheda.effettoTaglia === 'ingrandito' ? '✨ Ingrandito' : '⬆️ Ingrandisci'}
+                                        </button>
+                                        <button
+                                          type="button"
+                                          style={{
+                                            ...styles.buttonMini,
+                                            padding: '2px 6px',
+                                            fontSize: 10,
+                                            fontWeight: 700,
+                                            color: scheda.effettoTaglia === 'ridotto' ? '#fff' : (C.red || '#c0392b'),
+                                            background: scheda.effettoTaglia === 'ridotto' ? (C.red || '#c0392b') : 'transparent',
+                                            borderColor: C.red || '#c0392b',
+                                            cursor: 'pointer',
+                                          }}
+                                          title="Attiva Ridurre: -1 taglia, -1d4 danni armi, svantaggio prove/TS FOR, carico dimezzato"
+                                          onClick={() => aggiorna({ effettoTaglia: scheda.effettoTaglia === 'ridotto' ? null : 'ridotto' })}
+                                        >
+                                          {scheda.effettoTaglia === 'ridotto' ? '✨ Ridotto' : '⬇️ Riduci'}
+                                        </button>
+                                      </div>
+                                    )}
                                     {s.catalogo ? (
                                       <button
                                         style={{
@@ -11990,7 +12088,8 @@ export default function App() {
                 // non pesano nulla sull'ingombro. La borsa stessa pesa il suo peso (15 lb = 6.8 kg).
                 const borsaEquip = inv.find((o) => o.equip && /borsa\s+conservante|bag of holding/i.test(o.nome || ''));
                 const capBonusBorsa = borsaEquip ? 250 : 0;
-                const moltiTaglia = ({ Minuscola: 0.5, Piccola: 1, Media: 1, Grande: 2, Enorme: 4, Mastodontica: 8 })[scheda.taglia] || 1;
+                const tagliaAttiva = tagliaEffettiva(scheda);
+                const moltiTaglia = MOLTIPLICATORI_TAGLIA[tagliaAttiva] || 1;
                 const capFisica = capacitaCarico(forza) * moltiTaglia;
                 const cap = capFisica + capBonusBorsa;
                 // Peso totale ESCLUSO ciò che sta dentro la Borsa Conservante equipaggiata
@@ -12132,7 +12231,7 @@ export default function App() {
                         {stato !== 'ok' && <span style={{ color: colore, fontWeight: 700 }}>{t('inv.stato_' + stato)}</span>}
                       </div>
                       <div style={{ ...styles.detail, marginTop: 2, fontSize: 10, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
-                        <span>Taglia {scheda.taglia || 'Media'} ×{moltiTaglia} · Spingi/trascina/solleva {spingiTrascina.toFixed(0)} kg</span>
+                        <span>Taglia {tagliaAttiva} ×{moltiTaglia} · Spazio: {SPAZIO_TAGLIA_5E[tagliaAttiva]} · Spingi/trascina/solleva {spingiTrascina.toFixed(0)} kg (Lotta fino a: {LOTTA_MAX_TAGLIA_5E[tagliaAttiva]})</span>
                         <span>🛡️ Indossato: <strong>{pesoEquipTot.toFixed(1)} kg</strong> · 🎒 Zaino: <strong>{pesoZainoTot.toFixed(1)} kg</strong></span>
                       </div>
                       <div style={{ height: 6, borderRadius: 3, background: C.border, overflow: 'hidden', marginTop: 3 }} title={`${t('inv.soglie')}: ${(soglia1).toFixed(0)} / ${(soglia2).toFixed(0)} / ${cap.toFixed(0)} kg`}>

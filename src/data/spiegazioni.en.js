@@ -224,6 +224,7 @@ export const EN_INCANTESIMI = {
   'Infliggere Maledizione': 'Lv. 3 · You curse a creature (range 9 m; Wisdom save) with an effect of your choice: disadvantage, extra damage, and so on. Concentration, 1 min.',
   'Interdizione alle Lame': 'Resistance to bludgeoning, piercing and slashing weapon damage or −1d4 on enemy attack rolls.',
   'Intralciare': 'Lv. 1 · 6 m area (range 27 m): weeds restrain creatures (Strength save). Concentration, 1 min.',
+  'Ingrandire/Ridurre': 'Lv. 2 · Enlarge (+1 size, +1d4 weapon damage, advantage on Strength checks and saves, doubled carrying capacity) or Reduce (−1 size, −1d4 weapon damage, disadvantage on Strength checks/saves). Concentration, 1 min.',
   'Invisibilità': 'Lv. 2 · A creature you touch becomes invisible until it attacks or casts a spell. Concentration, 1 hour (more targets with higher slots).',
   'Invisibilità Superiore': 'Lv. 4 · The creature stays invisible even while attacking or casting spells. Concentration, 1 min.',
   'Legame di Protezione': 'Lv. 2 · An ally within 18 m takes half damage: you take the other half. 1 hour.',

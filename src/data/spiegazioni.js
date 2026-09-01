@@ -844,6 +844,7 @@ const SPIEG_INCANTESIMI = {
   'Infliggere Maledizione': 'Liv. 3 · Maledici una creatura (gittata 9 m; TS Saggezza) con un effetto a scelta: svantaggio, danni extra, ecc. Concentrazione, 1 min.',
   'Interdizione alle Lame': 'Resistenza ai danni fisici da armi o −1d4 ai tiri per colpire dei nemici.',
   'Intralciare': "Liv. 1 · Area 6 m (gittata 27 m): erbacce trattengono le creature (TS Forza). Concentrazione, 1 min.",
+  'Ingrandire/Ridurre': 'Liv. 2 · Ingrandisci (+1 taglia, +1d4 danni alle armi, vantaggio a prove e TS su Forza, capacità di carico raddoppiata) o Riduci (−1 taglia, −1d4 danni armi, svantaggio prove/TS Forza). Concentrazione, 1 min.',
   'Invisibilità': 'Liv. 2 · Una creatura toccata diventa invisibile finché non attacca o lancia un incantesimo. Concentrazione, 1 ora (più bersagli con slot).',
   'Invisibilità Superiore': 'Liv. 4 · La creatura resta invisibile anche attaccando o lanciando incantesimi. Concentrazione, 1 min.',
   'Legame di Protezione': "Liv. 2 · Un alleato entro 18 m subisce metà danni: l'altra metà la subisci tu. 1 ora.",

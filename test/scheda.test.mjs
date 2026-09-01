@@ -338,3 +338,29 @@ test('Forma Bestiale: genera avatar SVG e icone coerenti per ogni animale', asyn
   assert.ok(svgOrso.includes('ORSO%20BRUNO'));
   assert.ok(svgOrso.includes('GS%201'));
 });
+
+test('Taglia 5e: calcolo taglia effettiva con Forma Bestiale, Ingrandire e Ridurre', async () => {
+  const { tagliaEffettiva, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E } = await import('../src/rules/scheda.js');
+  
+  const pg = { taglia: 'Media', condizioni: [], effettoTaglia: null, formaBestiale: { attiva: false } };
+  assert.equal(tagliaEffettiva(pg), 'Media');
+  assert.equal(MOLTIPLICATORI_TAGLIA[tagliaEffettiva(pg)], 1);
+
+  // Ingrandire / Enlarge (+1 taglia)
+  pg.effettoTaglia = 'ingrandito';
+  assert.equal(tagliaEffettiva(pg), 'Grande');
+  assert.equal(MOLTIPLICATORI_TAGLIA[tagliaEffettiva(pg)], 2);
+  assert.equal(SPAZIO_TAGLIA_5E[tagliaEffettiva(pg)], '3 m × 3 m (4 quadretti)');
+  assert.equal(LOTTA_MAX_TAGLIA_5E[tagliaEffettiva(pg)], 'Enorme');
+
+  // Ridurre / Reduce (-1 taglia)
+  pg.effettoTaglia = 'ridotto';
+  assert.equal(tagliaEffettiva(pg), 'Piccola');
+  assert.equal(MOLTIPLICATORI_TAGLIA[tagliaEffettiva(pg)], 1);
+
+  // Forma Bestiale sovrascrive con la taglia della bestia (es. Alce gigante = Enorme)
+  pg.formaBestiale = { attiva: true, taglia: 'Enorme' };
+  assert.equal(tagliaEffettiva(pg), 'Enorme');
+  assert.equal(MOLTIPLICATORI_TAGLIA[tagliaEffettiva(pg)], 4);
+});
+
