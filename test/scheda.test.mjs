@@ -237,21 +237,41 @@ test('Lyrian: Guerriero 4 / Warlock 1 (Totale 5, BC +3), CA 18, PF 36, Dadi Vita
   assert.equal(LYRIAN_JSON.incantesimiLista.length, 4);
 });
 
-test('spiegaIncantesimo: funziona per tutti gli incantesimi (inclusi quelli dal database) senza ReferenceError', async () => {
-  assert.ok(spiegaIncantesimo('Guida'));
-  assert.ok(spiegaIncantesimo('Arte Druidica'));
-  assert.ok(spiegaIncantesimo('Cura Ferite'));
-  assert.ok(spiegaIncantesimo('Passo Senza Tracce'));
-  assert.ok(spiegaIncantesimo('Randello Incantato'));
-  assert.ok(spiegaIncantesimo('Bastone Incantato'));
-  assert.ok(spiegaIncantesimo('Shillelagh'));
-  assert.equal(spiegaIncantesimo('Incantesimo Non Esistente 999'), null);
+test('spiegaIncantesimo: funziona per TUTTI gli incantesimi di tutte le classi (5.0, 5.5 e DB) in italiano e inglese', async () => {
+  const { INCANTESIMI_CLASSE, INCANTESIMI_CLASSE_2014 } = await import('../src/data/dati5e.js');
+  const { INCANTESIMI_DB } = await import('../src/data/incantesimi.js');
+  const { setLinguaAttuale } = await import('../src/i18n.js');
 
-  const { INCANTESIMI_CLASSE } = await import('../src/data/dati5e.js');
-  const druidoSpells = Object.values(INCANTESIMI_CLASSE.druido || {}).flat();
-  for (const s of druidoSpells) {
-    assert.ok(spiegaIncantesimo(s), `Descrizione mancante per incantesimo druido: ${s}`);
+  const allSpells = new Set();
+  function addSpells(obj) {
+    if (!obj) return;
+    if (Array.isArray(obj)) {
+      obj.forEach(s => typeof s === 'string' && allSpells.add(s));
+    } else if (typeof obj === 'object') {
+      Object.values(obj).forEach(v => addSpells(v));
+    }
   }
+
+  addSpells(INCANTESIMI_CLASSE);
+  addSpells(INCANTESIMI_CLASSE_2014);
+  Object.keys(INCANTESIMI_DB).forEach(s => allSpells.add(s));
+
+  assert.ok(allSpells.size >= 280, `Attesi almeno 280 incantesimi, trovati ${allSpells.size}`);
+
+  // Test in Italiano
+  setLinguaAttuale('it');
+  for (const s of allSpells) {
+    const desc = spiegaIncantesimo(s);
+    assert.ok(desc && desc.trim().length > 5, `Descrizione mancante o vuota in IT per: "${s}"`);
+  }
+
+  // Test in Inglese
+  setLinguaAttuale('en');
+  for (const s of allSpells) {
+    const desc = spiegaIncantesimo(s);
+    assert.ok(desc && desc.trim().length > 5, `Descrizione mancante o vuota in EN per: "${s}"`);
+  }
+  setLinguaAttuale('it');
 });
 
 test('generatore nomi fantasy: copre tutte le specie con decine di nomi e cognomi tipici e distinzione di genere', async () => {
