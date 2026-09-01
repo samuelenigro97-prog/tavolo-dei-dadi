@@ -4920,12 +4920,34 @@ export default function App() {
         const trascrizioni = [];
         for (const file of imageFiles) {
           const name = file.name.toLowerCase();
-          const base64 = await new Promise((risolvi, rifiuta) => {
+          let fileBase64 = await new Promise((risolvi, rifiuta) => {
             const fr = new FileReader();
-            fr.onload = () => risolvi(String(fr.result).split(',')[1] || '');
+            fr.onload = () => {
+              const res = String(fr.result || '');
+              const comma = res.indexOf(',');
+              risolvi(comma >= 0 ? res.slice(comma + 1).trim() : res.trim());
+            };
             fr.onerror = () => rifiuta(new Error('lettura del file fallita'));
             fr.readAsDataURL(file);
           });
+          if (!fileBase64) {
+            try {
+              const buf = await file.arrayBuffer();
+              let bin = '';
+              const bytes = new Uint8Array(buf);
+              const chunkSize = 8192;
+              for (let i = 0; i < bytes.byteLength; i += chunkSize) {
+                const chunk = bytes.subarray(i, i + chunkSize);
+                bin += String.fromCharCode.apply(null, chunk);
+              }
+              fileBase64 = btoa(bin);
+            } catch (err) {
+              console.error('Fallback arrayBuffer failed', err);
+            }
+          }
+          if (!fileBase64) {
+            throw new Error(`Il file "${file.name}" è vuoto o non è stato possibile leggerlo.`);
+          }
           const mediaType = (() => {
             if (file.type) return file.type;
             if (name.endsWith('.pdf')) return 'application/pdf';
@@ -4935,9 +4957,52 @@ export default function App() {
             if (name.endsWith('.jpg') || name.endsWith('.jpeg')) return 'image/jpeg';
             return 'image/jpeg';
           })();
-          const body = mediaType.startsWith('image/') ? { fileBase64: base64, mediaType } : { pdfBase64: base64, fileBase64: base64, mediaType: 'application/pdf' };
-          const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-          if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || `errore ${res.status} su ${file.name}`); }
+          const body = {
+            fileBase64,
+            pdfBase64: fileBase64,
+            imageBase64: fileBase64,
+            file: fileBase64,
+            image: fileBase64,
+            pdf: fileBase64,
+            data: fileBase64,
+            mediaType,
+            mimeType: mediaType,
+            type: mediaType,
+            name: file.name,
+            filename: file.name,
+            versione: versioneScelta,
+          };
+          const baseEp = endpoint.replace(/\/+$/, '');
+          const endpointsToTry = [
+            endpoint,
+            `${baseEp}/transcribe`,
+            `${baseEp}/api/transcribe`,
+          ].filter((v, i, a) => v && a.indexOf(v) === i);
+
+          let res = null;
+          let lastErr = null;
+          for (const ep of endpointsToTry) {
+            try {
+              const r = await fetch(ep, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+              });
+              if (r.ok) {
+                res = r;
+                break;
+              } else if (r.status !== 404) {
+                const err = await r.json().catch(() => ({}));
+                lastErr = new Error(err.error || `errore ${r.status} su ${file.name}`);
+                break;
+              }
+            } catch (err) {
+              lastErr = err;
+            }
+          }
+          if (!res) {
+            throw lastErr || new Error(`Impossibile contattare l'endpoint IA (${endpoint})`);
+          }
           const dati = await res.json();
           trascrizioni.push(dati);
         }
