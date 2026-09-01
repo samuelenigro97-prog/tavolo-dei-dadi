@@ -3551,16 +3551,8 @@ export default function App() {
     window.removeEventListener('pointermove', duranteTrascinamento);
   }
 
-  /** Props per rendere una Sezione riordinabile via drag (maniglia + ordine). */
-  const propsSez = (id) => ({
-    style: { order: ordineSezioni.indexOf(id) },
-    innerRef: (el) => {
-      if (el) nodiSezioni.current[id] = el;
-      else delete nodiSezioni.current[id];
-    },
-    manigliaProps: { onPointerDown: (e) => iniziaTrascinamento(e, id) },
-    trascinando: sezTrascinata === id,
-  });
+  /** Props per le sezioni: struttura fissa e ordinata. */
+  const propsSez = () => ({});
 
   /** Controllo sottoclasse per una singola classe (usato sia per la classe
    *  principale sia per quelle del multiclasse): bloccato finché non è ancora il

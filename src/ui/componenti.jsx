@@ -519,18 +519,7 @@ export function Sezione({ titolo, children, aperto = true, onToggleAperto, manig
       <span className="angolo-ornamento angolo-br" aria-hidden="true" />
       <summary className="sezione-titolo" style={{ ...styles.panelTitle, cursor: 'pointer', listStyle: 'none', marginBottom: 0, userSelect: 'none' }}>
         <span className="sezione-titolo-sinistra">
-        {manigliaProps && (
-          <span
-            className="tirabile"
-            title={t('tip.trascina_sezioni')}
-            style={{ cursor: 'grab', color: C.inkDim, fontSize: 15, lineHeight: 1, touchAction: 'none' }}
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-            {...manigliaProps}
-          >
-            ⠿
-          </span>
-        )}
-        <span className="freccia">▾</span>
+          <span className="freccia">▾</span>
         </span>
         <span className="sezione-titolo-testo">{titolo}</span>
         {/* Comandi nella riga del titolo: il click non deve aprire/chiudere. */}
