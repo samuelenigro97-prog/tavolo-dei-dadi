@@ -412,8 +412,8 @@ export const DIZIONARIO = {
     'spell.nessun_risultato': 'Nessun incantesimo trovato per la ricerca.',
     'spell.slot_speso_tip': 'Slot speso (click per recuperare)',
     'spell.slot_disp_tip': 'Slot disponibile (click per spendere)',
-    'spell.slot_piu_tip': 'Aumenta gli slot totali di questo livello',
-    'spell.slot_meno_tip': 'Diminuisce gli slot totali di questo livello',
+    'spell.slot_piu_tip': 'Recupera uno slot speso (+1 disponibile)',
+    'spell.slot_meno_tip': 'Usa/spendi uno slot (-1 disponibile)',
     'spell.elimina_titolo': 'Elimina incantesimo',
     'comune.aggiungi': 'Aggiungi',
     // Risorse di classe
@@ -1256,8 +1256,8 @@ export const DIZIONARIO = {
     'spell.nessun_risultato': 'No spells match your search.',
     'spell.slot_speso_tip': 'Expended slot (click to restore)',
     'spell.slot_disp_tip': 'Available slot (click to expend)',
-    'spell.slot_piu_tip': 'Increase total slots for this level',
-    'spell.slot_meno_tip': 'Decrease total slots for this level',
+    'spell.slot_piu_tip': 'Restore an expended slot (+1 available)',
+    'spell.slot_meno_tip': 'Use/spend a spell slot (-1 available)',
     'spell.elimina_titolo': 'Delete spell',
     'comune.aggiungi': 'Add',
     // Class resources

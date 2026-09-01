@@ -11811,44 +11811,58 @@ export default function App() {
                           <span style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: C.ink }}>
                             {liv === 0 ? t('spell.trucchetti') : t('spell.n_livello', { n: liv })}
                           </span>
-                          {liv >= 1 && slot && slot.totale > 0 && (
+                          {liv >= 1 && slot && (
                             <span style={{ fontSize: 11, color: C.inkDim, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 4, padding: '1px 5px' }}>
-                              Slot: <strong style={{ color: (slot.totale - slot.spesi) > 0 ? C.goldDark : C.red }}>{slot.totale - slot.spesi}</strong>/{slot.totale}
+                              Slot: <strong style={{ color: (slot.totale - (slot.spesi || 0)) > 0 ? C.goldDark : C.red }}>{Math.max(0, slot.totale - (slot.spesi || 0))}</strong>/<Editable value={slot.totale} tipo="numero" width={18} onChange={(v) => aggiornaSlot({ totale: Math.max(0, parseInt(v, 10) || 0) })} />
                             </span>
                           )}
                           <span style={{ fontSize: 11, color: C.inkDim, opacity: 0.8 }}>({countLiv}{liv >= 1 && classePreparata ? ` · ${numPrep} prep.` : ''})</span>
                         </div>
 
-                        {liv >= 1 && slot && (
+                        {liv >= 1 && slot && slot.totale > 0 && (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={(e) => e.stopPropagation()}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                              {Array.from({ length: slot.totale }, (_, i) => (
-                                <button
-                                  key={i}
-                                  type="button"
-                                  onClick={() => aggiornaSlot({ spesi: i < slot.spesi ? i : i + 1 })}
-                                  title={i < slot.spesi ? t('spell.slot_speso_tip') : t('spell.slot_disp_tip')}
-                                  style={{
-                                    width: 14, height: 14, borderRadius: '50%',
-                                    border: `1px solid ${C.goldDark}`,
-                                    background: i < slot.spesi ? 'transparent' : C.goldDark,
-                                    cursor: 'pointer', padding: 0,
-                                  }}
-                                />
-                              ))}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                              {Array.from({ length: slot.totale }, (_, i) => {
+                                const isDisponibile = i < (slot.totale - (slot.spesi || 0));
+                                return (
+                                  <button
+                                    key={i}
+                                    type="button"
+                                    onClick={() => {
+                                      if (isDisponibile) {
+                                        aggiornaSlot({ spesi: Math.min(slot.totale, (slot.spesi || 0) + 1) });
+                                      } else {
+                                        aggiornaSlot({ spesi: Math.max(0, (slot.spesi || 0) - 1) });
+                                      }
+                                    }}
+                                    title={isDisponibile ? t('spell.slot_disp_tip') : t('spell.slot_speso_tip')}
+                                    style={{
+                                      width: 15,
+                                      height: 15,
+                                      borderRadius: '50%',
+                                      border: `1.8px solid ${C.goldDark}`,
+                                      background: isDisponibile ? C.goldDark : 'rgba(0,0,0,0.18)',
+                                      boxShadow: isDisponibile ? '0 0 5px rgba(214,169,15,0.5)' : 'inset 0 0 3px rgba(0,0,0,0.4)',
+                                      cursor: 'pointer',
+                                      padding: 0,
+                                      transition: 'all 0.15s ease',
+                                    }}
+                                  />
+                                );
+                              })}
                             </div>
                             <button
                               type="button"
                               className="no-stampa"
-                              onClick={() => aggiornaSlot({ totale: slot.totale + 1 })}
-                              style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 10 }}
+                              onClick={() => aggiornaSlot({ spesi: Math.max(0, (slot.spesi || 0) - 1) })}
+                              style={{ ...styles.buttonMini, padding: '1px 6px', fontSize: 11, fontWeight: 700, color: C.green, borderColor: C.green }}
                               title={t('spell.slot_piu_tip')}
                             >+</button>
                             <button
                               type="button"
                               className="no-stampa"
-                              onClick={() => aggiornaSlot({ totale: Math.max(0, slot.totale - 1), spesi: Math.min(Math.max(0, slot.totale - 1), slot.spesi) })}
-                              style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 10 }}
+                              onClick={() => aggiornaSlot({ spesi: Math.min(slot.totale, (slot.spesi || 0) + 1) })}
+                              style={{ ...styles.buttonMini, padding: '1px 6px', fontSize: 11, fontWeight: 700, color: C.red, borderColor: C.red }}
                               title={t('spell.slot_meno_tip')}
                             >−</button>
                           </div>
