@@ -6833,7 +6833,14 @@ export default function App() {
                       setScheda((s) => ({
                         ...s,
                         risorse: risorseDopoRiposo(s.risorse, 'breve'),
-                        ...(isWarlock ? { slotIncantesimo: Object.fromEntries(Object.entries(s.slotIncantesimo).map(([liv, v]) => [liv, { ...v, spesi: 0 }])) } : {}),
+                        ...(isWarlock ? {
+                          slotIncantesimo: Object.fromEntries(
+                            Object.entries(s.slotIncantesimo || {}).map(([liv, v]) => [
+                              liv,
+                              Number(liv) <= 5 ? { ...v, spesi: 0 } : v,
+                            ])
+                          ),
+                        } : {}),
                       }));
                       registra({ etichetta: `🔥 ${t('vital.riposo_breve_tooltip')}`, tipo: 'riposo', dettaglio: isWarlock ? t('rest.breve_fatto_warlock') : t('rest.breve_fatto') });
                       setModalRiposo(null);

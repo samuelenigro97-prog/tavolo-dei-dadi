@@ -676,8 +676,9 @@ test('warlock: progressione e spiegazioni Invocazioni Occulte (Eldritch Invocati
 
   // Progressione 2024
   assert.equal(maxInvocazioniWarlock(1, '2024'), 1);
-  assert.equal(maxInvocazioniWarlock(2, '2024'), 2);
-  assert.equal(maxInvocazioniWarlock(20, '2024'), 8);
+  assert.equal(maxInvocazioniWarlock(2, '2024'), 3);
+  assert.equal(maxInvocazioniWarlock(5, '2024'), 5);
+  assert.equal(maxInvocazioniWarlock(20, '2024'), 10);
 
   // Spiegazioni
   assert.ok(INVOCAZIONI_5E.length >= 20, 'elenco invocazioni nutrito');
