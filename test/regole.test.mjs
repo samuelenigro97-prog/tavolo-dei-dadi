@@ -15,7 +15,7 @@ import {
   classificaIncantesimoCombattimento, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello,
   controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, puntiVersoSlot, slotVersoPunti,
   riepilogoCondizioni, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi,
-  classePreparaIncantesimi,
+  classePreparaIncantesimi, calcolaPfCompagno, parseAzioniCompagno,
 } from '../src/rules/regole.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from '../src/data/condizioni.js';
 import { CONDIZIONI_5E } from '../src/data/dati5e.js';
@@ -729,5 +729,40 @@ test('artefice: progressione slot, incantesimi preparati e infusioni (Artificer 
     assert.ok(typeof sp === 'string' && sp.length >= 25, `Spiegazione troppo breve per infusione: ${inf}`);
   }
 });
+
+test('compagni e famigli: auto-scaling PF e parsing attacchi (Companion & Pet Tracker)', () => {
+  const pgRanger = { classe: 'Ranger', livello: 6, caratteristiche: { intelligenza: 10, saggezza: 16 } };
+  const bestiaTerra = { nome: 'Bestia della Terra', pfFormula: '5 + 5 × Livello Ranger', ca: 13 };
+  assert.equal(calcolaPfCompagno(bestiaTerra, pgRanger), 35, '5 + 5 * 6 = 35 PF');
+
+  const pgArtificiere = { classe: 'Artefice', livello: 4, caratteristiche: { intelligenza: 16 } };
+  const omuncolo = { nome: 'Servitore Omuncolo', pfFormula: '1 + Mod INT + 5 × Livello Artificiere', ca: 13 };
+  assert.equal(calcolaPfCompagno(omuncolo, pgArtificiere), 24, '1 + 3 + 5 * 4 = 24 PF');
+
+  const difensoreAcciaio = { nome: 'Difensore d’Acciaio', pfFormula: '2 + Mod INT + 5 × Livello Artificiere', ca: 15 };
+  assert.equal(calcolaPfCompagno(difensoreAcciaio, pgArtificiere), 25, '2 + 3 + 5 * 4 = 25 PF');
+
+  // Creatura fissa
+  const gufo = { nome: 'Gufo', pf: 1, pfFormula: '1d4 - 1' };
+  assert.equal(calcolaPfCompagno(gufo, pgRanger), 1);
+
+  // Parsing azioni
+  const azioniTest = [
+    'Morso: +4 al tiro per colpire, 1d4+2 danni perforanti.',
+    'Pungiglione: +5 al tiro per colpire, 1d4+3 danni perforanti + 3d6 veleno.',
+    'Colpo di Forza: tiro per colpire dell’Artificiere, 1d4 + bonus danni da forza.',
+  ];
+  const parsed = parseAzioniCompagno(azioniTest);
+  assert.equal(parsed.length, 3);
+  assert.equal(parsed[0].nome, 'Morso');
+  assert.equal(parsed[0].bonusAttacco, 4);
+  assert.equal(parsed[0].danno, '1d4+2');
+  assert.equal(parsed[0].tipoDanno, 'perforanti');
+
+  assert.equal(parsed[1].nome, 'Pungiglione');
+  assert.equal(parsed[1].bonusAttacco, 5);
+  assert.equal(parsed[1].danno, '1d4+3');
+});
+
 
 

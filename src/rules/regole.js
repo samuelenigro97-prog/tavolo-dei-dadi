@@ -1080,3 +1080,64 @@ export function riepilogoCondizioni(condizioni) {
   }
   return righe;
 }
+
+/**
+ * Calcola i PF massimi scalati di un compagno o evocazione in base al livello e alle
+ * caratteristiche del PG (es. Compagni Tasha: Bestia della Terra, Omucolo, Difensore d'Acciaio).
+ */
+export function calcolaPfCompagno(creatura, scheda) {
+  if (!creatura) return 10;
+  const formula = String(creatura.pfFormula || '').trim();
+  const liv = Math.max(1, Math.floor(scheda?.livello) || 1);
+  const modInt = modificatore(scheda?.caratteristiche?.intelligenza || 10);
+
+  if (/5\s*\+\s*5\s*×\s*Livello/i.test(formula) || /5\s*\+\s*5\s*\*\s*Livello/i.test(formula)) {
+    return 5 + 5 * liv;
+  }
+  if (/4\s*\+\s*4\s*×\s*Livello/i.test(formula) || /4\s*\+\s*4\s*\*\s*Livello/i.test(formula)) {
+    return 4 + 4 * liv;
+  }
+  if (/1\s*\+\s*Mod\s*INT\s*\+\s*5\s*×\s*Livello/i.test(formula) || /1\s*\+\s*INT\s*\+\s*5\s*\*\s*liv/i.test(formula)) {
+    return Math.max(1, 1 + modInt + 5 * liv);
+  }
+  if (/2\s*\+\s*Mod\s*INT\s*\+\s*5\s*×\s*Livello/i.test(formula) || /2\s*\+\s*INT\s*\+\s*5\s*\*\s*liv/i.test(formula)) {
+    return Math.max(1, 2 + modInt + 5 * liv);
+  }
+  if (/5\s*×\s*Livello/i.test(formula)) {
+    return 5 * liv;
+  }
+  return Number(creatura.pf) || 10;
+}
+
+/**
+ * Estrae attacco, formula danno e tipo di danno dalle righe di azioni di una bestia/famiglio.
+ */
+export function parseAzioniCompagno(azioni) {
+  if (!Array.isArray(azioni)) return [];
+  return azioni.map((azioneStr, idx) => {
+    const raw = String(azioneStr || '').trim();
+    const [nomeAzione, ...resto] = raw.split(':');
+    const desc = resto.join(':').trim();
+
+    // Estrai bonus colpire (es. +4 al tiro per colpire)
+    const mBonus = desc.match(/([+-]\d+)\s+al\s+tiro\s+per\s+colpire/i) || desc.match(/([+-]\d+)\s+to\s+hit/i);
+    const bonusAttacco = mBonus ? parseInt(mBonus[1], 10) : 0;
+
+    // Estrai formula danni (es. 1d4+2, 1d8+2, 2d6)
+    const mDanno = desc.match(/(\d+d\d+(?:\s*[+-]\s*\d+)?)\s+danni\s+([a-zA-Zàèéìòù]+)/i)
+      || desc.match(/(\d+d\d+(?:\s*[+-]\s*\d+)?)\s+([a-zA-Z]+)\s+damage/i)
+      || desc.match(/(\d+d\d+(?:\s*[+-]\s*\d+)?)/i);
+
+    const danno = mDanno ? mDanno[1].replace(/\s+/g, '') : '';
+    const tipoDanno = (mDanno && mDanno[2]) ? mDanno[2].trim() : '';
+
+    return {
+      id: `azione-${idx}-${Date.now()}`,
+      nome: (nomeAzione || `Attacco ${idx + 1}`).trim(),
+      bonusAttacco,
+      danno,
+      tipoDanno,
+      testoCompleto: raw,
+    };
+  });
+}

@@ -1289,7 +1289,7 @@ const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(I
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E, DEFAULT_MANUALI, MANUALI_INFO, SOTTOCLASSI_FONTI, TALENTI_FONTI, INCANTESIMI_FONTI, talentiPerManuali, incantesimiPerManuali, fonteValida } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -3430,6 +3430,9 @@ export default function App() {
   const [mostraModalManuali, setMostraModalManuali] = useState(false);
   const [mostraModalRitrattoBestia, setMostraModalRitrattoBestia] = useState(false);
   const [urlRitrattoBestiaInput, setUrlRitrattoBestiaInput] = useState('');
+  const [mostraModalAggiungiCompagno, setMostraModalAggiungiCompagno] = useState(false);
+  const [filtroCompagnoCat, setFiltroCompagnoCat] = useState('tutti');
+  const [cercaCompagnoText, setCercaCompagnoText] = useState('');
   // Preset colori UI
   const [presetColori, setPresetColori] = useState(() => localStorage.getItem('scheda-interattiva:preset-colori') || 'default');
   useEffect(() => {
@@ -4963,6 +4966,7 @@ export default function App() {
         risorse: risorseDopoRiposo(s.risorse, 'lungo'),
         sfinimento: Math.max(0, s.sfinimento - 1),
         concentrazione: '',
+        alleati: (Array.isArray(s.alleati) ? s.alleati : []).map((a) => ({ ...a, pfAttuali: a.pfMax ?? a.pf ?? 10 })),
       };
     });
     // Ciclo Notte ↔ Giorno: dopo il riposo lungo alterna il tema
@@ -13977,65 +13981,563 @@ export default function App() {
               </Sezione>
             )}
 
-            {/* Famigli & Creature Evocate: compare se il PG possiede incantesimi o abilità specifiche di evocazione/famigli */}
-            {Boolean(
-              (/warlock/i.test(scheda.classe || '') && /catena|chain/i.test(scheda.sottoclasse || '')) ||
-              (/ranger/i.test(scheda.classe || '') && /bestie|beast|fey|drake|swarm/i.test(scheda.sottoclasse || '')) ||
-              (/artificiere|artificer/i.test(scheda.classe || '')) ||
-              (scheda.incantesimiLista || []).some((s) => /famiglio|evoca|spiriti|spirit|elementale|summon|conjure|destriero|steed|trova|omuncolo|guardiano/i.test(s.nome || ''))
-            ) && (
-              <Sezione titolo={lingua === 'en' ? 'Familiars & Summons' : 'Famigli & Evocazioni'} {...apertoProps('famigliEvocazioni', false)}>
-                {(() => {
-                  const haFam = (/warlock/i.test(scheda.classe || '') && /catena|chain/i.test(scheda.sottoclasse || '')) ||
-                    /artificiere|artificer/i.test(scheda.classe || '') ||
-                    (scheda.incantesimiLista || []).some((s) => /famiglio|familiar|omuncolo|difensore/i.test(s.nome || ''));
-                  const haEvo = (scheda.incantesimiLista || []).some((s) => /evoca|spiriti|spirit|elementale|summon|conjure|destriero|steed|guardiano/i.test(s.nome || ''));
-                  const listaCreature = [
-                    ...(haFam ? FAMIGLI : []),
-                    ...(haEvo ? EVOCAZIONI : []),
-                    ...(!haFam && !haEvo ? [...FAMIGLI, ...EVOCAZIONI] : []),
-                  ];
-                  return (
-                    <div>
-                      <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
-                        <span>{lingua === 'en' ? 'Quick statblocks for your active familiars and summoned creatures:' : 'Statblock rapidi per i tuoi famigli e creature evocate:'}</span>
-                        <span style={{ opacity: 0.8 }}>{listaCreature.length} creature</span>
+            {/* Sezione Compagni, Famigli ed Evocazioni Integrata */}
+            <Sezione
+              titolo={lingua === 'en' ? '🐾 Companions, Familiars & Summons' : '🐾 Compagni, Famigli & Evocazioni'}
+              {...apertoProps('famigliEvocazioni', Boolean(
+                (Array.isArray(scheda.alleati) && scheda.alleati.length > 0) ||
+                (/warlock/i.test(scheda.classe || '') && /catena|chain/i.test(scheda.sottoclasse || '')) ||
+                (/ranger/i.test(scheda.classe || '') && /bestie|beast|fey|drake|swarm/i.test(scheda.sottoclasse || '')) ||
+                (/artefice|artificer/i.test(scheda.classe || '')) ||
+                (scheda.incantesimiLista || []).some((s) => /famiglio|evoca|spiriti|spirit|elementale|summon|conjure|destriero|steed|trova|omuncolo|guardiano/i.test(s.nome || ''))
+              ))}
+            >
+              {(() => {
+                const alleati = Array.isArray(scheda.alleati) ? scheda.alleati : [];
+
+                const aggiungiDaCatalogo = (creatura) => {
+                  const pfCalc = calcolaPfCompagno(creatura, scheda);
+                  const azioniParsed = parseAzioniCompagno(creatura.azioni || []);
+                  const idNuovo = `all-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+                  const nuovo = {
+                    id: idNuovo,
+                    nome: creatura.nome,
+                    nomeOriginale: creatura.nome,
+                    tipo: creatura.tipo || creatura.taglia || 'Compagno',
+                    taglia: creatura.taglia || 'Media',
+                    ca: Number(creatura.ca) || 12,
+                    pfMax: pfCalc,
+                    pfAttuali: pfCalc,
+                    velocita: creatura.velocita ? (typeof creatura.velocita === 'object' ? Object.entries(creatura.velocita).map(([k, v]) => `${k} ${v}m`).join(', ') : creatura.velocita) : '9m',
+                    sensi: creatura.sensi || '',
+                    abilita: creatura.abilita || '',
+                    tratti: Array.isArray(creatura.tratti) ? creatura.tratti : [],
+                    azioni: azioniParsed,
+                    note: creatura.note || '',
+                  };
+                  aggiorna({ alleati: [...alleati, nuovo] });
+                  setMostraModalAggiungiCompagno(false);
+                  registra({ etichetta: `🐾 ${creatura.nome}`, tipo: 'evoca', dettaglio: `Evocato/aggiunto compagno: ${creatura.nome} (${pfCalc} PF, CA ${creatura.ca})` });
+                };
+
+                const modificaPfAlleato = (idx, delta) => {
+                  const lista = [...alleati];
+                  const a = lista[idx];
+                  if (!a) return;
+                  const cur = Number(a.pfAttuali ?? a.pfMax ?? 10);
+                  const max = Number(a.pfMax ?? 10);
+                  const nuovo = Math.max(0, Math.min(max, cur + delta));
+                  lista[idx] = { ...a, pfAttuali: nuovo };
+                  aggiorna({ alleati: lista });
+                };
+
+                const resetPfAlleato = (idx) => {
+                  const lista = [...alleati];
+                  const a = lista[idx];
+                  if (!a) return;
+                  lista[idx] = { ...a, pfAttuali: a.pfMax ?? 10 };
+                  aggiorna({ alleati: lista });
+                };
+
+                const rimuoviAlleato = (idx) => {
+                  const lista = alleati.filter((_, i) => i !== idx);
+                  aggiorna({ alleati: lista });
+                };
+
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {/* Barra Superiore: Status e Pulsante Aggiungi */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+                      <div style={{ ...styles.detail, fontSize: 12, color: C.inkDim }}>
+                        {alleati.length === 0
+                          ? (lingua === 'en' ? 'No active companions or familiars.' : 'Nessun compagno, famiglio o evocazione attiva.')
+                          : (lingua === 'en' ? `${alleati.length} active companion${alleati.length > 1 ? 's' : ''}:` : `${alleati.length} compagni/famigli attivi:`)}
                       </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 }}>
-                        {listaCreature.map((c) => (
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button
+                          type="button"
+                          onClick={() => setMostraModalAggiungiCompagno(true)}
+                          style={{ ...styles.buttonMini, fontSize: 11.5, padding: '3px 10px', color: C.goldDark, borderColor: C.gold, background: 'rgba(201,162,39,0.12)', fontWeight: 700 }}
+                        >
+                          ➕ {lingua === 'en' ? 'Summon / Add Companion' : 'Evoca / Aggiungi Compagno'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Schede Compagni Attivi */}
+                    {alleati.length > 0 && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {alleati.map((all, idx) => {
+                          const pfMax = Number(all.pfMax) || 10;
+                          const pfAttuali = Number(all.pfAttuali ?? pfMax);
+                          const percPf = Math.min(100, Math.max(0, Math.round((pfAttuali / pfMax) * 100)));
+                          const coloreBarra = percPf > 50 ? '#10b981' : percPf > 20 ? '#f59e0b' : '#ef4444';
+                          const creatureMatch = TUTTE_LE_CREATURE.find((c) => c.nome === all.nomeOriginale || c.nome === all.nome);
+
+                          return (
+                            <div
+                              key={all.id || idx}
+                              style={{
+                                background: C.panelLight,
+                                border: `1px solid ${C.border}`,
+                                borderRadius: 10,
+                                padding: '12px 14px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 10,
+                                boxShadow: '0 2px 5px rgba(0,0,0,0.04)',
+                              }}
+                            >
+                              {/* Intestazione Compagno */}
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                  <span style={{ fontSize: 18 }}>🐾</span>
+                                  <div>
+                                    <div style={{ fontWeight: 700, fontSize: 13.5, color: C.goldDark, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                      <Editable
+                                        value={all.nome}
+                                        onChange={(v) => {
+                                          const lista = [...alleati];
+                                          lista[idx] = { ...lista[idx], nome: v };
+                                          aggiorna({ alleati: lista });
+                                        }}
+                                        width={140}
+                                      />
+                                      {all.taglia && (
+                                        <span style={{ fontSize: 10.5, fontWeight: 500, color: C.inkDim, background: C.panel, padding: '1px 6px', borderRadius: 4, border: `1px solid ${C.border}` }}>
+                                          {all.taglia}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div style={{ fontSize: 11, color: C.inkDim }}>
+                                      {all.tipo || 'Compagno / Famiglio'} {all.sensi ? `· ${all.sensi}` : ''}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                                  <span style={{ fontSize: 11.5, fontWeight: 700, color: C.ink, background: C.panel, padding: '3px 8px', borderRadius: 6, border: `1px solid ${C.border}` }}>
+                                    🛡️ CA <Editable value={all.ca ?? 10} tipo="numero" width={24} onChange={(v) => {
+                                      const lista = [...alleati];
+                                      lista[idx] = { ...lista[idx], ca: v };
+                                      aggiorna({ alleati: lista });
+                                    }} />
+                                  </span>
+                                  {all.velocita && (
+                                    <span style={{ fontSize: 11, color: C.inkDim, background: C.panel, padding: '3px 6px', borderRadius: 6, border: `1px solid ${C.border}` }}>
+                                      👟 {all.velocita}
+                                    </span>
+                                  )}
+                                  {creatureMatch && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setBestiaDettaglio(creatureMatch)}
+                                      style={{ ...styles.buttonMini, fontSize: 10.5, padding: '2px 7px' }}
+                                      title={lingua === 'en' ? 'View complete statblock' : 'Vedi statblock completo'}
+                                    >
+                                      ℹ️ {lingua === 'en' ? 'Statblock' : 'Scheda'}
+                                    </button>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      aggiungiCombattente('alleato', {
+                                        id: all.id,
+                                        nome: all.nome,
+                                        pfMax: pfMax,
+                                        pfAttuali: pfAttuali,
+                                        ca: all.ca ?? 10,
+                                      });
+                                    }}
+                                    style={{ ...styles.buttonMini, fontSize: 10.5, padding: '2px 7px', color: '#10b981', borderColor: '#10b981' }}
+                                    title={lingua === 'en' ? 'Send to combat tracker' : 'Invia allo scontro'}
+                                  >
+                                    ⚔️ Combat
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => rimuoviAlleato(idx)}
+                                    style={{ ...styles.buttonMini, fontSize: 10.5, padding: '2px 6px', color: C.red, borderColor: C.red }}
+                                    title={lingua === 'en' ? 'Dismiss / Remove' : 'Congeda / Elimina'}
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Barra Punti Ferita */}
+                              <div style={{ background: C.panel, border: `1px solid ${C.border}`, borderRadius: 6, padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11.5 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                    <span style={{ fontWeight: 700, color: C.ink }}>❤️ PF:</span>
+                                    <Editable value={pfAttuali} tipo="numero" width={32} onChange={(v) => {
+                                      const lista = [...alleati];
+                                      lista[idx] = { ...lista[idx], pfAttuali: v };
+                                      aggiorna({ alleati: lista });
+                                    }} />
+                                    <span>/</span>
+                                    <Editable value={pfMax} tipo="numero" width={32} onChange={(v) => {
+                                      const lista = [...alleati];
+                                      lista[idx] = { ...lista[idx], pfMax: v };
+                                      aggiorna({ alleati: lista });
+                                    }} />
+                                  </div>
+                                  <div style={{ display: 'flex', gap: 4 }}>
+                                    <button type="button" onClick={() => modificaPfAlleato(idx, -5)} style={{ ...styles.buttonMini, fontSize: 10, padding: '1px 5px', color: C.red }}>−5</button>
+                                    <button type="button" onClick={() => modificaPfAlleato(idx, -1)} style={{ ...styles.buttonMini, fontSize: 10, padding: '1px 5px', color: C.red }}>−1</button>
+                                    <button type="button" onClick={() => modificaPfAlleato(idx, 1)} style={{ ...styles.buttonMini, fontSize: 10, padding: '1px 5px', color: '#10b981' }}>+1</button>
+                                    <button type="button" onClick={() => modificaPfAlleato(idx, 5)} style={{ ...styles.buttonMini, fontSize: 10, padding: '1px 5px', color: '#10b981' }}>+5</button>
+                                    <button type="button" onClick={() => resetPfAlleato(idx)} style={{ ...styles.buttonMini, fontSize: 10, padding: '1px 6px', color: C.goldDark }} title="Ripristina PF Max">❤️ Max</button>
+                                  </div>
+                                </div>
+
+                                <div style={{ height: 6, width: '100%', background: 'rgba(0,0,0,0.1)', borderRadius: 3, overflow: 'hidden' }}>
+                                  <div style={{ height: '100%', width: `${percPf}%`, background: coloreBarra, transition: 'width 0.25s ease' }} />
+                                </div>
+                              </div>
+
+                              {/* Attacchi & Azioni con Tiri Dadi */}
+                              {all.azioni && all.azioni.length > 0 && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                  <div style={{ fontSize: 11, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                    ⚔️ {lingua === 'en' ? 'Actions & Attacks' : 'Azioni & Attacchi'}:
+                                  </div>
+                                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 6 }}>
+                                    {all.azioni.map((az, azIdx) => (
+                                      <div
+                                        key={az.id || azIdx}
+                                        style={{
+                                          background: C.panel,
+                                          border: `1px solid ${C.border}`,
+                                          borderRadius: 6,
+                                          padding: '6px 8px',
+                                          fontSize: 11,
+                                          display: 'flex',
+                                          flexDirection: 'column',
+                                          gap: 4,
+                                        }}
+                                      >
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
+                                          <strong style={{ color: C.ink, fontSize: 11.5 }}>{az.nome}</strong>
+                                          <div style={{ display: 'flex', gap: 4 }}>
+                                            <button
+                                              type="button"
+                                              onClick={() => lanciaD20(`${all.nome}: ${az.nome}`, az.bonusAttacco || 0, { suono: 'tiro' })}
+                                              style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 6px', color: C.goldDark, borderColor: C.goldDark }}
+                                              title={lingua === 'en' ? 'Roll attack' : 'Tiro per colpire'}
+                                            >
+                                              🎲 {conSegno(az.bonusAttacco || 0)}
+                                            </button>
+                                            {az.danno && (
+                                              <button
+                                                type="button"
+                                                onClick={() => tiraDanniPerAttacco({ id: az.id, nome: `${all.nome}: ${az.nome}`, danno: az.danno, tipoDanno: az.tipoDanno })}
+                                                style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 6px', color: '#ef4444', borderColor: '#ef4444' }}
+                                                title={lingua === 'en' ? 'Roll damage' : 'Tiro danni'}
+                                              >
+                                                💥 {az.danno}
+                                              </button>
+                                            )}
+                                          </div>
+                                        </div>
+                                        {az.testoCompleto && az.testoCompleto !== az.nome && (
+                                          <div style={{ fontSize: 10, color: C.inkDim, lineHeight: 1.25 }}>
+                                            {az.testoCompleto}
+                                          </div>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Tratti & Sensi */}
+                              {all.tratti && all.tratti.length > 0 && (
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 2 }}>
+                                  {all.tratti.map((tr, trIdx) => {
+                                    const titoloTratto = tr.split(':')[0] || tr;
+                                    return (
+                                      <span
+                                        key={trIdx}
+                                        onClick={() => setInfo({ titolo: `${all.nome}: ${titoloTratto}`, testo: tr })}
+                                        style={{
+                                          fontSize: 10,
+                                          background: 'rgba(201,162,39,0.08)',
+                                          border: '1px solid rgba(201,162,39,0.3)',
+                                          color: C.goldDark,
+                                          padding: '2px 6px',
+                                          borderRadius: 4,
+                                          cursor: 'pointer',
+                                        }}
+                                        title={tr}
+                                      >
+                                        ✨ {titoloTratto} ℹ️
+                                      </span>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Catalogo Rapido Bestiario & Evocazioni per consultazione */}
+                    <div style={{ marginTop: 4 }}>
+                      <div style={{ fontSize: 11.5, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span>📖 {lingua === 'en' ? 'Quick Bestiary & Summons Reference' : 'Catalogo Rapido Bestiario & Evocazioni'}</span>
+                        <span style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 400 }}>{FAMIGLI.length + EVOCAZIONI.length} creature</span>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: 6 }}>
+                        {[...FAMIGLI, ...EVOCAZIONI].slice(0, 16).map((c) => (
                           <div
                             key={c.nome}
                             onClick={() => setBestiaDettaglio(c)}
                             style={{
                               background: C.panelLight,
                               border: `1px solid ${C.border}`,
-                              borderRadius: 8,
-                              padding: '8px 10px',
+                              borderRadius: 6,
+                              padding: '6px 8px',
                               cursor: 'pointer',
                               display: 'flex',
                               flexDirection: 'column',
-                              gap: 3,
-                              transition: 'transform 0.15s ease, border-color 0.15s ease',
+                              gap: 2,
+                              transition: 'border-color 0.15s ease',
                             }}
-                            onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.goldDark; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.transform = 'none'; }}
                           >
-                            <div style={{ fontWeight: 700, fontSize: 12.5, color: C.ink, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <span>{lingua === 'en' ? c.nomeEn : c.nome}</span>
+                            <div style={{ fontWeight: 700, fontSize: 11.5, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {lingua === 'en' ? c.nomeEn : c.nome}
                             </div>
-                            <div style={{ fontSize: 11, color: C.inkDim }}>
+                            <div style={{ fontSize: 10, color: C.inkDim }}>
                               🛡️ CA {c.ca} · ❤️ {c.pf} PF
-                            </div>
-                            <div style={{ fontSize: 10, color: C.goldDark, opacity: 0.9 }}>
-                              {c.tipo || c.taglia}
                             </div>
                           </div>
                         ))}
                       </div>
                     </div>
-                  );
-                })()}
-              </Sezione>
+                  </div>
+                );
+              })()}
+            </Sezione>
+
+            {/* Modale Evoca / Aggiungi Compagno */}
+            {mostraModalAggiungiCompagno && (
+              <div
+                style={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: 'rgba(0,0,0,0.6)',
+                  backdropFilter: 'blur(3px)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 9999,
+                  padding: 16,
+                }}
+                onClick={(e) => { if (e.target === e.currentTarget) setMostraModalAggiungiCompagno(false); }}
+              >
+                <div
+                  style={{
+                    background: C.panel,
+                    border: `1px solid ${C.border}`,
+                    borderRadius: 12,
+                    maxWidth: 620,
+                    width: '100%',
+                    maxHeight: '85vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {/* Header Modale */}
+                  <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <strong style={{ fontSize: 15, color: C.goldDark }}>
+                      🐾 {lingua === 'en' ? 'Summon / Add Companion or Familiar' : 'Evoca / Aggiungi Compagno o Famiglio'}
+                    </strong>
+                    <button
+                      type="button"
+                      onClick={() => setMostraModalAggiungiCompagno(false)}
+                      style={{ ...styles.buttonMini, fontSize: 13, padding: '2px 8px' }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {/* Filtri e Ricerca */}
+                  <div style={{ padding: '12px 18px 8px', display: 'flex', flexDirection: 'column', gap: 8, borderBottom: `1px solid ${C.border}`, background: C.panelLight }}>
+                    <input
+                      type="text"
+                      placeholder={lingua === 'en' ? 'Search creature name...' : 'Cerca nome creatura...'}
+                      value={cercaCompagnoText}
+                      onChange={(e) => setCercaCompagnoText(e.target.value)}
+                      style={{ ...styles.inlineInput, width: '100%', padding: '6px 10px', fontSize: 12.5 }}
+                    />
+                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                      {[
+                        { id: 'tutti', label: lingua === 'en' ? 'All' : 'Tutti' },
+                        { id: 'famigli', label: '🦉 ' + (lingua === 'en' ? 'Familiars' : 'Famigli') },
+                        { id: 'compagni', label: '🐺 ' + (lingua === 'en' ? 'Class Companions' : 'Compagni di Classe') },
+                        { id: 'evocazioni', label: '✨ ' + (lingua === 'en' ? 'Summons' : 'Evocazioni') },
+                        { id: 'bestie', label: '🐴 ' + (lingua === 'en' ? 'Beasts' : 'Bestie') },
+                        { id: 'custom', label: '✏️ ' + (lingua === 'en' ? 'Custom' : 'Personalizzato') },
+                      ].map((cat) => (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => setFiltroCompagnoCat(cat.id)}
+                          style={{
+                            ...styles.buttonMini,
+                            fontSize: 11,
+                            padding: '2px 8px',
+                            background: filtroCompagnoCat === cat.id ? C.goldDark : 'transparent',
+                            color: filtroCompagnoCat === cat.id ? '#fff' : C.ink,
+                            borderColor: filtroCompagnoCat === cat.id ? C.goldDark : C.border,
+                          }}
+                        >
+                          {cat.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Elenco Creature */}
+                  <div style={{ padding: 16, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
+                    {filtroCompagnoCat === 'custom' ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 12, background: C.panelLight, borderRadius: 8, border: `1px solid ${C.border}` }}>
+                        <div style={{ fontWeight: 700, fontSize: 13, color: C.goldDark }}>
+                          ✏️ {lingua === 'en' ? 'Create Custom Creature / Ally' : 'Crea Creatura / Alleato Personalizzato'}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const idNuovo = `all-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+                            const nuovo = {
+                              id: idNuovo,
+                              nome: `Creatura ${(scheda.alleati || []).length + 1}`,
+                              tipo: 'Personalizzato',
+                              taglia: 'Media',
+                              ca: 12,
+                              pfMax: 15,
+                              pfAttuali: 15,
+                              velocita: '9m',
+                              azioni: [{ id: 'az-1', nome: 'Attacco Base', bonusAttacco: 3, danno: '1d6+1', tipoDanno: 'contundente', testoCompleto: 'Attacco Base: +3 a colpire, 1d6+1 danni' }],
+                            };
+                            aggiorna({ alleati: [...(scheda.alleati || []), nuovo] });
+                            setMostraModalAggiungiCompagno(false);
+                          }}
+                          style={{ ...styles.buttonMini, fontSize: 12, padding: '6px 14px', background: C.goldDark, color: '#fff', alignSelf: 'flex-start', fontWeight: 700 }}
+                        >
+                          ➕ {lingua === 'en' ? 'Add Empty Custom Creature' : 'Aggiungi Creatura Vuota'}
+                        </button>
+                      </div>
+                    ) : (
+                      (() => {
+                        const q = cercaCompagnoText.trim().toLowerCase();
+                        let elenco = [];
+                        if (filtroCompagnoCat === 'famigli') elenco = FAMIGLI;
+                        else if (filtroCompagnoCat === 'compagni') elenco = FAMIGLI.filter((c) => /compagno|artificiere|difensore/i.test(c.nome || c.tipo || ''));
+                        else if (filtroCompagnoCat === 'evocazioni') elenco = EVOCAZIONI;
+                        else if (filtroCompagnoCat === 'bestie') elenco = BESTIE;
+                        else elenco = [...FAMIGLI, ...EVOCAZIONI, ...BESTIE];
+
+                        if (q) {
+                          elenco = elenco.filter((c) => (c.nome || '').toLowerCase().includes(q) || (c.nomeEn || '').toLowerCase().includes(q) || (c.tipo || '').toLowerCase().includes(q));
+                        }
+
+                        if (elenco.length === 0) {
+                          return (
+                            <div style={{ textAlign: 'center', padding: 24, color: C.inkDim, fontSize: 12 }}>
+                              {lingua === 'en' ? 'No creatures found matching search.' : 'Nessuna creatura trovata con questo filtro.'}
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 8 }}>
+                            {elenco.map((c, i) => {
+                              const pfCalc = calcolaPfCompagno(c, scheda);
+                              return (
+                                <div
+                                  key={c.nome + i}
+                                  style={{
+                                    background: C.panelLight,
+                                    border: `1px solid ${C.border}`,
+                                    borderRadius: 8,
+                                    padding: '8px 10px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 4,
+                                    justifyContent: 'space-between',
+                                  }}
+                                >
+                                  <div>
+                                    <div style={{ fontWeight: 700, fontSize: 12.5, color: C.ink }}>
+                                      {lingua === 'en' ? c.nomeEn : c.nome}
+                                    </div>
+                                    <div style={{ fontSize: 11, color: C.inkDim }}>
+                                      🛡️ CA {c.ca} · ❤️ {pfCalc} PF {c.pfFormula ? `(${c.pfFormula})` : ''} · 👟 {typeof c.velocita === 'object' ? Object.entries(c.velocita).map(([k, v]) => `${k} ${v}m`).join(', ') : c.velocita}
+                                    </div>
+                                    {c.tipo && (
+                                      <div style={{ fontSize: 10, color: C.goldDark, marginTop: 1 }}>
+                                        {c.tipo}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const pfCalc = calcolaPfCompagno(c, scheda);
+                                        const azioniParsed = parseAzioniCompagno(c.azioni || []);
+                                        const idNuovo = `all-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+                                        const nuovo = {
+                                          id: idNuovo,
+                                          nome: c.nome,
+                                          nomeOriginale: c.nome,
+                                          tipo: c.tipo || c.taglia || 'Compagno',
+                                          taglia: c.taglia || 'Media',
+                                          ca: Number(c.ca) || 12,
+                                          pfMax: pfCalc,
+                                          pfAttuali: pfCalc,
+                                          velocita: c.velocita ? (typeof c.velocita === 'object' ? Object.entries(c.velocita).map(([k, v]) => `${k} ${v}m`).join(', ') : c.velocita) : '9m',
+                                          sensi: c.sensi || '',
+                                          abilita: c.abilita || '',
+                                          tratti: Array.isArray(c.tratti) ? c.tratti : [],
+                                          azioni: azioniParsed,
+                                          note: c.note || '',
+                                        };
+                                        aggiorna({ alleati: [...(scheda.alleati || []), nuovo] });
+                                        setMostraModalAggiungiCompagno(false);
+                                        registra({ etichetta: `🐾 ${c.nome}`, tipo: 'evoca', dettaglio: `Evocato/aggiunto compagno: ${c.nome} (${pfCalc} PF, CA ${c.ca})` });
+                                      }}
+                                      style={{ ...styles.buttonMini, fontSize: 11, padding: '3px 8px', background: C.goldDark, color: '#fff', fontWeight: 700, flex: 1 }}
+                                    >
+                                      ➕ {lingua === 'en' ? 'Summon / Add' : 'Evoca / Aggiungi'}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setBestiaDettaglio(c)}
+                                      style={{ ...styles.buttonMini, fontSize: 11, padding: '3px 8px' }}
+                                    >
+                                      ℹ️ {lingua === 'en' ? 'Info' : 'Dettagli'}
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()
+                    )}
+                  </div>
+                </div>
+              </div>
             )}
 
           </div>
