@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { ICONE_CLASSE, ICONE_SPECIE } from './ritratti';
+import { ICONE_CLASSE, ICONE_SPECIE, ICONE_BESTIE_SVG, GALLERIA_BESTIE_PRESET, generaAvatarBestia, iconaBestia } from './ritratti';
 import { t, setLinguaAttuale, DIZIONARIO, traduciDato, linguaAttuale } from './i18n';
 import { avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro, sbloccaAudio, precaricaSfx } from './utils/audioAmbiente';
 import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI } from './ui/tema.js';
@@ -1273,72 +1273,7 @@ function avatarSvgFallback(classe, specie, nome) {
   return 'data:image/svg+xml,' + encodeURIComponent(svg);
 }
 
-export function iconaBestia(nome) {
-  const n = (nome || '').toLowerCase();
-  if (n.includes('orso')) return '🐻';
-  if (n.includes('lupo') || n.includes('sciacallo') || n.includes('mastino')) return '🐺';
-  if (n.includes('iena')) return '🐺';
-  if (n.includes('tigre') || n.includes('denti a sciabola')) return '🐅';
-  if (n.includes('leone')) return '🦁';
-  if (n.includes('pantera') || n.includes('leopardo') || n.includes('gatto')) return '🐆';
-  if (n.includes('aquila') || n.includes('falco') || n.includes('avvoltoio') || n.includes('condor')) return '🦅';
-  if (n.includes('gufo')) return '🦉';
-  if (n.includes('corvo')) return '🦅';
-  if (n.includes('serpente') || n.includes('costrittore') || n.includes('vipera')) return '🐍';
-  if (n.includes('squalo') || n.includes('plesiosauro') || n.includes('delfino')) return '🦈';
-  if (n.includes('polpo') || n.includes('calamaro')) return '🐙';
-  if (n.includes('coccodrillo') || n.includes('alligatore')) return '🐊';
-  if (n.includes('rana') || n.includes('rospo')) return '🐸';
-  if (n.includes('ragno')) return '🕷️';
-  if (n.includes('scorpione')) return '🦂';
-  if (n.includes('cinghiale') || n.includes('maiale')) return '🐗';
-  if (n.includes('cavallo') || n.includes('pony') || n.includes('galoppo') || n.includes('mulo') || n.includes('asino')) return '🐎';
-  if (n.includes('alce') || n.includes('cervo')) return '🦌';
-  if (n.includes('rinoceronte')) return '🦏';
-  if (n.includes('elefante') || n.includes('mammut')) return '🐘';
-  if (n.includes('capra') || n.includes('ariete')) return '🐐';
-  if (n.includes('tasso') || n.includes('donnola') || n.includes('furetto')) return '🦡';
-  if (n.includes('pipistrello')) return '🦇';
-  if (n.includes('ratto') || n.includes('topo')) return '🐀';
-  if (n.includes('granchio')) return '🦀';
-  if (n.includes('vespa') || n.includes('ape') || n.includes('millepiedi')) return '🐝';
-  if (n.includes('anchilosauro') || n.includes('sauro') || n.includes('tirannosauro') || n.includes('dinosauro') || n.includes('lucertola')) return '🦖';
-  return '🐾';
-}
 
-export function generaAvatarBestia(forma) {
-  const nome = forma?.nome || 'Bestia';
-  const gs = forma?.gs != null ? (forma.gs === 0.25 ? '1/4' : forma.gs === 0.5 ? '1/2' : forma.gs) : '';
-  const ico = iconaBestia(nome);
-  
-  const svg =
-    `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">` +
-    `<defs>` +
-    `<radialGradient id="bgBestia" cx="50%" cy="38%" r="75%">` +
-    `<stop offset="0%" stop-color="#40916c"/>` +
-    `<stop offset="65%" stop-color="#1b4332"/>` +
-    `<stop offset="100%" stop-color="#081c15"/>` +
-    `</radialGradient>` +
-    `</defs>` +
-    `<rect width="512" height="512" fill="url(#bgBestia)"/>` +
-    `<!-- Zampa silvestre di sfondo -->` +
-    `<g opacity="0.16" fill="#fff" transform="translate(106, 60) scale(0.6)">` +
-    `<circle cx="150" cy="110" r="35"/>` +
-    `<circle cx="230" cy="80" r="35"/>` +
-    `<circle cx="310" cy="80" r="35"/>` +
-    `<circle cx="390" cy="110" r="35"/>` +
-    `<ellipse cx="270" cy="270" rx="140" ry="110"/>` +
-    `</g>` +
-    `<!-- Icona centrale dell'animale -->` +
-    `<text x="256" y="240" font-size="180" text-anchor="middle" dominant-baseline="middle">${ico}</text>` +
-    `<!-- Targhetta badge inferiore -->` +
-    `<rect x="32" y="394" width="448" height="92" rx="18" fill="rgba(8, 28, 21, 0.9)" stroke="#52b788" stroke-width="4"/>` +
-    `<text x="256" y="434" font-size="28" font-weight="bold" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" fill="#d8f3dc" text-anchor="middle">🐾 ${nome.toUpperCase()}</text>` +
-    `<text x="256" y="468" font-size="19" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" fill="#74c69d" text-anchor="middle">${gs ? `GS ${gs} · ` : ''}FORMA BESTIALE</text>` +
-    `</svg>`;
-    
-  return 'data:image/svg+xml,' + encodeURIComponent(svg);
-}
 
 
 
@@ -3433,6 +3368,8 @@ export default function App() {
     try { localStorage.setItem('scheda-interattiva:manuali', JSON.stringify(manualiAttivi)); } catch { /* niente */ }
   }, [manualiAttivi]);
   const [mostraModalManuali, setMostraModalManuali] = useState(false);
+  const [mostraModalRitrattoBestia, setMostraModalRitrattoBestia] = useState(false);
+  const [urlRitrattoBestiaInput, setUrlRitrattoBestiaInput] = useState('');
   // Preset colori UI
   const [presetColori, setPresetColori] = useState(() => localStorage.getItem('scheda-interattiva:preset-colori') || 'default');
   useEffect(() => {
@@ -3811,6 +3748,7 @@ export default function App() {
   const jsonRef = useRef(null);
   const pdfRef = useRef(null);
   const ritrattoRef = useRef(null);
+  const ritrattoBestiaRef = useRef(null);
   const barraTiroRef = useRef(null);
 
   // Autochiusura banner tiro quando si clicca all'esterno del riquadro del risultato
@@ -5100,6 +5038,33 @@ export default function App() {
       // Mantiene dettaglio Retina, ma impedisce a una singola foto di saturare
       // lo spazio riservato a tutti i personaggi.
       aggiorna({ ritratto: immagineRidotta(img, 1280, 650000, 0.88) });
+      URL.revokeObjectURL(url);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      setErroreImport('Immagine non riconosciuta: usa un file JPG o PNG.');
+    };
+    img.src = url;
+  }
+
+  /** Carica e ridimensiona l'immagine personalizzata per la Forma Bestiale. */
+  function caricaRitrattoBestia(evento) {
+    const file = evento.target.files?.[0];
+    evento.target.value = '';
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const ridotta = immagineRidotta(img, 1024, 500000, 0.88);
+      if (scheda.formaBestiale?.attiva) {
+        aggiorna({
+          formaBestiale: {
+            ...scheda.formaBestiale,
+            ritratto: ridotta,
+          },
+        });
+      }
+      setMostraModalRitrattoBestia(false);
       URL.revokeObjectURL(url);
     };
     img.onerror = () => {
@@ -9411,6 +9376,199 @@ export default function App() {
         </div>
       )}
 
+      {/* Modal Personalizzazione Ritratto / Illustrazione Forma Bestiale */}
+      {mostraModalRitrattoBestia && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1150, padding: 16,
+            background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            backdropFilter: 'blur(3px)',
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setMostraModalRitrattoBestia(false); }}
+        >
+          <div style={{ ...styles.panel, maxWidth: 540, width: '100%', maxHeight: '90vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14, boxShadow: '0 12px 48px rgba(0,0,0,0.55)' }}>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${C.border}`, paddingBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 24 }}>🐾</span>
+                <div>
+                  <h2 style={{ ...styles.title, margin: 0, fontSize: 18, lineHeight: 1.2 }}>
+                    {lingua === 'en' ? 'Wild Shape Beast Artwork' : 'Illustrazione Forma Bestiale'}
+                  </h2>
+                  <div style={{ ...styles.detail, fontSize: 11.5, color: C.inkDim, marginTop: 2 }}>
+                    {scheda.formaBestiale?.nome || 'Bestia'} · {lingua === 'en' ? 'Choose official artwork, upload image, or paste URL' : 'Scegli illustrazioni ufficiali, carica un file o incolla un link'}
+                  </div>
+                </div>
+              </div>
+              <button
+                style={{ ...styles.buttonMini, padding: '4px 8px', fontSize: 14 }}
+                onClick={() => setMostraModalRitrattoBestia(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Anteprima Corrente */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'rgba(0,0,0,0.03)', padding: 12, borderRadius: 10, border: `1px solid ${C.border}` }}>
+              <div style={{ width: 84, height: 84, borderRadius: 10, overflow: 'hidden', border: '2px solid #52b788', flexShrink: 0, background: '#1b4332' }}>
+                <img
+                  src={generaAvatarBestia(scheda.formaBestiale)}
+                  alt="Anteprima"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 800, fontSize: 14, color: C.ink }}>
+                  🐾 {scheda.formaBestiale?.nome?.toUpperCase()}
+                </div>
+                <div style={{ fontSize: 11.5, color: C.inkDim, marginTop: 2 }}>
+                  {scheda.formaBestiale?.ritratto ? (lingua === 'en' ? 'Custom portrait active' : 'Ritratto personalizzato attivo') : (lingua === 'en' ? 'Standard D&D vector artwork active' : 'Illustrazione vettoriale standard attiva')}
+                </div>
+                {scheda.formaBestiale?.ritratto && (
+                  <button
+                    type="button"
+                    style={{ ...styles.buttonMini, marginTop: 6, fontSize: 11, borderColor: '#d32f2f', color: '#d32f2f' }}
+                    onClick={() => {
+                      aggiorna({
+                        formaBestiale: {
+                          ...scheda.formaBestiale,
+                          ritratto: null,
+                        },
+                      });
+                    }}
+                  >
+                    🔄 {lingua === 'en' ? 'Reset to Vector Art' : 'Ripristina grafica originale'}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Opzione 1: Carica dal Dispositivo */}
+            <div style={{ border: `1px solid ${C.border}`, borderRadius: 10, padding: 12 }}>
+              <strong style={{ display: 'block', fontSize: 13, color: C.ink, marginBottom: 4 }}>
+                📁 {lingua === 'en' ? 'Upload from your device' : 'Carica immagine dal tuo dispositivo'}
+              </strong>
+              <div style={{ fontSize: 11.5, color: C.inkDim, marginBottom: 8 }}>
+                {lingua === 'en' ? 'Upload any PNG, JPG or WebP image from your computer or phone.' : 'Supporta qualsiasi immagine PNG, JPG o WebP dal tuo computer o smartphone.'}
+              </div>
+              <button
+                type="button"
+                style={{ ...styles.button, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontWeight: 700 }}
+                onClick={() => ritrattoBestiaRef.current?.click()}
+              >
+                <span>📂</span>
+                <span>{lingua === 'en' ? 'Select File...' : 'Scegli File...'}</span>
+              </button>
+            </div>
+
+            {/* Opzione 2: Incolla Link da Internet / Immagine Generata */}
+            <div style={{ border: `1px solid ${C.border}`, borderRadius: 10, padding: 12 }}>
+              <strong style={{ display: 'block', fontSize: 13, color: C.ink, marginBottom: 4 }}>
+                🌐 {lingua === 'en' ? 'Paste image URL (Internet / AI generated)' : 'Incolla link da internet o immagine generata'}
+              </strong>
+              <div style={{ fontSize: 11.5, color: C.inkDim, marginBottom: 8 }}>
+                {lingua === 'en' ? 'Paste any direct image URL from D&D Beyond, Pinterest, Midjourney, etc.' : 'Incolla il link diretto di un’illustrazione da Pinterest, Google Immagini, D&D Beyond o generatore AI.'}
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <input
+                  type="text"
+                  placeholder="https://.../bestia.jpg"
+                  value={urlRitrattoBestiaInput}
+                  onChange={(e) => setUrlRitrattoBestiaInput(e.target.value)}
+                  style={{ ...styles.inlineInput, flex: 1, padding: '7px 10px', fontSize: 12.5 }}
+                />
+                <button
+                  type="button"
+                  style={{ ...styles.buttonPrimary, padding: '6px 14px', fontSize: 12 }}
+                  onClick={() => {
+                    const u = urlRitrattoBestiaInput.trim();
+                    if (!u) return;
+                    if (scheda.formaBestiale?.attiva) {
+                      aggiorna({
+                        formaBestiale: {
+                          ...scheda.formaBestiale,
+                          ritratto: u,
+                        },
+                      });
+                    }
+                    setUrlRitrattoBestiaInput('');
+                    setMostraModalRitrattoBestia(false);
+                  }}
+                >
+                  {lingua === 'en' ? 'Apply' : 'Applica'}
+                </button>
+              </div>
+            </div>
+
+            {/* Opzione 3: Galleria Token & Illustrazioni D&D 5e */}
+            <div style={{ border: `1px solid ${C.border}`, borderRadius: 10, padding: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <strong style={{ fontSize: 13, color: C.ink }}>
+                  🎨 {lingua === 'en' ? 'D&D 5e Fantasy Artwork Presets' : 'Galleria Illustrazioni & Token D&D 5e'}
+                </strong>
+                <span style={{ fontSize: 11, color: C.inkDim }}>{GALLERIA_BESTIE_PRESET.length} opzioni</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: 8, maxHeight: 220, overflowY: 'auto', paddingRight: 4 }}>
+                {GALLERIA_BESTIE_PRESET.map((g) => {
+                  const avatarSvg = generaAvatarBestia({ nome: g.bestia });
+                  return (
+                    <div
+                      key={g.id}
+                      onClick={() => {
+                        if (scheda.formaBestiale?.attiva) {
+                          aggiorna({
+                            formaBestiale: {
+                              ...scheda.formaBestiale,
+                              ritratto: avatarSvg,
+                            },
+                          });
+                        }
+                        setMostraModalRitrattoBestia(false);
+                      }}
+                      style={{
+                        background: C.panelLight,
+                        border: `1.5px solid ${C.border}`,
+                        borderRadius: 8,
+                        padding: 6,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 4,
+                        transition: 'all 0.15s ease',
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#52b788'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.transform = 'none'; }}
+                    >
+                      <div style={{ width: 56, height: 56, borderRadius: 8, overflow: 'hidden', background: '#1b4332' }}>
+                        <img src={avatarSvg} alt={g.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                      <div style={{ fontSize: 11, fontWeight: 700, textAlign: 'center', color: C.ink, lineHeight: 1.2 }}>
+                        {g.nome}
+                      </div>
+                      <div style={{ fontSize: 9.5, color: C.inkDim, textAlign: 'center' }}>
+                        {g.tag}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 6, borderTop: `1px solid ${C.border}` }}>
+              <button
+                type="button"
+                style={{ ...styles.buttonPrimary, padding: '8px 18px', fontSize: 13 }}
+                onClick={() => setMostraModalRitrattoBestia(false)}
+              >
+                {t('common.chiudi')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Supporto e Donazioni Spontanee */}
       {mostraDonazioni && (
         <div
@@ -10150,18 +10308,29 @@ export default function App() {
                     </div>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  style={{ ...styles.button, background: C.panel, borderColor: C.goldDark, color: C.ink, fontWeight: 700, fontSize: 12.5, padding: '6px 14px', borderRadius: 8 }}
-                  onClick={() => {
-                    aggiorna({
-                      formaBestiale: { ...scheda.formaBestiale, attiva: false }
-                    });
-                  }}
-                  title={lingua === 'en' ? 'Revert to normal humanoid form' : 'Ritorna alla tua forma umanoide normale'}
-                >
-                  👤 {lingua === 'en' ? 'Revert to Humanoid' : 'Ritorna alla Forma Umanoide'}
-                </button>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    style={{ ...styles.buttonMini, background: C.panel, borderColor: '#52b788', color: '#1b4332', fontWeight: 700, fontSize: 12, padding: '5px 10px', borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                    onClick={() => setMostraModalRitrattoBestia(true)}
+                    title={lingua === 'en' ? 'Change beast portrait artwork' : 'Cambia illustrazione o carica immagine per la forma bestiale'}
+                  >
+                    <span>🖼️</span>
+                    <span>{lingua === 'en' ? 'Change Art' : 'Cambia Immagine'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    style={{ ...styles.button, background: C.panel, borderColor: C.goldDark, color: C.ink, fontWeight: 700, fontSize: 12.5, padding: '6px 14px', borderRadius: 8 }}
+                    onClick={() => {
+                      aggiorna({
+                        formaBestiale: { ...scheda.formaBestiale, attiva: false }
+                      });
+                    }}
+                    title={lingua === 'en' ? 'Revert to normal humanoid form' : 'Ritorna alla tua forma umanoide normale'}
+                  >
+                    👤 {lingua === 'en' ? 'Revert to Humanoid' : 'Ritorna Umanoide'}
+                  </button>
+                </div>
               </div>
 
               {/* Punti Ferita della Bestia (con barra e pulsanti di danno/cura) */}
@@ -10311,11 +10480,15 @@ export default function App() {
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         boxShadow: scheda.formaBestiale?.attiva ? '0 0 16px rgba(46,125,50,0.6)' : 'inset 0 0 8px rgba(0,0,0,0.2)',
                         border: scheda.formaBestiale?.attiva ? '2.5px solid #52b788' : `2px solid ${coloreClasse(scheda.classe) ? C.gold : C.border}`,
-                        cursor: scheda.formaBestiale?.attiva ? 'default' : 'pointer', position: 'relative',
+                        cursor: 'pointer', position: 'relative',
                       }}
-                      title={scheda.formaBestiale?.attiva ? `🐾 Forma Bestiale attiva: ${scheda.formaBestiale.nome}` : (scheda.ritratto ? 'Click: cambia immagine' : 'Click: carica l’immagine del personaggio')}
+                      title={scheda.formaBestiale?.attiva ? `🐾 ${scheda.formaBestiale.nome}: Click per cambiare illustrazione o caricare immagine` : (scheda.ritratto ? 'Click: cambia immagine' : 'Click: carica l’immagine del personaggio')}
                       onClick={() => {
-                        if (!scheda.formaBestiale?.attiva) ritrattoRef.current?.click();
+                        if (scheda.formaBestiale?.attiva) {
+                          setMostraModalRitrattoBestia(true);
+                        } else {
+                          ritrattoRef.current?.click();
+                        }
                       }}
                     >
                       {/* Freccia di riduzione */}
@@ -10368,9 +10541,24 @@ export default function App() {
                             alt={`Forma Bestiale: ${scheda.formaBestiale.nome}`}
                             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                           />
-                          <div style={{ position: 'absolute', top: 6, right: 6, zIndex: 3, background: 'rgba(8, 28, 21, 0.9)', color: '#d8f3dc', border: '1px solid #52b788', borderRadius: 6, fontSize: 9.5, fontWeight: 800, padding: '2px 6px', textTransform: 'uppercase', letterSpacing: 0.5, boxShadow: '0 2px 6px rgba(0,0,0,0.4)' }}>
+                          <div style={{ position: 'absolute', top: 6, right: 6, zIndex: 3, background: 'rgba(8, 28, 21, 0.92)', color: '#d8f3dc', border: '1px solid #52b788', borderRadius: 6, fontSize: 9.5, fontWeight: 800, padding: '2px 6px', textTransform: 'uppercase', letterSpacing: 0.5, boxShadow: '0 2px 6px rgba(0,0,0,0.4)' }}>
                             🐾 {lingua === 'en' ? 'Beast' : 'Bestia'}
                           </div>
+                          <button
+                            type="button"
+                            style={{
+                              position: 'absolute', top: 6, left: 6, zIndex: 3,
+                              background: 'rgba(8, 28, 21, 0.9)', color: '#d8f3dc',
+                              border: '1px solid #52b788', borderRadius: 6, fontSize: 10,
+                              fontWeight: 800, padding: '2px 6px', cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', gap: 3,
+                              boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
+                            }}
+                            onClick={(e) => { e.stopPropagation(); setMostraModalRitrattoBestia(true); }}
+                            title="Cambia immagine o illustrazione della forma bestiale"
+                          >
+                            <span>🖼️</span> <span>{lingua === 'en' ? 'Art' : 'Arte'}</span>
+                          </button>
                         </div>
                       ) : (
                         scheda.ritratto ? (
@@ -10407,6 +10595,7 @@ export default function App() {
                       </button>
                     )}
                     <input ref={ritrattoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitratto} />
+                    <input ref={ritrattoBestiaRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaRitrattoBestia} />
                   </div>
                 )}
               </div>

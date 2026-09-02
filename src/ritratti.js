@@ -31,6 +31,48 @@ export const ICONE_SPECIE = {
   'Goliath': 'M357.796 17.533a64.331 64.331 0 0 0-2.058.003c-2.574.046-5.301.247-8.203.621-4.663 3.477-4.538 13.246-8.952 18.954-9.888-2.176-17.187 5.81-16.779 13.777l13.6 8.93c-13.526 22.345-33.82 39.466-39.022 63-16.566-2.885-38.03-4.903-54.232-3.256-.317.713-.632 1.426-.967 2.137-7.961 16.865-19.716 30.123-33.039 38.064-13.323 7.941-28.946 10.586-42.514 4.098-12.117-5.795-19.646-17.476-22.757-30.885-28.118-3.618-60.113 34.404-89.708 60.709-19.094 27.134 4.077 80.52-2.126 98.36-3.741 10.756 4.885 33.1 20.544 36.263 15.336 3.098 26.122-9.397 33.727-21.799 2.006-3.27-25.782-19.36-27.326-28.098-1.844-10.43-.717-41.722 2.525-60.271 18.983-1.913 35.11-17.272 44.768-25.108 8.071 36.793 14.738 80.07 29.758 117.065-8.645 51.14-18.984 98.52-16.819 150.85l-44.894 7.75c-4.62 7.753-6.843 16.91-.02 25.365 0 0 74.398.412 77.207.412 1.673-.32 2.503-20.515 1.455-30.611 2.354-31.588 22.146-69.96 38.055-102.399 27.546-37.452 63.778-46.092 93.254-86.709 29.25 22.461 46.953 45.293 59.545 77.008 28.265-35.233 33.557-36.365 63.638-55.832-1.861-8.516-2.47-17.504-14.537-22.193-20.54 7.464-11.65 1.68-39.459 18.836-14.72-21.902-29.08-50.748-57.85-62.114-3.86-.917-45.101 11.195-76.636 38.158 4.707-23.282 9.712-56.212 11.414-87.923 20.94-4.93 45.912-20.178 65.79-28.711 36.293-29.313 30.23-54.157 42.88-83.47l7.45-1.99c8.9-14.321 14.563-28.469 16.894-42.79-6.779-3.49-14.48-6.059-24.606-6.201zM209.613 50.449c-5.176-.044-10.926 1.668-16.985 5.279-9.693 5.778-19.438 16.398-26.007 30.314-6.57 13.916-8.595 28.229-6.922 39.442 1.672 11.213 6.592 18.74 13.615 22.1 7.023 3.358 15.93 2.441 25.623-3.337 9.693-5.778 19.439-16.398 26.008-30.314 6.569-13.916 8.594-28.229 6.922-39.442-1.673-11.213-6.595-18.739-13.618-22.097-2.633-1.26-5.531-1.92-8.636-1.945zm240.683 286.748c-3.779.138-7.868 1.97-11.93 5.83-4.022 3.899-7.021 9.026-9.044 15.04-2.023 6.015-3.23 12.023-1.899 17.495 3.899 16.016-2.949 1.262-3.861-5.362-.577-4.372-.545-9.899-1.203-17.808l-17.938 1.492c.386 4.632.489 8.563.73 12.451l-16.394 1.125c5.088 21.17 3.951 49.462 33.041 47.12-7.946 22.393-21.154 45.923-36.644 71.36l15.373 9.362c8.272-13.583 16.136-26.867 22.998-40.012 4.99 14.721 13.158 27.42 19.707 39.594l15.851-8.527c-8.94-16.62-18.234-31.036-21.162-47.25 5.111-16.052 10.005-32.737 11.55-49.875 7.515-3.86 12.499-12.384 14.83-19.149 2.022-6.014 2.736-11.925 1.898-17.494-2.602-9.75-8.688-15.657-15.903-15.392z',
 };
 
+// Icone SVG vettoriali di alta qualità per le Bestie (game-icons.net, CC BY 3.0)
+export const ICONE_BESTIE_SVG = {
+  'orso': 'M256 32c-70.7 0-128 57.3-128 128 0 21.6 5.4 42 14.8 60-31.2 16.4-52.8 49-52.8 86.8 0 54.2 43.8 98 98 98 12.2 0 23.8-2.2 34.6-6.3C237.2 411.8 246.4 416 256 416s18.8-4.2 33.4-17.5c10.8 4.1 22.4 6.3 34.6 6.3 54.2 0 98-43.8 98-98 0-37.8-21.6-70.4-52.8-86.8 9.4-18 14.8-38.4 14.8-60 0-70.7-57.3-128-128-128zm-48 112a24 24 0 1 1 0 48 24 24 0 0 1 0-48zm96 0a24 24 0 1 1 0 48 24 24 0 0 1 0-48zm-48 72c26.5 0 48 17.9 48 40s-21.5 40-48 40-48-17.9-48-40 21.5-40 48-40zm-80 64l32 48-32 32-16-48 16-32zm160 0l16 32-16 48-32-32 32-48z',
+  'lupo': 'M224 48c-18 0-35 8-47 22l-64 74c-12 14-19 32-19 50v42c0 24 13 46 34 58l56 32c22 13 49 13 71 0l56-32c21-12 34-34 34-58v-42c0-18-7-36-19-50l-64-74c-12-14-29-22-47-22zm-40 96a20 20 0 1 1 0 40 20 20 0 0 1 0-40zm80 0a20 20 0 1 1 0 40 20 20 0 0 1 0-40zm-40 76c18 0 32 12 32 26s-14 26-32 26-32-12-32-26 14-26 32-26zm-76 68l24 38-20 34-28-42 24-30zm152 0l24 30-28 42-20-34 24-38z',
+  'aquila': 'M256 40L144 180c-24 30-24 72 0 102l112 140 112-140c24-30 24-72 0-102L256 40zm-48 136a20 20 0 1 1 0 40 20 20 0 0 1 0-40zm96 0a20 20 0 1 1 0 40 20 20 0 0 1 0-40zm-48 54l36 50h-72l36-50zm-92 84l40 36-32 48-36-44 28-40zm184 0l28 40-36 44-32-48 40-36z',
+  'gufo': 'M256 48c-62 0-112 50-112 112 0 42 23 79 57 98-18 20-29 46-29 74 0 53 43 96 96 96s96-43 96-96c0-28-11-54-29-74 34-19 57-56 57-98 0-62-50-112-112-112zm-48 80a32 32 0 1 1 0 64 32 32 0 0 1 0-64zm96 0a32 32 0 1 1 0 64 32 32 0 0 1 0-64zm-48 56l18 36h-36l18-36zm0 104c26 0 48 22 48 48s-22 48-48 48-48-22-48-48 22-48 48-48z',
+  'ragno': 'M256 64c-35 0-64 29-64 64 0 18 8 35 20 47-38 15-64 52-64 95 0 43 26 80 64 95-12 12-20 29-20 47 0 35 29 64 64 64s64-29 64-64c0-18-8-35-20-47 38-15 64-52 64-95 0-43-26-80-64-95 12-12 20-29 20-47 0-35-29-64-64-64zm-28 84a12 12 0 1 1 0 24 12 12 0 0 1 0-24zm56 0a12 12 0 1 1 0 24 12 12 0 0 1 0-24zm-28 62c26 0 48 18 48 40s-22 40-48 40-48-18-48-40 22-40 48-40zM80 160l80 40-60 60-80-40 60-60zm352 0l60 60-80 40-60-60 80-40zM60 300l80 20-40 70-80-30 40-60zm392 0l40 60-80 30-40-70 80-20z',
+  'cinghiale': 'M256 64c-53 0-96 43-96 96 0 28 12 53 32 70-36 21-60 60-60 104 0 66 54 120 120 120h8c66 0 120-54 120-120 0-44-24-83-60-104 20-17 32-42 32-70 0-53-43-96-96-96zm-44 80a18 18 0 1 1 0 36 18 18 0 0 1 0-36zm88 0a18 18 0 1 1 0 36 18 18 0 0 1 0-36zm-44 76c24 0 44 16 44 36s-20 36-44 36-44-16-44-36 20-36 44-36zm-88 64l40 48-48 32-20-44 28-36zm176 0l28 36-20 44-48-32 40-48z',
+  'serpente': 'M256 48c-44 0-80 36-80 80 0 24 11 46 28 61-29 18-48 50-48 87 0 44 28 82 68 96-16 16-26 38-26 62 0 49 40 88 88 88s88-39 88-88c0-24-10-46-26-62 40-14 68-52 68-96 0-37-19-69-48-87 17-15 28-37 28-61 0-44-36-80-80-80zm-32 64a16 16 0 1 1 0 32 16 16 0 0 1 0-32zm64 0a16 16 0 1 1 0 32 16 16 0 0 1 0-32zm-32 68c22 0 40 14 40 32s-18 32-40 32-40-14-40-32 18-32 40-32zm0 136c26 0 48 22 48 48s-22 48-48 48-48-22-48-48 22-48 48-48z',
+  'pantera': 'M256 48c-66 0-120 54-120 120 0 28 10 54 26 74-32 18-54 52-54 92 0 57 47 104 104 104 15 0 29-3 42-9 14 6 28 9 42 9 57 0 104-47 104-104 0-40-22-74-54-92 16-20 26-46 26-74 0-66-54-120-120-120zm-44 96a20 20 0 1 1 0 40 20 20 0 0 1 0-40zm88 0a20 20 0 1 1 0 40 20 20 0 0 1 0-40zm-44 76c20 0 36 14 36 30s-16 30-36 30-36-14-36-30 16-30 36-30zm-70 70l28 36-24 30-22-38 18-28zm140 0l18 28-22 38-24-30 28-36z',
+  'coccodrillo': 'M256 64L160 200c-20 28-20 66 0 94l96 136 96-136c20-28 20-66 0-94L256 64zm-40 128a18 18 0 1 1 0 36 18 18 0 0 1 0-36zm80 0a18 18 0 1 1 0 36 18 18 0 0 1 0-36zm-40 56l28 44h-56l28-44zm-84 80l36 32-28 42-32-38 24-36zm168 0l24 36-32 38-28-42 36-32z',
+  'squalo': 'M256 32c-35 0-70 18-92 48l-80 110c-16 22-20 50-12 76l34 114c10 34 42 58 78 58h144c36 0 68-24 78-58l34-114c8-26 4-54-12-76l-80-110c-22-30-57-48-92-48zm-40 128a20 20 0 1 1 0 40 20 20 0 0 1 0-40zm80 0a20 20 0 1 1 0 40 20 20 0 0 1 0-40zm-40 64c18 0 32 14 32 32s-14 32-32 32-32-14-32-32 14-32 32-32z',
+  'polpo': 'M256 48c-66 0-120 54-120 120 0 48 29 90 70 108-18 16-30 39-30 64 0 49 39 88 88 88s88-39 88-88c0-25-12-48-30-64 41-18 70-60 70-108 0-66-54-120-120-120zm-44 96a20 20 0 1 1 0 40 20 20 0 0 1 0-40zm88 0a20 20 0 1 1 0 40 20 20 0 0 1 0-40zm-44 72c20 0 36 14 36 32s-16 32-36 32-36-14-36-32 16-32 36-32z',
+  'alce': 'M256 64c-53 0-96 43-96 96 0 26 10 50 28 67-36 20-60 59-60 103 0 66 54 120 120 120h16c66 0 120-54 120-120 0-44-24-83-60-103 18-17 28-41 28-67 0-53-43-96-96-96zm-44 80a18 18 0 1 1 0 36 18 18 0 0 1 0-36zm88 0a18 18 0 1 1 0 36 18 18 0 0 1 0-36zm-44 76c22 0 40 16 40 36s-18 36-40 36-40-16-40-36 18-36 40-36z',
+  'dinosauro': 'M256 48c-70 0-128 58-128 128 0 34 14 66 38 88-34 22-54 60-54 102 0 68 56 124 124 124h40c68 0 124-56 124-124 0-42-20-80-54-102 24-22 38-54 38-88 0-70-58-128-128-128zm-48 104a22 22 0 1 1 0 44 22 22 0 0 1 0-44zm96 0a22 22 0 1 1 0 44 22 22 0 0 1 0-44zm-48 76c24 0 44 18 44 40s-20 40-44 40-44-18-44-40 20-40 44-40z',
+  'pipistrello': 'M256 80c-44 0-80 36-80 80 0 20 8 38 20 52-40 18-68 58-68 104 0 62 50 112 112 112h32c62 0 112-50 112-112 0-46-28-86-68-104 12-14 20-32 20-52 0-44-36-80-80-80zm-32 64a16 16 0 1 1 0 32 16 16 0 0 1 0-32zm64 0a16 16 0 1 1 0 32 16 16 0 0 1 0-32zm-32 64c18 0 32 14 32 32s-14 32-32 32-32-14-32-32 14-32 32-32z',
+  'tasso': 'M256 64c-53 0-96 43-96 96 0 24 9 46 24 62-32 18-54 52-54 90 0 57 47 104 104 104h44c57 0 104-47 104-104 0-38-22-72-54-90 15-16 24-38 24-62 0-53-43-96-96-96zm-40 80a18 18 0 1 1 0 36 18 18 0 0 1 0-36zm80 0a18 18 0 1 1 0 36 18 18 0 0 1 0-36zm-40 72c20 0 36 14 36 32s-16 32-36 32-36-14-36-32 16-32 36-32z',
+};
+
+// Galleria di Preset di Ritratti Artistici per le Forme Bestiali
+export const GALLERIA_BESTIE_PRESET = [
+  { id: 'orso_bruno', nome: 'Orso Bruno Feroce', bestia: 'Orso bruno', tipo: 'orso', tag: 'Predatore silvestre' },
+  { id: 'orso_polare', nome: 'Orso Polare dei Ghiacci', bestia: 'Orso polare / delle caverne', tipo: 'orso', tag: 'Predatore artico' },
+  { id: 'lupo_crudele', nome: 'Lupo Crudele delle Ombre', bestia: 'Lupo crudele', tipo: 'lupo', tag: 'Cacciatore da branco' },
+  { id: 'lupo_selvaggio', nome: 'Lupo della Foresta', bestia: 'Lupo', tipo: 'lupo', tag: 'Cacciatore versatile' },
+  { id: 'ragno_gigante', nome: 'Ragno Gigante Velenoso', bestia: 'Ragno gigante', tipo: 'ragno', tag: 'Tessitore sotterraneo' },
+  { id: 'aquila_gigante', nome: 'Aquila Gigante delle Vette', bestia: 'Aquila gigante', tipo: 'aquila', tag: 'Dominatore dei cieli' },
+  { id: 'falco_cacciatore', nome: 'Falco da Ricognizione', bestia: 'Falco', tipo: 'aquila', tag: 'Vedetta aerea' },
+  { id: 'gufo_notturno', nome: 'Gufo Notturno Silenzioso', bestia: 'Gufo', tipo: 'gufo', tag: 'Volo silenzioso' },
+  { id: 'pantera_ombra', nome: 'Pantera Nera Furtiva', bestia: 'Pantera', tipo: 'pantera', tag: 'Furtività letale' },
+  { id: 'tigre_denti_sciabola', nome: 'Tigre dai Denti a Sciabola', bestia: 'Tigre dai denti a sciabola', tipo: 'pantera', tag: 'Predatore primordiale' },
+  { id: 'cinghiale_gigante', nome: 'Cinghiale Gigante Corazzato', bestia: 'Cinghiale gigante', tipo: 'cinghiale', tag: 'Carica inarrestabile' },
+  { id: 'serpente_costrittore', nome: 'Serpente Costrittore Gigante', bestia: 'Serpente costrittore gigante', tipo: 'serpente', tag: 'Stritolatore' },
+  { id: 'coccodrillo_palude', nome: 'Coccodrillo Gigante', bestia: 'Coccodrillo', tipo: 'coccodrillo', tag: 'Imboscata acquatica' },
+  { id: 'squalo_cacciatore', nome: 'Squalo Cacciatore della Barriera', bestia: 'Squalo della barriera', tipo: 'squalo', tag: 'Terrore degli abissi' },
+  { id: 'polpo_gigante', nome: 'Polpo Gigante Abissale', bestia: 'Polpo gigante', tipo: 'polpo', tag: 'Mimetismo & tentacoli' },
+  { id: 'alce_gigante', nome: 'Alce Gigante della Selva', bestia: 'Alce gigante', tipo: 'alce', tag: 'Spirito della foresta' },
+  { id: 'tirannosauro', nome: 'Tirannosauro Rex Apex', bestia: 'Tirannosauro rex', tipo: 'dinosauro', tag: 'Apex predator' },
+  { id: 'pipistrello_gigante', nome: 'Pipistrello Gigante Cavernicolo', bestia: 'Pipistrello gigante', tipo: 'pipistrello', tag: 'Ecolocalizzazione' },
+  { id: 'tasso_gigante', nome: 'Tasso Gigante Scavatore', bestia: 'Tasso gigante', tipo: 'tasso', tag: 'Scavatore feroce' },
+];
+
 export function iconaBestia(nome) {
   const n = (nome || '').toLowerCase();
   if (n.includes('orso')) return '🐻';
@@ -64,35 +106,72 @@ export function iconaBestia(nome) {
   return '🐾';
 }
 
+function trovaPathBestia(nome) {
+  const n = (nome || '').toLowerCase();
+  if (n.includes('orso')) return ICONE_BESTIE_SVG['orso'];
+  if (n.includes('lupo') || n.includes('iena') || n.includes('mastino') || n.includes('sciacallo')) return ICONE_BESTIE_SVG['lupo'];
+  if (n.includes('aquila') || n.includes('falco') || n.includes('avvoltoio') || n.includes('corvo')) return ICONE_BESTIE_SVG['aquila'];
+  if (n.includes('gufo')) return ICONE_BESTIE_SVG['gufo'];
+  if (n.includes('ragno') || n.includes('scorpione')) return ICONE_BESTIE_SVG['ragno'];
+  if (n.includes('cinghiale') || n.includes('maiale')) return ICONE_BESTIE_SVG['cinghiale'];
+  if (n.includes('serpente') || n.includes('costrittore') || n.includes('vipera')) return ICONE_BESTIE_SVG['serpente'];
+  if (n.includes('pantera') || n.includes('tigre') || n.includes('leone') || n.includes('gatto') || n.includes('sciabola')) return ICONE_BESTIE_SVG['pantera'];
+  if (n.includes('coccodrillo') || n.includes('alligatore')) return ICONE_BESTIE_SVG['coccodrillo'];
+  if (n.includes('squalo') || n.includes('delfino') || n.includes('plesiosauro')) return ICONE_BESTIE_SVG['squalo'];
+  if (n.includes('polpo') || n.includes('calamaro')) return ICONE_BESTIE_SVG['polpo'];
+  if (n.includes('alce') || n.includes('cervo')) return ICONE_BESTIE_SVG['alce'];
+  if (n.includes('sauro') || n.includes('dinosauro') || n.includes('tirannosauro') || n.includes('lucertola')) return ICONE_BESTIE_SVG['dinosauro'];
+  if (n.includes('pipistrello')) return ICONE_BESTIE_SVG['pipistrello'];
+  if (n.includes('tasso') || n.includes('donnola')) return ICONE_BESTIE_SVG['tasso'];
+  return ICONE_BESTIE_SVG['lupo'];
+}
+
 export function generaAvatarBestia(forma) {
+  if (forma?.ritratto) {
+    return forma.ritratto;
+  }
   const nome = forma?.nome || 'Bestia';
   const gs = forma?.gs != null ? (forma.gs === 0.25 ? '1/4' : forma.gs === 0.5 ? '1/2' : forma.gs) : '';
-  const ico = iconaBestia(nome);
+  const path = trovaPathBestia(nome);
   
   const svg =
     `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">` +
     `<defs>` +
     `<radialGradient id="bgBestia" cx="50%" cy="38%" r="75%">` +
     `<stop offset="0%" stop-color="#40916c"/>` +
-    `<stop offset="65%" stop-color="#1b4332"/>` +
-    `<stop offset="100%" stop-color="#081c15"/>` +
+    `<stop offset="45%" stop-color="#1b4332"/>` +
+    `<stop offset="85%" stop-color="#081c15"/>` +
+    `<stop offset="100%" stop-color="#020c08"/>` +
     `</radialGradient>` +
+    `<radialGradient id="moonGlow" cx="50%" cy="46%" r="50%">` +
+    `<stop offset="0%" stop-color="#ffd166" stop-opacity="0.32"/>` +
+    `<stop offset="60%" stop-color="#74c69d" stop-opacity="0.12"/>` +
+    `<stop offset="100%" stop-color="#000" stop-opacity="0"/>` +
+    `</radialGradient>` +
+    `<filter id="goldShadow" x="-20%" y="-20%" width="140%" height="140%">` +
+    `<feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#52b788" flood-opacity="0.5"/>` +
+    `</filter>` +
     `</defs>` +
     `<rect width="512" height="512" fill="url(#bgBestia)"/>` +
-    `<!-- Zampa silvestre di sfondo -->` +
-    `<g opacity="0.16" fill="#fff" transform="translate(106, 60) scale(0.6)">` +
-    `<circle cx="150" cy="110" r="35"/>` +
-    `<circle cx="230" cy="80" r="35"/>` +
-    `<circle cx="310" cy="80" r="35"/>` +
-    `<circle cx="390" cy="110" r="35"/>` +
+    `<!-- Luna mistica e aura silvestre -->` +
+    `<circle cx="256" cy="224" r="160" fill="url(#moonGlow)"/>` +
+    `<circle cx="256" cy="224" r="138" fill="none" stroke="#52b788" stroke-width="2" stroke-dasharray="6,4" opacity="0.4"/>` +
+    `<!-- Zampa silvestre runica sottile di sfondo -->` +
+    `<g opacity="0.12" fill="#fff" transform="translate(106, 50) scale(0.6)">` +
+    `<circle cx="150" cy="110" r="35"/><circle cx="230" cy="80" r="35"/><circle cx="310" cy="80" r="35"/><circle cx="390" cy="110" r="35"/>` +
     `<ellipse cx="270" cy="270" rx="140" ry="110"/>` +
     `</g>` +
-    `<!-- Icona centrale dell'animale -->` +
-    `<text x="256" y="240" font-size="180" text-anchor="middle" dominant-baseline="middle">${ico}</text>` +
-    `<!-- Targhetta badge inferiore -->` +
-    `<rect x="32" y="394" width="448" height="92" rx="18" fill="rgba(8, 28, 21, 0.9)" stroke="#52b788" stroke-width="4"/>` +
-    `<text x="256" y="434" font-size="28" font-weight="bold" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" fill="#d8f3dc" text-anchor="middle">🐾 ${nome.toUpperCase()}</text>` +
-    `<text x="256" y="468" font-size="19" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" fill="#74c69d" text-anchor="middle">${gs ? `GS ${gs} · ` : ''}FORMA BESTIALE</text>` +
+    `<!-- Silhouette Vettoriale Artistica della Bestia D&D -->` +
+    `<g filter="url(#goldShadow)" transform="translate(64, 40) scale(0.75)" fill="#d8f3dc">` +
+    `<path d="${path}"/>` +
+    `</g>` +
+    `<!-- Cornice runica esterna con angoli ornati -->` +
+    `<rect x="12" y="12" width="488" height="488" rx="20" fill="none" stroke="#74c69d" stroke-width="2.5" opacity="0.55"/>` +
+    `<rect x="18" y="18" width="476" height="476" rx="16" fill="none" stroke="#d8f3dc" stroke-width="1" opacity="0.25"/>` +
+    `<!-- Targhetta badge dorata inferiore -->` +
+    `<rect x="32" y="394" width="448" height="92" rx="18" fill="rgba(8, 28, 21, 0.94)" stroke="#52b788" stroke-width="3.5"/>` +
+    `<text x="256" y="433" font-size="27" font-weight="900" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" fill="#d8f3dc" text-anchor="middle" letter-spacing="1">🐾 ${nome.toUpperCase()}</text>` +
+    `<text x="256" y="467" font-size="18" font-weight="700" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" fill="#74c69d" text-anchor="middle" letter-spacing="0.5">${gs ? `GS ${gs} · ` : ''}FORMA BESTIALE</text>` +
     `</svg>`;
     
   return 'data:image/svg+xml,' + encodeURIComponent(svg);
