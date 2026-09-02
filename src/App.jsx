@@ -1960,7 +1960,6 @@ function rosterPredefinito() {
   const idWendell = 'pg-wendell';
   const idFlyora = 'pg-flyora';
   const idElevorn = 'pg-elevorn';
-  const idLyrian = 'pg-lyrian';
   return {
     attivo: idVaelion,
     personaggi: {
@@ -1968,7 +1967,6 @@ function rosterPredefinito() {
       [idWendell]: { ...schedaVuota(), ...normalizeImported(WENDELL_JSON) },
       [idFlyora]: { ...schedaVuota(), ...normalizeImported(FLYORA_JSON) },
       [idElevorn]: { ...schedaVuota(), ...normalizeImported(ELEVORN_JSON) },
-      [idLyrian]: { ...schedaVuota(), ...normalizeImported(LYRIAN_JSON) },
     }
   };
 }
@@ -2066,9 +2064,19 @@ function loadState() {
     }
 
     if (roster?.personaggi && Object.keys(roster.personaggi).length > 0) {
+      // Elimina definitivamente la scheda demo di Lyrian se presente
+      if (roster.personaggi['pg-lyrian']) {
+        delete roster.personaggi['pg-lyrian'];
+      }
+      for (const k of Object.keys(roster.personaggi)) {
+        if (k.startsWith('pg-lyrian') || (/lyrian.*faenor/i.test(roster.personaggi[k]?.nome || '') && roster.personaggi[k]?.sesso === 'M')) {
+          delete roster.personaggi[k];
+        }
+      }
+
       const ids = Object.keys(roster.personaggi);
       if (!roster.attivo || !roster.personaggi[roster.attivo]) {
-        roster.attivo = ids[0];
+        roster.attivo = ids[0] || '';
       }
       for (const id of ids) {
         const s = { ...schedaVuota(), ...roster.personaggi[id] };
@@ -2181,21 +2189,6 @@ function loadState() {
           if (!s.legami && ELEVORN_JSON.legami) s.legami = ELEVORN_JSON.legami;
           if (!s.difetti && ELEVORN_JSON.difetti) s.difetti = ELEVORN_JSON.difetti;
           if (!s.nemici && ELEVORN_JSON.nemici) s.nemici = ELEVORN_JSON.nemici;
-        } else if (/lyrian|faenor|mezzafaccia/i.test(s.nome) || id === 'pg-lyrian') {
-          if (!Array.isArray(s.multiclasse) || s.multiclasse.length === 0) {
-            s.multiclasse = [{ classe: 'Warlock', livello: 1, sottoclasse: 'Lama Iettatrice' }];
-          }
-          if (!s.bonusCompetenza || s.bonusCompetenza < 3) s.bonusCompetenza = 3;
-          if (!s.note && LYRIAN_JSON.note) s.note = LYRIAN_JSON.note;
-          if (!s.trattiCaratteriali && LYRIAN_JSON.trattiCaratteriali) s.trattiCaratteriali = LYRIAN_JSON.trattiCaratteriali;
-          if (!s.ideali && LYRIAN_JSON.ideali) s.ideali = LYRIAN_JSON.ideali;
-          if (!s.legami && LYRIAN_JSON.legami) s.legami = LYRIAN_JSON.legami;
-          if (!s.difetti && LYRIAN_JSON.difetti) s.difetti = LYRIAN_JSON.difetti;
-          if (!s.nemici && LYRIAN_JSON.nemici) s.nemici = LYRIAN_JSON.nemici;
-          if (!s.privilegi || s.privilegi.length < 200) s.privilegi = LYRIAN_JSON.privilegi;
-          if (!s.trattiSpecie || s.trattiSpecie.length < 50) s.trattiSpecie = LYRIAN_JSON.trattiSpecie;
-          if (!s.attacchi || s.attacchi.length < 4) s.attacchi = LYRIAN_JSON.attacchi;
-          if (!s.incantesimiLista || s.incantesimiLista.length < 4) s.incantesimiLista = LYRIAN_JSON.incantesimiLista;
         }
         roster.personaggi[id] = s;
       }
