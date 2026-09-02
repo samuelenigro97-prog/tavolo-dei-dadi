@@ -12525,6 +12525,121 @@ export default function App() {
               </Sezione>
             )}
 
+            {/* Sezione Unificata: Privilegi di Classe, Sottoclasse, Tratti di Specie e Talenti (prima di Forma Bestiale e Famigli) */}
+            <Sezione
+              titolo={lingua === 'en' ? 'Features, Traits & Feats' : 'Privilegi, Tratti & Talenti'}
+              {...apertoProps('privilegi', true)}
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {/* Blocco 1: Classe e Sottoclasse */}
+                  <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5, textAlign: 'center' }}>
+                      🛡️ {lingua === 'en' ? 'Class & Subclass Features' : 'Privilegi di Classe & Sottoclasse'}
+                    </div>
+                    {(() => {
+                      const tutteLeSub = [
+                        ...(scheda.sottoclasse ? [{ classe: scheda.classe, livello: scheda.livello || 1, sottoclasse: scheda.sottoclasse }] : []),
+                        ...((scheda.multiclasse || []).filter((m) => m.sottoclasse).map((m) => ({ classe: m.classe, livello: m.livello || 1, sottoclasse: m.sottoclasse }))),
+                      ];
+                      const classiSenzaSubMaPronte = [
+                        ...((!scheda.sottoclasse && (scheda.livello || 1) >= livelloSceltaSottoclasse(scheda.classe, versione)) ? [{ classe: scheda.classe, livello: scheda.livello || 1, isMain: true }] : []),
+                        ...((scheda.multiclasse || []).filter((m) => !m.sottoclasse && (m.livello || 1) >= livelloSceltaSottoclasse(m.classe, versione)).map((m) => ({ classe: m.classe, livello: m.livello || 1, isMain: false }))),
+                      ];
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {classiSenzaSubMaPronte.length > 0 && (
+                            <div style={{ background: 'rgba(200,140,20,0.1)', border: `1px dashed ${C.gold}`, borderRadius: 6, padding: '6px 8px' }}>
+                              {classiSenzaSubMaPronte.map((c, idx) => (
+                                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                                  <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 600 }}>{traduciDato(c.classe)}:</span>
+                                  <select
+                                    style={{ ...styles.inlineInput, fontSize: 12, padding: '3px 6px', flex: 1, minWidth: 130 }}
+                                    value=""
+                                    onChange={(e) => {
+                                      const sub = e.target.value;
+                                      if (!sub) return;
+                                      if (c.isMain) {
+                                        aggiorna({ sottoclasse: sub, privilegiSottoclasse: privilegiSottoclasseFinoA(sub, c.livello) });
+                                      } else {
+                                        aggiorna({
+                                          multiclasse: (scheda.multiclasse || []).map((m) => (m.classe === c.classe ? { ...m, sottoclasse: sub } : m)),
+                                        });
+                                      }
+                                    }}
+                                  >
+                                    <option value="">{lingua === 'en' ? 'Choose subclass…' : 'Scegli sottoclasse…'}</option>
+                                    {sottoclassiPerClasse(c.classe).map((sc) => (
+                                      <option key={sc} value={sc}>{traduciDato(sc)}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            <button
+                              style={{ ...styles.button, flex: 1, minWidth: 140, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                              onClick={() => setMostraPrivilegi(true)}
+                              title={t('tip.panoramica_priv')}
+                            >
+                              📖 {t("priv.panoramica_btn")} ({scheda.classe || t('profilo.nessuna')} Liv. {scheda.livello || 1})
+                            </button>
+                            {tutteLeSub.length > 0 ? (
+                              tutteLeSub.map((subItem, sIdx) => (
+                                <button
+                                  key={sIdx}
+                                  style={{ ...styles.button, flex: 1, minWidth: 140, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                                  onClick={() => setMostraPrivilegiSub(subItem.sottoclasse || true)}
+                                  title={t('tip.panoramica_priv_sub')}
+                                >
+                                  📖 {traduciDato(subItem.sottoclasse)} ({traduciDato(subItem.classe)} Liv. {subItem.livello})
+                                </button>
+                              ))
+                            ) : (
+                              <div style={{ ...styles.detail, fontSize: 11.5, display: 'flex', alignItems: 'center' }}>
+                                {t('priv.sub_nessuna')}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  {/* Blocchi 2 e 3: Tratti di Specie e Talenti affiancati */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                    gap: 10
+                  }}>
+                    <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
+                        🧬 {t("sez.tratti_specie")}{scheda.specie ? ` (${traduciDato(scheda.specie)})` : ''}
+                      </div>
+                      <ListaQuadratini
+                        value={scheda.trattiSpecie}
+                        lookup={spiegaTratto}
+                        placeholder={t("tratti.ph")}
+                        onChange={(v) => aggiorna({ trattiSpecie: v })}
+                      />
+                    </div>
+
+                    <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
+                        ⭐ {t("sez.talenti")}
+                      </div>
+                      <ListaQuadratini
+                        value={scheda.talenti}
+                        lookup={spiegaTalento}
+                        opzioni={TALENTI_5E}
+                        placeholder={t("talenti.ph")}
+                        onChange={(v) => aggiorna({ talenti: v })}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </Sezione>
+
             {/* Forma Bestiale (solo Druido dal 2° livello): subito sotto la Magia */}
             {/(druido|druid)/i.test(scheda.classe || '') && (Number(scheda.livello) || 1) >= 2 && (
               <Sezione titolo={lingua === 'en' ? 'Beast Form' : 'Forma Bestiale'} {...apertoProps('formaBestiale', true)}>
@@ -12708,122 +12823,6 @@ export default function App() {
               </Sezione>
             )}
 
-            {/* Sezione Unificata: Privilegi di Classe, Sottoclasse, Tratti di Specie e Talenti (fissa sopra l'Inventario) */}
-            <Sezione
-              titolo={lingua === 'en' ? 'Features, Traits & Feats' : 'Privilegi, Tratti & Talenti'}
-              {...apertoProps('privilegi', true)}
-            >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {/* Blocco 1: Classe e Sottoclasse */}
-                  <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5, textAlign: 'center' }}>
-                      🛡️ {lingua === 'en' ? 'Class & Subclass Features' : 'Privilegi di Classe & Sottoclasse'}
-                    </div>
-                    {(() => {
-                      const tutteLeSub = [
-                        ...(scheda.sottoclasse ? [{ classe: scheda.classe, livello: scheda.livello || 1, sottoclasse: scheda.sottoclasse }] : []),
-                        ...((scheda.multiclasse || []).filter((m) => m.sottoclasse).map((m) => ({ classe: m.classe, livello: m.livello || 1, sottoclasse: m.sottoclasse }))),
-                      ];
-                      const classiSenzaSubMaPronte = [
-                        ...((!scheda.sottoclasse && (scheda.livello || 1) >= livelloSceltaSottoclasse(scheda.classe, versione)) ? [{ classe: scheda.classe, livello: scheda.livello || 1, isMain: true }] : []),
-                        ...((scheda.multiclasse || []).filter((m) => !m.sottoclasse && (m.livello || 1) >= livelloSceltaSottoclasse(m.classe, versione)).map((m) => ({ classe: m.classe, livello: m.livello || 1, isMain: false }))),
-                      ];
-                      return (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                          {classiSenzaSubMaPronte.length > 0 && (
-                            <div style={{ background: 'rgba(200,140,20,0.1)', border: `1px dashed ${C.gold}`, borderRadius: 6, padding: '6px 8px' }}>
-                              {classiSenzaSubMaPronte.map((c, idx) => (
-                                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                                  <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 600 }}>{traduciDato(c.classe)}:</span>
-                                  <select
-                                    style={{ ...styles.inlineInput, fontSize: 12, padding: '3px 6px', flex: 1, minWidth: 130 }}
-                                    value=""
-                                    onChange={(e) => {
-                                      const sub = e.target.value;
-                                      if (!sub) return;
-                                      if (c.isMain) {
-                                        aggiorna({ sottoclasse: sub, privilegiSottoclasse: privilegiSottoclasseFinoA(sub, c.livello) });
-                                      } else {
-                                        aggiorna({
-                                          multiclasse: (scheda.multiclasse || []).map((m) => (m.classe === c.classe ? { ...m, sottoclasse: sub } : m)),
-                                        });
-                                      }
-                                    }}
-                                  >
-                                    <option value="">{lingua === 'en' ? 'Choose subclass…' : 'Scegli sottoclasse…'}</option>
-                                    {sottoclassiPerClasse(c.classe).map((sc) => (
-                                      <option key={sc} value={sc}>{traduciDato(sc)}</option>
-                                    ))}
-                                  </select>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                            <button
-                              style={{ ...styles.button, flex: 1, minWidth: 140, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-                              onClick={() => setMostraPrivilegi(true)}
-                              title={t('tip.panoramica_priv')}
-                            >
-                              📖 {t("priv.panoramica_btn")} ({scheda.classe || t('profilo.nessuna')} Liv. {scheda.livello || 1})
-                            </button>
-                            {tutteLeSub.length > 0 ? (
-                              tutteLeSub.map((subItem, sIdx) => (
-                                <button
-                                  key={sIdx}
-                                  style={{ ...styles.button, flex: 1, minWidth: 140, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-                                  onClick={() => setMostraPrivilegiSub(subItem.sottoclasse || true)}
-                                  title={t('tip.panoramica_priv_sub')}
-                                >
-                                  📖 {traduciDato(subItem.sottoclasse)} ({traduciDato(subItem.classe)} Liv. {subItem.livello})
-                                </button>
-                              ))
-                            ) : (
-                              <div style={{ ...styles.detail, fontSize: 11.5, display: 'flex', alignItems: 'center' }}>
-                                {t('priv.sub_nessuna')}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
-
-                  {/* Blocchi 2 e 3: Tratti di Specie e Talenti affiancati */}
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                    gap: 10
-                  }}>
-                    <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column' }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
-                        🧬 {t("sez.tratti_specie")}{scheda.specie ? ` (${traduciDato(scheda.specie)})` : ''}
-                      </div>
-                      <ListaQuadratini
-                        value={scheda.trattiSpecie}
-                        lookup={spiegaTratto}
-                        placeholder={t("tratti.ph")}
-                        onChange={(v) => aggiorna({ trattiSpecie: v })}
-                      />
-                    </div>
-
-                    <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column' }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
-                        ⭐ {t("sez.talenti")}
-                      </div>
-                      <ListaQuadratini
-                        value={scheda.talenti}
-                        lookup={spiegaTalento}
-                        opzioni={TALENTI_5E}
-                        placeholder={t("talenti.ph")}
-                        onChange={(v) => aggiorna({ talenti: v })}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </Sezione>
-
-
           </div>
 
           {/* Sezioni descrittive: anch'esse figlie dirette di .griglia-scheda
@@ -12834,6 +12833,9 @@ export default function App() {
             <Sezione titolo={t("sez.equipaggiamento")} {...propsSez('equipaggiamento')} {...apertoProps('equipaggiamento')}>
               {(() => {
                 const inv = scheda.inventario || [];
+                const invVisualizzato = filtroInventario
+                  ? inv.filter((o) => (o.nome || '').toLowerCase().includes(filtroInventario.toLowerCase()) || (o.note || '').toLowerCase().includes(filtroInventario.toLowerCase()) || (o.categoria || '').toLowerCase().includes(filtroInventario.toLowerCase()))
+                  : inv;
                 const pesoItemUnitario = (o) => {
                   if (Array.isArray(o?.contenuto) && o.contenuto.length > 0) {
                     return o.contenuto.reduce((sum, sub) => sum + (Number(sub?.qta) || 1) * (Number(sub?.peso) || 0), 0);
@@ -12841,28 +12843,20 @@ export default function App() {
                   return Number(o?.peso) || 0;
                 };
                 const pesoInv = inv.reduce((s, o) => s + (o.qta || 1) * pesoItemUnitario(o), 0);
-                // Peso di armi e armatura equipaggiate (tutto ciò che ho addosso).
-                // Le armi che sono GIÀ nell'inventario non vengono ricontate qui
-                // (altrimenti equipaggiare un oggetto già posseduto ne raddoppia il peso).
                 const attacchi = Array.isArray(scheda.attacchi) ? scheda.attacchi : [];
                 const nomiInv = new Set(inv.map((o) => (o.nome || '').trim().toLowerCase()));
                 const pesoArmi = attacchi.reduce((s, a) => (nomiInv.has((a.nome || '').trim().toLowerCase()) ? s : s + pesoStimato(a.nome)), 0);
                 const pesoArm = pesoArmatura(scheda.armatura);
-                // Peso delle monete: conta nel totale ed è mostrato come riga fra gli oggetti.
                 const dMon = scheda.denari || {};
                 const numMonete = (dMon.mr || 0) + (dMon.ma || 0) + (dMon.me || 0) + (dMon.mo || 0) + (dMon.mp || 0);
                 const pesoMonete = numMonete * 0.01;
                 const forza = punteggioCaratteristica(scheda, 'forza') || 10;
-                // Borsa Conservante equipaggiata: spazio extradimensionale (~250 kg).
-                // Gli oggetti CONTRASSEGNATI come "dentro borsa" (dentroBorsa: true)
-                // non pesano nulla sull'ingombro. La borsa stessa pesa il suo peso (15 lb = 6.8 kg).
                 const borsaEquip = inv.find((o) => o.equip && /borsa\s+conservante|bag of holding/i.test(o.nome || ''));
                 const capBonusBorsa = borsaEquip ? 250 : 0;
                 const tagliaAttiva = tagliaEffettiva(scheda);
                 const moltiTaglia = MOLTIPLICATORI_TAGLIA[tagliaAttiva] || 1;
                 const capFisica = capacitaCarico(forza) * moltiTaglia;
                 const cap = capFisica + capBonusBorsa;
-                // Peso totale ESCLUSO ciò che sta dentro la Borsa Conservante equipaggiata
                 const pesoDentroBorsa = borsaEquip
                   ? inv.filter((o) => o.dentroBorsa).reduce((s, o) => s + (o.qta || 1) * pesoItemUnitario(o), 0)
                   : 0;
@@ -12873,26 +12867,19 @@ export default function App() {
                 }).reduce((s, o) => s + (o.qta || 1) * pesoItemUnitario(o), 0);
                 const pesoEquipTot = pesoEquipItems + pesoArmi + pesoArm;
                 const pesoZainoTot = Math.max(0, pesoTot - pesoEquipTot);
-                const soglia1 = forza * 2.5 * moltiTaglia; // soglia variante opzionale 5e: > 5x FOR in libbre = 2.5x FOR in kg
-                const soglia2 = forza * 5 * moltiTaglia;   // soglia variante opzionale 5e: > 10x FOR in libbre = 5x FOR in kg
                 const spingiTrascina = capFisica * 2;
-                // Nelle regole base 5e un personaggio trasporta fino alla capacità massima (cap) senza penalità.
-                // Se supera la capacità massima è sovraccarico; se supera la soglia di variante opzionale (5x FOR)
-                // e non possiede una borsa conservante equipaggiata, viene indicato lo stato opzionale.
+                // Nelle regole standard 5e un personaggio trasporta fino alla capacità massima (cap) senza penalità.
+                // Se supera la capacità massima è sovraccarico (rosso); se supera l'80% della capacità viene indicato come verso il limite (arancione).
                 const stato = pesoTot > cap
                   ? 'sovraccarico'
                   : (pesoTot > capFisica
                     ? (borsaEquip ? 'ok' : 'sovraccarico')
-                    : (pesoTot > soglia2
-                      ? (borsaEquip ? 'ok' : 'grave')
-                      : (pesoTot > soglia1
-                        ? (borsaEquip ? 'ok' : 'ingombrato')
-                        : 'ok')));
+                    : 'ok');
                 const perc = Math.min(100, (pesoTot / cap) * 100);
-                // Colore barra: verde se normale/ok, arancione se verso il limite o ingombrato (regola opzionale), rosso se grave/sovraccarico
-                const colore = (stato === 'sovraccarico' || stato === 'grave')
+                // Colore barra: verde se normale/ok, arancione se vicino alla capacità (>80%), rosso se oltre la capacità (sovraccarico)
+                const colore = (stato === 'sovraccarico')
                   ? '#c0392b'
-                  : (stato === 'ingombrato' || pesoTot > cap * 0.75 ? '#e08a1e' : '#2e9d4d');
+                  : (pesoTot > cap * 0.8 ? '#e08a1e' : '#2e9d4d');
                 const modInv = (id, patch) => aggiorna({ inventario: inv.map((x) => (x.id === id ? { ...x, ...patch } : x)) });
                 const sintoniaArr = Array.isArray(scheda.sintonia) ? scheda.sintonia : (scheda.sintonia ? [scheda.sintonia] : []);
                 const normalizzaNomeOggetto = (v) => String(v || '').toLocaleLowerCase('it').replace(/[^a-zà-ÿ0-9]/gi, ' ').replace(/\s+/g, ' ').trim();
@@ -13004,7 +12991,7 @@ export default function App() {
                         <span>Taglia {tagliaAttiva} ×{moltiTaglia} · Spazio: {SPAZIO_TAGLIA_5E[tagliaAttiva]} · Spingi/trascina/solleva {spingiTrascina.toFixed(0)} kg (Lotta fino a: {LOTTA_MAX_TAGLIA_5E[tagliaAttiva]})</span>
                         <span>🛡️ Indossato: <strong>{pesoEquipTot.toFixed(1)} kg</strong> · 🎒 Zaino: <strong>{pesoZainoTot.toFixed(1)} kg</strong></span>
                       </div>
-                      <div style={{ height: 6, borderRadius: 3, background: C.border, overflow: 'hidden', marginTop: 3 }} title={`${t('inv.soglie')}: ${(soglia1).toFixed(0)} / ${(soglia2).toFixed(0)} / ${cap.toFixed(0)} kg`}>
+                      <div style={{ height: 6, borderRadius: 3, background: C.border, overflow: 'hidden', marginTop: 3 }} title={`Capacità: ${pesoTot.toFixed(1)} / ${cap.toFixed(0)} kg (${perc.toFixed(0)}%)`}>
                         <div style={{ width: `${perc}%`, height: '100%', background: colore, transition: 'width 0.25s ease' }} />
                       </div>
                     </div>
