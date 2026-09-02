@@ -207,7 +207,9 @@ export const DIZIONARIO = {
     
     // Sezioni Scheda
     'sez.risorse': 'Risorse di classe',
-    'sez.combattimento': 'Combattimento',
+    'sez.combattimento': 'Azioni',
+    'sez.azioni': 'Azioni',
+    'combat.titolo': 'Combattimento',
     'sez.incantesimi': 'Magia',
     'sez.privilegi': 'Privilegi di classe',
     'sez.metamagia': 'Metamagia',
@@ -1053,7 +1055,9 @@ export const DIZIONARIO = {
 
     // Sezioni Scheda
     'sez.risorse': 'Class Resources',
-    'sez.combattimento': 'Combat',
+    'sez.combattimento': 'Actions',
+    'sez.azioni': 'Actions',
+    'combat.titolo': 'Combat',
     'sez.incantesimi': 'Magic',
     'sez.privilegi': 'Class Features',
     'sez.metamagia': 'Metamagic',

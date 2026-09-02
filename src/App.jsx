@@ -13236,47 +13236,8 @@ export default function App() {
           </div>
 
           <div style={{ display: 'contents' }}>
-            {/* Armi e attacchi — sezione collassabile */}
-            <Sezione titolo={t("sez.combattimento")} {...propsSez('attacchi')} {...apertoProps('attacchi')}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8, gap: 8, flexWrap: 'wrap' }}>
-                <button
-                  type="button"
-                  style={{
-                    ...styles.buttonMini,
-                    fontSize: 11.5,
-                    fontWeight: 700,
-                    padding: '4px 10px',
-                    borderRadius: 6,
-                    cursor: 'pointer',
-                    background: scheda.mostraArmiAttacco !== false ? 'rgba(201,162,39,0.22)' : 'transparent',
-                    color: scheda.mostraArmiAttacco !== false ? C.goldDark : C.inkDim,
-                    border: `1px solid ${scheda.mostraArmiAttacco !== false ? C.gold : C.border}`
-                  }}
-                  onClick={() => aggiorna({ mostraArmiAttacco: scheda.mostraArmiAttacco === false })}
-                  title={t('attacchi.armi_tip')}
-                >
-                  {t('attacchi.armi')}: {scheda.mostraArmiAttacco !== false ? 'ON' : 'OFF'}
-                </button>
-                <button
-                  type="button"
-                  style={{
-                    ...styles.buttonMini,
-                    fontSize: 11.5,
-                    fontWeight: 700,
-                    padding: '4px 10px',
-                    borderRadius: 6,
-                    cursor: 'pointer',
-                    background: scheda.mostraIncantesimiAttacco !== false ? 'rgba(201,162,39,0.22)' : 'transparent',
-                    color: scheda.mostraIncantesimiAttacco !== false ? C.goldDark : C.inkDim,
-                    border: `1px solid ${scheda.mostraIncantesimiAttacco !== false ? C.gold : C.border}`
-                  }}
-                  onClick={() => aggiorna({ mostraIncantesimiAttacco: scheda.mostraIncantesimiAttacco === false })}
-                  title={t('attacchi.incantesimi_offensivi_tip')}
-                >
-                  {t('attacchi.incantesimi_offensivi')}: {scheda.mostraIncantesimiAttacco !== false ? 'ON' : 'OFF'}
-                </button>
-              </div>
-
+            {/* Azioni, Turno e Combattimento — sezione collassabile */}
+            <Sezione titolo={t("sez.azioni")} {...propsSez('attacchi')} {...apertoProps('attacchi')}>
               {/* Barra Economia del Turno & Tattiche di Combattimento 5e */}
               {(() => {
                 const turno = calcolaTurnoCombattimento(scheda, scheda.turnoAzioni || {});
@@ -13795,6 +13756,51 @@ export default function App() {
                   </div>
                 );
               })()}
+
+              {/* Intestazione Combattimento & Filtri Armi / Incantesimi Offensivi */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, marginBottom: 8, borderBottom: `1px solid ${C.border}`, paddingBottom: 6, flexWrap: 'wrap', gap: 8 }}>
+                <h3 style={{ fontSize: 13.5, fontWeight: 700, color: C.goldDark, margin: 0, textTransform: 'uppercase', letterSpacing: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>⚔️</span> {t('combat.titolo')}
+                </h3>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    style={{
+                      ...styles.buttonMini,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      padding: '3px 8px',
+                      borderRadius: 6,
+                      cursor: 'pointer',
+                      background: scheda.mostraArmiAttacco !== false ? 'rgba(201,162,39,0.22)' : 'transparent',
+                      color: scheda.mostraArmiAttacco !== false ? C.goldDark : C.inkDim,
+                      border: `1px solid ${scheda.mostraArmiAttacco !== false ? C.gold : C.border}`
+                    }}
+                    onClick={() => aggiorna({ mostraArmiAttacco: scheda.mostraArmiAttacco === false })}
+                    title={t('attacchi.armi_tip')}
+                  >
+                    🗡️ {t('attacchi.armi')}: {scheda.mostraArmiAttacco !== false ? 'ON' : 'OFF'}
+                  </button>
+                  <button
+                    type="button"
+                    style={{
+                      ...styles.buttonMini,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      padding: '3px 8px',
+                      borderRadius: 6,
+                      cursor: 'pointer',
+                      background: scheda.mostraIncantesimiAttacco !== false ? 'rgba(201,162,39,0.22)' : 'transparent',
+                      color: scheda.mostraIncantesimiAttacco !== false ? C.goldDark : C.inkDim,
+                      border: `1px solid ${scheda.mostraIncantesimiAttacco !== false ? C.gold : C.border}`
+                    }}
+                    onClick={() => aggiorna({ mostraIncantesimiAttacco: scheda.mostraIncantesimiAttacco === false })}
+                    title={t('attacchi.incantesimi_offensivi_tip')}
+                  >
+                    ✨ {t('attacchi.incantesimi_offensivi')}: {scheda.mostraIncantesimiAttacco !== false ? 'ON' : 'OFF'}
+                  </button>
+                </div>
+              </div>
 
               <div style={{ overflowX: 'auto' }}>
                 {(() => {
