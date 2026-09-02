@@ -987,6 +987,10 @@ export const PRIVILEGI_CLASSE_LIV_2014 = {
     20: 'Anima dell’artefice (Soul of Artifice)',
   },
 };
+export const PE_PER_LIVELLO = [
+  0, 0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000,
+  85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000,
+];
 export const ASI_LIV = {
   guerriero: [4, 6, 8, 12, 14, 16, 19],
   ladro: [4, 8, 10, 12, 16, 19],

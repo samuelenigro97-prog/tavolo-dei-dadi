@@ -15,10 +15,10 @@ import {
   classificaIncantesimoCombattimento, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello,
   controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, puntiVersoSlot, slotVersoPunti,
   riepilogoCondizioni, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi,
-  classePreparaIncantesimi, calcolaPfCompagno, parseAzioniCompagno,
+  classePreparaIncantesimi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza,
 } from '../src/rules/regole.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from '../src/data/condizioni.js';
-import { CONDIZIONI_5E } from '../src/data/dati5e.js';
+import { CONDIZIONI_5E, PE_PER_LIVELLO } from '../src/data/dati5e.js';
 import { spiegaPrivilegio, spiegaInvocazione, spiegaInfusione, INVOCAZIONI_5E, INFUSIONI_ARTEFICE_5E } from '../src/data/spiegazioni.js';
 
 // --- Helper: sostituisce Math.random con una coda di valori deterministici ---
@@ -763,6 +763,47 @@ test('compagni e famigli: auto-scaling PF e parsing attacchi (Companion & Pet Tr
   assert.equal(parsed[1].bonusAttacco, 5);
   assert.equal(parsed[1].danno, '1d4+3');
 });
+
+test('punti esperienza (XP Tracker): calcolo soglie, percentuali e level up', () => {
+  assert.equal(PE_PER_LIVELLO[1], 0);
+  assert.equal(PE_PER_LIVELLO[2], 300);
+  assert.equal(PE_PER_LIVELLO[3], 900);
+  assert.equal(PE_PER_LIVELLO[5], 6500);
+  assert.equal(PE_PER_LIVELLO[20], 355000);
+
+  // Livello 1 con 0 PE: 0% di 300
+  const d0 = dettagliEsperienza(0, 1);
+  assert.equal(d0.percentuale, 0);
+  assert.equal(d0.puoSalire, false);
+  assert.equal(d0.peMancanti, 300);
+  assert.equal(d0.livelloTeorico, 1);
+
+  // Livello 1 con 150 PE: 50%
+  const d150 = dettagliEsperienza(150, 1);
+  assert.equal(d150.percentuale, 50);
+  assert.equal(d150.puoSalire, false);
+  assert.equal(d150.peMancanti, 150);
+
+  // Livello 1 con 300 PE: 100%, puoSalire = true
+  const d300 = dettagliEsperienza(300, 1);
+  assert.equal(d300.percentuale, 100);
+  assert.equal(d300.puoSalire, true);
+  assert.equal(d300.peMancanti, 0);
+  assert.equal(d300.livelloTeorico, 2);
+
+  // Livello 3 con 1800 PE (soglia liv 3 = 900, liv 4 = 2700, delta = 1800. Guadagnati = 900 -> 50%)
+  const d1800 = dettagliEsperienza(1800, 3);
+  assert.equal(d1800.percentuale, 50);
+  assert.equal(d1800.puoSalire, false);
+  assert.equal(d1800.peMancanti, 900);
+
+  // Livello 20 (Max)
+  const dMax = dettagliEsperienza(400000, 20);
+  assert.equal(dMax.percentuale, 100);
+  assert.equal(dMax.puoSalire, false);
+  assert.equal(dMax.livelloTeorico, 20);
+});
+
 
 
 

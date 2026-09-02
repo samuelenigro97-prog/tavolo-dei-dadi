@@ -5,7 +5,7 @@ import { CLASSI, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, SLOT_FULL_CASTER, SLOT
   INCANTESIMI_CLASSE, CARATT_INCANTATORE, SOTTOCLASSE_TERZO_CASTER,
   SCUOLE_TERZO_CASTER_2014, SLOT_TERZO_CASTER, INC_MAX_TERZO, TRUCCHETTI_TERZO_CASTER,
   TS_CLASSE, COMPETENZE_CLASSE, COMPETENZE_SPECIE, BACKGROUND_COMPETENZE,
-  MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E } from '../data/dati5e.js';
+  MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, PE_PER_LIVELLO } from '../data/dati5e.js';
 import { modificatore, conSegno, bonusCompetenzaDaLivello } from './dadi.js';
 import { spiegaIncantesimo } from '../data/spiegazioni.js';
 import { INCANTESIMI_DB, datiIncantesimo } from '../data/incantesimi.js';
@@ -1140,4 +1140,42 @@ export function parseAzioniCompagno(azioni) {
       testoCompleto: raw,
     };
   });
+}
+
+/**
+ * Calcola i dettagli completi sui Punti Esperienza (P.E. / XP) e la progressione 5e:
+ * soglie, percentuale di completamento del livello, PE mancanti e disponibilità Level Up.
+ */
+export function dettagliEsperienza(pe, livello = 1) {
+  const liv = Math.max(1, Math.min(20, Math.floor(livello) || 1));
+  const peAttuali = Math.max(0, Number(pe) || 0);
+  const peMinLivello = PE_PER_LIVELLO[liv] || 0;
+  const peProssimoLivello = PE_PER_LIVELLO[liv + 1] || PE_PER_LIVELLO[20];
+  const peNecessariDelta = Math.max(1, peProssimoLivello - peMinLivello);
+  const peGuadagnatiNelLivello = Math.max(0, peAttuali - peMinLivello);
+  const percentuale = liv >= 20 ? 100 : Math.min(100, Math.max(0, Math.round((peGuadagnatiNelLivello / peNecessariDelta) * 100)));
+  const puoSalire = liv < 20 && peAttuali >= peProssimoLivello;
+  const peMancanti = Math.max(0, peProssimoLivello - peAttuali);
+
+  // Calcola quale livello teorico raggiungerebbe con questi PE
+  let livelloTeorico = 1;
+  for (let l = 20; l >= 1; l--) {
+    if (peAttuali >= PE_PER_LIVELLO[l]) {
+      livelloTeorico = l;
+      break;
+    }
+  }
+
+  return {
+    livello: liv,
+    peAttuali,
+    peMinLivello,
+    peProssimoLivello,
+    peNecessariDelta,
+    peGuadagnatiNelLivello,
+    percentuale,
+    puoSalire,
+    peMancanti,
+    livelloTeorico,
+  };
 }

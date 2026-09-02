@@ -758,10 +758,6 @@ function applicaASIFinoA(caratteristiche, classe, livello, scelteTalento = {}) {
   return { applicati, talenti };
 }
 
-// Punti esperienza minimi per livello (identici nelle due edizioni).
-const PE_PER_LIVELLO = [0, 0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000,
-  85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000];
-
 /**
  * Oro iniziale per un personaggio creato a livello alto (linee guida del DMG).
  * Sotto il 5° livello vale la dotazione normale della classe.
@@ -1286,10 +1282,10 @@ import { spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spieg
 import { INCANTESIMI_DB, ALIAS_INCANTESIMI, datiIncantesimo } from './data/incantesimi.js';
 
 const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(INCANTESIMI_DB)])).sort((a, b) => a.localeCompare(b, 'it'));
-import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E, DEFAULT_MANUALI, MANUALI_INFO, SOTTOCLASSI_FONTI, TALENTI_FONTI, INCANTESIMI_FONTI, talentiPerManuali, incantesimiPerManuali, fonteValida } from './data/dati5e.js';
+import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E, DEFAULT_MANUALI, MANUALI_INFO, SOTTOCLASSI_FONTI, TALENTI_FONTI, INCANTESIMI_FONTI, talentiPerManuali, incantesimiPerManuali, fonteValida, PE_PER_LIVELLO } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -3433,6 +3429,8 @@ export default function App() {
   const [mostraModalAggiungiCompagno, setMostraModalAggiungiCompagno] = useState(false);
   const [filtroCompagnoCat, setFiltroCompagnoCat] = useState('tutti');
   const [cercaCompagnoText, setCercaCompagnoText] = useState('');
+  const [mostraModalPe, setMostraModalPe] = useState(false);
+  const [inputAggiungiPe, setInputAggiungiPe] = useState('');
   // Preset colori UI
   const [presetColori, setPresetColori] = useState(() => localStorage.getItem('scheda-interattiva:preset-colori') || 'default');
   useEffect(() => {
@@ -7629,6 +7627,300 @@ export default function App() {
         );
       })()}
 
+      {/* Modal Tracciatore Punti Esperienza (P.E. / XP Tracker) */}
+      {mostraModalPe && (() => {
+        const livTotale = (Number(scheda.livello) || 1) + ((scheda.multiclasse || []).reduce((a, m) => a + (Number(m.livello) || 0), 0));
+        const infoPe = dettagliEsperienza(scheda.pe, livTotale);
+
+        const aggiungiPeDelta = (delta) => {
+          const num = Math.max(0, Math.floor(Number(delta) || 0));
+          if (num === 0) return;
+          const pePrec = Math.max(0, Number(scheda.pe) || 0);
+          const nuovoTotale = pePrec + num;
+          aggiorna({ pe: nuovoTotale });
+          setInputAggiungiPe('');
+          registra({
+            etichetta: `⭐ Punti Esperienza`,
+            tipo: 'pe',
+            totale: num,
+            dettaglio: `Guadagnati +${num.toLocaleString()} P.E. (Totale: ${nuovoTotale.toLocaleString()} P.E.)`,
+          });
+        };
+
+        return (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0,0,0,0.6)',
+              backdropFilter: 'blur(3px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              padding: 16,
+            }}
+            onClick={(e) => { if (e.target === e.currentTarget) setMostraModalPe(false); }}
+          >
+            <div
+              style={{
+                background: C.panel,
+                border: `1px solid ${C.border}`,
+                borderRadius: 12,
+                maxWidth: 540,
+                width: '100%',
+                maxHeight: '90vh',
+                display: 'flex',
+                flexDirection: 'column',
+                boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
+                overflow: 'hidden',
+              }}
+            >
+              {/* Header */}
+              <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <strong style={{ fontSize: 15, color: C.goldDark, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>⭐</span> {lingua === 'en' ? 'Experience Points (XP Tracker)' : 'Tracciatore Punti Esperienza (P.E.)'}
+                </strong>
+                <button
+                  type="button"
+                  onClick={() => setMostraModalPe(false)}
+                  style={{ ...styles.buttonMini, fontSize: 13, padding: '2px 8px' }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Contenuto Modale */}
+              <div style={{ padding: '16px 18px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                
+                {/* Scheda Riepilogo Livello e Barra Progresso */}
+                <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                    <div>
+                      <div style={{ fontSize: 11, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 }}>
+                        {lingua === 'en' ? 'Current Level' : 'Livello Attuale'}
+                      </div>
+                      <div style={{ fontSize: 18, fontWeight: 800, color: C.ink }}>
+                        {t('profilo.livello')} {livTotale}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: 11, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 }}>
+                        {lingua === 'en' ? 'Next Level Goal' : 'Prossimo Livello'}
+                      </div>
+                      <div style={{ fontSize: 18, fontWeight: 800, color: C.goldDark }}>
+                        {livTotale >= 20 ? 'Max (Liv. 20)' : `${t('profilo.livello')} ${livTotale + 1}`}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Barra di Avanzamento */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700 }}>
+                      <span style={{ color: C.ink }}>
+                        {Number(scheda.pe || 0).toLocaleString()} P.E.
+                      </span>
+                      <span style={{ color: infoPe.puoSalire ? '#10b981' : C.goldDark }}>
+                        {infoPe.percentuale}% {livTotale < 20 ? `(${infoPe.peGuadagnatiNelLivello.toLocaleString()} / ${infoPe.peNecessariDelta.toLocaleString()} P.E.)` : ''}
+                      </span>
+                    </div>
+                    <div style={{ height: 10, width: '100%', background: 'rgba(0,0,0,0.08)', borderRadius: 5, overflow: 'hidden' }}>
+                      <div
+                        style={{
+                          height: '100%',
+                          width: `${infoPe.percentuale}%`,
+                          background: infoPe.puoSalire ? 'linear-gradient(90deg, #10b981, #059669)' : `linear-gradient(90deg, ${C.gold}, ${C.goldDark})`,
+                          transition: 'width 0.3s ease',
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Informazioni Dettagliate */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 11.5, color: C.inkDim, background: C.panel, padding: '8px 10px', borderRadius: 6, border: `1px solid ${C.border}` }}>
+                    <div>
+                      {lingua === 'en' ? 'Threshold for current level:' : 'Soglia livello attuale:'} <strong>{infoPe.peMinLivello.toLocaleString()} P.E.</strong>
+                    </div>
+                    <div>
+                      {lingua === 'en' ? 'Threshold for next level:' : 'Soglia prossimo livello:'} <strong>{livTotale >= 20 ? '—' : `${infoPe.peProssimoLivello.toLocaleString()} P.E.`}</strong>
+                    </div>
+                    <div>
+                      {lingua === 'en' ? 'XP Remaining to Level Up:' : 'P.E. mancanti al passaggio:'} <strong style={{ color: infoPe.puoSalire ? '#10b981' : C.ink }}>{infoPe.puoSalire ? (lingua === 'en' ? 'Ready to Level Up!' : 'Pronto per il Level Up!') : `${infoPe.peMancanti.toLocaleString()} P.E.`}</strong>
+                    </div>
+                    <div>
+                      {lingua === 'en' ? 'Theoretical Level by XP:' : 'Livello teorico da P.E.:'} <strong>Liv. {infoPe.livelloTeorico}</strong>
+                    </div>
+                  </div>
+
+                  {/* Pulsante Level Up se idoneo */}
+                  {infoPe.puoSalire && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMostraModalPe(false);
+                        setMostraLevelUp(true);
+                      }}
+                      style={{
+                        ...styles.button,
+                        background: 'linear-gradient(135deg, #10b981, #059669)',
+                        color: '#fff',
+                        fontWeight: 800,
+                        fontSize: 13,
+                        padding: '10px 16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 8,
+                        boxShadow: '0 4px 12px rgba(16,185,129,0.3)',
+                      }}
+                    >
+                      ✨ {lingua === 'en' ? 'Ready to Level Up! Open Level Up Guide' : 'Pronto al Passaggio! Apri Avanzamento di Livello'}
+                    </button>
+                  )}
+                </div>
+
+                {/* Sezione Aggiungi Rapido P.E. */}
+                <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                    ➕ {lingua === 'en' ? 'Add Session / Encounter XP' : 'Aggiungi Punti Esperienza'}
+                  </div>
+                  
+                  {/* Input personalizzato */}
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <input
+                      type="number"
+                      placeholder={lingua === 'en' ? 'Amount of XP to add (e.g. 450)...' : 'Quantità P.E. da aggiungere (es. 450)...'}
+                      value={inputAggiungiPe}
+                      onChange={(e) => setInputAggiungiPe(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          aggiungiPeDelta(inputAggiungiPe);
+                        }
+                      }}
+                      style={{ ...styles.inlineInput, flex: 1, padding: '6px 10px', fontSize: 13 }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => aggiungiPeDelta(inputAggiungiPe)}
+                      disabled={!inputAggiungiPe || Number(inputAggiungiPe) <= 0}
+                      style={{
+                        ...styles.buttonMini,
+                        background: C.goldDark,
+                        color: '#fff',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        padding: '6px 14px',
+                        opacity: (!inputAggiungiPe || Number(inputAggiungiPe) <= 0) ? 0.5 : 1,
+                      }}
+                    >
+                      {lingua === 'en' ? 'Add XP' : 'Aggiungi'}
+                    </button>
+                  </div>
+
+                  {/* Pulsanti Rapidi */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 2 }}>
+                    {[50, 100, 250, 500, 1000, 2500, 5000].map((val) => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => aggiungiPeDelta(val)}
+                        style={{
+                          ...styles.buttonMini,
+                          fontSize: 11,
+                          padding: '3px 8px',
+                          color: C.goldDark,
+                          borderColor: C.gold,
+                          background: 'rgba(201,162,39,0.08)',
+                          fontWeight: 600,
+                        }}
+                      >
+                        +{val.toLocaleString()} P.E.
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Modifica Manuale P.E. Totali */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: C.panelLight, borderRadius: 8, border: `1px solid ${C.border}`, fontSize: 12 }}>
+                  <span style={{ color: C.inkDim }}>{lingua === 'en' ? 'Set Total XP manually:' : 'Imposta P.E. totali a mano:'}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Editable
+                      value={Math.max(0, Number(scheda.pe) || 0)}
+                      tipo="numero"
+                      width={90}
+                      style={{ textAlign: 'right', fontWeight: 700 }}
+                      onChange={(v) => aggiorna({ pe: Math.max(0, v) })}
+                    />
+                    <span style={{ color: C.inkDim }}>P.E.</span>
+                  </div>
+                </div>
+
+                {/* Tabella Ufficiale Soglie D&D 5e */}
+                <div>
+                  <div style={{ fontSize: 11.5, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 6 }}>
+                    📜 {lingua === 'en' ? 'Official 5e XP Progression Table' : 'Tabella Ufficiale Soglie P.E. 5e'}
+                  </div>
+                  <div style={{ maxHeight: 180, overflowY: 'auto', border: `1px solid ${C.border}`, borderRadius: 6 }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, textAlign: 'left' }}>
+                      <thead>
+                        <tr style={{ background: C.panelLight, borderBottom: `1px solid ${C.border}`, color: C.inkDim }}>
+                          <th style={{ padding: '4px 8px' }}>{t('profilo.livello')}</th>
+                          <th style={{ padding: '4px 8px' }}>{lingua === 'en' ? 'Min XP' : 'P.E. Minimi'}</th>
+                          <th style={{ padding: '4px 8px' }}>{lingua === 'en' ? 'Prof. Bonus' : 'Bonus Comp.'}</th>
+                          <th style={{ padding: '4px 8px' }}>{lingua === 'en' ? 'Status' : 'Stato'}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Array.from({ length: 20 }, (_, i) => i + 1).map((l) => {
+                          const soglia = PE_PER_LIVELLO[l];
+                          const bc = bonusCompetenzaDaLivello(l);
+                          const isAttuale = l === livTotale;
+                          const isRaggiunto = Number(scheda.pe || 0) >= soglia;
+
+                          return (
+                            <tr
+                              key={l}
+                              style={{
+                                background: isAttuale ? 'rgba(201,162,39,0.14)' : l % 2 === 0 ? 'rgba(0,0,0,0.02)' : 'transparent',
+                                fontWeight: isAttuale ? 700 : 400,
+                                borderBottom: `1px solid ${C.border}`,
+                              }}
+                            >
+                              <td style={{ padding: '4px 8px', color: isAttuale ? C.goldDark : C.ink }}>
+                                {isAttuale ? '👉 ' : ''}Livello {l}
+                              </td>
+                              <td style={{ padding: '4px 8px', color: C.ink }}>
+                                {soglia.toLocaleString()} P.E.
+                              </td>
+                              <td style={{ padding: '4px 8px', color: C.inkDim }}>
+                                {conSegno(bc)}
+                              </td>
+                              <td style={{ padding: '4px 8px', fontSize: 10.5 }}>
+                                {isAttuale ? (
+                                  <span style={{ color: C.goldDark, fontWeight: 700 }}>● {lingua === 'en' ? 'Current' : 'Attuale'}</span>
+                                ) : isRaggiunto ? (
+                                  <span style={{ color: '#10b981' }}>✓ {lingua === 'en' ? 'Reached' : 'Raggiunto'}</span>
+                                ) : (
+                                  <span style={{ color: C.inkDim }}>—</span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {mostraLevelUp && (() => {
         // --- Target del Level Up: classe principale, secondaria esistente o nuova classe (True Multiclassing) ---
         const targetMode = levelUpBozza.target !== undefined ? levelUpBozza.target : 'main';
@@ -11187,14 +11479,50 @@ export default function App() {
                       })}
                     </CampoModulo>
                     <CampoModulo label={t("profilo.pe")}>
-                      <Editable
-                        value={Math.max(0, Number(scheda.pe) || 0)}
-                        tipo="numero"
-                        width="100%"
-                        style={{ width: '100%', textAlign: 'left' }}
+                      <div
+                        onClick={() => setMostraModalPe(true)}
+                        style={{
+                          cursor: 'pointer',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 2,
+                          padding: '2px 4px',
+                          background: 'rgba(0,0,0,0.02)',
+                          borderRadius: 4,
+                          transition: 'background 0.15s ease',
+                        }}
                         title={t('profilo.pe_tooltip')}
-                        onChange={(v) => aggiorna({ pe: Math.max(0, v) })}
-                      />
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, fontWeight: 700, color: C.ink }}>
+                          <span>{Number(scheda.pe || 0).toLocaleString()}</span>
+                          {(() => {
+                            const livTotale = (Number(scheda.livello) || 1) + ((scheda.multiclasse || []).reduce((a, m) => a + (Number(m.livello) || 0), 0));
+                            const infoPe = dettagliEsperienza(scheda.pe, livTotale);
+                            if (infoPe.puoSalire) {
+                              return (
+                                <span style={{ fontSize: 9.5, fontWeight: 700, color: '#10b981', background: 'rgba(16,185,129,0.12)', border: '1px solid #10b981', padding: '0 4px', borderRadius: 3 }}>
+                                  ✨ Up!
+                                </span>
+                              );
+                            }
+                            return (
+                              <span style={{ fontSize: 10, color: C.inkDim, fontWeight: 400 }}>
+                                {infoPe.percentuale}%
+                              </span>
+                            );
+                          })()}
+                        </div>
+                        {/* Mini barra di progresso PE */}
+                        {(() => {
+                          const livTotale = (Number(scheda.livello) || 1) + ((scheda.multiclasse || []).reduce((a, m) => a + (Number(m.livello) || 0), 0));
+                          const infoPe = dettagliEsperienza(scheda.pe, livTotale);
+                          return (
+                            <div style={{ height: 3, width: '100%', background: 'rgba(0,0,0,0.08)', borderRadius: 2, overflow: 'hidden' }}>
+                              <div style={{ height: '100%', width: `${infoPe.percentuale}%`, background: infoPe.puoSalire ? '#10b981' : C.goldDark, transition: 'width 0.25s ease' }} />
+                            </div>
+                          );
+                        })()}
+                      </div>
                     </CampoModulo>
                   </div>
 
