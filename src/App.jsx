@@ -15148,13 +15148,6 @@ export default function App() {
 
               {/* Gruppo 2: Aggiungi Combattenti */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-                <button
-                  style={{ ...styles.buttonMini, background: 'rgba(214,169,15,0.12)', color: C.goldDark, borderColor: C.goldDark, fontWeight: 700, whiteSpace: 'nowrap' }}
-                  onClick={aggiungiPgAlCombat}
-                  title={`${t('ct.aggiungi_pg')}: ${scheda.nome || 'Attivo'}`}
-                >
-                  ＋ {t('ct.pg')}
-                </button>
                 {scheda.alleati && scheda.alleati.length > 0 ? (
                   <select
                     value=""
@@ -15292,7 +15285,7 @@ export default function App() {
             {/* LISTA COMBATTENTI (Ordinati a scorrimento naturale: PG in turno -> Prossimo -> Successivi) */}
             {combat.combattenti.length === 0 ? (
               <div style={{ ...styles.detail, padding: '16px 8px', textAlign: 'center', background: 'rgba(0,0,0,0.02)', borderRadius: 8, border: `1px dashed ${C.border}`, color: C.inkDim }}>
-                ⚔️ <strong>Nessun combattente in questo scontro.</strong> Usa i pulsanti sopra (<strong>＋ PG</strong>, <strong>＋ Alleato</strong>, <strong>＋ Nemico</strong> o <strong>Mostro</strong>) per iniziare.
+                ⚔️ <strong>Nessun combattente in questo scontro.</strong> Usa i pulsanti sopra (<strong>＋ Alleato</strong>, <strong>＋ Nemico</strong> o <strong>Mostro</strong>) per iniziare.
               </div>
             ) : (() => {
               // Master list ordinata per iniziativa decrescente
@@ -15483,9 +15476,9 @@ export default function App() {
                                 <span style={{ color: C.inkDim, fontSize: 12 }}>/ <Editable value={cb.pfMax} tipo="numero" width={32} onChange={(v) => modCombat(cb.id, { pfMax: Math.max(1, v) })} /> PF</span>
                               </div>
 
-                              {/* Chip PF Temporanei chiaro e interattivo */}
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                {cb.pfTemp > 0 ? (
+                              {/* Chip PF Temporanei: visibile solo se attivi (>0) */}
+                              {cb.pfTemp > 0 && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                   <span
                                     style={{
                                       display: 'inline-flex',
@@ -15518,33 +15511,8 @@ export default function App() {
                                       ×
                                     </button>
                                   </span>
-                                ) : (
-                                  <span
-                                    style={{
-                                      display: 'inline-flex',
-                                      alignItems: 'center',
-                                      gap: 2,
-                                      background: 'rgba(0,0,0,0.03)',
-                                      border: `1px dashed ${C.border}`,
-                                      borderRadius: 6,
-                                      padding: '1px 5px',
-                                      color: C.inkDim,
-                                      fontSize: 10.5,
-                                    }}
-                                    title="Aggiungi PF Temporanei (clicca sul numero per impostare)"
-                                  >
-                                    <span>🛡️</span>
-                                    <Editable
-                                      value={cb.pfTemp || 0}
-                                      tipo="numero"
-                                      width={20}
-                                      onChange={(v) => modCombat(cb.id, { pfTemp: Math.max(0, v) })}
-                                      style={{ color: C.inkDim }}
-                                    />
-                                    <span style={{ fontSize: 9.5 }}>Temp</span>
-                                  </span>
-                                )}
-                              </div>
+                                </div>
+                              )}
                             </div>
 
                             {/* Barra della Vita con indicatore PF Temp */}
