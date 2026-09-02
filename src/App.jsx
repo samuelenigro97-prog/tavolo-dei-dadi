@@ -14512,18 +14512,33 @@ export default function App() {
                         const pesoMonete = numMonete * 0.01; // 50 monete = 0.5 kg (0.01 kg a moneta)
                         return (
                           <>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 10, minWidth: 0 }}>
-                            <button
-                              style={{ ...styles.buttonMini, fontSize: 11, color: C.goldDark, borderColor: C.goldDark, whiteSpace: 'nowrap' }}
-                              title={t('monete.converti_tip')}
-                              onClick={() => {
-                                const mr = d.mr || 0;
-                                const ma = d.ma || 0;
-                                const addMo = Math.floor(mr / 100) + Math.floor(ma / 10);
-                                if (addMo > 0) aggiorna({ denari: { ...d, mr: mr % 100, ma: ma % 10, mo: (d.mo || 0) + addMo } });
-                                else alert(t('monete.insufficienti'));
-                              }}
-                            >🔄 {t('monete.converti')}</button>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 10, minWidth: 0, flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                              <button
+                                style={{ ...styles.buttonMini, fontSize: 11, color: C.goldDark, borderColor: C.goldDark, whiteSpace: 'nowrap' }}
+                                title={t('monete.converti_tip')}
+                                onClick={() => {
+                                  const mr = d.mr || 0;
+                                  const ma = d.ma || 0;
+                                  const addMo = Math.floor(mr / 100) + Math.floor(ma / 10);
+                                  if (addMo > 0) aggiorna({ denari: { ...d, mr: mr % 100, ma: ma % 10, mo: (d.mo || 0) + addMo } });
+                                  else alert(t('monete.insufficienti'));
+                                }}
+                              >🔄 {t('monete.converti')}</button>
+                              <button
+                                style={{ ...styles.buttonMini, fontSize: 11, color: '#0077b6', borderColor: '#0077b6', whiteSpace: 'nowrap' }}
+                                title={lingua === 'en' ? 'Convert GP into Platinum (10 GP = 1 PP, reduces coin weight by 90%)' : 'Converti Monete d\'Oro in Platino (10 MO = 1 MP, riduce il peso del 90%)'}
+                                onClick={() => {
+                                  const mo = d.mo || 0;
+                                  const addMp = Math.floor(mo / 10);
+                                  if (addMp > 0) {
+                                    aggiorna({ denari: { ...d, mo: mo % 10, mp: (d.mp || 0) + addMp } });
+                                  } else {
+                                    alert(lingua === 'en' ? 'Not enough GP (minimum 10 GP needed for 1 PP).' : 'Servono almeno 10 MO per ottenere 1 MP.');
+                                  }
+                                }}
+                              >💎 {lingua === 'en' ? 'To PP (÷10 weight)' : 'In MP (÷10 peso)'}</button>
+                            </div>
                             <div title={t('monete.totale_tip', { n: numMonete })} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 7, minWidth: 0, fontSize: 12, color: C.goldDark, fontWeight: 700, textAlign: 'right', whiteSpace: 'nowrap' }}>
                               <IconaMonetaOro size={18} />
                               <span>≈ {totMo.toFixed(2)} MO · {pesoMonete.toFixed(2)} kg</span>
