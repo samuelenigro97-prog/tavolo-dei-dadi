@@ -3185,12 +3185,7 @@ export default function App() {
   const [soloRitualiInc, setSoloRitualiInc] = useState(false);
   const [soloPreparatiInc, setSoloPreparatiInc] = useState(false);
   const [soloConcInc, setSoloConcInc] = useState(false);
-  const livelliIncChiusi = scheda.livelliIncChiusi || {};
-  const setLivelliIncChiusi = (updater) => {
-    const prev = scheda.livelliIncChiusi || {};
-    const next = typeof updater === 'function' ? updater(prev) : updater;
-    aggiorna({ livelliIncChiusi: next });
-  };
+  const [filtroTempoInc, setFiltroTempoInc] = useState(''); // '' | 'azione' | 'bonus' | 'reazione'
   const [filtroDiario, setFiltroDiario] = useState('');
   const [vociDiarioChiuse, setVociDiarioChiuse] = useState({});
   const [filtroInventario, setFiltroInventario] = useState('');
@@ -3870,6 +3865,13 @@ export default function App() {
   function aggiorna(patch) {
     setScheda((s) => ({ ...s, ...patch }));
   }
+
+  const livelliIncChiusi = scheda?.livelliIncChiusi || {};
+  const setLivelliIncChiusi = (updater) => {
+    const prev = scheda?.livelliIncChiusi || {};
+    const next = typeof updater === 'function' ? updater(prev) : updater;
+    aggiorna({ livelliIncChiusi: next });
+  };
 
   // Corregge definitivamente anche le schede create/importate prima
   // dell'automatismo, senza ritardare i calcoli del render corrente.
