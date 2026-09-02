@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.54',
+    voci: {
+      it: [
+        'Scaling Trucchetti & Combattimento Rifinito: scaling automatico dei danni dei trucchetti con il livello del PG (5/11/17), tiro rapido danni e critici con raddoppio dadi, forme bestiali preferite (⭐) con gestione corretta dell\'overflow danni, Combat Tracker pulito e filtri rapidi a pillole per l\'inventario.',
+      ],
+      en: [
+        'Cantrip Level Scaling & Combat Refinements: automatic cantrip damage dice scaling with character level (5/11/17), quick damage and critical hit rolling, favorite beast forms (⭐) with PHB damage overflow handling, cleaner Combat Tracker, and pill category filters for inventory.',
+      ],
+    },
+  },
+  {
     versione: '4.0.53',
     voci: {
       it: [
