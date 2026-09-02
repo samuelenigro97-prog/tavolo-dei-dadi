@@ -1628,3 +1628,32 @@ export function dettagliAbilita(chiave, scheda = {}) {
   };
 }
 
+/**
+ * Calcola la CD e i parametri del Tiro Salvezza sulla Concentrazione 5e a seguito di danno o evento.
+ * CD = Math.max(10, Math.floor(danno / 2))
+ * Rileva talenti come Incantatore da Guerra (War Caster) e Invocazioni come Mente Occulta (Eldritch Mind).
+ */
+export function calcolaTsConcentrazione(scheda = {}, danno = 0) {
+  const cd = Math.max(10, Math.floor(Math.max(0, Number(danno) || 0) / 2));
+  const modCos = modificatore(Number(scheda?.caratteristiche?.costituzione) || 10);
+  const tsCosComp = Boolean(scheda?.ts?.costituzione);
+  const bonusComp = Number(scheda?.bonusCompetenza) || 2;
+  const bonus = modCos + (tsCosComp ? bonusComp : 0);
+
+  const testoTalenti = `${scheda?.talenti || ''}\n${scheda?.privilegi || ''}\n${scheda?.privilegiSottoclasse || ''}\n${scheda?.tratti || ''}`.toLowerCase();
+  const haIncantatoreDaGuerra = testoTalenti.includes('incantatore da guerra') ||
+    testoTalenti.includes('war caster') ||
+    testoTalenti.includes('mente occulta') ||
+    testoTalenti.includes('eldritch mind');
+
+  return {
+    cd,
+    bonus,
+    haIncantatoreDaGuerra,
+    spiegazioneCd: danno > 0
+      ? `CD ${cd} (max tra 10 e metà del danno subito: ⌊${danno}/2⌋ = ${Math.floor(danno / 2)})`
+      : 'CD 10 (difficoltà standard per pericoli ambientali)',
+  };
+}
+
+

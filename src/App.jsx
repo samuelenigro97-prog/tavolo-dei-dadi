@@ -1285,7 +1285,7 @@ const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(I
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E, DEFAULT_MANUALI, MANUALI_INFO, SOTTOCLASSI_FONTI, TALENTI_FONTI, INCANTESIMI_FONTI, talentiPerManuali, incantesimiPerManuali, fonteValida, PE_PER_LIVELLO } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili, calcolaTurnoCombattimento, dettagliAbilita } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili, calcolaTurnoCombattimento, dettagliAbilita, calcolaTsConcentrazione } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -6863,33 +6863,109 @@ export default function App() {
 
       {/* TS Concentrazione automatico: appare quando i PF calano mentre concentri */}
       {checkConc && (() => {
-        const bonusCon = bonusTiroSalvezza(scheda, 'costituzione');
+        const tsInfo = calcolaTsConcentrazione(scheda, checkConc.danno);
+        const bonusCon = tsInfo.bonus;
         const esito = checkConc.esito;
+
+        const eseguiTiroConc = (vantaggio = 0) => {
+          const d1 = Math.floor(Math.random() * 20) + 1;
+          const d2 = Math.floor(Math.random() * 20) + 1;
+          const d20 = vantaggio === 1 ? Math.max(d1, d2) : vantaggio === -1 ? Math.min(d1, d2) : d1;
+          const tot = d20 + bonusCon;
+          const passa = d20 === 20 ? true : d20 === 1 ? false : tot >= checkConc.cd;
+          const etichVant = vantaggio === 1 ? ' (Vantaggio)' : vantaggio === -1 ? ' (Svantaggio)' : '';
+          const dettDadi = vantaggio !== 0 ? `2d20 [${d1}, ${d2}] -> [${d20}] ${conSegno(bonusCon)}` : `d20 [${d20}] ${conSegno(bonusCon)}`;
+
+          registra({
+            etichetta: `${t('conc.ts')}${etichVant}`,
+            tipo: 'd20',
+            naturale: d20,
+            totale: tot,
+            dettaglio: `${dettDadi} = ${tot} · CD ${checkConc.cd} (${checkConc.spell}) → ${passa ? '✅ Mantenuta' : '❌ Persa'}`,
+            critico: d20 === 20,
+            fumble: d20 === 1,
+          });
+
+          if (!passa) {
+            aggiorna({ concentrazione: '' });
+          }
+          setCheckConc({ ...checkConc, esito: { d20, tot, passa, d1, d2, vantaggio } });
+        };
+
         return (
-          <div style={{ position: 'fixed', inset: 0, zIndex: 3300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'rgba(0,0,0,0.55)' }} onClick={() => setCheckConc(null)}>
-            <div style={{ ...styles.panel, maxWidth: 380, width: '100%', boxShadow: '0 8px 30px rgba(0,0,0,0.4)' }} onClick={(e) => e.stopPropagation()}>
-              <strong style={{ color: C.goldDark, fontSize: 16, display: 'block', marginBottom: 8 }}>🧠 {t('conc.auto_titolo')}</strong>
-              <div style={{ fontSize: 14, lineHeight: 1.45, color: C.ink, marginBottom: 12 }}>
-                {t('conc.auto_desc', { danno: checkConc.danno, spell: checkConc.spell })} <strong>{t('conc.auto_cd', { cd: checkConc.cd })}</strong>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 3300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)' }} onClick={() => setCheckConc(null)}>
+            <div style={{ ...styles.panel, maxWidth: 420, width: '100%', boxShadow: '0 8px 30px rgba(0,0,0,0.4)', borderRadius: 12 }} onClick={(e) => e.stopPropagation()}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <strong style={{ color: C.goldDark, fontSize: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>🧠</span> {t('conc.auto_titolo')}
+                </strong>
+                <span style={{ fontSize: 11, background: 'rgba(201,162,39,0.15)', color: C.goldDark, padding: '2px 7px', borderRadius: 6, fontWeight: 700 }}>
+                  CD {checkConc.cd}
+                </span>
               </div>
+
+              <div style={{ fontSize: 13, lineHeight: 1.45, color: C.ink, marginBottom: 10 }}>
+                {lingua === 'en'
+                  ? `You took ${checkConc.danno} damage while concentrating on `
+                  : `Hai subito ${checkConc.danno} danni mentre ti concentri su `}
+                <strong style={{ color: C.goldDark }}>{checkConc.spell}</strong>.
+                <div style={{ fontSize: 11, color: C.inkDim, marginTop: 4 }}>
+                  📐 {tsInfo.spiegazioneCd}
+                </div>
+              </div>
+
+              {tsInfo.haIncantatoreDaGuerra && !esito && (
+                <div style={{ fontSize: 11.5, background: 'rgba(46,157,77,0.12)', border: '1px solid #2e9d4d', borderRadius: 6, padding: '5px 8px', marginBottom: 10, color: '#2e9d4d', fontWeight: 600 }}>
+                  ⭐ <strong>{lingua === 'en' ? 'War Caster / Eldritch Mind' : 'Incantatore da Guerra / Mente Occulta'}</strong>: {lingua === 'en' ? 'You have Advantage on concentration saves!' : 'Hai Vantaggio sui TS di concentrazione!'}
+                </div>
+              )}
+
               {!esito ? (
-                <button style={{ ...styles.button, width: '100%', marginBottom: 8 }} onClick={() => {
-                  const d20 = Math.floor(Math.random() * 20) + 1;
-                  const tot = d20 + bonusCon;
-                  const passa = d20 === 20 ? true : d20 === 1 ? false : tot >= checkConc.cd;
-                  registra({ etichetta: t('conc.ts'), tipo: 'd20', naturale: d20, totale: tot, dettaglio: `d20 [${d20}] ${conSegno(bonusCon)} · CD ${checkConc.cd} → ${passa ? '✅' : '❌'}`, critico: d20 === 20, fumble: d20 === 1 });
-                  if (!passa) aggiorna({ concentrazione: '' });
-                  setCheckConc({ ...checkConc, esito: { d20, tot, passa } });
-                }}>🎲 {t('conc.ts')} ({conSegno(bonusCon)})</button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 }}>
+                  <button
+                    type="button"
+                    style={{
+                      ...styles.button,
+                      width: '100%',
+                      fontWeight: 700,
+                      background: tsInfo.haIncantatoreDaGuerra ? 'rgba(46,157,77,0.15)' : 'rgba(201,162,39,0.18)',
+                      borderColor: tsInfo.haIncantatoreDaGuerra ? '#2e9d4d' : C.gold,
+                      color: tsInfo.haIncantatoreDaGuerra ? '#2e9d4d' : C.goldDark,
+                    }}
+                    onClick={() => eseguiTiroConc(tsInfo.haIncantatoreDaGuerra ? 1 : 0)}
+                  >
+                    🎲 {tsInfo.haIncantatoreDaGuerra ? (lingua === 'en' ? 'Roll with Advantage' : 'Tira con Vantaggio') : t('conc.ts')} ({conSegno(bonusCon)})
+                  </button>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button
+                      type="button"
+                      style={{ ...styles.buttonMini, flex: 1, fontSize: 11 }}
+                      onClick={() => eseguiTiroConc(1)}
+                    >
+                      ✨ {lingua === 'en' ? 'Advantage' : 'Con Vantaggio'}
+                    </button>
+                    <button
+                      type="button"
+                      style={{ ...styles.buttonMini, flex: 1, fontSize: 11 }}
+                      onClick={() => eseguiTiroConc(-1)}
+                    >
+                      ⚠️ {lingua === 'en' ? 'Disadvantage' : 'Con Svantaggio'}
+                    </button>
+                  </div>
+                </div>
               ) : (
-                <div style={{ textAlign: 'center', marginBottom: 8 }}>
-                  <div style={{ fontSize: 13, color: C.inkDim }}>d20 [{esito.d20}] {conSegno(bonusCon)} = <strong>{esito.tot}</strong> · CD {checkConc.cd}</div>
-                  <div style={{ fontSize: 18, fontWeight: 700, marginTop: 6, color: esito.passa ? C.green : C.red }}>
-                    {esito.passa ? `✅ ${t('conc.mantieni')}` : `❌ ${t('conc.persa')}`}
+                <div style={{ textAlign: 'center', marginBottom: 12, padding: '10px', background: C.panelLight, borderRadius: 8, border: `1px solid ${esito.passa ? '#2e9d4d' : C.red}` }}>
+                  <div style={{ fontSize: 13, color: C.inkDim }}>
+                    {esito.vantaggio !== 0 ? `2d20 [${esito.d1}, ${esito.d2}] -> [${esito.d20}]` : `d20 [${esito.d20}]`} {conSegno(bonusCon)} = <strong style={{ fontSize: 15, color: C.ink }}>{esito.tot}</strong> · CD {checkConc.cd}
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 800, marginTop: 6, color: esito.passa ? '#2e9d4d' : C.red }}>
+                    {esito.passa
+                      ? `✅ ${lingua === 'en' ? 'Concentration Maintained!' : 'Concentrazione Mantenuta!'}`
+                      : `❌ ${lingua === 'en' ? 'Concentration Lost!' : 'Concentrazione Persa!'}`}
                   </div>
                 </div>
               )}
-              <button style={{ ...styles.buttonMini, width: '100%' }} onClick={() => setCheckConc(null)}>{t('modal.chiudi')}</button>
+              <button type="button" style={{ ...styles.buttonMini, width: '100%' }} onClick={() => setCheckConc(null)}>{t('modal.chiudi')}</button>
             </div>
           </div>
         );
@@ -13948,17 +14024,23 @@ export default function App() {
               <div style={{ marginBottom: 14 }}>
                 {(() => {
                   const conc = incantesimiConcentrazioneClasse(scheda.classe, scheda.sottoclasse, versione);
-                  const bonusCon = bonusTiroSalvezza(scheda, 'costituzione');
+                  const tsInfo = calcolaTsConcentrazione(scheda, 0);
+                  const bonusCon = tsInfo.bonus;
                   const attivo = Boolean(scheda.concentrazione);
                   return (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, width: '100%', marginTop: 8 }}>
                       {/* Concentrazione: riquadro quadrato, in linea con gli altri tre */}
                       <div style={{ ...styles.vitalBox, padding: '30px 6px 8px', gap: 5, justifyContent: 'flex-start', background: attivo ? 'rgba(201,162,39,0.15)' : C.panelLight, borderColor: attivo ? C.goldDark : C.border }}>
-                        <div style={{ ...styles.vitalLabel, color: attivo ? C.goldDark : C.inkDim }}>🧠 {t('conc.label')}</div>
+                        <div style={{ ...styles.vitalLabel, color: attivo ? C.goldDark : C.inkDim, display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <span>🧠</span> {t('conc.label')}
+                          {tsInfo.haIncantatoreDaGuerra && (
+                            <span title={lingua === 'en' ? 'War Caster: Advantage on concentration saves' : 'Incantatore da Guerra: Vantaggio sui TS di concentrazione'} style={{ fontSize: 9, color: '#2e9d4d' }}>⭐</span>
+                          )}
+                        </div>
                         <select
                           value={scheda.concentrazione || ''}
                           onChange={(e) => aggiorna({ concentrazione: e.target.value })}
-                          style={{ ...styles.inlineInput, fontSize: 12, width: '100%', maxWidth: '100%', padding: '3px 6px', height: 28, textAlign: 'center' }}
+                          style={{ ...styles.inlineInput, fontSize: 12, width: '100%', maxWidth: '100%', padding: '3px 6px', height: 28, textAlign: 'center', fontWeight: attivo ? 700 : 400, color: attivo ? C.goldDark : C.ink }}
                           title={t('conc.scegli')}
                         >
                           <option value="">{t('conc.nessuna')}</option>
@@ -13967,11 +14049,25 @@ export default function App() {
                         </select>
                         <button
                           className="tirabile"
-                          style={{ ...styles.button, fontSize: 12, fontWeight: 700, padding: '3px 8px', width: '100%', lineHeight: 1.2 }}
-                          title={t('conc.ts_tooltip')}
-                          onClick={() => lanciaD20(t('conc.ts'), bonusCon)}
+                          style={{ ...styles.button, fontSize: 11.5, fontWeight: 700, padding: '3px 8px', width: '100%', lineHeight: 1.2 }}
+                          title={tsInfo.haIncantatoreDaGuerra ? `${t('conc.ts_tooltip')} (Vantaggio da Incantatore da Guerra)` : t('conc.ts_tooltip')}
+                          onClick={() => {
+                            if (tsInfo.haIncantatoreDaGuerra) {
+                              const d1 = tiraDado(20);
+                              const d2 = tiraDado(20);
+                              const d = Math.max(d1, d2);
+                              const tot = d + bonusCon;
+                              conAnimazione(() => {
+                                setDadoValore(tot);
+                                setDadoDettaglio(`TS Concentrazione (Vantaggio War Caster): 2d20 [${d1}, ${d2}] max -> [${d}] ${conSegno(bonusCon)}`);
+                                registra({ etichetta: 'TS Concentrazione (War Caster)', tipo: 'd20', naturale: d, totale: tot, dettaglio: `2d20 [${d1}, ${d2}] -> [${d}] ${conSegno(bonusCon)} = ${tot}` });
+                              }, d);
+                            } else {
+                              lanciaD20(t('conc.ts'), bonusCon);
+                            }
+                          }}
                         >
-                          🎲 TS {conSegno(bonusCon)}
+                          🎲 TS {conSegno(bonusCon)}{tsInfo.haIncantatoreDaGuerra ? ' ⭐' : ''}
                         </button>
                         {attivo && (
                           <button style={{ ...styles.buttonMini, position: 'absolute', top: 4, right: 4, fontSize: 10, padding: '0 5px', height: 20, color: C.red, background: C.panel }} title={t('conc.termina')} onClick={() => aggiorna({ concentrazione: '' })}>✕</button>

@@ -17,7 +17,7 @@ import {
   riepilogoCondizioni, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi,
   classePreparaIncantesimi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza,
   analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili,
-  calcolaTurnoCombattimento, dettagliAbilita,
+  calcolaTurnoCombattimento, dettagliAbilita, calcolaTsConcentrazione,
 } from '../src/rules/regole.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from '../src/data/condizioni.js';
 import { CONDIZIONI_5E, PE_PER_LIVELLO } from '../src/data/dati5e.js';
@@ -991,6 +991,44 @@ test('guida alle abilità 5e, CD di riferimento e sinergie con strumenti (dettag
   assert.ok(synAlchimista);
   assert.equal(synAlchimista.posseduto, true);
 });
+
+test('calcolo TS concentrazione e talenti 5e (calcolaTsConcentrazione)', () => {
+  // 1. Chierico base (COS 14 -> +2, no War Caster, no competenza TS COS)
+  const chierico = {
+    caratteristiche: { costituzione: 14 },
+    ts: { costituzione: false },
+    bonusCompetenza: 3,
+    talenti: '',
+  };
+
+  // Danno 6 -> CD = max(10, 3) = 10
+  const ts6 = calcolaTsConcentrazione(chierico, 6);
+  assert.equal(ts6.cd, 10);
+  assert.equal(ts6.bonus, 2);
+  assert.equal(ts6.haIncantatoreDaGuerra, false);
+
+  // Danno 28 -> CD = max(10, 14) = 14
+  const ts28 = calcolaTsConcentrazione(chierico, 28);
+  assert.equal(ts28.cd, 14);
+
+  // Danno 0 (pericolo ambientale) -> CD 10
+  const ts0 = calcolaTsConcentrazione(chierico, 0);
+  assert.equal(ts0.cd, 10);
+
+  // 2. Mago con talento Incantatore da Guerra (War Caster) e Resiliente (COS)
+  const mago = {
+    caratteristiche: { costituzione: 16 }, // mod +3
+    ts: { costituzione: true }, // comp +3
+    bonusCompetenza: 3,
+    talenti: 'Incantatore da Guerra',
+  };
+
+  const tsMago = calcolaTsConcentrazione(mago, 22);
+  assert.equal(tsMago.cd, 11);
+  assert.equal(tsMago.bonus, 6); // +3 mod + 3 comp
+  assert.equal(tsMago.haIncantatoreDaGuerra, true);
+});
+
 
 
 
