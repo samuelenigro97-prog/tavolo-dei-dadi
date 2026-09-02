@@ -769,13 +769,14 @@ const _lcMap = (obj) => { const m = {}; for (const k in obj) m[k.toLowerCase()] 
 // Quando la lingua è "en" si cerca prima qui; se la voce non è ancora tradotta
 // si ricade sul testo italiano, così non compaiono mai buchi.
 import { linguaAttuale } from '../i18n.js';
-import { EN_METAMAGIA, EN_TALENTI, EN_TRATTI, EN_PRIVILEGI, EN_INCANTESIMI, EN_PRIVILEGI_CLASSE, EN_INVOCAZIONI } from './spiegazioni.en.js';
+import { EN_METAMAGIA, EN_TALENTI, EN_TRATTI, EN_PRIVILEGI, EN_INCANTESIMI, EN_PRIVILEGI_CLASSE, EN_INVOCAZIONI, EN_INFUSIONI } from './spiegazioni.en.js';
 const EN_METAMAGIA_LC = _lcMap(EN_METAMAGIA);
 const EN_TALENTI_LC = _lcMap(EN_TALENTI);
 const EN_TRATTI_LC = _lcMap(EN_TRATTI);
 const EN_PRIVILEGI_LC = _lcMap({ ...EN_PRIVILEGI_CLASSE, ...EN_PRIVILEGI });
 const EN_INCANTESIMI_LC = _lcMap(EN_INCANTESIMI);
 const EN_INVOCAZIONI_LC = _lcMap(EN_INVOCAZIONI || {});
+const EN_INFUSIONI_LC = _lcMap(EN_INFUSIONI || {});
 /** Cerca la voce inglese solo se l'interfaccia è in inglese (altrimenti null). */
 function _en(mappaLc, chiave) {
   if (linguaAttuale !== 'en') return null;
@@ -1485,4 +1486,43 @@ export function spiegaInvocazione(nome) {
   const base = n.replace(/\s*\(.*$/, '').trim();
   return _ed(_en(EN_INVOCAZIONI_LC, n) || _en(EN_INVOCAZIONI_LC, base)
     || SPIEG_INVOCAZIONI_LC[n] || SPIEG_INVOCAZIONI_LC[base] || null);
+}
+
+// Infusioni dell'Artefice (Artificer Infusions) - TCoE / 5e
+const SPIEG_INFUSIONI = {
+  'Arma Potenziata': "*Oggetto: un'arma semplice o da guerra.*\nL'arma conferisce un bonus di **+1 ai tiri per colpire e per i danni** effettuati con essa. Questo bonus aumenta a **+2 al 10° livello** da Artefice.",
+  'Difesa Potenziata': "*Oggetto: un'armatura o uno scudo.*\nL'armatura o lo scudo conferisce un bonus di **+1 alla Classe Armatura (CA)** mentre viene indossato o impugnato. Questo bonus sale a **+2 al 10° livello** da Artefice.",
+  'Focus Arcano Potenziato': "*Oggetto: una verga, bastone o bacchetta.*\nChi lo impugna ottiene un bonus di **+1 ai tiri per colpire con incantesimi** e i suoi attacchi magici **ignorano la mezza copertura**. Il bonus sale a **+2 al 10° livello**.",
+  'Armatura della Mente': "*Oggetto: un'armatura o vesti.*\nL'oggetto possiede 4 cariche. Quando chi la indossa fallisce un tiro salvezza su Costituzione per mantenere la **Concentrazione**, può usare la propria **reazione** per spendere 1 carica e **superare automaticamente** il tiro salvezza. Recupera 1d4 cariche all'alba.",
+  'Servitore Omucolo': "*Oggetto: una gemma o pietra preziosa del valore di almeno 100 MO.*\nCrei un fedele servitore costrutto volante (Homunculus Servant). Agisce subito dopo di te in combattimento ed esegue i tuoi ordini (puoi usare l'azione bonus per fargli compiere un attacco magico o erogare un incantesimo di contatto per te).",
+  'Colpo Radioso': "*Prerequisito: 6° livello · Oggetto: un'arma semplice o da guerra.*\nL'arma conferisce un bonus di **+1 a colpire e danni** ed emana luce viva. Come reazione quando viene colpita da un attacco in mischia, la creatura che la impugna può spendere 1 delle 4 cariche per **accecare** l'attaccante fino alla fine del suo prossimo turno (TS Costituzione contro la tua CD).",
+  'Scudo Repulsivo': "*Prerequisito: 6° livello · Oggetto: uno scudo.*\nConferisce un bonus di **+1 alla CA**. Lo scudo ha 4 cariche: come reazione quando chi lo impugna viene colpito da un attacco in mischia, può spendere 1 carica per **respingere l'attaccante fino a 4,5 metri**.",
+  'Stivali del Movimento': "*Prerequisito: 6° livello · Oggetto: un paio di stivali.*\nChi li indossa può compiere un'**azione bonus** per **teletrasportarsi** istantaneamente fino a 4,5 metri in uno spazio libero non occupato che ha attraversato nel suo turno attuale.",
+  'Armatura della Forza Magica': "*Oggetto: un'armatura.*\nPossiede 6 cariche. Chi la indossa può aggiungere il proprio modificatore di **Intelligenza** a qualsiasi prova o tiro salvezza di Forza. Come reazione quando verrebbe buttato prono, può spendere 1 carica per rimanere in piedi.",
+  'Anello Ricarica Incantesimi': "*Prerequisito: 6° livello · Oggetto: un anello.*\nChi indossa l'anello può compiere un'azione per **recuperare uno slot incantesimo speso** di 3° livello o inferiore. Si ricarica a ogni alba.",
+  'Replicare Oggetto Magico': "*Oggetto: un oggetto non magico base.*\nReplichi le proprietà perfette di un oggetto magico canonico (es. *Borsa Conservante*, *Occhiali della Notte*, *Stivali Alati*, *Mantello della Protezione*, *Guanti del Potere Orchesco*, *Fascia dell'Intelletto*, *Amuleto della Salute*, *Anello di Protezione*).",
+  'Borsa Conservante Infusa': "*Oggetto: un sacco comune.*\nL'oggetto diventa una vera **Borsa Conservante (Bag of Holding)** in grado di contenere fino a 250 kg di peso e 1,8 m³ di volume, pur pesando sempre e soltanto 7 kg.",
+  'Occhiali della Notte': "*Oggetto: un paio di lenti o occhiali.*\nConferisce **Scurovisione fino a 18 metri** a chi li indossa (o aumenta la scurovisione esistente di 18 metri).",
+  'Stivali Alati': "*Prerequisito: 10° livello · Oggetto: un paio di stivali.*\nChi li indossa ottiene una **velocità di volo pari alla sua velocità sul terreno**, utilizzabile fino a un massimo di 4 ore totali al giorno.",
+  'Guanti del Potere Orchesco': "*Prerequisito: 10° livello · Oggetto: un paio di guanti.*\nImpostano il punteggio di **Forza a 19** mentre vengono indossati.",
+  'Fascia dell’Intelletto': "*Prerequisito: 10° livello · Oggetto: un cerchietto o fascia.*\nImposta il punteggio di **Intelligenza a 19** mentre viene indossata.",
+  'Fascia dell\'Intelletto': "*Prerequisito: 10° livello · Oggetto: un cerchietto o fascia.*\nImposta il punteggio di **Intelligenza a 19** mentre viene indossata.",
+  'Mantello della Protezione': "*Prerequisito: 10° livello · Oggetto: un mantello.*\nConferisce un bonus di **+1 alla Classe Armatura** e un bonus di **+1 a tutti i Tiri Salvezza**.",
+  'Amuleto della Salute': "*Prerequisito: 14° livello · Oggetto: un amuleto.*\nImposta il punteggio di **Costituzione a 19** mentre viene indossato.",
+  'Anello di Protezione': "*Prerequisito: 14° livello · Oggetto: un anello.*\nConferisce un bonus di **+1 alla CA** e a tutti i **Tiri Salvezza**.",
+  'Cintura della Forza del Gigante': "*Prerequisito: 14° livello · Oggetto: una cintura.*\nImposta il punteggio di **Forza a 21** (Gigante delle Colline) mentre viene indossata.",
+};
+
+export const INFUSIONI_ARTEFICE_5E = Object.keys(SPIEG_INFUSIONI)
+  .filter((k) => !k.includes('\''))
+  .sort((a, b) => a.localeCompare(b, 'it'));
+
+const SPIEG_INFUSIONI_LC = _lcMap(SPIEG_INFUSIONI);
+
+/** Spiegazione di un'Infusione dell'Artefice dal nome (o null), senza maiuscole. */
+export function spiegaInfusione(nome) {
+  const n = String(nome || '').trim().toLowerCase();
+  const base = n.replace(/\s*\(.*$/, '').trim();
+  return _ed(_en(EN_INFUSIONI_LC, n) || _en(EN_INFUSIONI_LC, base)
+    || SPIEG_INFUSIONI_LC[n] || SPIEG_INFUSIONI_LC[base] || null);
 }

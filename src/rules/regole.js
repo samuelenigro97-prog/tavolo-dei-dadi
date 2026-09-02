@@ -1,4 +1,4 @@
-import { CLASSI, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, SLOT_WARLOCK,
+import { CLASSI, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, SLOT_WARLOCK, SLOT_ARTEFICE,
   TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014,
   PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV,
   PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, PESI_OGGETTI, PESO_ARMATURA_TIPO,
@@ -54,6 +54,11 @@ export function trucchettiMax(classe, livello, sottoclasse) {
     return TRUCCHETTI_TERZO_CASTER[terzo][lv >= 10 ? 1 : 0];
   }
   const k = chiaveClasse(classe);
+  if (k === 'artefice') {
+    if (lv >= 14) return 4;
+    if (lv >= 10) return 3;
+    return 2;
+  }
   const base = TRUCCHETTI_NOTI[k];
   if (!base) return null;
   return lv >= 10 ? base[2] : lv >= 4 ? base[1] : base[0];
@@ -68,6 +73,9 @@ export function incantesimiMaxAuto(scheda, versione = '2024') {
   const idx = Math.min(19, lv - 1);
   const carKey = caratteristicaIncantatoreEffettiva(scheda);
   const mod = carKey ? modificatore(scheda.caratteristiche?.[carKey]) : 0;
+  if (k === 'artefice') {
+    return Math.max(1, Math.floor(lv / 2) + mod);
+  }
   if (versione === '2014') {
     if (['chierico', 'druido', 'mago'].includes(k)) return Math.max(1, mod + lv);
     if (k === 'paladino') return Math.max(1, mod + Math.floor(lv / 2));
@@ -105,7 +113,7 @@ export function caratteristicaIncantatoreEffettiva(scheda) {
 
 /** Classi che scelgono ogni giorno gli incantesimi preparati da una lista ampia. */
 export function classePreparaIncantesimi(classe) {
-  return ['mago', 'chierico', 'druido', 'paladino'].includes(chiaveClasse(classe));
+  return ['mago', 'chierico', 'druido', 'paladino', 'artefice'].includes(chiaveClasse(classe));
 }
 
 /**
@@ -327,6 +335,26 @@ export function maxInvocazioniWarlock(livello, versione = '2024') {
   return 0;
 }
 
+export function maxInfusioniNote(livello) {
+  const lv = Math.max(0, Math.min(20, Math.floor(livello) || 0));
+  if (lv < 2) return 0;
+  if (lv >= 18) return 12;
+  if (lv >= 14) return 10;
+  if (lv >= 10) return 8;
+  if (lv >= 6) return 6;
+  return 4;
+}
+
+export function maxOggettiInfusi(livello) {
+  const lv = Math.max(0, Math.min(20, Math.floor(livello) || 0));
+  if (lv < 2) return 0;
+  if (lv >= 18) return 6;
+  if (lv >= 14) return 5;
+  if (lv >= 10) return 4;
+  if (lv >= 6) return 3;
+  return 2;
+}
+
 export function slotDaClasseLivello(classe, livello, sottoclasse) {
   const lv = Math.max(1, Math.min(20, Math.floor(livello) || 1));
   let tabella = null;
@@ -339,6 +367,7 @@ export function slotDaClasseLivello(classe, livello, sottoclasse) {
     if (CLASSI_FULL_CASTER.includes(k)) tabella = SLOT_FULL_CASTER[lv];
     else if (CLASSI_MEZZO_CASTER.includes(k)) tabella = SLOT_MEZZO_CASTER[lv];
     else if (k === 'warlock') tabella = SLOT_WARLOCK[lv];
+    else if (k === 'artefice') tabella = SLOT_ARTEFICE[lv];
   }
   if (!tabella) return null;
   const slot = {};
@@ -354,6 +383,7 @@ export function livelloIncantatoreCombinato(classi) {
     const k = c.match[0];
     if (CLASSI_FULL_CASTER.includes(k)) lv += Math.floor(livello) || 0;
     else if (CLASSI_MEZZO_CASTER.includes(k)) lv += Math.floor((Math.floor(livello) || 0) / 2);
+    else if (k === 'artefice') lv += Math.ceil((Math.floor(livello) || 0) / 2);
   }
   return lv;
 }

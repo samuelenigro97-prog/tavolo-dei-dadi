@@ -1282,14 +1282,14 @@ function avatarSvgFallback(classe, specie, nome) {
 // ---------------------------------------------------------------------------
 
 
-import { spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spiegaMetamagia, spiegaInvocazione, setEdizioneAttuale, METAMAGIA_5E, TALENTI_5E, INVOCAZIONI_5E, INCANTESIMI_NOMI as NOMI_SPIEG_INC } from './data/spiegazioni.js';
+import { spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spiegaMetamagia, spiegaInvocazione, spiegaInfusione, setEdizioneAttuale, METAMAGIA_5E, TALENTI_5E, INVOCAZIONI_5E, INFUSIONI_ARTEFICE_5E, INCANTESIMI_NOMI as NOMI_SPIEG_INC } from './data/spiegazioni.js';
 import { INCANTESIMI_DB, ALIAS_INCANTESIMI, datiIncantesimo } from './data/incantesimi.js';
 
 const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(INCANTESIMI_DB)])).sort((a, b) => a.localeCompare(b, 'it'));
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E, DEFAULT_MANUALI, MANUALI_INFO, SOTTOCLASSI_FONTI, TALENTI_FONTI, INCANTESIMI_FONTI, talentiPerManuali, incantesimiPerManuali, fonteValida } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -1465,6 +1465,8 @@ function schedaVuota() {
     talenti: '',
     metamagie: '', // opzioni di Metamagia attive (solo Stregone)
     invocazioni: '', // Invocazioni Occulte attive (solo Warlock)
+    infusioni: '', // Infusioni conosciute (solo Artefice)
+    infusioniAttive: [], // Oggetti infusi attivi: [{ id, infusione, target, bonus }]
     equipaggiamento: '',
     // inventario strutturato: { id, nome, qta, peso, equip, categoria, usi, usiMax, ricarica, effetto }
     inventario: [],
@@ -2518,6 +2520,8 @@ function normalizeImported(rawDati) {
     })(),
     metamagie: str(dati.metamagie),
     invocazioni: str(dati.invocazioni),
+    infusioni: str(dati.infusioni),
+    infusioniAttive: Array.isArray(dati.infusioniAttive) ? dati.infusioniAttive : [],
     equipaggiamento: str(dati.equipaggiamento),
     inventario: (() => {
       // Usa l'inventario strutturato solo se NON è vuoto: un array vuoto salvato
@@ -5947,6 +5951,8 @@ export default function App() {
       if (!pg.talenti) pg.talenti = '';
       if (!pg.metamagie) pg.metamagie = '';
       if (!pg.invocazioni) pg.invocazioni = '';
+      if (!pg.infusioni) pg.infusioni = '';
+      if (!Array.isArray(pg.infusioniAttive)) pg.infusioniAttive = [];
       if (!pg.equipaggiamento) pg.equipaggiamento = '';
       if (!pg.inventario) pg.inventario = [];
       if (!pg.sintonia) pg.sintonia = '';
@@ -13537,6 +13543,188 @@ export default function App() {
                                   </div>
                                   {spieg && (
                                     <div style={{ fontSize: 10.5, color: C.inkDim, lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                                      {spieg.replace(/\*\*/g, '').replace(/\\n/g, ' ')}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  );
+                })()}
+              </Sezione>
+            )}
+
+            {/* Infusioni dell'Artefice (solo Artefice se livello >= 2): subito dopo Invocazioni */}
+            {(/(artefice|artificer)/i.test(scheda.classe || '') || /(artefice|artificer)/i.test(scheda.multiclasseClasse2 || '') || /(artefice|artificer)/i.test(scheda.multiclasseClasse3 || '')) && (
+              <Sezione
+                titolo={lingua === 'en' ? '⚙️ Artificer Infusions' : '⚙️ Infusioni dell’Artefice'}
+                {...apertoProps('infusioni', true)}
+              >
+                {(() => {
+                  const lvArtefice = Number(scheda.livello) || 1;
+                  const maxNote = maxInfusioniNote(lvArtefice);
+                  const maxAttivi = maxOggettiInfusi(lvArtefice);
+                  const scelte = (scheda.infusioni || '').split(',').map((s) => s.trim()).filter(Boolean);
+                  const attive = Array.isArray(scheda.infusioniAttive) ? scheda.infusioniAttive : [];
+
+                  const toggleAttiva = (infNome) => {
+                    if (attive.some((a) => a.infusione === infNome)) {
+                      aggiorna({ infusioniAttive: attive.filter((a) => a.infusione !== infNome) });
+                    } else {
+                      if (attive.length >= maxAttivi) {
+                        setInfo({
+                          titolo: lingua === 'en' ? '⚙️ Infusion Limit Reached' : '⚙️ Limite Infusioni Raggiunto',
+                          testo: lingua === 'en'
+                            ? `You can have at most ${maxAttivi} active infused items at level ${lvArtefice}. Deactivate one to activate another.`
+                            : `Puoi avere al massimo ${maxAttivi} oggetti infusi contemporaneamente al livello ${lvArtefice}. Disattiva un'infusione per attivarne un'altra.`,
+                        });
+                        return;
+                      }
+                      aggiorna({ infusioniAttive: [...attive, { id: 'inf-' + Date.now(), infusione: infNome, target: '' }] });
+                    }
+                  };
+
+                  const assegnaTarget = (infNome, targetNome) => {
+                    aggiorna({
+                      infusioniAttive: attive.map((a) => a.infusione === infNome ? { ...a, target: targetNome } : a),
+                    });
+                  };
+
+                  return (
+                    <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+                        <div>
+                          <div style={{ ...styles.detail, fontWeight: 700, fontSize: 13, color: C.goldDark }}>
+                            ⚙️ {lingua === 'en' ? 'Infused Items & Formulas' : 'Formule & Oggetti Infusi'}
+                          </div>
+                          <div style={{ ...styles.detail, fontSize: 11, color: C.inkDim }}>
+                            {lvArtefice < 2
+                              ? (lingua === 'en' ? 'Infusions unlock at 2nd level.' : 'Le infusioni si sbloccano al 2° livello da Artefice.')
+                              : (lingua === 'en'
+                                ? `Infusions known: max ${maxNote} | Active infused items: max ${maxAttivi} (Level ${lvArtefice})`
+                                : `Infusioni conosciute: max ${maxNote} | Oggetti infusi attivi: max ${maxAttivi} (Livello ${lvArtefice})`)}
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: 11.5, fontWeight: 'bold', color: scelte.length > maxNote ? '#ef4444' : C.goldDark, background: C.panel, padding: '3px 8px', borderRadius: 6, border: `1px solid ${C.border}` }}>
+                            {scelte.length} / {maxNote} {lingua === 'en' ? 'known' : 'note'}
+                          </span>
+                          <span style={{ fontSize: 11.5, fontWeight: 'bold', color: attive.length > maxAttivi ? '#ef4444' : '#10b981', background: C.panel, padding: '3px 8px', borderRadius: 6, border: `1px solid ${C.border}` }}>
+                            ⚡ {attive.length} / {maxAttivi} {lingua === 'en' ? 'active' : 'attivi'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div style={{ marginBottom: 2 }}>
+                        <CampoConTendina
+                          value={scheda.infusioni}
+                          opzioni={INFUSIONI_ARTEFICE_5E}
+                          onChange={(v) => aggiorna({ infusioni: v })}
+                          lookup={spiegaInfusione}
+                          setInfo={setInfo}
+                          title={lingua === 'en' ? 'Select an Infusion to learn' : 'Scegli un\'Infusione da apprendere'}
+                        />
+                      </div>
+
+                      {/* Elenco delle infusioni apprese con pulsante di attivazione su oggetto inventario */}
+                      {(() => {
+                        if (!scelte.length) {
+                          return (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.inkDim, fontSize: 11.5, fontStyle: 'italic', padding: '12px 0' }}>
+                              {lingua === 'en' ? 'No Infusions learned. Click ➕ to add.' : 'Nessuna infusione appresa. Clicca ➕ per aggiungerne.'}
+                            </div>
+                          );
+                        }
+                        const itemsInventario = (scheda.inventario || []).map((o) => o?.nome).filter(Boolean);
+
+                        return (
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: 8 }}>
+                            {scelte.map((inf) => {
+                              const spieg = spiegaInfusione(inf);
+                              const entryAttiva = attive.find((a) => a.infusione === inf);
+                              const eAttiva = !!entryAttiva;
+
+                              return (
+                                <div
+                                  key={inf}
+                                  style={{
+                                    background: eAttiva ? 'rgba(16, 185, 129, 0.08)' : C.panel,
+                                    border: `1px solid ${eAttiva ? '#10b981' : C.border}`,
+                                    borderRadius: 8,
+                                    padding: '8px 10px',
+                                    fontSize: 11.5,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 6,
+                                    transition: 'border-color 0.15s ease',
+                                  }}
+                                >
+                                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
+                                    <div
+                                      onClick={() => spieg && setInfo({ titolo: traduciDato(inf), testo: spieg })}
+                                      style={{ cursor: spieg ? 'pointer' : 'default', display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}
+                                      title={spieg ? (lingua === 'en' ? 'Click for description' : 'Clicca per la spiegazione') : undefined}
+                                    >
+                                      <strong style={{ color: eAttiva ? '#059669' : C.goldDark, fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        ⚙️ {traduciDato(inf)}
+                                      </strong>
+                                      {spieg && <span style={{ fontSize: 9.5, color: C.inkDim }}>ℹ️</span>}
+                                    </div>
+
+                                    <button
+                                      onClick={() => toggleAttiva(inf)}
+                                      style={{
+                                        ...styles.buttonMini,
+                                        fontSize: 10,
+                                        padding: '2px 8px',
+                                        background: eAttiva ? '#10b981' : 'transparent',
+                                        color: eAttiva ? '#fff' : C.ink,
+                                        borderColor: eAttiva ? '#10b981' : C.border,
+                                        cursor: 'pointer',
+                                      }}
+                                    >
+                                      {eAttiva ? (lingua === 'en' ? '⚡ Active' : '⚡ Attiva') : (lingua === 'en' ? '○ Inactive' : '○ Inattiva')}
+                                    </button>
+                                  </div>
+
+                                  {/* Sezione assegnazione oggetto inventario se attiva */}
+                                  {eAttiva && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(0,0,0,0.03)', padding: '4px 6px', borderRadius: 4 }}>
+                                      <span style={{ fontSize: 10.5, color: C.inkDim, whiteSpace: 'nowrap' }}>
+                                        {lingua === 'en' ? 'Applied to:' : 'Applicata a:'}
+                                      </span>
+                                      {itemsInventario.length > 0 ? (
+                                        <select
+                                          value={entryAttiva.target || ''}
+                                          onChange={(e) => assegnaTarget(inf, e.target.value)}
+                                          style={{ ...styles.inlineInput, fontSize: 11, padding: '1px 4px', flex: 1, minWidth: 0 }}
+                                        >
+                                          <option value="">{lingua === 'en' ? '— Select Item —' : '— Scegli Oggetto —'}</option>
+                                          {itemsInventario.map((nomeItem, idx) => (
+                                            <option key={idx} value={nomeItem}>{nomeItem}</option>
+                                          ))}
+                                        </select>
+                                      ) : (
+                                        <input
+                                          type="text"
+                                          value={entryAttiva.target || ''}
+                                          placeholder={lingua === 'en' ? 'Item name...' : 'Nome oggetto...'}
+                                          onChange={(e) => assegnaTarget(inf, e.target.value)}
+                                          style={{ ...styles.inlineInput, fontSize: 11, padding: '1px 4px', flex: 1, minWidth: 0 }}
+                                        />
+                                      )}
+                                    </div>
+                                  )}
+
+                                  {spieg && (
+                                    <div
+                                      onClick={() => setInfo({ titolo: traduciDato(inf), testo: spieg })}
+                                      style={{ fontSize: 10.5, color: C.inkDim, lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', cursor: 'pointer' }}
+                                    >
                                       {spieg.replace(/\*\*/g, '').replace(/\\n/g, ' ')}
                                     </div>
                                   )}

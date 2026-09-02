@@ -14,11 +14,12 @@ import {
   sottoclasseLivPer, trucchettiMax, incantesimiMaxAuto, caratteristicaIncantatoreEffettiva,
   classificaIncantesimoCombattimento, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello,
   controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, puntiVersoSlot, slotVersoPunti,
-  riepilogoCondizioni, maxInvocazioniWarlock,
+  riepilogoCondizioni, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi,
+  classePreparaIncantesimi,
 } from '../src/rules/regole.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from '../src/data/condizioni.js';
 import { CONDIZIONI_5E } from '../src/data/dati5e.js';
-import { spiegaPrivilegio, spiegaInvocazione, INVOCAZIONI_5E } from '../src/data/spiegazioni.js';
+import { spiegaPrivilegio, spiegaInvocazione, spiegaInfusione, INVOCAZIONI_5E, INFUSIONI_ARTEFICE_5E } from '../src/data/spiegazioni.js';
 
 // --- Helper: sostituisce Math.random con una coda di valori deterministici ---
 function conRandom(valori, fn) {
@@ -682,4 +683,51 @@ test('warlock: progressione e spiegazioni Invocazioni Occulte (Eldritch Invocati
     assert.ok(typeof sp === 'string' && sp.length >= 25, `Spiegazione troppo breve per invocazione: ${inv}`);
   }
 });
+
+test('artefice: progressione slot, incantesimi preparati e infusioni (Artificer Infusions)', () => {
+  // Dado vita e caratteristiche
+  const schedaArt = {
+    classe: 'Artefice',
+    livello: 5,
+    caratteristiche: { intelligenza: 16 },
+  };
+  assert.equal(caratteristicaIncantatoreEffettiva(schedaArt), 'intelligenza');
+  assert.equal(classePreparaIncantesimi('Artefice'), true);
+  // Incantesimi preparati: lv/2 (2) + modInt (+3) = 5
+  assert.equal(incantesimiMaxAuto(schedaArt), 5);
+  assert.equal(trucchettiMax('Artefice', 1), 2);
+  assert.equal(trucchettiMax('Artefice', 10), 3);
+  assert.equal(trucchettiMax('Artefice', 14), 4);
+
+  // Slot incantesimo (Half caster rounding UP)
+  const slotLiv1 = slotDaClasseLivello('Artefice', 1);
+  assert.equal(slotLiv1[1].totale, 2, 'Artefice al liv 1 ha 2 slot di 1°');
+  const slotLiv5 = slotDaClasseLivello('Artefice', 5);
+  assert.equal(slotLiv5[1].totale, 4, 'Artefice al liv 5 ha 4 slot di 1°');
+  assert.equal(slotLiv5[2].totale, 2, 'Artefice al liv 5 ha 2 slot di 2°');
+
+  // Infusioni note e attive
+  assert.equal(maxInfusioniNote(1), 0);
+  assert.equal(maxInfusioniNote(2), 4);
+  assert.equal(maxInfusioniNote(6), 6);
+  assert.equal(maxInfusioniNote(10), 8);
+  assert.equal(maxInfusioniNote(14), 10);
+  assert.equal(maxInfusioniNote(18), 12);
+
+  assert.equal(maxOggettiInfusi(1), 0);
+  assert.equal(maxOggettiInfusi(2), 2);
+  assert.equal(maxOggettiInfusi(6), 3);
+  assert.equal(maxOggettiInfusi(10), 4);
+  assert.equal(maxOggettiInfusi(14), 5);
+  assert.equal(maxOggettiInfusi(18), 6);
+
+  // Spiegazioni infusioni
+  assert.ok(INFUSIONI_ARTEFICE_5E.length >= 15, 'elenco infusioni nutrito');
+  for (const inf of INFUSIONI_ARTEFICE_5E) {
+    const sp = spiegaInfusione(inf);
+    assert.ok(sp, `Manca spiegazione per infusione: ${inf}`);
+    assert.ok(typeof sp === 'string' && sp.length >= 25, `Spiegazione troppo breve per infusione: ${inf}`);
+  }
+});
+
 

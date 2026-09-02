@@ -5,7 +5,7 @@ import { INCANTESIMI_DB } from './incantesimi.js';
 
 export const NOMI_CLASSI = [
   'Barbaro', 'Bardo', 'Chierico', 'Druido', 'Guerriero', 'Ladro',
-  'Mago', 'Monaco', 'Paladino', 'Ranger', 'Stregone', 'Warlock',
+  'Mago', 'Monaco', 'Paladino', 'Ranger', 'Stregone', 'Warlock', 'Artefice',
 ];
 export const BACKGROUND_5E = [
   'Accolito', 'Artigiano', 'Ciarlatano', 'Contadino', 'Criminale', 'Eremita',
@@ -110,6 +110,28 @@ export const SLOT_WARLOCK = {
   18: [0, 0, 0, 0, 4, 1, 1, 1, 1],
   19: [0, 0, 0, 0, 4, 1, 1, 1, 1],
   20: [0, 0, 0, 0, 4, 1, 1, 1, 1],
+};
+export const SLOT_ARTEFICE = {
+  1:  [2],
+  2:  [2],
+  3:  [3],
+  4:  [3],
+  5:  [4, 2],
+  6:  [4, 2],
+  7:  [4, 3],
+  8:  [4, 3],
+  9:  [4, 3, 2],
+  10: [4, 3, 2],
+  11: [4, 3, 3],
+  12: [4, 3, 3],
+  13: [4, 3, 3, 1],
+  14: [4, 3, 3, 1],
+  15: [4, 3, 3, 2],
+  16: [4, 3, 3, 2],
+  17: [4, 3, 3, 3, 1],
+  18: [4, 3, 3, 3, 1],
+  19: [4, 3, 3, 3, 2],
+  20: [4, 3, 3, 3, 2],
 };
 export const CLASSI_FULL_CASTER = ['bardo', 'chierico', 'druido', 'mago', 'stregone'];
 export const CLASSI_MEZZO_CASTER = ['paladino', 'ranger'];
@@ -440,11 +462,18 @@ export const SUBCLASS_PRIVILEGI = {
   'Patrono Celestiale': { 3: 'Incantesimi Celestiali\nLuce Curatrice', 6: 'Anima Radiosa', 10: 'Resilienza Celestiale', 14: 'Vendetta Incandescente' },
   'Patrono Immondo': { 3: 'Benedizione dell’Oscuro\nIncantesimi Immondi', 6: 'Fortuna dell’Oscuro', 10: 'Resilienza Immonda', 14: 'Scagliare all’Inferno' },
   'Patrono Grande Antico': { 3: 'Incantesimi del Grande Antico\nIncantesimi Psichici\nMente Risvegliata', 6: 'Guerriero Chiaroveggente', 10: 'Scudo del Pensiero', 14: 'Creare Servitore' },
+
+  // --- ARTEFICE (3, 5, 9, 15) ---
+  'Alchimista': { 3: 'Competenza: arnesi da alchimista, elisir sperimentale\nIncantesimi: parola guaritrice, raggio di infermità', 5: 'Padronanza alchemica (+INT a cure/danni acido/fuoco/necrotico/veleno)', 9: 'Ricostituente prodigioso (PF temp da elisir)', 15: 'Purezza chimica (resistenze veleno/acido, immunità ad avvelenato)' },
+  'Armaiolo': { 3: 'Competenza: armature pesanti\nArmatura arcana (focus magico, no requisiti Forza)\nModello Guardiano o Infiltratore', 5: 'Attacco extra', 9: 'Modifiche all’armatura (4 parti infondibili, +2 infusioni)', 15: 'Armatura perfetta' },
+  'Artigliere': { 3: 'Competenza: arnesi da intagliatore\nIncantesimi: scudo, dardo tracciante\nCannone arcano (Lanciafiamme, Balista, Protettore)', 5: 'Arma da fuoco arcana (+1d8 danni agli incantesimi)', 9: 'Posizione esplosiva', 15: 'Cannoni fortificati (mezza copertura, 2 cannoni)' },
+  'Fabbro da Guerra': { 3: 'Competenza: armi da guerra\nPronto alla battaglia (INT per colpire e danni)\nDifensore d’acciaio (fedele costrutto da combattimento)', 5: 'Attacco extra', 9: 'Colpo arcano (2d6 forza extra o cura 2d6)', 15: 'Difensore migliorato (colpo arcano 4d6, +2 CA difensore)' },
 };
+
 export const CARATT_INCANTATORE = {
   bardo: 'carisma', stregone: 'carisma', warlock: 'carisma', paladino: 'carisma',
   chierico: 'saggezza', druido: 'saggezza', ranger: 'saggezza',
-  mago: 'intelligenza',
+  mago: 'intelligenza', artefice: 'intelligenza',
 };
 
 // "Terzo incantatore": Guerriero con Cavaliere Mistico e Ladro con Mistificatore
@@ -486,11 +515,12 @@ export const PRIORITA_CARATT = {
   ranger: ['destrezza', 'saggezza', 'costituzione', 'forza', 'intelligenza', 'carisma'],
   stregone: ['carisma', 'costituzione', 'destrezza', 'saggezza', 'intelligenza', 'forza'],
   warlock: ['carisma', 'costituzione', 'destrezza', 'saggezza', 'intelligenza', 'forza'],
+  artefice: ['intelligenza', 'costituzione', 'destrezza', 'saggezza', 'forza', 'carisma'],
 };
 export const DADO_VITA_CLASSE = {
   barbaro: 12,
   guerriero: 10, paladino: 10, ranger: 10,
-  bardo: 8, chierico: 8, druido: 8, ladro: 8, monaco: 8, stregone: 8, warlock: 8,
+  bardo: 8, chierico: 8, druido: 8, ladro: 8, monaco: 8, stregone: 8, warlock: 8, artefice: 8,
   mago: 6,
 };
 export const BACKGROUND_TALENTO_ORIGINE_2024 = {
@@ -536,7 +566,7 @@ export const TS_CLASSE = {
   guerriero: ['forza', 'costituzione'], ladro: ['destrezza', 'intelligenza'],
   mago: ['intelligenza', 'saggezza'], monaco: ['forza', 'destrezza'],
   paladino: ['saggezza', 'carisma'], ranger: ['forza', 'destrezza'],
-  stregone: ['costituzione', 'carisma'], warlock: ['saggezza', 'carisma'],
+  stregone: ['costituzione', 'carisma'], warlock: ['saggezza', 'carisma'], artefice: ['costituzione', 'intelligenza'],
 };
 export const ADDESTRAMENTO_CLASSE = {
   barbaro: { armature: { leggera: true, media: true, pesante: false, scudi: true }, armi: 'Armi semplici e da guerra' },
@@ -551,6 +581,7 @@ export const ADDESTRAMENTO_CLASSE = {
   ranger: { armature: { leggera: true, media: true, pesante: false, scudi: true }, armi: 'Armi semplici e da guerra' },
   stregone: { armature: { leggera: false, media: false, pesante: false, scudi: false }, armi: 'Armi semplici' },
   warlock: { armature: { leggera: true, media: false, pesante: false, scudi: false }, armi: 'Armi semplici' },
+  artefice: { armature: { leggera: true, media: true, pesante: false, scudi: true }, armi: 'Armi semplici e balestre' },
 };
 export const MULTICLASSE_REQUISITI_5E = {
   barbaro: 'FOR 13',
@@ -565,6 +596,7 @@ export const MULTICLASSE_REQUISITI_5E = {
   ranger: 'DES 13 e SAG 13',
   stregone: 'CAR 13',
   warlock: 'CAR 13',
+  artefice: 'INT 13',
 };
 
 export const MULTICLASSE_COMPETENZE_5E = {
@@ -637,6 +669,12 @@ export const MULTICLASSE_COMPETENZE_5E = {
     desc: 'Armature leggere, Armi semplici',
     descEn: 'Light armor, Simple weapons',
   },
+  artefice: {
+    armature: { leggera: true, media: true, scudi: true },
+    strumenti: 'Arnesi da ladro, arnesi da inventore',
+    desc: 'Armature leggere e medie, scudi, arnesi da ladro e inventore',
+    descEn: 'Light and medium armor, shields, thieves\' and tinker\'s tools',
+  },
 };
 
 export const COMPETENZE_CLASSE = {
@@ -652,6 +690,7 @@ export const COMPETENZE_CLASSE = {
   ranger: { numero: 3, lista: ['addestrareAnimali', 'atletica', 'indagare', 'intuizione', 'natura', 'percezione', 'furtivita', 'sopravvivenza'] },
   stregone: { numero: 2, lista: ['arcano', 'inganno', 'intuizione', 'intimidire', 'persuasione', 'religione'] },
   warlock: { numero: 2, lista: ['arcano', 'inganno', 'storia', 'intimidire', 'indagare', 'natura', 'religione'] },
+  artefice: { numero: 2, lista: ['arcano', 'storia', 'indagare', 'medicina', 'natura', 'percezione', 'rapiditaDiMano'] },
 };
 export const PRIVILEGI_CLASSE_L1 = {
   barbaro: 'Ira\nDifesa senza armatura (CA = 10 + DES + COS)\nMaestria nelle armi',
@@ -666,6 +705,7 @@ export const PRIVILEGI_CLASSE_L1 = {
   ranger: 'Lancio di incantesimi (Saggezza)\nNemico favorito\nEsploratore provetto\nMaestria nelle armi',
   stregone: 'Lancio di incantesimi (Carisma)\nStregoneria innata',
   warlock: 'Magia del patto (Carisma)\nPatrono ultraterreno\nSuppliche occulte (invocazioni)',
+  artefice: 'Bricolage magico (Magical Tinkering)\nLancio di incantesimi (Intelligenza)',
 };
 export const PRIVILEGI_CLASSE_L1_2014 = {
   barbaro: 'Ira\nDifesa senza armatura (CA = 10 + DES + COS)',
@@ -680,6 +720,7 @@ export const PRIVILEGI_CLASSE_L1_2014 = {
   ranger: 'Nemico prescelto\nEsploratore naturale',
   stregone: 'Lancio di incantesimi (Carisma)\nOrigine stregonesca (sottoclasse)',
   warlock: 'Magia del patto (Carisma)\nPatrono ultraterreno (sottoclasse)',
+  artefice: 'Bricolage magico (Magical Tinkering)\nLancio di incantesimi (Intelligenza)',
 };
 export const PRIVILEGI_CLASSE_LIV = {
   barbaro: {
@@ -804,7 +845,19 @@ export const PRIVILEGI_CLASSE_LIV = {
     17: 'Arcanum mistico (9° livello)',
     20: 'Maestro occulto',
   },
+  artefice: {
+    2: 'Infondere oggetti (Infuse Item)',
+    3: 'Specializzazione dell’artefice\nCompetenza negli strumenti',
+    6: 'Competenza negli strumenti (Raddoppiata)',
+    7: 'Lampo d’ingegno (Flash of Genius)',
+    10: 'Adepto degli oggetti magici',
+    11: 'Oggetto conserva-incantesimi',
+    14: 'Specialista degli oggetti magici',
+    18: 'Maestro degli oggetti magici',
+    20: 'Anima dell’artefice (Soul of Artifice)',
+  },
 };
+
 export const PRIVILEGI_CLASSE_LIV_2014 = {
   barbaro: {
     2: 'Attacco irruento\nPercezione del pericolo',
@@ -922,6 +975,17 @@ export const PRIVILEGI_CLASSE_LIV_2014 = {
     17: 'Arcanum mistico (9° livello)',
     20: 'Maestro occulto',
   },
+  artefice: {
+    2: 'Infondere oggetti (Infuse Item)',
+    3: 'Specializzazione dell’artefice\nCompetenza negli strumenti',
+    6: 'Competenza negli strumenti (Raddoppiata)',
+    7: 'Lampo d’ingegno (Flash of Genius)',
+    10: 'Adepto degli oggetti magici',
+    11: 'Oggetto conserva-incantesimi',
+    14: 'Specialista degli oggetti magici',
+    18: 'Maestro degli oggetti magici',
+    20: 'Anima dell’artefice (Soul of Artifice)',
+  },
 };
 export const ASI_LIV = {
   guerriero: [4, 6, 8, 12, 14, 16, 19],
@@ -933,12 +997,14 @@ export const SOTTOCLASSE_LIV = {
   druido: [3, 6, 10, 14], guerriero: [3, 7, 10, 15, 18], ladro: [3, 9, 13, 17],
   mago: [3, 6, 10, 14], monaco: [3, 6, 11, 17], paladino: [3, 7, 15, 20],
   ranger: [3, 7, 11, 15], stregone: [3, 6, 14, 18], warlock: [3, 6, 10, 14],
+  artefice: [3, 5, 9, 15],
 };
 export const SOTTOCLASSE_LIV_2014 = {
   barbaro: [3, 6, 10, 14], bardo: [3, 6, 14], chierico: [1, 2, 6, 8, 17],
   druido: [2, 6, 10, 14], guerriero: [3, 7, 10, 15, 18], ladro: [3, 9, 13, 17],
   mago: [2, 6, 10, 14], monaco: [3, 6, 11, 17], paladino: [3, 7, 15, 20],
   ranger: [3, 7, 11, 15], stregone: [1, 6, 14, 18], warlock: [1, 6, 10, 14],
+  artefice: [3, 5, 9, 15],
 };
 export const COMPETENZE_SPECIE = {
   // Chiave = lista di SPECIE_5E; 'tutte' = qualsiasi abilità (Umano, Mezzelfo).

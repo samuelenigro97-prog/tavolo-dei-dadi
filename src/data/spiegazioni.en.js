@@ -1255,3 +1255,27 @@ export const EN_INVOCAZIONI = {
   'Parola Terrificante': "*Prerequisite: 7th level.*\nYou can cast *Confusion* once per long rest using a warlock pact slot.",
   'Segno di Malaugurio': "*Prerequisite: 5th level.*\nYou can cast *Bestow Curse* once per long rest using a warlock pact slot.",
 };
+
+export const EN_INFUSIONI = {
+  'Arma Potenziata': "*Item: a simple or martial weapon.*\nThe weapon grants a **+1 bonus to attack and damage rolls** made with it. This bonus increases to **+2 at 10th level** in this class.",
+  'Difesa Potenziata': "*Item: a suit of armor or a shield.*\nA creature gains a **+1 bonus to Armor Class (AC)** while wearing (armor) or wielding (shield) the infused item. The bonus increases to **+2 at 10th level**.",
+  'Focus Arcano Potenziato': "*Item: a rod, staff or wand.*\nA creature gains a **+1 bonus to spell attack rolls** and its spell attacks **ignore half cover**. The bonus increases to **+2 at 10th level**.",
+  'Armatura della Mente': "*Item: a suit of armor or robes.*\nThe item has 4 charges. When the wearer fails a Constitution saving throw to maintain **Concentration**, they can use a **reaction** to spend 1 charge to **succeed instead**. Regains 1d4 charges at dawn.",
+  'Servitore Omucolo': "*Item: a gem or crystal worth at least 100 gp.*\nYou create a loyal flying construct (Homunculus Servant) that acts immediately after you in combat and can attack or deliver touch spells with a bonus action.",
+  'Colpo Radioso': "*Prerequisite: 6th level · Item: a simple or martial weapon.*\nGrants a **+1 bonus to attack and damage rolls** and sheds bright light. As a reaction when hit by a melee attack, the wielder can spend 1 of 4 charges to **blind** the attacker until the end of its next turn (Constitution save vs spell DC).",
+  'Scudo Repulsivo': "*Prerequisite: 6° livello · Item: a shield.*\nGrants a **+1 bonus to AC**. The shield has 4 charges: reaction when hit in melee to spend 1 charge and **push the attacker up to 4.5 meters (15 ft) away**.",
+  'Stivali del Movimento': "*Prerequisite: 6th level · Item: a pair of boots.*\nThe wearer can use a **bonus action** to **teleport** up to 4.5 meters to an unoccupied space they passed through earlier on their current turn.",
+  'Armatura della Forza Magica': "*Item: a suit of armor.*\nHas 6 charges. The wearer adds their **Intelligence** modifier to Strength checks and saving throws, and can spend 1 charge as a reaction to avoid being knocked prone.",
+  'Anello Ricarica Incantesimi': "*Prerequisite: 6th level · Item: a ring.*\nThe wearer can use an action to **recover one expended spell slot** of 3rd level or lower. Recharges at dawn.",
+  'Replicare Oggetto Magico': "*Item: a nonmagical base item.*\nYou replicate the exact properties of a magic item (e.g. *Bag of Holding*, *Goggles of Night*, *Winged Boots*, *Cloak of Protection*, *Gauntlets of Ogre Power*, *Headband of Intellect*, *Amulet of Health*, *Ring of Protection*).",
+  'Borsa Conservante Infusa': "*Item: a bag.*\nThe bag becomes a **Bag of Holding** that can hold up to 250 kg and 1.8 cubic meters while always weighing 7 kg.",
+  'Occhiali della Notte': "*Item: a pair of goggles or glasses.*\nGrants **darkvision out to 18 meters (60 ft)** or increases existing darkvision by 18 meters.",
+  'Stivali Alati': "*Prerequisite: 10th level · Item: a pair of boots.*\nThe wearer gains a **flying speed equal to their walking speed** for up to 4 hours daily.",
+  'Guanti del Potere Orchesco': "*Prerequisite: 10th level · Item: a pair of gauntlets.*\nSets the wearer's **Strength score to 19**.",
+  'Fascia dell’Intelletto': "*Prerequisite: 10th level · Item: a headband.*\nSets the wearer's **Intelligence score to 19**.",
+  'Fascia dell\'Intelletto': "*Prerequisite: 10th level · Item: a headband.*\nSets the wearer's **Intelligence score to 19**.",
+  'Mantello della Protezione': "*Prerequisite: 10th level · Item: a cloak.*\nGrants a **+1 bonus to AC and all saving throws**.",
+  'Amuleto della Salute': "*Prerequisite: 14th level · Item: an amulet.*\nSets the wearer's **Constitution score to 19**.",
+  'Anello di Protezione': "*Prerequisite: 14th level · Item: a ring.*\nGrants a **+1 bonus to AC and all saving throws**.",
+  'Cintura della Forza del Gigante': "*Prerequisite: 14th level · Item: a belt.*\nSets the wearer's **Strength score to 21** (Hill Giant).",
+};
