@@ -12845,7 +12845,7 @@ export default function App() {
                   }}
                   title={lingua === 'en' ? 'Click to open Movement, Jump & Carrying Calculator' : 'Clicca per aprire il Calcolatore Salti, Movimento e Capacità Fisiche'}
                 >
-                  <span>🏃 {t('vital.salto') || 'Salto'}: {((punteggioCaratteristica(scheda, 'forza') || 10) * 0.3).toFixed(1)}m</span>
+                  <span>🏃 {t('vital.movimenti')}</span>
                   <span style={{ fontSize: 8.5, opacity: 0.8 }}>▼</span>
                 </div>
               </div>
