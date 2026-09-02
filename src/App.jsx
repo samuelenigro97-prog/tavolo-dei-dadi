@@ -1276,7 +1276,7 @@ export function generaAvatarBestia(forma) {
 
 
 import { spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spiegaMetamagia, setEdizioneAttuale, METAMAGIA_5E, TALENTI_5E, INCANTESIMI_NOMI as NOMI_SPIEG_INC } from './data/spiegazioni.js';
-import { INCANTESIMI_DB, datiIncantesimo } from './data/incantesimi.js';
+import { INCANTESIMI_DB, ALIAS_INCANTESIMI, datiIncantesimo } from './data/incantesimi.js';
 
 const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(INCANTESIMI_DB)])).sort((a, b) => a.localeCompare(b, 'it'));
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E } from './data/dati5e.js';
