@@ -826,6 +826,7 @@ const SPIEG_INCANTESIMI = {
   'Fermare il Tempo': 'Liv. 9 · Blocchi il flusso del tempo per 1d4+1 round per chiunque tranne te.',
   'Fiamma Sacra': 'Una fiamma radiosa colpisce un nemico entro 18 m: 1d8 radiosi (TS Destrezza; aumenta a 5/11/17).',
   'Folata': 'Liv. 0 · Crei una raffica di vento: spingi una creatura di 1,5 m (TS Forza), sposti un oggetto leggero fino a 3 m, o crei un effetto sensoriale.',
+  'Folata di Vento': 'Liv. 2 · Linea di vento forte di 18 m: spinge indietro le creature di 4,5 m (TS Forza), disperde gas e spegne fiamme. Concentrazione, 1 min.',
   'Frantumare': "Liv. 2 · Area 3 m (gittata 18 m): 3d8 danni da tuono (TS Costituzione per metà). +1d8 per slot oltre il 2°.",
   'Freccia Fulminante': 'Liv. 3 · Il prossimo tiro con arco: 4d8 fulmine al bersaglio, metà agli altri entro 3 m (TS Destrezza). Concentrazione, 1 min.',
   'Frusta di Spine': 'Frusta di rovi (gittata 9 m): attacco magico per 1d6 perforanti, trascina il bersaglio di 3 m (aumenta a 5/11/17).',
@@ -835,6 +836,7 @@ const SPIEG_INCANTESIMI = {
   'Fuoco Fatato': "Liv. 1 · Area 6 m (gittata 18 m): le creature emanano luce e si attaccano con vantaggio (TS Destrezza). Concentrazione, 1 min.",
   'Guardiani Spirituali': 'Liv. 3 · Aura di 4,5 m attorno a te: 3d8 radiosi/necrotici e velocità dimezzata (TS Saggezza per metà). Concentrazione, 10 min.',
   'Guardiano della Fede': 'Liv. 4 · Un guardiano spettrale (gittata 9 m): 20 danni radiosi a chi entra/inizia il turno vicino (TS Destrezza per metà). 8 ore.',
+  'Guarigione': 'Liv. 6 · Una creatura entro 18 m recupera 70 PF e guarisce da cecità, sordità, veleni e malattie (+10 PF per slot oltre il 6°).',
   'Guida': 'Aggiungi 1d4 a una prova di caratteristica a scelta entro 1 minuto.',
   'Identificare': 'Liv. 1 · Scopri le proprietà magiche e gli incantesimi attivi di un oggetto toccato. Rituale, 1 min.',
   'Illusione Minore': "Crei un suono o un'immagine (max 1,5 m) entro 9 m; un esame (prova Intelligenza) la rivela. Dura 1 min.",
@@ -1040,8 +1042,7 @@ export function spiegaIncantesimo(nome) {
   // Cerca in INCANTESIMI_DB come fallback
   const dbKey = Object.keys(INCANTESIMI_DB).find(k => k.toLowerCase() === target) ||
                 Object.keys(INCANTESIMI_DB).find(k => k.toLowerCase() === searchName) ||
-                Object.keys(INCANTESIMI_DB).find(k => k.toLowerCase() === clean) ||
-                Object.keys(INCANTESIMI_DB).sort((a, b) => a.length - b.length).find(k => k.toLowerCase().includes(clean) || clean.includes(k.toLowerCase()));
+                Object.keys(INCANTESIMI_DB).find(k => k.toLowerCase() === clean);
   if (dbKey && INCANTESIMI_DB[dbKey].desc) {
     return INCANTESIMI_DB[dbKey].desc;
   }

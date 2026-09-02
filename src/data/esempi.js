@@ -238,31 +238,41 @@ export const VAELION_JSON = {
     {
       id: "v-a1",
       nome: "Randello",
-      caratteristica: "saggezza",
+      caratteristica: "forza",
       competenza: true,
-      danno: "1d8+5",
+      danno: "1d4-3",
       tipoDanno: "Contundente",
-      bonus: 5,
-      note: "Incantato con Randello Incantato (Shillelagh)"
+      bonus: 1,
+      note: "Arma semplice (Leggera)"
     },
     {
       id: "v-a2",
+      nome: "Bastone Ferrato",
+      caratteristica: "forza",
+      competenza: true,
+      danno: "1d6-3",
+      tipoDanno: "Contundente",
+      bonus: 1,
+      note: "Arma semplice (Versatile 1d8-3)"
+    },
+    {
+      id: "v-a3",
       nome: "Frusta di Spine",
       caratteristica: "saggezza",
       competenza: true,
       danno: "2d6",
       tipoDanno: "Perforante",
-      bonus: 5,
+      bonus: 9,
       note: "Trascina 3m, gittata 9m"
     },
     {
-      id: "v-a3",
+      id: "v-a4",
       nome: "Morsa del Gelo",
       caratteristica: "saggezza",
       competenza: true,
-      danno: "2d6",
+      danno: "2d8",
       tipoDanno: "Freddo",
-      bonus: 5,
+      bonus: 9,
       note: "Svantaggio prox attacco, gittata 18m"
     }
   ],
@@ -281,6 +291,7 @@ export const VAELION_JSON = {
     "9": { totale: 0, spesi: 0 }
   },
   incantesimiLista: [
+    { id: "vi-00", nome: "Randello Incantato", livello: 0, preparato: true, tempo: "Azione Bonus", gittata: "Tocco", note: "1 min: usa SAG su randello/bastone, danno 1d8" },
     { id: "vi-01", nome: "Folata", livello: 0, preparato: true },
     { id: "vi-02", nome: "Frusta di Spine", livello: 0, preparato: true },
     { id: "vi-03", nome: "Guida", livello: 0, preparato: true },

@@ -2023,6 +2023,12 @@ function loadState() {
             if (base.nome === 'Vampa') {
               base.nome = 'Stregoneria Esplosiva';
             }
+            if (ALIAS_INCANTESIMI[base.nome?.toLowerCase()?.trim()]) {
+              base.nome = ALIAS_INCANTESIMI[base.nome.toLowerCase().trim()];
+            }
+            if (base.nome === 'Bastone Incantato' || base.nome === 'Bastone ferrato incantato' || base.nome === 'Shillelagh' || base.nome === 'bastone incantato') {
+              base.nome = 'Randello Incantato';
+            }
             // Auto-completa i dettagli mancanti (gittata/tempo/note vuoti) per
             // gli incantesimi noti: le righe importate o riaggiunte a mano non
             // restano più "vuote" (es. Dardo Incantato → gittata 36m).
@@ -2038,6 +2044,17 @@ function loadState() {
             if (!base.tipoDanno && d.tipoDanno) patch.tipoDanno = d.tipoDanno;
             
             return Object.keys(patch).length ? { ...base, ...patch } : base;
+          });
+        }
+        if (Array.isArray(s.attacchi)) {
+          s.attacchi = s.attacchi.map((a) => {
+            if (!a || typeof a !== 'object') return a;
+            let nome = a.nome;
+            if (nome === 'Bastone Incantato' || nome === 'Bastone ferrato incantato' || nome === 'Shillelagh' || nome === 'bastone incantato') {
+              nome = 'Randello Incantato';
+            }
+            let note = a.note ? a.note.replace(/bastone incantato/gi, 'Randello Incantato').replace(/\(shillelagh\)/gi, '').trim() : a.note;
+            return { ...a, nome, note };
           });
         }
         // Migrazione legacy: se l'inventario strutturato è vuoto ma esiste il
@@ -2231,15 +2248,22 @@ function normalizeImported(rawDati) {
     ? dati.attacchi
         .filter((a) => a && typeof a === 'object' && a.nome)
         .slice(0, 20)
-        .map((a, i) => ({
-          id: Date.now() + i,
-          nome: String(a.nome),
-          categoria: ['Azione', 'Bonus', 'Reazione'].includes(a.categoria) ? a.categoria : 'Azione',
-          bonus: num(a.bonus, 0),
-          danno: typeof a.danno === 'string' && parseEspressioneDado(a.danno) ? a.danno.trim() : '',
-          tipoDanno: str(a.tipoDanno),
-          note: str(a.note),
-        }))
+        .map((a, i) => {
+          let nome = String(a.nome).trim();
+          if (nome.toLowerCase() === 'bastone incantato' || nome.toLowerCase() === 'bastone ferrato incantato' || nome.toLowerCase() === 'shillelagh') {
+            nome = 'Randello Incantato';
+          }
+          let note = a.note ? str(a.note).replace(/bastone incantato/gi, 'Randello Incantato').replace(/\(shillelagh\)/gi, '').trim() : '';
+          return {
+            id: Date.now() + i,
+            nome,
+            categoria: ['Azione', 'Bonus', 'Reazione'].includes(a.categoria) ? a.categoria : 'Azione',
+            bonus: num(a.bonus, 0),
+            danno: typeof a.danno === 'string' && parseEspressioneDado(a.danno) ? a.danno.trim() : '',
+            tipoDanno: str(a.tipoDanno),
+            note,
+          };
+        })
     : base.attacchi;
 
   const carIncantatore = CARATTERISTICHE.some((c) => c.key === dati.incantatore?.caratteristica)
@@ -2274,15 +2298,24 @@ function normalizeImported(rawDati) {
     ? dati.incantesimiLista
         .filter((s) => s && typeof s === 'object' && s.nome)
         .slice(0, 60)
-        .map((s, i) => ({
-          id: Date.now() + i,
-          livello: Math.max(0, Math.min(9, num(s.livello, 0))),
-          nome: String(s.nome),
-          tempo: str(s.tempo),
-          gittata: str(s.gittata),
-          note: str(s.note),
-          preparato: s.preparato !== false,
-        }))
+        .map((s, i) => {
+          let nome = String(s.nome).trim();
+          if (ALIAS_INCANTESIMI[nome.toLowerCase()]) {
+            nome = ALIAS_INCANTESIMI[nome.toLowerCase()];
+          }
+          if (nome.toLowerCase() === 'bastone incantato' || nome.toLowerCase() === 'bastone ferrato incantato' || nome.toLowerCase() === 'shillelagh') {
+            nome = 'Randello Incantato';
+          }
+          return {
+            id: Date.now() + i,
+            livello: Math.max(0, Math.min(9, num(s.livello, 0))),
+            nome,
+            tempo: str(s.tempo),
+            gittata: str(s.gittata),
+            note: str(s.note),
+            preparato: s.preparato !== false,
+          };
+        })
     : [];
 
   const clampTs = (v) => Math.max(0, Math.min(3, num(v, 0)));

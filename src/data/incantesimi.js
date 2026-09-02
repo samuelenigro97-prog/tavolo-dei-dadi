@@ -101,6 +101,7 @@ export const INCANTESIMI_DB = {
   'Cordone di Frecce':     { livello:2, scuola:'Trasmutazione', classi:['Ranger'], tempo:'1 Azione', gittata:'Sé stesso', danno:'1d6', tipoDanno:'Perforante', desc:'Pianti fino a 4 munizioni non magiche nel terreno attorno a te: per 8 ore, quando una creatura entra entro 9m da esse, una freccia si scaglia infliggendo 1d6 danni perforanti (TS Destrezza per dimezzare).' },
   'Corona della Follia':   { livello:2, scuola:'Ammaliamento', classi:['Bardo','Warlock'], tempo:'1 Azione', gittata:'36m', conc:true, desc:'Un umanoide entro 36m deve superare un TS Saggezza o essere affascinato da te per 1 minuto (concentrazione): una corona di spine fiammeggianti appare sulla sua testa e puoi usare la tua azione in ogni turno per costringerlo ad attaccare in mischia una creatura a tua scelta.' },
   'Crescita di Spine':     { livello:2, scuola:'Trasmutazione', classi:['Druido','Ranger'], tempo:'1 Azione', gittata:'45m', area:'Sfera', conc:true, danno:'2d4', tipoDanno:'Perforante', desc:'Il terreno in un raggio di 6m si riempie di spine e rovi mimetizzati: diventa terreno difficile e qualsiasi creatura subisce 2d4 danni perforanti per ogni 1,5m percorsi nell\'area. Concentrazione, 10 min.' },
+  'Folata di Vento':       { livello:2, scuola:'Invocazione', classi:['Druido','Mago','Ranger','Stregone'], tempo:'1 Azione', gittata:'Sé stesso (linea 18m)', area:'Linea', conc:true, desc:'Una violenta raffica di vento crea una linea di 18m per 3m: ogni creatura che inizia il turno nella linea deve superare un TS Forza o essere spinta 4,5m lontano da te. Muoversi verso di te nell\'area costa il doppio del movimento e disperde vapori e spegne fiamme.' },
   'Frantumare':            { livello:2, scuola:'Invocazione', classi:['Bardo','Mago','Stregone','Warlock'], tempo:'1 Azione', gittata:'18m', area:'Sfera', danno:'3d8', tipoDanno:'Tuono', desc:'Un boato doloroso e acuto risuona in un punto entro 18m in una sfera di 3m di raggio: ogni creatura nell\'area subisce 3d8 danni da tuono (TS Costituzione per dimezzare). Le creature fatte di materiale inorganico hanno Svantaggio al tiro salvezza. +1d8 per slot oltre il 2°.' },
   'Frusta Mentale di Tasha': { livello:2, scuola:'Ammaliamento', classi:['Mago','Stregone'], tempo:'1 Azione', gittata:'27m', danno:'3d6', tipoDanno:'Psichico', desc:'Colpisci la mente di una creatura entro 27m: TS Intelligenza o subisce 3d6 danni psichici (metà danno su successo). Se fallisce il TS, nel suo prossimo turno non può compiere reazioni e deve scegliere se compiere solo un\'Azione, solo un\'Azione Bonus o solo Movimento. +1 bersaglio per slot oltre il 2°.' },
   'Spada dell\'Ombra':     { livello:2, scuola:'Illusione', classi:['Mago','Stregone','Warlock'], tempo:'Azione Bonus', gittata:'Sé stesso', conc:true, danno:'2d8', tipoDanno:'Psichico', desc:'Crei una spada d\'ombra solida nella tua mano per 1 minuto (concentrazione): arma da mischia leggera e accurata che infligge 2d8 danni psichici e può essere lanciata (gittata 6m/18m). Hai Vantaggio ai tiri per colpire in luce fioca o oscurità. Danni: 3d8 (3°-4° slot), 4d8 (5°-6°), 5d8 (7°+).' },
@@ -229,6 +230,7 @@ export const INCANTESIMI_DB = {
   'Crea Morti Viventi':    { livello:6, scuola:'Necromanzia', classi:['Chierico','Mago','Warlock'], tempo:'1 min', gittata:'3m', desc:'Rianimi fino a 3 cadaveri entro 3m come ghoul sotto il tuo comando per 24 ore (con slot superiori: ghast, wight o mummie).' },
   'Evoca Demone':          { livello:6, scuola:'Evocazione', classi:['Mago','Warlock'], tempo:'1 Azione', gittata:'27m', conc:true, desc:'Evochi uno spirito immondo (demone, diavolo o yugoloth) per 1 ora (concentrazione) che combatte al tuo comando con attacchi di fuoco o necrotici.' },
   'Fulmine a Catena':      { livello:6, scuola:'Invocazione', classi:['Mago','Stregone'], tempo:'1 Azione', gittata:'45m', danno:'10d8', tipoDanno:'Fulmine', desc:'Scagli una scarica di fulmini su un bersaglio primario entro 45m che rimbalza su un massimo di altri 3 bersagli entro 9m dal primo: ciascun bersaglio subisce 10d8 danni da fulmine (TS Destrezza per metà). +1 bersaglio per ogni slot oltre il 6°.' },
+  'Guarigione':            { livello:6, scuola:'Invocazione', classi:['Chierico','Druido'], tempo:'1 Azione', gittata:'18m', danno:'70', tipoDanno:'Cura', desc:'Un\'ondata di energia curativa fluisce in una creatura entro 18m: recupera 70 punti ferita ed è guarita da cecità, sordità e da tutti i veleni e malattie che la affliggono. +10 PF per slot oltre il 6°.' },
   'Raggio Solare':         { livello:6, scuola:'Invocazione', classi:['Druido','Mago','Stregone'], tempo:'1 Azione', gittata:'Sé stesso (linea 18m)', area:'Linea', conc:true, danno:'6d8', tipoDanno:'Radiante', desc:'Un raggio di luce solare abbagliante largo 1,5m e lungo 18m scaturisce dalle tue mani per 1 minuto (concentrazione): ogni creatura sulla linea subisce 6d8 danni radianti e viene accecata per 1 round (TS Costituzione per metà e non essere accecata). I non morti e i melmi hanno Svantaggio al TS. Puoi emettere un nuovo raggio ogni turno come azione.' },
   'Trasportare Via':       { livello:6, scuola:'Evocazione', classi:['Bardo','Chierico','Druido','Mago','Stregone','Warlock'], tempo:'1 Azione', gittata:'Tocco', desc:'Tocchi fino a 8 creature consenzienti teletrasportandole istantaneamente su un cerchio di teletrasporto permanente noto o in un punto designato su un altro piano di esistenza.' },
   'Vedere Verità':         { livello:6, scuola:'Divinazione', classi:['Bardo','Chierico','Mago','Stregone','Warlock'], tempo:'1 Azione', gittata:'Tocco', desc:'Tocchi una creatura consenziente: per 1 ora ottiene Vera Vista fino a 36 metri, vedendo attraverso il buio normale e magico, scorgendo creature e oggetti invisibili, riconoscendo le illusioni e percependo la forma originaria di mutaforma.' },
@@ -449,6 +451,8 @@ export const ALIAS_INCANTESIMI = {
   'hypnotic pattern': 'Schema Ipnotico',
   'comprensione dei linguaggi': 'Comprensione dei Linguaggi',
   'comprehend languages': 'Comprensione dei Linguaggi',
+  'gust of wind': 'Folata di Vento',
+  'heal': 'Guarigione',
 };
 
 export function datiIncantesimo(nome) {
@@ -459,8 +463,7 @@ export function datiIncantesimo(nome) {
   const targetName = alias ? alias.toLowerCase() : n;
 
   const key = Object.keys(INCANTESIMI_DB).find(k => k.toLowerCase() === targetName) ||
-              Object.keys(INCANTESIMI_DB).find(k => k.toLowerCase() === clean) ||
-              Object.keys(INCANTESIMI_DB).sort((a, b) => a.length - b.length).find(k => k.toLowerCase().includes(clean) || clean.includes(k.toLowerCase()));
+              Object.keys(INCANTESIMI_DB).find(k => k.toLowerCase() === clean);
   if (!key) return null;
   const d = INCANTESIMI_DB[key];
   return {
