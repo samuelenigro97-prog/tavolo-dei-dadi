@@ -17,6 +17,7 @@ import {
   riepilogoCondizioni, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi,
   classePreparaIncantesimi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza,
   analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili,
+  calcolaTurnoCombattimento,
 } from '../src/rules/regole.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from '../src/data/condizioni.js';
 import { CONDIZIONI_5E, PE_PER_LIVELLO } from '../src/data/dati5e.js';
@@ -926,6 +927,35 @@ test('reazioni e inneschi di combattimento 5e (trovaReazioniDisponibili)', () =>
   assert.equal(scudo.tipo, 'incantesimo');
   assert.ok(scudo.innescoIt.includes('colpito'));
 });
+
+test('economia del turno e tattiche di combattimento 5e (calcolaTurnoCombattimento)', () => {
+  const pg = {
+    velocita: 9,
+    privilegi: 'Azione Scaltra',
+  };
+
+  // 1. Turno vergine (nessuna azione spesa)
+  const t0 = calcolaTurnoCombattimento(pg, {});
+  assert.equal(t0.velBase, 9);
+  assert.equal(t0.movimentoMax, 9);
+  assert.equal(t0.movimentoRimanente, 9);
+  assert.equal(t0.azioneUsata, false);
+  assert.equal(t0.bonusUsato, false);
+  assert.equal(t0.reazioneUsata, false);
+  assert.equal(t0.haAzioneScaltra, true);
+
+  // 2. Movimento parziale (mosso 4.5m su 9m)
+  const t1 = calcolaTurnoCombattimento(pg, { movimentoUsato: 4.5, azione: true });
+  assert.equal(t1.movimentoRimanente, 4.5);
+  assert.equal(t1.azioneUsata, true);
+
+  // 3. Azione di Scatto (Dash: raddoppia movimento)
+  const tScatto = calcolaTurnoCombattimento(pg, { tatticaAttiva: 'scatto', movimentoUsato: 3 });
+  assert.equal(tScatto.haScatto, true);
+  assert.equal(tScatto.movimentoMax, 18);
+  assert.equal(tScatto.movimentoRimanente, 15);
+});
+
 
 
 

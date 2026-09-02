@@ -1561,3 +1561,41 @@ export function trovaReazioniDisponibili(scheda) {
 
   return reazioni;
 }
+
+/**
+ * Calcola l'economia del turno in combattimento (5e):
+ * - Azione, Azione Bonus, Reazione, Interazione con Oggetti
+ * - Movimento base, moltiplicatore scatto (Dash), movimento consumato e rimanente
+ * - Tattiche difensive/offensive attive (Schivata, Disimpegno, Scatto, ecc.)
+ */
+export function calcolaTurnoCombattimento(scheda, turnoAzioni = {}) {
+  const velBase = Math.max(0, Number(scheda?.formaBestiale?.attiva ? (scheda.formaBestiale.velocita?.terra ?? 9) : (scheda?.velocita ?? 9)));
+  const haScatto = turnoAzioni.tatticaAttiva === 'scatto' || turnoAzioni.scattoAttivo;
+  const moltiplicatore = haScatto ? 2 : 1;
+  const movimentoMax = Number((velBase * moltiplicatore).toFixed(1));
+  const movimentoUsato = Math.max(0, Number(turnoAzioni.movimentoUsato) || 0);
+  const movimentoRimanente = Number(Math.max(0, movimentoMax - movimentoUsato).toFixed(1));
+
+  const azioneUsata = Boolean(turnoAzioni.azione);
+  const bonusUsato = Boolean(turnoAzioni.bonus);
+  const reazioneUsata = Boolean(scheda?.reazioneUsata || turnoAzioni.reazione);
+  const interazioneUsata = Boolean(turnoAzioni.interazione);
+
+  // Privilegi di scatto o disimpegno con azione bonus (Ladro Azione Scaltra, Monaco Passo del Vento)
+  const testoPriv = `${scheda?.privilegi || ''}\n${scheda?.privilegiSottoclasse || ''}`.toLowerCase();
+  const haAzioneScaltra = testoPriv.includes('azione scaltra') || testoPriv.includes('cunning action') || testoPriv.includes('passo del vento') || testoPriv.includes('step of the wind');
+
+  return {
+    velBase,
+    movimentoMax,
+    movimentoUsato,
+    movimentoRimanente,
+    haScatto,
+    azioneUsata,
+    bonusUsato,
+    reazioneUsata,
+    interazioneUsata,
+    tatticaAttiva: turnoAzioni.tatticaAttiva || null,
+    haAzioneScaltra,
+  };
+}

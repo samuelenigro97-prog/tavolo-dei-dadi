@@ -1285,7 +1285,7 @@ const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(I
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E, DEFAULT_MANUALI, MANUALI_INFO, SOTTOCLASSI_FONTI, TALENTI_FONTI, INCANTESIMI_FONTI, talentiPerManuali, incantesimiPerManuali, fonteValida, PE_PER_LIVELLO } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili, calcolaTurnoCombattimento } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -12903,6 +12903,318 @@ export default function App() {
                   {t('attacchi.incantesimi_offensivi')}: {scheda.mostraIncantesimiAttacco !== false ? 'ON' : 'OFF'}
                 </button>
               </div>
+
+              {/* Barra Economia del Turno & Tattiche di Combattimento 5e */}
+              {(() => {
+                const turno = calcolaTurnoCombattimento(scheda, scheda.turnoAzioni || {});
+                const setTurno = (patch) => {
+                  aggiorna({ turnoAzioni: { ...(scheda.turnoAzioni || {}), ...patch } });
+                };
+
+                const resetTurno = () => {
+                  aggiorna({
+                    turnoAzioni: {
+                      azione: false,
+                      bonus: false,
+                      interazione: false,
+                      movimentoUsato: 0,
+                      tatticaAttiva: null,
+                    },
+                    reazioneUsata: false,
+                  });
+                  registra({ etichetta: '🔄 Turno', tipo: 'turno', dettaglio: `Inizio nuovo turno di combattimento (${scheda.nome || 'PG'})` });
+                };
+
+                const applicaTattica = (nomeTattica) => {
+                  if (nomeTattica === 'schivata') {
+                    setTurno({ azione: true, tatticaAttiva: 'schivata' });
+                    registra({ etichetta: '🛡️ Schivata', tipo: 'tattica', dettaglio: `${scheda.nome || 'PG'} compie l'azione di Schivata: gli attacchi contro di te hanno svantaggio e hai vantaggio ai TS su Destrezza.` });
+                    setInfo({ titolo: '🛡️ Schivata (Dodge)', testo: 'Fino all\'inizio del tuo prossimo turno, ogni tiro per colpire contro di te ha svantaggio (se puoi vedere l\'attaccante) e hai vantaggio ai tiri salvezza su Destrezza.' });
+                  } else if (nomeTattica === 'disimpegno') {
+                    const usaBonus = turno.haAzioneScaltra && !turno.bonusUsato;
+                    if (usaBonus) {
+                      setTurno({ bonus: true, tatticaAttiva: 'disimpegno' });
+                    } else {
+                      setTurno({ azione: true, tatticaAttiva: 'disimpegno' });
+                    }
+                    registra({ etichetta: '💨 Disimpegno', tipo: 'tattica', dettaglio: `${scheda.nome || 'PG'} compie l'azione di Disimpegno: il tuo movimento non provoca attacchi di opportunità per il resto del turno.` });
+                    setInfo({ titolo: '💨 Disimpegno (Disengage)', testo: 'Per il resto del tuo turno, il tuo movimento non provoca attacchi di opportunità da parte delle creature nemiche.' });
+                  } else if (nomeTattica === 'scatto') {
+                    const usaBonus = turno.haAzioneScaltra && !turno.bonusUsato;
+                    if (usaBonus) {
+                      setTurno({ bonus: true, tatticaAttiva: 'scatto' });
+                    } else {
+                      setTurno({ azione: true, tatticaAttiva: 'scatto' });
+                    }
+                    registra({ etichetta: '🏃 Scatto', tipo: 'tattica', dettaglio: `${scheda.nome || 'PG'} compie l'azione di Scatto: movimento massimo del turno raddoppiato a ${turno.velBase * 2} m.` });
+                  } else if (nomeTattica === 'nascondersi') {
+                    const usaBonus = turno.haAzioneScaltra && !turno.bonusUsato;
+                    if (usaBonus) {
+                      setTurno({ bonus: true });
+                    } else {
+                      setTurno({ azione: true });
+                    }
+                    // Tira Destrezza (Furtività)
+                    const modDes = modificatore(punteggioCaratteristica(scheda, 'destrezza'));
+                    const comp = Number(scheda.abilita?.furtivita) || 0;
+                    const bonusComp = scheda.bonusCompetenza || 2;
+                    const totBonus = modDes + (comp === 1 || comp === 2 ? bonusComp : comp === 3 ? bonusComp * 2 : 0);
+                    const d20 = tiraDado(20);
+                    const tot = d20 + totBonus;
+                    registra({ etichetta: '🙈 Nascondersi', tipo: 'prova', totale: tot, dettaglio: `Prova di Furtività (Nascondersi): 1d20 [${d20}] ${conSegno(totBonus)} = ${tot}` });
+                    setInfo({ titolo: `🙈 Furtività: ${tot}`, testo: `Hai tentato di nasconderti con un risultato di **${tot}** (d20 [${d20}] ${conSegno(totBonus)}). Confrontalo con la Percezione Passiva dei nemici.` });
+                  } else if (nomeTattica === 'aiuto') {
+                    setTurno({ azione: true, tatticaAttiva: 'aiuto' });
+                    registra({ etichetta: '🤝 Aiuto', tipo: 'tattica', dettaglio: `${scheda.nome || 'PG'} compie l'azione di Aiuto: concede vantaggio al prossimo tiro per colpire o prova di caratteristica di un alleato.` });
+                    setInfo({ titolo: '🤝 Azione di Aiuto (Help)', testo: 'Concedi vantaggio alla prossima prova di caratteristica di un alleato, oppure al prossimo tiro per colpire di un alleato contro un nemico entro 1,5 m da te prima dell\'inizio del tuo prossimo turno.' });
+                  }
+                };
+
+                return (
+                  <div
+                    style={{
+                      background: C.panelLight,
+                      border: `1px solid ${C.border}`,
+                      borderRadius: 10,
+                      padding: '10px 12px',
+                      marginBottom: 12,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 8,
+                    }}
+                  >
+                    {/* Intestazione Economia del Turno */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 14 }}>⚔️</span>
+                        <strong style={{ fontSize: 12, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                          {lingua === 'en' ? 'Turn Economy & Actions' : 'Economia del Turno & Azioni'}
+                        </strong>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={resetTurno}
+                        style={{
+                          ...styles.buttonMini,
+                          fontSize: 10.5,
+                          padding: '2px 8px',
+                          fontWeight: 700,
+                          color: C.goldDark,
+                          borderColor: C.goldDark,
+                          background: 'rgba(201,162,39,0.12)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          cursor: 'pointer',
+                        }}
+                        title={lingua === 'en' ? 'Reset all actions and movement for a new combat round' : 'Ripristina tutte le azioni e il movimento per iniziare un nuovo round'}
+                      >
+                        🔄 {lingua === 'en' ? 'New Turn' : 'Nuovo Turno'}
+                      </button>
+                    </div>
+
+                    {/* Badge delle Azioni del Round */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 6 }}>
+                      {/* 1. Azione */}
+                      <button
+                        type="button"
+                        onClick={() => setTurno({ azione: !turno.azioneUsata })}
+                        style={{
+                          ...styles.buttonMini,
+                          padding: '4px 8px',
+                          fontSize: 11,
+                          fontWeight: 700,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          background: turno.azioneUsata ? 'rgba(239,68,68,0.08)' : 'rgba(46,157,77,0.1)',
+                          borderColor: turno.azioneUsata ? '#ef4444' : '#2e9d4d',
+                          color: turno.azioneUsata ? '#ef4444' : '#2e9d4d',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <span>⚔️ {lingua === 'en' ? 'Action' : 'Azione'}</span>
+                        <span>{turno.azioneUsata ? '🔴' : '🟢'}</span>
+                      </button>
+
+                      {/* 2. Azione Bonus */}
+                      <button
+                        type="button"
+                        onClick={() => setTurno({ bonus: !turno.bonusUsato })}
+                        style={{
+                          ...styles.buttonMini,
+                          padding: '4px 8px',
+                          fontSize: 11,
+                          fontWeight: 700,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          background: turno.bonusUsato ? 'rgba(239,68,68,0.08)' : 'rgba(46,157,77,0.1)',
+                          borderColor: turno.bonusUsato ? '#ef4444' : '#2e9d4d',
+                          color: turno.bonusUsato ? '#ef4444' : '#2e9d4d',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <span>⚡ {lingua === 'en' ? 'Bonus Action' : 'Azione Bonus'}</span>
+                        <span>{turno.bonusUsato ? '🔴' : '🟢'}</span>
+                      </button>
+
+                      {/* 3. Reazione */}
+                      <button
+                        type="button"
+                        onClick={() => aggiorna({ reazioneUsata: !scheda.reazioneUsata })}
+                        style={{
+                          ...styles.buttonMini,
+                          padding: '4px 8px',
+                          fontSize: 11,
+                          fontWeight: 700,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          background: scheda.reazioneUsata ? 'rgba(239,68,68,0.08)' : 'rgba(46,157,77,0.1)',
+                          borderColor: scheda.reazioneUsata ? '#ef4444' : '#2e9d4d',
+                          color: scheda.reazioneUsata ? '#ef4444' : '#2e9d4d',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <span>🛡️ {lingua === 'en' ? 'Reaction' : 'Reazione'}</span>
+                        <span>{scheda.reazioneUsata ? '🔴' : '🟢'}</span>
+                      </button>
+
+                      {/* 4. Interazione Oggetto */}
+                      <button
+                        type="button"
+                        onClick={() => setTurno({ interazione: !turno.interazioneUsata })}
+                        style={{
+                          ...styles.buttonMini,
+                          padding: '4px 8px',
+                          fontSize: 11,
+                          fontWeight: 700,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          background: turno.interazioneUsata ? 'rgba(239,68,68,0.08)' : 'rgba(46,157,77,0.1)',
+                          borderColor: turno.interazioneUsata ? '#ef4444' : '#2e9d4d',
+                          color: turno.interazioneUsata ? '#ef4444' : '#2e9d4d',
+                          cursor: 'pointer',
+                        }}
+                        title={lingua === 'en' ? 'Free Object Interaction (draw weapon, open door, etc.)' : 'Interazione gratuita con un oggetto (estrarre arma, aprire porta...)'}
+                      >
+                        <span>✋ {lingua === 'en' ? 'Free Object' : 'Interazione Oggetto'}</span>
+                        <span>{turno.interazioneUsata ? '🔴' : '🟢'}</span>
+                      </button>
+                    </div>
+
+                    {/* Riga Movimento Residuo & Tattiche 5e */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, background: C.panel, padding: '6px 10px', borderRadius: 8, border: `1px solid ${C.border}` }}>
+                      {/* Movimento Residuo */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 11.5, fontWeight: 700, color: C.ink }}>
+                          🏃 {lingua === 'en' ? 'Move:' : 'Movimento:'}{' '}
+                          <strong style={{ color: turno.movimentoRimanente > 0 ? '#2e9d4d' : C.red, fontSize: 13 }}>
+                            {turno.movimentoRimanente}m
+                          </strong>
+                          <span style={{ fontSize: 11, color: C.inkDim }}> / {turno.movimentoMax}m</span>
+                        </span>
+                        <div style={{ display: 'inline-flex', gap: 3 }}>
+                          <button
+                            type="button"
+                            onClick={() => setTurno({ movimentoUsato: Math.min(turno.movimentoMax, turno.movimentoUsato + 1.5) })}
+                            style={{ ...styles.buttonMini, fontSize: 9.5, padding: '1px 5px' }}
+                            title="-1.5m (1 quadretto)"
+                          >
+                            −1.5m
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setTurno({ movimentoUsato: Math.min(turno.movimentoMax, turno.movimentoUsato + 3) })}
+                            style={{ ...styles.buttonMini, fontSize: 9.5, padding: '1px 5px' }}
+                            title="-3m (2 quadretti)"
+                          >
+                            −3m
+                          </button>
+                          {turno.movimentoUsato > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => setTurno({ movimentoUsato: 0 })}
+                              style={{ ...styles.buttonMini, fontSize: 9.5, padding: '1px 5px', color: C.inkDim }}
+                              title="Ripristina movimento intero"
+                            >
+                              ↺
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Pulsanti Tattiche Rapide 5e */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          onClick={() => applicaTattica('schivata')}
+                          style={{
+                            ...styles.buttonMini,
+                            fontSize: 10,
+                            padding: '2px 6px',
+                            background: turno.tatticaAttiva === 'schivata' ? 'rgba(201,162,39,0.2)' : 'transparent',
+                            borderColor: turno.tatticaAttiva === 'schivata' ? C.goldDark : C.border,
+                            color: turno.tatticaAttiva === 'schivata' ? C.goldDark : C.ink,
+                          }}
+                          title={lingua === 'en' ? 'Dodge action (disadvantage to attackers, advantage on Dex saves)' : 'Azione Schivata (svantaggio a chi ti attacca, vantaggio ai TS Destrezza)'}
+                        >
+                          🛡️ {lingua === 'en' ? 'Dodge' : 'Schiva'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => applicaTattica('disimpegno')}
+                          style={{
+                            ...styles.buttonMini,
+                            fontSize: 10,
+                            padding: '2px 6px',
+                            background: turno.tatticaAttiva === 'disimpegno' ? 'rgba(59,130,246,0.2)' : 'transparent',
+                            borderColor: turno.tatticaAttiva === 'disimpegno' ? '#3b82f6' : C.border,
+                            color: turno.tatticaAttiva === 'disimpegno' ? '#3b82f6' : C.ink,
+                          }}
+                          title={lingua === 'en' ? 'Disengage action (movement does not provoke opportunity attacks)' : 'Azione Disimpegno (il tuo movimento non provoca attacchi di opportunità)'}
+                        >
+                          💨 {lingua === 'en' ? 'Disengage' : 'Disimpegnati'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => applicaTattica('scatto')}
+                          style={{
+                            ...styles.buttonMini,
+                            fontSize: 10,
+                            padding: '2px 6px',
+                            background: turno.tatticaAttiva === 'scatto' ? 'rgba(16,185,129,0.2)' : 'transparent',
+                            borderColor: turno.tatticaAttiva === 'scatto' ? '#10b981' : C.border,
+                            color: turno.tatticaAttiva === 'scatto' ? '#10b981' : C.ink,
+                          }}
+                          title={lingua === 'en' ? 'Dash action (doubles movement for the turn)' : 'Azione Scatto (raddoppia il movimento del turno)'}
+                        >
+                          🏃 {lingua === 'en' ? 'Dash' : 'Scatta'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => applicaTattica('nascondersi')}
+                          style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 6px' }}
+                          title={lingua === 'en' ? 'Hide action (Stealth check)' : 'Azione Nascondersi (prova rapida di Furtività)'}
+                        >
+                          🙈 {lingua === 'en' ? 'Hide' : 'Nasconditi'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => applicaTattica('aiuto')}
+                          style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 6px' }}
+                          title={lingua === 'en' ? 'Help action (grants advantage to an ally)' : 'Azione Aiuto (concede vantaggio a un alleato)'}
+                        >
+                          🤝 {lingua === 'en' ? 'Help' : 'Aiuta'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
               <div style={{ overflowX: 'auto' }}>
                 {(() => {
                   const isAttaccoIncantesimo = (a) => {
