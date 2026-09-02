@@ -1656,4 +1656,102 @@ export function calcolaTsConcentrazione(scheda = {}, danno = 0) {
   };
 }
 
+/**
+ * Calcola il livello effettivo in una specifica classe (gestisce singolo e multiclasse).
+ */
+export function livelloDiClasse(scheda = {}, nomeClasse = '') {
+  const target = chiaveClasse(nomeClasse);
+  let liv = 0;
+  if (chiaveClasse(scheda?.classe) === target) {
+    liv += Number(scheda?.livello) || 1;
+  }
+  if (Array.isArray(scheda?.classi)) {
+    for (const c of scheda.classi) {
+      if (chiaveClasse(c?.classe || c?.nome) === target) {
+        liv = Math.max(liv, Number(c?.livello) || 0);
+      }
+    }
+  }
+  return liv;
+}
+
+/**
+ * Calcola i dadi e le proprietà dell'Attacco Furtivo del Ladro (Sneak Attack).
+ * Formula: ceil(livelloLadro / 2) d6
+ */
+export function calcolaAttaccoFurtivo(scheda = {}) {
+  const livLadro = livelloDiClasse(scheda, 'ladro');
+  if (livLadro <= 0) return null;
+  const dadi = Math.ceil(livLadro / 2);
+  return {
+    livelloLadro: livLadro,
+    dadi,
+    formula: `${dadi}d6`,
+    descIt: `Attacco Furtivo (+${dadi}d6 danni)`,
+    descEn: `Sneak Attack (+${dadi}d6 damage)`,
+  };
+}
+
+/**
+ * Calcola il bonus danni e le resistenze dell'Ira Barbarica (Rage).
+ * Danni: +2 (1-8), +3 (9-15), +4 (16-20).
+ */
+export function calcolaIraBarbarica(scheda = {}) {
+  const livBarbaro = livelloDiClasse(scheda, 'barbaro');
+  if (livBarbaro <= 0) return null;
+  const bonusDanni = livBarbaro >= 16 ? 4 : livBarbaro >= 9 ? 3 : 2;
+  const utilizziMax = livBarbaro >= 20 ? 999 : livBarbaro >= 17 ? 6 : livBarbaro >= 12 ? 5 : livBarbaro >= 6 ? 4 : livBarbaro >= 3 ? 3 : 2;
+  return {
+    livelloBarbaro: livBarbaro,
+    bonusDanni,
+    utilizziMax,
+    resistenze: ['contundente', 'perforante', 'tagliente'],
+    descIt: `Ira (+${bonusDanni} danni FOR, resistenza C/P/T)`,
+    descEn: `Rage (+${bonusDanni} STR damage, resistance B/P/S)`,
+  };
+}
+
+/**
+ * Calcola i dadi e le proprietà della Punizione Divina del Paladino (Divine Smite).
+ * Base: 2d8 (1° slot), +1d8 per ogni livello slot superiore (max 5d8), +1d8 vs non morti/immondi (max 6d8).
+ */
+export function calcolaPunizioneDivina(scheda = {}, livelloSlot = 1, isNonMortoOImmondo = false) {
+  const livPaladino = livelloDiClasse(scheda, 'paladino');
+  if (livPaladino < 2) return null;
+  const slot = Math.max(1, Math.min(5, Number(livelloSlot) || 1));
+  const dadiBase = Math.min(5, 1 + slot);
+  const dadiTotali = isNonMortoOImmondo ? Math.min(6, dadiBase + 1) : dadiBase;
+  return {
+    livelloPaladino: livPaladino,
+    livelloSlot: slot,
+    isNonMortoOImmondo,
+    dadi: dadiTotali,
+    formula: `${dadiTotali}d8`,
+    tipoDanno: 'radioso',
+    descIt: `Punizione Divina (+${dadiTotali}d8 radiosi)`,
+    descEn: `Divine Smite (+${dadiTotali}d8 radiant)`,
+  };
+}
+
+/**
+ * Calcola il dado e gli utilizzi dell'Ispirazione Bardica (Bardic Inspiration).
+ * d6 (1-4), d8 (5-9), d10 (10-14), d12 (15-20).
+ */
+export function calcolaIspirazioneBardica(scheda = {}) {
+  const livBardo = livelloDiClasse(scheda, 'bardo');
+  if (livBardo <= 0) return null;
+  const facce = livBardo >= 15 ? 12 : livBardo >= 10 ? 10 : livBardo >= 5 ? 8 : 6;
+  const modCar = modificatore(Number(scheda?.caratteristiche?.carisma) || 10);
+  const utilizziMax = Math.max(1, modCar);
+  return {
+    livelloBardo: livBardo,
+    dado: `d${facce}`,
+    facce,
+    utilizziMax,
+    descIt: `Ispirazione Bardica (d${facce})`,
+    descEn: `Bardic Inspiration (d${facce})`,
+  };
+}
+
+
 

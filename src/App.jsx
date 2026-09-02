@@ -1285,7 +1285,7 @@ const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(I
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E, DEFAULT_MANUALI, MANUALI_INFO, SOTTOCLASSI_FONTI, TALENTI_FONTI, INCANTESIMI_FONTI, talentiPerManuali, incantesimiPerManuali, fonteValida, PE_PER_LIVELLO } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili, calcolaTurnoCombattimento, dettagliAbilita, calcolaTsConcentrazione } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili, calcolaTurnoCombattimento, dettagliAbilita, calcolaTsConcentrazione, calcolaAttaccoFurtivo, calcolaIraBarbarica, calcolaPunizioneDivina, calcolaIspirazioneBardica, livelloDiClasse } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -4784,14 +4784,48 @@ export default function App() {
       }
     }
     const isArma = !attacco?.isSpell;
-    let notaTaglia = '';
+    let notaExtra = '';
+
+    // Modificatori dimensionali (Ingrandito / Ridotto)
     if (isArma && (scheda?.effettoTaglia === 'ingrandito' || (Array.isArray(scheda?.condizioni) && scheda.condizioni.includes('Ingrandito')))) {
       dannoExpr = dannoExpr ? `${dannoExpr} + 1d4` : '1d4';
-      notaTaglia = ' (Ingrandito +1d4)';
+      notaExtra += ' (Ingrandito +1d4)';
     } else if (isArma && (scheda?.effettoTaglia === 'ridotto' || (Array.isArray(scheda?.condizioni) && scheda.condizioni.includes('Ridotto')))) {
       dannoExpr = dannoExpr ? `${dannoExpr} - 1d4` : '1d4';
-      notaTaglia = ' (Ridotto -1d4)';
+      notaExtra += ' (Ridotto -1d4)';
     }
+
+    // 1. Attacco Furtivo (Sneak Attack)
+    const furtivo = calcolaAttaccoFurtivo(scheda);
+    if (isArma && furtivo && scheda?.applicaFurtivo) {
+      dannoExpr = dannoExpr ? `${dannoExpr} + ${furtivo.formula}` : furtivo.formula;
+      notaExtra += ` (Furtivo +${furtivo.formula})`;
+    }
+
+    // 2. Ira Barbarica (Rage)
+    const ira = calcolaIraBarbarica(scheda);
+    if (isArma && ira && scheda?.inIra) {
+      dannoExpr = dannoExpr ? `${dannoExpr} + ${ira.bonusDanni}` : `${ira.bonusDanni}`;
+      notaExtra += ` (Ira +${ira.bonusDanni})`;
+    }
+
+    // 3. Punizione Divina (Divine Smite)
+    const smiteDadi = scheda?.smiteAttivo ? calcolaPunizioneDivina(scheda, scheda.smiteSlot || 1, scheda.smiteVsNonMorto) : null;
+    if (isArma && smiteDadi) {
+      dannoExpr = dannoExpr ? `${dannoExpr} + ${smiteDadi.formula}` : smiteDadi.formula;
+      notaExtra += ` (Smite +${smiteDadi.formula})`;
+      // Se era attivo, scala lo slot se ancora disponibile
+      if (scheda.smiteSlot && scheda.slot?.[scheda.smiteSlot] > 0) {
+        aggiorna({
+          slot: {
+            ...scheda.slot,
+            [scheda.smiteSlot]: Math.max(0, (scheda.slot[scheda.smiteSlot] || 0) - 1),
+          },
+          smiteAttivo: false,
+        });
+      }
+    }
+
     const parsata = parseEspressioneDado(dannoExpr);
     if (!parsata) return;
     const maxFacce = Math.max(...parsata.termini.map((p) => p.facce).filter(Boolean));
@@ -4809,8 +4843,8 @@ export default function App() {
           ? 'arco'
           : 'arma';
     conAnimazione(() => {
-      setDanni({ etichetta: `${critico ? '⚔ Danni CRITICI' : 'Danni'}: ${nome}${notaTaglia}`, ...esito, critico });
-      registra({ etichetta: `${critico ? '⚔ CRITICO ' : ''}${t('log.danni')}: ${nome}${notaTaglia}`, tipo: 'danni', totale: esito.totale, dettaglio: esito.dettaglio, critico });
+      setDanni({ etichetta: `${critico ? '⚔ Danni CRITICI' : 'Danni'}: ${nome}${notaExtra}`, ...esito, critico });
+      registra({ etichetta: `${critico ? '⚔ CRITICO ' : ''}${t('log.danni')}: ${nome}${notaExtra}`, tipo: 'danni', totale: esito.totale, dettaglio: esito.dettaglio, critico });
     }, esito.totale, maxFacce || 20, false, suonoDanno);
   }
 
@@ -13589,6 +13623,168 @@ export default function App() {
                         })}
                       </div>
                     </div>
+                    {/* Riga Meccaniche di Classe Speciali (Furtivo, Ira, Smite, Ispirazione) */}
+                    {(() => {
+                      const furtivo = calcolaAttaccoFurtivo(scheda);
+                      const ira = calcolaIraBarbarica(scheda);
+                      const smite = calcolaPunizioneDivina(scheda, 1, false);
+                      const bardo = calcolaIspirazioneBardica(scheda);
+                      const haIspirazioneEroica = Boolean(scheda.ispirazioneEroica);
+
+                      const haPotenziamenti = furtivo || ira || smite || bardo || haIspirazioneEroica;
+                      if (!haPotenziamenti) return null;
+
+                      return (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, background: C.panel, padding: '6px 10px', borderRadius: 8, border: `1px solid ${C.border}` }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ fontSize: 13 }}>⚡</span>
+                            <strong style={{ fontSize: 11, color: C.goldDark }}>
+                              {lingua === 'en' ? 'Class Powers & Boosters:' : 'Potenziamenti di Classe:'}
+                            </strong>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                            {/* 1. Attacco Furtivo (Ladro) */}
+                            {furtivo && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const v = !scheda.applicaFurtivo;
+                                  aggiorna({ applicaFurtivo: v });
+                                  if (v) {
+                                    registra({ etichetta: '🗡️ Attacco Furtivo', tipo: 'tattica', dettaglio: `${scheda.nome || 'PG'} attiva Attacco Furtivo (+${furtivo.formula}) sul prossimo colpo!` });
+                                  }
+                                }}
+                                style={{
+                                  ...styles.buttonMini,
+                                  fontSize: 10,
+                                  padding: '2px 7px',
+                                  fontWeight: scheda.applicaFurtivo ? 700 : 500,
+                                  background: scheda.applicaFurtivo ? 'rgba(46,157,77,0.18)' : 'transparent',
+                                  borderColor: scheda.applicaFurtivo ? '#2e9d4d' : C.border,
+                                  color: scheda.applicaFurtivo ? '#2e9d4d' : C.inkDim,
+                                  cursor: 'pointer',
+                                }}
+                                title={lingua === 'en' ? `Apply Sneak Attack (+${furtivo.formula}) to next weapon damage roll` : `Applica i dadi di Attacco Furtivo (+${furtivo.formula}) al prossimo tiro danni`}
+                              >
+                                🗡️ {lingua === 'en' ? 'Sneak' : 'Furtivo'} (+{furtivo.formula}) {scheda.applicaFurtivo ? '●' : '○'}
+                              </button>
+                            )}
+
+                            {/* 2. Ira Barbarica (Barbaro) */}
+                            {ira && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const v = !scheda.inIra;
+                                  const ireUsate = v ? Math.min(ira.utilizziMax, (scheda.ireUsate || 0) + 1) : (scheda.ireUsate || 0);
+                                  aggiorna({ inIra: v, ireUsate });
+                                  registra({
+                                    etichetta: v ? '🔥 Entra in Ira' : '🔥 Fine Ira',
+                                    tipo: 'tattica',
+                                    dettaglio: v
+                                      ? `${scheda.nome || 'PG'} entra in Ira! (+${ira.bonusDanni} danni FOR, resistenza a contundente/perforante/tagliente, vantaggio a prove/TS FOR)`
+                                      : `${scheda.nome || 'PG'} termina l'Ira Barbarica.`,
+                                  });
+                                }}
+                                style={{
+                                  ...styles.buttonMini,
+                                  fontSize: 10,
+                                  padding: '2px 7px',
+                                  fontWeight: scheda.inIra ? 700 : 500,
+                                  background: scheda.inIra ? 'rgba(239,68,68,0.2)' : 'transparent',
+                                  borderColor: scheda.inIra ? '#ef4444' : C.border,
+                                  color: scheda.inIra ? '#ef4444' : C.inkDim,
+                                  cursor: 'pointer',
+                                }}
+                                title={lingua === 'en' ? `Rage (+${ira.bonusDanni} STR melee damage, physical resistances)` : `Ira Barbarica (+${ira.bonusDanni} danni mischia FOR, resistenze contundente/perforante/tagliente)`}
+                              >
+                                🔥 {lingua === 'en' ? 'Rage' : 'Ira'} (+{ira.bonusDanni}) {scheda.inIra ? '🔥 ATTIVA' : `(${Math.max(0, ira.utilizziMax - (scheda.ireUsate || 0))}/${ira.utilizziMax})`}
+                              </button>
+                            )}
+
+                            {/* 3. Punizione Divina (Paladino) */}
+                            {smite && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const v = !scheda.smiteAttivo;
+                                  aggiorna({ smiteAttivo: v, smiteSlot: 1 });
+                                  if (v) {
+                                    registra({ etichetta: '✨ Punizione Divina', tipo: 'tattica', dettaglio: `${scheda.nome || 'PG'} prepara Punizione Divina (+2d8 radiosi) sul prossimo colpo!` });
+                                  }
+                                }}
+                                style={{
+                                  ...styles.buttonMini,
+                                  fontSize: 10,
+                                  padding: '2px 7px',
+                                  fontWeight: scheda.smiteAttivo ? 700 : 500,
+                                  background: scheda.smiteAttivo ? 'rgba(201,162,39,0.2)' : 'transparent',
+                                  borderColor: scheda.smiteAttivo ? C.goldDark : C.border,
+                                  color: scheda.smiteAttivo ? C.goldDark : C.inkDim,
+                                  cursor: 'pointer',
+                                }}
+                                title={lingua === 'en' ? 'Divine Smite (+2d8 radiant, +1d8/slot)' : 'Punizione Divina (+2d8 radiosi, scala con lo slot)'}
+                              >
+                                ✨ Smite {scheda.smiteAttivo ? '● ATTIVO' : '○'}
+                              </button>
+                            )}
+
+                            {/* 4. Ispirazione Bardica (Bardo) */}
+                            {bardo && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const d = tiraDado(bardo.facce);
+                                  conAnimazione(() => {
+                                    setDadoValore(d);
+                                    setDadoDettaglio(`Ispirazione Bardica (1${bardo.dado}): [${d}]`);
+                                    registra({ etichetta: '🎲 Ispirazione Bardica', tipo: 'dadi', totale: d, dettaglio: `1${bardo.dado} [${d}]` });
+                                  }, d);
+                                }}
+                                style={{
+                                  ...styles.buttonMini,
+                                  fontSize: 10,
+                                  padding: '2px 7px',
+                                  fontWeight: 700,
+                                  background: 'rgba(158,75,230,0.15)',
+                                  borderColor: '#9e4be6',
+                                  color: '#9e4be6',
+                                  cursor: 'pointer',
+                                }}
+                                title={lingua === 'en' ? `Roll Bardic Inspiration (1${bardo.dado})` : `Tira dado Ispirazione Bardica (1${bardo.dado})`}
+                              >
+                                🎲 {bardo.dado} {lingua === 'en' ? 'Inspiration' : 'Ispirazione'}
+                              </button>
+                            )}
+
+                            {/* 5. Ispirazione Eroica */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const v = !scheda.ispirazioneEroica;
+                                aggiorna({ ispirazioneEroica: v });
+                                if (v) {
+                                  registra({ etichetta: '✨ Ispirazione Eroica', tipo: 'tattica', dettaglio: `${scheda.nome || 'PG'} ottiene Ispirazione Eroica (ritiro di un d20 a scelta)!` });
+                                }
+                              }}
+                              style={{
+                                ...styles.buttonMini,
+                                fontSize: 10,
+                                padding: '2px 7px',
+                                fontWeight: scheda.ispirazioneEroica ? 700 : 500,
+                                background: scheda.ispirazioneEroica ? 'rgba(234,179,8,0.2)' : 'transparent',
+                                borderColor: scheda.ispirazioneEroica ? '#eab308' : C.border,
+                                color: scheda.ispirazioneEroica ? '#eab308' : C.inkDim,
+                                cursor: 'pointer',
+                              }}
+                              title={lingua === 'en' ? 'Heroic Inspiration (reroll any d20)' : 'Ispirazione Eroica (ritira qualsiasi d20 prima o dopo il risultato)'}
+                            >
+                              ⭐ {lingua === 'en' ? 'Heroic' : 'Eroica'} {scheda.ispirazioneEroica ? '✨ DISPONIBILE' : '○'}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 );
               })()}

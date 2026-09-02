@@ -18,6 +18,8 @@ import {
   classePreparaIncantesimi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza,
   analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili,
   calcolaTurnoCombattimento, dettagliAbilita, calcolaTsConcentrazione,
+  calcolaAttaccoFurtivo, calcolaIraBarbarica, calcolaPunizioneDivina,
+  calcolaIspirazioneBardica, livelloDiClasse,
 } from '../src/rules/regole.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from '../src/data/condizioni.js';
 import { CONDIZIONI_5E, PE_PER_LIVELLO } from '../src/data/dati5e.js';
@@ -1028,6 +1030,49 @@ test('calcolo TS concentrazione e talenti 5e (calcolaTsConcentrazione)', () => {
   assert.equal(tsMago.bonus, 6); // +3 mod + 3 comp
   assert.equal(tsMago.haIncantatoreDaGuerra, true);
 });
+
+test('meccaniche e potenziamenti di classe 5e (Furtivo, Ira, Smite, Ispirazione)', () => {
+  // 1. Ladro livello 5 (Attacco Furtivo 3d6)
+  const ladro = { classe: 'ladro', livello: 5 };
+  const furtivo = calcolaAttaccoFurtivo(ladro);
+  assert.ok(furtivo);
+  assert.equal(furtivo.dadi, 3);
+  assert.equal(furtivo.formula, '3d6');
+
+  // Ladro livello 1 (1d6)
+  assert.equal(calcolaAttaccoFurtivo({ classe: 'Ladro', livello: 1 }).formula, '1d6');
+  // Non ladro -> null
+  assert.equal(calcolaAttaccoFurtivo({ classe: 'Mago', livello: 5 }), null);
+
+  // 2. Barbaro livello 9 (Ira +3 danni, 4 utilizzi)
+  const barbaro = { classe: 'barbaro', livello: 9 };
+  const ira = calcolaIraBarbarica(barbaro);
+  assert.ok(ira);
+  assert.equal(ira.bonusDanni, 3);
+  assert.equal(ira.utilizziMax, 4);
+
+  // Barbaro livello 16 (+4 danni, 5 utilizzi)
+  assert.equal(calcolaIraBarbarica({ classe: 'Barbaro', livello: 16 }).bonusDanni, 4);
+
+  // 3. Paladino livello 4 (Punizione Divina: 2d8 con 1° slot, 3d8 con 2° slot, +1d8 vs non morti)
+  const paladino = { classe: 'paladino', livello: 4 };
+  const smite1 = calcolaPunizioneDivina(paladino, 1, false);
+  assert.ok(smite1);
+  assert.equal(smite1.dadi, 2);
+  assert.equal(smite1.formula, '2d8');
+
+  const smite2Undead = calcolaPunizioneDivina(paladino, 2, true);
+  assert.equal(smite2Undead.dadi, 4); // 3d8 base + 1d8 vs undead
+  assert.equal(smite2Undead.formula, '4d8');
+
+  // 4. Bardo livello 10 (Ispirazione d10)
+  const bardo = { classe: 'bardo', livello: 10, caratteristiche: { carisma: 18 } };
+  const insp = calcolaIspirazioneBardica(bardo);
+  assert.ok(insp);
+  assert.equal(insp.dado, 'd10');
+  assert.equal(insp.utilizziMax, 4);
+});
+
 
 
 
