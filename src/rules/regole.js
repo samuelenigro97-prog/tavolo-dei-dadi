@@ -1179,3 +1179,155 @@ export function dettagliEsperienza(pe, livello = 1) {
     livelloTeorico,
   };
 }
+
+/**
+ * Riconosce e calcola gli effetti meccanici completi di qualsiasi pozione o consumabile 5e:
+ * guarigione con formula corretta, PF temporanei, rimozione o aggiunta di condizioni,
+ * sfinimento e descrizioni ufficiali (italiano ed inglese).
+ */
+export function analizzaPozione(nomePozione) {
+  const nome = String(nomePozione || '').trim().toLowerCase();
+
+  // 1. Pozioni di Guarigione (Healing Potions)
+  if (/guarigione|cura|healing|cure/i.test(nome)) {
+    if (/suprema|supreme/i.test(nome)) {
+      return { tipo: 'cura', formula: '10d4+20', descIt: 'Recuperi 10d4 + 20 Punti Ferita (media 45 PF).', descEn: 'Regain 10d4 + 20 Hit Points (avg 45 HP).' };
+    }
+    if (/superiore|superior/i.test(nome)) {
+      return { tipo: 'cura', formula: '8d4+8', descIt: 'Recuperi 8d4 + 8 Punti Ferita (media 28 PF).', descEn: 'Regain 8d4 + 8 Hit Points (avg 28 HP).' };
+    }
+    if (/maggiore|greater/i.test(nome)) {
+      return { tipo: 'cura', formula: '4d4+4', descIt: 'Recuperi 4d4 + 4 Punti Ferita (media 14 PF).', descEn: 'Regain 4d4 + 4 Hit Points (avg 14 HP).' };
+    }
+    return { tipo: 'cura', formula: '2d4+2', descIt: 'Recuperi 2d4 + 2 Punti Ferita (media 7 PF).', descEn: 'Regain 2d4 + 2 Hit Points (avg 7 HP).' };
+  }
+
+  // 2. Pozione di Eroismo (Potion of Heroism) -> 10 PF Temp + Effetto Benedizione (Bless)
+  if (/eroismo|heroism/i.test(nome)) {
+    return {
+      tipo: 'buff',
+      pfTemp: 10,
+      descIt: 'Ottieni 10 Punti Ferita Temporanei per 1 ora e sei sotto l’effetto di Benedizione (+1d4 a colpire e TS).',
+      descEn: 'You gain 10 Temporary Hit Points for 1 hour and are under the effect of Bless (+1d4 on attack rolls and saving throws).',
+    };
+  }
+
+  // 3. Pozione di Vitalità (Potion of Vitality) -> Rimuove sfinimento e malattie, cura massima
+  if (/vitalit|vitality/i.test(nome)) {
+    return {
+      tipo: 'cura_stato',
+      rimuoviSfinimento: true,
+      rimuoviCondizioni: ['Avvelenato'],
+      descIt: 'Rimuove qualsiasi livello di sfinimento, cura tutte le malattie e i veleni, e massimizza le cure dei dadi vita per 24 ore.',
+      descEn: 'Removes any exhaustion, cures all diseases and poison, and maximizes hit dice healing for 24 hours.',
+    };
+  }
+
+  // 4. Elisir di Salute (Elixir of Health) -> Rimuove malattie e condizioni
+  if (/elisir.*salute|elixir.*health/i.test(nome)) {
+    return {
+      tipo: 'cura_stato',
+      rimuoviCondizioni: ['Accecato', 'Assordato', 'Paralizzato', 'Avvelenato'],
+      descIt: 'Cura ogni malattia e rimuove le condizioni Accecato, Assordato, Paralizzato e Avvelenato.',
+      descEn: 'Cures any disease and removes Blinded, Deafened, Paralyzed, and Poisoned conditions.',
+    };
+  }
+
+  // 5. Antitossina / Antidoto (Antitoxin) -> Rimuove Avvelenato
+  if (/antitossina|antidoto|antitoxin/i.test(nome)) {
+    return {
+      tipo: 'cura_stato',
+      rimuoviCondizioni: ['Avvelenato'],
+      descIt: 'Rimuove la condizione Avvelenato e ti concede vantaggio ai tiri salvezza contro il veleno per 1 ora.',
+      descEn: 'Removes the Poisoned condition and gives you advantage on saving throws against poison for 1 hour.',
+    };
+  }
+
+  // 6. Pozione di Invisibilità (Potion of Invisibility) -> Aggiunge condizione Invisibile
+  if (/invisibilit|invisibility/i.test(nome)) {
+    return {
+      tipo: 'buff',
+      aggiungiCondizioni: ['Invisibile'],
+      descIt: 'Diventi Invisibile per 1 ora (o finché non attacchi o lanci un incantesimo).',
+      descEn: 'You become Invisible for 1 hour (or until you attack or cast a spell).',
+    };
+  }
+
+  // 7. Pozione di Velocità (Potion of Speed) -> Effetto Haste (+2 CA, vantaggio TS Des, doppio movimento)
+  if (/velocit|speed|haste/i.test(nome)) {
+    return {
+      tipo: 'buff',
+      descIt: 'Ottieni l’effetto dell’incantesimo Velocità per 1 minuto (+2 CA, vantaggio ai TS su Destrezza, velocità raddoppiata, un’azione aggiuntiva per turno).',
+      descEn: 'You gain the effect of Haste for 1 minute (+2 AC, advantage on Dex saves, doubled speed, an additional action per turn).',
+    };
+  }
+
+  // 8. Pozione di Forza dei Giganti (Potion of Giant Strength)
+  if (/forza.*gigant|giant.*strength/i.test(nome)) {
+    let strVal = 21;
+    let tipoG = 'delle Colline (Hill Giant, FOR 21)';
+    if (/tempest|storm/i.test(nome)) { strVal = 29; tipoG = 'delle Tempeste (Storm Giant, FOR 29)'; }
+    else if (/nuvol|cloud/i.test(nome)) { strVal = 27; tipoG = 'delle Nuvole (Cloud Giant, FOR 27)'; }
+    else if (/fuoco|fire/i.test(nome)) { strVal = 25; tipoG = 'del Fuoco (Fire Giant, FOR 25)'; }
+    else if (/gelo|pietra|frost|stone/i.test(nome)) { strVal = 23; tipoG = 'del Gelo/Pietra (Frost/Stone Giant, FOR 23)'; }
+
+    return {
+      tipo: 'buff',
+      forzaTarget: strVal,
+      descIt: `La tua Forza diventa ${strVal} (+${Math.floor((strVal - 10) / 2)}) per 1 ora (${tipoG}).`,
+      descEn: `Your Strength becomes ${strVal} (+${Math.floor((strVal - 10) / 2)}) for 1 hour (${tipoG}).`,
+    };
+  }
+
+  // 9. Pozione di Volo (Potion of Flying)
+  if (/volo|flying/i.test(nome)) {
+    return {
+      tipo: 'buff',
+      descIt: 'Ottieni una velocità di volo pari alla tua velocità sul terreno per 1 ora (puoi fluttuare a mezz’aria).',
+      descEn: 'You gain a flying speed equal to your walking speed for 1 hour (with hover).',
+    };
+  }
+
+  // 10. Pozione di Respirare sott'Acqua (Potion of Water Breathing)
+  if (/respirar.*acqua|water.*breathing/i.test(nome)) {
+    return {
+      tipo: 'buff',
+      descIt: 'Puoi respirare sott’acqua per 1 ora e conservi la normale capacità di respirare aria.',
+      descEn: 'You can breathe underwater for 1 hour while retaining your normal breathing ability.',
+    };
+  }
+
+  // 11. Pozione di Resistenza (Potion of Resistance)
+  if (/resistenza|resistance/i.test(nome)) {
+    return {
+      tipo: 'buff',
+      descIt: 'Ottieni resistenza a un tipo di danno per 1 ora (riduce della metà tutti i danni di quel tipo subiti).',
+      descEn: 'You gain resistance to one damage type for 1 hour (halves all damage of that type taken).',
+    };
+  }
+
+  // 12. Pozione di Forma Gassosa (Potion of Gaseous Form)
+  if (/forma.*gassos|gaseous.*form/i.test(nome)) {
+    return {
+      tipo: 'buff',
+      descIt: 'Ti trasformi in una nube gassosa per 1 ora: ottieni volo 6 m, resistenza ai danni non magici e vantaggio ai TS su Forza/Destrezza/Costituzione.',
+      descEn: 'You transform into a misty cloud for 1 hour: flying speed 6 m (20 ft), non-magical damage resistance, and advantage on Str/Dex/Con saves.',
+    };
+  }
+
+  // 13. Pozione di Chiaroveggenza o Lettura del Pensiero (Clairvoyance / Mind Reading)
+  if (/chiaroveggenza|clairvoyance|lettura.*ment|mind.*reading/i.test(nome)) {
+    return {
+      tipo: 'magia',
+      descIt: 'Ottieni l’effetto di Lettura del Pensiero o Chiaroveggenza per percepire luoghi o leggere la mente altrui.',
+      descEn: 'You gain the effect of Detect Thoughts or Clairvoyance to perceive remote locations or read surface thoughts.',
+    };
+  }
+
+  // Fallback generico
+  return {
+    tipo: 'usa',
+    descIt: `Bevi o usi ${nomePozione}.`,
+    descEn: `Drink or use ${nomePozione}.`,
+  };
+}

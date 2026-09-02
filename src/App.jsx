@@ -1285,7 +1285,7 @@ const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(I
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E, DEFAULT_MANUALI, MANUALI_INFO, SOTTOCLASSI_FONTI, TALENTI_FONTI, INCANTESIMI_FONTI, talentiPerManuali, incantesimiPerManuali, fonteValida, PE_PER_LIVELLO } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -15174,14 +15174,12 @@ export default function App() {
                               const senzaBordo = { borderBottom: 'none' };
 
                               const beviPozione = () => {
-                                const nome = (o.nome || '').toLowerCase();
-                                let curaFormula = '2d4+2';
-                                if (nome.includes('maggiore') || nome.includes('greater')) curaFormula = '4d4+4';
-                                else if (nome.includes('superiore') || nome.includes('superior')) curaFormula = '8d4+8';
-                                else if (nome.includes('suprema') || nome.includes('supreme')) curaFormula = '10d4+20';
+                                const eff = analizzaPozione(o.nome);
+                                const qtaRimanente = Math.max(0, (Number(o.qta) || 1) - 1);
+                                const scalaInventario = (inv) => (inv || []).map((x) => (x.id === o.id ? { ...x, qta: qtaRimanente } : x));
 
-                                if (/guarigione|cura|healing/i.test(nome)) {
-                                  const p = parseEspressioneDado(curaFormula);
+                                if (eff.tipo === 'cura') {
+                                  const p = parseEspressioneDado(eff.formula);
                                   let tot = 0;
                                   if (p) {
                                     for (const t of p.termini) {
@@ -15192,17 +15190,49 @@ export default function App() {
                                   setScheda((s) => ({
                                     ...s,
                                     pfAttuali: Math.min(s.pfMax, (s.pfAttuali || 0) + tot),
-                                    inventario: (s.inventario || []).map((x) => (x.id === o.id ? { ...x, qta: Math.max(0, (Number(x.qta) || 1) - 1) } : x)),
+                                    inventario: scalaInventario(s.inventario),
                                   }));
-                                  registra({ etichetta: `🧪 ${o.nome}`, tipo: 'cura', totale: tot, dettaglio: `Bevi ${o.nome}: recuperi ${tot} PF (${curaFormula})` });
-                                  setInfo({ titolo: `🧪 ${o.nome}`, testo: t('inv.pozione_testo', { nome: o.nome, tot: tot, qta: Math.max(0, (Number(o.qta) || 1) - 1) }) });
+                                  registra({ etichetta: `🧪 ${o.nome}`, tipo: 'cura', totale: tot, dettaglio: `Bevi ${o.nome}: recuperi ${tot} PF (${eff.formula})` });
+                                  setInfo({ titolo: `🧪 ${o.nome}`, testo: `${lingua === 'en' ? eff.descEn : eff.descIt} (Recuperati: ${tot} PF · Rimasti: ×${qtaRimanente})` });
+                                  if (suoniEffOn) eseguiEffettoSonoro('magia', volumeEffetti);
+                                } else if (eff.tipo === 'buff') {
+                                  setScheda((s) => {
+                                    const patch = { inventario: scalaInventario(s.inventario) };
+                                    if (eff.pfTemp) {
+                                      patch.pfTemp = Math.max(Number(s.pfTemp) || 0, eff.pfTemp);
+                                    }
+                                    if (Array.isArray(eff.aggiungiCondizioni)) {
+                                      const attuali = Array.isArray(s.condizioni) ? s.condizioni : [];
+                                      patch.condizioni = Array.from(new Set([...attuali, ...eff.aggiungiCondizioni]));
+                                    }
+                                    return { ...s, ...patch };
+                                  });
+                                  registra({ etichetta: `🧪 ${o.nome}`, tipo: 'buff', dettaglio: lingua === 'en' ? eff.descEn : eff.descIt });
+                                  setInfo({ titolo: `🧪 ${o.nome}`, testo: `${lingua === 'en' ? eff.descEn : eff.descIt} (Rimasti: ×${qtaRimanente})` });
+                                  if (suoniEffOn) eseguiEffettoSonoro('magia', volumeEffetti);
+                                } else if (eff.tipo === 'cura_stato' || eff.tipo === 'cura_max') {
+                                  setScheda((s) => {
+                                    const patch = { inventario: scalaInventario(s.inventario) };
+                                    if (Array.isArray(eff.rimuoviCondizioni)) {
+                                      const attuali = Array.isArray(s.condizioni) ? s.condizioni : [];
+                                      patch.condizioni = attuali.filter((c) => !eff.rimuoviCondizioni.includes(c));
+                                    }
+                                    if (eff.rimuoviSfinimento) {
+                                      patch.sfinimento = 0;
+                                    }
+                                    return { ...s, ...patch };
+                                  });
+                                  registra({ etichetta: `🧪 ${o.nome}`, tipo: 'cura', dettaglio: lingua === 'en' ? eff.descEn : eff.descIt });
+                                  setInfo({ titolo: `🧪 ${o.nome}`, testo: `${lingua === 'en' ? eff.descEn : eff.descIt} (Rimasti: ×${qtaRimanente})` });
+                                  if (suoniEffOn) eseguiEffettoSonoro('magia', volumeEffetti);
                                 } else {
                                   setScheda((s) => ({
                                     ...s,
-                                    inventario: (s.inventario || []).map((x) => (x.id === o.id ? { ...x, qta: Math.max(0, (Number(x.qta) || 1) - 1) } : x)),
+                                    inventario: scalaInventario(s.inventario),
                                   }));
                                   registra({ etichetta: `🧪 ${o.nome}`, tipo: 'usa', dettaglio: `Usato/bevuto ${o.nome}` });
-                                  setInfo({ titolo: `🧪 ${o.nome}`, testo: t('inv.pozione_usata', { nome: o.nome, qta: Math.max(0, (Number(o.qta) || 1) - 1) }) });
+                                  setInfo({ titolo: `🧪 ${o.nome}`, testo: `${lingua === 'en' ? eff.descEn : eff.descIt} (Rimasti: ×${qtaRimanente})` });
+                                  if (suoniEffOn) eseguiEffettoSonoro('arma', volumeEffetti);
                                 }
                               };
 

@@ -16,6 +16,7 @@ import {
   controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, puntiVersoSlot, slotVersoPunti,
   riepilogoCondizioni, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi,
   classePreparaIncantesimi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza,
+  analizzaPozione,
 } from '../src/rules/regole.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from '../src/data/condizioni.js';
 import { CONDIZIONI_5E, PE_PER_LIVELLO } from '../src/data/dati5e.js';
@@ -803,6 +804,46 @@ test('punti esperienza (XP Tracker): calcolo soglie, percentuali e level up', ()
   assert.equal(dMax.puoSalire, false);
   assert.equal(dMax.livelloTeorico, 20);
 });
+
+test('pozioni e consumabili (analizzaPozione): formule di cura e integrazione effetti 5e', () => {
+  // 1. Guarigione
+  assert.equal(analizzaPozione('Pozione di Guarigione').formula, '2d4+2');
+  assert.equal(analizzaPozione('Potion of Healing').formula, '2d4+2');
+  assert.equal(analizzaPozione('Pozione di Guarigione Maggiore').formula, '4d4+4');
+  assert.equal(analizzaPozione('Potion of Greater Healing').formula, '4d4+4');
+  assert.equal(analizzaPozione('Pozione di Guarigione Superiore').formula, '8d4+8');
+  assert.equal(analizzaPozione('Potion of Superior Healing').formula, '8d4+8');
+  assert.equal(analizzaPozione('Pozione di Guarigione Suprema').formula, '10d4+20');
+  assert.equal(analizzaPozione('Potion of Supreme Healing').formula, '10d4+20');
+
+  // 2. Buff e PF Temp
+  const eroismo = analizzaPozione('Pozione di Eroismo');
+  assert.equal(eroismo.tipo, 'buff');
+  assert.equal(eroismo.pfTemp, 10);
+
+  const invis = analizzaPozione('Pozione di Invisibilità');
+  assert.equal(invis.tipo, 'buff');
+  assert.deepEqual(invis.aggiungiCondizioni, ['Invisibile']);
+
+  const giganteFuoco = analizzaPozione('Pozione della Forza del Gigante del Fuoco');
+  assert.equal(giganteFuoco.forzaTarget, 25);
+
+  const giganteTempesta = analizzaPozione('Potion of Storm Giant Strength');
+  assert.equal(giganteTempesta.forzaTarget, 29);
+
+  // 3. Rimozione condizioni e stati
+  const elisir = analizzaPozione('Elisir di Salute');
+  assert.equal(elisir.tipo, 'cura_stato');
+  assert.ok(elisir.rimuoviCondizioni.includes('Avvelenato'));
+  assert.ok(elisir.rimuoviCondizioni.includes('Paralizzato'));
+
+  const antitossina = analizzaPozione('Antitossina');
+  assert.ok(antitossina.rimuoviCondizioni.includes('Avvelenato'));
+
+  const vitalita = analizzaPozione('Pozione di Vitalità');
+  assert.equal(vitalita.rimuoviSfinimento, true);
+});
+
 
 
 
