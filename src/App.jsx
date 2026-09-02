@@ -7960,7 +7960,7 @@ export default function App() {
                 {/* Tabella Ufficiale Soglie D&D 5e */}
                 <div>
                   <div style={{ fontSize: 11.5, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 6 }}>
-                    📜 {lingua === 'en' ? 'Official 5e XP Progression Table' : 'Tabella Ufficiale Soglie P.E. 5e'}
+                    {lingua === 'en' ? `Official XP Progression Table (${versione === '2024' ? '5.5' : '5e'})` : `Tabella Ufficiale Soglie P.E. (${versione === '2024' ? '5.5' : '5e'})`}
                   </div>
                   <div style={{ maxHeight: 180, overflowY: 'auto', border: `1px solid ${C.border}`, borderRadius: 6 }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, textAlign: 'left' }}>
@@ -8057,8 +8057,8 @@ export default function App() {
             >
               {/* Header */}
               <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <strong style={{ fontSize: 15, color: C.goldDark, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span>🏃</span> {lingua === 'en' ? 'Movement, Jumps & Physical Capacity (5e)' : 'Movimento, Salti & Capacità Fisiche (5e)'}
+                <strong style={{ fontSize: 15, color: C.goldDark }}>
+                  {lingua === 'en' ? `Movement, Jumps & Physical Capacity (${versione === '2024' ? '5.5' : '5e'})` : `Movimento, Salti & Capacità Fisiche (${versione === '2024' ? '5.5' : '5e'})`}
                 </strong>
                 <button
                   type="button"
@@ -8075,7 +8075,7 @@ export default function App() {
                 {/* 1. Modalità di Movimento */}
                 <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                    👟 {lingua === 'en' ? 'Movement Modes per Round' : 'Velocità & Modalità di Movimento'}
+                    {lingua === 'en' ? 'Movement Modes per Round' : 'Velocità & Modalità di Movimento'}
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 8 }}>
                     <div style={{ background: C.panel, padding: '8px 10px', borderRadius: 6, border: `1px solid ${C.border}` }}>
@@ -8101,11 +8101,11 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* 2. Calcolatore Salti 5e */}
+                {/* 2. Calcolatore Salti */}
                 <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                      🦘 {lingua === 'en' ? '5e Jump Calculator (Strength-Based)' : 'Calcolatore Salti 5e (Basato su Forza)'}
+                      {lingua === 'en' ? `Jump Calculator (${versione === '2024' ? '5.5' : '5e'}) (Strength-Based)` : `Calcolatore Salti (${versione === '2024' ? '5.5' : '5e'}) (Basato su Forza)`}
                     </div>
                     <span style={{ fontSize: 11, color: C.inkDim }}>FOR {mov.forPunteggio} ({conSegno(mov.modFor)})</span>
                   </div>
@@ -8152,7 +8152,7 @@ export default function App() {
                 {/* 3. Capacità Fisiche: Sollevamento & Trascinamento */}
                 <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span>🏋️ {lingua === 'en' ? 'Lifting & Dragging Capacity' : 'Sollevamento & Spinta / Trascinamento'}</span>
+                    <span>{lingua === 'en' ? 'Lifting & Dragging Capacity' : 'Sollevamento & Spinta / Trascinamento'}</span>
                     {mov.haCorporaturaPossente && (
                       <span style={{ fontSize: 10, color: '#10b981', background: 'rgba(16,185,129,0.12)', border: '1px solid #10b981', padding: '1px 5px', borderRadius: 4, fontWeight: 700 }}>
                         ✨ {lingua === 'en' ? 'Powerful Build ×2' : 'Corporatura Possente ×2'}
@@ -8245,8 +8245,8 @@ export default function App() {
               {/* Header */}
               <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: C.panelLight }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <strong style={{ fontSize: 15, color: C.goldDark, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span>⚡</span> {lingua === 'en' ? 'Reactions & In-Combat Triggers' : 'Reazioni & Inneschi di Combattimento (5e)'}
+                  <strong style={{ fontSize: 15, color: C.goldDark }}>
+                    {lingua === 'en' ? `Reactions & In-Combat Triggers (${versione === '2024' ? '5.5' : '5e'})` : `Reazioni & Inneschi di Combattimento (${versione === '2024' ? '5.5' : '5e'})`}
                   </strong>
                 </div>
                 <button
@@ -8486,10 +8486,10 @@ export default function App() {
                   {lingua === 'en' ? infoAb.descrizioneEn : infoAb.descrizioneIt}
                 </div>
 
-                {/* Tabella CD di Riferimento 5e */}
+                {/* Tabella CD di Riferimento */}
                 <div>
-                  <h4 style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, color: C.goldDark, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span>🎯</span> {lingua === 'en' ? 'Official Reference DCs (Difficulty Class)' : 'Classi di Difficoltà Ufficiali 5e (CD)'}
+                  <h4 style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, color: C.goldDark, marginBottom: 6 }}>
+                    {lingua === 'en' ? 'Official Reference DCs (Difficulty Class)' : 'Classi di Difficoltà Ufficiali (CD)'}
                   </h4>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {(infoAb.esempiCd || []).map((ex) => (
@@ -8523,8 +8523,8 @@ export default function App() {
                 {/* Sinergie con Strumenti (Xanathar p. 78-85) */}
                 {(infoAb.sinergie || []).length > 0 && (
                   <div>
-                    <h4 style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, color: C.goldDark, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span>🛠️</span> {lingua === 'en' ? 'Tool Synergies (Xanathar\'s Guide)' : 'Sinergie con gli Strumenti (Xanathar)'}
+                    <h4 style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, color: C.goldDark, marginBottom: 6 }}>
+                      {lingua === 'en' ? 'Tool Synergies (Xanathar\'s Guide)' : 'Sinergie con gli Strumenti (Xanathar)'}
                     </h4>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                       {infoAb.sinergie.map((syn) => (
