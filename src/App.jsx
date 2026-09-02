@@ -13297,12 +13297,9 @@ export default function App() {
                   >
                     {/* Intestazione Economia del Turno */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 14 }}>⚔️</span>
-                        <strong style={{ fontSize: 12, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                          {lingua === 'en' ? 'Turn Economy & Actions' : 'Economia del Turno & Azioni'}
-                        </strong>
-                      </div>
+                      <strong style={{ fontSize: 12, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                        {lingua === 'en' ? 'Turn Economy & Actions' : 'Economia del Turno & Azioni'}
+                      </strong>
                       <button
                         type="button"
                         onClick={resetTurno}
@@ -13736,11 +13733,12 @@ export default function App() {
               })()}
 
               {/* Intestazione Combattimento & Filtri Armi / Incantesimi Offensivi */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, marginBottom: 8, borderBottom: `1px solid ${C.border}`, paddingBottom: 6, flexWrap: 'wrap', gap: 8 }}>
-                <h3 style={{ fontSize: 13.5, fontWeight: 700, color: C.goldDark, margin: 0, textTransform: 'uppercase', letterSpacing: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span>⚔️</span> {t('combat.titolo')}
+              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(28px, 1fr) auto minmax(28px, 1fr)', alignItems: 'center', columnGap: 6, marginTop: 14, marginBottom: 8, borderBottom: `1.5px solid ${C.goldDark}`, paddingBottom: 6 }}>
+                <div />
+                <h3 style={{ ...styles.panelTitle, margin: 0, borderBottom: 'none', paddingBottom: 0, color: C.ink, textAlign: 'center', justifySelf: 'center' }}>
+                  {t('combat.titolo')}
                 </h3>
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                <div style={{ justifySelf: 'end', display: 'inline-flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
                   <button
                     type="button"
                     style={{
@@ -13870,54 +13868,58 @@ export default function App() {
                     return (
                       <div key={cat} style={{ marginBottom: 16 }}>
                         {cat !== 'Azione' && (
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${C.border}`, paddingBottom: 4, marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
-                            <h3 style={{ fontSize: 13, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 1, margin: 0 }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(28px, 1fr) auto minmax(28px, 1fr)', alignItems: 'center', columnGap: 6, marginTop: 16, marginBottom: 8, borderBottom: `1.5px solid ${C.goldDark}`, paddingBottom: 6 }}>
+                            <div />
+                            <h3 style={{ ...styles.panelTitle, margin: 0, borderBottom: 'none', paddingBottom: 0, color: C.ink, textAlign: 'center', justifySelf: 'center' }}>
                               {cat === 'Bonus' ? t('combat.azioni_bonus') : t('combat.reazioni')}
                             </h3>
-                            {cat === 'Reazione' && (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                <button
-                                  type="button"
-                                  onClick={() => aggiorna({ reazioneUsata: !scheda.reazioneUsata })}
-                                  style={{
-                                    ...styles.buttonMini,
-                                    fontSize: 10.5,
-                                    padding: '1px 7px',
-                                    fontWeight: 700,
-                                    background: scheda.reazioneUsata ? 'rgba(239,68,68,0.12)' : 'rgba(46,157,77,0.12)',
-                                    borderColor: scheda.reazioneUsata ? '#ef4444' : '#2e9d4d',
-                                    color: scheda.reazioneUsata ? '#ef4444' : '#2e9d4d',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: 4,
-                                    cursor: 'pointer',
-                                  }}
-                                  title={lingua === 'en' ? 'Click to toggle reaction available/used status for this round' : 'Clicca per alternare lo stato della reazione (disponibile/usata) in questo round'}
-                                >
-                                  <span>{scheda.reazioneUsata ? '🔴' : '🟢'}</span>
-                                  <span>{scheda.reazioneUsata ? (lingua === 'en' ? 'Used' : 'Usata') : (lingua === 'en' ? 'Available' : 'Disponibile')}</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setMostraModalReazioni(true)}
-                                  style={{
-                                    ...styles.buttonMini,
-                                    fontSize: 10.5,
-                                    padding: '1px 7px',
-                                    borderColor: C.goldDark,
-                                    color: C.goldDark,
-                                    background: 'rgba(201,162,39,0.08)',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: 4,
-                                    cursor: 'pointer',
-                                  }}
-                                  title={lingua === 'en' ? 'View all available reactions & triggers' : 'Visualizza tutti gli inneschi e le reazioni disponibili'}
-                                >
-                                  <span>⚡ {lingua === 'en' ? 'Triggers & Reactions' : 'Inneschi & Reazioni'}</span>
-                                </button>
-                              </div>
-                            )}
+                            <div style={{ justifySelf: 'end', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                              {cat === 'Reazione' && (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => aggiorna({ reazioneUsata: !scheda.reazioneUsata })}
+                                    style={{
+                                      ...styles.buttonMini,
+                                      fontSize: 10.5,
+                                      padding: '1px 7px',
+                                      fontWeight: 700,
+                                      background: scheda.reazioneUsata ? 'rgba(239,68,68,0.12)' : 'rgba(46,157,77,0.12)',
+                                      borderColor: scheda.reazioneUsata ? '#ef4444' : '#2e9d4d',
+                                      color: scheda.reazioneUsata ? '#ef4444' : '#2e9d4d',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: 4,
+                                      cursor: 'pointer',
+                                    }}
+                                    title={lingua === 'en' ? 'Click to toggle reaction available/used status for this round' : 'Clicca per alternare lo stato della reazione (disponibile/usata) in questo round'}
+                                  >
+                                    <span>{scheda.reazioneUsata ? '🔴' : '🟢'}</span>
+                                    <span>{scheda.reazioneUsata ? (lingua === 'en' ? 'Used' : 'Usata') : (lingua === 'en' ? 'Available' : 'Disponibile')}</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setMostraModalReazioni(true)}
+                                    style={{
+                                      ...styles.buttonMini,
+                                      fontSize: 10.5,
+                                      padding: '1px 7px',
+                                      borderColor: C.goldDark,
+                                      color: C.goldDark,
+                                      background: 'rgba(201,162,39,0.08)',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: 4,
+                                      cursor: 'pointer',
+                                    }}
+                                    title={lingua === 'en' ? 'View all available reactions & triggers' : 'Visualizza tutti gli inneschi e le reazioni disponibili'}
+                                  >
+                                    <span>⚡</span>
+                                    <span>{lingua === 'en' ? 'Triggers & Reactions' : 'Inneschi & Reazioni'}</span>
+                                  </button>
+                                </>
+                              )}
+                            </div>
                           </div>
                         )}
                         {cat === 'Reazione' && arr.length === 0 ? (
