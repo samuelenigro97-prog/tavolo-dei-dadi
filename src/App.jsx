@@ -11186,14 +11186,36 @@ export default function App() {
             <Sezione titolo={t("sez.combattimento")} {...propsSez('attacchi')} {...apertoProps('attacchi')}>
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8, gap: 8, flexWrap: 'wrap' }}>
                 <button
-                  style={{ ...styles.buttonMini, fontSize: 11, padding: '3px 8px', color: scheda.mostraArmiAttacco !== false ? C.accentDark : C.inkDim, border: `1px solid ${scheda.mostraArmiAttacco !== false ? C.accentDark : C.border}` }}
+                  type="button"
+                  style={{
+                    ...styles.buttonMini,
+                    fontSize: 11.5,
+                    fontWeight: 700,
+                    padding: '4px 10px',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    background: scheda.mostraArmiAttacco !== false ? 'rgba(201,162,39,0.22)' : 'transparent',
+                    color: scheda.mostraArmiAttacco !== false ? C.goldDark : C.inkDim,
+                    border: `1px solid ${scheda.mostraArmiAttacco !== false ? C.gold : C.border}`
+                  }}
                   onClick={() => aggiorna({ mostraArmiAttacco: scheda.mostraArmiAttacco === false })}
                   title={t('attacchi.armi_tip')}
                 >
                   {t('attacchi.armi')}: {scheda.mostraArmiAttacco !== false ? 'ON' : 'OFF'}
                 </button>
                 <button
-                  style={{ ...styles.buttonMini, fontSize: 11, padding: '3px 8px', color: scheda.mostraIncantesimiAttacco !== false ? C.accentDark : C.inkDim, border: `1px solid ${scheda.mostraIncantesimiAttacco !== false ? C.accentDark : C.border}` }}
+                  type="button"
+                  style={{
+                    ...styles.buttonMini,
+                    fontSize: 11.5,
+                    fontWeight: 700,
+                    padding: '4px 10px',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    background: scheda.mostraIncantesimiAttacco !== false ? 'rgba(201,162,39,0.22)' : 'transparent',
+                    color: scheda.mostraIncantesimiAttacco !== false ? C.goldDark : C.inkDim,
+                    border: `1px solid ${scheda.mostraIncantesimiAttacco !== false ? C.gold : C.border}`
+                  }}
                   onClick={() => aggiorna({ mostraIncantesimiAttacco: scheda.mostraIncantesimiAttacco === false })}
                   title={t('attacchi.incantesimi_offensivi_tip')}
                 >
@@ -13534,7 +13556,7 @@ export default function App() {
                           {t("aspetto.background")}{scheda.background ? `: ${traduciDato(scheda.background)}` : ''}
                         </div>
                         {scheda.background && (
-                          <span style={{ fontSize: 11.5, fontWeight: 700, color: C.accentDark, background: 'rgba(201,162,39,0.12)', border: `1px solid ${C.accentDark}`, borderRadius: 6, padding: '2px 8px' }}>
+                          <span style={{ fontSize: 11.5, fontWeight: 700, color: C.goldDark, background: 'rgba(201,162,39,0.15)', border: `1px solid ${C.gold}`, borderRadius: 6, padding: '2px 8px' }}>
                             📜 {traduciDato(scheda.background)}
                           </span>
                         )}
@@ -13561,7 +13583,7 @@ export default function App() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <button
                             type="button"
-                            style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.accentDark, border: `1px solid ${C.accentDark}`, background: 'rgba(201,162,39,0.08)', fontWeight: 700 }}
+                            style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.goldDark, border: `1px solid ${C.gold}`, background: 'rgba(201,162,39,0.12)', fontWeight: 700 }}
                             onClick={() => tiraTabellaBackground('trattiCaratteriali')}
                             title={`Tira 1d8 dalla tabella ${bgDati.nome}`}
                           >
@@ -13596,7 +13618,7 @@ export default function App() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <button
                             type="button"
-                            style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.accentDark, border: `1px solid ${C.accentDark}`, background: 'rgba(201,162,39,0.08)', fontWeight: 700 }}
+                            style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.goldDark, border: `1px solid ${C.gold}`, background: 'rgba(201,162,39,0.12)', fontWeight: 700 }}
                             onClick={() => tiraTabellaBackground('ideali')}
                             title={`Tira 1d6 dalla tabella ${bgDati.nome}`}
                           >
@@ -13631,7 +13653,7 @@ export default function App() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <button
                             type="button"
-                            style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.accentDark, border: `1px solid ${C.accentDark}`, background: 'rgba(201,162,39,0.08)', fontWeight: 700 }}
+                            style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.goldDark, border: `1px solid ${C.gold}`, background: 'rgba(201,162,39,0.12)', fontWeight: 700 }}
                             onClick={() => tiraTabellaBackground('legami')}
                             title={`Tira 1d6 dalla tabella ${bgDati.nome}`}
                           >
@@ -13666,7 +13688,7 @@ export default function App() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <button
                             type="button"
-                            style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.accentDark, border: `1px solid ${C.accentDark}`, background: 'rgba(201,162,39,0.08)', fontWeight: 700 }}
+                            style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.goldDark, border: `1px solid ${C.gold}`, background: 'rgba(201,162,39,0.12)', fontWeight: 700 }}
                             onClick={() => tiraTabellaBackground('difetti')}
                             title={`Tira 1d6 dalla tabella ${bgDati.nome}`}
                           >
@@ -13707,7 +13729,7 @@ export default function App() {
                       <div style={{ ...styles.moduloLabel, margin: 0 }}>🛡️ {t("aspetto.alleati")}</div>
                       <button
                         type="button"
-                        style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.accentDark, border: `1px solid ${C.accentDark}`, background: 'rgba(201,162,39,0.08)', fontWeight: 700 }}
+                        style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.goldDark, border: `1px solid ${C.gold}`, background: 'rgba(201,162,39,0.12)', fontWeight: 700 }}
                         onClick={() => {
                           const idNuovo = `all-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
                           const nuovaLista = [...(scheda.alleati || []), { id: idNuovo, nome: `Alleato ${(scheda.alleati || []).length + 1}`, pfMax: 10, pfAttuali: 10, ca: 10, note: '' }];
@@ -14243,7 +14265,7 @@ export default function App() {
                       <span style={{ fontSize: 13, fontWeight: 700, color: C.goldDark }}>👤 {t('aspetto.tratti_caratteriali')} (d8)</span>
                       <button
                         type="button"
-                        style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.accentDark, border: `1px solid ${C.accentDark}`, background: 'rgba(201,162,39,0.08)', fontWeight: 700 }}
+                        style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.goldDark, border: `1px solid ${C.gold}`, background: 'rgba(201,162,39,0.12)', fontWeight: 700 }}
                         onClick={() => {
                           const r = tiraDado(8);
                           setBozzaIspirazione((b) => ({ ...b, tratto: bgDati.tratti[r - 1] || '' }));
@@ -14290,7 +14312,7 @@ export default function App() {
                       <span style={{ fontSize: 13, fontWeight: 700, color: C.goldDark }}>⚖️ {t('aspetto.ideali')} (d6)</span>
                       <button
                         type="button"
-                        style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.accentDark, border: `1px solid ${C.accentDark}`, background: 'rgba(201,162,39,0.08)', fontWeight: 700 }}
+                        style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.goldDark, border: `1px solid ${C.gold}`, background: 'rgba(201,162,39,0.12)', fontWeight: 700 }}
                         onClick={() => {
                           const r = tiraDado(6);
                           setBozzaIspirazione((b) => ({ ...b, ideale: bgDati.ideali[r - 1] || '' }));
@@ -14337,7 +14359,7 @@ export default function App() {
                       <span style={{ fontSize: 13, fontWeight: 700, color: C.goldDark }}>🔗 {t('aspetto.legami')} (d6)</span>
                       <button
                         type="button"
-                        style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.accentDark, border: `1px solid ${C.accentDark}`, background: 'rgba(201,162,39,0.08)', fontWeight: 700 }}
+                        style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.goldDark, border: `1px solid ${C.gold}`, background: 'rgba(201,162,39,0.12)', fontWeight: 700 }}
                         onClick={() => {
                           const r = tiraDado(6);
                           setBozzaIspirazione((b) => ({ ...b, legame: bgDati.legami[r - 1] || '' }));
@@ -14384,7 +14406,7 @@ export default function App() {
                       <span style={{ fontSize: 13, fontWeight: 700, color: C.goldDark }}>⚡ {t('aspetto.difetti')} (d6)</span>
                       <button
                         type="button"
-                        style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.accentDark, border: `1px solid ${C.accentDark}`, background: 'rgba(201,162,39,0.08)', fontWeight: 700 }}
+                        style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.goldDark, border: `1px solid ${C.gold}`, background: 'rgba(201,162,39,0.12)', fontWeight: 700 }}
                         onClick={() => {
                           const r = tiraDado(6);
                           setBozzaIspirazione((b) => ({ ...b, difetto: bgDati.difetti[r - 1] || '' }));
@@ -14438,7 +14460,7 @@ export default function App() {
                 </button>
                 <button
                   type="button"
-                  style={{ ...styles.button, background: C.accentDark, color: '#fff', fontSize: 13, fontWeight: 700, padding: '6px 18px' }}
+                  style={{ ...styles.button, background: C.gold, color: '#fff', fontSize: 13, fontWeight: 700, padding: '6px 18px' }}
                   onClick={applicaIspirazioneBg}
                 >
                   {t('aspetto.applica')}
