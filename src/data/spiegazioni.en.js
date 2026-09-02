@@ -341,6 +341,8 @@ export const EN_INCANTESIMI = {
   'Tempesta di Nevischio': 'Lv. 3 · A cylinder with a 12 m radius (range 45 m): obscures sight, snuffs out flames, slippery ground, and breaks concentration. Concentration, 1 min.',
   'Tempo Inverso': 'Lv. 9 · You rewind local time up to 6 seconds (1 round), undoing recent actions.',
   'Terreno Allucinatorio': 'Lv. 4 · You make an area (a 45 m cube, range 90 m) look like a different kind of natural terrain. Lasts 24 hours.',
+  'Tocco Gelido': 'Lv. 0 · Ranged spell attack (range 36 m): 1d8 necrotic, prevents the target from regaining HP until your next turn, and imposes disadvantage on undead (increases at 5/11/17).',
+  'Chill Touch': 'Lv. 0 · Ranged spell attack (range 36 m): 1d8 necrotic, prevents the target from regaining HP until your next turn, and imposes disadvantage on undead (increases at 5/11/17).',
   'Tocco Vampirico': 'Lv. 3 · Melee spell attack: 3d6 necrotic and you heal half the damage dealt; repeatable each turn. Concentration, 1 min.',
   'Tornado': 'Lv. 8 · A massive vortex of wind (range 90 m): 4d10 bludgeoning and flings creatures into the air. Concentration, 1 min.',
   'Trasportare Via': 'Lv. 6 · Up to 8 willing creatures you touch are teleported to another plane of existence.',

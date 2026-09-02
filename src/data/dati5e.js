@@ -32,7 +32,7 @@ export const SOTTOCLASSI_5E = {
 };
 export const INCANTESIMI_CLASSE = {
   stregone: {
-    0: ['Dardo Infuocato', 'Raggio di Gelo', 'Morsa del Gelo', 'Mano Magica', 'Luce', 'Messaggio', 'Prestidigitazione', 'Illusione Minore', 'Spruzzo Velenoso', 'Stretta Folgorante', 'Luci Danzanti', 'Interdizione alle Lame'],
+    0: ['Dardo Infuocato', 'Raggio di Gelo', 'Morsa del Gelo', 'Tocco Gelido', 'Mano Magica', 'Luce', 'Messaggio', 'Prestidigitazione', 'Illusione Minore', 'Spruzzo Velenoso', 'Stretta Folgorante', 'Luci Danzanti', 'Interdizione alle Lame'],
     1: ['Stregoneria Esplosiva', 'Dardo Incantato', 'Scudo', 'Armatura Magica', 'Onda Tonante', 'Mani Brucianti', 'Sfera Cromatica', 'Sonno', 'Ammaliare Persone', 'Caduta Morbida', 'Individuazione del Magico', 'Nube di Nebbia', 'Camuffarsi', 'Immagine Silenziosa', 'Fulmine Stregato'],
     2: ['Immagine Speculare', 'Passo Velato', 'Frantumare', 'Raggio Rovente', 'Invisibilità', 'Blocca Persone', 'Oscurità', 'Scurovisione', 'Levitazione', 'Ragnatela', 'Suggestione', 'Offuscamento', 'Vedere Invisibilità'],
     3: ['Palla di Fuoco', 'Controincantesimo', 'Fulmine', 'Volare', 'Velocità', 'Lentezza', 'Dissolvi Magie', 'Nube Mefitica', 'Paura'],
@@ -40,7 +40,7 @@ export const INCANTESIMI_CLASSE = {
     5: ['Cono di Freddo', 'Blocca Mostri', 'Dominare Persone', 'Telecinesi', 'Muro di Pietra'],
   },
   mago: {
-    0: ['Dardo Infuocato', 'Raggio di Gelo', 'Morsa del Gelo', 'Mano Magica', 'Luce', 'Messaggio', 'Prestidigitazione', 'Illusione Minore', 'Spruzzo Acido', 'Stretta Folgorante', 'Colpo Accurato', 'Riparare'],
+    0: ['Dardo Infuocato', 'Raggio di Gelo', 'Morsa del Gelo', 'Tocco Gelido', 'Mano Magica', 'Luce', 'Messaggio', 'Prestidigitazione', 'Illusione Minore', 'Spruzzo Acido', 'Stretta Folgorante', 'Colpo Accurato', 'Riparare'],
     1: ['Dardo Incantato', 'Scudo', 'Armatura Magica', 'Onda Tonante', 'Mani Brucianti', 'Sonno', 'Individuazione del Magico', 'Comprendere Linguaggi', 'Identificare', 'Ritirata Veloce', 'Falsa Vita', 'Servitore Invisibile', 'Sfera Cromatica'],
     2: ['Immagine Speculare', 'Passo Velato', 'Frantumare', 'Raggio Rovente', 'Invisibilità', 'Blocca Persone', 'Ragnatela', 'Levitazione', 'Vedere Invisibilità', 'Bussare', 'Individuazione dei Pensieri'],
     3: ['Palla di Fuoco', 'Controincantesimo', 'Fulmine', 'Volare', 'Velocità', 'Dissolvi Magie', 'Nube Mefitica', 'Animare Morti', 'Schema Ipnotico'],
@@ -76,7 +76,7 @@ export const INCANTESIMI_CLASSE = {
     5: ['Ristorare Superiore', 'Cura Ferite di Massa', 'Blocca Mostri', 'Dominare Persone', 'Sviare'],
   },
   warlock: {
-    0: ['Deflagrazione Occulta', 'Morsa del Gelo', 'Mano Magica', 'Illusione Minore', 'Spruzzo Velenoso', 'Prestidigitazione', 'Colpo Accurato'],
+    0: ['Deflagrazione Occulta', 'Morsa del Gelo', 'Tocco Gelido', 'Mano Magica', 'Illusione Minore', 'Spruzzo Velenoso', 'Prestidigitazione', 'Colpo Accurato'],
     1: ['Malocchio', 'Armatura di Agathys', 'Braccia di Hadar', 'Ammaliare Persone', 'Comprendere Linguaggi', 'Ritirata Veloce', 'Protezione dal Male e dal Bene', 'Fulmine Stregato', 'Rappresaglia Infernale', 'Servitore Invisibile'],
     2: ['Invisibilità', 'Immagine Speculare', 'Passo Velato', 'Blocca Persone', 'Oscurità', 'Raggio di Indebolimento', 'Corona della Follia', 'Suggestione'],
     3: ['Controincantesimo', 'Dissolvi Magie', 'Volare', 'Paura', 'Schema Ipnotico', 'Fame di Hadar', 'Tocco Vampirico'],

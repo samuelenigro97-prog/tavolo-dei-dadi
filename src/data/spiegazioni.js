@@ -960,6 +960,7 @@ const SPIEG_INCANTESIMI = {
   'Tempesta di Nevischio': "Liv. 3 · Cilindro raggio 12 m (gittata 45 m): oscura la vista, spegne i fuochi, terreno scivoloso e rompe la concentrazione. Concentrazione, 1 min.",
   'Tempo Inverso': 'Liv. 9 · Riavvolgi il tempo locale fino a 6 secondi (1 round), annullando le azioni appena avvenute.',
   'Terreno Allucinatorio': "Liv. 4 · Fai apparire un'area (cubo di 45 m, gittata 90 m) come un tipo di terreno naturale diverso. Dura 24 ore.",
+  'Tocco Gelido': "Liv. 0 · Attacco magico a distanza (gittata 36 m): 1d8 necrotici, impedisce al bersaglio di recuperare PF fino al tuo prossimo turno e dà svantaggio ai non morti (aumenta a 5/11/17).",
   'Tocco Vampirico': 'Liv. 3 · Attacco magico in mischia: 3d6 necrotici e curi metà dei danni inflitti; ripetibile ogni turno. Concentrazione, 1 min.',
   'Tornado': 'Liv. 8 · Colonna di vento violento (gittata 90 m): 4d10 contundenti e scaraventa le creature in aria. Concentrazione, 1 min.',
   'Trasportare Via': 'Liv. 6 · Fino a 8 creature consenzienti toccate vengono teletrasportate su un altro piano di esistenza.',

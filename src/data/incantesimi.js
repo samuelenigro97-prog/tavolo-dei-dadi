@@ -37,6 +37,7 @@ export const INCANTESIMI_DB = {
   'Stabilizzare':          { livello:0, scuola:'Necromanzia', classi:['Chierico','Druido'], tempo:'1 Azione', gittata:'Tocco', desc:'Tocchi una creatura vivente con 0 punti ferita: la creatura diventa immediatamente stabilizzata.' },
   'Taumaturgia':           { livello:0, scuola:'Trasmutazione', classi:['Chierico'], tempo:'1 Azione', gittata:'9m', desc:'Prodigi divini: voce 3 volte più potente per 1 minuto, fiamme tremolanti/cambiate colore, piccoli tremori innocui, suoni illusori o spalancare/chiudere porte e finestre istantaneamente.' },
   'Stretta Folgorante':    { livello:0, scuola:'Invocazione', classi:['Artefice','Mago','Stregone'], tempo:'1 Azione', gittata:'Tocco', danno:'1d8', tipoDanno:'Fulmine', desc:'Attacco magico in mischia con contatto: vantaggio se il bersaglio indossa armatura di metallo. Infligge 1d8 fulmine e il bersaglio non può compiere reazioni fino al suo prossimo turno. Scala a 5/11/17.' },
+  'Tocco Gelido':          { livello:0, scuola:'Necromanzia', classi:['Mago','Stregone','Warlock'], tempo:'1 Azione', gittata:'36m', danno:'1d8', tipoDanno:'Necrotico', desc:'Crei una mano scheletrica spettrale per assestare il tocco della tomba: attacco magico a distanza per 1d8 danni necrotici. Se colpisce, il bersaglio non può recuperare punti ferita fino all\'inizio del tuo prossimo turno. Se il bersaglio è un non morto, ha svantaggio ai tiri per colpire contro di te fino alla fine del tuo prossimo turno. Scala a 5/11/17.' },
 
   // ─── LIVELLO 1 ────────────────────────────────────────────────────
   'Ammaliare Persone':     { livello:1, scuola:'Ammaliamento', classi:['Bardo','Druido','Mago','Stregone','Warlock'], tempo:'1 Azione', gittata:'9m', desc:'Un umanoide entro 9m deve superare un TS Saggezza (con vantaggio se tu o i tuoi compagni lo state combattendo). Se fallisce, è affascinato da te e ti considera un amico fidato per 1 ora o finché non gli fai del male. +1 bersaglio per slot oltre il 1°.' },
@@ -453,6 +454,8 @@ export const ALIAS_INCANTESIMI = {
   'comprehend languages': 'Comprensione dei Linguaggi',
   'gust of wind': 'Folata di Vento',
   'heal': 'Guarigione',
+  'chill touch': 'Tocco Gelido',
+  'tocco gelido': 'Tocco Gelido',
 };
 
 export function datiIncantesimo(nome) {
