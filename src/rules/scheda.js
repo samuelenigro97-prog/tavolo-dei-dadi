@@ -111,7 +111,22 @@ export function competenteInArmatura(scheda, tipo) {
   return !!scheda.addestramento?.armature?.[tipo];
 }
 
-/** Bonus di un'abilità: mod caratteristica + competenza (1x o 2x per maestria). */
+/**
+ * Estrae l'eventuale bonus dell'abilità dalla scheda della bestia (es. "Percezione +3, Furtività +4").
+ * Ritorna il numero se presente, altrimenti null.
+ */
+export function bonusAbilitaBestia(scheda, abilitaKey) {
+  if (!scheda?.formaBestiale?.attiva || !scheda.formaBestiale.abilita || scheda.formaBestiale.abilita === '—') return null;
+  const def = ABILITA.find((a) => a.key === abilitaKey);
+  if (!def) return null;
+  const label = def.label;
+  const key = def.key;
+  const re = new RegExp(`(?:${label}|${key})\\s*([+-]?\\d+)`, 'iu');
+  const m = String(scheda.formaBestiale.abilita).match(re);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+/** Bonus di un'abilità: mod caratteristica + competenza (1x o 2x per maestria), con regola Forma Selvatica. */
 export function bonusAbilita(scheda, abilita) {
   const def = ABILITA.find((a) => a.key === abilita);
   if (!def) return 0;
@@ -123,7 +138,16 @@ export function bonusAbilita(scheda, abilita) {
   const bonusComp = Number.isFinite(Number(scheda?.bonusCompetenza))
     ? Number(scheda.bonusCompetenza)
     : bonusCompetenzaDaLivello(scheda?.livello || 1);
-  return modificatore(punteggioCaratteristica(scheda, def.car)) + moltiplicatore * bonusComp;
+  const bonusBase = modificatore(punteggioCaratteristica(scheda, def.car)) + moltiplicatore * bonusComp;
+
+  // Regola 5e PHB Forma Selvatica: usa il bonus della bestia se superiore
+  if (scheda?.formaBestiale?.attiva) {
+    const bonusBestia = bonusAbilitaBestia(scheda, abilita);
+    if (bonusBestia != null) {
+      return Math.max(bonusBase, bonusBestia);
+    }
+  }
+  return bonusBase;
 }
 
 /** Bonus di un tiro salvezza: mod caratteristica + eventuale competenza. */

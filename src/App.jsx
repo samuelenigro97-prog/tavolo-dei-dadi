@@ -11288,19 +11288,22 @@ export default function App() {
                 <div style={{ ...styles.vitalBox, gridColumn: 'span 4', padding: '8px 12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', minHeight: 'auto', height: '100%', boxSizing: 'border-box' }}>
                   {/* Sezione Superiore: Punti Ferita — perfettamente centrata nello spazio disponibile */}
                   <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2px 0' }}>
-                    <div style={{ ...styles.vitalLabel, position: 'static', margin: 0, marginBottom: 6, fontSize: 12 }}>❤️ {t("vital.pf")}</div>
+                    <div style={{ ...styles.vitalLabel, position: 'static', margin: 0, marginBottom: 6, fontSize: 12 }}>
+                      ❤️ {t("vital.pf")} {scheda.formaBestiale?.attiva && <span style={{ color: '#2e7d32', fontWeight: 800 }}>· 🐾 {scheda.formaBestiale.nome}</span>}
+                    </div>
 
                     {/* BARRA DELLA VITA STILE VIDEOGIOCO */}
                     {(() => {
-                      const att = Number(scheda.pfAttuali) || 0;
-                      const maxPf = Number(scheda.pfMax) || 10;
-                      const temp = Number(scheda.pfTemp) || 0;
+                      const isBestia = !!scheda.formaBestiale?.attiva;
+                      const att = isBestia ? (Number(scheda.formaBestiale.pfAttuali) || 0) : (Number(scheda.pfAttuali) || 0);
+                      const maxPf = isBestia ? (Number(scheda.formaBestiale.pfMax) || 10) : (Number(scheda.pfMax) || 10);
+                      const temp = isBestia ? 0 : (Number(scheda.pfTemp) || 0);
                       const max = Math.max(1, maxPf + temp);
                       const percNormale = Math.max(0, Math.min(100, (att / max) * 100));
                       const percTemp = Math.max(0, Math.min(100, (temp / max) * 100));
                       const coloreNormale = (att / Math.max(1, maxPf)) > 0.5 ? 'linear-gradient(90deg, #2e7d32, #4caf50)' : (att / Math.max(1, maxPf)) > 0.25 ? 'linear-gradient(90deg, #f57f17, #ffb300)' : 'linear-gradient(90deg, #c62828, #e53935)';
                       return (
-                        <div style={{ position: 'relative', width: '100%', height: 26, borderRadius: 13, background: 'rgba(0,0,0,0.7)', border: `2px solid ${C.goldDark}`, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.3)', overflow: 'hidden', margin: '2px 0', display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
+                        <div style={{ position: 'relative', width: '100%', height: 26, borderRadius: 13, background: 'rgba(0,0,0,0.7)', border: `2px solid ${isBestia ? '#52b788' : C.goldDark}`, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.3)', overflow: 'hidden', margin: '2px 0', display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
                           <div style={{ width: `${percNormale}%`, height: '100%', background: coloreNormale, transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: '0 0 10px rgba(76,175,80,0.5)', position: 'relative' }}>
                             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)' }} />
                           </div>
@@ -11312,13 +11315,34 @@ export default function App() {
                           {/* Overlay cliccabile per modificare PF attuali */}
                           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13.5, textShadow: '0 1px 3px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.8)', letterSpacing: 0.5, gap: 4 }}>
                             <span style={{ color: '#fff', cursor: 'pointer' }}>
-                              <Editable value={scheda.pfAttuali} tipo="numero" onChange={(v) => {
-                                const danno = scheda.pfAttuali - v;
-                                aggiorna({ pfAttuali: v });
-                                if (danno > 0 && scheda.concentrazione) {
-                                  setCheckConc({ danno, cd: Math.max(10, Math.floor(danno / 2)), spell: scheda.concentrazione, esito: null });
-                                }
-                              }} width={34} style={{ color: '#fff', fontWeight: 800, fontSize: 13.5, textShadow: '0 1px 3px rgba(0,0,0,0.9)', background: 'transparent', border: 'none' }} />
+                              <Editable
+                                value={att}
+                                tipo="numero"
+                                onChange={(v) => {
+                                  const danno = att - v;
+                                  if (isBestia) {
+                                    if (v <= 0) {
+                                      const eccesso = Math.abs(v);
+                                      const pfDruido = Math.max(0, (Number(scheda.pfAttuali) || 0) - eccesso);
+                                      aggiorna({
+                                        pfAttuali: pfDruido,
+                                        formaBestiale: { ...scheda.formaBestiale, pfAttuali: 0, attiva: false }
+                                      });
+                                    } else {
+                                      aggiorna({
+                                        formaBestiale: { ...scheda.formaBestiale, pfAttuali: Math.min(scheda.formaBestiale.pfMax, v) }
+                                      });
+                                    }
+                                  } else {
+                                    aggiorna({ pfAttuali: v });
+                                  }
+                                  if (danno > 0 && scheda.concentrazione) {
+                                    setCheckConc({ danno, cd: Math.max(10, Math.floor(danno / 2)), spell: scheda.concentrazione, esito: null });
+                                  }
+                                }}
+                                width={34}
+                                style={{ color: '#fff', fontWeight: 800, fontSize: 13.5, textShadow: '0 1px 3px rgba(0,0,0,0.9)', background: 'transparent', border: 'none' }}
+                              />
                             </span>
                             <span style={{ color: '#fff' }}>/ {maxPf}</span>
                           </div>
@@ -11326,49 +11350,87 @@ export default function App() {
                       );
                     })()}
 
-                    {/* PF Temporanei — centrati sotto la barra */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, margin: '3px 0 4px' }}>
-                      <span
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#42a5f5', background: 'rgba(66,165,245,0.12)', border: '1px solid rgba(66,165,245,0.45)', borderRadius: 10, padding: '1px 8px' }}
-                        title={t('vital.temporanei')}
-                      >
-                        🛡️ <span style={{ fontSize: 9.5, color: C.inkDim, letterSpacing: 0.4, textTransform: 'uppercase' }}>{t("vital.temporanei")}</span>
-                        <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={24} style={{ fontSize: 12, fontWeight: 'bold', color: '#42a5f5' }} />
-                      </span>
-                    </div>
+                    {/* PF Temporanei / Info PF Druido se in Forma Bestiale */}
+                    {scheda.formaBestiale?.attiva ? (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, margin: '3px 0 4px' }}>
+                        <span style={{ fontSize: 10, color: C.inkDim, background: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: 6, border: `1px solid ${C.border}` }}>
+                          👤 {lingua === 'en' ? 'Humanoid HP (preserved)' : 'PF Umanoide (preservati)'}: <strong>{scheda.pfAttuali} / {scheda.pfMax}</strong>
+                        </span>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, margin: '3px 0 4px' }}>
+                        <span
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#42a5f5', background: 'rgba(66,165,245,0.12)', border: '1px solid rgba(66,165,245,0.45)', borderRadius: 10, padding: '1px 8px' }}
+                          title={t('vital.temporanei')}
+                        >
+                          🛡️ <span style={{ fontSize: 9.5, color: C.inkDim, letterSpacing: 0.4, textTransform: 'uppercase' }}>{t("vital.temporanei")}</span>
+                          <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={24} style={{ fontSize: 12, fontWeight: 'bold', color: '#42a5f5' }} />
+                        </span>
+                      </div>
+                    )}
 
                     {/* Pulsanti Rapidi Danno / Cura */}
                     {(() => {
                       const applicaDannoRapido = (quantita) => {
                         if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio);
-                        const temp = Number(scheda.pfTemp) || 0;
-                        const att = Number(scheda.pfAttuali) || 0;
-                        let patch = {};
-                        if (temp > 0) {
-                          if (quantita <= temp) {
-                            patch = { pfTemp: temp - quantita };
+                        if (scheda.formaBestiale?.attiva) {
+                          const beastPf = Number(scheda.formaBestiale.pfAttuali) || 0;
+                          if (quantita >= beastPf) {
+                            const eccesso = quantita - beastPf;
+                            const pfDruido = Math.max(0, (Number(scheda.pfAttuali) || 0) - eccesso);
+                            aggiorna({
+                              pfAttuali: pfDruido,
+                              formaBestiale: { ...scheda.formaBestiale, pfAttuali: 0, attiva: false }
+                            });
                           } else {
-                            const rim = quantita - temp;
-                            patch = { pfTemp: 0, pfAttuali: Math.max(0, att - rim) };
+                            aggiorna({
+                              formaBestiale: { ...scheda.formaBestiale, pfAttuali: beastPf - quantita }
+                            });
                           }
                         } else {
-                          patch = { pfAttuali: Math.max(0, att - quantita) };
+                          const temp = Number(scheda.pfTemp) || 0;
+                          const att = Number(scheda.pfAttuali) || 0;
+                          let patch = {};
+                          if (temp > 0) {
+                            if (quantita <= temp) {
+                              patch = { pfTemp: temp - quantita };
+                            } else {
+                              const rim = quantita - temp;
+                              patch = { pfTemp: 0, pfAttuali: Math.max(0, att - rim) };
+                            }
+                          } else {
+                            patch = { pfAttuali: Math.max(0, att - quantita) };
+                          }
+                          aggiorna(patch);
                         }
-                        aggiorna(patch);
                         if (scheda.concentrazione) {
-                          setCheckConc({ danno: quantita, cd: Math.max(10, Math.floor(danno / 2)), spell: scheda.concentrazione, esito: null });
+                          setCheckConc({ danno: quantita, cd: Math.max(10, Math.floor(quantita / 2)), spell: scheda.concentrazione, esito: null });
                         }
                       };
+
+                      const applicaCuraRapida = (quantita) => {
+                        if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio);
+                        if (scheda.formaBestiale?.attiva) {
+                          const att = Number(scheda.formaBestiale.pfAttuali) || 0;
+                          const maxPf = Number(scheda.formaBestiale.pfMax) || 10;
+                          aggiorna({
+                            formaBestiale: { ...scheda.formaBestiale, pfAttuali: Math.min(maxPf, att + quantita) }
+                          });
+                        } else {
+                          aggiorna({ pfAttuali: Math.min(scheda.pfMax, (Number(scheda.pfAttuali) || 0) + quantita) });
+                        }
+                      };
+
                       return (
                         <div style={{ display: 'flex', gap: 3.5, margin: '14px 0 8px', justifyContent: 'center', flexWrap: 'wrap' }}>
                           <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 6px', fontWeight: 'bold', fontSize: 11 }} onClick={() => applicaDannoRapido(20)} title={t('vital.danno')}>-20</button>
                           <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 6px', fontWeight: 'bold', fontSize: 11 }} onClick={() => applicaDannoRapido(10)} title={t('vital.danno')}>-10</button>
                           <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 6px', fontWeight: 'bold', fontSize: 11 }} onClick={() => applicaDannoRapido(5)} title={t('vital.danno')}>-5</button>
                           <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '2px 6px', fontWeight: 'bold', fontSize: 11 }} onClick={() => applicaDannoRapido(1)} title={t('vital.danno')}>-1</button>
-                          <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 6px', fontWeight: 'bold', fontSize: 11 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, (Number(scheda.pfAttuali) || 0) + 1) }); }} title={t('vital.cura')}>+1</button>
-                          <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 6px', fontWeight: 'bold', fontSize: 11 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, (Number(scheda.pfAttuali) || 0) + 5) }); }} title={t('vital.cura')}>+5</button>
-                          <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 6px', fontWeight: 'bold', fontSize: 11 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, (Number(scheda.pfAttuali) || 0) + 10) }); }} title={t('vital.cura')}>+10</button>
-                          <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 6px', fontWeight: 'bold', fontSize: 11 }} onClick={() => { if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio); aggiorna({ pfAttuali: Math.min(scheda.pfMax, (Number(scheda.pfAttuali) || 0) + 20) }); }} title={t('vital.cura')}>+20</button>
+                          <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 6px', fontWeight: 'bold', fontSize: 11 }} onClick={() => applicaCuraRapida(1)} title={t('vital.cura')}>+1</button>
+                          <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 6px', fontWeight: 'bold', fontSize: 11 }} onClick={() => applicaCuraRapida(5)} title={t('vital.cura')}>+5</button>
+                          <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 6px', fontWeight: 'bold', fontSize: 11 }} onClick={() => applicaCuraRapida(10)} title={t('vital.cura')}>+10</button>
+                          <button style={{ ...styles.buttonMini, color: C.green, borderColor: C.green, padding: '2px 6px', fontWeight: 'bold', fontSize: 11 }} onClick={() => applicaCuraRapida(20)} title={t('vital.cura')}>+20</button>
                         </div>
                       );
                     })()}
@@ -11651,10 +11713,26 @@ export default function App() {
             >
               <div style={styles.vitalLabel}>{t("vital.movimento")}</div>
               <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={styles.vitalValue}>
-                  <Editable value={scheda.velocita} tipo="numero" onChange={(v) => aggiorna({ velocita: v })} width={48} />
-                  <span style={{ fontSize: 17, color: C.inkDim, marginLeft: 2, fontWeight: 600 }}> m</span>
-                </div>
+                {scheda.formaBestiale?.attiva ? (
+                  <div style={{ ...styles.vitalValue, display: 'flex', alignItems: 'baseline', justifyContent: 'center', flexWrap: 'wrap', gap: 2 }}>
+                    <span style={{ fontSize: 18, fontWeight: 800, color: '#2e7d32' }}>
+                      {scheda.formaBestiale.velocita?.terra ?? 9}
+                    </span>
+                    <span style={{ fontSize: 14, color: C.inkDim, fontWeight: 600 }}>m</span>
+                    {Object.entries(scheda.formaBestiale.velocita || {})
+                      .filter(([k]) => k !== 'terra')
+                      .map(([k, v]) => (
+                        <span key={k} style={{ fontSize: 10.5, color: '#2e7d32', fontWeight: 700, marginLeft: 2 }} title={`${k}: ${v}m`}>
+                          {k === 'volo' ? '🦅' : k === 'nuoto' ? '🏊' : k === 'scalata' ? '🧗' : '⛏️'}{v}m
+                        </span>
+                      ))}
+                  </div>
+                ) : (
+                  <div style={styles.vitalValue}>
+                    <Editable value={scheda.velocita} tipo="numero" onChange={(v) => aggiorna({ velocita: v })} width={48} />
+                    <span style={{ fontSize: 17, color: C.inkDim, marginLeft: 2, fontWeight: 600 }}> m</span>
+                  </div>
+                )}
                 <div style={{ fontSize: 10, color: C.goldDark, textAlign: 'center', fontWeight: 600, marginTop: 2 }}>
                   🏃 {t('vital.salto') || 'Salto'}: {((punteggioCaratteristica(scheda, 'forza') || 10) * 0.3).toFixed(1)}m
                 </div>
@@ -11685,12 +11763,18 @@ export default function App() {
               <div style={{ ...styles.vitalBox }}>
                 <div style={styles.vitalLabel}>{t("vital.visione")}</div>
                 <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                  <CampoConTendina
-                    value={scheda.sensi}
-                    opzioni={SENSI_5E}
-                    onChange={(v) => aggiorna({ sensi: v })}
-                    title={t('tip.sensi')}
-                  />
+                  {scheda.formaBestiale?.attiva && scheda.formaBestiale.sensi ? (
+                    <div style={{ fontSize: 11.5, fontWeight: 700, color: '#2e7d32', textAlign: 'center', padding: '0 4px', lineHeight: 1.25 }} title={`Sensi della Bestia: ${scheda.formaBestiale.sensi}`}>
+                      🐾 {scheda.formaBestiale.sensi}
+                    </div>
+                  ) : (
+                    <CampoConTendina
+                      value={scheda.sensi}
+                      opzioni={SENSI_5E}
+                      onChange={(v) => aggiorna({ sensi: v })}
+                      title={t('tip.sensi')}
+                    />
+                  )}
                 </div>
               </div>
 

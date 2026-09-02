@@ -401,12 +401,41 @@ test('Forma Bestiale: sostituisce FOR, DES, COS e CA con le statistiche della be
   // CA naturale della bestia
   assert.equal(caTotale(druido), 11);
 
+  // Abilità e Tiri Salvezza in Forma Bestiale (Regole PHB 5e)
+  druido.livello = 2;
+  druido.bonusCompetenza = 2;
+  druido.abilita = { percezione: 1 }; // Competente in percezione (+4 con SAG 18 = +4+2 = +6)
+  druido.tiriSalvezza = { saggezza: true, intelligenza: true };
+
+  // Atletica: FOR bestia 19 (+4) + no comp = +4
+  assert.equal(bonusAbilita(druido, 'atletica'), 4);
+  // Acrobazia: DES bestia 10 (+0) + no comp = +0
+  assert.equal(bonusAbilita(druido, 'acrobazia'), 0);
+  // Percezione: SAG druido 18 (+4) + comp (+2) = +6
+  assert.equal(bonusAbilita(druido, 'percezione'), 6);
+
+  // Gufo con competenze speciali della bestia: Percezione +3, Furtività +3
+  druido.formaBestiale.abilita = 'Percezione +3, Furtività +3';
+  // Furtività: Druido ha DES 10 (+0) e non è competente (+0), ma il Gufo ha +3 -> usa +3 della bestia!
+  assert.equal(bonusAbilita(druido, 'furtivita'), 3);
+  // Percezione: Il druido ha +6 (superiore al +3 del Gufo) -> usa il +6 del druido!
+  assert.equal(bonusAbilita(druido, 'percezione'), 6);
+
+  // TS: FOR (+4), DES (+0), COS (+3), SAG (+4+2 = +6)
+  assert.equal(bonusTiroSalvezza(druido, 'forza'), 4);
+  assert.equal(bonusTiroSalvezza(druido, 'destrezza'), 0);
+  assert.equal(bonusTiroSalvezza(druido, 'costituzione'), 3);
+  assert.equal(bonusTiroSalvezza(druido, 'saggezza'), 6);
+
   // Quando la forma bestiale si disattiva (ritorno a forma umanoide)
   druido.formaBestiale.attiva = false;
   assert.equal(punteggioCaratteristica(druido, 'forza'), 8);
   assert.equal(punteggioCaratteristica(druido, 'destrezza'), 14);
   assert.equal(punteggioCaratteristica(druido, 'costituzione'), 12);
   assert.equal(caTotale(druido), 13);
+  assert.equal(bonusAbilita(druido, 'atletica'), -1); // FOR 8 (-1)
+  assert.equal(bonusAbilita(druido, 'acrobazia'), 2); // DES 14 (+2)
+  assert.equal(bonusAbilita(druido, 'furtivita'), 2); // DES 14 (+2)
 });
 
 test('Forma Bestiale: genera avatar SVG e icone coerenti per ogni animale', async () => {
