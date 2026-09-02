@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, punteggioCaratteristica, formattaNomePg } from '../src/rules/scheda.js';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, punteggioCaratteristica, formattaNomePg, bonusCopertura } from '../src/rules/scheda.js';
 import { ABILITA, CARATTERISTICHE } from '../src/data/caratteristiche.js';
 import { spiegaIncantesimo } from '../src/data/spiegazioni.js';
 import { tiraDanni, parseEspressioneDado } from '../src/rules/dadi.js';
@@ -62,6 +62,40 @@ test('caTotale: manuale + scudo somma comunque lo scudo', () => {
   const s = schedaBase({ armatura: { tipo: 'manuale', scudo: true }, ca: 15 });
   assert.equal(caTotale(s), 17);
 });
+
+test('copertura 5e: modifica dinamicamente CA e TS Destrezza (bonusCopertura, caTotale, bonusTiroSalvezza)', () => {
+  // Base: Cuoio (11) + DES 16 (+3) = 14 CA, TS Destrezza (competente) = +3 mod + 3 comp = +6
+  const pg = schedaBase({
+    armatura: { tipo: 'leggera', base: 11 },
+    tiriSalvezza: { destrezza: true, costituzione: true },
+    copertura: 'nessuna',
+  });
+
+  // 1. Nessuna copertura
+  assert.equal(caTotale(pg), 14);
+  assert.equal(bonusTiroSalvezza(pg, 'destrezza'), 6);
+  assert.equal(bonusTiroSalvezza(pg, 'costituzione'), 5); // +2 mod + 3 comp
+
+  // 2. Mezza Copertura (+2 CA, +2 TS Des)
+  pg.copertura = 'mezza';
+  assert.equal(bonusCopertura(pg).ca, 2);
+  assert.equal(bonusCopertura(pg).tsDes, 2);
+  assert.equal(caTotale(pg), 16); // 14 + 2
+  assert.equal(bonusTiroSalvezza(pg, 'destrezza'), 8); // 6 + 2
+  assert.equal(bonusTiroSalvezza(pg, 'costituzione'), 5); // invariato
+
+  // 3. Tre Quarti (+5 CA, +5 TS Des)
+  pg.copertura = 'tre_quarti';
+  assert.equal(bonusCopertura(pg).ca, 5);
+  assert.equal(bonusCopertura(pg).tsDes, 5);
+  assert.equal(caTotale(pg), 19); // 14 + 5
+  assert.equal(bonusTiroSalvezza(pg, 'destrezza'), 11); // 6 + 5
+
+  // 4. Totale (totale = true)
+  pg.copertura = 'totale';
+  assert.equal(bonusCopertura(pg).totale, true);
+});
+
 
 // ========================= Competenza armature =========================
 

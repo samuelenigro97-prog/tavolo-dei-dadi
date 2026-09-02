@@ -7,7 +7,7 @@ import { avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro, s
 import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI } from './ui/tema.js';
 import { styles, GLOBAL_CSS } from './ui/stili.js';
 import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, Sezione, CampoBloccato } from './ui/componenti.jsx';
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E } from './rules/scheda.js';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON, WENDELL_JSON, LYRIAN_JSON } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from './data/condizioni.js';
@@ -12637,7 +12637,14 @@ export default function App() {
                   {scheda.armatura.tipo === 'manuale' && !scheda.armatura.scudo && !scheda.armatura.bonus && !bonusClasseArmaturaOggetti(scheda) ? (
                     <Editable value={scheda.ca} tipo="numero" onChange={(v) => aggiorna({ ca: v })} width={48} />
                   ) : (
-                    <span title={t('tip.ca_calcolata')}>{caTotale(scheda)}</span>
+                    <span title={t('tip.ca_calcolata')}>
+                      {caTotale(scheda)}
+                      {bonusCopertura(scheda).ca > 0 && (
+                        <span style={{ fontSize: 10, color: '#2e9d4d', fontWeight: 800, marginLeft: 3 }} title={bonusCopertura(scheda).labelIt}>
+                          (+{bonusCopertura(scheda).ca})
+                        </span>
+                      )}
+                    </span>
                   )}
                 </div>
                 <select
@@ -12682,6 +12689,25 @@ export default function App() {
                   })()}
                   <span>+ <Editable value={scheda.armatura.bonus} tipo="numero" width={22} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, bonus: v } })} /></span>
                   {bonusClasseArmaturaOggetti(scheda) > 0 && <span title={t('inv.effetto_attivo')}>✨ +{bonusClasseArmaturaOggetti(scheda)}</span>}
+                </div>
+                <div style={{ marginTop: 3, width: '100%' }}>
+                  <select
+                    style={{ ...styles.inlineInput, fontSize: 9.5, padding: '1px 3px', width: '100%', maxWidth: '100%', color: (scheda.copertura && scheda.copertura !== 'nessuna') ? '#2e9d4d' : C.inkDim, fontWeight: (scheda.copertura && scheda.copertura !== 'nessuna') ? 700 : 400 }}
+                    value={scheda.copertura || 'nessuna'}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      aggiorna({ copertura: v });
+                      const copInfo = TIPI_COPERTURA_5E.find((c) => c.key === v);
+                      if (v !== 'nessuna') {
+                        registra({ etichetta: '🛡️ Copertura', tipo: 'tattica', dettaglio: `${scheda.nome || 'PG'}: ${lingua === 'en' ? copInfo.labelEn : copInfo.labelIt}` });
+                      }
+                    }}
+                    title="Copertura 5e: +2 CA/TS Des (mezza), +5 CA/TS Des (tre quarti), totale"
+                  >
+                    {TIPI_COPERTURA_5E.map((c) => (
+                      <option key={c.key} value={c.key}>{lingua === 'en' ? c.labelEn : c.labelIt}</option>
+                    ))}
+                  </select>
                 </div>
                 {(!competenteInArmatura(scheda, scheda.armatura.tipo) || (scheda.armatura.scudo && !scheda.addestramento?.armature?.scudi)) && (
                   <div style={{ fontSize: 9, color: C.red, marginTop: 3, lineHeight: 1.2 }} title={t('tip.senza_comp_armatura')}>
@@ -13515,6 +13541,52 @@ export default function App() {
                         >
                           🤝 {lingua === 'en' ? 'Help' : 'Aiuta'}
                         </button>
+                      </div>
+                    </div>
+
+                    {/* Riga Copertura & Difesa Tattica 5e */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, background: C.panel, padding: '6px 10px', borderRadius: 8, border: `1px solid ${C.border}` }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 13 }}>🛡️</span>
+                        <strong style={{ fontSize: 11, color: C.ink }}>
+                          {lingua === 'en' ? 'Cover:' : 'Copertura:'}
+                        </strong>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                        {TIPI_COPERTURA_5E.map((cop) => {
+                          const attivo = (scheda.copertura || 'nessuna') === cop.key;
+                          return (
+                            <button
+                              key={cop.key}
+                              type="button"
+                              onClick={() => {
+                                const nuovaCop = attivo ? 'nessuna' : cop.key;
+                                aggiorna({ copertura: nuovaCop });
+                                const copInfo = TIPI_COPERTURA_5E.find((c) => c.key === nuovaCop);
+                                if (nuovaCop !== 'nessuna') {
+                                  registra({
+                                    etichetta: '🛡️ Copertura',
+                                    tipo: 'tattica',
+                                    dettaglio: `${scheda.nome || 'PG'}: ${lingua === 'en' ? copInfo.labelEn : copInfo.labelIt} (${lingua === 'en' ? copInfo.descEn : copInfo.descIt})`,
+                                  });
+                                }
+                              }}
+                              style={{
+                                ...styles.buttonMini,
+                                fontSize: 10,
+                                padding: '2px 7px',
+                                fontWeight: attivo ? 700 : 500,
+                                background: attivo ? (cop.ca >= 5 ? 'rgba(239,68,68,0.18)' : cop.ca >= 2 ? 'rgba(46,157,77,0.18)' : 'rgba(201,162,39,0.18)') : 'transparent',
+                                borderColor: attivo ? (cop.ca >= 5 ? '#ef4444' : cop.ca >= 2 ? '#2e9d4d' : C.gold) : C.border,
+                                color: attivo ? (cop.ca >= 5 ? '#ef4444' : cop.ca >= 2 ? '#2e9d4d' : C.goldDark) : C.inkDim,
+                                cursor: 'pointer',
+                              }}
+                              title={lingua === 'en' ? cop.descEn : cop.descIt}
+                            >
+                              {lingua === 'en' ? cop.labelEn : cop.labelIt}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>

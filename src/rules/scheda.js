@@ -79,16 +79,38 @@ export function punteggioCaratteristica(scheda, caratteristica) {
   return valori.length ? Math.max(base, ...valori) : base;
 }
 
+export const TIPI_COPERTURA_5E = [
+  { key: 'nessuna', labelIt: 'Nessuna Copertura', labelEn: 'No Cover', ca: 0, tsDes: 0, descIt: 'Bersaglio in campo aperto, nessuna protezione.', descEn: 'Target in open field, no protection.' },
+  { key: 'mezza', labelIt: 'Mezza Copertura (+2)', labelEn: 'Half Cover (+2)', ca: 2, tsDes: 2, descIt: '+2 a CA e TS Destrezza (muretto, cassa, tronco o altra creatura).', descEn: '+2 to AC and Dex saves (low wall, crate, tree trunk, or another creature).' },
+  { key: 'tre_quarti', labelIt: 'Tre Quarti (+5)', labelEn: 'Three-Quarters Cover (+5)', ca: 5, tsDes: 5, descIt: '+5 a CA e TS Destrezza (feritoia, saracinesca, muro parziale).', descEn: '+5 to AC and Dex saves (arrow slit, portcullis, partial wall).' },
+  { key: 'totale', labelIt: 'Copertura Totale', labelEn: 'Total Cover', ca: 0, tsDes: 0, descIt: 'Completamente celato da ostacoli: non bersagliabile direttamente da attacchi o incantesimi.', descEn: 'Completely concealed: cannot be targeted directly by attacks or spells.' },
+];
+
+export function bonusCopertura(scheda) {
+  const tipo = scheda?.copertura || 'nessuna';
+  const match = TIPI_COPERTURA_5E.find((c) => c.key === tipo) || TIPI_COPERTURA_5E[0];
+  return {
+    tipo: match.key,
+    ca: match.ca,
+    tsDes: match.tsDes,
+    totale: match.key === 'totale',
+    labelIt: match.labelIt,
+    labelEn: match.labelEn,
+    descIt: match.descIt,
+    descEn: match.descEn,
+  };
+}
+
 /**
  * CA totale in base all'equipaggiamento (regole 5e):
  * se la Forma Bestiale è attiva, usa la CA naturale della bestia;
  * altrimenti a mano = valore scritto · nessuna 10+DES · leggera base+DES ·
  * media base+min(DES,2) · pesante base. In tutti i casi si sommano
- * scudo (+2) ed eventuale bonus magico.
+ * scudo (+2) ed eventuale bonus magico, più eventuale mezza/tre quarti copertura.
  */
 export function caTotale(scheda) {
   if (scheda?.formaBestiale?.attiva && scheda.formaBestiale.ca != null) {
-    return Number(scheda.formaBestiale.ca) + bonusClasseArmaturaOggetti(scheda);
+    return Number(scheda.formaBestiale.ca) + bonusClasseArmaturaOggetti(scheda) + bonusCopertura(scheda).ca;
   }
   const a = scheda.armatura || {};
   const des = modificatore(punteggioCaratteristica(scheda, 'destrezza'));
@@ -98,7 +120,7 @@ export function caTotale(scheda) {
   else if (a.tipo === 'media') ca = (a.base || 0) + Math.min(des, 2);
   else if (a.tipo === 'pesante') ca = a.base || 0;
   else ca = Number(scheda.ca) || 0; // 'manuale': valore scritto a mano
-  return ca + (a.scudo ? 2 : 0) + (Number(a.bonus) || 0) + bonusClasseArmaturaOggetti(scheda);
+  return ca + (a.scudo ? 2 : 0) + (Number(a.bonus) || 0) + bonusClasseArmaturaOggetti(scheda) + bonusCopertura(scheda).ca;
 }
 
 /**
@@ -150,15 +172,17 @@ export function bonusAbilita(scheda, abilita) {
   return bonusBase;
 }
 
-/** Bonus di un tiro salvezza: mod caratteristica + eventuale competenza. */
+/** Bonus di un tiro salvezza: mod caratteristica + eventuale competenza + bonus copertura (su Des). */
 export function bonusTiroSalvezza(scheda, car) {
   const bonusComp = Number.isFinite(Number(scheda?.bonusCompetenza))
     ? Number(scheda.bonusCompetenza)
     : bonusCompetenzaDaLivello(scheda?.livello || 1);
+  const bonusCop = car === 'destrezza' ? bonusCopertura(scheda).tsDes : 0;
   return (
     modificatore(punteggioCaratteristica(scheda, car)) +
     (scheda?.tiriSalvezza?.[car] ? bonusComp : 0) +
-    bonusTiriSalvezzaOggetti(scheda)
+    bonusTiriSalvezzaOggetti(scheda) +
+    bonusCop
   );
 }
 
