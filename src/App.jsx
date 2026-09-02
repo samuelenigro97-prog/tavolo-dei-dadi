@@ -979,11 +979,47 @@ function separaQtaOggetto(nomeRaw) {
 /** Impostazioni note per oggetti con cariche. La Perla del Potere recupera
  * uno slot di 3° livello o inferiore e torna utilizzabile all'alba. */
 function utilizziOggettoNoto(nome) {
-  if (/perla del pot(?:ere)?\.?/i.test(String(nome || ''))) {
+  const n = String(nome || '').trim();
+  if (/perla del pot(?:ere)?\.?/i.test(n)) {
     return {
       nome: 'Perla del Potere',
       usi: 1, usiMax: 1, ricarica: 'alba',
       effetto: 'Azione Magica: recuperi uno slot incantesimo speso di 3° livello o inferiore. La Perla torna utilizzabile all’alba successiva.',
+    };
+  }
+  if (/bacchetta dei dardi incantati/i.test(n)) {
+    return {
+      nome: 'Bacchetta dei Dardi Incantati',
+      usi: 7, usiMax: 7, ricarica: '1d6+1 all’alba',
+      effetto: 'Azione: lanci Dardo Incantato (1 carica = 1° liv; +1 carica per livello di slot superiore).',
+    };
+  }
+  if (/pozione di guarigione suprema/i.test(n)) {
+    return {
+      nome: 'Pozione di Guarigione Suprema',
+      usi: 1, usiMax: 1, ricarica: 'consumabile',
+      effetto: 'Azione bonus (5.5) / Azione (5.0): recuperi 10d4 + 20 PF.',
+    };
+  }
+  if (/pozione di guarigione superiore/i.test(n)) {
+    return {
+      nome: 'Pozione di Guarigione Superiore',
+      usi: 1, usiMax: 1, ricarica: 'consumabile',
+      effetto: 'Azione bonus (5.5) / Azione (5.0): recuperi 8d4 + 8 PF.',
+    };
+  }
+  if (/pozione di guarigione maggiore/i.test(n)) {
+    return {
+      nome: 'Pozione di Guarigione Maggiore',
+      usi: 1, usiMax: 1, ricarica: 'consumabile',
+      effetto: 'Azione bonus (5.5) / Azione (5.0): recuperi 4d4 + 4 PF.',
+    };
+  }
+  if (/pozione di guarigione/i.test(n)) {
+    return {
+      nome: 'Pozione di Guarigione',
+      usi: 1, usiMax: 1, ricarica: 'consumabile',
+      effetto: 'Azione bonus (5.5) / Azione (5.0): recuperi 2d4 + 2 PF.',
     };
   }
   return null;
@@ -1011,8 +1047,38 @@ function effettoOggettoNoto(nome) {
   if (/guanti (?:del potere orchesco|della forza orchesca)/i.test(n)) {
     return { nome: 'Guanti del Potere Orchesco', effettoMeccanico: 'forza_impostata_19', richiedeSintonia: true };
   }
+  if (/fascia dell(?:’|')intelletto/i.test(n)) {
+    return { nome: 'Fascia dell’Intelletto', effettoMeccanico: 'intelligenza_impostata_19', richiedeSintonia: true };
+  }
+  if (/amuleto della salute/i.test(n)) {
+    return { nome: 'Amuleto della Salute', effettoMeccanico: 'costituzione_impostata_19', richiedeSintonia: true };
+  }
   if (/mantello (?:della |di )?prot(?:ezione|\.)?/i.test(n)) {
     return { nome: 'Mantello della Protezione', effettoMeccanico: 'classe_armatura_tiri_salvezza_1', richiedeSintonia: true };
+  }
+  if (/anello (?:della |di )?prot(?:ezione|\.)?/i.test(n)) {
+    return { nome: 'Anello di Protezione', effettoMeccanico: 'classe_armatura_tiri_salvezza_1', richiedeSintonia: true };
+  }
+  if (/pietra della fortuna/i.test(n)) {
+    return { nome: 'Pietra della Fortuna', effettoMeccanico: 'tiri_salvezza_1', richiedeSintonia: true };
+  }
+  if (/scudo\s*\+3/i.test(n)) {
+    return { nome: 'Scudo +3', effettoMeccanico: 'classe_armatura_3', richiedeSintonia: false };
+  }
+  if (/scudo\s*\+2/i.test(n)) {
+    return { nome: 'Scudo +2', effettoMeccanico: 'classe_armatura_2', richiedeSintonia: false };
+  }
+  if (/scudo\s*\+1/i.test(n)) {
+    return { nome: 'Scudo +1', effettoMeccanico: 'classe_armatura_1', richiedeSintonia: false };
+  }
+  if (/armatura\s*\+3/i.test(n)) {
+    return { nome: 'Armatura +3', effettoMeccanico: 'classe_armatura_3', richiedeSintonia: false };
+  }
+  if (/armatura\s*\+2/i.test(n)) {
+    return { nome: 'Armatura +2', effettoMeccanico: 'classe_armatura_2', richiedeSintonia: false };
+  }
+  if (/armatura\s*\+1/i.test(n)) {
+    return { nome: 'Armatura +1', effettoMeccanico: 'classe_armatura_1', richiedeSintonia: false };
   }
   if (/perla del pot(?:ere)?\.?/i.test(n)) {
     return { nome: 'Perla del Potere', effettoMeccanico: 'recupera_slot_3', richiedeSintonia: true };

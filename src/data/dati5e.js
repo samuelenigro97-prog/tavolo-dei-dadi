@@ -139,6 +139,13 @@ export const PESI_OGGETTI = {
   'Pozione di Resistenza al Fuoco': 0.25, 'Pozione di Resistenza al Veleno': 0.25,
   'Pozione di Invisibilità': 0.25, 'Pozione di Forza del Gigante': 0.25,
   'Antitossina': 0.05, 'Unguento di Resistenza al Veleno': 0.25,
+  // Pozioni di guarigione canoniche
+  'Pozione di Guarigione Maggiore': 0.25, 'Pozione di Guarigione Superiore': 0.25, 'Pozione di Guarigione Suprema': 0.25,
+  // Oggetti Magici iconici
+  'Anello di Protezione': 0.05, 'Fascia dell’Intelletto': 0.5, 'Amuleto della Salute': 0.5, 'Bacchetta dei Dardi Incantati': 0.5,
+  'Spada Fiammeggiante': 1.5, 'Mazza della Distruzione': 2, 'Pietra della Fortuna': 0.1,
+  'Arma +1': 1.5, 'Arma +2': 1.5, 'Arma +3': 1.5, 'Scudo +1': 3, 'Scudo +2': 3, 'Scudo +3': 3,
+  'Armatura +1': 9, 'Armatura +2': 9, 'Armatura +3': 9,
 };
 export const NOMI_OGGETTI = Object.keys(PESI_OGGETTI).sort((a, b) => a.localeCompare(b, 'it'));
 export const PESO_ARMATURA_TIPO = { leggera: 5, media: 9, pesante: 25 };
