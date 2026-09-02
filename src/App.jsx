@@ -6242,10 +6242,8 @@ export default function App() {
   const incantesimiPieno = !classePreparata && baseIncantesimi != null && nIncantesimi >= baseIncantesimi;
   // Blocco PREPARAZIONE (solo classi che preparano): non puoi preparare più del cap.
   const preparatiPieni = classePreparata && baseIncantesimi != null && nPreparati >= baseIncantesimi;
-  const maxTrucchetti = baseTrucchetti == null ? null : Math.max(baseTrucchetti, nTrucchetti);
-  // Per chi prepara il massimo mostrato è il cap dei preparati (fisso); per chi
-  // conosce non scende mai sotto quanti ne ha già.
-  const maxIncantesimi = baseIncantesimi == null ? null : (classePreparata ? baseIncantesimi : Math.max(baseIncantesimi, nIncantesimi));
+  const maxTrucchetti = (scheda?.maxTrucchetti > 0) ? scheda.maxTrucchetti : baseTrucchetti;
+  const maxIncantesimi = (scheda?.maxIncantesimi > 0) ? scheda.maxIncantesimi : baseIncantesimi;
 
   // Avvisi in sospeso e novità non ancora lette: pilotano il puntino rosso
   // lampeggiante sul pulsante 🔔 dell'intestazione.
@@ -14934,7 +14932,7 @@ export default function App() {
                       <span>{t('spell.trucchetti')}</span>
                       {maxTrucchetti != null ? (
                         <span style={{ fontSize: 13, color: trucchettiPieno ? C.goldDark : C.inkDim, fontWeight: 'normal', display: 'flex', alignItems: 'center', justifySelf: 'end', textTransform: 'none', letterSpacing: 'normal' }}>
-                          {nTrucchetti} / <Editable value={maxTrucchetti} tipo="numero" width={24} onChange={(v) => aggiorna({ maxTrucchetti: Math.max(0, v) })} />
+                          {nTrucchetti} / <Editable value={maxTrucchetti} tipo="numero" width={32} title={lingua === 'en' ? 'Click to edit maximum (0 for auto)' : 'Click per modificare il massimo (0 per valore auto)'} onChange={(v) => aggiorna({ maxTrucchetti: Math.max(0, v) })} />
                         </span>
                       ) : <span />}
                     </h3>
@@ -14945,7 +14943,7 @@ export default function App() {
                         <span>{t('spell.incantesimi')}</span>
                         {maxIncantesimi != null ? (
                           <span style={{ fontSize: 13, color: (classePreparata ? preparatiPieni : incantesimiPieno) ? C.goldDark : C.inkDim, fontWeight: 'normal', display: 'flex', alignItems: 'center', justifySelf: 'end', textTransform: 'none', letterSpacing: 'normal' }}>
-                            ({classePreparata ? t('spell.preparati') : t('spell.conosciuti')}: {classePreparata ? nPreparati : nIncantesimi} / <Editable value={maxIncantesimi} tipo="numero" width={24} onChange={(v) => aggiorna({ maxIncantesimi: Math.max(0, v) })} />)
+                            ({classePreparata ? t('spell.preparati') : t('spell.conosciuti')}: {classePreparata ? nPreparati : nIncantesimi} / <Editable value={maxIncantesimi} tipo="numero" width={32} title={lingua === 'en' ? 'Click to edit maximum (0 for auto)' : 'Click per modificare il massimo (0 per valore auto)'} onChange={(v) => aggiorna({ maxIncantesimi: Math.max(0, v) })} />)
                             {nBonus > 0 && <span style={{ color: C.goldDark, fontWeight: 700, marginLeft: 4 }}>✦ {nBonus}</span>}
                           </span>
                         ) : <span />}

@@ -229,7 +229,15 @@ export function Editable({ value, onChange, onRoll, tipo = 'testo', width, style
   if (editing) {
     return (
       <input
-        style={{ ...styles.inlineInput, width: width || 70 }}
+        style={{
+          ...styles.inlineInput,
+          width: width ? Math.max(38, width) : 70,
+          textAlign: tipo === 'numero' ? 'center' : 'left',
+          fontSize: 'inherit',
+          padding: '1px 3px',
+          height: 'auto',
+          lineHeight: 'inherit',
+        }}
         autoFocus
         onFocus={(e) => e.target.select()}
         type={tipo === 'numero' ? 'number' : 'text'}
@@ -247,7 +255,12 @@ export function Editable({ value, onChange, onRoll, tipo = 'testo', width, style
   return (
     <span
       className={[onRoll ? 'tirabile' : '', carica ? 'carica' : ''].filter(Boolean).join(' ') || undefined}
-      style={{ ...styles.editable, ...style }}
+      style={{
+        ...styles.editable,
+        minWidth: width ? Math.min(width, 24) : 24,
+        textAlign: tipo === 'numero' ? 'center' : 'left',
+        ...style,
+      }}
       title={title || (onRoll ? '1 click: modifica · tieni premuto o doppio click: tira' : '1 click: modifica')}
       onSelectStart={onRoll ? (e) => e.preventDefault() : undefined}
       onPointerDown={onRoll ? pointerDown : undefined}
