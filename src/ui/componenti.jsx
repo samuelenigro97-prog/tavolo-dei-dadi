@@ -513,10 +513,6 @@ export function Sezione({ titolo, children, aperto = true, onToggleAperto, manig
       style={{ ...styles.panel, opacity: trascinando ? 0.4 : 1, ...style }}
       className={`sezione ${className}`.trim()}
     >
-      <span className="angolo-ornamento angolo-tl" aria-hidden="true" />
-      <span className="angolo-ornamento angolo-tr" aria-hidden="true" />
-      <span className="angolo-ornamento angolo-bl" aria-hidden="true" />
-      <span className="angolo-ornamento angolo-br" aria-hidden="true" />
       <summary className="sezione-titolo" style={{ ...styles.panelTitle, cursor: 'pointer', listStyle: 'none', marginBottom: 0, userSelect: 'none' }}>
         <span className="sezione-titolo-sinistra">
           <span className="freccia">▾</span>
