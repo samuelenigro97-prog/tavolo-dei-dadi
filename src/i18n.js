@@ -1750,6 +1750,7 @@ const DATI_EN = {
   'Stregoneria Draconica': 'Draconic Sorcery', 'Stregoneria della Magia Selvaggia': 'Wild Magic Sorcery', 'Stregoneria delle Ombre': 'Shadow Magic', 'Anima Divina': 'Divine Soul', 'Stregoneria della Tempesta': 'Storm Sorcery',
   'Patrono Signore Fatato': 'Archfey Patron', 'Patrono Celestiale': 'Celestial Patron',
   'Patrono Immondo': 'Fiend Patron', 'Patrono Grande Antico': 'Great Old One Patron', 'Patrono delle Profondità': 'Fathomless Patron', 'Patrono del Genio': 'Genie Patron', 'Lama del Sortilegio': 'Hexblade', 'L’Immortale': 'The Undying',
+  'Artefice': 'Artificer', 'Alchimista': 'Alchemist', 'Armaiolo': 'Armorer', 'Artigliere': 'Artillerist', 'Fabbro da Guerra': 'Battle Smith',
   // Scuole di magia
   'Abiurazione': 'Abjuration', 'Ammaliamento': 'Enchantment', 'Chiaroveggenza': 'Divination',
   'Conjurazione': 'Conjuration', 'Divinazione': 'Divination', 'Evocazione': 'Conjuration',

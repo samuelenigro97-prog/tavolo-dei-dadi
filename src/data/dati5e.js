@@ -31,6 +31,7 @@ export const SOTTOCLASSI_5E = {
   ranger: ['Signore delle Bestie', 'Viandante Fatato', 'Cacciatore delle Tenebre', 'Cacciatore', 'Custode dello Sciame', 'Uccisore di Mostri', 'Guardiano dell’Orizzonte'],
   stregone: ['Stregoneria Aberrante', 'Stregoneria Meccanica', 'Stregoneria Draconica', 'Stregoneria della Magia Selvaggia', 'Stregoneria delle Ombre', 'Anima Divina', 'Stregoneria della Tempesta'],
   warlock: ['Patrono Signore Fatato', 'Patrono Celestiale', 'Patrono Immondo', 'Patrono Grande Antico', 'Patrono delle Profondità', 'Patrono del Genio', 'Lama del Sortilegio', 'L’Immortale'],
+  artefice: ['Alchimista', 'Armaiolo', 'Artigliere', 'Fabbro da Guerra'],
 };
 
 export const INCANTESIMI_CLASSE = (() => {
@@ -1204,4 +1205,114 @@ export const CLASSI = [
   { match: ['ranger'], chiaro: '#627514', scuro: '#b5cf4b' },                 // oliva
   { match: ['stregone', 'sorcerer'], chiaro: '#df4815', scuro: '#ff8557' },   // arancio fiamma
   { match: ['warlock', 'patto'], chiaro: '#6e2aa6', scuro: '#c27bf2' },       // viola occulto
+  { match: ['artefice', 'artificer'], chiaro: '#7c3aed', scuro: '#a78bfa' },   // ametista tecnomagica
 ];
+
+
+// ============================================================================
+// CONFIGURAZIONE MANUALI E FONTI DI REGOLE D&D 5e
+// ============================================================================
+
+export const DEFAULT_MANUALI = {
+  phb2024: true,
+  phb2014: true,
+  tasha: true,
+  xanathar: true,
+  fizban_mm: true,
+};
+
+export const MANUALI_INFO = {
+  phb2024: {
+    id: 'phb2024',
+    nome: "Player's Handbook 2024 (D&D 5.5)",
+    nomeEn: "Player's Handbook 2024 (D&D 5.5)",
+    codice: 'PHB 2024',
+    icona: '✨',
+    colore: '#2e9d4d',
+    descrizione: 'Regole 2024, 16 Background con Talenti di Origine, Maestria nelle Armi e 48 nuove sottoclassi canoniche.',
+    descrizioneEn: '2024 Core Rules, 16 Origin Backgrounds with Feats, Weapon Mastery, and 48 updated subclasses.',
+  },
+  phb2014: {
+    id: 'phb2014',
+    nome: "Player's Handbook 2014 (D&D 5.0)",
+    nomeEn: "Player's Handbook 2014 (D&D 5.0)",
+    codice: 'PHB 2014',
+    icona: '📕',
+    colore: '#d97706',
+    descrizione: 'Regole e progressioni storiche della 5ª Edizione classica (2014).',
+    descrizioneEn: 'Classic 5th Edition historical core rules and progressions (2014).',
+  },
+  tasha: {
+    id: 'tasha',
+    nome: "Tasha's Cauldron of Everything (TCoE)",
+    nomeEn: "Tasha's Cauldron of Everything (TCoE)",
+    codice: 'TCoE',
+    icona: '🔮',
+    colore: '#8b5cf6',
+    descrizione: 'Classe Artefice con 4 specializzazioni, 26 sottoclassi Tasha, magie di Evocazione con scheda mostro e talenti opzionali.',
+    descrizioneEn: 'Artificer class with 4 subclasses, 26 Tasha subclasses, Summon spells with stat blocks, and optional feats.',
+  },
+  xanathar: {
+    id: 'xanathar',
+    nome: "Xanathar's Guide to Everything (XGtE)",
+    nomeEn: "Xanathar's Guide to Everything (XGtE)",
+    codice: 'XGtE',
+    icona: '📜',
+    colore: '#3b82f6',
+    descrizione: '31 sottoclassi iconiche (Lama del Sortilegio, Anima Divina, Cacciatore delle Tenebre, Samurai), incantesimi e regole espanse.',
+    descrizioneEn: '31 iconic subclasses (Hexblade, Divine Soul, Gloom Stalker, Samurai), spells, and expanded options.',
+  },
+  fizban_mm: {
+    id: 'fizban_mm',
+    nome: "Fizban's Treasury & Bestiario Esteso",
+    nomeEn: "Fizban's Treasury & Expanded Bestiary",
+    codice: 'FTD & MM',
+    icona: '🐉',
+    colore: '#ef4444',
+    descrizione: 'Evocazione Spirito Draconico, catalogo mostri completo per il Combat Tracker e creature avanzate.',
+    descrizioneEn: 'Summon Draconic Spirit, full classic monsters catalog for Combat Tracker, and expanded creatures.',
+  },
+};
+
+export const SOTTOCLASSI_FONTI = {
+  // Barbaro
+  'Berserker': 'phb2014', 'Cuore Selvaggio': 'phb2024', 'Albero del Mondo': 'phb2024', 'Zelota': 'xanathar',
+  'Cammino della Bestia': 'tasha', 'Cammino della Magia Selvaggia': 'tasha', 'Guardiano Ancestrale': 'xanathar', 'Guerriero Totemico': 'phb2014',
+  // Bardo
+  'Collegio della Danza': 'phb2024', 'Collegio del Fascino': 'xanathar', 'Collegio della Sapienza': 'phb2014', 'Collegio del Valore': 'phb2014',
+  'Collegio della Creazione': 'tasha', 'Collegio dell’Eloquenza': 'tasha', 'Collegio delle Spade': 'xanathar', 'Collegio dei Sussurri': 'xanathar',
+  // Chierico
+  'Dominio della Vita': 'phb2014', 'Dominio della Luce': 'phb2014', 'Dominio dell’Inganno': 'phb2014', 'Dominio della Guerra': 'phb2014',
+  'Dominio dell’Ordine': 'tasha', 'Dominio della Pace': 'tasha', 'Dominio del Crepuscolo': 'tasha', 'Dominio della Tempesta': 'phb2014',
+  'Dominio della Natura': 'phb2014', 'Dominio della Forgia': 'xanathar', 'Dominio della Tomba': 'xanathar',
+  // Druido
+  'Circolo della Terra': 'phb2014', 'Circolo della Luna': 'phb2014', 'Circolo del Mare': 'phb2024', 'Circolo del Pastore': 'xanathar',
+  'Circolo delle Stelle': 'tasha', 'Circolo delle Spore': 'tasha', 'Circolo del Fuoco Selvaggio': 'tasha', 'Circolo dei Sogni': 'xanathar',
+  // Guerriero
+  'Maestro di Battaglia': 'phb2014', 'Campione': 'phb2014', 'Cavaliere Mistico': 'phb2014', 'Guerriero Psionico': 'tasha',
+  'Cavaliere Runico': 'tasha', 'Arciere Arcano': 'xanathar', 'Cavaliere': 'xanathar', 'Samurai': 'xanathar',
+  // Ladro
+  'Mistificatore Arcano': 'phb2014', 'Assassino': 'phb2014', 'Lama Spirituale': 'tasha', 'Furfante': 'phb2014',
+  'Fantasma': 'tasha', 'Inquisitore': 'xanathar', 'Pianificatore': 'xanathar', 'Spadaccino': 'xanathar', 'Scout': 'xanathar',
+  // Mago
+  'Abiuratore': 'phb2014', 'Divinatore': 'phb2014', 'Invocatore': 'phb2014', 'Illusionista': 'phb2014',
+  'Cantore della Lama': 'tasha', 'Ordine degli Scribi': 'tasha', 'Necromante': 'phb2014', 'Trasmutatore': 'phb2014',
+  'Ammaliatore': 'phb2014', 'Evocatore': 'phb2014', 'Mago della Guerra': 'xanathar',
+  // Monaco
+  'Guerriero della Misericordia': 'tasha', 'Guerriero dell’Ombra': 'phb2014', 'Guerriero degli Elementi': 'phb2024', 'Guerriero della Mano Aperta': 'phb2014',
+  'Via del Sé Astrale': 'tasha', 'Via del Maestro Ubriaco': 'xanathar', 'Via del Kensei': 'xanathar', 'Via dell’Anima Solare': 'xanathar',
+  // Paladino
+  'Giuramento di Devozione': 'phb2014', 'Giuramento di Gloria': 'tasha', 'Giuramento degli Antichi': 'phb2014', 'Giuramento di Vendetta': 'phb2014',
+  'Giuramento degli Osservatori': 'tasha', 'Giuramento di Conquista': 'xanathar', 'Giuramento di Redenzione': 'xanathar', 'Giuramento della Corona': 'phb2014',
+  // Ranger
+  'Signore delle Bestie': 'phb2014', 'Viandante Fatato': 'tasha', 'Cacciatore delle Tenebre': 'xanathar', 'Cacciatore': 'phb2014',
+  'Custode dello Sciame': 'tasha', 'Uccisore di Mostri': 'xanathar', 'Guardiano dell’Orizzonte': 'xanathar',
+  // Stregone
+  'Stregoneria Aberrante': 'tasha', 'Stregoneria Meccanica': 'tasha', 'Stregoneria Draconica': 'phb2014', 'Stregoneria della Magia Selvaggia': 'phb2014',
+  'Stregoneria delle Ombre': 'xanathar', 'Anima Divina': 'xanathar', 'Stregoneria della Tempesta': 'xanathar',
+  // Warlock
+  'Patrono Signore Fatato': 'phb2014', 'Patrono Celestiale': 'xanathar', 'Patrono Immondo': 'phb2014', 'Patrono Grande Antico': 'phb2014',
+  'Patrono delle Profondità': 'tasha', 'Patrono del Genio': 'tasha', 'Lama del Sortilegio': 'xanathar', 'L’Immortale': 'phb2014',
+  // Artefice
+  'Alchimista': 'tasha', 'Armaiolo': 'tasha', 'Artigliere': 'tasha', 'Fabbro da Guerra': 'tasha',
+};

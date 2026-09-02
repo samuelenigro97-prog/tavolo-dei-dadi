@@ -540,10 +540,16 @@ function TendinaLingue({ valoreLingue, onToggleLingua }) {
 // Sottoclassi per classe (chiave = primo alias in CLASSI, es. 'mago').
 
 
-/** Sottoclassi disponibili per la classe indicata (o [] se non riconosciuta). */
-function sottoclassiPerClasse(classe) {
+/** Sottoclassi disponibili per la classe indicata (o [] se non riconosciuta), filtrate per manuali attivi. */
+function sottoclassiPerClasse(classe, manuali = null) {
   const c = coloreClasse(classe);
-  return (c && SOTTOCLASSI_5E[c.match[0]]) || [];
+  const tutte = (c && SOTTOCLASSI_5E[c.match[0]]) || [];
+  if (!manuali) return tutte;
+  return tutte.filter((s) => {
+    const f = SOTTOCLASSI_FONTI[s];
+    if (!f) return true;
+    return manuali[f] !== false;
+  });
 }
 
 // Privilegi delle sottoclassi per livello (regole 2024). I nomi seguono le
@@ -1345,7 +1351,7 @@ import { spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spieg
 import { INCANTESIMI_DB, ALIAS_INCANTESIMI, datiIncantesimo } from './data/incantesimi.js';
 
 const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(INCANTESIMI_DB)])).sort((a, b) => a.localeCompare(b, 'it'));
-import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E } from './data/dati5e.js';
+import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E, DEFAULT_MANUALI, MANUALI_INFO, SOTTOCLASSI_FONTI } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
 import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello } from './rules/regole.js';
@@ -3414,6 +3420,19 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem('scheda-interattiva:versione', regoleVersione); } catch { /* niente */ }
   }, [regoleVersione]);
+  // Manuali & Fonti di Regole abilitate
+  const [manualiAttivi, setManualiAttivi] = useState(() => {
+    try {
+      const m = localStorage.getItem('scheda-interattiva:manuali');
+      return m ? { ...DEFAULT_MANUALI, ...JSON.parse(m) } : DEFAULT_MANUALI;
+    } catch {
+      return DEFAULT_MANUALI;
+    }
+  });
+  useEffect(() => {
+    try { localStorage.setItem('scheda-interattiva:manuali', JSON.stringify(manualiAttivi)); } catch { /* niente */ }
+  }, [manualiAttivi]);
+  const [mostraModalManuali, setMostraModalManuali] = useState(false);
   // Preset colori UI
   const [presetColori, setPresetColori] = useState(() => localStorage.getItem('scheda-interattiva:preset-colori') || 'default');
   useEffect(() => {
@@ -7011,7 +7030,14 @@ export default function App() {
                 </div>
               </>
             )}
-            <button style={{ ...styles.button, width: '100%', marginBottom: 14 }} onClick={() => generaPgCasuale()} title={t('menu.pg_casuale_tooltip')}>{t('menu.pg_casuale')}</button>
+            <button style={{ ...styles.button, width: '100%', marginBottom: 8 }} onClick={() => generaPgCasuale()} title={t('menu.pg_casuale_tooltip')}>{t('menu.pg_casuale')}</button>
+            <button
+              style={{ ...styles.button, width: '100%', marginBottom: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontWeight: 700, color: C.goldDark, borderColor: C.goldDark }}
+              onClick={() => { setMostraModalManuali(true); }}
+            >
+              <span>📚</span>
+              <span>{lingua === 'it' ? `Manuali & Fonti (${Object.values(manualiAttivi).filter(Boolean).length} attivi)` : `Sourcebooks & Rules (${Object.values(manualiAttivi).filter(Boolean).length} active)`}</span>
+            </button>
 
             {/* Specchio tasti header globali nello stesso identico ordine, con le stesse etichette e icone */}
             <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
@@ -7588,7 +7614,7 @@ export default function App() {
 
         const haASI = asiAlLivello(targetClasse, targetLivelloNuovo);
         const haSub = sottoclasseAlLivello(targetClasse, targetLivelloNuovo, versione);
-        const scelteSub = sottoclassiPerClasse(targetClasse);
+        const scelteSub = sottoclassiPerClasse(targetClasse, manualiAttivi);
         const mostraSceltaSub = targetLivelloNuovo === livelloSceltaSottoclasse(targetClasse, versione) && scelteSub.length > 0;
         const subSel = mostraSceltaSub ? (levelUpBozza.sottoclasse || '') : (isSecMc ? (secMcObj?.sottoclasse || '') : (scheda.sottoclasse || ''));
         const subTab = SUBCLASS_PRIVILEGI[subSel];
@@ -8186,13 +8212,23 @@ export default function App() {
                 >ℹ️</button>
               </div>
 
-              <div style={{ display: 'flex', gap: 6, justifyContent: 'center', alignItems: 'center', marginBottom: 14 }}>
+              <div style={{ display: 'flex', gap: 6, justifyContent: 'center', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
                 <span style={styles.detail}>{t('crea.versione')}</span>
                 {['2024', '2014'].map((v) => (
                   <button key={v} style={{ ...styles.modeButton(regoleVersione === v), fontSize: 12, padding: '3px 10px' }} onClick={() => { setRegoleVersione(v); setB({ sottoclasse: '' }); }}>
                     {v === '2024' ? 'D&D 5.5' : 'D&D 5.0'}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  style={{ ...styles.buttonMini, fontSize: 11.5, padding: '3px 8px', color: C.goldDark, borderColor: C.goldDark, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                  onClick={() => setMostraModalManuali(true)}
+                  title={lingua === 'it' ? 'Configura i manuali e le espansioni attive (Tasha, Xanathar, ecc.)' : 'Configure active sourcebooks (Tasha, Xanathar, etc.)'}
+                >
+                  <span>📚</span>
+                  <span>{lingua === 'it' ? `Manuali (${Object.values(manualiAttivi).filter(Boolean).length})` : `Books (${Object.values(manualiAttivi).filter(Boolean).length})`}</span>
+                  <span>⚙️</span>
+                </button>
               </div>
 
               <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{t('profilo.sesso')}</label>
@@ -8236,7 +8272,7 @@ export default function App() {
               <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{t('crea.classe')}</label>
               <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.classe} onChange={(e) => setB({ classe: e.target.value, sottoclasse: '', competenzeClasse: [] })}>
                 <option value="">{t('crea.scegli')}</option>
-                {[...NOMI_CLASSI].sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
+                {[...(manualiAttivi.tasha !== false ? [...NOMI_CLASSI, 'Artefice'] : NOMI_CLASSI)].sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
               </select>
 
               {/* Livello iniziale: crea subito un PG di livello alto senza fare Level Up a mano */}
@@ -8257,19 +8293,23 @@ export default function App() {
                     <input
                       type="checkbox"
                       checked={!!bozzaCrea.multiclasseClasse2}
-                      onChange={(e) => setB({ multiclasseClasse2: e.target.checked ? (NOMI_CLASSI.find((n) => n !== bozzaCrea.classe) || '') : '', multiclasseLivello2: 1 })}
+                      onChange={(e) => {
+                        const listaC = manualiAttivi.tasha !== false ? [...NOMI_CLASSI, 'Artefice'] : NOMI_CLASSI;
+                        setB({ multiclasseClasse2: e.target.checked ? (listaC.find((n) => n !== bozzaCrea.classe) || '') : '', multiclasseLivello2: 1 });
+                      }}
                     />
                     ➕ {lingua === 'it' ? 'Multiclasse: aggiungi una seconda classe' : 'Multiclass: add a second class'}
                   </label>
                   {bozzaCrea.multiclasseClasse2 && (() => {
                     const maxLiv2 = Math.max(1, 20 - Number(bozzaCrea.livello || 1));
                     const serveSubMc2 = Number(bozzaCrea.multiclasseLivello2 || 1) >= livelloSceltaSottoclasse(bozzaCrea.multiclasseClasse2, regoleVersione);
-                    const scelteSubMc2 = serveSubMc2 ? sottoclassiPerClasse(bozzaCrea.multiclasseClasse2) : [];
+                    const scelteSubMc2 = serveSubMc2 ? sottoclassiPerClasse(bozzaCrea.multiclasseClasse2, manualiAttivi) : [];
+                    const listaC = manualiAttivi.tasha !== false ? [...NOMI_CLASSI, 'Artefice'] : NOMI_CLASSI;
                     return (
                       <>
                         <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
                           <select style={{ ...stileSelect, flex: 2 }} value={bozzaCrea.multiclasseClasse2} onChange={(e) => setB({ multiclasseClasse2: e.target.value, sottoclasseMc2: '' })}>
-                            {[...NOMI_CLASSI].filter((n) => n !== bozzaCrea.classe).sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
+                            {[...listaC].filter((n) => n !== bozzaCrea.classe).sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
                           </select>
                           <select style={{ ...stileSelect, flex: 1 }} value={Math.min(bozzaCrea.multiclasseLivello2 || 1, maxLiv2)} onChange={(e) => setB({ multiclasseLivello2: Math.max(1, Math.min(maxLiv2, parseInt(e.target.value, 10) || 1)), sottoclasseMc2: '' })}>
                             {Array.from({ length: maxLiv2 }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{lingua === 'it' ? `Liv. ${n}` : `Lv. ${n}`}</option>)}
@@ -8292,19 +8332,23 @@ export default function App() {
                     <input
                       type="checkbox"
                       checked={!!bozzaCrea.multiclasseClasse3}
-                      onChange={(e) => setB({ multiclasseClasse3: e.target.checked ? (NOMI_CLASSI.find((n) => n !== bozzaCrea.classe && n !== bozzaCrea.multiclasseClasse2) || '') : '', multiclasseLivello3: 1 })}
+                      onChange={(e) => {
+                        const listaC = manualiAttivi.tasha !== false ? [...NOMI_CLASSI, 'Artefice'] : NOMI_CLASSI;
+                        setB({ multiclasseClasse3: e.target.checked ? (listaC.find((n) => n !== bozzaCrea.classe && n !== bozzaCrea.multiclasseClasse2) || '') : '', multiclasseLivello3: 1 });
+                      }}
                     />
                     ➕ {lingua === 'it' ? 'Triclasse: aggiungi una terza classe' : 'Triclass: add a third class'}
                   </label>
                   {bozzaCrea.multiclasseClasse3 && (() => {
                     const maxLiv3 = Math.max(1, 20 - Number(bozzaCrea.livello || 1) - Number(bozzaCrea.multiclasseLivello2 || 1));
                     const serveSubMc3 = Number(bozzaCrea.multiclasseLivello3 || 1) >= livelloSceltaSottoclasse(bozzaCrea.multiclasseClasse3, regoleVersione);
-                    const scelteSubMc3 = serveSubMc3 ? sottoclassiPerClasse(bozzaCrea.multiclasseClasse3) : [];
+                    const scelteSubMc3 = serveSubMc3 ? sottoclassiPerClasse(bozzaCrea.multiclasseClasse3, manualiAttivi) : [];
+                    const listaC = manualiAttivi.tasha !== false ? [...NOMI_CLASSI, 'Artefice'] : NOMI_CLASSI;
                     return (
                       <>
                         <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
                           <select style={{ ...stileSelect, flex: 2 }} value={bozzaCrea.multiclasseClasse3} onChange={(e) => setB({ multiclasseClasse3: e.target.value, sottoclasseMc3: '' })}>
-                            {[...NOMI_CLASSI].filter((n) => n !== bozzaCrea.classe && n !== bozzaCrea.multiclasseClasse2).sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
+                            {[...listaC].filter((n) => n !== bozzaCrea.classe && n !== bozzaCrea.multiclasseClasse2).sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
                           </select>
                           <select style={{ ...stileSelect, flex: 1 }} value={Math.min(bozzaCrea.multiclasseLivello3 || 1, maxLiv3)} onChange={(e) => setB({ multiclasseLivello3: Math.max(1, Math.min(maxLiv3, parseInt(e.target.value, 10) || 1)), sottoclasseMc3: '' })}>
                             {Array.from({ length: maxLiv3 }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{lingua === 'it' ? `Liv. ${n}` : `Lv. ${n}`}</option>)}
@@ -8374,7 +8418,7 @@ export default function App() {
                   <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>⚔️ {lingua === 'it' ? 'Sottoclasse' : 'Subclass'}</label>
                   <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.sottoclasse} onChange={(e) => setB({ sottoclasse: e.target.value })}>
                     <option value="">{t('crea.scegli')}</option>
-                    {[...sottoclassiPerClasse(bozzaCrea.classe)].sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
+                    {[...sottoclassiPerClasse(bozzaCrea.classe, manualiAttivi)].sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
                   </select>
                 </>
               )}
@@ -9218,6 +9262,151 @@ export default function App() {
             <button style={{ ...styles.buttonPrimary, width: '100%', marginTop: 16 }} onClick={() => setMostraNoteLegali(false)}>
               {t('common.chiudi')}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Configurazione Manuali & Fonti di Regole D&D 5e */}
+      {mostraModalManuali && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1100, padding: 16,
+            background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setMostraModalManuali(false); }}
+        >
+          <div style={{ ...styles.panel, maxWidth: 540, width: '100%', maxHeight: '90vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12, boxShadow: '0 12px 48px rgba(0,0,0,0.5)' }}>
+            {/* Titolo e Chiusura */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${C.border}`, paddingBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 24 }}>📚</span>
+                <div>
+                  <h2 style={{ ...styles.title, margin: 0, fontSize: 18, lineHeight: 1.2 }}>
+                    {lingua === 'it' ? 'Manuali & Fonti di Regole' : 'Sourcebooks & Rulesets'}
+                  </h2>
+                  <div style={{ ...styles.detail, fontSize: 11.5, color: C.inkDim, marginTop: 2 }}>
+                    {lingua === 'it' ? 'Attiva o disattiva i manuali di gioco per personalizzare classi e opzioni.' : 'Enable or disable rule sourcebooks to customize classes and options.'}
+                  </div>
+                </div>
+              </div>
+              <button
+                style={{ ...styles.buttonMini, padding: '4px 8px', fontSize: 14 }}
+                onClick={() => setMostraModalManuali(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Preset Rapidi */}
+            <div style={{ background: 'rgba(0,0,0,0.025)', padding: '8px 10px', borderRadius: 8, border: `1px solid ${C.border}` }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.inkDim, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.4 }}>
+                {lingua === 'it' ? 'Preset Rapidi:' : 'Quick Presets:'}
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                <button
+                  type="button"
+                  style={{ ...styles.buttonMini, fontSize: 11, padding: '3px 8px', fontWeight: 600 }}
+                  onClick={() => setManualiAttivi({ phb2024: true, phb2014: true, tasha: true, xanathar: true, fizban_mm: true })}
+                >
+                  🌟 {lingua === 'it' ? 'Tutto Attivo (Consigliato)' : 'All Active (Recommended)'}
+                </button>
+                <button
+                  type="button"
+                  style={{ ...styles.buttonMini, fontSize: 11, padding: '3px 8px', fontWeight: 600 }}
+                  onClick={() => setManualiAttivi({ phb2024: true, phb2014: false, tasha: false, xanathar: false, fizban_mm: false })}
+                >
+                  ✨ {lingua === 'it' ? 'Solo D&D 2024 (5.5)' : 'Only D&D 2024 (5.5)'}
+                </button>
+                <button
+                  type="button"
+                  style={{ ...styles.buttonMini, fontSize: 11, padding: '3px 8px', fontWeight: 600 }}
+                  onClick={() => setManualiAttivi({ phb2024: false, phb2014: true, tasha: false, xanathar: false, fizban_mm: false })}
+                >
+                  📕 {lingua === 'it' ? 'Solo D&D 2014 (5.0)' : 'Only D&D 2014 (5.0)'}
+                </button>
+                <button
+                  type="button"
+                  style={{ ...styles.buttonMini, fontSize: 11, padding: '3px 8px', fontWeight: 600 }}
+                  onClick={() => setManualiAttivi({ phb2024: false, phb2014: true, tasha: true, xanathar: true, fizban_mm: true })}
+                >
+                  🔮 {lingua === 'it' ? '2014 + Tasha & Xanathar' : '2014 + Tasha & Xanathar'}
+                </button>
+              </div>
+            </div>
+
+            {/* Lista Manuali */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {Object.entries(MANUALI_INFO).map(([k, m]) => {
+                const attivo = manualiAttivi[k] !== false;
+                return (
+                  <div
+                    key={k}
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: 10,
+                      border: `1.5px solid ${attivo ? m.colore : C.border}`,
+                      background: attivo ? `${m.colore}0d` : 'rgba(0,0,0,0.02)',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      justifyContent: 'space-between',
+                      gap: 12,
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    <div style={{ display: 'flex', gap: 10, flex: 1, minWidth: 0 }}>
+                      <span style={{ fontSize: 24, lineHeight: 1 }}>{m.icona}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                          <span style={{ fontWeight: 800, fontSize: 13.5, color: C.ink }}>
+                            {lingua === 'it' ? m.nome : m.nomeEn}
+                          </span>
+                          <span style={{
+                            fontSize: 10, fontWeight: 800, padding: '1px 5px', borderRadius: 4,
+                            background: m.colore, color: '#ffffff',
+                          }}>
+                            {m.codice}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: 11.5, color: C.inkDim, marginTop: 3, lineHeight: 1.35 }}>
+                          {lingua === 'it' ? m.descrizione : m.descrizioneEn}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Toggle Switch */}
+                    <button
+                      type="button"
+                      onClick={() => setManualiAttivi((prev) => ({ ...prev, [k]: !attivo }))}
+                      style={{
+                        flexShrink: 0,
+                        padding: '6px 12px',
+                        borderRadius: 8,
+                        fontSize: 12,
+                        fontWeight: 800,
+                        cursor: 'pointer',
+                        border: 'none',
+                        background: attivo ? m.colore : 'rgba(0,0,0,0.12)',
+                        color: attivo ? '#ffffff' : C.inkDim,
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      {attivo ? (lingua === 'it' ? '✓ ATTIVO' : '✓ ACTIVE') : (lingua === 'it' ? 'DISATTIVO' : 'INACTIVE')}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Footer */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 6, paddingTop: 10, borderTop: `1px solid ${C.border}` }}>
+              <button
+                type="button"
+                style={{ ...styles.buttonPrimary, padding: '8px 18px', fontSize: 13 }}
+                onClick={() => setMostraModalManuali(false)}
+              >
+                {lingua === 'it' ? 'Salva e Chiudi' : 'Save & Close'}
+              </button>
+            </div>
           </div>
         </div>
       )}
