@@ -18,6 +18,7 @@ import {
 } from '../src/rules/regole.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from '../src/data/condizioni.js';
 import { CONDIZIONI_5E } from '../src/data/dati5e.js';
+import { spiegaPrivilegio } from '../src/data/spiegazioni.js';
 
 // --- Helper: sostituisce Math.random con una coda di valori deterministici ---
 function conRandom(valori, fn) {
@@ -631,4 +632,26 @@ test('condizioni: ogni condizione della scheda ha testo in entrambe le lingue', 
 test('condizioni: ogni voce dell\'elenco CONDIZIONI_5E ha i suoi effetti', () => {
   const senzaEffetti = CONDIZIONI_5E.filter((c) => !EFFETTI_CONDIZIONI[c]);
   assert.deepEqual(senzaEffetti, [], 'condizioni selezionabili ma senza spiegazione meccanica');
+});
+
+test('spiegazioni risorse e privilegi di classe: tutte le risorse hanno nuvoletta informativa', () => {
+  const risorseVerifica = [
+    'Ira', 'Ira Implacabile', 'Ispirazione Bardica', 'Ispirazione Superiore', 'Parole Taglienti',
+    'Punti Ki', 'Punti Focus', 'Palmo Tremante', 'Integrità del Corpo',
+    'Punti Stregoneria', 'Stregoneria Innata', 'Ripristino dell’Equilibrio',
+    'Recupero Arcano', 'Portento',
+    'Recuperare Energie', 'Azione Impetuosa', 'Indomito',
+    'Forma Selvatica', 'Ausilio dalla Terra',
+    'Incanalare Divinità', 'Intervento Divino',
+    'Imposizione delle Mani', 'Senso del Divino',
+    'Marchio del Cacciatore', 'Sensi Primordiali', 'Nemico Prescelto',
+    'Colpo di Fortuna',
+    'Contatto Mistico', 'Maestro Occulto', 'Slot del Patto',
+  ];
+
+  for (const r of risorseVerifica) {
+    const sp = spiegaPrivilegio(r);
+    assert.ok(sp, `Manca spiegazione/nuvoletta per la risorsa: ${r}`);
+    assert.ok(typeof sp === 'string' && sp.length >= 20, `Spiegazione troppo breve per ${r}`);
+  }
 });

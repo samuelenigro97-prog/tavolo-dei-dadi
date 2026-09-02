@@ -518,8 +518,24 @@ export const EN_INCANTESIMI = {
   'Power Word Kill': 'Lv. 9 · You speak a word of power: a creature within 18 m with 100 HP or fewer dies instantly without a save.',
 };
 
-// Privilegi di classe (568 voci): come per il resto, chiavi in italiano.
 export const EN_PRIVILEGI_CLASSE = {
+  'Contatto Mistico': 'Warlock capstone (20th level - Eldritch Master): you spend 1 minute supplicating your patron to regain all expended Pact Magic spell slots. Recharges on a Long Rest.',
+  'Maestro Occulto': 'Warlock capstone (20th level - Eldritch Master): you spend 1 minute supplicating your patron to regain all expended Pact Magic spell slots. Recharges on a Long Rest.',
+  'Colpo di Fortuna': 'Rogue capstone (20th level - Stroke of Luck): if your attack misses or you fail an ability check, you turn the miss into a hit or treat the d20 as a 20. Recharges on a Short or Long Rest.',
+  'Marchio del Cacciatore': 'Bonus Action: magically mark a target within 27 m to deal +1d6 force damage on every hit and gain advantage to track it. In 2024 you gain free uses without spending spell slots.',
+  'Sensi Primordiali': 'As an action, sense the presence of planar/aberrant creatures within 1.5 km (or 9 km in favoured terrain). Recharges on a Long Rest.',
+  'Nemico Prescelto': 'Gain advantage on Survival checks to track favoured enemies and Intelligence checks to recall information about them.',
+  'Senso del Divino': 'As an action, detect the location of celestials, fiends, and undead within 18 m. Uses = 1 + Cha modifier; recharges on a Long Rest.',
+  'Intervento Divino': 'As an action, call upon your deity with a d100 roll: if you roll equal to or below your level, your deity intervenes with divine aid or duplicates a spell. Recharges on a Long Rest.',
+  'Punti Ki': 'The Monk\'s spiritual energy pool (2014): fuels Flurry of Blows, Patient Defence, and Step of the Wind. Recharges on a Short or Long Rest.',
+  'Punti Focus': 'The Monk\'s spiritual Focus pool (2024): fuels Flurry of Blows, Patient Defence, Step of the Wind, and monastic techniques. Recharges on a Short or Long Rest.',
+  'Punti Stregoneria': 'The Sorcerer\'s font of magic pool: fuels Metamagic and spell slot creation. Recharges on a Long Rest.',
+  'Stregoneria Innata': 'As a bonus action, unleash your inner magic for 1 minute: +1 to spell save DC and advantage on spell attack rolls. Recharges on a Long Rest.',
+  'Recupero Arcano': 'During a short rest, regain expended spell slots totaling up to half your Wizard level. Recharges on a Long Rest.',
+  'Forma Selvatica': 'As an action, magically wild shape into a beast you have seen, taking its HP and physical stats. Recharges on a Short or Long Rest.',
+  'Incanalare Divinità': 'Channel divine energy to Turn Undead or trigger your Domain/Oath power. Recharges on a Short or Long Rest.',
+  'Imposizione delle Mani': 'Healing pool equal to 5 × Paladin level to heal HP or cure poisons and diseases. Recharges on a Long Rest.',
+  'Slot del Patto': 'Warlock spell slots are all of the highest level available and recharge completely on a Short or Long Rest.',
   'Lancio di incantesimi': 'You can cast spells from your class, using your spellcasting ability for the save DC and attack rolls.',
   'Maestria nelle armi': "*Every weapon has a trick only you know how to use (5.5 only).*\n\nYou choose a number of weapons (how many depends on your class and grows with level) and unlock their **mastery property**. You can change the chosen weapons after each Long Rest. The eight properties are:\n\n- **Cleave**: if you hit in melee, you can attack a second creature within 1.5 m of the first and in your reach; on a hit you deal the weapon's damage **without** your ability modifier. Once per turn.\n- **Graze**: if you **miss**, you still deal damage equal to the ability modifier used for the attack.\n- **Nick**: you make the extra attack of the Light property **as part of the Attack action** instead of as a Bonus Action. Once per turn.\n- **Push**: on a hit you can **push** the target (Large or smaller) up to 3 m away from you.\n- **Sap**: on a hit the target has **disadvantage** on its next attack roll before the start of your next turn.\n- **Slow**: if you hit and deal damage, the target's **speed** drops by 3 m until the start of your next turn (it does not stack in the same turn).\n- **Topple**: on a hit the target makes a **Constitution saving throw** (DC 8 + your attack modifier + proficiency bonus) or falls **Prone**.\n- **Vex**: if you hit and deal damage, you have **advantage** on your next attack roll against that target, before the end of your next turn.",
   'Stile di combattimento': {

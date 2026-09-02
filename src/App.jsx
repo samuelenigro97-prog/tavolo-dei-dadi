@@ -1812,27 +1812,80 @@ function sincronizzaRisorseClasse(scheda, versione = '2024') {
 // Spiegazioni delle risorse di classe (parole proprie, meccaniche 5e/5.5):
 // mostrate al passaggio del cursore sul nome, come per le altre sezioni.
 const SPIEG_RISORSE = {
-  'Ira': 'Azione bonus: entri in Ira, ottenendo resistenza ai danni contundenti, perforanti e taglienti e un bonus ai danni degli attacchi basati sulla Forza. Termina se resti incapacitato o non la mantieni secondo le regole della tua edizione.',
-  'Ispirazione Bardica': 'Azione bonus: doni a un alleato entro 18 m un dado Ispirazione (d6, poi d8/d10/d12 col livello) da sommare a un tiro per colpire, una prova o un TS. Usi pari al mod. Carisma; si recuperano con un riposo lungo (breve dal 5° livello).',
-  'Punti Ki': 'La riserva di Ki del Monaco nelle regole 5.0 (punti = livello). Li spendi per Raffica di Colpi (2 attacchi senz’armi bonus), Scatto Vertiginoso e Difesa Paziente. Si recuperano tutti con un riposo breve o lungo.',
-  'Punti Focus': 'La riserva di Ki del Monaco (punti = livello). Li spendi per le tue tecniche: Raffica di Colpi (1 attacco bonus extra), Scatto Vertiginoso, Difesa Paziente. Si recuperano tutti con un riposo breve o lungo.',
-  'Recupero Arcano': 'Una volta al giorno, durante un riposo breve, recuperi slot incantesimo spesi per un totale di livelli pari alla metà del tuo livello da Mago (arrotondata per eccesso): 4 livelli al 7°, 5 al 9°, e nessuno slot di 6° livello o superiore. Si ricarica con un riposo lungo.',
-  'Punti Stregoneria': 'La riserva di energia magica dello Stregone (punti = livello). Puoi convertirli in slot incantesimo (o viceversa) e alimentano la Metamagia. Si recuperano con un riposo lungo.',
+  // Barbaro
+  'Ira': 'Azione bonus: entri in Ira, ottenendo resistenza ai danni contundenti, perforanti e taglienti, vantaggio alle prove e TS su Forza, e un bonus ai danni degli attacchi basati sulla Forza. Termina se resti privo di sensi o non la mantieni secondo le regole della tua edizione. Si ricarica con un riposo lungo (o breve nella 2024).',
+  'Ira Implacabile': 'Se scendi a 0 PF mentre sei in ira, puoi effettuare un TS Costituzione CD 10 per scendere invece a 1 PF. Ogni uso successivo aumenta la CD di 5. Si azzera con un riposo breve o lungo.',
+
+  // Bardo
+  'Ispirazione Bardica': 'Azione bonus: doni a un alleato entro 18 m un dado Ispirazione (d6, poi d8/d10/d12 col livello) da sommare entro 10 minuti a un tiro per colpire, una prova o un TS. Usi pari al modificatore di Carisma (minimo 1); si recuperano con un riposo lungo (o breve dal 5° livello).',
+  'Ispirazione Superiore': 'Quando tiri l’iniziativa e non hai usi rimasti di Ispirazione Bardica, recuperi immediatamente 1 uso.',
+  'Parole Taglienti': 'Come reazione spendi un uso di Ispirazione Bardica per sottrarre il risultato del dado al tiro per colpire, prova o danno di un nemico entro 18 m.',
+  'Ispirazione da Combattimento': 'Gli alleati possono spendere il dado Ispirazione per aggiungerlo al tiro per i danni dell’arma o alla CA come reazione contro un attacco.',
+
+  // Monaco
+  'Punti Ki': 'La riserva di energia spirituale del Monaco nelle regole 2014 (punti = livello). Li spendi per Raffica di Colpi (2 attacchi senz’armi bonus), Scatto Vertiginoso e Difesa Paziente. Si recuperano tutti con un riposo breve o lungo.',
+  'Punti Focus': 'La riserva di Focus/Ki del Monaco nelle regole 2024 (punti = livello). Li spendi per alimentare Raffica di Colpi, Scatto Vertiginoso, Difesa Paziente e tecniche monastiche avanzate. Si recuperano tutti con un riposo breve o lungo.',
+  'Palmo Tremante': 'Spendi 3 punti Ki/Focus quando colpisci con un colpo senz’armi per attivare vibrazioni letali: costringi il bersaglio a un TS Costituzione o scendere a 0 PF (10d10 necrotici se supera).',
+  'Integrità del Corpo': 'Come azione recuperi un ammontare di PF pari a 3 volte il tuo livello da Monaco. Si ricarica con un riposo lungo.',
+
+  // Stregone
+  'Punti Stregoneria': 'La riserva di potere magico innato dello Stregone (punti = livello). Puoi convertirli in slot incantesimo (o viceversa tramite Fonte di Magia) e spenderli per potenziare gli incantesimi con la Metamagia. Si recuperano con un riposo lungo.',
   'Stregoneria Innata': 'Come azione bonus sprigioni la tua magia interiore per 1 minuto: la CD dei tuoi incantesimi da Stregone aumenta di 1 e hai Vantaggio ai loro tiri per colpire. Hai 2 utilizzi e li recuperi con un riposo lungo.',
-  'Borsa del Guaritore': 'Contiene 10 utilizzi. Come azione puoi spenderne uno per stabilizzare una creatura a 0 PF senza effettuare una prova di Medicina.',
-  'Recuperare Energie': 'Azione bonus: recuperi 1d10 + il tuo livello da Guerriero in PF. Si ricarica con un riposo breve o lungo.',
-  'Azione Impetuosa': 'Una volta per riposo (due volte dal 17° livello) compi un’azione aggiuntiva nel tuo turno, oltre a quella normale. Si ricarica con un riposo breve o lungo.',
-  'Forma Selvatica': 'Ti trasformi in una bestia che conosci, entro i limiti di grado sfida della tua edizione (azione nella 5.0, azione bonus nella 5.5). Usi limitati, recuperati con un riposo breve o lungo.',
-  'Incanalare Divinità': 'Incanali il potere del tuo dominio (Chierico) o giuramento (Paladino) per un effetto speciale della sottoclasse. Usi limitati: si recuperano con un riposo breve (Chierico) o lungo (Paladino).',
-  'Imposizione delle Mani': 'Una riserva di potere curativo pari a 5 × il tuo livello da Paladino: distribuisci quei PF toccando i feriti (azione nella 5.0, azione bonus nella 5.5) e puoi spendere 5 punti per il veleno. Si ricarica con un riposo lungo.',
+  'Ripristino dell’Equilibrio': 'Come reazione quando una creatura entro 18 m tira con vantaggio o svantaggio, annulli il vantaggio o lo svantaggio per quel tiro. Usi pari al bonus di competenza; si ricarica con un riposo lungo.',
+
+  // Mago
+  'Recupero Arcano': 'Una volta al giorno, durante un riposo breve, recuperi slot incantesimo spesi per un totale di livelli pari alla metà del tuo livello da Mago (arrotondata per eccesso): es. 4 livelli al 7°, 5 al 9°, e nessun singolo slot di 6° livello o superiore. Si ricarica con un riposo lungo.',
+  'Portento': 'Al termine di ogni riposo lungo tiri due d20 (tre dal 14° livello) e ne annoti i risultati: puoi sostituire qualsiasi tiro per colpire, TS o prova con uno di questi dadi.',
+
+  // Guerriero
+  'Recuperare Energie': 'Azione bonus: attingi alla tua riserva di resistenza per recuperare 1d10 + il tuo livello da Guerriero in Punti Ferita. Si ricarica con un riposo breve (o lungo). Nella 2024 ottieni più utilizzi scalabili con il livello.',
+  'Azione Impetuosa': 'Nel tuo turno compi un’azione aggiuntiva oltre alla tua azione normale e alla possibile azione bonus. 1 uso (2 dal 17° livello); si ricarica con un riposo breve o lungo.',
+  'Indomito': 'Puoi ritirare un tiro salvezza fallito (+ livello da Guerriero nella versione 2024). Usi: 1 al 9°, 2 al 13°, 3 al 17°; si ricarica con un riposo lungo.',
+
+  // Druido
+  'Forma Selvatica': 'Come azione (o azione bonus nella 2024/Luna), assumi magicamente la forma di una bestia che conosci entro i limiti di GS. Ottieni i PF e le caratteristiche fisiche della bestia preservando le facoltà mentali. 2 usi (3 al 6°, 4 al 17°); si recuperano con un riposo breve o lungo.',
+  'Ausilio dalla Terra': 'Come azione spendi una Forma Selvatica per evocare fiori curativi per gli alleati o spine che feriscono i nemici nell’area.',
+
+  // Chierico
+  'Incanalare Divinità': 'Incanali l’energia divina della tua divinità per alimentare effetti sacri: Scacciare Non Morti e il potere unico del tuo Dominio Divino (Preservare Vita, Radiosità dell’Alba, Furia della Tempesta…). Usi limitati per livello; si recuperano con un riposo breve o lungo.',
+  'Intervento Divino': 'Come azione implori l’aiuto della tua divinità tirando 1d100: se ottieni un numero pari o inferiore al tuo livello da Chierico (automatico al 20°), la divinità interviene compiendo un miracolo o replicando un incantesimo. Si ricarica con un riposo lungo.',
+
+  // Paladino
+  'Imposizione delle Mani': 'Hai una riserva di potere curativo benedetto pari a 5 × il tuo livello da Paladino. Toccando una creatura spendi punti per curarla, oppure ne spendi 5 per neutralizzare un veleno o una malattia. Si ricarica con un riposo lungo.',
+  'Senso del Divino': 'Come azione apri la tua consapevolezza per percepire il sacro e l’empio: fino alla fine del tuo prossimo turno conosci la posizione di celestiali, immondi e non morti entro 18 m. Usi = 1 + mod. Carisma; si ricarica con un riposo lungo.',
+  'Incanalare Divinità (Paladino)': 'Incanali il potere sacro del tuo Giuramento per produrre effetti unici (Arma Sacra, Vendetta Implacabile, Voto di Inimicizia…). Si ricarica con un riposo breve o lungo.',
+
+  // Ranger
+  'Marchio del Cacciatore': 'Azione bonus: marchi magicamente una creatura entro 27 m come tua preda. Infliggi 1d6 danni da forza extra a ogni colpo e hai vantaggio a rintracciarla con Percezione e Sopravvivenza. Nella 2024 hai usi gratuiti senza spendere slot; si ricarica con un riposo lungo.',
+  'Sensi Primordiali': 'Come azione spendi la tua connessione naturale per percepire se aberrazioni, celestiali, draghi, elementali, folletti, immondi o non morti sono presenti entro 1,5 km (o 9 km nel terreno prescelto). Si ricarica con un riposo lungo.',
+  'Nemico Prescelto': 'Hai vantaggio alle prove di Sopravvivenza per tracciare i tuoi nemici prescelti e a quelle di Intelligenza per ricordare nozioni su di essi, oltre a conoscerne la lingua.',
+
+  // Ladro
+  'Colpo di Fortuna': 'Privilegio supremo del Ladro (20° livello): se il tuo attacco manca un bersaglio entro gittata, puoi trasformare il mancamento in un colpo a segno. In alternativa, se fallisci una prova di caratteristica, puoi trattare il d20 come un 20 naturale. Si ricarica con un riposo breve o lungo.',
+
+  // Warlock
+  'Contatto Mistico': 'Privilegio supremo del Warlock (20° livello - Maestro Occulto / Eldritch Master): puoi rivolgerti al tuo patrono ultraterreno per implorare una ricarica immediata di potere magico. Spendi 1 minuto per recuperare tutti gli slot incantesimo spesi della tua Magia del Patto (fino a 4 slot di 5° livello). Si ricarica con un riposo lungo.',
+  'Maestro Occulto': 'Privilegio supremo del Warlock (20° livello - Eldritch Master): spendendo 1 minuto in supplica al tuo patrono ultraterreno, recuperi istantaneamente tutti i tuoi slot incantesimo della Magia del Patto spesi. Si ricarica con un riposo lungo.',
+  'Slot del Patto': 'Gli slot incantesimo del Warlock derivano dal patto con il patrono: sono tutti del livello massimo consentito (fino al 5° livello) e si ricaricano completamente con un riposo breve o lungo.',
+
+  // Generiche e Oggetti
+  'Borsa del Guaritore': 'Contiene 10 utilizzi. Come azione puoi spenderne uno per stabilizzare una creatura a 0 PF senza effettuare una prova di Medicina. Con il talento Guaritore puoi spendere un uso per curare 1d6 + 4 + dadi vita del bersaglio.',
+  'Kit del Guaritore': 'Contiene 10 utilizzi. Come azione puoi spenderne uno per stabilizzare una creatura a 0 PF senza effettuare una prova di Medicina.',
 };
 
-/** Spiegazione di una risorsa di classe: prima la mappa dedicata, poi i privilegi. */
+/** Spiegazione di una risorsa di classe: prima la mappa dedicata, poi i privilegi (case-insensitive). */
 function spiegaRisorsa(nome) {
   const n = String(nome || '').trim();
+  if (!n) return '';
   if (SPIEG_RISORSE[n]) return SPIEG_RISORSE[n];
-  const sp = spiegaPrivilegio(n);
-  if (sp) return typeof sp === 'string' ? sp : (sp.testo || sp.descrizione || '');
+  const base = n.replace(/\s*\(.*$/, '').replace(/\s+d\d+.*$/i, '').trim();
+  if (SPIEG_RISORSE[base]) return SPIEG_RISORSE[base];
+  const lower = n.toLowerCase();
+  const lowerBase = base.toLowerCase();
+  const foundKey = Object.keys(SPIEG_RISORSE).find((k) => k.toLowerCase() === lower || k.toLowerCase() === lowerBase);
+  if (foundKey) return SPIEG_RISORSE[foundKey];
+  const sp = spiegaPrivilegio(n) || spiegaPrivilegio(base);
+  if (sp) return typeof sp === 'string' ? sp : (sp.testo || sp.descrizione || sp.base || '');
   return '';
 }
 

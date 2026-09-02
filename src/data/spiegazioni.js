@@ -607,6 +607,26 @@ const SPIEG_PRIVILEGI = {
   'Baluardo della Forza': 'Crei una barriera di forza che protegge te e gli alleati.',
   'Maestro della Telecinesi': 'Sollevi telecineticamente una creatura o un oggetto (come Mano Potente).',
 
+  // Risorse e Privilegi di Classe Fondamentali
+  'Contatto Mistico': 'Privilegio supremo del Warlock (20° livello): spendi 1 minuto per implorare il tuo patrono e recuperare tutti gli slot incantesimo spesi della Magia del Patto (fino a 4 slot di 5° livello). Si ricarica con un riposo lungo.',
+  'Maestro Occulto': 'Privilegio supremo del Warlock (20° livello): spendi 1 minuto per implorare il tuo patrono e recuperare tutti gli slot incantesimo spesi della Magia del Patto (fino a 4 slot di 5° livello). Si ricarica con un riposo lungo.',
+  'Colpo di Fortuna': 'Privilegio supremo del Ladro (20° livello): se manchi un attacco o fallisci una prova di caratteristica, trasformi il mancamento in un colpo a segno o il d20 in un 20 naturale. Si ricarica con un riposo breve o lungo.',
+  'Indomito': 'Puoi ritirare un tiro salvezza fallito (+ livello da Guerriero nella versione 2024). Usi per riposo lungo: 1 al 9°, 2 al 13°, 3 al 17°.',
+  'Marchio del Cacciatore': 'Azione bonus: marchi un nemico entro 27 m come tua preda; infliggi 1d6 danni da forza extra ogni volta che lo colpisci e hai vantaggio alle prove per rintracciarlo. Nella 2024 hai usi gratuiti senza spendere slot incantesimo.',
+  'Sensi Primordiali': 'Come azione spendi la tua connessione naturale per percepire la presenza di creature planari o sovrannaturali (aberrazioni, celestiali, draghi, elementali, folletti, immondi, non morti) entro 1,5 km. Si ricarica con un riposo lungo.',
+  'Nemico Prescelto': 'Ottieni vantaggio alle prove di Saggezza (Sopravvivenza) per tracciare i tuoi nemici prescelti e alle prove di Intelligenza per ricordare nozioni su di essi, oltre a conoscerne la lingua.',
+  'Senso del Divino': 'Come azione individui la presenza di celestiali, immondi e non morti entro 18 m non protetti da copertura totale fino alla fine del tuo prossimo turno. Usi = 1 + mod. Carisma; si ricarica con un riposo lungo.',
+  'Intervento Divino': 'Come azione implori l’intervento della tua divinità tirando 1d100: se il risultato è pari o inferiore al tuo livello (automatico al 20°), la divinità compie un prodigio o replica un incantesimo divino. Si ricarica con un riposo lungo.',
+  'Punti Ki': 'La riserva di energia spirituale del Monaco (2014): alimenta Raffica di Colpi, Scatto Vertiginoso e Difesa Paziente. Si ricarica con un riposo breve o lungo.',
+  'Punti Focus': 'La riserva di energia spirituale del Monaco (2024): alimenta Raffica di Colpi, Scatto Vertiginoso, Difesa Paziente e tecniche monastiche. Si ricarica con un riposo breve o lungo.',
+  'Punti Stregoneria': 'La riserva di magia innata dello Stregone: usata per la Metamagia e la conversione in slot incantesimo. Si ricarica con un riposo lungo.',
+  'Stregoneria Innata': 'Come azione bonus aumenti di 1 la CD degli incantesimi e ottieni vantaggio ai tiri per colpire per 1 minuto. Si ricarica con un riposo lungo.',
+  'Recupero Arcano': 'Durante un riposo breve recuperi slot incantesimo spesi fino a metà del tuo livello da Mago. Si ricarica con un riposo lungo.',
+  'Forma Selvatica': 'Come azione assumi la forma di una bestia conosciuta, assumendone PF e statistiche fisiche. Si ricarica con un riposo breve o lungo.',
+  'Incanalare Divinità': 'Incanali energia sacra per Scacciare Non Morti o attivare il potere del tuo dominio o giuramento. Si ricarica con un riposo breve o lungo.',
+  'Imposizione delle Mani': 'Riserva curativa pari a 5 × livello da Paladino per sanare ferite o neutralizzare veleni e malattie. Si ricarica con un riposo lungo.',
+  'Slot del Patto': 'Gli slot del Warlock sono tutti del massimo livello disponibile e si ricaricano completamente con un riposo breve o lungo.',
+
   // Meccaniche base varie
   'Difesa senza armatura (CA = 10 + DES + COS)': 'Finché non indossi armature, la tua Classe Armatura è 10 + mod. Destrezza + mod. Costituzione. Puoi usare uno scudo.',
   'Difesa senza armatura (CA = 10 + DES + SAG)': 'Finché non indossi armature né usi scudi, la tua Classe Armatura è 10 + mod. Destrezza + mod. Saggezza.',
