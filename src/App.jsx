@@ -11,7 +11,7 @@ import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusC
 import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON, WENDELL_JSON, LYRIAN_JSON } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from './data/condizioni.js';
-import { BESTIE, FAMIGLI, EVOCAZIONI, bestieDisponibili, limitiFormaSelvatica } from './data/bestiario.js';
+import { BESTIE, FAMIGLI, EVOCAZIONI, MOSTRI_5E, TUTTE_LE_CREATURE, bestieDisponibili, limitiFormaSelvatica } from './data/bestiario.js';
 import { novitaRecenti, ultimaVersioneNovita } from './data/novita.js';
 import { codificaScheda, decodificaScheda, preparaPerCondivisione, costruisciLink, payloadDaUrl, LIMITE_PAYLOAD } from './utils/condivisione.js';
 import { creaStanza, apriStanza, normalizzaCodiceStanza, formattaCodiceStanza, DURATA_STANZA_ORE } from './utils/stanze.js';
@@ -15509,28 +15509,55 @@ export default function App() {
                   onChange={(e) => {
                     const nome = e.target.value;
                     if (!nome) return;
-                    const b = BESTIE.find((x) => x.nome === nome);
+                    const b = TUTTE_LE_CREATURE.find((x) => x.nome === nome);
                     if (b) {
-                      const initRoll = tiraDado(20) + Math.floor(((b.car?.destrezza || 10) - 10) / 2);
+                      const modDes = Math.floor(((b.car?.destrezza || 10) - 10) / 2);
+                      const initRoll = tiraDado(20) + modDes;
                       aggiungiCombattente('nemico', {
                         nome: b.nome,
                         pfMax: b.pf,
                         pfAttuali: b.pf,
                         ca: b.ca,
                         iniziativa: initRoll,
+                        dati: b,
                       });
                     }
                     e.target.value = '';
                   }}
-                  style={{ ...styles.inlineInput, fontSize: 11.5, padding: '3px 6px', maxWidth: 115, height: 26, fontWeight: 600 }}
-                  title="Aggiungi una creatura o mostro dal bestiario al combattimento"
+                  style={{ ...styles.inlineInput, fontSize: 11.5, padding: '3px 6px', maxWidth: 120, height: 26, fontWeight: 600 }}
+                  title={lingua === 'it' ? "Aggiungi un mostro o creatura dal bestiario allo scontro" : "Add a monster or creature from the bestiary to combat"}
                 >
-                  <option value="">🐾 + Mostro...</option>
-                  {BESTIE.map((b) => (
-                    <option key={b.nome} value={b.nome}>
-                      {b.nome} (GS {b.gs})
-                    </option>
-                  ))}
+                  <option value="">👹 + Mostro...</option>
+                  <optgroup label="💀 Non-Morti">
+                    {MOSTRI_5E.filter((m) => m.categoria === 'Non-Morti').map((b) => (
+                      <option key={b.nome} value={b.nome}>{b.nome} (GS {b.gs})</option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="👹 Goblinoidi & Orchi">
+                    {MOSTRI_5E.filter((m) => m.categoria === 'Umanoidi & Mostri').map((b) => (
+                      <option key={b.nome} value={b.nome}>{b.nome} (GS {b.gs})</option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="🗡️ Umanoidi & PNG">
+                    {MOSTRI_5E.filter((m) => m.categoria === 'Umanoidi & PNG').map((b) => (
+                      <option key={b.nome} value={b.nome}>{b.nome} (GS {b.gs})</option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="🐲 Mostruosità & Draghi">
+                    {MOSTRI_5E.filter((m) => m.categoria === 'Mostruosità & Draghi').map((b) => (
+                      <option key={b.nome} value={b.nome}>{b.nome} (GS {b.gs})</option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="🔥 Elementali & Immondi">
+                    {MOSTRI_5E.filter((m) => m.categoria === 'Elementali & Immondi').map((b) => (
+                      <option key={b.nome} value={b.nome}>{b.nome} (GS {b.gs})</option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="🐾 Bestie & Animali">
+                    {BESTIE.map((b) => (
+                      <option key={b.nome} value={b.nome}>{b.nome} (GS {b.gs})</option>
+                    ))}
+                  </optgroup>
                 </select>
               </div>
 

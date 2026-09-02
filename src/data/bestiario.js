@@ -1188,3 +1188,484 @@ export function bestieDisponibili(livello, sottoclasse = '', bestie = BESTIE) {
     .filter((b) => (b.velocita.nuoto ? limiti.nuoto : true))
     .sort((a, b) => b.gsNum - a.gsNum || a.nome.localeCompare(b.nome, 'it'));
 }
+
+
+// ============================================================================
+// CATALOGO MOSTRI CLASSICI D&D 5e (SRD 5.1 / PHB / MM) PER IL COMBAT TRACKER
+// ============================================================================
+
+export const MOSTRI_5E = [
+  // --- NON-MORTI ---
+  {
+    nome: 'Scheletro', nomeEn: 'Skeleton', categoria: 'Non-Morti', gs: '1/4', gsNum: 0.25,
+    taglia: 'Media', ca: 13, pf: 13, pfFormula: '2d8 + 4',
+    velocita: { terra: 9 },
+    car: { forza: 10, destrezza: 14, costituzione: 15, intelligenza: 6, saggezza: 8, carisma: 5 },
+    abilita: '—',
+    sensi: 'Scurovisione 18 m · Percezione passiva 9',
+    tratti: ['Vulnerabile ai danni contundenti. Immune a danni da veleno e condizioni Avvelenato, Affaticato.'],
+    azioni: ['Spada corta: +4 al tiro per colpire, 1d6+2 danni perforanti.', 'Arco corto: +4 al tiro per colpire, gittata 24/96 m, 1d6+2 danni perforanti.'],
+    note: 'Non-morto animato da magia oscura, agile e dotato di arco.'
+  },
+  {
+    nome: 'Zombie', nomeEn: 'Zombie', categoria: 'Non-Morti', gs: '1/4', gsNum: 0.25,
+    taglia: 'Media', ca: 8, pf: 22, pfFormula: '3d8 + 9',
+    velocita: { terra: 6 },
+    car: { forza: 13, destrezza: 6, costituzione: 16, intelligenza: 3, saggezza: 6, carisma: 5 },
+    abilita: '—',
+    sensi: 'Scurovisione 18 m · Percezione passiva 8',
+    tratti: ['Tenacia dei Non-Morti: se i danni lo portano a 0 PF (salvo radianti o critico), fa un TS Costituzione (CD 5 + danno) per restare a 1 PF.'],
+    azioni: ['Schianto: +3 al tiro per colpire, 1d6+1 danni contundenti.'],
+    note: 'Lento ma incredibilmente resistente a colpi non letali.'
+  },
+  {
+    nome: 'Ombra', nomeEn: 'Shadow', categoria: 'Non-Morti', gs: '1/2', gsNum: 0.5,
+    taglia: 'Media', ca: 12, pf: 16, pfFormula: '3d8 + 3',
+    velocita: { terra: 12 },
+    car: { forza: 6, destrezza: 14, costituzione: 13, intelligenza: 6, saggezza: 10, carisma: 8 },
+    abilita: 'Furtività +4 (+6 nella penombra)',
+    sensi: 'Scurovisione 18 m · Percezione passiva 10',
+    tratti: ['Movimento Amorfo: può attraversare fessure di 2,5 cm. Furtività nell’Ombra.'],
+    azioni: ['Risucchio di Forza: +4 al tiro per colpire, 2d6+2 danni necrotici e riduce il punteggio di Forza del bersaglio di 1d4.'],
+    note: 'Spettrale e letale: risucchia direttamente la Forza vitale.'
+  },
+  {
+    nome: 'Ghoul', nomeEn: 'Ghoul', categoria: 'Non-Morti', gs: '1', gsNum: 1,
+    taglia: 'Media', ca: 12, pf: 22, pfFormula: '5d8',
+    velocita: { terra: 9 },
+    car: { forza: 13, destrezza: 15, costituzione: 10, intelligenza: 7, saggezza: 10, carisma: 6 },
+    abilita: '—',
+    sensi: 'Scurovisione 18 m · Percezione passiva 10',
+    tratti: ['Immunità a veleno e condizioni Affascinato, Paralizzato, Avvelenato.'],
+    azioni: ['Morso: +2 al tiro per colpire, 2d6+2 danni perforanti.', 'Artigli: +4 al tiro per colpire, 2d4+2 danni taglienti; bersaglio fa TS Costituzione CD 10 o cade Paralizzato per 1 minuto.'],
+    note: 'I suoi artigli paralizzano le prede viventi.'
+  },
+  {
+    nome: 'Spettro', nomeEn: 'Specter', categoria: 'Non-Morti', gs: '1', gsNum: 1,
+    taglia: 'Media', ca: 12, pf: 22, pfFormula: '5d8',
+    velocita: { terra: 0, volo: 15 },
+    car: { forza: 1, destrezza: 14, costituzione: 11, intelligenza: 10, saggezza: 10, carisma: 11 },
+    abilita: '—',
+    sensi: 'Scurovisione 18 m · Percezione passiva 10',
+    tratti: ['Incorporeo: può muoversi attraverso creature e oggetti.', 'Sensibilità alla luce solare.'],
+    azioni: ['Risucchio Vitale: +4 al tiro per colpire, 3d6 danni necrotici; TS Costituzione CD 10 o i PF massimi calano dello stesso ammontare.'],
+    note: 'Spirito incorporeo che consuma la vitalità.'
+  },
+  {
+    nome: 'Ghast', nomeEn: 'Ghast', categoria: 'Non-Morti', gs: '2', gsNum: 2,
+    taglia: 'Media', ca: 13, pf: 36, pfFormula: '8d8',
+    velocita: { terra: 9 },
+    car: { forza: 16, destrezza: 17, costituzione: 10, intelligenza: 11, saggezza: 10, carisma: 8 },
+    abilita: '—',
+    sensi: 'Scurovisione 18 m · Percezione passiva 10',
+    tratti: ['Fetore: creature entro 1,5 m devono superare TS Costituzione CD 10 o essere Avvelenate per 1 turno.', 'Resistenza allo Scacciare.'],
+    azioni: ['Morso: +3 al tiro per colpire, 2d8+3 danni perforanti.', 'Artigli: +5 al tiro per colpire, 2d6+3 danni taglienti (Paralisi CD 10 anche per Elfi).'],
+    note: 'Versione superiore e maleodorante del Ghoul.'
+  },
+  {
+    nome: 'Mummia', nomeEn: 'Mummy', categoria: 'Non-Morti', gs: '3', gsNum: 3,
+    taglia: 'Media', ca: 11, pf: 58, pfFormula: '9d8 + 18',
+    velocita: { terra: 6 },
+    car: { forza: 16, destrezza: 8, costituzione: 15, intelligenza: 6, saggezza: 10, carisma: 12 },
+    abilita: '—',
+    sensi: 'Scurovisione 18 m · Percezione passiva 10',
+    tratti: ['Vulnerabile al fuoco. Resistenza ai danni contundenti, perforanti e taglienti non magici.'],
+    azioni: ['Sguardo Terrificante: spaventa o paralizza di terrore una creatura entro 18 m (TS Saggezza CD 11).', 'Pugno Putrescente: +5 al tiro per colpire, 2d6+3 danni contundenti + 3d6 necrotici (Maledizione della Mummia).'],
+    note: 'Guardiana di cripte, maledice e incute terrore.'
+  },
+  {
+    nome: 'Progenie Vampirica', nomeEn: 'Vampire Spawn', categoria: 'Non-Morti', gs: '5', gsNum: 5,
+    taglia: 'Media', ca: 15, pf: 82, pfFormula: '11d8 + 33',
+    velocita: { terra: 9, scalata: 9 },
+    car: { forza: 16, destrezza: 16, costituzione: 16, intelligenza: 11, saggezza: 10, carisma: 12 },
+    abilita: 'Percezione +3, Furtività +6',
+    sensi: 'Scurovisione 18 m · Percezione passiva 13',
+    tratti: ['Rigenerazione: recupera 10 PF all’inizio del suo turno se non è alla luce del sole o acqua corrente.', 'Movimento del Ragno.'],
+    azioni: ['Multiattacco: 2 attacchi (Artigli e Morso).', 'Artigli: +6 al tiro per colpire, 2d4+3 danni taglienti (può afferrare).', 'Morso: +6 al tiro per colpire, 1d6+3 perforanti + 2d6 necrotici (si cura dei danni necrotici inflitti).'],
+    note: 'Non-morto vampirico assetato di sangue e rigenerante.'
+  },
+
+  // --- GOBLINOIDI, ORCHI & COBOLDI ---
+  {
+    nome: 'Coboldo', nomeEn: 'Kobold', categoria: 'Umanoidi & Mostri', gs: '1/8', gsNum: 0.125,
+    taglia: 'Piccola', ca: 12, pf: 5, pfFormula: '2d6 − 2',
+    velocita: { terra: 9 },
+    car: { forza: 7, destrezza: 15, costituzione: 9, intelligenza: 8, saggezza: 7, carisma: 8 },
+    abilita: '—',
+    sensi: 'Scurovisione 18 m · Percezione passiva 8',
+    tratti: ['Tattica di Branco: vantaggio al tiro per colpire se un alleato è entro 1,5 m dal bersaglio.', 'Sensibilità alla luce solare.'],
+    azioni: ['Pugnale: +4 al tiro per colpire, 1d4+2 danni perforanti.', 'Fionda: +4 al tiro per colpire, gittata 9/36 m, 1d4+2 danni contundenti.'],
+    note: 'Piccolo rettileide che caccia in gruppo nelle gallerie.'
+  },
+  {
+    nome: 'Goblin', nomeEn: 'Goblin', categoria: 'Umanoidi & Mostri', gs: '1/4', gsNum: 0.25,
+    taglia: 'Piccola', ca: 15, pf: 7, pfFormula: '2d6',
+    velocita: { terra: 9 },
+    car: { forza: 8, destrezza: 14, costituzione: 10, intelligenza: 10, saggezza: 8, carisma: 8 },
+    abilita: 'Furtività +6',
+    sensi: 'Scurovisione 18 m · Percezione passiva 9',
+    tratti: ['Fuga Agile: può compiere l’azione di Disimpegno o Nascondersi come azione bonus ad ogni turno.'],
+    azioni: ['Scimitarra: +4 al tiro per colpire, 1d6+2 danni taglienti.', 'Arco corto: +4 al tiro per colpire, gittata 24/96 m, 1d6+2 danni perforanti.'],
+    note: 'Veloce, sfuggente e infido negli agguati.'
+  },
+  {
+    nome: 'Hobgoblin', nomeEn: 'Hobgoblin', categoria: 'Umanoidi & Mostri', gs: '1/2', gsNum: 0.5,
+    taglia: 'Media', ca: 18, pf: 11, pfFormula: '2d8 + 2',
+    velocita: { terra: 9 },
+    car: { forza: 13, destrezza: 12, costituzione: 12, intelligenza: 10, saggezza: 10, carisma: 9 },
+    abilita: '—',
+    sensi: 'Scurovisione 18 m · Percezione passiva 10',
+    tratti: ['Vantaggio Marziale: infligge 2d6 danni extra se colpisce una creatura entro 1,5 m da un alleato.'],
+    azioni: ['Spada lunga: +3 al tiro per colpire, 1d8+1 danni taglienti (o 1d10+1 a 2 mani).', 'Arco lungo: +3 al tiro per colpire, gittata 45/180 m, 1d8+1 danni perforanti.'],
+    note: 'Guerriero disciplinato in corazza pesante e scudo.'
+  },
+  {
+    nome: 'Orco', nomeEn: 'Orc', categoria: 'Umanoidi & Mostri', gs: '1/2', gsNum: 0.5,
+    taglia: 'Media', ca: 13, pf: 15, pfFormula: '2d8 + 6',
+    velocita: { terra: 9 },
+    car: { forza: 16, destrezza: 12, costituzione: 16, intelligenza: 7, saggezza: 11, carisma: 10 },
+    abilita: 'Intimidire +2',
+    sensi: 'Scurovisione 18 m · Percezione passiva 10',
+    tratti: ['Aggressivo: come azione bonus può muoversi fino alla sua velocità verso una creatura ostile.'],
+    azioni: ['Ascia bipenne: +5 al tiro per colpire, 1d12+3 danni taglienti.', 'Giavellotto: +5 al tiro per colpire, gittata 9/36 m, 1d6+3 danni perforanti.'],
+    note: 'Furia bruta e carica implacabile verso il nemico.'
+  },
+  {
+    nome: 'Bugbear', nomeEn: 'Bugbear', categoria: 'Umanoidi & Mostri', gs: '1', gsNum: 1,
+    taglia: 'Media', ca: 16, pf: 27, pfFormula: '5d8 + 5',
+    velocita: { terra: 9 },
+    car: { forza: 15, destrezza: 14, costituzione: 13, intelligenza: 8, saggezza: 11, carisma: 9 },
+    abilita: 'Furtività +6, Sopravvivenza +2',
+    sensi: 'Scurovisione 18 m · Percezione passiva 10',
+    tratti: ['Agguato Silenzioso: +2d6 danni su un attacco a sorpresa nel primo round.', 'Portata aumentata di 1,5 m.'],
+    azioni: ['Stella del mattino: +4 al tiro per colpire, 2d8+2 danni perforanti.', 'Giavellotto: +4 al tiro per colpire, 1d6+2 danni perforanti.'],
+    note: 'Colosso goblinide silenzioso con braccia lunghe.'
+  },
+  {
+    nome: 'Ogre', nomeEn: 'Ogre', categoria: 'Umanoidi & Mostri', gs: '2', gsNum: 2,
+    taglia: 'Grande', ca: 11, pf: 59, pfFormula: '7d10 + 21',
+    velocita: { terra: 12 },
+    car: { forza: 19, destrezza: 8, costituzione: 16, intelligenza: 5, saggezza: 7, carisma: 7 },
+    abilita: '—',
+    sensi: 'Scurovisione 18 m · Percezione passiva 8',
+    tratti: ['—'],
+    azioni: ['Grande clava: +6 al tiro per colpire, 2d8+4 danni contundenti.', 'Giavellotto: +6 al tiro per colpire, gittata 9/36 m, 2d6+4 danni perforanti.'],
+    note: 'Gigante brutale dotato di immensa forza distruttiva.'
+  },
+  {
+    nome: 'Troll', nomeEn: 'Troll', categoria: 'Umanoidi & Mostri', gs: '5', gsNum: 5,
+    taglia: 'Grande', ca: 15, pf: 84, pfFormula: '8d10 + 40',
+    velocita: { terra: 9 },
+    car: { forza: 18, destrezza: 13, costituzione: 20, intelligenza: 7, saggezza: 9, carisma: 7 },
+    abilita: 'Percezione +2',
+    sensi: 'Scurovisione 18 m · Percezione passiva 12',
+    tratti: ['Rigenerazione: recupera 10 PF all’inizio del suo turno. Muore solo se subisce danni da acido o fuoco prima del suo turno.'],
+    azioni: ['Multiattacco: 1 Morso e 2 Artigli.', 'Morso: +7 al tiro per colpire, 1d6+4 danni perforanti.', 'Artigli: +7 al tiro per colpire, 2d6+4 danni taglienti.'],
+    note: 'Gigantesco mostro con rigenerazione letale, vulnerabile solo al fuoco e all’acido.'
+  },
+
+  // --- UMANOIDI & PNG ---
+  {
+    nome: 'Guardia', nomeEn: 'Guard', categoria: 'Umanoidi & PNG', gs: '1/8', gsNum: 0.125,
+    taglia: 'Media', ca: 16, pf: 11, pfFormula: '2d8 + 2',
+    velocita: { terra: 9 },
+    car: { forza: 13, destrezza: 12, costituzione: 12, intelligenza: 10, saggezza: 11, carisma: 10 },
+    abilita: 'Percezione +2',
+    sensi: 'Percezione passiva 12',
+    tratti: ['—'],
+    azioni: ['Lancia: +3 al tiro per colpire, 1d6+1 perforanti.', 'Balestra leggera: +3 al tiro per colpire, gittata 24/96 m, 1d8+1 danni perforanti.'],
+    note: 'Soldato di pattuglia o sentinella cittadina.'
+  },
+  {
+    nome: 'Bandito', nomeEn: 'Bandit', categoria: 'Umanoidi & PNG', gs: '1/8', gsNum: 0.125,
+    taglia: 'Media', ca: 12, pf: 11, pfFormula: '2d8 + 2',
+    velocita: { terra: 9 },
+    car: { forza: 11, destrezza: 12, costituzione: 12, intelligenza: 10, saggezza: 10, carisma: 10 },
+    abilita: '—',
+    sensi: 'Percezione passiva 10',
+    tratti: ['—'],
+    azioni: ['Scimitarra: +3 al tiro per colpire, 1d6+1 danni taglienti.', 'Balestra leggera: +3 al tiro per colpire, gittata 24/96 m, 1d8+1 danni perforanti.'],
+    note: 'Fuorilegge o predone delle strade.'
+  },
+  {
+    nome: 'Cultista', nomeEn: 'Cultist', categoria: 'Umanoidi & PNG', gs: '1/8', gsNum: 0.125,
+    taglia: 'Media', ca: 12, pf: 9, pfFormula: '2d8',
+    velocita: { terra: 9 },
+    car: { forza: 11, destrezza: 12, costituzione: 10, intelligenza: 10, saggezza: 11, carisma: 10 },
+    abilita: 'Inganno +2, Religione +2',
+    sensi: 'Percezione passiva 10',
+    tratti: ['Devozione Oscura: vantaggio ai tiri salvezza contro l’essere Affascinato o Spaventato.'],
+    azioni: ['Scimitarra: +3 al tiro per colpire, 1d6+1 danni taglienti.'],
+    note: 'Fanatico devoto a divinità o entità malvagie.'
+  },
+  {
+    nome: 'Berserker', nomeEn: 'Berserker', categoria: 'Umanoidi & PNG', gs: '2', gsNum: 2,
+    taglia: 'Media', ca: 13, pf: 67, pfFormula: '9d8 + 27',
+    velocita: { terra: 9 },
+    car: { forza: 16, destrezza: 12, costituzione: 17, intelligenza: 9, saggezza: 11, carisma: 9 },
+    abilita: '—',
+    sensi: 'Percezione passiva 10',
+    tratti: ['Attacco Avventato: vantaggio a tutti i tiri per colpire in mischia, ma i nemici hanno vantaggio contro di lui.'],
+    azioni: ['Ascia bipenne: +5 al tiro per colpire, 1d12+3 danni taglienti.'],
+    note: 'Guerriero selvaggio con una riserva di PF massiccia.'
+  },
+  {
+    nome: 'Fanatico del Culto', nomeEn: 'Cult Fanatic', categoria: 'Umanoidi & PNG', gs: '2', gsNum: 2,
+    taglia: 'Media', ca: 13, pf: 33, pfFormula: '6d8 + 6',
+    velocita: { terra: 9 },
+    car: { forza: 11, destrezza: 14, costituzione: 12, intelligenza: 10, saggezza: 13, carisma: 14 },
+    abilita: 'Inganno +4, Persuasione +4, Religione +2',
+    sensi: 'Percezione passiva 11',
+    tratti: ['Lancio di Incantesimi (Chierico liv. 4, CD 11): Parola Guaritrice, Comando, Scudo della Fede, Blocca Persone, Arma Spirituale.'],
+    azioni: ['Pugnale: +4 al tiro per colpire, 1d4+2 danni perforanti.'],
+    note: 'Sacerdote oscuro capace di paralizzare e curare alleati.'
+  },
+  {
+    nome: 'Cavaliere', nomeEn: 'Knight', categoria: 'Umanoidi & PNG', gs: '3', gsNum: 3,
+    taglia: 'Media', ca: 18, pf: 52, pfFormula: '8d8 + 16',
+    velocita: { terra: 9 },
+    car: { forza: 16, destrezza: 11, costituzione: 14, intelligenza: 11, saggezza: 11, carisma: 15 },
+    abilita: '—',
+    sensi: 'Percezione passiva 10',
+    tratti: ['Coraggioso: vantaggio ai TS contro l’essere Spaventato.'],
+    azioni: ['Multiattacco: 2 attacchi di Spada lunga.', 'Spada grande: +5 al tiro per colpire, 2d6+3 danni taglienti.', 'Parata (Reazione): +2 alla CA contro un attacco da mischia.'],
+    note: 'Nobile combattente in armatura completa e grande maestria difensiva.'
+  },
+  {
+    nome: 'Mago Malvagio', nomeEn: 'Mage', categoria: 'Umanoidi & PNG', gs: '6', gsNum: 6,
+    taglia: 'Media', ca: 12, pf: 40, pfFormula: '9d8',
+    velocita: { terra: 9 },
+    car: { forza: 9, destrezza: 14, costituzione: 11, intelligenza: 17, saggezza: 12, carisma: 11 },
+    abilita: 'Arcano +6, Storia +6',
+    sensi: 'Percezione passiva 11',
+    tratti: ['Incantatore di 9° livello (CD 14, +6 al TxC magico): Dardo Incantato, Scudo, Palla di Fuoco, Fulmine, Cono di Freddo, Invisibilità.'],
+    azioni: ['Pugnale: +5 al tiro per colpire, 1d4+2 perforanti.'],
+    note: 'Incantatore arcano letale con incantesimi ad area devastanti.'
+  },
+  {
+    nome: 'Assassino', nomeEn: 'Assassin', categoria: 'Umanoidi & PNG', gs: '8', gsNum: 8,
+    taglia: 'Media', ca: 15, pf: 78, pfFormula: '12d8 + 24',
+    velocita: { terra: 9 },
+    car: { forza: 11, destrezza: 16, costituzione: 14, intelligenza: 13, saggezza: 11, carisma: 10 },
+    abilita: 'Acrobazia +6, Furtività +9, Inganno +3, Percezione +3',
+    sensi: 'Percezione passiva 13',
+    tratti: ['Assassinare: vantaggio contro chi non ha ancora agito nel combattimento; ogni colpo contro un bersaglio sorpreso è un colpo critico.'],
+    azioni: ['Multiattacco: 2 attacchi di Spada corta o Balestra.', 'Spada corta: +6 al tiro per colpire, 1d6+3 perforanti + 7d6 danni da veleno (TS Costituzione CD 15 dimezza).'],
+    note: 'Sicario mortale con veleni letali e colpi a sorpresa devastanti.'
+  },
+
+  // --- MOSTRUOSITÀ, ABERRAZIONI & MELME ---
+  {
+    nome: 'Arpia', nomeEn: 'Harpy', categoria: 'Mostruosità & Draghi', gs: '1', gsNum: 1,
+    taglia: 'Media', ca: 11, pf: 38, pfFormula: '7d8 + 7',
+    velocita: { terra: 6, volo: 12 },
+    car: { forza: 12, destrezza: 13, costituzione: 12, intelligenza: 7, saggezza: 10, carisma: 13 },
+    abilita: '—',
+    sensi: 'Percezione passiva 10',
+    tratti: ['—'],
+    azioni: ['Canto Incantatore: creature entro 90 m devono superare TS Saggezza CD 11 o essere Affascinate e camminare verso l’arpia.', 'Artigli: +3 al tiro per colpire, 2d4+1 danni taglienti.'],
+    note: 'Creatura alata dal canto ipnotico che attira le vittime verso precipizi o trappole.'
+  },
+  {
+    nome: 'Mimic', nomeEn: 'Mimic', categoria: 'Mostruosità & Draghi', gs: '2', gsNum: 2,
+    taglia: 'Media', ca: 12, pf: 58, pfFormula: '9d8 + 18',
+    velocita: { terra: 4.5 },
+    car: { forza: 17, destrezza: 12, costituzione: 15, intelligenza: 5, saggezza: 13, carisma: 8 },
+    abilita: 'Furtività +5',
+    sensi: 'Scurovisione 18 m · Percezione passiva 11',
+    tratti: ['Falso Aspetto: indistinguibile da un oggetto inanimato (es. forziere, porta).', 'Adesivo: trattiene qualsiasi creatura o arma che lo tocca.'],
+    azioni: ['Pseudopodo: +5 al tiro per colpire, 1d8+3 contundenti (trattiene il bersaglio).', 'Morso: +5 al tiro per colpire, 1d8+3 perforanti + 1d8 acido.'],
+    note: 'Predatore mutaforma che assume la forma di forzieri o porte.'
+  },
+  {
+    nome: 'Cubo Gelatinoso', nomeEn: 'Gelatinous Cube', categoria: 'Mostruosità & Draghi', gs: '2', gsNum: 2,
+    taglia: 'Grande', ca: 6, pf: 84, pfFormula: '8d10 + 40',
+    velocita: { terra: 4.5 },
+    car: { forza: 14, destrezza: 3, costituzione: 20, intelligenza: 1, saggezza: 6, carisma: 1 },
+    abilita: '—',
+    sensi: 'Vista cieca 18 m · Percezione passiva 8',
+    tratti: ['Trasparente: superare prova di Percezione CD 15 per individuarlo.', 'Inglobare: si muove nello spazio di creature e le ingloba (TS Destrezza CD 12 o 3d6 acido e paralisi).'],
+    azioni: ['Pseudopodo: +4 al tiro per colpire, 3d6 danni da acido.'],
+    note: 'Cubo semovente che scioglie e ingloba tutto ciò che incontra nei corridoi.'
+  },
+  {
+    nome: 'Gufo-Orso', nomeEn: 'Owlbear', categoria: 'Mostruosità & Draghi', gs: '3', gsNum: 3,
+    taglia: 'Grande', ca: 13, pf: 59, pfFormula: '7d10 + 21',
+    velocita: { terra: 12 },
+    car: { forza: 20, destrezza: 12, costituzione: 17, intelligenza: 3, saggezza: 12, carisma: 7 },
+    abilita: 'Percezione +3',
+    sensi: 'Scurovisione 18 m · Percezione passiva 13',
+    tratti: ['Vista e olfatto acuti: vantaggio alle prove di Percezione su vista e olfatto.'],
+    azioni: ['Multiattacco: 1 Becco e 1 Artigli.', 'Becco: +7 al tiro per colpire, 1d10+5 danni perforanti.', 'Artigli: +7 al tiro per colpire, 2d8+5 danni taglienti.'],
+    note: 'Ibrido feroce, combinazione terrificante di becco rapace e artigli d’orso.'
+  },
+  {
+    nome: 'Basilisco', nomeEn: 'Basilisk', categoria: 'Mostruosità & Draghi', gs: '3', gsNum: 3,
+    taglia: 'Media', ca: 12, pf: 52, pfFormula: '8d8 + 16',
+    velocita: { terra: 6 },
+    car: { forza: 16, destrezza: 8, costituzione: 15, intelligenza: 2, saggezza: 8, carisma: 7 },
+    abilita: '—',
+    sensi: 'Scurovisione 18 m · Percezione passiva 9',
+    tratti: ['Sguardo Pietrificante: se una creatura inizia il turno entro 9 m e guarda il basilisco, TS Costituzione CD 12 o inizia a tramutarsi in pietra.'],
+    azioni: ['Morso: +5 al tiro per colpire, 2d6+3 perforanti + 2d6 veleno.'],
+    note: 'Rettile a otto zampe il cui sguardo trasforma i viventi in pietra.'
+  },
+  {
+    nome: 'Manticora', nomeEn: 'Manticore', categoria: 'Mostruosità & Draghi', gs: '3', gsNum: 3,
+    taglia: 'Grande', ca: 14, pf: 68, pfFormula: '8d10 + 24',
+    velocita: { terra: 9, volo: 15 },
+    car: { forza: 17, destrezza: 16, costituzione: 17, intelligenza: 7, saggezza: 12, carisma: 8 },
+    abilita: '—',
+    sensi: 'Scurovisione 18 m · Percezione passiva 11',
+    tratti: ['—'],
+    azioni: ['Multiattacco: 3 attacchi (1 Morso e 2 Artigli o 3 Spine della Coda).', 'Morso: +5 al tiro per colpire, 1d8+3 perforanti.', 'Spine della Coda: +5 al tiro per colpire, gittata 30/60 m, 1d8+3 perforanti.'],
+    note: 'Corpo di leone, ali di pipistrello e coda con dardi appuntiti.'
+  },
+  {
+    nome: 'Belva Distorcente', nomeEn: 'Displacer Beast', categoria: 'Mostruosità & Draghi', gs: '3', gsNum: 3,
+    taglia: 'Grande', ca: 13, pf: 85, pfFormula: '10d10 + 30',
+    velocita: { terra: 12 },
+    car: { forza: 18, destrezza: 15, costituzione: 16, intelligenza: 6, saggezza: 12, carisma: 8 },
+    abilita: 'Furtività +4',
+    sensi: 'Scurovisione 18 m · Percezione passiva 11',
+    tratti: ['Spostamento Illusorio: gli attacchi contro di essa hanno svantaggio (svanisce se subisce danni fino al suo turno).', 'Schivata Prodigiosa.'],
+    azioni: ['Multiattacco: 2 Tentacoli.', 'Tentacoli: +6 al tiro per colpire, portata 3 m, 1d6+4 perforanti + 1d6 contundenti.'],
+    note: 'Felino a sei zampe con tentacoli e proiezione illusoria.'
+  },
+  {
+    nome: 'Medusa', nomeEn: 'Medusa', categoria: 'Mostruosità & Draghi', gs: '6', gsNum: 6,
+    taglia: 'Media', ca: 15, pf: 127, pfFormula: '17d8 + 51',
+    velocita: { terra: 9 },
+    car: { forza: 10, destrezza: 17, costituzione: 16, intelligenza: 12, saggezza: 13, carisma: 15 },
+    abilita: 'Inganno +5, Intuizione +4, Furtività +6, Percezione +4',
+    sensi: 'Scurovisione 18 m · Percezione passiva 14',
+    tratti: ['Sguardo Pietrificante: TS Costituzione CD 14 per chi la fissa entro 9 m o cade Pietrificato.'],
+    azioni: ['Multiattacco: 1 Serpenti e 2 Spada corta (o 2 Arco lungo).', 'Serpenti: +5 al tiro per colpire, 1d4+2 perforanti + 4d6 veleno.', 'Arco lungo: +6 al tiro per colpire, 1d8+3 perforanti + 2d6 veleno.'],
+    note: 'Creatura con chioma di vipere velenose e sguardo pietrificante.'
+  },
+  {
+    nome: 'Mind Flayer', nomeEn: 'Mind Flayer', categoria: 'Mostruosità & Draghi', gs: '7', gsNum: 7,
+    taglia: 'Media', ca: 15, pf: 71, pfFormula: '13d8 + 13',
+    velocita: { terra: 9 },
+    car: { forza: 11, destrezza: 12, costituzione: 12, intelligenza: 19, saggezza: 17, carisma: 17 },
+    abilita: 'Arcano +7, Furtività +4, Inganno +6, Intuizione +6, Percezione +6',
+    sensi: 'Scurovisione 36 m · Percezione passiva 16',
+    tratti: ['Resistenza alla magia: vantaggio ai TS contro incantesimi.', 'Telepatia 36 m.'],
+    azioni: ['Tentacoli: +7 al tiro per colpire, 2d10+4 danni psichici (afferra e stordisce con TS Intelligenza CD 15).', 'Estrarre Cervello: +7 al tiro per colpire contro bersaglio stordito, infligge 10d10 danni perforanti; se riduce a 0 PF il bersaglio muore all’istante.', 'Esplosione Psichica (Ricarica 5-6): cono di 18 m, 4d8+4 danni psichici e stordimento per 1 minuto (TS Int CD 15).'],
+    note: 'Aberrazione psionica divoratrice di cervelli.'
+  },
+  {
+    nome: 'Beholder', nomeEn: 'Beholder', categoria: 'Mostruosità & Draghi', gs: '13', gsNum: 13,
+    taglia: 'Grande', ca: 18, pf: 180, pfFormula: '19d10 + 76',
+    velocita: { terra: 0, volo: 6 },
+    car: { forza: 10, destrezza: 14, costituzione: 18, intelligenza: 17, saggezza: 15, carisma: 17 },
+    abilita: 'Percezione +12',
+    sensi: 'Scurovisione 36 m · Percezione passiva 22',
+    tratti: ['Cono Antimagia: il suo occhio centrale crea un cono di 45 m di antimagia totale.'],
+    azioni: ['Morso: +5 al tiro per colpire, 4d6 danni perforanti.', 'Raggi Oculari: tira a caso 3 raggi oculari (Fascino, Paralisi, Paura, Rallentamento, Indebolimento, Telecinesi, Sonno, Pietrificazione, Disintegrazione [10d8 danni da forza], Morte [10d10 danni necrotici]).'],
+    note: 'Tiranno oculare supremo con 10 raggi letali e cono antimagia.'
+  },
+
+  // --- ELEMENTALI, COSTTRUTTI & IMMONDI ---
+  {
+    nome: 'Gargoyle', nomeEn: 'Gargoyle', categoria: 'Elementali & Immondi', gs: '2', gsNum: 2,
+    taglia: 'Media', ca: 15, pf: 52, pfFormula: '7d8 + 21',
+    velocita: { terra: 9, volo: 18 },
+    car: { forza: 15, destrezza: 11, costituzione: 16, intelligenza: 6, saggezza: 11, carisma: 7 },
+    abilita: '—',
+    sensi: 'Scurovisione 18 m · Percezione passiva 10',
+    tratti: ['Falso Aspetto: indistinguibile da una statua di pietra finché resta immobile.', 'Resistenza ai danni contundenti, perforanti e taglienti non magici.'],
+    azioni: ['Multiattacco: 1 Morso e 1 Artigli.', 'Morso: +4 al tiro per colpire, 1d6+2 danni perforanti.', 'Artigli: +4 al tiro per colpire, 1d6+2 danni taglienti.'],
+    note: 'Costrutto alato di pietra vivente guardiano di templi.'
+  },
+  {
+    nome: 'Elementale del Fuoco', nomeEn: 'Fire Elemental', categoria: 'Elementali & Immondi', gs: '5', gsNum: 5,
+    taglia: 'Grande', ca: 13, pf: 102, pfFormula: '12d10 + 36',
+    velocita: { terra: 15 },
+    car: { forza: 10, destrezza: 17, costituzione: 16, intelligenza: 6, saggezza: 10, carisma: 7 },
+    abilita: '—',
+    sensi: 'Scurovisione 18 m · Percezione passiva 10',
+    tratti: ['Forma di Fuoco: può attraversare spazi di 2,5 cm. Chi lo tocca o colpisce in mischia subisce 1d10 danni da fuoco.', 'Suscettibilità all’acqua.'],
+    azioni: ['Multiattacco: 2 Schianti.', 'Schianto: +6 al tiro per colpire, 2d6+3 danni da fuoco + bersaglio prende fuoco (1d10 a turno).'],
+    note: 'Massa semovente di fiamme ardenti che incenerisce tutto al passaggio.'
+  },
+  {
+    nome: 'Elementale della Terra', nomeEn: 'Earth Elemental', categoria: 'Elementali & Immondi', gs: '5', gsNum: 5,
+    taglia: 'Grande', ca: 17, pf: 126, pfFormula: '12d10 + 60',
+    velocita: { terra: 9, scavare: 9 },
+    car: { forza: 20, destrezza: 8, costituzione: 20, intelligenza: 5, saggezza: 10, carisma: 5 },
+    abilita: '—',
+    sensi: 'Percezione tellurica 18 m · Scurovisione 18 m · Percezione passiva 10',
+    tratti: ['Scivolamento nella Pietra: si muove attraverso roccia e terra senza disturbarla.', 'Resistenza ai danni da armi non magiche.'],
+    azioni: ['Multiattacco: 2 Schianti.', 'Schianto: +8 al tiro per colpire, 2d8+5 danni contundenti.'],
+    note: 'Colosso di pietra e roccia impenetrabile.'
+  },
+  {
+    nome: 'Elementale dell’Aria', nomeEn: 'Air Elemental', categoria: 'Elementali & Immondi', gs: '5', gsNum: 5,
+    taglia: 'Grande', ca: 15, pf: 90, pfFormula: '12d10 + 24',
+    velocita: { terra: 0, volo: 27 },
+    car: { forza: 14, destrezza: 20, costituzione: 14, intelligenza: 6, saggezza: 10, carisma: 6 },
+    abilita: '—',
+    sensi: 'Scurovisione 18 m · Percezione passiva 10',
+    tratti: ['Forma di Aria: passa attraverso qualsiasi apertura.', 'Resistenza ai danni non magici.'],
+    azioni: ['Multiattacco: 2 Schianti.', 'Schianto: +8 al tiro per colpire, 2d8+5 danni contundenti.', 'Turbine (Ricarica 4-6): solleva e scaglia creature fino a 6 m infliggendo 3d8+5 danni (TS Forza CD 13).'],
+    note: 'Vortice tempestoso rapidissimo e impalpabile.'
+  },
+  {
+    nome: 'Elementale dell’Acqua', nomeEn: 'Water Elemental', categoria: 'Elementali & Immondi', gs: '5', gsNum: 5,
+    taglia: 'Grande', ca: 14, pf: 114, pfFormula: '12d10 + 48',
+    velocita: { terra: 9, nuoto: 27 },
+    car: { forza: 18, destrezza: 14, costituzione: 18, intelligenza: 5, saggezza: 10, carisma: 5 },
+    abilita: '—',
+    sensi: 'Scurovisione 18 m · Percezione passiva 10',
+    tratti: ['Forma Liquida: entra nello spazio dei nemici e si muove liberamente.'],
+    azioni: ['Multiattacco: 2 Schianti.', 'Schianto: +7 al tiro per colpire, 2d8+4 danni contundenti.', 'Travolgere (Ricarica 4-6): sommerge creature infliggendo 2d8+4 contundenti e trattenendole sott’acqua (TS Forza CD 15).'],
+    note: 'Onda vivente che annega e trascina le creature.'
+  },
+  {
+    nome: 'Golem di Carne', nomeEn: 'Flesh Golem', categoria: 'Elementali & Immondi', gs: '5', gsNum: 5,
+    taglia: 'Media', ca: 9, pf: 93, pfFormula: '11d8 + 44',
+    velocita: { terra: 9 },
+    car: { forza: 19, destrezza: 9, costituzione: 18, intelligenza: 6, saggezza: 10, carisma: 5 },
+    abilita: '—',
+    sensi: 'Scurovisione 18 m · Percezione passiva 10',
+    tratti: ['Assorbimento del Fulmine: i danni da fulmine lo curano.', 'Avversione al Fuoco: svantaggio su attacchi e prove se subisce fuoco.', 'Immune alle armi non magiche.'],
+    azioni: ['Multiattacco: 2 Schianti.', 'Schianto: +7 al tiro per colpire, 2d8+4 danni contundenti.'],
+    note: 'Costrutto di cadaveri cuciti insieme dotato di forza inumana.'
+  },
+  {
+    nome: 'Viverna', nomeEn: 'Wyvern', categoria: 'Mostruosità & Draghi', gs: '6', gsNum: 6,
+    taglia: 'Grande', ca: 13, pf: 110, pfFormula: '13d10 + 39',
+    velocita: { terra: 6, volo: 24 },
+    car: { forza: 19, destrezza: 10, costituzione: 16, intelligenza: 5, saggezza: 12, carisma: 6 },
+    abilita: 'Percezione +4',
+    sensi: 'Scurovisione 18 m · Percezione passiva 14',
+    tratti: ['Vista acuta: vantaggio a Percezione (vista).'],
+    azioni: ['Multiattacco: 1 Morso, 1 Artigli e 1 Pungiglione.', 'Morso: +7 al tiro per colpire, 2d6+4 perforanti.', 'Artigli: +7 al tiro per colpire, 2d4+4 taglienti.', 'Pungiglione: +7 al tiro per colpire, 2d6+4 perforanti + 7d6 danni da veleno (TS Costituzione CD 15 dimezza).'],
+    note: 'Drago alato feroce con un pungiglione velenoso letale sulla coda.'
+  },
+  {
+    nome: 'Drago Rosso Giovane', nomeEn: 'Young Red Dragon', categoria: 'Mostruosità & Draghi', gs: '10', gsNum: 10,
+    taglia: 'Grande', ca: 18, pf: 178, pfFormula: '17d10 + 85',
+    velocita: { terra: 12, scalata: 12, volo: 24 },
+    car: { forza: 23, destrezza: 10, costituzione: 21, intelligenza: 14, saggezza: 11, carisma: 19 },
+    abilita: 'Furtività +4, Percezione +8',
+    sensi: 'Vista cieca 9 m · Scurovisione 36 m · Percezione passiva 18',
+    tratti: ['Immune al fuoco.'],
+    azioni: ['Multiattacco: 1 Morso e 2 Artigli.', 'Morso: +10 al tiro per colpire, 2d10+6 perforanti + 1d6 fuoco.', 'Artigli: +10 al tiro per colpire, 2d6+6 taglienti.', 'Soffio di Fuoco (Ricarica 5-6): cono di 9 m, 16d6 danni da fuoco (TS Destrezza CD 17 dimezza).'],
+    note: 'Drago sputafuoco superbo e distruttivo, terrore dei cieli.'
+  },
+  {
+    nome: 'Golem di Pietra', nomeEn: 'Stone Golem', categoria: 'Elementali & Immondi', gs: '10', gsNum: 10,
+    taglia: 'Grande', ca: 17, pf: 178, pfFormula: '17d10 + 85',
+    velocita: { terra: 9 },
+    car: { forza: 22, destrezza: 9, costituzione: 20, intelligenza: 3, saggezza: 11, carisma: 1 },
+    abilita: '—',
+    sensi: 'Scurovisione 36 m · Percezione passiva 10',
+    tratti: ['Forma Immutabile: immune a qualsiasi magia che alteri la sua forma.', 'Immunità alla magia non adamantina.'],
+    azioni: ['Multiattacco: 2 Schianti.', 'Schianto: +10 al tiro per colpire, 3d8+6 danni contundenti.', 'Rallentamento (Ricarica 5-6): bersaglia creature entro 3 m, TS Saggezza CD 17 o velocità dimezzata e nessuna reazione.'],
+    note: 'Monolite di pietra inarrestabile e protetto contro ogni magia.'
+  }
+];
+
+export const TUTTE_LE_CREATURE = [...MOSTRI_5E, ...BESTIE];
