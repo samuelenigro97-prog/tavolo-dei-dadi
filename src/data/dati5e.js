@@ -1338,3 +1338,92 @@ export const SOTTOCLASSI_FONTI = {
   // Artefice
   'Alchimista': 'tasha', 'Armaiolo': 'tasha', 'Artigliere': 'tasha', 'Fabbro da Guerra': 'tasha',
 };
+
+export const TALENTI_FONTI = {
+  // PHB 2024 / Origine / Doni Epici
+  'Allerta': 'phb2024', 'Fortunato': 'phb2024', 'Guaritore': 'phb2024', 'Incantatore Magico': 'phb2024',
+  'Mago Combattente': 'phb2024', 'Iniziato alla Magia': 'phb2024', 'Robusto': 'phb2024', 'Musico': 'phb2024',
+  'Abile': 'phb2024', 'Artigiano': 'phb2024', 'Guida Spirituale': 'phb2024', 'Attaccabrighe': 'phb2024',
+  'Dono dell’Irresistibile Offensiva': 'phb2024', 'Dono del Destino': 'phb2024',
+  'Dono dell’Attacco Rapido': 'phb2024', 'Dono dell’Invulnerabilità': 'phb2024',
+  'Dono della Magia Implacabile': 'phb2024', 'Dono dell\'Irresistibile Offensiva': 'phb2024',
+  'Dono dell\'Attacco Rapido': 'phb2024', 'Dono dell\'Invulnerabilità': 'phb2024',
+
+  // Tasha's Cauldron of Everything (TCoE)
+  'Toccato dalle Fate': 'tasha', 'Toccato dalle Ombre': 'tasha', 'Telecinetico': 'tasha',
+  'Telepatico': 'tasha', 'Cuoco': 'tasha', 'Schiacciatore': 'tasha', 'Perforatore': 'tasha',
+  'Squartatore': 'tasha', 'Avvelenatore': 'tasha', 'Esperto nelle Abilità': 'tasha',
+  'Iniziato all’Artefatto': 'tasha', 'Iniziato all\'Artefatto': 'tasha', 'Metamagia Adepta': 'tasha',
+  'Iniziato al Combattimento': 'tasha', 'Lama Spirituale': 'tasha',
+
+  // Xanathar's Guide to Everything (XGtE)
+  'Precisione Elfica': 'xanathar', 'Paura del Drago': 'xanathar', 'Fiamme di Phlegethos': 'xanathar',
+  'Agilità Tozza': 'xanathar', 'Furia Orchesca': 'xanathar', 'Fortuna Generosa': 'xanathar',
+  'Costituzione Infernale': 'xanathar', 'Seconda Opportunità': 'xanathar',
+  'Magia degli Elfi dei Boschi': 'xanathar', 'Prodigio': 'xanathar',
+
+  // PHB 2014 Classici
+  'Maestro delle Armi Grandi': 'phb2014', 'Tiratore Scelto': 'phb2014', 'Sentinella': 'phb2014',
+  'Maestro delle Armature Medie': 'phb2014', 'Condottiero Ispiratore': 'phb2014', 'Resiliente': 'phb2014',
+  'Mente Lucida': 'phb2014', 'Padrone delle Armi ad Asta': 'phb2014', 'Attore': 'phb2014', 'Atleta': 'phb2014',
+  'Difensore con Due Armi': 'phb2014', 'Lottatore': 'phb2014', 'Adepto Elementale': 'phb2014',
+  'Cecchino Magico': 'phb2014', 'Mobile': 'phb2014', 'Osservatore': 'phb2014', 'Maestro di Scudo': 'phb2014',
+};
+
+export const INCANTESIMI_FONTI = {
+  // Tasha's Cauldron of Everything (TCoE)
+  'Evoca Aberrazione': 'tasha', 'Evoca Bestia': 'tasha', 'Evoca Celestiale': 'tasha',
+  'Evoca Costrutto': 'tasha', 'Evoca Elementale': 'tasha', 'Evoca Folletto': 'tasha',
+  'Evoca Immondo': 'tasha', 'Evoca Spirito dell’Ombra': 'tasha', 'Evoca Spirito dell\'Ombra': 'tasha',
+  'Evoca Non Morto': 'tasha', 'Calderone Caustico di Tasha': 'tasha', 'Frusta Mentale di Tasha': 'tasha',
+  'Aspetto Ultraterreno di Tasha': 'tasha', 'Lama del Disastro': 'tasha', 'Sudario Spirituale': 'tasha',
+  'Spada dell’Inganno': 'tasha', 'Scheggia Mentale': 'tasha', 'Sogno del Velo Blu': 'tasha',
+
+  // Xanathar's Guide to Everything (XGtE)
+  'Assorbire Elementi': 'xanathar', 'Dardo del Caos': 'xanathar', 'Catapulta': 'xanathar',
+  'Soffio del Drago': 'xanathar', 'Spirito Guaritore': 'xanathar', 'Lama d’Ombra': 'xanathar',
+  'Lama d\'Ombra': 'xanathar', 'Passo del Tuono': 'xanathar', 'Minuscolo Servitore': 'xanathar',
+  'Squarcio Sinaptico': 'xanathar', 'Danza Macabra': 'xanathar', 'Enervazione': 'xanathar',
+  'Alba': 'xanathar', 'Arma Sacra': 'xanathar', 'Drago Illusorio': 'xanathar',
+  'Oscurità Esasperante': 'xanathar', 'Tempio degli Dei': 'xanathar', 'Corona di Stelle': 'xanathar',
+  'Rintocco dei Morti': 'xanathar', 'Infestazione': 'xanathar', 'Ferinità Primordiale': 'xanathar',
+  'Parola di Radiosità': 'xanathar', 'Dardo Psichico': 'xanathar', 'Trasferimento Vitale': 'xanathar',
+
+  // Fizban's Treasury of Dragons (FTD)
+  'Evoca Spirito Draconico': 'fizban_mm', 'Passo di Ashardalon': 'fizban_mm',
+  'Trasformazione Draconica': 'fizban_mm', 'Scudo di Platino di Fizban': 'fizban_mm',
+  'Gelo Vincolante di Rime': 'fizban_mm', 'Inganno di Nathair': 'fizban_mm',
+};
+
+export const INVOCAZIONI_FONTI = {
+  // Tasha
+  'Mente Mistica': 'tasha', 'Scriba Remoto': 'tasha', 'Investitura del Maestro della Catena': 'tasha',
+  'Servitù Imperitura': 'tasha', 'Protezione della Tomba': 'tasha',
+  // Xanathar
+  'Tomba di Levistus': 'xanathar', 'Sguardo Fantasmale': 'xanathar', 'Morsa di Hadar': 'xanathar',
+  'Arma del Patto Migliorata': 'xanathar', 'Fuga del Trickster': 'xanathar', 'Manto di Baalzebul': 'xanathar',
+};
+
+export function fonteValida(fonte, manuali) {
+  if (!manuali || typeof manuali !== 'object') return true;
+  if (!fonte) return true;
+  return manuali[fonte] !== false;
+}
+
+export function talentiPerManuali(talenti, manuali) {
+  if (!manuali || !Array.isArray(talenti)) return talenti;
+  return talenti.filter((t) => {
+    const nome = typeof t === 'string' ? t : (t.nome || '');
+    const fonte = TALENTI_FONTI[nome] || 'phb2014';
+    return fonteValida(fonte, manuali);
+  });
+}
+
+export function incantesimiPerManuali(incantesimi, manuali) {
+  if (!manuali || !Array.isArray(incantesimi)) return incantesimi;
+  return incantesimi.filter((inc) => {
+    const nome = typeof inc === 'string' ? inc : (inc.nome || '');
+    const fonte = INCANTESIMI_FONTI[nome] || 'phb2014';
+    return fonteValida(fonte, manuali);
+  });
+}

@@ -1286,7 +1286,7 @@ import { spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spieg
 import { INCANTESIMI_DB, ALIAS_INCANTESIMI, datiIncantesimo } from './data/incantesimi.js';
 
 const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(INCANTESIMI_DB)])).sort((a, b) => a.localeCompare(b, 'it'));
-import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E, DEFAULT_MANUALI, MANUALI_INFO, SOTTOCLASSI_FONTI } from './data/dati5e.js';
+import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E, DEFAULT_MANUALI, MANUALI_INFO, SOTTOCLASSI_FONTI, TALENTI_FONTI, INCANTESIMI_FONTI, talentiPerManuali, incantesimiPerManuali, fonteValida } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
 import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello } from './rules/regole.js';
@@ -6924,7 +6924,7 @@ export default function App() {
                 placeholder={t('ph.inc_nome')} 
               />
               <datalist id="lista-incantesimi">
-                {INCANTESIMI_NOMI.map((n) => <option key={n} value={n} />)}
+                {incantesimiPerManuali(INCANTESIMI_NOMI, manualiAttivi).map((n) => <option key={n} value={n} />)}
               </datalist>
               {eff && <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 12px', fontSize: 13, lineHeight: 1.4, marginTop: 6 }}>{eff}</div>}
               <div style={{ display: 'flex', gap: 8 }}>
@@ -7908,10 +7908,10 @@ export default function App() {
                       }}
                     >
                       <option value="">{t('crea.scegli')}</option>
-                      {[...TALENTI_5E].sort((a, b) => a.nome.localeCompare(b.nome, lingua)).map((tl) => <option key={tl.nome} value={tl.nome}>{tl.nome} — {tl.desc}</option>)}
+                      {[...talentiPerManuali(TALENTI_5E, manualiAttivi)].sort((a, b) => a.nome.localeCompare(b.nome, lingua)).map((tl) => <option key={tl.nome} value={tl.nome}>{tl.nome} — {tl.desc}</option>)}
                       <option value="__altro">{t('levelup.altro_talento')}</option>
                     </select>
-                    {(!levelUpBozza.talento || !TALENTI_5E.some((t) => t.nome === levelUpBozza.talento)) && (
+                    {(!levelUpBozza.talento || !talentiPerManuali(TALENTI_5E, manualiAttivi).some((t) => t.nome === levelUpBozza.talento)) && (
                       <input
                         type="text"
                         placeholder={t('levelup.nome_talento_custom')}
@@ -8452,7 +8452,7 @@ export default function App() {
               {bozzaCrea.classe && (() => {
                 const asi = livelliASI(bozzaCrea.classe).filter((l) => l <= Number(bozzaCrea.livello || 1));
                 if (!asi.length) return null;
-                const talentiOrdinati = [...TALENTI_5E].sort((a, b) => a.nome.localeCompare(b.nome, lingua));
+                const talentiOrdinati = [...talentiPerManuali(TALENTI_5E, manualiAttivi)].sort((a, b) => a.nome.localeCompare(b.nome, lingua));
                 return (
                   <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', marginTop: -6, marginBottom: 12, fontSize: 11 }}>
                     <div style={{ fontWeight: 'bold', marginBottom: 6, color: C.inkDim }}>
@@ -8489,7 +8489,7 @@ export default function App() {
                   <label style={{ ...styles.detail, display: 'block', marginBottom: 3, fontWeight: 'bold' }}>{t('crea.talento_origine_label')}</label>
                   <select value={bozzaCrea.talentoOrigine} onChange={(e) => setB({ talentoOrigine: e.target.value })} style={stileSelect}>
                     <option value="">{t('crea.scegli')}</option>
-                    {[...TALENTI_5E].sort((a, b) => a.nome.localeCompare(b.nome, lingua)).map((tl) => <option key={tl.nome} value={tl.nome}>{tl.nome} — {tl.desc}</option>)}
+                    {[...talentiPerManuali(TALENTI_5E, manualiAttivi)].sort((a, b) => a.nome.localeCompare(b.nome, lingua)).map((tl) => <option key={tl.nome} value={tl.nome}>{tl.nome} — {tl.desc}</option>)}
                   </select>
                 </div>
               )}
@@ -13562,7 +13562,7 @@ export default function App() {
                       <ListaQuadratini
                         value={scheda.talenti}
                         lookup={spiegaTalento}
-                        opzioni={TALENTI_5E}
+                        opzioni={talentiPerManuali(TALENTI_5E, manualiAttivi)}
                         placeholder={t("talenti.ph")}
                         onChange={(v) => aggiorna({ talenti: v })}
                       />
