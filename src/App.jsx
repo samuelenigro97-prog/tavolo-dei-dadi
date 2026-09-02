@@ -1485,6 +1485,7 @@ function schedaVuota() {
     denari: { mr: 0, ma: 0, me: 0, mo: 0, mp: 0 },
     // Preferenze UI del personaggio: persistono insieme alla scheda.
     sezioniAperte: {},
+    livelliIncChiusi: {},
     // Id dei controlliScheda() che l'utente ha scelto di non vedere più
     // (homebrew, concessioni del DM: non sono errori, solo eccezioni).
     controlliIgnorati: [],
@@ -2560,6 +2561,9 @@ function normalizeImported(rawDati) {
     sezioniAperte: dati.sezioniAperte && typeof dati.sezioniAperte === 'object' && !Array.isArray(dati.sezioniAperte)
       ? Object.fromEntries(Object.entries(dati.sezioniAperte).map(([id, aperta]) => [id, Boolean(aperta)]))
       : {},
+    livelliIncChiusi: dati.livelliIncChiusi && typeof dati.livelliIncChiusi === 'object' && !Array.isArray(dati.livelliIncChiusi)
+      ? Object.fromEntries(Object.entries(dati.livelliIncChiusi).map(([liv, chiuso]) => [liv, Boolean(chiuso)]))
+      : {},
     controlliIgnorati: Array.isArray(dati.controlliIgnorati) ? dati.controlliIgnorati.filter((x) => typeof x === 'string') : [],
     mappaCampagna: typeof dati.mappaCampagna === 'string' && dati.mappaCampagna.startsWith('data:image/')
       ? dati.mappaCampagna
@@ -3181,8 +3185,12 @@ export default function App() {
   const [soloRitualiInc, setSoloRitualiInc] = useState(false);
   const [soloPreparatiInc, setSoloPreparatiInc] = useState(false);
   const [soloConcInc, setSoloConcInc] = useState(false);
-  const [filtroTempoInc, setFiltroTempoInc] = useState(''); // '' | 'azione' | 'bonus' | 'reazione'
-  const [livelliIncChiusi, setLivelliIncChiusi] = useState({});
+  const livelliIncChiusi = scheda.livelliIncChiusi || {};
+  const setLivelliIncChiusi = (updater) => {
+    const prev = scheda.livelliIncChiusi || {};
+    const next = typeof updater === 'function' ? updater(prev) : updater;
+    aggiorna({ livelliIncChiusi: next });
+  };
   const [filtroDiario, setFiltroDiario] = useState('');
   const [vociDiarioChiuse, setVociDiarioChiuse] = useState({});
   const [filtroInventario, setFiltroInventario] = useState('');
