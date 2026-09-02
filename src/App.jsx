@@ -4436,6 +4436,42 @@ export default function App() {
     });
   }
 
+  /** Tira l'iniziativa per TUTTI i combattenti nel combat tracker e ordina la lista. */
+  function tiraIniziativeTutti() {
+    setCombat((c) => {
+      if (!c.combattenti.length) return c;
+      const conIniz = c.combattenti.map((cb) => {
+        let mod = 0;
+        if (cb.tipo === 'pg') {
+          mod = modificatore(punteggioCaratteristica(scheda, 'destrezza') || 10);
+          const haAllerta = /allerta|alert/i.test(scheda.tratti || '') || /allerta|alert/i.test(scheda.talenti || '');
+          if (haAllerta) {
+            mod += (scheda.versione === '2014' ? 5 : (bonusCompetenzaDaLivello(scheda.livello) || 2));
+          }
+        } else if (cb.dati?.car?.destrezza != null) {
+          mod = modificatore(cb.dati.car.destrezza);
+        } else {
+          mod = Math.floor(Math.random() * 5); // 0 a +4
+        }
+        const d20 = tiraDado(20);
+        return {
+          ...cb,
+          iniziativa: d20 + mod,
+        };
+      });
+
+      const ordinati = [...conIniz].sort((a, b) => (Number(b.iniziativa) || 0) - (Number(a.iniziativa) || 0));
+      return {
+        ...c,
+        attivo: true,
+        aperto: true,
+        combattenti: ordinati,
+        round: 1,
+        turno: 0,
+      };
+    });
+  }
+
   function aggiungiCombattente(tipo, dati = {}) {
     const nome = dati.nome || (tipo === 'nemico' ? t('ct.nemico') : tipo === 'alleato' ? t('ct.alleato') : t('ct.pg'));
     const pfMax = dati.pfMax ?? 10;
@@ -15501,20 +15537,11 @@ export default function App() {
               {/* Gruppo 3: Strumenti & Gestione */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
                 <button
-                  style={{ ...styles.buttonMini, color: C.goldDark, borderColor: C.goldDark, whiteSpace: 'nowrap', padding: '3px 8px' }}
-                  title="Tira automaticamente 1d20 per tutti i combattenti che hanno Iniziativa a 0, poi ordina la lista"
-                  onClick={() => {
-                    setCombat((c) => ({
-                      ...c,
-                      combattenti: c.combattenti.map((cb) => ({
-                        ...cb,
-                        iniziativa: cb.iniziativa ? cb.iniziativa : tiraDado(20) + (cb.tipo === 'pg' ? modificatore(punteggioCaratteristica(scheda, 'destrezza') || 10) : Math.floor(Math.random() * 5))
-                      }))
-                    }));
-                    setTimeout(ordinaIniziativa, 50);
-                  }}
+                  style={{ ...styles.buttonMini, color: C.goldDark, borderColor: C.goldDark, whiteSpace: 'nowrap', padding: '3px 8px', fontWeight: 700 }}
+                  title={lingua === 'it' ? "Tira l'iniziativa per tutti i combattenti e ordina il turno" : "Roll initiative for all combatants and order turn"}
+                  onClick={tiraIniziativeTutti}
                 >
-                  🎲 Iniziative
+                  🎲 {lingua === 'it' ? 'Iniziative' : 'Initiatives'}
                 </button>
                 <button
                   style={{ ...styles.buttonMini, whiteSpace: 'nowrap', padding: '3px 8px' }}
@@ -15684,11 +15711,26 @@ export default function App() {
                                 <button
                                   type="button"
                                   style={{ padding: 0, fontSize: 12, border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.85, lineHeight: 1 }}
-                                  title="Tira d20 Iniziativa"
+                                  title={lingua === 'it' ? "Tira d20 Iniziativa per questo combattente" : "Roll d20 Initiative for this combatant"}
                                   onClick={() => {
-                                    const roll = tiraDado(20) + (cb.tipo === 'pg' ? modificatore(punteggioCaratteristica(scheda, 'destrezza') || 10) : Math.floor(Math.random() * 5));
-                                    modCombat(cb.id, { iniziativa: roll });
-                                    setTimeout(ordinaIniziativa, 10);
+                                    let mod = 0;
+                                    if (cb.tipo === 'pg') {
+                                      mod = modificatore(punteggioCaratteristica(scheda, 'destrezza') || 10);
+                                      const haAllerta = /allerta|alert/i.test(scheda.tratti || '') || /allerta|alert/i.test(scheda.talenti || '');
+                                      if (haAllerta) mod += (scheda.versione === '2014' ? 5 : (bonusCompetenzaDaLivello(scheda.livello) || 2));
+                                    } else if (cb.dati?.car?.destrezza != null) {
+                                      mod = modificatore(cb.dati.car.destrezza);
+                                    } else {
+                                      mod = Math.floor(Math.random() * 5);
+                                    }
+                                    const roll = tiraDado(20) + mod;
+                                    setCombat((c) => {
+                                      const aggiornati = c.combattenti.map((x) => x.id === cb.id ? { ...x, iniziativa: roll } : x);
+                                      const ordinati = [...aggiornati].sort((a, b) => (Number(b.iniziativa) || 0) - (Number(a.iniziativa) || 0));
+                                      const idAttivo = c.combattenti[c.turno]?.id;
+                                      const nuovoTurno = idAttivo ? Math.max(0, ordinati.findIndex((x) => x.id === idAttivo)) : 0;
+                                      return { ...c, combattenti: ordinati, turno: nuovoTurno };
+                                    });
                                   }}
                                 >
                                   🎲
