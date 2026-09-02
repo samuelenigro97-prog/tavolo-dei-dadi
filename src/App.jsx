@@ -12056,8 +12056,8 @@ export default function App() {
                 </div>
 
                 <div className="profilo-anagrafica-campi" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {/* Riga 1: Sesso, Specie/Razza, Taglia (compatta), Allineamento (largo) */}
-                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.8fr 1.2fr 0.65fr 1.55fr', gap: 10, alignItems: 'end' }}>
+                  {/* Riga 1: Sesso, Specie/Razza (compatta), Taglia (compatta), Allineamento (largo) */}
+                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.75fr 0.9fr 0.6fr 1.75fr', gap: 10, alignItems: 'end' }}>
                     <CampoModulo label={t("profilo.sesso")}>
                       <select
                         value={scheda.sesso || ''}
@@ -12121,8 +12121,8 @@ export default function App() {
                     </CampoModulo>
                   </div>
 
-                  {/* Riga 2: Background, Classe, Sottoclasse (molto larga), P.E. (compatto) */}
-                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.8fr 1.2fr 1.75fr 0.45fr', gap: 10, alignItems: 'end' }}>
+                  {/* Riga 2: Background, Classe (compatta), Sottoclasse (molto larga), P.E. (compatto) */}
+                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.75fr 0.9fr 2.05fr 0.4fr', gap: 10, alignItems: 'end' }}>
                     <CampoModulo label={t("profilo.background")} boxClassName={String(scheda.background || '').length > 12 ? 'testo-compatto' : undefined}>
                       <CampoBloccato
                         valore={traduciDato(scheda.background) || t('profilo.nessuno')}
@@ -12259,7 +12259,7 @@ export default function App() {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {mc.map((m, i) => (
-                    <div key={i} className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.6fr 1.5fr auto', gap: '6px 10px', alignItems: 'end' }}>
+                    <div key={i} className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.9fr 0.5fr 1.85fr auto', gap: '6px 10px', alignItems: 'end' }}>
                       <CampoModulo label={t('profilo.classe')}>
                         <select
                           value={m.classe}
