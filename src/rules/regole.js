@@ -11,6 +11,7 @@ import { spiegaIncantesimo } from '../data/spiegazioni.js';
 import { INCANTESIMI_DB, datiIncantesimo } from '../data/incantesimi.js';
 import { ABILITA, CARATTERISTICHE } from '../data/caratteristiche.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from '../data/condizioni.js';
+import { GUIDA_ABILITA_5E } from '../data/guidaAbilita5e.js';
 
 /** Restituisce 'guerriero'/'ladro' se la scheda è un "terzo incantatore" (la
  *  sottoclasse specifica, non l'intera classe: un Campione o un Assassino non
@@ -1599,3 +1600,31 @@ export function calcolaTurnoCombattimento(scheda, turnoAzioni = {}) {
     haAzioneScaltra,
   };
 }
+
+/**
+ * Restituisce i dettagli completi di un'abilità 5e (descrizione, CD di riferimento,
+ * e sinergie con gli strumenti che il PG possiede o in cui è addestrato).
+ */
+export function dettagliAbilita(chiave, scheda = {}) {
+  const guida = GUIDA_ABILITA_5E[chiave] || null;
+  if (!guida) return null;
+
+  // Strumenti in cui il PG è competente o che possiede nell'inventario
+  const strumentiTesto = `${scheda?.addestramento?.strumenti || ''}\n${(scheda?.inventario || []).map((x) => x.nome).join('\n')}`.toLowerCase();
+
+  const sinergie = (guida.sinergieStrumenti || []).map((s) => {
+    const nomeNorm = s.strumento.toLowerCase().replace(/^(attrezzi da|strumenti da|kit da|borsa da|veicoli \(|strumento )\s*/i, '');
+    const posseduto = strumentiTesto.includes(s.strumento.toLowerCase()) || (nomeNorm.length >= 3 && strumentiTesto.includes(nomeNorm));
+    return {
+      ...s,
+      posseduto,
+    };
+  });
+
+  return {
+    ...guida,
+    chiave,
+    sinergie,
+  };
+}
+

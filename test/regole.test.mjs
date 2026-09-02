@@ -17,7 +17,7 @@ import {
   riepilogoCondizioni, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi,
   classePreparaIncantesimi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza,
   analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili,
-  calcolaTurnoCombattimento,
+  calcolaTurnoCombattimento, dettagliAbilita,
 } from '../src/rules/regole.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from '../src/data/condizioni.js';
 import { CONDIZIONI_5E, PE_PER_LIVELLO } from '../src/data/dati5e.js';
@@ -955,6 +955,43 @@ test('economia del turno e tattiche di combattimento 5e (calcolaTurnoCombattimen
   assert.equal(tScatto.movimentoMax, 18);
   assert.equal(tScatto.movimentoRimanente, 15);
 });
+
+test('guida alle abilità 5e, CD di riferimento e sinergie con strumenti (dettagliAbilita)', () => {
+  const pg = {
+    addestramento: { strumenti: 'Arnesi da Scasso, Borsa da Erborista' },
+    inventario: [{ nome: 'Attrezzi da Alchimista' }],
+  };
+
+  // 1. Prova di Indagare
+  const ind = dettagliAbilita('indagare', pg);
+  assert.ok(ind);
+  assert.equal(ind.nomeIt, 'Indagare');
+  assert.equal(ind.car, 'intelligenza');
+  assert.ok(ind.esempiCd.length >= 4);
+  assert.equal(ind.esempiCd[0].cd, 10);
+
+  // Verifica sinergia Arnesi da Scasso (posseduto!)
+  const synScasso = ind.sinergie.find((s) => s.strumento === 'Arnesi da Scasso');
+  assert.ok(synScasso);
+  assert.equal(synScasso.posseduto, true);
+
+  // Verifica sinergia Falsario (non posseduto)
+  const synFalsario = ind.sinergie.find((s) => s.strumento === 'Kit da Falsario');
+  assert.ok(synFalsario);
+  assert.equal(synFalsario.posseduto, false);
+
+  // 2. Prova di Medicina
+  const med = dettagliAbilita('medicina', pg);
+  assert.ok(med);
+  const synErborista = med.sinergie.find((s) => s.strumento === 'Borsa da Erborista');
+  assert.ok(synErborista);
+  assert.equal(synErborista.posseduto, true);
+
+  const synAlchimista = med.sinergie.find((s) => s.strumento === 'Attrezzi da Alchimista');
+  assert.ok(synAlchimista);
+  assert.equal(synAlchimista.posseduto, true);
+});
+
 
 
 

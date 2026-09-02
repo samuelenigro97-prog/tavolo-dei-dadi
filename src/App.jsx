@@ -1285,7 +1285,7 @@ const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(I
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E, DEFAULT_MANUALI, MANUALI_INFO, SOTTOCLASSI_FONTI, TALENTI_FONTI, INCANTESIMI_FONTI, talentiPerManuali, incantesimiPerManuali, fonteValida, PE_PER_LIVELLO } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili, calcolaTurnoCombattimento } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili, calcolaTurnoCombattimento, dettagliAbilita } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -3433,6 +3433,7 @@ export default function App() {
   const [inputAggiungiPe, setInputAggiungiPe] = useState('');
   const [mostraModalMovimento, setMostraModalMovimento] = useState(false);
   const [mostraModalReazioni, setMostraModalReazioni] = useState(false);
+  const [modalAbilitaGuida, setModalAbilitaGuida] = useState(null);
   // Preset colori UI
   const [presetColori, setPresetColori] = useState(() => localStorage.getItem('scheda-interattiva:preset-colori') || 'default');
   useEffect(() => {
@@ -8266,6 +8267,212 @@ export default function App() {
         );
       })()}
 
+      {/* Modal Guida & Assistente Abilità 5e */}
+      {modalAbilitaGuida && (() => {
+        const infoAb = dettagliAbilita(modalAbilitaGuida, scheda);
+        if (!infoAb) return null;
+        const bonus = bonusAbilita(scheda, modalAbilitaGuida);
+        const liv = scheda.abilita?.[modalAbilitaGuida] || 0;
+        const carAbbr = (CARATTERISTICHE.find((c) => c.key === infoAb.car)?.abbr || infoAb.car).toUpperCase();
+
+        const eseguiTiro = (vantaggio = 0) => {
+          setModalAbilitaGuida(null);
+          const d1 = tiraDado(20);
+          const d2 = tiraDado(20);
+          const d = vantaggio === 1 ? Math.max(d1, d2) : vantaggio === -1 ? Math.min(d1, d2) : d1;
+          const tot = d + bonus;
+          const etichVant = vantaggio === 1 ? ' (Vantaggio)' : vantaggio === -1 ? ' (Svantaggio)' : '';
+          const dettVant = vantaggio === 1
+            ? `2d20 [${d1}, ${d2}] max -> [${d}] ${conSegno(bonus)}`
+            : vantaggio === -1
+              ? `2d20 [${d1}, ${d2}] min -> [${d}] ${conSegno(bonus)}`
+              : `1d20 [${d}] ${conSegno(bonus)}`;
+
+          conAnimazione(() => {
+            setDadoValore(tot);
+            setDadoDettaglio(`Prova di ${t('skill.' + modalAbilitaGuida)}${etichVant}: ${dettVant}`);
+            registra({
+              etichetta: `${t('skill.' + modalAbilitaGuida)}${etichVant}`,
+              tipo: 'prova',
+              totale: tot,
+              dettaglio: dettVant,
+            });
+          }, d);
+        };
+
+        return (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0,0,0,0.6)',
+              backdropFilter: 'blur(3px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              padding: 16,
+            }}
+            onClick={(e) => { if (e.target === e.currentTarget) setModalAbilitaGuida(null); }}
+          >
+            <div
+              style={{
+                background: C.panel,
+                border: `1px solid ${C.border}`,
+                borderRadius: 12,
+                maxWidth: 620,
+                width: '100%',
+                maxHeight: '90vh',
+                display: 'flex',
+                flexDirection: 'column',
+                boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
+                overflow: 'hidden',
+              }}
+            >
+              {/* Header */}
+              <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: C.panelLight }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 20 }}>📚</span>
+                  <div>
+                    <strong style={{ fontSize: 16, color: C.ink }}>
+                      {lingua === 'en' ? infoAb.nomeEn : infoAb.nomeIt}
+                    </strong>
+                    <span style={{ fontSize: 11, color: C.inkDim, marginLeft: 8 }}>
+                      ({carAbbr}) • {liv === 3 ? '✦ Maestria (Expertise)' : liv === 2 ? '★ Competenza Razza/Classe' : liv === 1 ? '● Competente' : '○ Non Competente'}
+                    </span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <strong style={{ fontSize: 16, color: C.goldDark, background: 'rgba(201,162,39,0.12)', padding: '2px 8px', borderRadius: 6, border: `1px solid ${C.gold}` }}>
+                    {conSegno(bonus)}
+                  </strong>
+                  <button
+                    type="button"
+                    onClick={() => setModalAbilitaGuida(null)}
+                    style={{ ...styles.buttonMini, fontSize: 13, padding: '2px 8px' }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              {/* Pulsanti di Tiro Rapido */}
+              <div style={{ padding: '12px 18px', background: C.panelLight, borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={() => eseguiTiro(0)}
+                  style={{ ...styles.buttonMini, fontSize: 12, fontWeight: 700, padding: '5px 12px', background: 'rgba(201,162,39,0.15)', borderColor: C.gold, color: C.goldDark }}
+                >
+                  🎲 {lingua === 'en' ? 'Normal Roll' : 'Tiro Normale'} ({conSegno(bonus)})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => eseguiTiro(1)}
+                  style={{ ...styles.buttonMini, fontSize: 12, fontWeight: 700, padding: '5px 12px', background: 'rgba(46,157,77,0.15)', borderColor: '#2e9d4d', color: '#2e9d4d' }}
+                >
+                  ✨ {lingua === 'en' ? 'Advantage' : 'Con Vantaggio'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => eseguiTiro(-1)}
+                  style={{ ...styles.buttonMini, fontSize: 12, fontWeight: 700, padding: '5px 12px', background: 'rgba(239,68,68,0.12)', borderColor: C.red, color: C.red }}
+                >
+                  ⚠️ {lingua === 'en' ? 'Disadvantage' : 'Con Svantaggio'}
+                </button>
+              </div>
+
+              {/* Corpo Modale: Descrizione, CD e Sinergie */}
+              <div style={{ padding: '16px 18px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {/* Descrizione 5e */}
+                <div style={{ fontSize: 12.5, color: C.ink, lineHeight: 1.45, background: C.panel, padding: '10px 12px', borderRadius: 8, border: `1px solid ${C.border}` }}>
+                  {lingua === 'en' ? infoAb.descrizioneEn : infoAb.descrizioneIt}
+                </div>
+
+                {/* Tabella CD di Riferimento 5e */}
+                <div>
+                  <h4 style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, color: C.goldDark, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span>🎯</span> {lingua === 'en' ? 'Official Reference DCs (Difficulty Class)' : 'Classi di Difficoltà Ufficiali 5e (CD)'}
+                  </h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {(infoAb.esempiCd || []).map((ex) => (
+                      <div
+                        key={ex.cd}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'baseline',
+                          gap: 8,
+                          fontSize: 11.5,
+                          padding: '4px 8px',
+                          background: C.panelLight,
+                          borderRadius: 6,
+                          border: `1px solid ${C.border}`,
+                        }}
+                      >
+                        <strong style={{ width: 44, color: ex.cd >= 25 ? C.red : ex.cd >= 20 ? C.goldDark : '#2e9d4d', flexShrink: 0 }}>
+                          CD {ex.cd}
+                        </strong>
+                        <span style={{ width: 85, color: C.inkDim, fontSize: 10.5, flexShrink: 0, fontWeight: 600 }}>
+                          ({lingua === 'en' ? ex.diffEn : ex.diffIt})
+                        </span>
+                        <span style={{ color: C.ink, lineHeight: 1.3 }}>
+                          {lingua === 'en' ? ex.esEn : ex.esIt}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Sinergie con Strumenti (Xanathar p. 78-85) */}
+                {(infoAb.sinergie || []).length > 0 && (
+                  <div>
+                    <h4 style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, color: C.goldDark, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span>🛠️</span> {lingua === 'en' ? 'Tool Synergies (Xanathar\'s Guide)' : 'Sinergie con gli Strumenti (Xanathar)'}
+                    </h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {infoAb.sinergie.map((syn) => (
+                        <div
+                          key={syn.strumento}
+                          style={{
+                            padding: '8px 10px',
+                            borderRadius: 8,
+                            background: syn.posseduto ? 'rgba(46,157,77,0.08)' : C.panelLight,
+                            border: `1px solid ${syn.posseduto ? '#2e9d4d' : C.border}`,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 3,
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                            <strong style={{ fontSize: 12, color: syn.posseduto ? '#2e9d4d' : C.ink }}>
+                              🔧 {syn.strumento}
+                            </strong>
+                            {syn.posseduto ? (
+                              <span style={{ fontSize: 10, fontWeight: 700, color: '#2e9d4d', background: 'rgba(46,157,77,0.15)', padding: '1px 6px', borderRadius: 4 }}>
+                                ✓ {lingua === 'en' ? 'Possessed / Proficient' : 'Posseduto / Addestrato'}
+                              </span>
+                            ) : (
+                              <span style={{ fontSize: 10, color: C.inkDim }}>
+                                {lingua === 'en' ? 'Not in inventory' : 'Non posseduto'}
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ fontSize: 11, color: C.inkDim, lineHeight: 1.35 }}>
+                            {lingua === 'en' ? syn.beneficioEn : syn.beneficioIt}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {mostraLevelUp && (() => {
         // --- Target del Level Up: classe principale, secondaria esistente o nuova classe (True Multiclassing) ---
         const targetMode = levelUpBozza.target !== undefined ? levelUpBozza.target : 'main';
@@ -12817,6 +13024,29 @@ export default function App() {
                         {abMancante && (
                           <span style={{ marginLeft: 'auto', fontSize: 9.5, color: C.red, fontWeight: 700 }}>⚠️ Manca</span>
                         )}
+                        <button
+                          type="button"
+                          onPointerDown={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setModalAbilitaGuida(a.key);
+                          }}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            padding: '0 2px',
+                            cursor: 'pointer',
+                            fontSize: 11,
+                            color: C.inkDim,
+                            opacity: 0.65,
+                            marginLeft: abMancante ? 4 : 'auto',
+                            lineHeight: 1,
+                            flexShrink: 0,
+                          }}
+                          title={lingua === 'en' ? 'View 5e rules, DCs, and tool synergies' : 'Guida 5e, CD di riferimento e sinergie con strumenti'}
+                        >
+                          ℹ️
+                        </button>
                       </Rollable>
                     );
                   })}
