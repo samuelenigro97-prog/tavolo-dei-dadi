@@ -2478,8 +2478,9 @@ function normalizeImported(rawDati) {
           const qtaVal = parsed.qta > 1 ? parsed.qta : Math.max(1, num(o.qta, 1));
           let pesoVal = Math.max(0, Number(o.peso) || 0);
           const isFocus = /focus|simbolo sacro|borsa (da )?componenti|bacchetta|cristallo|totem|bastone runico|feticcio|strumento musicale|liuto|flauto|arpa|tamburo|cornamusa|lira/i.test(nomeVal);
-          // Se nessun oggetto ha flag equip (import grezzo o legacy) e l'oggetto è un focus, lo equipaggiamo di default
-          const autoEquip = !hasAnyEquip && isFocus;
+          const isArmor = Boolean(trovaArmatura(nomeVal) || eScudo(nomeVal));
+          // Se nessun oggetto ha flag equip (import grezzo o legacy) e l'oggetto è un focus o un'armatura/scudo, lo equipaggiamo di default
+          const autoEquip = !hasAnyEquip && (isFocus || isArmor);
           const equipVal = typeof o.equip === 'boolean' ? o.equip : autoEquip;
           const base = completaUtilizziOggetto({
             id: o.id || `inv-${i}-${Math.random().toString(36).slice(2, 6)}`,
@@ -4193,17 +4194,18 @@ export default function App() {
         .filter(Boolean);
       if (armi.length) s.attacchi = armi;
 
-      // Inizializza l'inventario strutturato ed equipaggia in automatico il Focus arcano/druidico, simbolo sacro o borsa componenti
+      // Inizializza l'inventario strutturato ed equipaggia in automatico armature, scudi e focus arcano/druidico, simbolo sacro o borsa componenti
       s.inventario = kit.equip.map((raw, i) => {
         const { nome, qta } = separaQtaOggetto(raw);
         const isFocus = /focus|simbolo sacro|borsa (da )?componenti|bacchetta|cristallo|totem|bastone runico|feticcio|strumento musicale|liuto|flauto|arpa|tamburo|cornamusa|lira/i.test(nome);
+        const isArmor = Boolean(trovaArmatura(nome) || eScudo(nome));
         const base = completaUtilizziOggetto({
           id: `inv-init-${Date.now()}-${i}`,
           nome,
           qta,
           peso: 0,
-          equip: isFocus, // equipaggia automaticamente all'avvio
-          categoria: isFocus ? 'Focus' : '',
+          equip: isFocus || isArmor, // equipaggia automaticamente armature, scudi e focus all'avvio
+          categoria: isFocus ? 'Focus' : isArmor ? (eScudo(nome) ? 'Scudo' : 'Armatura') : '',
         });
         const cont = eContenitore(base) ? ottieniContenutoItem(base) : undefined;
         if (cont && cont.length > 0) base.contenuto = cont;
