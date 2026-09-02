@@ -1331,3 +1331,68 @@ export function analizzaPozione(nomePozione) {
     descEn: `Drink or use ${nomePozione}.`,
   };
 }
+
+/**
+ * Calcola in modo completo e dinamico tutte le statistiche di movimento, salti
+ * e capacità fisiche (regole ufficiali D&D 5e):
+ * - Velocità base, scatto, scalata, nuoto, strisciata
+ * - Salto in lungo (con e senza rincorsa)
+ * - Salto in alto (con e senza rincorsa)
+ * - Altezza raggiungibile a braccia tese
+ * - Capacità di sollevamento e trascinamento/spinta (con supporto per taglia e Powerful Build)
+ */
+export function calcolaMovimentoESalti(scheda) {
+  const forPunteggio = Math.max(1, Number(scheda?.caratteristiche?.forza) || 10);
+  const modFor = modificatore(forPunteggio);
+  const velBase = Math.max(0, Number(scheda?.formaBestiale?.attiva ? (scheda.formaBestiale.velocita?.terra ?? 9) : (scheda?.velocita ?? 9)));
+
+  // Salti (in metri, 1 ft = 0.3 m)
+  const saltoLungoRincorsa = Number((forPunteggio * 0.3).toFixed(1));
+  const saltoLungoFermo = Number((saltoLungoRincorsa / 2).toFixed(1));
+
+  const saltoAltoPiedi = Math.max(1, 3 + modFor);
+  const saltoAltoRincorsa = Number((saltoAltoPiedi * 0.3).toFixed(1));
+  const saltoAltoFermo = Number((saltoAltoRincorsa / 2).toFixed(1));
+
+  // Altezza raggiungibile a braccia tese (altezza PG ~1.75m * 1.5 + salto)
+  const altezzaRaggiungibile = Number((1.75 * 1.5 + saltoAltoRincorsa).toFixed(1));
+
+  // Velocità speciali
+  const scatto = velBase * 2;
+  const scalata = Number((velBase / 2).toFixed(1));
+  const nuoto = Number((velBase / 2).toFixed(1));
+  const strisciata = Number((velBase / 2).toFixed(1));
+
+  // Capacità di carico / sollevamento / spinta
+  const taglia = String(scheda?.taglia || 'Media').toLowerCase();
+  const haCorporaturaPossente = (Array.isArray(scheda?.talenti) && scheda.talenti.some((t) => /possente|powerful/i.test(t))) ||
+    (Array.isArray(scheda?.tratti) && scheda.tratti.some((t) => /possente|powerful/i.test(t))) ||
+    /goliath|orco|orc|bugbear|firbolg/i.test(scheda?.razza || scheda?.specie || '');
+
+  let moltiplicatoreTaglia = 1;
+  if (/minuscol|tiny/i.test(taglia)) moltiplicatoreTaglia = 0.5;
+  else if (/grand|large/i.test(taglia) || haCorporaturaPossente) moltiplicatoreTaglia = 2;
+  else if (/enorm|huge/i.test(taglia)) moltiplicatoreTaglia = 4;
+  else if (/gargant|gargantuan/i.test(taglia)) moltiplicatoreTaglia = 8;
+
+  const sollevamentoKg = forPunteggio * 15 * moltiplicatoreTaglia;
+  const spintaKg = forPunteggio * 30 * moltiplicatoreTaglia;
+
+  return {
+    velBase,
+    scatto,
+    scalata,
+    nuoto,
+    strisciata,
+    forPunteggio,
+    modFor,
+    saltoLungoRincorsa,
+    saltoLungoFermo,
+    saltoAltoRincorsa,
+    saltoAltoFermo,
+    altezzaRaggiungibile,
+    sollevamentoKg,
+    spintaKg,
+    haCorporaturaPossente,
+  };
+}

@@ -1285,7 +1285,7 @@ const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(I
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E, DEFAULT_MANUALI, MANUALI_INFO, SOTTOCLASSI_FONTI, TALENTI_FONTI, INCANTESIMI_FONTI, talentiPerManuali, incantesimiPerManuali, fonteValida, PE_PER_LIVELLO } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione, calcolaMovimentoESalti } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -3431,6 +3431,7 @@ export default function App() {
   const [cercaCompagnoText, setCercaCompagnoText] = useState('');
   const [mostraModalPe, setMostraModalPe] = useState(false);
   const [inputAggiungiPe, setInputAggiungiPe] = useState('');
+  const [mostraModalMovimento, setMostraModalMovimento] = useState(false);
   // Preset colori UI
   const [presetColori, setPresetColori] = useState(() => localStorage.getItem('scheda-interattiva:preset-colori') || 'default');
   useEffect(() => {
@@ -7921,6 +7922,165 @@ export default function App() {
         );
       })()}
 
+      {/* Modal / Menu Calcolatore Movimento, Salti & Capacità Fisiche 5e */}
+      {mostraModalMovimento && (() => {
+        const mov = calcolaMovimentoESalti(scheda);
+        return (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0,0,0,0.6)',
+              backdropFilter: 'blur(3px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              padding: 16,
+            }}
+            onClick={(e) => { if (e.target === e.currentTarget) setMostraModalMovimento(false); }}
+          >
+            <div
+              style={{
+                background: C.panel,
+                border: `1px solid ${C.border}`,
+                borderRadius: 12,
+                maxWidth: 520,
+                width: '100%',
+                maxHeight: '90vh',
+                display: 'flex',
+                flexDirection: 'column',
+                boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
+                overflow: 'hidden',
+              }}
+            >
+              {/* Header */}
+              <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <strong style={{ fontSize: 15, color: C.goldDark, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>🏃</span> {lingua === 'en' ? 'Movement, Jumps & Physical Capacity (5e)' : 'Movimento, Salti & Capacità Fisiche (5e)'}
+                </strong>
+                <button
+                  type="button"
+                  onClick={() => setMostraModalMovimento(false)}
+                  style={{ ...styles.buttonMini, fontSize: 13, padding: '2px 8px' }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Contenuto */}
+              <div style={{ padding: '16px 18px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                
+                {/* 1. Modalità di Movimento */}
+                <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                    👟 {lingua === 'en' ? 'Movement Modes per Round' : 'Velocità & Modalità di Movimento'}
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 8 }}>
+                    <div style={{ background: C.panel, padding: '8px 10px', borderRadius: 6, border: `1px solid ${C.border}` }}>
+                      <div style={{ fontSize: 11, color: C.inkDim }}>🚶 {lingua === 'en' ? 'Walking / Base' : 'Camminata / Base'}</div>
+                      <div style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>{mov.velBase} m</div>
+                    </div>
+                    <div style={{ background: C.panel, padding: '8px 10px', borderRadius: 6, border: `1px solid ${C.border}` }}>
+                      <div style={{ fontSize: 11, color: C.inkDim }}>💨 {lingua === 'en' ? 'Dash (Action)' : 'Scatto (Azione)'}</div>
+                      <div style={{ fontSize: 16, fontWeight: 800, color: C.goldDark }}>{mov.scatto} m</div>
+                    </div>
+                    <div style={{ background: C.panel, padding: '8px 10px', borderRadius: 6, border: `1px solid ${C.border}` }}>
+                      <div style={{ fontSize: 11, color: C.inkDim }}>🧗 {lingua === 'en' ? 'Climbing' : 'Scalata'}</div>
+                      <div style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>{mov.scalata} m</div>
+                    </div>
+                    <div style={{ background: C.panel, padding: '8px 10px', borderRadius: 6, border: `1px solid ${C.border}` }}>
+                      <div style={{ fontSize: 11, color: C.inkDim }}>🏊 {lingua === 'en' ? 'Swimming' : 'Nuoto'}</div>
+                      <div style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>{mov.nuoto} m</div>
+                    </div>
+                    <div style={{ background: C.panel, padding: '8px 10px', borderRadius: 6, border: `1px solid ${C.border}` }}>
+                      <div style={{ fontSize: 11, color: C.inkDim }}>🐛 {lingua === 'en' ? 'Crawling' : 'Strisciata'}</div>
+                      <div style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>{mov.strisciata} m</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Calcolatore Salti 5e */}
+                <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                      🦘 {lingua === 'en' ? '5e Jump Calculator (Strength-Based)' : 'Calcolatore Salti 5e (Basato su Forza)'}
+                    </div>
+                    <span style={{ fontSize: 11, color: C.inkDim }}>FOR {mov.forPunteggio} ({conSegno(mov.modFor)})</span>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    {/* Salto in Lungo */}
+                    <div style={{ background: C.panel, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      <div style={{ fontWeight: 700, fontSize: 12, color: C.ink }}>
+                        🏃 {lingua === 'en' ? 'Long Jump' : 'Salto in Lungo'}
+                      </div>
+                      <div style={{ fontSize: 11.5, color: C.inkDim, display: 'flex', justifyContent: 'space-between' }}>
+                        <span>{lingua === 'en' ? 'With 3m run-up:' : 'Con rincorsa (3m):'}</span>
+                        <strong style={{ color: C.goldDark, fontSize: 13 }}>{mov.saltoLungoRincorsa} m</strong>
+                      </div>
+                      <div style={{ fontSize: 11.5, color: C.inkDim, display: 'flex', justifyContent: 'space-between' }}>
+                        <span>{lingua === 'en' ? 'Standing jump:' : 'Da fermo:'}</span>
+                        <strong style={{ color: C.ink, fontSize: 13 }}>{mov.saltoLungoFermo} m</strong>
+                      </div>
+                      <div style={{ fontSize: 10, color: C.inkDim, marginTop: 2, lineHeight: 1.25 }}>
+                        {lingua === 'en' ? 'Clear low obstacle: Athletics DC 10. Difficult terrain landing: Acrobatics DC 10 or prone.' : 'Ostacolo basso: Atletica CD 10. Terreno difficile: Acrobazia CD 10 o prono.'}
+                      </div>
+                    </div>
+
+                    {/* Salto in Alto */}
+                    <div style={{ background: C.panel, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      <div style={{ fontWeight: 700, fontSize: 12, color: C.ink }}>
+                        🧗 {lingua === 'en' ? 'High Jump' : 'Salto in Alto'}
+                      </div>
+                      <div style={{ fontSize: 11.5, color: C.inkDim, display: 'flex', justifyContent: 'space-between' }}>
+                        <span>{lingua === 'en' ? 'With 3m run-up:' : 'Con rincorsa (3m):'}</span>
+                        <strong style={{ color: C.goldDark, fontSize: 13 }}>{mov.saltoAltoRincorsa} m</strong>
+                      </div>
+                      <div style={{ fontSize: 11.5, color: C.inkDim, display: 'flex', justifyContent: 'space-between' }}>
+                        <span>{lingua === 'en' ? 'Standing jump:' : 'Da fermo:'}</span>
+                        <strong style={{ color: C.ink, fontSize: 13 }}>{mov.saltoAltoFermo} m</strong>
+                      </div>
+                      <div style={{ fontSize: 10.5, color: C.inkDim, borderTop: `1px dashed ${C.border}`, paddingTop: 4, marginTop: 2 }}>
+                        🤲 {lingua === 'en' ? 'Reach with arms:' : 'Presa a braccia tese:'} <strong style={{ color: C.ink }}>{mov.altezzaRaggiungibile} m</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. Capacità Fisiche: Sollevamento & Trascinamento */}
+                <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>🏋️ {lingua === 'en' ? 'Lifting & Dragging Capacity' : 'Sollevamento & Spinta / Trascinamento'}</span>
+                    {mov.haCorporaturaPossente && (
+                      <span style={{ fontSize: 10, color: '#10b981', background: 'rgba(16,185,129,0.12)', border: '1px solid #10b981', padding: '1px 5px', borderRadius: 4, fontWeight: 700 }}>
+                        ✨ {lingua === 'en' ? 'Powerful Build ×2' : 'Corporatura Possente ×2'}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    <div style={{ background: C.panel, padding: '8px 10px', borderRadius: 6, border: `1px solid ${C.border}` }}>
+                      <div style={{ fontSize: 11, color: C.inkDim }}>🏋️ {lingua === 'en' ? 'Max Overhead Lift:' : 'Sollevamento Massimo:'}</div>
+                      <div style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>{mov.sollevamentoKg} kg</div>
+                      <div style={{ fontSize: 10, color: C.inkDim }}>{lingua === 'en' ? '(Strength × 15 kg)' : '(Forza × 15 kg)'}</div>
+                    </div>
+                    <div style={{ background: C.panel, padding: '8px 10px', borderRadius: 6, border: `1px solid ${C.border}` }}>
+                      <div style={{ fontSize: 11, color: C.inkDim }}>🚜 {lingua === 'en' ? 'Max Push / Drag:' : 'Spinta / Trascinamento Max:'}</div>
+                      <div style={{ fontSize: 16, fontWeight: 800, color: C.goldDark }}>{mov.spintaKg} kg</div>
+                      <div style={{ fontSize: 10, color: C.inkDim }}>{lingua === 'en' ? '(Strength × 30 kg)' : '(Forza × 30 kg)'}</div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {mostraLevelUp && (() => {
         // --- Target del Level Up: classe principale, secondaria esistente o nuova classe (True Multiclassing) ---
         const targetMode = levelUpBozza.target !== undefined ? levelUpBozza.target : 'main';
@@ -12129,8 +12289,29 @@ export default function App() {
                     <span style={{ fontSize: 17, color: C.inkDim, marginLeft: 2, fontWeight: 600 }}> m</span>
                   </div>
                 )}
-                <div style={{ fontSize: 10, color: C.goldDark, textAlign: 'center', fontWeight: 600, marginTop: 2 }}>
-                  🏃 {t('vital.salto') || 'Salto'}: {((punteggioCaratteristica(scheda, 'forza') || 10) * 0.3).toFixed(1)}m
+                <div
+                  onClick={() => setMostraModalMovimento(true)}
+                  style={{
+                    fontSize: 10,
+                    color: C.goldDark,
+                    textAlign: 'center',
+                    fontWeight: 600,
+                    marginTop: 3,
+                    cursor: 'pointer',
+                    padding: '2px 6px',
+                    borderRadius: 4,
+                    background: 'rgba(201,162,39,0.08)',
+                    border: '1px solid rgba(201,162,39,0.25)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 3,
+                    transition: 'background 0.15s ease',
+                  }}
+                  title={lingua === 'en' ? 'Click to open Movement, Jump & Carrying Calculator' : 'Clicca per aprire il Calcolatore Salti, Movimento e Capacità Fisiche'}
+                >
+                  <span>🏃 {t('vital.salto') || 'Salto'}: {((punteggioCaratteristica(scheda, 'forza') || 10) * 0.3).toFixed(1)}m</span>
+                  <span style={{ fontSize: 8.5, opacity: 0.8 }}>▼</span>
                 </div>
               </div>
             </div>

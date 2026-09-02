@@ -16,7 +16,7 @@ import {
   controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, puntiVersoSlot, slotVersoPunti,
   riepilogoCondizioni, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi,
   classePreparaIncantesimi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza,
-  analizzaPozione,
+  analizzaPozione, calcolaMovimentoESalti,
 } from '../src/rules/regole.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from '../src/data/condizioni.js';
 import { CONDIZIONI_5E, PE_PER_LIVELLO } from '../src/data/dati5e.js';
@@ -843,6 +843,47 @@ test('pozioni e consumabili (analizzaPozione): formule di cura e integrazione ef
   const vitalita = analizzaPozione('Pozione di Vitalità');
   assert.equal(vitalita.rimuoviSfinimento, true);
 });
+
+test('calcolo movimento, salti e capacità fisiche 5e (calcolaMovimentoESalti)', () => {
+  const pgGuerriero = {
+    velocita: 9,
+    caratteristiche: { forza: 16, destrezza: 14, costituzione: 14, intelligenza: 10, saggezza: 12, carisma: 8 },
+    taglia: 'Media',
+  };
+
+  const m = calcolaMovimentoESalti(pgGuerriero);
+  assert.equal(m.velBase, 9);
+  assert.equal(m.scatto, 18);
+  assert.equal(m.scalata, 4.5);
+  assert.equal(m.nuoto, 4.5);
+  assert.equal(m.strisciata, 4.5);
+
+  // Salto in lungo (FOR 16 -> 16 * 0.3 = 4.8 m; da fermo = 2.4 m)
+  assert.equal(m.saltoLungoRincorsa, 4.8);
+  assert.equal(m.saltoLungoFermo, 2.4);
+
+  // Salto in alto (Mod FOR +3 -> 3 + 3 = 6 ft -> 6 * 0.3 = 1.8 m; da fermo = 0.9 m)
+  assert.equal(m.saltoAltoRincorsa, 1.8);
+  assert.equal(m.saltoAltoFermo, 0.9);
+
+  // Sollevamento e trascinamento (FOR 16 * 15 = 240 kg; FOR 16 * 30 = 480 kg)
+  assert.equal(m.sollevamentoKg, 240);
+  assert.equal(m.spintaKg, 480);
+  assert.equal(m.haCorporaturaPossente, false);
+
+  // Goliath / Corporatura Possente (raddoppia capacità)
+  const pgGoliath = {
+    velocita: 9,
+    caratteristiche: { forza: 18 },
+    razza: 'Goliath',
+    taglia: 'Media',
+  };
+  const mg = calcolaMovimentoESalti(pgGoliath);
+  assert.equal(mg.haCorporaturaPossente, true);
+  assert.equal(mg.sollevamentoKg, 18 * 15 * 2); // 540 kg
+  assert.equal(mg.spintaKg, 18 * 30 * 2); // 1080 kg
+});
+
 
 
 
