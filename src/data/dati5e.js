@@ -463,6 +463,25 @@ export const DADO_VITA_CLASSE = {
   bardo: 8, chierico: 8, druido: 8, ladro: 8, monaco: 8, stregone: 8, warlock: 8,
   mago: 6,
 };
+export const BACKGROUND_TALENTO_ORIGINE_2024 = {
+  'Accolito': 'Iniziato alla Magia',
+  'Artigiano': 'Artigiano',
+  'Ciarlatano': 'Abile',
+  'Contadino': 'Robusto',
+  'Criminale': 'Allerta',
+  'Eremita': 'Guaritore',
+  'Guardia': 'Allerta',
+  'Guida': 'Iniziato alla Magia',
+  'Intrattenitore': 'Musicista',
+  'Marinaio': 'Condottiero',
+  'Mercante': 'Fortunato',
+  'Nobile': 'Abile',
+  'Saggio': 'Iniziato alla Magia',
+  'Scriba': 'Abile',
+  'Soldato': 'Mente Rapida',
+  'Viandante': 'Fortunato',
+};
+
 export const BACKGROUND_CARATT = {
   Accolito: ['intelligenza', 'saggezza', 'carisma'],
   Artigiano: ['forza', 'destrezza', 'intelligenza'],
