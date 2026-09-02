@@ -7,7 +7,7 @@ import { avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro, s
 import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI } from './ui/tema.js';
 import { styles, GLOBAL_CSS } from './ui/stili.js';
 import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, Sezione, CampoBloccato } from './ui/componenti.jsx';
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E } from './rules/scheda.js';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON, WENDELL_JSON, LYRIAN_JSON } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from './data/condizioni.js';
@@ -6469,12 +6469,73 @@ export default function App() {
             {/* Azioni e Attacchi */}
             {bestiaDettaglio.azioni && bestiaDettaglio.azioni.length > 0 && (
               <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 8, marginTop: 8 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: C.goldDark, marginBottom: 4 }}>Azioni & Attacchi</div>
-                {bestiaDettaglio.azioni.map((az, idx) => (
-                  <div key={idx} style={{ fontSize: 12, lineHeight: 1.4, marginBottom: 4, background: 'rgba(0,0,0,0.03)', padding: '4px 6px', borderRadius: 4 }}>
-                    ⚔️ <strong>{az}</strong>
-                  </div>
-                ))}
+                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: C.goldDark, marginBottom: 6 }}>
+                  ⚔️ {lingua === 'en' ? 'Actions & Attacks' : 'Azioni & Attacchi'}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {bestiaDettaglio.azioni.map((azRaw, idx) => {
+                    const az = parseAzioneBestia(azRaw);
+                    return (
+                      <div
+                        key={idx}
+                        style={{
+                          fontSize: 12,
+                          lineHeight: 1.4,
+                          background: 'rgba(0,0,0,0.03)',
+                          padding: '6px 8px',
+                          borderRadius: 6,
+                          border: `1px solid ${C.border}`,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 4,
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, flexWrap: 'wrap' }}>
+                          <span style={{ fontWeight: 800, color: C.ink }}>⚔️ {az.nome}</span>
+                          {az.cd != null && (
+                            <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 5px', background: 'rgba(214,169,15,0.18)', color: C.goldDark, borderRadius: 4, border: `1px solid ${C.gold}` }}>
+                              🛡️ CD {az.cd}
+                            </span>
+                          )}
+                        </div>
+                        {az.desc && (
+                          <div style={{ fontSize: 11.5, color: C.ink }}>{az.desc}</div>
+                        )}
+                        {(az.bonus != null || az.danno) && (
+                          <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginTop: 2, paddingTop: 4, borderTop: `1px dashed ${C.border}` }}>
+                            {az.bonus != null && (
+                              <button
+                                type="button"
+                                style={{ ...styles.buttonPrimary, fontSize: 11, padding: '3px 8px', borderRadius: 4, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 3 }}
+                                onClick={() => {
+                                  lanciaD20(`Attacco (${bestiaDettaglio.nome}): ${az.nome}`, az.bonus, {
+                                    attacco: { nome: `${bestiaDettaglio.nome}: ${az.nome}`, danno: az.danno },
+                                    suono: 'arma',
+                                  });
+                                }}
+                                title={`Tira per Colpire: 1d20 ${conSegno(az.bonus)}`}
+                              >
+                                <span>🎯</span> <span>{lingua === 'en' ? 'Attack' : 'Colpisci'} ({conSegno(az.bonus)})</span>
+                              </button>
+                            )}
+                            {az.danno && (
+                              <button
+                                type="button"
+                                style={{ ...styles.button, fontSize: 11, padding: '3px 8px', borderRadius: 4, fontWeight: 800, borderColor: '#d32f2f', color: '#d32f2f', background: C.panelLight, display: 'inline-flex', alignItems: 'center', gap: 3 }}
+                                onClick={() => {
+                                  lanciaDanniDiretti(`Danni (${bestiaDettaglio.nome}): ${az.nome}`, az.danno);
+                                }}
+                                title={`Tira Danni: ${az.danno}`}
+                              >
+                                <span>💥</span> <span>{lingua === 'en' ? 'Damage' : 'Danni'} ({az.danno})</span>
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
@@ -10395,56 +10456,179 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Statistiche Fisiche Sostituite: FOR, DES, COS della bestia */}
+              {/* Statistiche Fisiche Sostituite: FOR, DES, COS della bestia (con prove di caratteristica interattive) */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, background: C.panel, padding: '8px 12px', borderRadius: 8, border: `1px solid ${C.border}`, textAlign: 'center', marginBottom: 10 }}>
-                <div>
-                  <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: C.inkDim }}>FOR (Bestia)</div>
-                  <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>
-                    {scheda.formaBestiale.car?.forza || 10}{' '}
-                    <span style={{ color: C.goldDark, fontSize: 12.5 }}>({conSegno(Math.floor(((scheda.formaBestiale.car?.forza || 10) - 10) / 2))})</span>
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: C.inkDim }}>DES (Bestia)</div>
-                  <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>
-                    {scheda.formaBestiale.car?.destrezza || 10}{' '}
-                    <span style={{ color: C.goldDark, fontSize: 12.5 }}>({conSegno(Math.floor(((scheda.formaBestiale.car?.destrezza || 10) - 10) / 2))})</span>
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: C.inkDim }}>COS (Bestia)</div>
-                  <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>
-                    {scheda.formaBestiale.car?.costituzione || 10}{' '}
-                    <span style={{ color: C.goldDark, fontSize: 12.5 }}>({conSegno(Math.floor(((scheda.formaBestiale.car?.costituzione || 10) - 10) / 2))})</span>
-                  </div>
-                </div>
+                {(() => {
+                  const forVal = Number(scheda.formaBestiale.car?.forza) || 10;
+                  const modFor = Math.floor((forVal - 10) / 2);
+                  return (
+                    <div
+                      style={{ cursor: 'pointer', padding: '4px', borderRadius: 6, transition: 'all 0.15s ease' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0,0,0,0.05)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                      onClick={() => lanciaD20(`Prova di Forza (${scheda.formaBestiale.nome})`, modFor)}
+                      title={`Clicca per tirare Prova di Forza: 1d20 ${conSegno(modFor)}`}
+                    >
+                      <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: C.inkDim }}>FOR (Bestia) 🎲</div>
+                      <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>
+                        {forVal} <span style={{ color: C.goldDark, fontSize: 12.5 }}>({conSegno(modFor)})</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+                {(() => {
+                  const desVal = Number(scheda.formaBestiale.car?.destrezza) || 10;
+                  const modDes = Math.floor((desVal - 10) / 2);
+                  return (
+                    <div
+                      style={{ cursor: 'pointer', padding: '4px', borderRadius: 6, transition: 'all 0.15s ease' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0,0,0,0.05)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                      onClick={() => lanciaD20(`Prova di Destrezza (${scheda.formaBestiale.nome})`, modDes)}
+                      title={`Clicca per tirare Prova di Destrezza: 1d20 ${conSegno(modDes)}`}
+                    >
+                      <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: C.inkDim }}>DES (Bestia) 🎲</div>
+                      <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>
+                        {desVal} <span style={{ color: C.goldDark, fontSize: 12.5 }}>({conSegno(modDes)})</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+                {(() => {
+                  const cosVal = Number(scheda.formaBestiale.car?.costituzione) || 10;
+                  const modCos = Math.floor((cosVal - 10) / 2);
+                  return (
+                    <div
+                      style={{ cursor: 'pointer', padding: '4px', borderRadius: 6, transition: 'all 0.15s ease' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0,0,0,0.05)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                      onClick={() => lanciaD20(`Prova di Costituzione (${scheda.formaBestiale.nome})`, modCos)}
+                      title={`Clicca per tirare Prova di Costituzione: 1d20 ${conSegno(modCos)}`}
+                    >
+                      <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: C.inkDim }}>COS (Bestia) 🎲</div>
+                      <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>
+                        {cosVal} <span style={{ color: C.goldDark, fontSize: 12.5 }}>({conSegno(modCos)})</span>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
+
+              {/* Tratti Speciali & Sensi della Bestia (se presenti) */}
+              {((scheda.formaBestiale.tratti && scheda.formaBestiale.tratti.length > 0) || scheda.formaBestiale.sensi) && (
+                <div style={{ marginBottom: 10, background: 'rgba(0,0,0,0.02)', padding: '6px 10px', borderRadius: 6, border: `1px dashed ${C.border}` }}>
+                  {scheda.formaBestiale.sensi && (
+                    <div style={{ fontSize: 11.5, color: C.inkDim, marginBottom: (scheda.formaBestiale.tratti && scheda.formaBestiale.tratti.length > 0) ? 4 : 0 }}>
+                      👁️ <strong>{lingua === 'en' ? 'Senses' : 'Sensi'}:</strong> {scheda.formaBestiale.sensi}
+                    </div>
+                  )}
+                  {scheda.formaBestiale.tratti && scheda.formaBestiale.tratti.map((tratto, tIdx) => (
+                    <div key={tIdx} style={{ fontSize: 11.5, color: C.ink, lineHeight: 1.35, marginTop: 2 }}>
+                      ✨ <em>{typeof tratto === 'string' ? tratto : tratto.nome}</em>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* Azioni & Attacchi della Bestia */}
               {scheda.formaBestiale.azioni && scheda.formaBestiale.azioni.length > 0 && (
                 <div>
-                  <div style={{ fontSize: 11.5, fontWeight: 800, textTransform: 'uppercase', color: C.goldDark, marginBottom: 5 }}>
+                  <div style={{ fontSize: 11.5, fontWeight: 800, textTransform: 'uppercase', color: C.goldDark, marginBottom: 6 }}>
                     ⚔️ {lingua === 'en' ? 'Beast Attacks & Actions' : 'Azioni & Attacchi della Bestia'}
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                    {scheda.formaBestiale.azioni.map((az, idx) => (
-                      <div
-                        key={idx}
-                        style={{
-                          fontSize: 12.5,
-                          padding: '6px 10px',
-                          background: C.panel,
-                          border: `1px solid ${C.border}`,
-                          borderRadius: 6,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: 6,
-                        }}
-                      >
-                        <span>⚔️ <strong>{typeof az === 'string' ? az : az.nome}</strong></span>
-                      </div>
-                    ))}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {scheda.formaBestiale.azioni.map((azRaw, idx) => {
+                      const az = parseAzioneBestia(azRaw);
+                      return (
+                        <div
+                          key={idx}
+                          style={{
+                            fontSize: 12.5,
+                            padding: '8px 10px',
+                            background: C.panel,
+                            border: `1px solid ${C.border}`,
+                            borderRadius: 8,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 5,
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, flexWrap: 'wrap' }}>
+                            <span style={{ fontWeight: 800, color: C.ink, fontSize: 13 }}>
+                              ⚔️ {az.nome}
+                            </span>
+                            {az.cd != null && (
+                              <span style={{ fontSize: 10.5, fontWeight: 700, padding: '2px 6px', background: 'rgba(214,169,15,0.18)', color: C.goldDark, borderRadius: 6, border: `1px solid ${C.gold}` }}>
+                                🛡️ CD {az.cd}
+                              </span>
+                            )}
+                          </div>
+                          {az.desc && (
+                            <div style={{ fontSize: 12, color: C.ink, lineHeight: 1.4 }}>
+                              {az.desc}
+                            </div>
+                          )}
+                          {(az.bonus != null || az.danno) && (
+                            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 2, borderTop: `1px dashed ${C.border}`, paddingTop: 6 }}>
+                              {az.bonus != null && (
+                                <button
+                                  type="button"
+                                  style={{
+                                    ...styles.buttonPrimary,
+                                    fontSize: 11.5,
+                                    padding: '4px 10px',
+                                    borderRadius: 6,
+                                    fontWeight: 800,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 4,
+                                  }}
+                                  onClick={() => {
+                                    lanciaD20(`Attacco (${scheda.formaBestiale.nome}): ${az.nome}`, az.bonus, {
+                                      attacco: {
+                                        nome: `${scheda.formaBestiale.nome}: ${az.nome}`,
+                                        danno: az.danno,
+                                      },
+                                      suono: 'arma',
+                                    });
+                                  }}
+                                  title={`Tira per Colpire: 1d20 ${conSegno(az.bonus)}`}
+                                >
+                                  <span>🎯</span>
+                                  <span>{lingua === 'en' ? 'Attack Roll' : 'Tiro per Colpire'} ({conSegno(az.bonus)})</span>
+                                </button>
+                              )}
+                              {az.danno && (
+                                <button
+                                  type="button"
+                                  style={{
+                                    ...styles.button,
+                                    fontSize: 11.5,
+                                    padding: '4px 10px',
+                                    borderRadius: 6,
+                                    fontWeight: 800,
+                                    borderColor: '#d32f2f',
+                                    color: '#d32f2f',
+                                    background: C.panelLight,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 4,
+                                  }}
+                                  onClick={() => {
+                                    lanciaDanniDiretti(`Danni (${scheda.formaBestiale.nome}): ${az.nome}`, az.danno);
+                                  }}
+                                  title={`Tira Danni: ${az.danno}`}
+                                >
+                                  <span>💥</span>
+                                  <span>{lingua === 'en' ? 'Damage' : 'Danni'} ({az.danno})</span>
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -10861,32 +11045,47 @@ export default function App() {
                     <CampoModulo label={versione === "2024" ? t("profilo.specie") : t("profilo.razza")}>
                       <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} formattaOpzione={(v) => nomeSpeciePerSesso(v, scheda.sesso, lingua)} onChange={(v) => { const sp = datiSpecieDi(v); aggiorna({ specie: v, ...(sp ? { velocita: sp.velocita, sensi: sp.sensi, taglia: sp.taglia, trattiSpecie: trattiSpecieTesto(sp.tratti) } : {}), ...abilitaConSpecie(v), ...ritrattoAuto(scheda.classe, v, scheda.nome) }); }} title={t('tip.scegli_specie')} />
                     </CampoModulo>
-                    <CampoModulo label={t("profilo.taglia")} boxClassName={tagliaEffettiva(scheda) !== (scheda.taglia || 'Media') ? 'testo-compatto' : undefined}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <CampoModulo label={t("profilo.taglia")}>
+                      {tagliaEffettiva(scheda) !== (scheda.taglia || 'Media') ? (
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            width: '100%',
+                            gap: 4,
+                            padding: '1px 0',
+                            cursor: 'help',
+                          }}
+                          title={`Taglia modificata da ${scheda.formaBestiale?.attiva ? `Forma Bestiale (${scheda.formaBestiale.nome})` : 'Effetto Taglia'}: ${tagliaEffettiva(scheda)} (Taglia naturale: ${scheda.taglia || 'Media'}) · Spazio: ${SPAZIO_TAGLIA_5E[tagliaEffettiva(scheda)] || '1,5m'} · Lotta fino a: ${LOTTA_MAX_TAGLIA_5E[tagliaEffettiva(scheda)] || 'Grande'}`}
+                        >
+                          <span style={{ fontWeight: 800, color: '#2e7d32', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                            <span>{scheda.formaBestiale?.attiva ? '🐾' : '✨'}</span>
+                            <span>{tagliaEffettiva(scheda)}</span>
+                          </span>
+                          <span
+                            style={{
+                              fontSize: 9,
+                              color: '#1b4332',
+                              background: 'rgba(46,125,50,0.15)',
+                              border: '1px solid #52b788',
+                              borderRadius: 4,
+                              padding: '1px 4px',
+                              fontWeight: 800,
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {scheda.formaBestiale?.attiva ? 'Bestia' : 'Attiva'}
+                          </span>
+                        </div>
+                      ) : (
                         <CampoTendina
                           value={scheda.taglia}
                           opzioni={TAGLIE_5E}
                           onChange={(v) => aggiorna({ taglia: v })}
-                          title={`Taglia effettiva: ${tagliaEffettiva(scheda)} · Spazio: ${SPAZIO_TAGLIA_5E[tagliaEffettiva(scheda)] || '1,5m'} · Lotta fino a: ${LOTTA_MAX_TAGLIA_5E[tagliaEffettiva(scheda)] || 'Grande'}`}
+                          title={`Taglia: ${scheda.taglia || 'Media'} · Spazio: ${SPAZIO_TAGLIA_5E[scheda.taglia || 'Media'] || '1,5m'} · Lotta fino a: ${LOTTA_MAX_TAGLIA_5E[scheda.taglia || 'Media'] || 'Grande'}`}
                         />
-                        {tagliaEffettiva(scheda) !== (scheda.taglia || 'Media') && (
-                          <span
-                            style={{
-                              fontSize: 9.5,
-                              fontWeight: 800,
-                              background: C.green || '#2e7d32',
-                              color: '#fff',
-                              borderRadius: 4,
-                              padding: '1px 5px',
-                              whiteSpace: 'nowrap',
-                              boxShadow: '0 1px 4px rgba(0,0,0,0.25)',
-                            }}
-                            title={`Effetto attivo! Taglia temporanea: ${tagliaEffettiva(scheda)} (Base: ${scheda.taglia || 'Media'})`}
-                          >
-                            ➔ {tagliaEffettiva(scheda)}
-                          </span>
-                        )}
-                      </div>
+                      )}
                     </CampoModulo>
                     <CampoModulo label={t("profilo.allineamento")}>
                       <CampoTendina value={scheda.allineamento} opzioni={ALLINEAMENTI_5E} onChange={(v) => aggiorna({ allineamento: v })} title={t('tip.scegli_allineamento')} />

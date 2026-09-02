@@ -451,6 +451,27 @@ test('Taglia 5e: calcolo taglia effettiva con Forma Bestiale, Ingrandire e Ridur
   assert.equal(MOLTIPLICATORI_TAGLIA[tagliaEffettiva(pg)], 4);
 });
 
+test('Forma Bestiale: parsing attacchi e azioni delle bestie per tiri dadi', async () => {
+  const { parseAzioneBestia } = await import('../src/rules/scheda.js');
+
+  const morsoRospo = parseAzioneBestia('Morso: +4 al tiro per colpire, 1d10+2 danni perforanti + 1d10 veleno; afferra il bersaglio (CD 13).');
+  assert.equal(morsoRospo.nome, 'Morso');
+  assert.equal(morsoRospo.bonus, 4);
+  assert.equal(morsoRospo.danno, '1d10+2');
+  assert.equal(morsoRospo.cd, 13);
+
+  const inghiottire = parseAzioneBestia('Inghiottire: inghiotte una creatura Media o più piccola. 3d6 danni da acido a turno.');
+  assert.equal(inghiottire.nome, 'Inghiottire');
+  assert.equal(inghiottire.bonus, null);
+  assert.equal(inghiottire.danno, '3d6');
+
+  const artigliGatto = parseAzioneBestia('Artigli: +0 al tiro per colpire, 1 danno tagliente.');
+  assert.equal(artigliGatto.nome, 'Artigli');
+  assert.equal(artigliGatto.bonus, 0);
+  assert.equal(artigliGatto.danno, '1');
+});
+
+
 test('Level Up: dettagli progressione e multiclasse 5e', async () => {
   const { dettagliProgressioneLivello, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E } = await import('../src/rules/regole.js');
 

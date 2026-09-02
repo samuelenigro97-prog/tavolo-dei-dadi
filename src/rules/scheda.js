@@ -193,3 +193,37 @@ export function tagliaEffettiva(scheda) {
   }
   return base;
 }
+
+/**
+ * Parsea una stringa o un oggetto azione di una bestia / mostro 5e,
+ * estraendo nome, descrizione, bonus per colpire, formula del danno e CD tiro salvezza.
+ */
+export function parseAzioneBestia(azione) {
+  if (!azione) return { nome: 'Azione', desc: '', bonus: null, danno: '', cd: null, testoOriginale: '' };
+  const str = typeof azione === 'string' ? azione : (azione.nome || azione.desc || '');
+  const colonIdx = str.indexOf(':');
+  const nome = colonIdx > -1 ? str.slice(0, colonIdx).trim() : (str.split(/[,.]/)[0] || 'Attacco');
+  const desc = colonIdx > -1 ? str.slice(colonIdx + 1).trim() : str;
+
+  // Trova bonus per colpire: es. "+4 al tiro per colpire", "+5 to hit"
+  const matchHit = str.match(/([+-]?\d+)\s*(?:al tiro per colpire|to hit)/i);
+  const bonus = matchHit ? parseInt(matchHit[1], 10) : null;
+
+  // Trova formula danno primaria: es. "1d10+2", "2d6+4", "3d6", "1" (es. "1 danno tagliente")
+  const matchDanno = desc.match(/(\d+d\d+(?:\s*[+-]\s*\d+)?|\b\d+\b(?=\s+danno|\s+danni|\s+damage))/i);
+  const danno = matchDanno ? matchDanno[1].replace(/\s+/g, '') : '';
+
+  // Trova CD: es. "CD 13", "DC 14"
+  const matchCD = desc.match(/(?:CD|DC)\s*(\d+)/i);
+  const cd = matchCD ? parseInt(matchCD[1], 10) : null;
+
+  return {
+    nome,
+    desc,
+    bonus,
+    danno,
+    cd,
+    testoOriginale: str,
+  };
+}
+
