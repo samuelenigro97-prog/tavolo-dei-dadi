@@ -294,12 +294,12 @@ export const VAELION_JSON = {
     { id: "vi-31", nome: "Camminare sull'Acqua", livello: 3, preparato: true, rituale: true },
     { id: "vi-32", nome: "Crescita Vegetale", livello: 3, preparato: true },
     { id: "vi-33", nome: "Dissolvi Magie", livello: 3, preparato: true },
-    { id: "vi-34", nome: "Evoca Animali", livello: 3, preparato: true, conc: true },
+    { id: "vi-34", nome: "Evocare Animali", livello: 3, preparato: true, conc: true },
     { id: "vi-35", nome: "Respirare sott'Acqua", livello: 3, preparato: true, rituale: true },
     { id: "vi-41", nome: "Inaridire", livello: 4, preparato: true },
     { id: "vi-42", nome: "Metamorfosi", livello: 4, preparato: true, conc: true },
     { id: "vi-51", nome: "Cura Ferite di Massa", livello: 5, preparato: true },
-    { id: "vi-52", nome: "Evoca Elementale", livello: 5, preparato: true, conc: true }
+    { id: "vi-52", nome: "Evocare Elementale", livello: 5, preparato: true, conc: true }
   ],
   sintonia: "Mantello della Protezione, Perla del Potere, Guanti della Forza Orchesca",
   inventario: [
