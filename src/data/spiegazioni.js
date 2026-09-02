@@ -773,8 +773,6 @@ const SPIEG_INCANTESIMI = {
   'Aura di Vitalità': "Liv. 3 · Aura di 9 m: come azione bonus curi 2d6 PF a una creatura nell'aura, ogni turno. Concentrazione, 1 min.",
   'Bacche Nutrienti': 'Liv. 1 · Crei 10 bacche: ognuna cura 1 PF e nutre per un giorno. Dura 24 ore.',
   'Randello Incantato': 'Liv. 0 · Il legno di un randello o bastone ferrato che impugni viene pervaso dalla magia naturale per 1 minuto: usi la caratteristica da incantatore al posto della Forza per attacco e danni, il danno dell\'arma diventa 1d8 (contundente) e diventa magica. Termina se lasci andare l\'arma.',
-  'Bastone Incantato': 'Liv. 0 · (Nome ufficiale nel manuale 5e: Randello Incantato / Shillelagh) Il legno di un randello o bastone ferrato usa la caratteristica da incantatore per attacco e danni (1d8 contundente) e diventa magico per 1 minuto. Termina se lasci andare l\'arma.',
-  'Shillelagh': 'Liv. 0 · (Nome ufficiale italiano nel manuale 5e: Randello Incantato) Il legno di un randello o bastone ferrato usa la caratteristica da incantatore per attacco e danni (1d8 contundente) e diventa magico per 1 minuto. Termina se lasci andare l\'arma.',
   'Beffa Crudele': 'Liv. 0 · Un insulto magico (gittata 18 m): 1d6 psichici e svantaggio al prossimo attacco (TS Saggezza; aumenta a 5/11/17).',
   'Benedizione': 'Liv. 1 · Fino a 3 alleati entro 9 m aggiungono 1d4 ad attacchi e TS. Concentrazione, 1 min (1 bersaglio in più per slot).',
   'Blocca Mostri': 'Liv. 5 · Paralizzi una creatura entro 27 m (TS Saggezza a ogni turno). Concentrazione, 1 min.',
