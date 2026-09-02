@@ -7,7 +7,7 @@ import { avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro, s
 import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI } from './ui/tema.js';
 import { styles, GLOBAL_CSS } from './ui/stili.js';
 import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, Sezione, CampoBloccato, formattaVoceConIcona } from './ui/componenti.jsx';
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E } from './rules/scheda.js';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON, WENDELL_JSON, LYRIAN_JSON } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from './data/condizioni.js';
@@ -4839,9 +4839,10 @@ export default function App() {
         : /arco|balestra|fionda/i.test(nome || '')
           ? 'arco'
           : 'arma';
+    const etichettaPresa = attacco?.aDueMani ? (lingua === 'en' ? ' (Two-Handed)' : ' (2 Mani)') : '';
     conAnimazione(() => {
-      setDanni({ etichetta: `${critico ? '⚔ Danni CRITICI' : 'Danni'}: ${nome}${notaExtra}`, ...esito, critico });
-      registra({ etichetta: `${critico ? '⚔ CRITICO ' : ''}${t('log.danni')}: ${nome}${notaExtra}`, tipo: 'danni', totale: esito.totale, dettaglio: esito.dettaglio, critico });
+      setDanni({ etichetta: `${critico ? '⚔ Danni CRITICI' : 'Danni'}: ${nome}${etichettaPresa}${notaExtra}`, ...esito, critico });
+      registra({ etichetta: `${critico ? '⚔ CRITICO ' : ''}${t('log.danni')}: ${nome}${etichettaPresa}${notaExtra}`, tipo: 'danni', totale: esito.totale, dettaglio: esito.dettaglio, critico });
     }, esito.totale, maxFacce || 20, false, suonoDanno);
   }
 
@@ -4866,7 +4867,8 @@ export default function App() {
   function tiraColpoArma(a) {
     // Il tiro per colpire è sempre un d20: spada, freccia e magia suonano solo
     // quando si tirano i rispettivi danni.
-    lanciaD20(`Attacco: ${a.nome}`, a.bonus, { attacco: a, magia: !!a.isSpell, suono: 'tiro' });
+    const etichettaPresa = a?.aDueMani ? (lingua === 'en' ? ' (Two-Handed)' : ' (2 Mani)') : '';
+    lanciaD20(`Attacco: ${a.nome}${etichettaPresa}`, a.bonus, { attacco: a, magia: !!a.isSpell, suono: 'tiro' });
     if (!a.isSpell) consumaMunizione(a.nome);
   }
 
@@ -14001,6 +14003,8 @@ export default function App() {
                               }
                               
                               const titoloRiga = spiegazioneEffetto ? `${cleanNome}: ${spiegazioneEffetto}` : undefined;
+                              const armaDb = !a.isSpell ? trovaArma(a.nome) : null;
+                              const { isVersatile, dado1M, dado2M, hasReach } = analizzaArmaVersatileEPortata(a, armaDb);
                               return (
                                 <tr key={a.id} className="attacchi-riga" title={titoloRiga}>
                                   <td style={styles.td} className="attacchi-nome">
@@ -14123,7 +14127,7 @@ export default function App() {
                                     )}
                                   </td>
                                   <td style={{ ...styles.td, color: dannoValido ? undefined : C.red }} className="attacchi-danno" data-label={t('combat.col_danno')}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
                                       <button
                                         style={{ ...styles.buttonMini, padding: '1px 6px', opacity: castBloccato ? 0.4 : 1, cursor: castBloccato ? 'not-allowed' : 'pointer', ...(isUltimoCrit ? { background: C.goldDark, color: '#fff', borderColor: C.goldDark, fontWeight: 700 } : {}) }}
                                         title={castBloccato ? 'Equipaggia un focus per lanciare questo incantesimo' : isUltimoCrit ? `⚔️ Tira i danni CRITICI raddoppiati (${a.danno} ×2)` : `Tira i danni (${a.danno})`}
@@ -14139,7 +14143,7 @@ export default function App() {
                                       </button>
                                       <Editable
                                         value={a.danno}
-                                        width={65}
+                                        width={isVersatile ? 55 : 65}
                                         onChange={(v) => aggiornaAttacco({ danno: v })}
                                         onRoll={castBloccato ? undefined : () => {
                                           tiraDanniPerAttacco(a, !!isUltimoCrit);
@@ -14147,11 +14151,60 @@ export default function App() {
                                         }}
                                         title={isUltimoCrit ? `⚔️ Critico attivo: doppio click per tirare i danni CRITICI (${a.danno} ×2)` : (titoloRiga || t('tip.click_mod_danni'))}
                                       />
+                                      {isVersatile && (
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            const nuovoAttacco = alternaImpugnaturaVersatile(a, armaDb);
+                                            aggiornaAttacco(nuovoAttacco);
+                                          }}
+                                          style={{
+                                            ...styles.buttonMini,
+                                            fontSize: 9.5,
+                                            padding: '1px 4px',
+                                            fontWeight: 700,
+                                            borderRadius: 4,
+                                            background: a.aDueMani ? 'rgba(201,162,39,0.2)' : 'rgba(0,0,0,0.04)',
+                                            borderColor: a.aDueMani ? C.goldDark : C.border,
+                                            color: a.aDueMani ? C.goldDark : C.inkDim,
+                                            cursor: 'pointer',
+                                            flexShrink: 0,
+                                          }}
+                                          title={a.aDueMani
+                                            ? (lingua === 'en' ? `Two-Handed Grip (${dado2M}): Click to switch to One-Handed (${dado1M})` : `Impugnatura a 2 Mani (${dado2M}): Clicca per passare a 1 Mano (${dado1M})`)
+                                            : (lingua === 'en' ? `One-Handed Grip (${dado1M}): Click to switch to Two-Handed (${dado2M})` : `Impugnatura a 1 Mano (${dado1M}): Clicca per passare a 2 Mani (${dado2M})`)}
+                                        >
+                                          {a.aDueMani ? `🙌 2M` : `✋ 1M`}
+                                        </button>
+                                      )}
                                       <Editable value={a.tipoDanno} width={75} onChange={(v) => aggiornaAttacco({ tipoDanno: v })} title={titoloRiga} />
                                     </div>
                                   </td>
                                   <td style={styles.td} className="attacchi-note" data-label={t('combat.col_note')}>
-                                    <Editable value={a.note} width={130} onChange={(v) => aggiornaAttacco({ note: v })} title={titoloRiga || a.note || t('tip.click_modifica')} />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                      {hasReach && (
+                                        <span
+                                          style={{
+                                            fontSize: 9.5,
+                                            padding: '1px 5px',
+                                            borderRadius: 4,
+                                            background: 'rgba(59,130,246,0.12)',
+                                            border: '1px solid #3b82f6',
+                                            color: '#2563eb',
+                                            fontWeight: 700,
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 2,
+                                            flexShrink: 0,
+                                            cursor: 'help',
+                                          }}
+                                          title={lingua === 'en' ? 'Reach Weapon: 3m (10 ft) melee reach for attacks & opportunity attacks' : 'Arma con Portata: minaccia ed estensione attacchi a 3m'}
+                                        >
+                                          📏 3m
+                                        </span>
+                                      )}
+                                      <Editable value={a.note} width={hasReach ? 95 : 130} onChange={(v) => aggiornaAttacco({ note: v })} title={titoloRiga || a.note || t('tip.click_modifica')} />
+                                    </div>
                                   </td>
                                   <td className="col-azioni attacchi-azioni" style={{ ...styles.td, textAlign: 'right' }}>
                                     <button

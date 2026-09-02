@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, punteggioCaratteristica, formattaNomePg, bonusCopertura } from '../src/rules/scheda.js';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, punteggioCaratteristica, formattaNomePg, bonusCopertura, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile } from '../src/rules/scheda.js';
 import { ABILITA, CARATTERISTICHE } from '../src/data/caratteristiche.js';
 import { spiegaIncantesimo } from '../src/data/spiegazioni.js';
 import { tiraDanni, parseEspressioneDado } from '../src/rules/dadi.js';
@@ -588,5 +588,48 @@ test('Trucchetti: moltiplicatore e scaling automatico dei danni con il livello 5
   assert.equal(scalaDannoTrucchetto('1d8', 20, 'Shillelagh'), '1d8');
 });
 
+test('Armi Versatili & Portata 5e: identificazione e commutazione impugnatura 1M / 2M', () => {
+  // Spada lunga: versatile 1d8 (1M) -> 1d10 (2M)
+  const spadaLunga = { nome: 'Spada lunga', danno: '1d8+3', note: 'Versatile (1d10)' };
+  const infoSpada = analizzaArmaVersatileEPortata(spadaLunga);
+  assert.equal(infoSpada.isVersatile, true);
+  assert.equal(infoSpada.dado1M, '1d8');
+  assert.equal(infoSpada.dado2M, '1d10');
+  assert.equal(infoSpada.hasReach, false);
 
+  // Commutazione a 2 mani
+  const spada2M = alternaImpugnaturaVersatile(spadaLunga);
+  assert.equal(spada2M.aDueMani, true);
+  assert.equal(spada2M.danno, '1d10+3');
 
+  // Commutazione di ritorno a 1 mano
+  const spada1M = alternaImpugnaturaVersatile(spada2M);
+  assert.equal(spada1M.aDueMani, false);
+  assert.equal(spada1M.danno, '1d8+3');
+
+  // Bastone ferrato: versatile 1d6 (1M) -> 1d8 (2M)
+  const bastone = { nome: 'Bastone ferrato', danno: '1d6+2', note: 'Versatile (1d8)' };
+  const infoBastone = analizzaArmaVersatileEPortata(bastone);
+  assert.equal(infoBastone.isVersatile, true);
+  assert.equal(infoBastone.dado1M, '1d6');
+  assert.equal(infoBastone.dado2M, '1d8');
+
+  const bastone2M = alternaImpugnaturaVersatile(bastone);
+  assert.equal(bastone2M.aDueMani, true);
+  assert.equal(bastone2M.danno, '1d8+2');
+
+  // Armi con Portata (Reach 3m)
+  const alabarda = { nome: 'Alabarda', danno: '1d10+3', note: 'Pesante, Portata (3m), Due mani' };
+  const infoAlabarda = analizzaArmaVersatileEPortata(alabarda);
+  assert.equal(infoAlabarda.hasReach, true);
+  assert.equal(infoAlabarda.isVersatile, false);
+
+  const frusta = { nome: 'Frusta', danno: '1d4+3', note: 'Accurata, Portata (3m)' };
+  const infoFrusta = analizzaArmaVersatileEPortata(frusta);
+  assert.equal(infoFrusta.hasReach, true);
+
+  const stocco = { nome: 'Stocco', danno: '1d8+3', note: 'Accurata' };
+  const infoStocco = analizzaArmaVersatileEPortata(stocco);
+  assert.equal(infoStocco.hasReach, false);
+  assert.equal(infoStocco.isVersatile, false);
+});

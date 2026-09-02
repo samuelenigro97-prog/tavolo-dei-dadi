@@ -275,3 +275,79 @@ export function parseAzioneBestia(azione) {
   };
 }
 
+/**
+ * Analizza un attacco o un'arma per verificare se possiede la proprietà Versatile
+ * (con i relativi dadi a 1 mano e a 2 mani) o la proprietà Portata (Reach 3m).
+ */
+export function analizzaArmaVersatileEPortata(attacco, armaDb = null) {
+  if (!attacco) return { isVersatile: false, dado1M: '', dado2M: '', hasReach: false };
+  const nome = String(attacco.nome || '').trim().toLowerCase();
+  const note = String(attacco.note || '').toLowerCase();
+  const arma = armaDb || null;
+
+  // 1. Controllo Versatilità
+  let isVersatile = false;
+  let dado1M = '';
+  let dado2M = '';
+
+  if (arma?.versatile) {
+    isVersatile = true;
+    dado1M = arma.danno;
+    dado2M = arma.versatile;
+  } else if (/versatile\s*\((1d\d+)\)/i.test(note)) {
+    isVersatile = true;
+    const match = note.match(/versatile\s*\((1d\d+)\)/i);
+    dado2M = match[1];
+    dado1M = dado2M === '1d10' ? '1d8' : '1d6';
+  } else if (/spada lunga|longsword|ascia da battaglia|battleaxe|martello da guerra|warhammer|tridente|trident/i.test(nome)) {
+    isVersatile = true;
+    dado1M = '1d8';
+    dado2M = '1d10';
+  } else if (/bastone ferrato|quarterstaff|lancia\b|spear\b/i.test(nome) && !/lancia da cavaliere|lance/i.test(nome)) {
+    isVersatile = true;
+    dado1M = '1d6';
+    dado2M = '1d8';
+  }
+
+  // 2. Controllo Portata (Reach)
+  let hasReach = false;
+  if (arma?.reach || arma?.portata) {
+    hasReach = true;
+  } else if (/portata|reach/i.test(note)) {
+    hasReach = true;
+  } else if (/alabarda|halberd|falcione|glaive|picca|pike|frusta|whip/i.test(nome)) {
+    hasReach = true;
+  }
+
+  return { isVersatile, dado1M, dado2M, hasReach };
+}
+
+/**
+ * Commuta la presa di un'arma versatile tra 1 mano e 2 mani,
+ * sostituendo il dado di danno nella formula senza toccare il modificatore fisso.
+ */
+export function alternaImpugnaturaVersatile(attacco, armaDb = null) {
+  const { isVersatile, dado1M, dado2M } = analizzaArmaVersatileEPortata(attacco, armaDb);
+  if (!isVersatile) return attacco;
+
+  const aDueManiAttuale = Boolean(attacco.aDueMani);
+  const nuovaDueMani = !aDueManiAttuale;
+  const vecchioDado = aDueManiAttuale ? dado2M : dado1M;
+  const nuovoDado = nuovaDueMani ? dado2M : dado1M;
+
+  let dannoStr = String(attacco.danno || '');
+  if (dannoStr.includes(vecchioDado)) {
+    dannoStr = dannoStr.replace(vecchioDado, nuovoDado);
+  } else if (/^1d\d+/i.test(dannoStr)) {
+    dannoStr = dannoStr.replace(/^1d\d+/i, nuovoDado);
+  } else {
+    dannoStr = nuovoDado;
+  }
+
+  return {
+    ...attacco,
+    aDueMani: nuovaDueMani,
+    danno: dannoStr,
+  };
+}
+
