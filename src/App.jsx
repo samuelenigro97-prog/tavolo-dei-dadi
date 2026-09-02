@@ -1103,7 +1103,7 @@ function regexMunizione(nomeArma) {
 // privilegi/privilegiSottoclasse/talenti sono nel blocco fisso "Privilegi & Talenti"
 // sotto la Magia (non riordinabili singolarmente).
 // 'metamagia' NON è qui: non è trascinabile, resta sempre agganciata sotto la Magia.
-const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'equipaggiamento', 'aspetto'];
+const ORDINE_SEZIONI_DEFAULT = ['attacchi', 'incantesimi', 'privilegi', 'equipaggiamento', 'aspetto'];
 
 /** Ricava il colore identità dalla classe (testo libero), o null se non riconosciuta. */
 
@@ -12291,11 +12291,9 @@ export default function App() {
               </div>
             </Sezione>
 
-            {/* Metamagia (solo Stregone): SEMPRE subito sotto la Magia. Ordine
-                agganciato a 'incantesimi' e in DOM dopo la sezione Magia; non è
-                trascinabile, così resta sempre attaccata alla Magia. */}
+            {/* Metamagia (solo Stregone): SEMPRE subito sotto la Magia */}
             {/(stregone|sorcerer)/i.test(scheda.classe || '') && (
-              <Sezione titolo={t("sez.metamagia")} style={{ order: ordineSezioni.indexOf('incantesimi') }} {...apertoProps('metamagia', false)}>
+              <Sezione titolo={t("sez.metamagia")} {...apertoProps('metamagia', false)}>
                 <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8 }}>
                   {t("meta.desc")}
                 </div>
@@ -12458,7 +12456,7 @@ export default function App() {
 
             {/* Forma Bestiale (solo Druido dal 2° livello): subito sotto la Magia */}
             {/(druido|druid)/i.test(scheda.classe || '') && (Number(scheda.livello) || 1) >= 2 && (
-              <Sezione titolo={lingua === 'en' ? 'Beast Form' : 'Forma Bestiale'} style={{ order: ordineSezioni.indexOf('incantesimi') }} {...apertoProps('formaBestiale', true)}>
+              <Sezione titolo={lingua === 'en' ? 'Beast Form' : 'Forma Bestiale'} {...apertoProps('formaBestiale', true)}>
                 {(() => {
                   const disp = bestieDisponibili(scheda.livello, scheda.sottoclasse);
                   const lim = limitiFormaSelvatica(scheda.livello, scheda.sottoclasse);
@@ -12517,7 +12515,7 @@ export default function App() {
               (/artificiere|artificer/i.test(scheda.classe || '')) ||
               (scheda.incantesimiLista || []).some((s) => /famiglio|evoca|spiriti|spirit|elementale|summon|conjure|destriero|steed|trova|omuncolo|guardiano/i.test(s.nome || ''))
             ) && (
-              <Sezione titolo={lingua === 'en' ? 'Familiars & Summons' : 'Famigli & Evocazioni'} style={{ order: ordineSezioni.indexOf('incantesimi') }} {...apertoProps('famigliEvocazioni', false)}>
+              <Sezione titolo={lingua === 'en' ? 'Familiars & Summons' : 'Famigli & Evocazioni'} {...apertoProps('famigliEvocazioni', false)}>
                 {(() => {
                   const haFam = (/warlock/i.test(scheda.classe || '') && /catena|chain/i.test(scheda.sottoclasse || '')) ||
                     /artificiere|artificer/i.test(scheda.classe || '') ||
@@ -12571,12 +12569,11 @@ export default function App() {
               </Sezione>
             )}
 
-            {/* Sezione Unificata: Privilegi di Classe, Sottoclasse, Tratti di Specie e Talenti */}
-            <div style={{ order: ordineSezioni.indexOf('incantesimi') }}>
-              <Sezione
-                titolo={lingua === 'en' ? 'Features, Traits & Feats' : 'Privilegi, Tratti & Talenti'}
-                {...apertoProps('privilegi', true)}
-              >
+            {/* Sezione Unificata: Privilegi di Classe, Sottoclasse, Tratti di Specie e Talenti (fissa sopra l'Inventario) */}
+            <Sezione
+              titolo={lingua === 'en' ? 'Features, Traits & Feats' : 'Privilegi, Tratti & Talenti'}
+              {...apertoProps('privilegi', true)}
+            >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {/* Blocco 1: Classe e Sottoclasse */}
                   <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
@@ -12686,7 +12683,6 @@ export default function App() {
                   </div>
                 </div>
               </Sezione>
-            </div>
 
 
           </div>
