@@ -1282,7 +1282,7 @@ const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(I
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -4643,6 +4643,12 @@ export default function App() {
   /** Tira i danni di un attacco (con eventuale critico), indipendente dallo stato. */
   function tiraDanniPerAttacco(attacco, critico) {
     let dannoExpr = attacco?.danno || '';
+    if (attacco?.isSpell) {
+      const dbSpell = datiIncantesimo(attacco.nome);
+      if (dbSpell?.livello === 0 || attacco.livello === 0) {
+        dannoExpr = scalaDannoTrucchetto(dannoExpr, scheda?.livello || 1, attacco.nome);
+      }
+    }
     const isArma = !attacco?.isSpell;
     let notaTaglia = '';
     if (isArma && (scheda?.effettoTaglia === 'ingrandito' || (Array.isArray(scheda?.condizioni) && scheda.condizioni.includes('Ingrandito')))) {
@@ -9791,9 +9797,9 @@ export default function App() {
                         if (nuovo <= 0) {
                           // Danni in eccesso passano ai PF del druido (Regola PHB)
                           const eccesso = Math.abs(nuovo);
-                          const pfDruidoNuovi = Math.max(0, (Number(scheda.pf) || 0) - eccesso);
+                          const pfDruidoNuovi = Math.max(0, (Number(scheda.pfAttuali ?? scheda.pf) || 0) - eccesso);
                           aggiorna({
-                            pf: pfDruidoNuovi,
+                            pfAttuali: pfDruidoNuovi,
                             formaBestiale: { ...scheda.formaBestiale, pfAttuali: 0, attiva: false }
                           });
                         } else {
@@ -11267,7 +11273,14 @@ export default function App() {
 
                   const attacchiSalvati = (scheda.attacchi || []).map((a) => {
                     const isSpell = isAttaccoIncantesimo(a);
-                    return isSpell && !a.isSpell ? { ...a, isSpell: true } : a;
+                    let att = isSpell && !a.isSpell ? { ...a, isSpell: true } : a;
+                    if (att.isSpell && att.danno) {
+                      const dbS = datiIncantesimo(att.nome);
+                      if (dbS?.livello === 0 || att.livello === 0) {
+                        att = { ...att, danno: scalaDannoTrucchetto(att.danno, scheda.livello || 1, att.nome) };
+                      }
+                    }
+                    return att;
                   });
 
                   const nomiSalvati = new Set(attacchiSalvati.map((a) => String(a.nome || '').replace(/^✨\s*/, '').trim().toLowerCase()));
@@ -11281,7 +11294,10 @@ export default function App() {
                     const d = dettagliIncantesimo(s.nome) || {};
                     const db = datiIncantesimo(s.nome) || {};
                     const desc = (s.note || '') + ' ' + (spiegaIncantesimo(s.nome) || '');
-                    const danno = s.danno || d.danno || '';
+                    let danno = s.danno || d.danno || '';
+                    if ((s.livello === 0 || db.livello === 0) && danno) {
+                      danno = scalaDannoTrucchetto(danno, scheda.livello || 1, s.nome);
+                    }
                     const tipoDanno = s.tipoDanno || d.tipoDanno || '';
                     const { isTS } = classificaIncantesimoCombattimento(s);
                     const tsMatch = desc.match(/ts\s+(destrezza|saggezza|costituzione|forza|intelligenza|carisma)/i);
@@ -12511,6 +12527,16 @@ export default function App() {
                 {(() => {
                   const disp = bestieDisponibili(scheda.livello, scheda.sottoclasse);
                   const lim = limitiFormaSelvatica(scheda.livello, scheda.sottoclasse);
+                  const bestiePref = Array.isArray(scheda.bestiePreferite) ? scheda.bestiePreferite : [];
+                  const togglePref = (e, nomeBestia) => {
+                    e.stopPropagation();
+                    const nuove = bestiePref.includes(nomeBestia)
+                      ? bestiePref.filter((x) => x !== nomeBestia)
+                      : [...bestiePref, nomeBestia];
+                    aggiorna({ bestiePreferite: nuove });
+                  };
+                  const listaPref = disp.filter((b) => bestiePref.includes(b.nome));
+
                   return (
                     <div>
                       <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
@@ -12521,37 +12547,95 @@ export default function App() {
                         </span>
                         <span style={{ opacity: 0.8 }}>{disp.length} bestie utilizzabili</span>
                       </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: 8 }}>
-                        {disp.map((b) => (
-                          <div
-                            key={b.nome}
-                            onClick={() => setBestiaDettaglio(b)}
-                            style={{
-                              background: C.panelLight,
-                              border: `1px solid ${C.border}`,
-                              borderRadius: 8,
-                              padding: '8px 10px',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: 3,
-                              transition: 'transform 0.15s ease, border-color 0.15s ease',
-                            }}
-                            onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.goldDark; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.transform = 'none'; }}
-                          >
-                            <div style={{ fontWeight: 700, fontSize: 13, color: C.ink, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <span>{lingua === 'en' ? b.nomeEn : b.nome}</span>
-                              <span style={{ fontSize: 10, color: C.goldDark, background: 'rgba(200,140,20,0.15)', padding: '1px 5px', borderRadius: 10 }}>GS {b.gs}</span>
-                            </div>
-                            <div style={{ fontSize: 11, color: C.inkDim }}>
-                              🛡️ CA {b.ca} · ❤️ {b.pf} PF
-                            </div>
-                            <div style={{ fontSize: 10, color: C.inkDim, opacity: 0.85 }}>
-                              {b.taglia} · {b.velocita.volo ? `🦅 ${b.velocita.volo}m` : b.velocita.nuoto ? `🏊 ${b.velocita.nuoto}m` : `🐾 ${b.velocita.terra}m`}
-                            </div>
+
+                      {/* Scorciatoie Forme Preferite (Accesso Rapido) */}
+                      {listaPref.length > 0 && (
+                        <div style={{ marginBottom: 12, padding: '8px 10px', background: 'rgba(214,169,15,0.08)', borderRadius: 8, border: `1px solid ${C.gold}` }}>
+                          <div style={{ fontSize: 11.5, fontWeight: 700, color: C.goldDark, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                            ⭐ {lingua === 'en' ? 'Favorite Wild Shapes (Quick Access)' : 'Forme Preferite (Accesso Rapido)'}
                           </div>
-                        ))}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: 6 }}>
+                            {listaPref.map((b) => (
+                              <div
+                                key={`pref-${b.nome}`}
+                                onClick={() => setBestiaDettaglio(b)}
+                                style={{
+                                  background: C.panel,
+                                  border: `1.5px solid ${C.gold}`,
+                                  borderRadius: 8,
+                                  padding: '6px 8px',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: 2,
+                                  boxShadow: '0 2px 5px rgba(214,169,15,0.25)',
+                                }}
+                              >
+                                <div style={{ fontWeight: 700, fontSize: 12.5, color: C.ink, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span>{lingua === 'en' ? b.nomeEn : b.nome}</span>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => togglePref(e, b.nome)}
+                                    style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, fontSize: 13 }}
+                                    title="Rimuovi dai preferiti"
+                                  >
+                                    ⭐
+                                  </button>
+                                </div>
+                                <div style={{ fontSize: 10.5, color: C.inkDim }}>
+                                  🛡️ CA {b.ca} · ❤️ {b.pf} PF · GS {b.gs}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Catalogo Completo Bestie Disponibili */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: 8 }}>
+                        {disp.map((b) => {
+                          const isFav = bestiePref.includes(b.nome);
+                          return (
+                            <div
+                              key={b.nome}
+                              onClick={() => setBestiaDettaglio(b)}
+                              style={{
+                                background: C.panelLight,
+                                border: `1px solid ${isFav ? C.gold : C.border}`,
+                                borderRadius: 8,
+                                padding: '8px 10px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 3,
+                                transition: 'transform 0.15s ease, border-color 0.15s ease',
+                              }}
+                              onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.goldDark; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.borderColor = isFav ? C.gold : C.border; e.currentTarget.style.transform = 'none'; }}
+                            >
+                              <div style={{ fontWeight: 700, fontSize: 13, color: C.ink, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span>{lingua === 'en' ? b.nomeEn : b.nome}</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => togglePref(e, b.nome)}
+                                    style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, fontSize: 12, opacity: isFav ? 1 : 0.4 }}
+                                    title={isFav ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'}
+                                  >
+                                    {isFav ? '⭐' : '☆'}
+                                  </button>
+                                  <span style={{ fontSize: 10, color: C.goldDark, background: 'rgba(200,140,20,0.15)', padding: '1px 5px', borderRadius: 10 }}>GS {b.gs}</span>
+                                </div>
+                              </div>
+                              <div style={{ fontSize: 11, color: C.inkDim }}>
+                                🛡️ CA {b.ca} · ❤️ {b.pf} PF
+                              </div>
+                              <div style={{ fontSize: 10, color: C.inkDim, opacity: 0.85 }}>
+                                {b.taglia} · {b.velocita.volo ? `🦅 ${b.velocita.volo}m` : b.velocita.nuoto ? `🏊 ${b.velocita.nuoto}m` : `🐾 ${b.velocita.terra}m`}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   );
@@ -12933,17 +13017,6 @@ export default function App() {
                         {filtroInventario && (
                           <button style={styles.buttonMini} onClick={() => setFiltroInventario('')}>✕</button>
                         )}
-                        <select
-                          value={filtroCatInventario}
-                          onChange={(e) => setFiltroCatInventario(e.target.value)}
-                          style={{ ...styles.inlineInput, padding: '5px 8px', fontSize: 12, maxWidth: 150 }}
-                        >
-                          <option value="tutti">{lingua === 'en' ? '📦 All Types' : '📦 Tutti i tipi'}</option>
-                          <option value="armi_armature">{lingua === 'en' ? '⚔️ Weapons & Armor' : '⚔️ Armi & Armature'}</option>
-                          <option value="pozioni">{lingua === 'en' ? '🧪 Potions' : '🧪 Pozioni & Unguenti'}</option>
-                          <option value="magici">{lingua === 'en' ? '✨ Magic Items' : '✨ Oggetti Magici'}</option>
-                          <option value="attrezzi">{lingua === 'en' ? '🔧 Tools' : '🔧 Attrezzi'}</option>
-                        </select>
                       </div>
                       
                       {/* Segmented View Tabs: Tutti vs Equipaggiato vs Zaino */}
@@ -12984,6 +13057,36 @@ export default function App() {
                           🗑️
                         </button>
                       </div>
+                    </div>
+
+                    {/* Barra Filtri Categoria Rapidi */}
+                    <div style={{ display: 'flex', gap: 5, overflowX: 'auto', paddingBottom: 6, marginBottom: 8, alignItems: 'center' }}>
+                      {[
+                        ['tutti', '📦 ' + (lingua === 'en' ? 'All Types' : 'Tutti i tipi')],
+                        ['armi_armature', '⚔️ ' + (lingua === 'en' ? 'Weapons & Armor' : 'Armi & Armature')],
+                        ['pozioni', '🧪 ' + (lingua === 'en' ? 'Potions' : 'Pozioni')],
+                        ['magici', '✨ ' + (lingua === 'en' ? 'Magic' : 'Magici')],
+                        ['attrezzi', '🔧 ' + (lingua === 'en' ? 'Tools' : 'Attrezzi')],
+                      ].map(([k, label]) => (
+                        <button
+                          key={k}
+                          type="button"
+                          onClick={() => setFiltroCatInventario(k)}
+                          style={{
+                            ...styles.buttonMini,
+                            fontSize: 11,
+                            padding: '3px 8px',
+                            whiteSpace: 'nowrap',
+                            borderRadius: 12,
+                            borderColor: filtroCatInventario === k ? C.goldDark : C.border,
+                            background: filtroCatInventario === k ? 'rgba(200,140,20,0.18)' : 'transparent',
+                            color: filtroCatInventario === k ? C.goldDark : C.inkDim,
+                            fontWeight: filtroCatInventario === k ? 700 : 500,
+                          }}
+                        >
+                          {label}
+                        </button>
+                      ))}
                     </div>
                     {/* Lista oggetti */}
                     {(inv.length > 0 || numMonete > 0) && (

@@ -376,8 +376,32 @@ export function dettagliIncantesimo(nome) {
     area: db.area || '',
     danno: db.danno || '',
     tipoDanno: db.tipoDanno || '',
-    desc: desc || db.desc || '',
   };
+}
+
+/** Calcola il moltiplicatore di dadi per i trucchetti offensivi 5e al salire di livello (5, 11, 17). */
+export function moltiplicatoreTrucchetto(livello = 1) {
+  const liv = Math.max(1, Math.min(20, Number(livello) || 1));
+  if (liv >= 17) return 4;
+  if (liv >= 11) return 3;
+  if (liv >= 5) return 2;
+  return 1;
+}
+
+/** Scala la formula di danno di un trucchetto 5e in base al livello del personaggio. */
+export function scalaDannoTrucchetto(danno, livello = 1, nome = '') {
+  if (!danno || typeof danno !== 'string') return danno;
+  const n = String(nome || '').toLowerCase().trim();
+  // Randello Incantato (Shillelagh) usa sempre 1d8 fisso
+  if (n.includes('randello incantato') || n.includes('shillelagh') || n.includes('bastone incantato')) {
+    return danno;
+  }
+  const mult = moltiplicatoreTrucchetto(livello);
+  const match = danno.trim().match(/^(\d+)?d(\d+)(.*)$/i);
+  if (!match) return danno;
+  const facce = match[2];
+  const resto = match[3] || '';
+  return `${mult}d${facce}${resto}`;
 }
 
 /**

@@ -474,4 +474,35 @@ test('Level Up: dettagli progressione e multiclasse 5e', async () => {
   assert.ok(MULTICLASSE_COMPETENZE_5E.ladro.strumenti.includes('scasso'));
 });
 
+test('Trucchetti: moltiplicatore e scaling automatico dei danni con il livello 5e', async () => {
+  const { moltiplicatoreTrucchetto, scalaDannoTrucchetto } = await import('../src/rules/regole.js');
+
+  // Moltiplicatori di dadi: 1 al liv 1-4, 2 al liv 5-10, 3 al liv 11-16, 4 al liv 17-20
+  assert.equal(moltiplicatoreTrucchetto(1), 1);
+  assert.equal(moltiplicatoreTrucchetto(4), 1);
+  assert.equal(moltiplicatoreTrucchetto(5), 2);
+  assert.equal(moltiplicatoreTrucchetto(10), 2);
+  assert.equal(moltiplicatoreTrucchetto(11), 3);
+  assert.equal(moltiplicatoreTrucchetto(16), 3);
+  assert.equal(moltiplicatoreTrucchetto(17), 4);
+  assert.equal(moltiplicatoreTrucchetto(20), 4);
+
+  // Dardo di Fuoco: 1d10 -> 2d10 -> 3d10 -> 4d10
+  assert.equal(scalaDannoTrucchetto('1d10', 1, 'Dardo di Fuoco'), '1d10');
+  assert.equal(scalaDannoTrucchetto('1d10', 5, 'Dardo di Fuoco'), '2d10');
+  assert.equal(scalaDannoTrucchetto('1d10', 11, 'Dardo di Fuoco'), '3d10');
+  assert.equal(scalaDannoTrucchetto('1d10', 17, 'Dardo di Fuoco'), '4d10');
+
+  // Frusta di Spine: 1d6 -> 2d6
+  assert.equal(scalaDannoTrucchetto('1d6', 5, 'Frusta di Spine'), '2d6');
+
+  // Morsa del Gelo: 1d8 -> 2d8
+  assert.equal(scalaDannoTrucchetto('1d8', 8, 'Morsa del Gelo'), '2d8');
+
+  // Randello Incantato (Shillelagh): non scala il numero di dadi (resta 1d8)
+  assert.equal(scalaDannoTrucchetto('1d8+5', 10, 'Randello Incantato'), '1d8+5');
+  assert.equal(scalaDannoTrucchetto('1d8', 20, 'Shillelagh'), '1d8');
+});
+
+
 
