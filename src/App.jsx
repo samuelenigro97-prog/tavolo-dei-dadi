@@ -6,7 +6,7 @@ import { t, setLinguaAttuale, DIZIONARIO, traduciDato, linguaAttuale } from './i
 import { avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro, sbloccaAudio, precaricaSfx } from './utils/audioAmbiente';
 import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI } from './ui/tema.js';
 import { styles, GLOBAL_CSS } from './ui/stili.js';
-import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, Sezione, CampoBloccato } from './ui/componenti.jsx';
+import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, Sezione, CampoBloccato, formattaVoceConIcona } from './ui/componenti.jsx';
 import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON, WENDELL_JSON, LYRIAN_JSON } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
@@ -7073,27 +7073,20 @@ export default function App() {
                   <label style={etichetta}>Scuola di Magia</label>
                   <select style={campo} value={s.scuola || ''} onChange={(e) => upd({ scuola: e.target.value })}>
                     <option value="">— Nessuna —</option>
-                    <option value="Abiurazione">Abiurazione</option>
-                    <option value="Ammaliamento">Ammaliamento</option>
-                    <option value="Chiaroveggenza">Chiaroveggenza</option>
-                    <option value="Conjurazione">Conjurazione</option>
-                    <option value="Divinazione">Divinazione</option>
-                    <option value="Evocazione">Evocazione</option>
-                    <option value="Illusione">Illusione</option>
-                    <option value="Invocazione">Invocazione</option>
-                    <option value="Necromanza">Necromanza</option>
-                    <option value="Trasmutazione">Trasmutazione</option>
+                    {['Abiurazione', 'Ammaliamento', 'Divinazione', 'Evocazione', 'Illusione', 'Invocazione', 'Necromanzia', 'Trasmutazione'].map((sc) => (
+                      <option key={sc} value={sc}>{formattaVoceConIcona(sc)}</option>
+                    ))}
                   </select>
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={etichetta}>Area d'Effetto</label>
                   <select style={campo} value={s.area || ''} onChange={(e) => upd({ area: e.target.value })}>
                     <option value="">— Nessuna —</option>
-                    <option value="Cono">Cono</option>
-                    <option value="Cubo">Cubo</option>
-                    <option value="Cilindro">Cilindro</option>
-                    <option value="Linea">Linea</option>
-                    <option value="Sfera">Sfera</option>
+                    <option value="Cono">📐 Cono</option>
+                    <option value="Cubo">📦 Cubo</option>
+                    <option value="Cilindro">🥫 Cilindro</option>
+                    <option value="Linea">📏 Linea</option>
+                    <option value="Sfera">🔮 Sfera</option>
                   </select>
                 </div>
               </div>
@@ -7105,20 +7098,10 @@ export default function App() {
                 <div style={{ flex: 1 }}>
                   <label style={etichetta}>Tipo di Danno</label>
                   <select style={campo} value={s.tipoDanno || ''} onChange={(e) => upd({ tipoDanno: e.target.value })}>
-                    <option value="">—</option>
-                    <option value="Acido">Acido</option>
-                    <option value="Freddo">Freddo</option>
-                    <option value="Fuoco">Fuoco</option>
-                    <option value="Forza">Forza</option>
-                    <option value="Fulmine">Fulmine</option>
-                    <option value="Necrotico">Necrotico</option>
-                    <option value="Perforante">Perforante</option>
-                    <option value="Psichico">Psichico</option>
-                    <option value="Radiante">Radiante</option>
-                    <option value="Rottura">Rottura</option>
-                    <option value="Tagliente">Tagliente</option>
-                    <option value="Tuono">Tuono</option>
-                    <option value="Veleno">Veleno</option>
+                    <option value="">— Nessuno —</option>
+                    {['Acido', 'Contundente', 'Freddo', 'Fulmine', 'Fuoco', 'Forza', 'Necrotico', 'Perforante', 'Psichico', 'Radiante', 'Tagliente', 'Tuono', 'Veleno'].map((td) => (
+                      <option key={td} value={td}>{formattaVoceConIcona(td)}</option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -9295,8 +9278,8 @@ export default function App() {
               <select style={{ ...stileSelect, marginBottom: bozzaCrea.specie ? 4 : 12 }} value={bozzaCrea.specie} onChange={(e) => setB({ specie: e.target.value, competenzeSpecie: [] })}>
                 <option value="">{t('crea.scegli')}</option>
                 {Object.entries(SPECIE_5E).map(([g, opts]) => (
-                  <optgroup key={g} label={g}>
-                    {[...opts].sort((a, b) => nomeSpeciePerSesso(a, bozzaCrea.sesso, lingua).localeCompare(nomeSpeciePerSesso(b, bozzaCrea.sesso, lingua), lingua)).map((n) => <option key={n} value={n}>{nomeSpeciePerSesso(n, bozzaCrea.sesso, lingua)}</option>)}
+                  <optgroup key={g} label={formattaVoceConIcona(g)}>
+                    {[...opts].sort((a, b) => nomeSpeciePerSesso(a, bozzaCrea.sesso, lingua).localeCompare(nomeSpeciePerSesso(b, bozzaCrea.sesso, lingua), lingua)).map((n) => <option key={n} value={n}>{formattaVoceConIcona(n, () => nomeSpeciePerSesso(n, bozzaCrea.sesso, lingua))}</option>)}
                   </optgroup>
                 ))}
               </select>
@@ -9324,7 +9307,7 @@ export default function App() {
               <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{t('crea.classe')}</label>
               <select style={{ ...stileSelect, marginBottom: 12 }} value={bozzaCrea.classe} onChange={(e) => setB({ classe: e.target.value, sottoclasse: '', competenzeClasse: [] })}>
                 <option value="">{t('crea.scegli')}</option>
-                {[...(manualiAttivi.tasha !== false ? [...NOMI_CLASSI, 'Artefice'] : NOMI_CLASSI)].sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
+                {[...(manualiAttivi.tasha !== false ? [...NOMI_CLASSI, 'Artefice'] : NOMI_CLASSI)].sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{formattaVoceConIcona(n)}</option>)}
               </select>
 
               {/* Livello iniziale: crea subito un PG di livello alto senza fare Level Up a mano */}
@@ -9333,7 +9316,7 @@ export default function App() {
                 const livello = Math.max(1, Math.min(20, parseInt(e.target.value, 10) || 1));
                 setB({ livello, sottoclasse: livello < livelloSceltaSottoclasse(bozzaCrea.classe, regoleVersione) ? '' : bozzaCrea.sottoclasse });
               }}>
-                {Array.from({ length: 20 }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{lingua === 'it' ? `Livello ${n}` : `Level ${n}`}</option>)}
+                {Array.from({ length: 20 }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{lingua === 'it' ? `🎚️ Livello ${n}` : `🎚️ Level ${n}`}</option>)}
               </select>
 
               {/* Multiclasse: classe e livello della classe principale prima,
@@ -9361,7 +9344,7 @@ export default function App() {
                       <>
                         <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
                           <select style={{ ...stileSelect, flex: 2 }} value={bozzaCrea.multiclasseClasse2} onChange={(e) => setB({ multiclasseClasse2: e.target.value, sottoclasseMc2: '' })}>
-                            {[...listaC].filter((n) => n !== bozzaCrea.classe).sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
+                            {[...listaC].filter((n) => n !== bozzaCrea.classe).sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{formattaVoceConIcona(n)}</option>)}
                           </select>
                           <select style={{ ...stileSelect, flex: 1 }} value={Math.min(bozzaCrea.multiclasseLivello2 || 1, maxLiv2)} onChange={(e) => setB({ multiclasseLivello2: Math.max(1, Math.min(maxLiv2, parseInt(e.target.value, 10) || 1)), sottoclasseMc2: '' })}>
                             {Array.from({ length: maxLiv2 }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{lingua === 'it' ? `Liv. ${n}` : `Lv. ${n}`}</option>)}
@@ -9400,7 +9383,7 @@ export default function App() {
                       <>
                         <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
                           <select style={{ ...stileSelect, flex: 2 }} value={bozzaCrea.multiclasseClasse3} onChange={(e) => setB({ multiclasseClasse3: e.target.value, sottoclasseMc3: '' })}>
-                            {[...listaC].filter((n) => n !== bozzaCrea.classe && n !== bozzaCrea.multiclasseClasse2).sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
+                            {[...listaC].filter((n) => n !== bozzaCrea.classe && n !== bozzaCrea.multiclasseClasse2).sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{formattaVoceConIcona(n)}</option>)}
                           </select>
                           <select style={{ ...stileSelect, flex: 1 }} value={Math.min(bozzaCrea.multiclasseLivello3 || 1, maxLiv3)} onChange={(e) => setB({ multiclasseLivello3: Math.max(1, Math.min(maxLiv3, parseInt(e.target.value, 10) || 1)), sottoclasseMc3: '' })}>
                             {Array.from({ length: maxLiv3 }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{lingua === 'it' ? `Liv. ${n}` : `Lv. ${n}`}</option>)}
@@ -9444,7 +9427,7 @@ export default function App() {
                             style={{ ...styles.inlineInput, fontSize: 11, padding: '2px 4px', flex: '1 1 150px', minWidth: 0 }}
                           >
                             <option value="">— o scegli un talento —</option>
-                            {talentiOrdinati.map((tl) => <option key={tl.nome} value={tl.nome}>{tl.nome}</option>)}
+                            {talentiOrdinati.map((tl) => <option key={tl.nome} value={tl.nome}>✨ {tl.nome}</option>)}
                           </select>
                         </div>
                       );
@@ -9460,7 +9443,7 @@ export default function App() {
                   <label style={{ ...styles.detail, display: 'block', marginBottom: 3, fontWeight: 'bold' }}>{t('crea.talento_origine_label')}</label>
                   <select value={bozzaCrea.talentoOrigine} onChange={(e) => setB({ talentoOrigine: e.target.value })} style={stileSelect}>
                     <option value="">{t('crea.scegli')}</option>
-                    {[...talentiPerManuali(TALENTI_5E, manualiAttivi)].sort((a, b) => a.nome.localeCompare(b.nome, lingua)).map((tl) => <option key={tl.nome} value={tl.nome}>{tl.nome} — {tl.desc}</option>)}
+                    {[...talentiPerManuali(TALENTI_5E, manualiAttivi)].sort((a, b) => a.nome.localeCompare(b.nome, lingua)).map((tl) => <option key={tl.nome} value={tl.nome}>✨ {tl.nome} — {tl.desc}</option>)}
                   </select>
                 </div>
               )}
@@ -9478,7 +9461,7 @@ export default function App() {
               <label style={{ ...styles.detail, display: 'block', marginBottom: 3 }}>{t('crea.background')}</label>
               <select style={{ ...stileSelect, marginBottom: 6 }} value={bozzaCrea.background} onChange={(e) => setB({ background: e.target.value })}>
                 <option value="">{t('crea.scegli')}</option>
-                {[...BACKGROUND_5E].sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
+                {[...BACKGROUND_5E].sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{formattaVoceConIcona(n)}</option>)}
               </select>
               {bozzaCrea.background && (
                 <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 10px', marginBottom: 12, fontSize: 11, lineHeight: 1.5 }}>
@@ -14291,9 +14274,9 @@ export default function App() {
                     disabled={Boolean(caratteristicaIncantatorePerClasse(scheda.classe, scheda.sottoclasse))}
                     title={caratteristicaIncantatorePerClasse(scheda.classe, scheda.sottoclasse) ? 'Determinata automaticamente dalla classe' : undefined}
                   >
-                    <option value="">{t('spell.non_incantatore')}</option>
+                    <option value="">🚫 {t('spell.non_incantatore')}</option>
                     {CARATTERISTICHE.map((c) => (
-                      <option key={c.key} value={c.key}>{t('attr.' + c.key)}</option>
+                      <option key={c.key} value={c.key}>{formattaVoceConIcona(c.key, () => t('attr.' + c.key))}</option>
                     ))}
                   </select>
                 </label>
@@ -14321,9 +14304,9 @@ export default function App() {
                           style={{ ...styles.inlineInput, fontSize: 12, width: '100%', maxWidth: '100%', padding: '3px 6px', height: 28, textAlign: 'center', fontWeight: attivo ? 700 : 400, color: attivo ? C.goldDark : C.ink }}
                           title={t('conc.scegli')}
                         >
-                          <option value="">{t('conc.nessuna')}</option>
-                          {attivo && !conc.includes(scheda.concentrazione) && <option value={scheda.concentrazione}>{scheda.concentrazione}</option>}
-                          {[...conc].sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>{n}</option>)}
+                          <option value="">🚫 {t('conc.nessuna')}</option>
+                          {attivo && !conc.includes(scheda.concentrazione) && <option value={scheda.concentrazione}>✨ {scheda.concentrazione}</option>}
+                          {[...conc].sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n}>✨ {n}</option>)}
                         </select>
                         <button
                           className="tirabile"
@@ -14392,17 +14375,17 @@ export default function App() {
                     style={{ ...styles.inlineInput, minWidth: 0, padding: '6px 9px' }}
                   />
                   <select value={filtroLivelloInc} onChange={(e) => setFiltroLivelloInc(e.target.value)} style={{ ...styles.inlineInput, padding: '6px 7px' }} aria-label={t('spell.filtro_livello')}>
-                    <option value="">{t('spell.tutti_livelli')}</option>
-                    <option value="0">{t('spell.trucchetti')}</option>
-                    {Array.from({ length: 9 }, (_, i) => <option key={i + 1} value={String(i + 1)}>{i + 1}°</option>)}
+                    <option value="">🔮 {t('spell.tutti_livelli')}</option>
+                    <option value="0">✨ {t('spell.trucchetti')}</option>
+                    {Array.from({ length: 9 }, (_, i) => <option key={i + 1} value={String(i + 1)}>📖 {i + 1}° {lingua === 'en' ? 'Level' : 'Livello'}</option>)}
                   </select>
                   <select value={filtroScuolaInc} onChange={(e) => setFiltroScuolaInc(e.target.value)} style={{ ...styles.inlineInput, padding: '6px 7px' }} aria-label={t('spell.filtro_scuola')}>
-                    <option value="">{t('spell.tutte_scuole')}</option>
-                    {[...new Set(incantesimiVisualizzati.map((s) => s.scuola || datiIncantesimo(s.nome)?.scuola).filter(Boolean))].sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((scuola) => <option key={scuola} value={scuola}>{traduciDato(scuola)}</option>)}
+                    <option value="">🔮 {t('spell.tutte_scuole')}</option>
+                    {[...new Set(incantesimiVisualizzati.map((s) => s.scuola || datiIncantesimo(s.nome)?.scuola).filter(Boolean))].sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((scuola) => <option key={scuola} value={scuola}>{formattaVoceConIcona(scuola)}</option>)}
                   </select>
                   <select value={filtroClasseInc} onChange={(e) => setFiltroClasseInc(e.target.value)} style={{ ...styles.inlineInput, padding: '6px 7px' }} aria-label={t('spell.filtro_classe')}>
-                    <option value="">{t('spell.tutte_classi')}</option>
-                    {['Bardo', 'Chierico', 'Druido', 'Mago', 'Paladino', 'Ranger', 'Stregone', 'Warlock', 'Artefice'].map((classe) => <option key={classe} value={classe}>{traduciDato(classe)}</option>)}
+                    <option value="">🧙 {t('spell.tutte_classi')}</option>
+                    {['Bardo', 'Chierico', 'Druido', 'Mago', 'Paladino', 'Ranger', 'Stregone', 'Warlock', 'Artefice'].map((classe) => <option key={classe} value={classe}>{formattaVoceConIcona(classe)}</option>)}
                   </select>
                 </div>
 

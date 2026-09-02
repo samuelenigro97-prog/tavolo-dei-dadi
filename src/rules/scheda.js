@@ -80,10 +80,10 @@ export function punteggioCaratteristica(scheda, caratteristica) {
 }
 
 export const TIPI_COPERTURA_5E = [
-  { key: 'nessuna', labelIt: 'Nessuna Copertura', labelEn: 'No Cover', ca: 0, tsDes: 0, descIt: 'Bersaglio in campo aperto, nessuna protezione.', descEn: 'Target in open field, no protection.' },
-  { key: 'mezza', labelIt: 'Mezza Copertura (+2)', labelEn: 'Half Cover (+2)', ca: 2, tsDes: 2, descIt: '+2 a CA e TS Destrezza (muretto, cassa, tronco o altra creatura).', descEn: '+2 to AC and Dex saves (low wall, crate, tree trunk, or another creature).' },
-  { key: 'tre_quarti', labelIt: 'Tre Quarti (+5)', labelEn: 'Three-Quarters Cover (+5)', ca: 5, tsDes: 5, descIt: '+5 a CA e TS Destrezza (feritoia, saracinesca, muro parziale).', descEn: '+5 to AC and Dex saves (arrow slit, portcullis, partial wall).' },
-  { key: 'totale', labelIt: 'Copertura Totale', labelEn: 'Total Cover', ca: 0, tsDes: 0, descIt: 'Completamente celato da ostacoli: non bersagliabile direttamente da attacchi o incantesimi.', descEn: 'Completely concealed: cannot be targeted directly by attacks or spells.' },
+  { key: 'nessuna', labelIt: '🛡️ Nessuna Copertura', labelEn: '🛡️ No Cover', ca: 0, tsDes: 0, descIt: 'Bersaglio in campo aperto, nessuna protezione.', descEn: 'Target in open field, no protection.' },
+  { key: 'mezza', labelIt: '🛡️ Mezza (+2 CA/TS)', labelEn: '🛡️ Half Cover (+2)', ca: 2, tsDes: 2, descIt: '+2 a CA e TS Destrezza (muretto, cassa, tronco o altra creatura).', descEn: '+2 to AC and Dex saves (low wall, crate, tree trunk, or another creature).' },
+  { key: 'tre_quarti', labelIt: '🏰 Tre Quarti (+5 CA/TS)', labelEn: '🏰 Three-Quarters (+5)', ca: 5, tsDes: 5, descIt: '+5 a CA e TS Destrezza (feritoia, saracinesca, muro parziale).', descEn: '+5 to AC and Dex saves (arrow slit, portcullis, partial wall).' },
+  { key: 'totale', labelIt: '🧱 Copertura Totale', labelEn: '🧱 Total Cover', ca: 0, tsDes: 0, descIt: 'Completamente celato da ostacoli: non bersagliabile direttamente da attacchi o incantesimi.', descEn: 'Completely concealed: cannot be targeted directly by attacks or spells.' },
 ];
 
 export function bonusCopertura(scheda) {

@@ -6,6 +6,139 @@ import { C } from './tema.js';
 import { styles } from './stili.js';
 import { formattaTitoloVoce } from '../rules/scheda.js';
 
+export const ICONE_5E = {
+  // Danni / Resistenze
+  'Acido': '🧪', 'Acid': '🧪',
+  'Contundente': '🔨', 'Bludgeoning': '🔨',
+  'Freddo': '❄️', 'Cold': '❄️',
+  'Fulmine': '⚡', 'Lightning': '⚡',
+  'Fuoco': '🔥', 'Fire': '🔥',
+  'Danno da Forza': '🌌', 'Force Damage': '🌌',
+  'Necrotico': '💀', 'Necrotic': '💀',
+  'Perforante': '🗡️', 'Piercing': '🗡️',
+  'Psichico': '🧠', 'Psychic': '🧠',
+  'Radiante': '✨', 'Radiant': '✨',
+  'Tagliente': '⚔️', 'Slashing': '⚔️',
+  'Tuono': '🔊', 'Thunder': '🔊',
+  'Veleno': '☠️', 'Poison': '☠️',
+
+  // Condizioni
+  'Accecato': '👁️', 'Blinded': '👁️',
+  'Affascinato': '💖', 'Charmed': '💖',
+  'Afferrato': '🤼', 'Grappled': '🤼',
+  'Assordato': '🔇', 'Deafened': '🔇',
+  'Avvelenato': '🧪', 'Poisoned': '🧪',
+  'Incapacitato': '🛑', 'Incapacitated': '🛑',
+  'Invisibile': '👻', 'Invisible': '👻',
+  'Paralizzato': '⚡', 'Paralyzed': '⚡',
+  'Pietrificato': '🗿', 'Petrified': '🗿',
+  'Privo di sensi': '💤', 'PrivoDiSensi': '💤', 'Unconscious': '💤',
+  'Prono': '🛌', 'Prone': '🛌',
+  'Spaventato': '😱', 'Frightened': '😱',
+  'Stordito': '💫', 'Stunned': '💫',
+  'Trattenuto': '🕸️', 'Restrained': '🕸️',
+
+  // Sensi / Visione
+  'Scurovisione': '👁️', 'Darkvision': '👁️',
+  'Scurovisione Superiore': '🌌', 'Superior Darkvision': '🌌',
+  'Scurovisione superiore': '🌌',
+  'Vista Cieca': '🦇', 'Blindsight': '🦇',
+  'Vista cieca': '🦇',
+  'Vista Pura': '👁️‍🗨️', 'Truesight': '👁️‍🗨️',
+  'Vista pura': '👁️‍🗨️',
+  'Percezione Tellurica': '🐾', 'Tremorsense': '🐾',
+  'Percezione tellurica': '🐾',
+  'Normale': '👁️', 'Normal': '👁️',
+
+  // Taglie
+  'Minuscola': '🐭', 'Tiny': '🐭',
+  'Piccola': '🦊', 'Small': '🦊',
+  'Media': '🧑', 'Medium': '🧑',
+  'Grande': '🐻', 'Large': '🐻',
+  'Enorme': '🐘', 'Huge': '🐘',
+  'Mastodontica': '🐉', 'Gargantuan': '🐉',
+
+  // Allineamenti
+  'Legale Buono': '⚖️', 'Lawful Good': '⚖️',
+  'Neutrale Buono': '🕊️', 'Neutral Good': '🕊️',
+  'Caotico Buono': '🌟', 'Chaotic Good': '🌟',
+  'Legale Neutrale': '📜', 'Lawful Neutral': '📜',
+  'Neutrale': '⚪', 'Neutral': '⚪', 'Neutrale Puro': '⚪', 'True Neutral': '⚪',
+  'Caotico Neutrale': '🎲', 'Chaotic Neutral': '🎲',
+  'Legale Malvagio': '⛓️', 'Lawful Evil': '⛓️',
+  'Neutrale Malvagio': '🖤', 'Neutral Evil': '🖤',
+  'Caotico Malvagio': '💀', 'Chaotic Evil': '💀',
+  'Senza Allineamento': '🔘', 'Unaligned': '🔘',
+
+  // Sesso
+  'maschio': '♂️', 'Maschio': '♂️', 'Male': '♂️',
+  'femmina': '♀️', 'Femmina': '♀️', 'Female': '♀️',
+  'altro': '⚧️', 'Altro': '⚧️', 'Other': '⚧️',
+
+  // Scuole di Magia
+  'Abiurazione': '🛡️', 'Abjuration': '🛡️',
+  'Ammaliamento': '💖', 'Enchantment': '💖',
+  'Divinazione': '🔮', 'Divination': '🔮',
+  'Evocazione': '🌀', 'Conjuration': '🌀',
+  'Illusione': '🎭', 'Illusion': '🎭',
+  'Invocazione': '💥', 'Evocation': '💥',
+  'Necromanzia': '💀', 'Necromancy': '💀',
+  'Trasmutazione': '⚗️', 'Transmutation': '⚗️',
+
+  // Categorie Armatura
+  'Leggera': '🥋', 'Light': '🥋',
+  'Pesante': '🛡️', 'Heavy': '🛡️',
+  'Scudi': '🛡️', 'Shields': '🛡️',
+  'Nessuna': '🚫', 'None': '🚫',
+  'Manuale': '✏️', 'Manual': '✏️',
+
+  // Caratteristiche
+  'forza': '💪', 'Forza': '💪', 'Strength': '💪',
+  'destrezza': '🏃', 'Destrezza': '🏃', 'Dexterity': '🏃',
+  'costituzione': '🛡️', 'Costituzione': '🛡️', 'Constitution': '🛡️',
+  'intelligenza': '🧠', 'Intelligenza': '🧠', 'Intelligence': '🧠',
+  'saggezza': '🦉', 'Saggezza': '🦉', 'Wisdom': '🦉',
+  'carisma': '🎭', 'Carisma': '🎭', 'Charisma': '🎭',
+
+  // Classi
+  'Barbaro': '🪓', 'Barbarian': '🪓',
+  'Bardo': '🎵', 'Bard': '🎵',
+  'Chierico': '✝️', 'Cleric': '✝️',
+  'Druido': '🌿', 'Druid': '🌿',
+  'Guerriero': '⚔️', 'Fighter': '⚔️',
+  'Ladro': '🗡️', 'Rogue': '🗡️',
+  'Mago': '🧙', 'Wizard': '🧙',
+  'Monaco': '🥋', 'Monk': '🥋',
+  'Paladino': '🛡️', 'Paladin': '🛡️',
+  'Ranger': '🏹',
+  'Stregone': '🔥', 'Sorcerer': '🔥',
+  'Warlock': '👁️',
+  'Artefice': '⚙️', 'Artificer': '⚙️',
+
+  // Specie principali
+  'Umano': '🧑', 'Human': '🧑',
+  'Elfo': '🧝', 'Elf': '🧝', 'Elfo dei Boschi': '🧝', 'Alto Elfo': '🧝', 'Drow': '🧝', 'Wood Elf': '🧝', 'High Elf': '🧝',
+  'Nano': '🧔', 'Dwarf': '🧔', 'Nano delle Colline': '🧔', 'Nano delle Montagne': '🧔', 'Hill Dwarf': '🧔', 'Mountain Dwarf': '🧔',
+  'Halfling': '🍀', 'Halfling Piedelesto': '🍀', 'Lightfoot Halfling': '🍀',
+  'Gnomo': '🍄', 'Gnome': '🍄', 'Gnomo delle Rocce': '🍄', 'Gnomo delle Foreste': '🍄', 'Rock Gnome': '🍄', 'Forest Gnome': '🍄',
+  'Dragonide': '🐲', 'Dragonborn': '🐲',
+  'Tiefling': '😈',
+  'Mezzelfo': '✨', 'Half-Elf': '✨',
+  'Mezzorco': '👹', 'Half-Orc': '👹',
+  'Aasimar': '👼',
+  'Golia': '🏔️', 'Goliath': '🏔️',
+  'Orco': '🐗', 'Orc': '🐗',
+};
+
+export function formattaVoceConIcona(v, formattaOpzione) {
+  if (v == null || v === '') return '';
+  const base = formattaOpzione ? formattaOpzione(v) : traduciDato(v);
+  if (typeof base !== 'string') return base;
+  if (/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/u.test(base.trim())) return base;
+  const ico = ICONE_5E[v] || ICONE_5E[String(v).trim()] || ICONE_5E[base] || ICONE_5E[String(base).trim()];
+  return ico ? `${ico} ${base}` : base;
+}
+
 /** Ordine coerente per tutte le tendine testuali riusabili. */
 function ordinaAlfabeticamente(opzioni, etichetta = traduciDato) {
   return [...opzioni].sort((a, b) => String(etichetta(a)).localeCompare(String(etichetta(b)), 'it', { sensitivity: 'base' }));
@@ -211,7 +344,7 @@ export function CampoConTendina({ value, opzioni, onChange, width, title, lookup
   // Accetta sia il formato storico separato da virgole sia le voci su righe
   // distinte: ogni elemento viene comunque mostrato nel proprio riquadro.
   const attuali = value ? value.split(/[,\n]/).map((s) => s.trim()).filter(Boolean) : [];
-  const mostraVoce = (v) => formattaVoce ? formattaVoce(v) : traduciDato(v);
+  const mostraVoce = (v) => formattaVoce ? formattaVoce(v) : formattaVoceConIcona(v);
   const visualizzati = ordinaAlfabeticamente(attuali, mostraVoce);
 
   const aggiungi = (v) => {
@@ -269,8 +402,8 @@ export function CampoConTendina({ value, opzioni, onChange, width, title, lookup
           style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }}
         >
           <option value="">{t('common.aggiungi')}…</option>
-          {ordinaAlfabeticamente(opzioni).map((o) => (
-            <option key={o} value={o}>{traduciDato(o)}</option>
+          {ordinaAlfabeticamente(opzioni, mostraVoce).map((o) => (
+            <option key={o} value={o}>{mostraVoce(o)}</option>
           ))}
         </select>
       </label>
@@ -285,7 +418,7 @@ export function CampoConTendina({ value, opzioni, onChange, width, title, lookup
  */
 export function CampoTendina({ value, opzioni, onChange, title, formattaOpzione }) {
   const std = Array.isArray(opzioni) ? opzioni.includes(value) : Object.values(opzioni).flat().includes(value);
-  const etichetta = (opzione) => formattaOpzione ? formattaOpzione(opzione) : traduciDato(opzione);
+  const etichetta = (opzione) => formattaVoceConIcona(opzione, formattaOpzione);
   return (
     <>
       <select
@@ -313,7 +446,7 @@ export function CampoTendina({ value, opzioni, onChange, title, formattaOpzione 
         {Array.isArray(opzioni) ? ordinaAlfabeticamente(opzioni, etichetta).map((o) => (
           <option key={o} value={o} style={{ background: C.panel }}>{etichetta(o)}</option>
         )) : Object.entries(opzioni).map(([group, opts]) => (
-          <optgroup key={group} label={traduciDato(group)} style={{ background: C.panel }}>
+          <optgroup key={group} label={etichetta(group)} style={{ background: C.panel }}>
             {ordinaAlfabeticamente(opts, etichetta).map((o) => <option key={o} value={o} style={{ background: C.panel }}>{etichetta(o)}</option>)}
           </optgroup>
         ))}
