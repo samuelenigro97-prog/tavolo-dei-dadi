@@ -303,6 +303,30 @@ export function dettagliProgressioneLivello(classe, vecchioLivello, nuovoLivello
   return out;
 }
 
+export function maxInvocazioniWarlock(livello, versione = '2024') {
+  const lv = Math.max(0, Math.min(20, Math.floor(livello) || 0));
+  if (lv <= 0) return 0;
+  if (versione === '2024') {
+    if (lv >= 18) return 8;
+    if (lv >= 15) return 7;
+    if (lv >= 12) return 6;
+    if (lv >= 9) return 5;
+    if (lv >= 7) return 4;
+    if (lv >= 5) return 3;
+    if (lv >= 2) return 2;
+    if (lv >= 1) return 1;
+    return 0;
+  }
+  if (lv >= 18) return 8;
+  if (lv >= 15) return 7;
+  if (lv >= 12) return 6;
+  if (lv >= 9) return 5;
+  if (lv >= 7) return 4;
+  if (lv >= 5) return 3;
+  if (lv >= 2) return 2;
+  return 0;
+}
+
 export function slotDaClasseLivello(classe, livello, sottoclasse) {
   const lv = Math.max(1, Math.min(20, Math.floor(livello) || 1));
   let tabella = null;

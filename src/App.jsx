@@ -1282,14 +1282,14 @@ function avatarSvgFallback(classe, specie, nome) {
 // ---------------------------------------------------------------------------
 
 
-import { spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spiegaMetamagia, setEdizioneAttuale, METAMAGIA_5E, TALENTI_5E, INCANTESIMI_NOMI as NOMI_SPIEG_INC } from './data/spiegazioni.js';
+import { spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spiegaMetamagia, spiegaInvocazione, setEdizioneAttuale, METAMAGIA_5E, TALENTI_5E, INVOCAZIONI_5E, INCANTESIMI_NOMI as NOMI_SPIEG_INC } from './data/spiegazioni.js';
 import { INCANTESIMI_DB, ALIAS_INCANTESIMI, datiIncantesimo } from './data/incantesimi.js';
 
 const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(INCANTESIMI_DB)])).sort((a, b) => a.localeCompare(b, 'it'));
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E, DEFAULT_MANUALI, MANUALI_INFO, SOTTOCLASSI_FONTI, TALENTI_FONTI, INCANTESIMI_FONTI, talentiPerManuali, incantesimiPerManuali, fonteValida } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -1464,6 +1464,7 @@ function schedaVuota() {
     trattiSpecie: '',
     talenti: '',
     metamagie: '', // opzioni di Metamagia attive (solo Stregone)
+    invocazioni: '', // Invocazioni Occulte attive (solo Warlock)
     equipaggiamento: '',
     // inventario strutturato: { id, nome, qta, peso, equip, categoria, usi, usiMax, ricarica, effetto }
     inventario: [],
@@ -2516,6 +2517,7 @@ function normalizeImported(rawDati) {
       }).join('\n');
     })(),
     metamagie: str(dati.metamagie),
+    invocazioni: str(dati.invocazioni),
     equipaggiamento: str(dati.equipaggiamento),
     inventario: (() => {
       // Usa l'inventario strutturato solo se NON è vuoto: un array vuoto salvato
@@ -5944,6 +5946,7 @@ export default function App() {
       if (!pg.trattiSpecie) pg.trattiSpecie = '';
       if (!pg.talenti) pg.talenti = '';
       if (!pg.metamagie) pg.metamagie = '';
+      if (!pg.invocazioni) pg.invocazioni = '';
       if (!pg.equipaggiamento) pg.equipaggiamento = '';
       if (!pg.inventario) pg.inventario = [];
       if (!pg.sintonia) pg.sintonia = '';
@@ -13453,6 +13456,99 @@ export default function App() {
                     })()}
                   </div>
                 </div>
+              </Sezione>
+            )}
+
+            {/* Invocazioni Occulte (solo Warlock se livello >= 1): subito dopo Magia */}
+            {(/(warlock|fattucchiere)/i.test(scheda.classe || '') || /(warlock|fattucchiere)/i.test(scheda.multiclasseClasse2 || '') || /(warlock|fattucchiere)/i.test(scheda.multiclasseClasse3 || '')) && (
+              <Sezione
+                titolo={lingua === 'en' ? '📜 Eldritch Invocations' : '📜 Invocazioni Occulte'}
+                {...apertoProps('invocazioni', true)}
+              >
+                {(() => {
+                  const lvWarlock = Number(scheda.livello) || 1;
+                  const maxInv = maxInvocazioniWarlock(lvWarlock, regoleVersione);
+                  const scelte = (scheda.invocazioni || '').split(',').map((s) => s.trim()).filter(Boolean);
+                  return (
+                    <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+                        <div>
+                          <div style={{ ...styles.detail, fontWeight: 700, fontSize: 13, color: C.goldDark }}>
+                            🔮 {lingua === 'en' ? 'Pact Invocations' : 'Suppliche & Invocazioni del Patto'}
+                          </div>
+                          <div style={{ ...styles.detail, fontSize: 11, color: C.inkDim }}>
+                            {lingua === 'en'
+                              ? `Mystical boons granted by your Otherworldly Patron (Max: ${maxInv} invocations at level ${lvWarlock}).`
+                              : `Doni mistici concessi dal tuo Patrono Ultraterreno (Massimo: ${maxInv} invocazioni al livello ${lvWarlock}).`}
+                          </div>
+                        </div>
+                        <span style={{ fontSize: 12, fontWeight: 'bold', color: scelte.length > maxInv ? '#ef4444' : C.goldDark, background: C.panel, padding: '3px 8px', borderRadius: 6, border: `1px solid ${C.border}` }}>
+                          {scelte.length} / {maxInv} {lingua === 'en' ? 'known' : 'conosciute'}
+                        </span>
+                      </div>
+
+                      <div style={{ marginBottom: 4 }}>
+                        <CampoConTendina
+                          value={scheda.invocazioni}
+                          opzioni={INVOCAZIONI_5E}
+                          onChange={(v) => aggiorna({ invocazioni: v })}
+                          lookup={spiegaInvocazione}
+                          setInfo={setInfo}
+                          title={lingua === 'en' ? 'Select an Eldritch Invocation' : 'Scegli un\'Invocazione Occulta'}
+                        />
+                      </div>
+
+                      {/* Elenco con spiegazione rapida delle invocazioni scelte */}
+                      {(() => {
+                        if (!scelte.length) {
+                          return (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.inkDim, fontSize: 11.5, fontStyle: 'italic', padding: '12px 0' }}>
+                              {lingua === 'en' ? 'No Invocations selected. Click ➕ to add.' : 'Nessuna invocazione selezionata. Clicca ➕ per aggiungerne.'}
+                            </div>
+                          );
+                        }
+                        return (
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 8 }}>
+                            {scelte.map((inv) => {
+                              const spieg = spiegaInvocazione(inv);
+                              return (
+                                <div
+                                  key={inv}
+                                  onClick={() => spieg && setInfo({ titolo: traduciDato(inv), testo: spieg })}
+                                  style={{
+                                    background: C.panel,
+                                    border: `1px solid ${C.border}`,
+                                    borderRadius: 6,
+                                    padding: '7px 10px',
+                                    fontSize: 11.5,
+                                    cursor: spieg ? 'pointer' : 'default',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 3,
+                                    transition: 'border-color 0.15s ease',
+                                  }}
+                                  onMouseEnter={(e) => { if (spieg) e.currentTarget.style.borderColor = C.goldDark; }}
+                                  onMouseLeave={(e) => { if (spieg) e.currentTarget.style.borderColor = C.border; }}
+                                  title={spieg ? (lingua === 'en' ? 'Click for full description' : 'Clicca per la spiegazione completa') : undefined}
+                                >
+                                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <strong style={{ color: C.goldDark, fontSize: 12 }}>📜 {traduciDato(inv)}</strong>
+                                    {spieg && <span style={{ fontSize: 10, color: C.inkDim }}>info ℹ️</span>}
+                                  </div>
+                                  {spieg && (
+                                    <div style={{ fontSize: 10.5, color: C.inkDim, lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                                      {spieg.replace(/\*\*/g, '').replace(/\\n/g, ' ')}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  );
+                })()}
               </Sezione>
             )}
 

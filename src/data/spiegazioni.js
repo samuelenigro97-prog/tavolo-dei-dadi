@@ -769,12 +769,13 @@ const _lcMap = (obj) => { const m = {}; for (const k in obj) m[k.toLowerCase()] 
 // Quando la lingua è "en" si cerca prima qui; se la voce non è ancora tradotta
 // si ricade sul testo italiano, così non compaiono mai buchi.
 import { linguaAttuale } from '../i18n.js';
-import { EN_METAMAGIA, EN_TALENTI, EN_TRATTI, EN_PRIVILEGI, EN_INCANTESIMI, EN_PRIVILEGI_CLASSE } from './spiegazioni.en.js';
+import { EN_METAMAGIA, EN_TALENTI, EN_TRATTI, EN_PRIVILEGI, EN_INCANTESIMI, EN_PRIVILEGI_CLASSE, EN_INVOCAZIONI } from './spiegazioni.en.js';
 const EN_METAMAGIA_LC = _lcMap(EN_METAMAGIA);
 const EN_TALENTI_LC = _lcMap(EN_TALENTI);
 const EN_TRATTI_LC = _lcMap(EN_TRATTI);
 const EN_PRIVILEGI_LC = _lcMap({ ...EN_PRIVILEGI_CLASSE, ...EN_PRIVILEGI });
 const EN_INCANTESIMI_LC = _lcMap(EN_INCANTESIMI);
+const EN_INVOCAZIONI_LC = _lcMap(EN_INVOCAZIONI || {});
 /** Cerca la voce inglese solo se l'interfaccia è in inglese (altrimenti null). */
 function _en(mappaLc, chiave) {
   if (linguaAttuale !== 'en') return null;
@@ -1430,4 +1431,58 @@ export function spiegaMetamagia(nome) {
   const base = n.replace(/\s*\(.*$/, '').trim();
   return _ed(_en(EN_METAMAGIA_LC, n) || _en(EN_METAMAGIA_LC, base)
     || SPIEG_METAMAGIA_LC[n] || SPIEG_METAMAGIA_LC[base] || null);
+}
+
+// Invocazioni Occulte del Warlock (5e / 2024), con riassunti propri per la nuvoletta.
+const SPIEG_INVOCAZIONI = {
+  'Deflagrazione Agonizzante': "*Prerequisito: Trucchetto Deflagrazione Occulta.*\nQuando lanci *Deflagrazione Occulta*, aggiungi il tuo modificatore di Carisma ai danni inflitti da ogni raggio andato a segno.",
+  'Armatura d’Ombre': "*A volontà.*\nPuoi lanciare *Armatura Magica* su te stesso a volontà, senza spendere alcuno slot incantesimo né componenti materiali.",
+  'Armatura d\'Ombre': "*A volontà.*\nPuoi lanciare *Armatura Magica* su te stesso a volontà, senza spendere alcuno slot incantesimo né componenti materiali.",
+  'Visione del Diavolo': "*Vista magica.*\nPuoi vedere normalmente nell'oscurità sia magica che non magica fino a una distanza di 36 metri.",
+  'Vista Arcana': "*A volontà.*\nPuoi lanciare *Individuazione del Magico* a volontà, senza spendere slot incantesimo né componenti materiali.",
+  'Occhi del Guardiano Runico': "*Lettura universale.*\nPuoi leggere tutte le forme di scrittura in qualsiasi lingua esistente.",
+  'Maschera dalle Molteplici Forme': "*A volontà.*\nPuoi lanciare *Camuffare Se Stesso* a volontà, senza spendere slot incantesimo.",
+  'Linguaggio delle Bestie': "*A volontà.*\nPuoi lanciare *Parlare con gli Animali* a volontà, senza spendere slot incantesimo.",
+  'Mente Mistica': "*Concentrazione potenziata.*\nOttieni Vantaggio ai tiri salvezza su Costituzione per mantenere la Concentrazione sui tuoi incantesimi.",
+  'Scriba Remoto': "*Prerequisito: Patto del Tomo.*\nNel tuo Libro delle Ombre appare una pagina speciale: le creature che vi scrivono il proprio nome possono essere contattate con un messaggio istantaneo telepatico (come *Inviare*) senza spendere slot.",
+  'Investitura del Maestro della Catena': "*Prerequisito: Patto della Catena.*\nIl tuo famiglio ottiene velocità di volo o nuoto 12 m, puoi ordinargli di attaccare con l'azione bonus, e la CD dei suoi effetti velenosi/magici usa la tua CD incantesimi.",
+  'Servitù Imperitura': "*Prerequisito: 5° livello.*\nPuoi lanciare *Animare Morti* una volta per riposo lungo senza spendere uno slot incantesimo.",
+  'Tomba di Levistus': "*Prerequisito: 5° livello.*\nCome reazione quando subisci danni, ti rinchiudi in una bara di ghiaccio ottenendo 10 PF temporanei per livello da Warlock. Si ricarica con un riposo breve o lungo.",
+  'Sguardo Fantasmale': "*Prerequisito: 7° livello.*\nCome azione ottieni la capacità di vedere attraverso oggetti solidi fino a 9 m per 1 minuto con scurovisione 9 m. Si ricarica con un riposo breve o lungo.",
+  'Morsa di Hadar': "*Prerequisito: Trucchetto Deflagrazione Occulta.*\nUna volta per turno quando colpisci una creatura con *Deflagrazione Occulta*, puoi trascinarla di 3 m in linea retta verso di te.",
+  'Lancia Repulsiva': "*Prerequisito: Trucchetto Deflagrazione Occulta.*\nQuando colpisci una creatura con *Deflagrazione Occulta*, puoi spingerla lontano da te in linea retta fino a 3 metri per ogni raggio.",
+  'Lancia Mistica': "*Prerequisito: Trucchetto Deflagrazione Occulta.*\nLa gittata della tua *Deflagrazione Occulta* aumenta fino a 90 metri.",
+  'Lama Assetata': "*Prerequisito: 5° livello, Patto della Lama.*\nPuoi attaccare due volte invece di una ogni volta che compi l'azione di Attacco con la tua arma del patto nel tuo turno.",
+  'Bevitore di Vita': "*Prerequisito: 12° livello (9° nel 2024), Patto della Lama.*\nQuando colpisci una creatura con la tua arma del patto, infliggi danni necrotici (o radiosi/psichici) extra pari al tuo modificatore di Carisma.",
+  'Arma del Patto Migliorata': "*Prerequisito: Patto della Lama.*\nLa tua arma del patto ottiene un bonus di +1 ai tiri per colpire e ai danni, funge da focus da incantatore per i tuoi incantesimi e può assumere la forma di un arco o balestra.",
+  'Libro dei Segreti Antichi': "*Prerequisito: Patto del Tomo.*\nPuoi trascrivere rituali magici di qualsiasi classe nel tuo Libro delle Ombre e lanciarli come rituali se il loro livello non supera la metà del tuo livello da Warlock.",
+  'Voce del Padrone della Catena': "*Prerequisito: Patto della Catena.*\nPuoi comunicare telepaticamente con il tuo famiglio e percepire attraverso i suoi sensi finché vi trovate sullo stesso piano d'esistenza.",
+  'Fuga dell’Ingannatore': "*Prerequisito: 7° livello.*\nPuoi lanciare *Libertà di Movimento* su te stesso una volta per riposo lungo senza spendere uno slot incantesimo.",
+  'Fuga dell\'Ingannatore': "*Prerequisito: 7° livello.*\nPuoi lanciare *Libertà di Movimento* su te stesso una volta per riposo lungo senza spendere uno slot incantesimo.",
+  'Manto di Baalzebul': "*Prerequisito: 9° livello.*\nCome azione bonus ti avvolgi in uno sciame di mosche: hai vantaggio alle prove di Intimidire e le creature che iniziano il turno a 1,5 m subiscono danni da veleno pari al tuo mod. Carisma.",
+  'Vigore Bestiale': "*A volontà.*\nPuoi lanciare *Falsa Vita* su te stesso a volontà come incantesimo di 1° livello senza spendere alcuno slot incantesimo né componenti materiali.",
+  'Passo Etereo': "*Prerequisito: 9° livello (2° nel 2024).*\nPuoi lanciare *Salto* su te stesso a volontà, senza spendere slot incantesimo.",
+  'Sussurri della Tomba': "*Prerequisito: 9° livello.*\nPuoi lanciare *Parlare con i Morti* a volontà, senza spendere slot incantesimo.",
+  'Vista Spettrale': "*Condivisione sensoriale.*\nCome azione tocchi un umanoide consenziente: fino alla fine del tuo prossimo turno percepisci attraverso i suoi sensi invece che i tuoi.",
+  'Volo Stregato': "*Prerequisito: 9° livello.*\nPuoi lanciare *Levitazione* su te stesso a volontà, senza spendere slot incantesimo.",
+  'Padronanza delle Forme': "*Prerequisito: 7° livello.*\nPuoi lanciare *Metamorfosi* una volta per riposo lungo spendendo uno slot incantesimo del patto.",
+  'Catene di Carceri': "*Prerequisito: 15° livello, Patto della Catena.*\nPuoi lanciare *Blocca Mostri* a volontà su celestiali, immondi o elementali senza spendere slot incantesimo. Si ricarica su quel bersaglio con un riposo lungo.",
+  'Visioni di Reami Lontani': "*Prerequisito: 15° livello.*\nPuoi lanciare *Occhio Arcano* a volontà, senza spendere slot incantesimo.",
+  'Maestro delle Ombre': "*Prerequisito: 5° livello.*\nQuando ti trovi in un'area di luce fioca o oscurità, puoi usare la tua azione per diventare invisibile finché non ti muovi o compi un'azione o reazione.",
+  'Parola Terrificante': "*Prerequisito: 7° livello.*\nPuoi lanciare *Confusione* una volta per riposo lungo spendendo uno slot incantesimo del patto.",
+  'Segno di Malaugurio': "*Prerequisito: 5° livello.*\nPuoi lanciare *Scagliare Maledizione* una volta per riposo lungo spendendo uno slot incantesimo del patto.",
+};
+
+export const INVOCAZIONI_5E = Object.keys(SPIEG_INVOCAZIONI)
+  .filter((k) => !k.includes('\'')) // Rimuove duplicati con apostrofo dritto
+  .sort((a, b) => a.localeCompare(b, 'it'));
+
+const SPIEG_INVOCAZIONI_LC = _lcMap(SPIEG_INVOCAZIONI);
+
+/** Spiegazione di un'Invocazione Occulta dal nome (o null), senza maiuscole. */
+export function spiegaInvocazione(nome) {
+  const n = String(nome || '').trim().toLowerCase();
+  const base = n.replace(/\s*\(.*$/, '').trim();
+  return _ed(_en(EN_INVOCAZIONI_LC, n) || _en(EN_INVOCAZIONI_LC, base)
+    || SPIEG_INVOCAZIONI_LC[n] || SPIEG_INVOCAZIONI_LC[base] || null);
 }

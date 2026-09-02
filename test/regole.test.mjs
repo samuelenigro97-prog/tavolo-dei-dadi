@@ -14,11 +14,11 @@ import {
   sottoclasseLivPer, trucchettiMax, incantesimiMaxAuto, caratteristicaIncantatoreEffettiva,
   classificaIncantesimoCombattimento, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello,
   controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, puntiVersoSlot, slotVersoPunti,
-  riepilogoCondizioni,
+  riepilogoCondizioni, maxInvocazioniWarlock,
 } from '../src/rules/regole.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from '../src/data/condizioni.js';
 import { CONDIZIONI_5E } from '../src/data/dati5e.js';
-import { spiegaPrivilegio } from '../src/data/spiegazioni.js';
+import { spiegaPrivilegio, spiegaInvocazione, INVOCAZIONI_5E } from '../src/data/spiegazioni.js';
 
 // --- Helper: sostituisce Math.random con una coda di valori deterministici ---
 function conRandom(valori, fn) {
@@ -655,3 +655,31 @@ test('spiegazioni risorse e privilegi di classe: tutte le risorse hanno nuvolett
     assert.ok(typeof sp === 'string' && sp.length >= 20, `Spiegazione troppo breve per ${r}`);
   }
 });
+
+test('warlock: progressione e spiegazioni Invocazioni Occulte (Eldritch Invocations)', () => {
+  // Progressione 2014
+  assert.equal(maxInvocazioniWarlock(1, '2014'), 0);
+  assert.equal(maxInvocazioniWarlock(2, '2014'), 2);
+  assert.equal(maxInvocazioniWarlock(4, '2014'), 2);
+  assert.equal(maxInvocazioniWarlock(5, '2014'), 3);
+  assert.equal(maxInvocazioniWarlock(7, '2014'), 4);
+  assert.equal(maxInvocazioniWarlock(9, '2014'), 5);
+  assert.equal(maxInvocazioniWarlock(12, '2014'), 6);
+  assert.equal(maxInvocazioniWarlock(15, '2014'), 7);
+  assert.equal(maxInvocazioniWarlock(18, '2014'), 8);
+  assert.equal(maxInvocazioniWarlock(20, '2014'), 8);
+
+  // Progressione 2024
+  assert.equal(maxInvocazioniWarlock(1, '2024'), 1);
+  assert.equal(maxInvocazioniWarlock(2, '2024'), 2);
+  assert.equal(maxInvocazioniWarlock(20, '2024'), 8);
+
+  // Spiegazioni
+  assert.ok(INVOCAZIONI_5E.length >= 20, 'elenco invocazioni nutrito');
+  for (const inv of INVOCAZIONI_5E) {
+    const sp = spiegaInvocazione(inv);
+    assert.ok(sp, `Manca spiegazione per invocazione: ${inv}`);
+    assert.ok(typeof sp === 'string' && sp.length >= 25, `Spiegazione troppo breve per invocazione: ${inv}`);
+  }
+});
+
