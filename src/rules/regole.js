@@ -1,5 +1,4 @@
-// Regole 5e che dipendono dai dati: classi, slot, incantesimi, pesi.
-import { CLASSI, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER,
+import { CLASSI, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, SLOT_WARLOCK,
   TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014,
   PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV,
   PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, PESI_OGGETTI, PESO_ARMATURA_TIPO,
@@ -312,8 +311,10 @@ export function slotDaClasseLivello(classe, livello, sottoclasse) {
   } else {
     const c = coloreClasse(classe);
     if (!c) return null;
-    if (CLASSI_FULL_CASTER.includes(c.match[0])) tabella = SLOT_FULL_CASTER[lv];
-    else if (CLASSI_MEZZO_CASTER.includes(c.match[0])) tabella = SLOT_MEZZO_CASTER[lv];
+    const k = c.match[0];
+    if (CLASSI_FULL_CASTER.includes(k)) tabella = SLOT_FULL_CASTER[lv];
+    else if (CLASSI_MEZZO_CASTER.includes(k)) tabella = SLOT_MEZZO_CASTER[lv];
+    else if (k === 'warlock') tabella = SLOT_WARLOCK[lv];
   }
   if (!tabella) return null;
   const slot = {};
@@ -335,12 +336,30 @@ export function livelloIncantatoreCombinato(classi) {
 
 export function slotMulticlasse(classi) {
   const lv = livelloIncantatoreCombinato(classi);
-  if (lv < 1) return null;
-  const tabella = SLOT_FULL_CASTER[Math.min(20, lv)];
-  if (!tabella) return null;
   const slot = {};
-  for (let i = 1; i <= 9; i++) slot[i] = { totale: tabella[i - 1] || 0, spesi: 0 };
-  return slot;
+  for (let i = 1; i <= 9; i++) slot[i] = { totale: 0, spesi: 0 };
+
+  if (lv >= 1) {
+    const tabella = SLOT_FULL_CASTER[Math.min(20, lv)];
+    if (tabella) {
+      for (let i = 1; i <= 9; i++) slot[i].totale += tabella[i - 1] || 0;
+    }
+  }
+
+  // Aggiungi gli slot di Magia del Patto (Warlock) se presenti
+  for (const { classe, livello } of (Array.isArray(classi) ? classi : [])) {
+    const k = chiaveClasse(classe);
+    if (k === 'warlock') {
+      const lvW = Math.max(1, Math.min(20, Math.floor(livello) || 1));
+      const tabW = SLOT_WARLOCK[lvW];
+      if (tabW) {
+        for (let i = 1; i <= 9; i++) slot[i].totale += tabW[i - 1] || 0;
+      }
+    }
+  }
+
+  const haSlot = Object.values(slot).some((v) => v.totale > 0);
+  return haSlot ? slot : null;
 }
 
 export function coloreClasse(classe) {

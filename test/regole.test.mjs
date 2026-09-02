@@ -181,8 +181,31 @@ test('slotDaClasseLivello: mezzo caster (paladino liv 5)', () => {
 
 test('slotDaClasseLivello: non incantatori -> null', () => {
   assert.equal(slotDaClasseLivello('Guerriero', 5), null);
-  assert.equal(slotDaClasseLivello('Warlock', 5), null); // patto gestito a parte
+  assert.equal(slotDaClasseLivello('Barbaro', 5), null);
+  assert.equal(slotDaClasseLivello('Monaco', 5), null);
   assert.equal(slotDaClasseLivello('inesistente', 5), null);
+});
+
+test('slotDaClasseLivello: warlock magia del patto e arcanum mistico (liv 1, 5, 11, 20)', () => {
+  const w1 = slotDaClasseLivello('Warlock', 1);
+  assert.equal(w1[1].totale, 1);
+  assert.equal(w1[2].totale, 0);
+
+  const w5 = slotDaClasseLivello('Warlock', 5);
+  assert.equal(w5[1].totale, 0);
+  assert.equal(w5[2].totale, 0);
+  assert.equal(w5[3].totale, 2);
+
+  const w11 = slotDaClasseLivello('Warlock', 11);
+  assert.equal(w11[5].totale, 3);
+  assert.equal(w11[6].totale, 1); // Arcanum 6° liv
+
+  const w20 = slotDaClasseLivello('Warlock', 20);
+  assert.equal(w20[5].totale, 4); // 4 slot di 5° liv (ricarica riposo breve)
+  assert.equal(w20[6].totale, 1); // Arcanum 6°
+  assert.equal(w20[7].totale, 1); // Arcanum 7°
+  assert.equal(w20[8].totale, 1); // Arcanum 8°
+  assert.equal(w20[9].totale, 1); // Arcanum 9°
 });
 
 // ===================== Terzo incantatore (Cavaliere Mistico / Mistificatore Arcano) =====================
@@ -390,6 +413,12 @@ test('creazione a livello alto: trucchetti e incantesimi coerenti con classe e s
   const pala = incantesimiInizialiPerLivello('Paladino', 9, '2014', { carisma: 14 });
   assert.equal(pala.trucchetti.length, 0);
   assert.equal(pala.incantesimi.length, 6); // mod +2 + metà livello (4)
+
+  // Warlock di 20° livello: 4 trucchetti e 15 incantesimi noti (Pact Magic + Arcanum)
+  const warlock20 = incantesimiInizialiPerLivello('Warlock', 20, '2024', { carisma: 20 });
+  assert.equal(warlock20.trucchetti.length, 4);
+  assert.equal(warlock20.incantesimi.length, 15);
+  assert.ok(warlock20.incantesimi.some((i) => i.livello >= 5), 'Warlock di 20° deve avere incantesimi di livello alto');
 
   // Chi non lancia incantesimi non riceve nulla.
   assert.equal(incantesimiInizialiPerLivello('Guerriero', 10, '2024', { forza: 18 }), null);
