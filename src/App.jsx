@@ -12054,7 +12054,7 @@ export default function App() {
 
                 <div className="profilo-anagrafica-campi" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {/* Riga 1: Sesso, Specie/Razza (compatta), Taglia (compatta), Allineamento (largo) */}
-                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.75fr 0.9fr 0.6fr 1.75fr', gap: 10, alignItems: 'end' }}>
+                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.7fr 0.85fr 0.6fr 1.85fr', gap: 10, alignItems: 'end' }}>
                     <CampoModulo label={t("profilo.sesso")}>
                       <select
                         value={scheda.sesso || ''}
@@ -12118,8 +12118,8 @@ export default function App() {
                     </CampoModulo>
                   </div>
 
-                  {/* Riga 2: Background, Classe (compatta), Sottoclasse (molto larga), P.E. (compatto) */}
-                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.75fr 0.9fr 2.05fr 0.4fr', gap: 10, alignItems: 'end' }}>
+                  {/* Riga 2: Background, Classe (compatta), Sottoclasse (larga), P.E. (adeguato per 6 cifre) */}
+                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.7fr 0.85fr 1.8fr 0.65fr', gap: 10, alignItems: 'end' }}>
                     <CampoModulo label={t("profilo.background")} boxClassName={String(scheda.background || '').length > 12 ? 'testo-compatto' : undefined}>
                       <CampoBloccato
                         valore={traduciDato(scheda.background) || t('profilo.nessuno')}
@@ -12159,7 +12159,7 @@ export default function App() {
                         }}
                         title={t('profilo.pe_tooltip')}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, fontWeight: 700, color: C.ink }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11.5, fontWeight: 700, color: C.ink, whiteSpace: 'nowrap', gap: 4 }}>
                           <span>{Number(scheda.pe || 0).toLocaleString()}</span>
                           {(() => {
                             const livTotale = (Number(scheda.livello) || 1) + ((scheda.multiclasse || []).reduce((a, m) => a + (Number(m.livello) || 0), 0));
