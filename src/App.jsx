@@ -2199,9 +2199,6 @@ function loadState() {
         }
         roster.personaggi[id] = s;
       }
-      if (!roster.personaggi['pg-lyrian'] && !Object.values(roster.personaggi).some((p) => /lyrian|faenor|mezzafaccia/i.test(p?.nome || ''))) {
-        roster.personaggi['pg-lyrian'] = { ...schedaVuota(), ...normalizeImported(LYRIAN_JSON) };
-      }
       return roster;
     }
   } catch {
