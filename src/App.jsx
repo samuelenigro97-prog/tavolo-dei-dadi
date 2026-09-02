@@ -9710,6 +9710,10 @@ export default function App() {
 
         {/* Testata: anagrafica + riquadri vitali uniformi */}
         <section className="sezione profilo-sezione" style={{ ...styles.panel, position: 'relative' }}>
+          <span className="angolo-ornamento angolo-tl" aria-hidden="true" />
+          <span className="angolo-ornamento angolo-tr" aria-hidden="true" />
+          <span className="angolo-ornamento angolo-bl" aria-hidden="true" />
+          <span className="angolo-ornamento angolo-br" aria-hidden="true" />
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', width: '100%', marginBottom: 10 }}>
             <h2 style={{ ...styles.panelTitle, margin: 0, width: '100%', textAlign: 'center' }}>{t("profilo.titolo")}</h2>
           </div>
@@ -10005,7 +10009,7 @@ export default function App() {
 
               {/* Tier 2: Addestramento / Competenze */}
               <div className="competenze-tier-2 profilo-competenze-box">
-                <Sezione titolo={t("sez.addestramento")} {...apertoProps('addestramento')}>
+                <Sezione titolo={t("sez.addestramento")} senzaAngoli={true} {...apertoProps('addestramento')}>
                   {/* Armature */}
                   <TendinaArmature
                     armature={scheda.addestramento?.armature}
@@ -10104,7 +10108,7 @@ export default function App() {
 
               {/* Tier 3: Risorse di classe */}
               <div className="risorse-tier-3 profilo-risorse-box">
-                <Sezione titolo={t("sez.risorse")} {...apertoProps('risorse')}>
+                <Sezione titolo={t("sez.risorse")} senzaAngoli={true} {...apertoProps('risorse')}>
                   {scheda.risorse.length === 0 && (
                     <p style={{ ...styles.detail, marginTop: 0, fontSize: 11 }}>
                       {t('res.nessuna_risorsa')}

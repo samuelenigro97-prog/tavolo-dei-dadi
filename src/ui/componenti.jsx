@@ -504,7 +504,8 @@ export function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni,
  * cliccando il titolo si richiude per risparmiare spazio verticale.
  * Con `manigliaProps` mostra un segnalino ⠿ per trascinare e riordinare.
  */
-export function Sezione({ titolo, children, aperto = true, onToggleAperto, manigliaProps, trascinando, style, innerRef, azioni, className = '' }) {
+export function Sezione({ titolo, children, aperto = true, onToggleAperto, manigliaDrag = false, className = '', style = {}, azioni = null, innerRef = null, senzaAngoli = false }) {
+  const trascinando = false;
   return (
     <details
       ref={innerRef}
@@ -513,6 +514,14 @@ export function Sezione({ titolo, children, aperto = true, onToggleAperto, manig
       style={{ ...styles.panel, opacity: trascinando ? 0.4 : 1, ...style }}
       className={`sezione ${className}`.trim()}
     >
+      {!senzaAngoli && (
+        <>
+          <span className="angolo-ornamento angolo-tl" aria-hidden="true" />
+          <span className="angolo-ornamento angolo-tr" aria-hidden="true" />
+          <span className="angolo-ornamento angolo-bl" aria-hidden="true" />
+          <span className="angolo-ornamento angolo-br" aria-hidden="true" />
+        </>
+      )}
       <summary className="sezione-titolo" style={{ ...styles.panelTitle, cursor: 'pointer', listStyle: 'none', marginBottom: 0, userSelect: 'none' }}>
         <span className="sezione-titolo-sinistra">
           <span className="freccia">▾</span>
