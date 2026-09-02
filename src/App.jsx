@@ -7904,30 +7904,126 @@ export default function App() {
                 </div>
               )}
 
-              {/* Slot Incantesimi & Progressione Magica */}
-              {slotStr && (
-                <div style={{ padding: '10px 0', borderBottom: (nuoviTrucchetti > 0 || nuoviIncantesimi > 0 || haASI) ? `1px solid ${C.border}` : 'none' }}>
-                  <div style={{ fontWeight: 700, marginBottom: 4, color: C.goldDark, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.4 }}>
-                    {t('levelup.incantesimi_progressione')}
+              {/* Progressione Magica (Slot, Cerchi sbloccati, Incantesimi da preparare/imparare) */}
+              {(slotStr || nuoviTrucchetti > 0 || nuoviIncantesimi > 0) && (
+                <div style={{ padding: '12px 0', borderBottom: haASI ? `1px solid ${C.border}` : 'none' }}>
+                  {/* Intestazione Sezione */}
+                  <div style={{ fontWeight: 700, marginBottom: 8, color: C.goldDark, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span>✨</span>
+                    <span>{lingua === 'it' ? 'Incantesimi & Slot Magici' : 'Spells & Spell Slots'}</span>
                   </div>
-                  <div style={{ fontSize: 12.5, color: C.ink }}>{slotStr}</div>
+
+                  {/* Banner Sblocco Nuovo Livello Incantesimo */}
                   {nuovoLivInc > 0 && (
-                    <div style={{ color: '#2e9d4d', marginTop: 4, fontWeight: 700, fontSize: 12.5 }}>
-                      {t('levelup.sblocchi', { n: nuovoLivInc })}
+                    <div style={{
+                      background: 'rgba(46, 157, 77, 0.1)',
+                      border: '1px solid rgba(46, 157, 77, 0.3)',
+                      borderRadius: 8,
+                      padding: '8px 12px',
+                      marginBottom: 10,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                    }}>
+                      <span style={{ fontSize: 18 }}>🎉</span>
+                      <div>
+                        <div style={{ color: '#2e9d4d', fontWeight: 800, fontSize: 13 }}>
+                          {t('levelup.sblocchi', { n: nuovoLivInc })}
+                        </div>
+                        <div style={{ color: C.inkDim, fontSize: 11.5, marginTop: 1 }}>
+                          {lingua === 'it'
+                            ? `Ora hai accesso agli incantesimi di ${nuovoLivInc}° cerchio.`
+                            : `You now have access to ${nuovoLivInc}${nuovoLivInc === 1 ? 'st' : nuovoLivInc === 2 ? 'nd' : nuovoLivInc === 3 ? 'rd' : 'th'} level spells.`}
+                        </div>
+                      </div>
                     </div>
                   )}
-                </div>
-              )}
 
-              {/* Nuovi Trucchetti o Incantesimi Conosciuti / Preparabili */}
-              {(nuoviTrucchetti > 0 || nuoviIncantesimi > 0) && (
-                <div style={{ padding: '10px 0', borderBottom: haASI ? `1px solid ${C.border}` : 'none' }}>
-                  <div style={{ fontWeight: 700, color: C.goldDark, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 4 }}>
-                    {t('levelup.nuovi_inc')}
-                  </div>
-                  {nuoviTrucchetti > 0 && <div style={{ color: C.ink, fontSize: 12.5 }}>• {t('levelup.piu_trucchetti', { n: nuoviTrucchetti })}</div>}
-                  {nuoviIncantesimi > 0 && <div style={{ color: C.ink, fontSize: 12.5 }}>• {t('levelup.piu_incantesimi', { n: nuoviIncantesimi })}</div>}
-                  <div style={{ ...styles.detail, fontSize: 11, color: C.inkDim, marginTop: 3 }}>{t('levelup.aggiungi_dopo')}</div>
+                  {/* Griglia Slot per Livello (Badge Eleganti) */}
+                  {slotNuovi && Object.keys(slotNuovi).filter((l) => slotNuovi[l]?.totale > 0).length > 0 && (
+                    <div style={{ marginBottom: (nuoviTrucchetti > 0 || nuoviIncantesimi > 0) ? 10 : 0 }}>
+                      <div style={{ fontSize: 11.5, color: C.inkDim, marginBottom: 6, fontWeight: 600 }}>
+                        {lingua === 'it' ? 'Disponibilità Slot Incantesimo:' : 'Spell Slot Availability:'}
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {Object.keys(slotNuovi)
+                          .filter((l) => slotNuovi[l]?.totale > 0)
+                          .map((l) => {
+                            const tot = slotNuovi[l].totale;
+                            const prevTot = slotVecchi?.[l]?.totale || 0;
+                            const isNuovoLiv = prevTot === 0;
+                            const isAumentato = prevTot > 0 && tot > prevTot;
+                            return (
+                              <div
+                                key={l}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 6,
+                                  padding: '4px 9px',
+                                  borderRadius: 7,
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                  background: isNuovoLiv
+                                    ? 'rgba(46, 157, 77, 0.12)'
+                                    : isAumentato
+                                      ? 'rgba(217, 119, 6, 0.1)'
+                                      : 'rgba(0, 0, 0, 0.04)',
+                                  border: `1px solid ${isNuovoLiv ? 'rgba(46, 157, 77, 0.4)' : isAumentato ? 'rgba(217, 119, 6, 0.35)' : C.border}`,
+                                  color: C.ink,
+                                }}
+                              >
+                                <span style={{ fontWeight: 700, color: isNuovoLiv ? '#2e9d4d' : C.goldDark }}>{l}° Liv:</span>
+                                <span>{tot} {tot === 1 ? 'slot' : 'slot'}</span>
+                                {isNuovoLiv && (
+                                  <span style={{ fontSize: 10, background: '#2e9d4d', color: '#fff', padding: '1px 5px', borderRadius: 4, fontWeight: 800 }}>
+                                    {lingua === 'it' ? 'NUOVO' : 'NEW'}
+                                  </span>
+                                )}
+                                {isAumentato && (
+                                  <span style={{ fontSize: 10, background: '#d97706', color: '#fff', padding: '1px 5px', borderRadius: 4, fontWeight: 800 }}>
+                                    +{tot - prevTot}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Incantesimi e Trucchetti da Scegliere */}
+                  {(nuoviTrucchetti > 0 || nuoviIncantesimi > 0) && (
+                    <div style={{
+                      background: 'rgba(0, 0, 0, 0.025)',
+                      border: `1px solid ${C.border}`,
+                      borderRadius: 8,
+                      padding: '8px 10px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 4,
+                    }}>
+                      <div style={{ fontSize: 11.5, fontWeight: 700, color: C.ink, display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <span>📖</span>
+                        <span>{lingua === 'it' ? 'Da imparare / preparare:' : 'To learn / prepare:'}</span>
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 2 }}>
+                        {nuoviIncantesimi > 0 && (
+                          <div style={{ fontSize: 12, color: C.ink, display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <strong style={{ color: '#2e9d4d' }}>+{nuoviIncantesimi}</strong> {lingua === 'it' ? (nuoviIncantesimi === 1 ? 'incantesimo' : 'incantesimi') : (nuoviIncantesimi === 1 ? 'spell' : 'spells')}
+                          </div>
+                        )}
+                        {nuoviTrucchetti > 0 && (
+                          <div style={{ fontSize: 12, color: C.ink, display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <strong style={{ color: '#2e9d4d' }}>+{nuoviTrucchetti}</strong> {lingua === 'it' ? (nuoviTrucchetti === 1 ? 'trucchetto' : 'trucchetti') : (nuoviTrucchetti === 1 ? 'cantrip' : 'cantrips')}
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ fontSize: 11, color: C.inkDim, marginTop: 2, fontStyle: 'italic' }}>
+                        {t('levelup.aggiungi_dopo')}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
