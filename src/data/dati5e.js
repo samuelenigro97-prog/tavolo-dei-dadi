@@ -1,6 +1,8 @@
 // Dati di gioco D&D 5e estratti da App.jsx (costanti pure, nessuna logica).
 // Spostati qui per ridurre la dimensione di App.jsx e i conflitti di merge.
 
+import { INCANTESIMI_DB } from './incantesimi.js';
+
 export const NOMI_CLASSI = [
   'Barbaro', 'Bardo', 'Chierico', 'Druido', 'Guerriero', 'Ladro',
   'Mago', 'Monaco', 'Paladino', 'Ranger', 'Stregone', 'Warlock',
@@ -30,74 +32,31 @@ export const SOTTOCLASSI_5E = {
   stregone: ['Stregoneria Aberrante', 'Stregoneria Meccanica', 'Stregoneria Draconica', 'Stregoneria della Magia Selvaggia', 'Stregoneria delle Ombre', 'Anima Divina', 'Stregoneria della Tempesta'],
   warlock: ['Patrono Signore Fatato', 'Patrono Celestiale', 'Patrono Immondo', 'Patrono Grande Antico', 'Patrono delle Profondità', 'Patrono del Genio', 'Lama del Sortilegio', 'L’Immortale'],
 };
-export const INCANTESIMI_CLASSE = {
-  stregone: {
-    0: ['Dardo Infuocato', 'Raggio di Gelo', 'Morsa del Gelo', 'Tocco Gelido', 'Mano Magica', 'Luce', 'Messaggio', 'Prestidigitazione', 'Illusione Minore', 'Spruzzo Velenoso', 'Stretta Folgorante', 'Luci Danzanti', 'Interdizione alle Lame'],
-    1: ['Stregoneria Esplosiva', 'Dardo Incantato', 'Scudo', 'Armatura Magica', 'Onda Tonante', 'Mani Brucianti', 'Sfera Cromatica', 'Sonno', 'Ammaliare Persone', 'Caduta Morbida', 'Individuazione del Magico', 'Nube di Nebbia', 'Camuffarsi', 'Immagine Silenziosa', 'Fulmine Stregato'],
-    2: ['Immagine Speculare', 'Passo Velato', 'Frantumare', 'Raggio Rovente', 'Invisibilità', 'Blocca Persone', 'Oscurità', 'Scurovisione', 'Levitazione', 'Ragnatela', 'Suggestione', 'Offuscamento', 'Vedere Invisibilità'],
-    3: ['Palla di Fuoco', 'Controincantesimo', 'Fulmine', 'Volare', 'Velocità', 'Lentezza', 'Dissolvi Magie', 'Nube Mefitica', 'Paura'],
-    4: ['Invisibilità Superiore', 'Porta Dimensionale', 'Tempesta di Ghiaccio', 'Scudo di Fuoco', 'Metamorfosi', 'Confusione'],
-    5: ['Cono di Freddo', 'Blocca Mostri', 'Dominare Persone', 'Telecinesi', 'Muro di Pietra'],
-  },
-  mago: {
-    0: ['Dardo Infuocato', 'Raggio di Gelo', 'Morsa del Gelo', 'Tocco Gelido', 'Mano Magica', 'Luce', 'Messaggio', 'Prestidigitazione', 'Illusione Minore', 'Spruzzo Acido', 'Stretta Folgorante', 'Colpo Accurato', 'Riparare'],
-    1: ['Dardo Incantato', 'Scudo', 'Armatura Magica', 'Onda Tonante', 'Mani Brucianti', 'Sonno', 'Individuazione del Magico', 'Comprendere Linguaggi', 'Identificare', 'Ritirata Veloce', 'Falsa Vita', 'Servitore Invisibile', 'Sfera Cromatica'],
-    2: ['Immagine Speculare', 'Passo Velato', 'Frantumare', 'Raggio Rovente', 'Invisibilità', 'Blocca Persone', 'Ragnatela', 'Levitazione', 'Vedere Invisibilità', 'Bussare', 'Individuazione dei Pensieri'],
-    3: ['Palla di Fuoco', 'Controincantesimo', 'Fulmine', 'Volare', 'Velocità', 'Dissolvi Magie', 'Nube Mefitica', 'Animare Morti', 'Schema Ipnotico'],
-    4: ['Invisibilità Superiore', 'Porta Dimensionale', 'Tempesta di Ghiaccio', 'Scudo di Fuoco', 'Metamorfosi', 'Pelle di Pietra', 'Muro di Fuoco'],
-    5: ['Cono di Freddo', 'Blocca Mostri', 'Telecinesi', 'Muro di Forza', 'Evocare Elementale'],
-  },
-  chierico: {
-    0: ['Fiamma Sacra', 'Guida', 'Luce', 'Riparare', 'Resistenza', 'Stabilizzare', 'Taumaturgia', 'Rintocco dei Morti'],
-    1: ['Benedizione', 'Cura Ferite', 'Dardo Guida', 'Parola di Guarigione', 'Comando', 'Individuazione del Magico', 'Infliggere Ferite', 'Protezione dal Male e dal Bene', 'Santuario', 'Scudo della Fede', 'Rovina'],
-    2: ['Aiuto', 'Ristorare Inferiore', 'Arma Spirituale', 'Blocca Persone', 'Silenzio', 'Preghiera di Guarigione', 'Presagio', 'Legame di Protezione'],
-    3: ['Dissolvi Magie', 'Parola di Guarigione di Massa', 'Rivitalizzare', 'Guardiani Spirituali', 'Faro di Speranza', 'Rimuovi Maledizione', 'Luce del Giorno'],
-    4: ['Barriera contro la Morte', 'Guardiano della Fede', 'Esilio', 'Libertà di Movimento'],
-    5: ['Colonna di Fuoco', 'Ristorare Superiore', 'Cura Ferite di Massa', 'Rianimare Morti'],
-  },
-  druido: {
-    0: ['Artificio Druidico', 'Guida', 'Riparare', 'Randello Incantato', 'Frusta di Spine', 'Folata', 'Morsa del Gelo', 'Produrre Fiamma', 'Resistenza', 'Spruzzo Velenoso', 'Controllo delle Fiamme', 'Creare Falò', 'Modellare la Terra', 'Plasmare l\'Acqua', 'Infusione Magica', 'Stabilizzare', 'Spruzzo Acido', 'Tuono', 'Ferocia Primordiale'],
-    1: ['Cura Ferite', 'Parola di Guarigione', 'Assorbire Elementi', 'Intralciare', 'Fuoco Fatato', 'Bacche Nutrienti', 'Parlare con gli Animali', 'Onda Tonante', 'Nube di Nebbia', 'Passo Lungo', 'Amicizia con gli Animali', 'Ammaliare Persone', 'Bocciolo di Ghiaccio', 'Caduta Morbida', 'Creare o Distruggere Acqua', 'Individuazione del Magico', 'Individuazione del Veleno e delle Malattie', 'Protezione dal Male e dal Bene', 'Purificare Cibo e Bevande', 'Salto'],
-    2: ['Pelle Coriacea', 'Sfera Infuocata', 'Raggio di Luna', 'Metallo Rovente', 'Passare Senza Tracce', 'Crescita di Spine', 'Ristorare Inferiore', 'Blocca Persone', 'Calmare Emozioni', 'Folata di Vento', 'Frantumare', 'Ingrandire/Ridurre', 'Lama Infuocata', 'Localizzare Animali o Piante', 'Localizzare Oggetto', 'Messaggero Animale', 'Potenziare Caratteristica', 'Presagio', 'Protezione dai Veleni', 'Scurovisione', 'Senso delle Bestie', 'Vincolo della Terra'],
-    3: ['Chiamare il Fulmine', 'Evocare Animali', 'Evoca Fata', 'Dissolvi Magie', 'Crescita Vegetale', 'Tempesta di Nevischio', 'Respirare sott\'Acqua', 'Muro di Vento', 'Arma Elementale', 'Camminare sull\'Acqua', 'Fondersi nella Pietra', 'Forma Gassosa', 'Frecce di Fuoco', 'Luce del Giorno', 'Parlare con le Piante', 'Protezione dall\'Energia', 'Rivitalizzare'],
-    4: ['Metamorfosi', 'Tempesta di Ghiaccio', 'Pelle di Pietra', 'Muro di Fuoco', 'Libertà di Movimento', 'Inaridire', 'Confusione', 'Controllare Acqua', 'Dominare Bestie', 'Evocare Elementali Minori', 'Evocare Creature Boschive', 'Insetto Gigante', 'Malanno', 'Terreno Allucinatorio', 'Vite Afferrante'],
-    5: ['Ridestare', 'Comunione con la Natura', 'Piaga di Insetti', 'Passo Arboreo', 'Cura Ferite di Massa', 'Blocca Mostri', 'Contagio', 'Evoca Drago', 'Evoca Celestiale', 'Evocare Elementale', 'Guscio Antivita', 'Muro di Pietra', 'Reincarnazione', 'Ristorare Superiore', 'Scrutare', 'Trasmutare Roccia'],
-    6: ['Camminare nel Vento', 'Festino degli Eroi', 'Guarigione', 'Muovere la Terra', 'Muro di Spine', 'Raggio Solare', 'Scopri la Via', 'Trasportare Via'],
-    7: ['Inversione della Gravità', 'Miraggio Arcano', 'Rigenerazione', 'Spostamento Planare', 'Tempesta di Fuoco', 'Turbine'],
-    8: ['Forme Animali', 'Antipatia/Simpatia', 'Controllare il Clima', 'Esplosione Solare', 'Terremoto', 'Tornado', 'Tsunami'],
-    9: ['Mutare Forma', 'Previsione', 'Resurrezione Pura', 'Tempesta di Vendetta'],
-  },
-  bardo: {
-    0: ['Beffa Crudele', 'Luci Danzanti', 'Luce', 'Mano Magica', 'Riparare', 'Messaggio', 'Illusione Minore', 'Prestidigitazione', 'Colpo Accurato'],
-    1: ['Cura Ferite', 'Parola di Guarigione', 'Ammaliare Persone', 'Camuffarsi', 'Fuoco Fatato', 'Caduta Morbida', 'Eroismo', 'Sonno', 'Onda Tonante', 'Sussurri Dissonanti', 'Individuazione del Magico'],
-    2: ['Invisibilità', 'Suggestione', 'Blocca Persone', 'Frantumare', 'Metallo Rovente', 'Potenziare Caratteristica', 'Ristorare Inferiore', 'Silenzio', 'Vedere Invisibilità'],
-    3: ['Dissolvi Magie', 'Schema Ipnotico', 'Paura', 'Immagine Maggiore', 'Linguaggi', 'Infliggere Maledizione', 'Messaggio a Distanza'],
-    4: ['Porta Dimensionale', 'Metamorfosi', 'Libertà di Movimento', 'Invisibilità Superiore', 'Confusione'],
-    5: ['Ristorare Superiore', 'Cura Ferite di Massa', 'Blocca Mostri', 'Dominare Persone', 'Sviare'],
-  },
-  warlock: {
-    0: ['Deflagrazione Occulta', 'Morsa del Gelo', 'Tocco Gelido', 'Mano Magica', 'Illusione Minore', 'Spruzzo Velenoso', 'Prestidigitazione', 'Colpo Accurato'],
-    1: ['Malocchio', 'Armatura di Agathys', 'Braccia di Hadar', 'Ammaliare Persone', 'Comprendere Linguaggi', 'Ritirata Veloce', 'Protezione dal Male e dal Bene', 'Fulmine Stregato', 'Rappresaglia Infernale', 'Servitore Invisibile'],
-    2: ['Invisibilità', 'Immagine Speculare', 'Passo Velato', 'Blocca Persone', 'Oscurità', 'Raggio di Indebolimento', 'Corona della Follia', 'Suggestione'],
-    3: ['Controincantesimo', 'Dissolvi Magie', 'Volare', 'Paura', 'Schema Ipnotico', 'Fame di Hadar', 'Tocco Vampirico'],
-    4: ['Esilio', 'Porta Dimensionale', 'Malanno', 'Terreno Allucinatorio'],
-    5: ['Blocca Mostri', 'Scrutare', 'Passo Lontano'],
-  },
-  paladino: {
-    1: ['Benedizione', 'Cura Ferite', 'Comando', 'Individuazione del Magico', 'Favore Divino', 'Eroismo', 'Protezione dal Male e dal Bene', 'Scudo della Fede', 'Colpo Ardente', 'Colpo Tonante', 'Colpo Irato'],
-    2: ['Aiuto', 'Ristorare Inferiore', 'Trovare Destriero', 'Arma Magica', 'Colpo Marchiante', 'Protezione dai Veleni', 'Zona di Verità'],
-    3: ['Dissolvi Magie', 'Rivitalizzare', 'Aura di Vitalità', 'Colpo Accecante', 'Manto del Crociato', 'Arma Elementale'],
-    4: ['Esilio', 'Barriera contro la Morte', 'Aura di Vita', 'Colpo Sconvolgente'],
-    5: ['Cerchio di Potere', 'Onda Distruttrice'],
-  },
-  ranger: {
-    1: ['Cura Ferite', 'Marchio del Cacciatore', 'Colpo Intrappolante', 'Nube di Nebbia', 'Bacche Nutrienti', 'Pioggia di Spine', 'Passo Lungo', 'Parlare con gli Animali'],
-    2: ['Ristorare Inferiore', 'Passare Senza Tracce', 'Crescita di Spine', 'Pelle Coriacea', 'Silenzio', 'Cordone di Frecce', 'Localizzare Oggetto'],
-    3: ['Evocare Animali', 'Freccia Fulminante', 'Crescita Vegetale', 'Respirare sott\'Acqua', 'Muro di Vento'],
-    4: ['Libertà di Movimento', 'Pelle di Pietra', 'Vite Afferrante'],
-    5: ['Faretra Veloce', 'Passo Arboreo'],
-  },
-};
+
+export const INCANTESIMI_CLASSE = (() => {
+  const classi = {
+    stregone: {}, mago: {}, chierico: {}, druido: {}, bardo: {}, warlock: {}, paladino: {}, ranger: {}, artefice: {}
+  };
+  for (let i = 0; i <= 9; i++) {
+    for (const c of Object.keys(classi)) classi[c][i] = [];
+  }
+  for (const [nome, d] of Object.entries(INCANTESIMI_DB)) {
+    const liv = d.livello ?? 0;
+    for (const cls of (d.classi || [])) {
+      const k = cls.toLowerCase();
+      if (classi[k] && classi[k][liv]) {
+        if (!classi[k][liv].includes(nome)) classi[k][liv].push(nome);
+      }
+    }
+  }
+  for (const c of Object.keys(classi)) {
+    for (let i = 0; i <= 9; i++) {
+      classi[c][i].sort((a, b) => a.localeCompare(b, 'it'));
+    }
+  }
+  return classi;
+})();
+
 export const TRUCCHETTI_NOTI = {
   bardo: [2, 3, 4], chierico: [3, 4, 5], druido: [2, 3, 4],
   mago: [3, 4, 5], stregone: [4, 5, 6], warlock: [2, 3, 4],
