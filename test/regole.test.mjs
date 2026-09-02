@@ -16,7 +16,7 @@ import {
   controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, puntiVersoSlot, slotVersoPunti,
   riepilogoCondizioni, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi,
   classePreparaIncantesimi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza,
-  analizzaPozione, calcolaMovimentoESalti,
+  analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili,
 } from '../src/rules/regole.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from '../src/data/condizioni.js';
 import { CONDIZIONI_5E, PE_PER_LIVELLO } from '../src/data/dati5e.js';
@@ -883,6 +883,50 @@ test('calcolo movimento, salti e capacità fisiche 5e (calcolaMovimentoESalti)',
   assert.equal(mg.sollevamentoKg, 18 * 15 * 2); // 540 kg
   assert.equal(mg.spintaKg, 18 * 30 * 2); // 1080 kg
 });
+
+test('reazioni e inneschi di combattimento 5e (trovaReazioniDisponibili)', () => {
+  // 1. Scheda Ladro con Schivata Prodigiosa e Sentinella
+  const ladro = {
+    classe: 'Ladro',
+    livello: 5,
+    privilegi: 'Schivata Prodigiosa\nEvasione\nAttacco Furtivo',
+    talenti: 'Sentinella',
+    incantesimiLista: [],
+  };
+
+  const reazioniLadro = trovaReazioniDisponibili(ladro);
+  const nomiLadro = reazioniLadro.map((r) => r.nome);
+  assert.ok(nomiLadro.includes('Attacco di Opportunità'));
+  assert.ok(nomiLadro.includes('Schivata Prodigiosa'));
+  assert.ok(nomiLadro.includes('Sentinella'));
+
+  const schivata = reazioniLadro.find((r) => r.nome === 'Schivata Prodigiosa');
+  assert.equal(schivata.tipo, 'privilegio');
+  assert.ok(schivata.innescoIt.includes('colpisce'));
+
+  // 2. Scheda Mago con incantesimi di reazione
+  const mago = {
+    classe: 'Mago',
+    livello: 5,
+    incantesimiLista: [
+      { nome: 'Scudo', tempo: '1 reazione' },
+      { nome: 'Controincantesimo', tempo: '1 reazione' },
+      { nome: 'Palla di Fuoco', tempo: '1 azione' },
+    ],
+  };
+
+  const reazioniMago = trovaReazioniDisponibili(mago);
+  const nomiMago = reazioniMago.map((r) => r.nome);
+  assert.ok(nomiMago.includes('Attacco di Opportunità'));
+  assert.ok(nomiMago.includes('Scudo'));
+  assert.ok(nomiMago.includes('Controincantesimo'));
+  assert.ok(!nomiMago.includes('Palla di Fuoco'));
+
+  const scudo = reazioniMago.find((r) => r.nome === 'Scudo');
+  assert.equal(scudo.tipo, 'incantesimo');
+  assert.ok(scudo.innescoIt.includes('colpito'));
+});
+
 
 
 

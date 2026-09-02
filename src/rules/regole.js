@@ -5,7 +5,7 @@ import { CLASSI, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, SLOT_FULL_CASTER, SLOT
   INCANTESIMI_CLASSE, CARATT_INCANTATORE, SOTTOCLASSE_TERZO_CASTER,
   SCUOLE_TERZO_CASTER_2014, SLOT_TERZO_CASTER, INC_MAX_TERZO, TRUCCHETTI_TERZO_CASTER,
   TS_CLASSE, COMPETENZE_CLASSE, COMPETENZE_SPECIE, BACKGROUND_COMPETENZE,
-  MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, PE_PER_LIVELLO } from '../data/dati5e.js';
+  MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, PE_PER_LIVELLO, REAZIONI_5E } from '../data/dati5e.js';
 import { modificatore, conSegno, bonusCompetenzaDaLivello } from './dadi.js';
 import { spiegaIncantesimo } from '../data/spiegazioni.js';
 import { INCANTESIMI_DB, datiIncantesimo } from '../data/incantesimi.js';
@@ -1395,4 +1395,169 @@ export function calcolaMovimentoESalti(scheda) {
     spintaKg,
     haCorporaturaPossente,
   };
+}
+
+/**
+ * Rileva in modo intelligente tutte le Reazioni disponibili per un personaggio (5e):
+ * tattiche universali (Attacco di Opportunità), incantesimi preparati/noti con tempo "1 reazione",
+ * privilegi di classe (Schivata Prodigiosa, Deviare Proiettili, Flash di Genio, Parole Taglienti, ecc.),
+ * stili di combattimento (Intercettare, Protezione) e talenti (Sentinella, Duellante Difensivo, Maestro d'Armi con Asta).
+ */
+export function trovaReazioniDisponibili(scheda) {
+  const reazioni = [];
+  const aggiunte = new Set();
+
+  function addReazione(r) {
+    if (!r || !r.nome || aggiunte.has(r.nome.toLowerCase())) return;
+    aggiunte.add(r.nome.toLowerCase());
+    reazioni.push(r);
+  }
+
+  // 1. Tattica Universale Base
+  addReazione({
+    nome: 'Attacco di Opportunità',
+    tipo: 'tattica',
+    innescoIt: 'Quando una creatura ostile che puoi vedere esce dalla tua portata in mischia.',
+    innescoEn: 'When a hostile creature that you can see moves out of your melee reach.',
+    effettoIt: 'Compi un singolo attacco con arma da mischia contro la creatura che fugge.',
+    effettoEn: 'Make one melee attack with a weapon against the fleeing creature.',
+  });
+
+  // 2. Incantesimi di Reazione noti o preparati
+  const listaInc = Array.isArray(scheda?.incantesimiLista) ? scheda.incantesimiLista : [];
+  for (const inc of listaInc) {
+    const nomeInc = inc.nome || '';
+    const sp = datiIncantesimo(nomeInc) || {};
+    const tempo = (inc.tempo || sp.tempo || '').toLowerCase();
+    if (tempo.includes('reaz') || tempo.includes('react')) {
+      const matchDb = REAZIONI_5E.find((x) => x.nome.toLowerCase() === nomeInc.toLowerCase());
+      addReazione({
+        nome: nomeInc,
+        tipo: 'incantesimo',
+        innescoIt: matchDb?.innescoIt || (sp.tempo ? sp.tempo : 'Quando si verifica la condizione di innesco dell\'incantesimo.'),
+        innescoEn: matchDb?.innescoEn || (sp.tempo ? sp.tempo : 'When the spell trigger condition occurs.'),
+        effettoIt: inc.note || matchDb?.note || sp.desc || '',
+        effettoEn: matchDb?.noteEn || sp.desc || '',
+      });
+    }
+  }
+
+  // 3. Privilegi di Classe & Sottoclasse
+  const testoPriv = `${scheda?.privilegi || ''}\n${scheda?.privilegiSottoclasse || ''}\n${scheda?.talenti || ''}`.toLowerCase();
+  
+  if (testoPriv.includes('schivata prodigiosa') || testoPriv.includes('uncanny dodge')) {
+    addReazione({
+      nome: 'Schivata Prodigiosa',
+      tipo: 'privilegio',
+      innescoIt: 'Quando un attaccante che puoi vedere ti colpisce con un attacco.',
+      innescoEn: 'When an attacker that you can see hits you with an attack.',
+      effettoIt: 'Dimezza il danno dell\'attacco contro di te.',
+      effettoEn: 'Halve the damage that you take from this attack.',
+    });
+  }
+
+  if (testoPriv.includes('deviare proiettili') || testoPriv.includes('deflect missiles')) {
+    addReazione({
+      nome: 'Deviare Proiettili',
+      tipo: 'privilegio',
+      innescoIt: 'Quando vieni colpito da un attacco con arma a distanza.',
+      innescoEn: 'When you are hit by a ranged weapon attack.',
+      effettoIt: 'Riduci il danno di 1d10 + Destrezza + Livello da Monaco. Se azzeri il danno, puoi afferrare e rilanciare il proiettile.',
+      effettoEn: 'Reduce the damage by 1d10 + Dexterity + Monk level. If reduced to 0, catch and throw it back.',
+    });
+  }
+
+  if (testoPriv.includes('flash di genio') || testoPriv.includes('flash of genius')) {
+    addReazione({
+      nome: 'Flash di Genio',
+      tipo: 'privilegio',
+      innescoIt: 'Quando tu o un\'altra creatura entro 9 m che puoi vedere effettua una prova di caratteristica o un tiro salvezza.',
+      innescoEn: 'When you or another creature you can see within 30 ft makes an ability check or saving throw.',
+      effettoIt: 'Aggiungi il tuo modificatore di Intelligenza al risultato del tiro.',
+      effettoEn: 'Add your Intelligence modifier to the roll result.',
+    });
+  }
+
+  if (testoPriv.includes('parole taglienti') || testoPriv.includes('cutting words')) {
+    addReazione({
+      nome: 'Parole Taglienti',
+      tipo: 'privilegio',
+      innescoIt: 'Quando una creatura entro 18 m che puoi vedere effettua un tiro per colpire, prova di caratteristica o tiro per i danni.',
+      innescoEn: 'When a creature that you can see within 60 ft makes an attack roll, ability check, or damage roll.',
+      effettoIt: 'Spendi 1 dado di Ispirazione Bardica e sottrai il risultato dal tiro del bersaglio.',
+      effettoEn: 'Spend 1 Bardic Inspiration die and subtract the result from the target roll.',
+    });
+  }
+
+  if (testoPriv.includes('intercettare') || testoPriv.includes('interception')) {
+    addReazione({
+      nome: 'Intercettare',
+      tipo: 'stile',
+      innescoIt: 'Quando una creatura entro 1,5 m da te che puoi vedere viene colpita da un attacco.',
+      innescoEn: 'When a creature you can see within 5 ft is hit by an attack.',
+      effettoIt: 'Riduci il danno dell\'attacco di 1d10 + Bonus di Competenza (se impugni uno scudo o un\'arma).',
+      effettoEn: 'Reduce the attack damage by 1d10 + Proficiency Bonus (with shield or weapon).',
+    });
+  }
+
+  if (testoPriv.includes('protezione') || testoPriv.includes('protection')) {
+    addReazione({
+      nome: 'Protezione',
+      tipo: 'stile',
+      innescoIt: 'Quando un nemico che puoi vedere attacca un bersaglio diverso da te entro 1,5 m da te.',
+      innescoEn: 'When a creature you can see attacks a target other than you within 5 ft of you.',
+      effettoIt: 'Imponi svantaggio al tiro per colpire dell\'attaccante (mentre impugni uno scudo).',
+      effettoEn: 'Impose disadvantage on the attack roll (with shield).',
+    });
+  }
+
+  if (testoPriv.includes('sentinella') || testoPriv.includes('sentinel')) {
+    addReazione({
+      nome: 'Sentinella',
+      tipo: 'talento',
+      innescoIt: 'Quando una creatura entro 1,5 m da te attacca un bersaglio diverso da te, oppure quando esce dalla tua portata anche se Disimpegna.',
+      innescoEn: 'When a creature within 5 ft makes an attack against a target other than you, or moves out of reach even if Disengaging.',
+      effettoIt: 'Compi un attacco con arma da mischia contro la creatura. Se colpisci, la sua velocità diventa 0 per il resto del turno.',
+      effettoEn: 'Make a melee weapon attack against the creature. On hit, its speed becomes 0 for the turn.',
+    });
+  }
+
+  if (testoPriv.includes('duellante difensivo') || testoPriv.includes('defensive duelist')) {
+    addReazione({
+      nome: 'Duellante Difensivo',
+      tipo: 'talento',
+      innescoIt: 'Quando impugni un\'arma accurata con cui sei competente e una creatura ti colpisce con un attacco in mischia.',
+      innescoEn: 'When you are wielding a finesse weapon and a creature hits you with a melee attack.',
+      effettoIt: 'Aggiungi il tuo Bonus di Competenza alla tua CA contro quell\'attacco, trasformando potenzialmente il colpo in un mancato.',
+      effettoEn: 'Add your Proficiency Bonus to your AC against that attack, potentially causing it to miss.',
+    });
+  }
+
+  if (testoPriv.includes('maestro d\'armi con asta') || testoPriv.includes('polearm master')) {
+    addReazione({
+      nome: 'Asta: Intercettazione in Entrata',
+      tipo: 'talento',
+      innescoIt: 'Quando una creatura ostile entra nella tua portata mentre impugni un\'arma ad asta.',
+      innescoEn: 'When a hostile creature enters your reach while wielding a polearm.',
+      effettoIt: 'Provochi un attacco di opportunità quando il nemico ENTRA nella tua portata.',
+      effettoEn: 'Provoke an opportunity attack when the enemy ENTERS your reach.',
+    });
+  }
+
+  // 4. Anche qualsiasi reazione aggiunta manualmente in scheda.attacchi
+  const attacchi = Array.isArray(scheda?.attacchi) ? scheda.attacchi : [];
+  for (const a of attacchi) {
+    if ((a.categoria || '').toLowerCase() === 'reazione' && a.nome) {
+      addReazione({
+        nome: a.nome,
+        tipo: a.isSpell ? 'incantesimo' : 'attacco',
+        innescoIt: 'Reazione di combattimento preparata.',
+        innescoEn: 'Prepared combat reaction.',
+        effettoIt: a.note || (a.danno ? `${a.danno} ${a.tipoDanno || ''}` : ''),
+        effettoEn: a.note || (a.danno ? `${a.danno} ${a.tipoDanno || ''}` : ''),
+      });
+    }
+  }
+
+  return reazioni;
 }
