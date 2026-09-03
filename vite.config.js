@@ -29,6 +29,19 @@ export default defineConfig({
   // su GitHub Pages l'app vive in /tavolo-dei-dadi/ o root, con ./ funziona ovunque
   base: process.env.BASE_PATH || './',
   define: { __BUILD_ID__: JSON.stringify(BUILD_ID) },
+  build: {
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          data5e: ['./src/data/dati5e.js', './src/data/incantesimi.js', './src/data/spiegazioni.js', './src/data/tabelleBackground.js'],
+          bestiario: ['./src/data/bestiario.js', './src/ritratti.js'],
+          regole: ['./src/rules/regole.js', './src/rules/scheda.js', './src/rules/dadi.js'],
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({

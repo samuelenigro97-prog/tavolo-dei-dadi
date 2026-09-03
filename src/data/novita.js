@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.73',
+    voci: {
+      it: [
+        'Bundle Ottimizzato: split chunk vendor/data5e/bestiario/regole per caricamento più rapido.',
+      ],
+      en: [
+        'Bundle Optimized: split vendor/data5e/bestiary/rules chunks for faster loading.',
+      ],
+    },
+  },
+  {
     versione: '4.0.72',
     voci: {
       it: [
