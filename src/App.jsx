@@ -1928,7 +1928,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.59';
+const APP_VERSION = '4.0.60';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2073,17 +2073,38 @@ function loadState() {
           delete roster.personaggi[k];
         }
       }
-      // Deduplica per nome uguale (normalizzato): se due PG hanno stesso nome (es. import ripetuto), mantieni solo il primo
+      // Deduplica per nome uguale: mantieni il PG con più dati (preferisci chi ha ritratto/mappa)
       {
-        const visti = new Map();
+        const gruppi = new Map(); // nomeNorm -> [ids]
         for (const k of Object.keys(roster.personaggi)) {
-          const nomeNorm = String(roster.personaggi[k]?.nome || '').trim().toLowerCase();
-          if (!nomeNorm) continue;
-          if (visti.has(nomeNorm)) {
-            if (roster.attivo === k) roster.attivo = visti.get(nomeNorm);
-            delete roster.personaggi[k];
-          } else {
-            visti.set(nomeNorm, k);
+          const n = String(roster.personaggi[k]?.nome || '').trim().toLowerCase();
+          if (!n) continue;
+          if (!gruppi.has(n)) gruppi.set(n, []);
+          gruppi.get(n).push(k);
+        }
+        for (const [nomeNorm, idsGruppo] of gruppi.entries()) {
+          if (idsGruppo.length <= 1) continue;
+          // punteggio: ritratto > mappa > numero campi > id originale pg-vaelion ecc.
+          const punteggio = (id) => {
+            const s = roster.personaggi[id] || {};
+            let p = 0;
+            if (s.ritratto) p += 100;
+            if (s.mappaCampagna) p += 50;
+            p += Object.keys(s).length;
+            if (id === 'pg-vaelion' || id === 'pg-flyora' || id === 'pg-elevorn' || id === 'pg-wendell') p += 20;
+            if (roster.attivo === id) p += 5;
+            return p;
+          };
+          idsGruppo.sort((a, b) => punteggio(b) - punteggio(a));
+          const daTenere = idsGruppo[0];
+          const ritrattoMigliore = roster.personaggi[daTenere]?.ritratto || idsGruppo.map((id) => roster.personaggi[id]?.ritratto).find(Boolean) || '';
+          const mappaMigliore = roster.personaggi[daTenere]?.mappaCampagna || idsGruppo.map((id) => roster.personaggi[id]?.mappaCampagna).find(Boolean) || '';
+          if (ritrattoMigliore && !roster.personaggi[daTenere].ritratto) roster.personaggi[daTenere].ritratto = ritrattoMigliore;
+          if (mappaMigliore && !roster.personaggi[daTenere].mappaCampagna) roster.personaggi[daTenere].mappaCampagna = mappaMigliore;
+          for (let i = 1; i < idsGruppo.length; i++) {
+            const dup = idsGruppo[i];
+            if (roster.attivo === dup) roster.attivo = daTenere;
+            delete roster.personaggi[dup];
           }
         }
       }

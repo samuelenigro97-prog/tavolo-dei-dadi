@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.60',
+    voci: {
+      it: [
+        'Fix Immagine Vaelion & Campanello: deduplica intelligente che conserva ritratto e mappa del PG più completo; campanello notifiche resta animato finché ci sono modifiche.',
+      ],
+      en: [
+        'Fix Vaelion Image & Bell: smart deduplication keeps portrait/map of most complete character; notification bell stays animated while changes pending.',
+      ],
+    },
+  },
+  {
     versione: '4.0.59',
     voci: {
       it: [
