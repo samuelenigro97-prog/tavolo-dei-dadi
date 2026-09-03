@@ -1928,7 +1928,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.57';
+const APP_VERSION = '4.0.58';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7833,8 +7833,8 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Informazioni Dettagliate */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 11.5, color: C.inkDim, background: C.panel, padding: '8px 10px', borderRadius: 6, border: `1px solid ${C.border}` }}>
+                  {/* Informazioni Dettagliate — allineata con Livello Attuale */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 11.5, color: C.inkDim, background: C.panel, padding: '8px 10px', borderRadius: 6, border: `1px solid ${C.border}`, textAlign: 'center' }}>
                     <div>
                       {lingua === 'en' ? 'Threshold for current level:' : 'Soglia livello attuale:'} <strong>{infoPe.peMinLivello.toLocaleString()} P.E.</strong>
                     </div>

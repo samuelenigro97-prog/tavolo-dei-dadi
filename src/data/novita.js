@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.58',
+    voci: {
+      it: [
+        'Tracciatore P.E.: sezione informazioni allineata e centrata con il Livello Attuale per simmetria perfetta.',
+      ],
+      en: [
+        'XP Tracker: info section aligned and centered with Current Level for perfect symmetry.',
+      ],
+    },
+  },
+  {
     versione: '4.0.57',
     voci: {
       it: [
