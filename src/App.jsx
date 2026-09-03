@@ -1047,7 +1047,10 @@ function nomeAbbreviatoNoto(nome) {
 function effettoOggettoNoto(nome) {
   const n = String(nome || '');
   if (/guanti (?:del potere orchesco|della forza orchesca)/i.test(n)) {
-    return { nome: 'Guanti del Potere Orchesco', effettoMeccanico: 'forza_impostata_19', richiedeSintonia: true };
+    // conserva la variante già in uso (Forza/Potere): rinominarla ogni volta
+    // la faceva oscillare con la sintonia salvata (mismatch → niente FOR 19)
+    const nomeProprio = /della forza orchesca/i.test(n) ? 'Guanti della Forza Orchesca' : 'Guanti del Potere Orchesco';
+    return { nome: nomeProprio, effettoMeccanico: 'forza_impostata_19', richiedeSintonia: true };
   }
   if (/fascia dell(?:’|')intelletto/i.test(n)) {
     return { nome: 'Fascia dell’Intelletto', effettoMeccanico: 'intelligenza_impostata_19', richiedeSintonia: true };
@@ -1928,7 +1931,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.79';
+const APP_VERSION = '4.0.80';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2117,6 +2120,14 @@ function loadState() {
           }
         }
       }
+      // Normalizza sintonia scritta come stringa con virgole in array
+      // (es. Vaelion da esempi.js): altrimenti push/splice la distruggerebbero
+      for (const k of Object.keys(roster.personaggi)) {
+        const s = roster.personaggi[k];
+        if (s && typeof s.sintonia === 'string' && s.sintonia.includes(',')) {
+          s.sintonia = s.sintonia.split(',').map((x) => x.trim()).filter(Boolean).slice(0, 3);
+        }
+      }
       // Fix Vaelion: guanti sempre equipaggiati + sintonia (gestisce sia Forza che Potere Orchesco)
       for (const k of Object.keys(roster.personaggi)) {
         const s = roster.personaggi[k];
@@ -2138,6 +2149,9 @@ function loadState() {
             } else if (!/forza/i.test(s.sintonia[idx] || '')) {
               s.sintonia[idx] = 'Guanti della Forza Orchesca';
             }
+          } else if (typeof s.sintonia === 'string' && String(s.sintonia).trim()) {
+            const esistente = String(s.sintonia).trim();
+            s.sintonia = /guanti/i.test(esistente) ? ['Guanti della Forza Orchesca'] : [esistente, 'Guanti della Forza Orchesca'].slice(0, 3);
           } else {
             s.sintonia = ['Guanti della Forza Orchesca'];
           }
@@ -3350,18 +3364,27 @@ export default function App() {
               r2.onerror = () => res('');
             });
             if (!img || String(img).startsWith('data:image/svg') || String(img).length < 1000) continue;
-            // euristica: se l'id orfano conteneva parte del nome o se snapshot conferma
-            try {
-              const snapsRaw = localStorage.getItem('scheda-interattiva:snapshots');
-              if (snapsRaw) {
-                const snaps = JSON.parse(snapsRaw);
-                const match = snaps.some((s) => {
-                  const cand = s?.roster?.personaggi?.[idOrig];
-                  return cand && String(cand.nome || '').trim().toLowerCase() === nomeNorm && cand.ritratto && String(cand.ritratto).length > 1000;
-                });
-                if (!match) continue;
-              }
-            } catch {}
+            // gli snapshot NON contengono immagini (strippate da rosterSenzaImmagini):
+            // usali solo per mappare nome→ID orfano, più euristica sullo slug dell'ID
+            // (es. pg-vaelion → Vaelion). Prima si richiedeva cand.ritratto negli
+            // snapshot: impossibile, quindi il recupero non scattava mai.
+            let confermato = false;
+            const slugId = String(idOrig || '').toLowerCase();
+            const primaParola = nomeNorm.split(/\s+/)[0] || '';
+            if (primaParola && (slugId.includes(primaParola) || nomeNorm.includes(slugId.replace(/^pg-/, '')))) confermato = true;
+            if (!confermato) {
+              try {
+                const snapsRaw = localStorage.getItem('scheda-interattiva:snapshots');
+                if (snapsRaw) {
+                  const snaps = JSON.parse(snapsRaw);
+                  confermato = snaps.some((s) => {
+                    const cand = s?.roster?.personaggi?.[idOrig];
+                    return cand && String(cand.nome || '').trim().toLowerCase() === nomeNorm;
+                  });
+                }
+              } catch {}
+            }
+            if (!confermato) continue;
             daAggiornare.personaggi[id] = { ...pg, ritratto: img };
             cambiato = true;
             break;
@@ -6440,13 +6463,6 @@ export default function App() {
   const nAvvisi = (avvisoBackup ? 1 : 0) + controlliAttivi.length;
   const novitaNonLette = novitaViste !== ultimaVersioneNovita();
   const daNotificare = nAvvisi > 0 || novitaNonLette || !!nuovaVersione;
-  const statoSync = (() => {
-    if (sincronizzando) return { label: lingua === 'en' ? 'Syncing…' : 'Sincronizzo…', color: C.goldDark, bg: 'rgba(201,162,39,0.18)', border: C.goldDark, icon: '☁️' };
-    if (typeof navigator !== 'undefined' && !navigator.onLine) return { label: 'Offline', color: C.red, bg: 'rgba(231,76,60,0.12)', border: C.red, icon: '☁️' };
-    const ok = (cloudStatus?.type === 'success' && String(cloudStatus.text).includes('Sincronizzato')) || (syncCodiceStatus?.type === 'success' && String(syncCodiceStatus.text).includes('Sincronizzato'));
-    if (ok) return { label: lingua === 'en' ? 'Live' : 'In tempo reale', color: '#2e9d4d', bg: 'rgba(46,157,77,0.12)', border: '#2e9d4d', icon: '☁️' };
-    return { label: lingua === 'en' ? 'Local' : 'Locale', color: C.goldDark, bg: 'rgba(201,162,39,0.12)', border: C.goldDark, icon: '☁️' };
-  })();
 
   function calcolaDettaglioCorrezione(r, pg, lang = lingua) {
     const isEn = lang === 'en';
@@ -11296,26 +11312,6 @@ export default function App() {
                         <span className={daNotificare ? 'icona-campanello' : ''}>🔔</span>
                       </button>
                       <button
-                        title={`Sync: ${statoSync.label} — click per aprire Cloud`}
-                        onClick={() => { setCloudStatus({ text: '', type: '' }); setSyncCodiceStatus({ text: '', type: '' }); setMostraCloud(true); }}
-                        style={{
-                          ...btnAzione,
-                          color: statoSync.color,
-                          background: statoSync.bg,
-                          border: `1px solid ${statoSync.border}`,
-                          borderRadius: 6,
-                          padding: '2px 6px',
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: 13,
-                          marginLeft: 2,
-                        }}
-                      >
-                        <span>☁️</span>
-                      </button>
-                      <button
                         style={btnAzione}
                         title={lingua === 'it' ? 'Cambia in inglese' : 'Switch to Italian'}
                         onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
@@ -11402,9 +11398,9 @@ export default function App() {
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, userSelect: 'none', flexShrink: 0 }}>
                     <span style={{ fontSize: 16, lineHeight: 1 }}>🎲</span>
-                    <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 15, fontWeight: 800, color: 'var(--c-title)', letterSpacing: 0.4, whiteSpace: 'nowrap', transition: 'color 0.2s ease', display: 'inline-flex', alignItems: 'baseline', gap: 3 }}>
+                    <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 15, fontWeight: 800, color: 'var(--c-title)', letterSpacing: 0.4, whiteSpace: 'nowrap', transition: 'color 0.2s ease', display: 'inline-flex', alignItems: 'center', gap: 2 }}>
                       Tavolo dei Dadi
-                      <span className="app-version" style={{ fontSize: 8, color: C.inkDim, opacity: 0.7, fontWeight: 600, fontVariantNumeric: 'tabular-nums', letterSpacing: 0.2, whiteSpace: 'nowrap', verticalAlign: 'baseline' }}>
+                      <span className="app-version" style={{ fontSize: 8, color: C.inkDim, opacity: 0.7, fontWeight: 600, fontVariantNumeric: 'tabular-nums', letterSpacing: 0.2, whiteSpace: 'nowrap', lineHeight: 1, transform: 'translateY(1px)' }}>
                         v{APP_VERSION}
                       </span>
                     </span>
@@ -17236,7 +17232,7 @@ export default function App() {
                                   <Editable value={dMon.mo || 0} tipo="numero" width={44} onChange={(v) => aggiorna({ denari: { ...scheda.denari, mo: Math.max(0, v) } })} title="Monete d'oro: sincronizzate con la sezione Monete" />
                                 </td>
                                 <td data-label={t('inv.sintonia')} style={{ ...styles.td, textAlign: 'center', color: C.inkDim }}>—</td>
-                                <td data-label={t('inv.peso')} style={{ ...styles.td, color: C.inkDim, whiteSpace: 'nowrap' }}>{pesoMonete.toFixed(2)} kg{numMonete > (dMon.mo || 0) ? ` · ${numMonete} monete tot.` : ''}</td>
+                                <td data-label={t('inv.peso')} style={{ ...styles.td, color: C.inkDim, whiteSpace: 'nowrap' }}>{pesoMonete.toFixed(2)} kg</td>
                                 <td className="inventario-azioni" style={styles.td} />
                               </tr>
                             )}

@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.80',
+    voci: {
+      it: [
+        'Fix Guanti/Immagini/Sistema: nome Guanti stabile (niente più oscillazione Forza/Potere, FOR 19 garantito), recupero immagini orfane funzionante, rimosso il doppione ☁️ vicino alle notifiche.',
+      ],
+      en: [
+        'Fix Gauntlets/Images/System: stable Gauntlets name (no more Forza/Potere flip-flop, STR 19 guaranteed), working orphan portrait recovery, removed duplicate ☁️ next to notifications.',
+      ],
+    },
+  },
+  {
     versione: '4.0.79',
     voci: {
       it: [

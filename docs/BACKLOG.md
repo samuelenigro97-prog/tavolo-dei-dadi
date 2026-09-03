@@ -1,13 +1,13 @@
 # Continua qui — stato reale di Tavolo dei Dadi
 
-Aggiornato il **03 settembre 2026**. Ultima versione pubblicata e verificata online: **v4.0.79**.
+Aggiornato il **03 settembre 2026**. Ultima versione pubblicata e verificata online: **v4.0.80**.
 App: https://samuelenigro97-prog.github.io/tavolo-dei-dadi/
 
 > Si lavora anche con altre IA sul repository. Prima di modificare o pubblicare:
 > controllare branch, modifiche locali e ultimo `main`; non sovrascrivere lavoro
 > non proprio e non far modificare `src/App.jsx` contemporaneamente.
 
-## Stato attuale: v4.0.79 su `main`
+## Stato attuale: v4.0.80 su `main`
 
 Tutti i rilasci recenti sono committati e sincronizzati direttamente su `main` (rebase del 03/09/2026 allineato a `origin/main`).
 
