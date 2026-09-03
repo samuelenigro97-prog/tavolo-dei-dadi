@@ -455,11 +455,9 @@ test('classificaIncantesimoCombattimento: una cura non è un attacco', () => {
 });
 
 test('classificaIncantesimoCombattimento: un incantesimo a tiro salvezza mostra la CD, non un bonus finto', () => {
-  // Bug reale: Intralciare (TS Forza) veniva etichettato "Attacco Magico" con
-  // un bonus di attacco, perché datiIncantesimo() non riporta la descrizione
-  // e isTS non trovava mai "tiro salvezza" nel testo.
+  // Opzione B (v4.0.57): in combattimento solo ATTACCHI con danni — Intralciare è TS controllo senza danni, quindi fuori dal combattimento ma isTS resta true per la CD
   const r = classificaIncantesimoCombattimento({ nome: 'Intralciare' });
-  assert.equal(r.mostraInCombattimento, true);
+  assert.equal(r.mostraInCombattimento, false);
   assert.equal(r.isTS, true);
 });
 

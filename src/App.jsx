@@ -1928,7 +1928,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.56';
+const APP_VERSION = '4.0.57';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -12029,8 +12029,8 @@ export default function App() {
                 </div>
 
                 <div className="profilo-anagrafica-campi" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {/* Riga 1: Sesso, Specie/Razza (compatta), Taglia (compatta), Allineamento (largo) */}
-                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.7fr 0.85fr 0.6fr 1.85fr', gap: 10, alignItems: 'end' }}>
+                  {/* Riga 1: Sesso, Specie/Razza (larga), Taglia (compatta), Allineamento (stretta) */}
+                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.65fr 1.15fr 0.6fr 1.6fr', gap: 10, alignItems: 'end' }}>
                     <CampoModulo label={t("profilo.sesso")}>
                       <select
                         value={scheda.sesso || ''}

@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.57',
+    voci: {
+      it: [
+        'Profilo: Allineamento stretto per dare più spazio alla Razza/Specie + Combattimento: solo incantesimi con danni via TS o tiro per colpire (TS con danni + attacchi con danni).',
+      ],
+      en: [
+        'Profile: narrowed Alignment for Species/Race + Combat: only damage spells via save or attack roll (TS + attack with damage).',
+      ],
+    },
+  },
+  {
     versione: '4.0.56',
     voci: {
       it: [

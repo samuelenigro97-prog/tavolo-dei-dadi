@@ -496,8 +496,8 @@ export function classificaIncantesimoCombattimento(s) {
   const danno = s?.danno || d.danno || '';
   const isTS = /ts (\w+)|tiro salvezza/i.test(desc);
   const haAttacco = /attacco/i.test(desc);
-  // Combattimento: solo TS (danno o controllo) oppure tiro per colpire con danni
-  const mostraInCombattimento = Boolean(isTS || (danno && haAttacco));
+  // TS con danni + attacchi con danni (solo spell che infliggono danni via CD o tiro)
+  const mostraInCombattimento = Boolean(danno && (isTS || haAttacco));
   return { mostraInCombattimento, isTS };
 }
 
