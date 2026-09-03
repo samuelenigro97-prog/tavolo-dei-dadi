@@ -9,7 +9,7 @@
   "specie": "Elfo dei Boschi",
   "taglia": "Media",
   "allineamento": "Neutrale",
-  "pe": 0,
+  "pe": 64000,
   "pfMax": 64,
   "pfAttuali": 64,
   "pfTemp": 0,

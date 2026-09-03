@@ -1928,7 +1928,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.66';
+const APP_VERSION = '4.0.67';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2128,9 +2128,31 @@ function loadState() {
               if (!o.effettoMeccanico) o.effettoMeccanico = 'forza_impostata_19';
             }
           }
-          if (Array.isArray(s.sintonia) && !s.sintonia.some((x) => /guanti/i.test(x)) && s.sintonia.length < 3) {
-            s.sintonia.push('Guanti della Forza Orchesca');
+          if (Array.isArray(s.sintonia) && !s.sintonia.some((x) => /guanti/i.test(x))) {
+            if (s.sintonia.length < 3) s.sintonia.push('Guanti della Forza Orchesca');
+            else s.sintonia[2] = 'Guanti della Forza Orchesca';
+          } else if (!Array.isArray(s.sintonia)) {
+            s.sintonia = ['Guanti della Forza Orchesca'];
           }
+        }
+      }
+      // Recupera immagini perse (Vaelion) da snapshots se ritratto è SVG/vuoto
+      for (const k of Object.keys(roster.personaggi)) {
+        const s = roster.personaggi[k];
+        if (s && /vaelion/i.test(s.nome || '') && (!s.ritratto || String(s.ritratto).startsWith('data:image/svg'))) {
+          try {
+            const snapsRaw = localStorage.getItem('scheda-interattiva:snapshots');
+            if (snapsRaw) {
+              const snaps = JSON.parse(snapsRaw);
+              for (const snap of snaps) {
+                const cand = snap?.roster?.personaggi?.[k] || Object.values(snap?.roster?.personaggi || {}).find((p) => /vaelion/i.test(p?.nome || ''));
+                if (cand?.ritratto && !String(cand.ritratto).startsWith('data:image/svg') && String(cand.ritratto).length > 1000) {
+                  s.ritratto = cand.ritratto;
+                  break;
+                }
+              }
+            }
+          } catch {}
         }
       }
       // Migrazione Vaelion 5.0: su richiesta, Vaelion usa le regole 2014

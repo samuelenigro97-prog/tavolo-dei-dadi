@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.67',
+    voci: {
+      it: [
+        'Vaelion P.E. & Immagini: P.E. corretti per livello 10 (64000) e Wendell 6 (14000), recupero automatico immagini perse da snapshot e garanzia equip Guanti FOR 19 con freccia → 19 sempre visibile.',
+      ],
+      en: [
+        'Vaelion XP & Images: XP fixed for level 10 (64000) and Wendell 6 (14000), auto-recovery of lost portraits from snapshots and guaranteed Gauntlets STR 19 arrow.',
+      ],
+    },
+  },
+  {
     versione: '4.0.66',
     voci: {
       it: [
