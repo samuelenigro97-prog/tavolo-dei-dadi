@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.63',
+    voci: {
+      it: [
+        'Animazioni diffuse: Level Up pronto e turno in combattimento ora pulsano come la campanella delle notifiche.',
+      ],
+      en: [
+        'Animations extended: Level Up ready and combat turn now pulse like notification bell.',
+      ],
+    },
+  },
+  {
     versione: '4.0.62',
     voci: {
       it: [

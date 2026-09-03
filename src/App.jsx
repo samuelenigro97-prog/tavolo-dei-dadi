@@ -1928,7 +1928,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.62';
+const APP_VERSION = '4.0.63';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7924,7 +7924,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Pulsante Level Up se idoneo */}
+                  {/* Pulsante Level Up se idoneo — animato come campanello */}
                   {infoPe.puoSalire && (
                     <button
                       type="button"
@@ -7932,6 +7932,7 @@ export default function App() {
                         setMostraModalPe(false);
                         setMostraLevelUp(true);
                       }}
+                      className="icona-campanello"
                       style={{
                         ...styles.button,
                         background: 'linear-gradient(135deg, #10b981, #059669)',
@@ -18984,9 +18985,9 @@ export default function App() {
                           transition: 'all 0.25s ease',
                         }}
                       >
-                        {/* Banner Ruolo / Turno Attivo / Prossimo Turno */}
+                        {/* Banner Ruolo / Turno Attivo / Prossimo Turno — animato */}
                         {inTurno ? (
-                          <div style={{ background: 'var(--c-gold-dark)', color: '#ffffff', fontSize: 10.5, fontWeight: 800, textAlign: 'center', padding: '3px 6px', letterSpacing: 0.6, textTransform: 'uppercase' }}>
+                          <div className="icona-campanello" style={{ background: 'var(--c-gold-dark)', color: '#ffffff', fontSize: 10.5, fontWeight: 800, textAlign: 'center', padding: '3px 6px', letterSpacing: 0.6, textTransform: 'uppercase' }}>
                             {t('ct.in_turno')}
                           </div>
                         ) : prossimo ? (
