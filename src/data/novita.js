@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.61',
+    voci: {
+      it: [
+        'Vaelion 5.0 & Fix Equip: Vaelion ora in 5.0 (2014), Guanti della Forza Orchesca sempre equipaggiati e in sintonia, rimosso omino che corre dai salti.',
+      ],
+      en: [
+        'Vaelion 5.0 & Equip Fix: Vaelion now on 5.0 (2014), Gauntlets always equipped/attuned, removed runner emoji from jumps.',
+      ],
+    },
+  },
+  {
     versione: '4.0.60',
     voci: {
       it: [

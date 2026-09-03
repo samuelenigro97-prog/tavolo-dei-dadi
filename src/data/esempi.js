@@ -162,7 +162,7 @@ export const ESEMPIO_GNOMO = {
 };
 
 export const VAELION_JSON = {
-  versione: "2024",
+  versione: "2014",
   nome: "Vaelion (Val) Leafwhisper",
   classe: "Druido",
   sottoclasse: "Circolo della Luna",

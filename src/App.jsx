@@ -1928,7 +1928,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.60';
+const APP_VERSION = '4.0.61';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2101,11 +2101,43 @@ function loadState() {
           const mappaMigliore = roster.personaggi[daTenere]?.mappaCampagna || idsGruppo.map((id) => roster.personaggi[id]?.mappaCampagna).find(Boolean) || '';
           if (ritrattoMigliore && !roster.personaggi[daTenere].ritratto) roster.personaggi[daTenere].ritratto = ritrattoMigliore;
           if (mappaMigliore && !roster.personaggi[daTenere].mappaCampagna) roster.personaggi[daTenere].mappaCampagna = mappaMigliore;
+          // preserva equipaggiamento del duplicato più completo
+          const invTenuto = roster.personaggi[daTenere]?.inventario || [];
+          for (let i = 1; i < idsGruppo.length; i++) {
+            const invDup = roster.personaggi[idsGruppo[i]]?.inventario || [];
+            for (const od of invDup) {
+              const ex = invTenuto.find((o) => String(o.nome || '').toLowerCase() === String(od.nome || '').toLowerCase());
+              if (ex && !ex.equip && od.equip) ex.equip = true;
+            }
+          }
           for (let i = 1; i < idsGruppo.length; i++) {
             const dup = idsGruppo[i];
             if (roster.attivo === dup) roster.attivo = daTenere;
             delete roster.personaggi[dup];
           }
+        }
+      }
+      // Fix Vaelion: guanti sempre equipaggiati + sintonia
+      for (const k of Object.keys(roster.personaggi)) {
+        const s = roster.personaggi[k];
+        if (s && /vaelion/i.test(s.nome || '') && Array.isArray(s.inventario)) {
+          for (const o of s.inventario) {
+            if (/guanti.*forza.*orchesca/i.test(o.nome || '')) {
+              o.equip = true;
+              o.richiedeSintonia = true;
+              if (!o.effettoMeccanico) o.effettoMeccanico = 'forza_impostata_19';
+            }
+          }
+          if (Array.isArray(s.sintonia) && !s.sintonia.some((x) => /guanti/i.test(x)) && s.sintonia.length < 3) {
+            s.sintonia.push('Guanti della Forza Orchesca');
+          }
+        }
+      }
+      // Migrazione Vaelion 5.0: su richiesta, Vaelion usa le regole 2014
+      for (const k of Object.keys(roster.personaggi)) {
+        const s = roster.personaggi[k];
+        if (s && /vaelion/i.test(s.nome || '') && s.versione === '2024') {
+          s.versione = '2014';
         }
       }
 
@@ -8144,7 +8176,7 @@ export default function App() {
                     {/* Salto in Lungo */}
                     <div style={{ background: C.panel, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
                       <div style={{ fontWeight: 700, fontSize: 12, color: C.ink }}>
-                        🏃 {lingua === 'en' ? 'Long Jump' : 'Salto in Lungo'}
+                        {lingua === 'en' ? 'Long Jump' : 'Salto in Lungo'}
                       </div>
                       <div style={{ fontSize: 11.5, color: C.inkDim, display: 'flex', justifyContent: 'space-between' }}>
                         <span>{lingua === 'en' ? 'With 3m run-up:' : 'Con rincorsa (3m):'}</span>
@@ -12852,7 +12884,7 @@ export default function App() {
                   }}
                   title={lingua === 'en' ? 'Click to open Movement, Jump & Carrying Calculator' : 'Clicca per aprire il Calcolatore Salti, Movimento e Capacità Fisiche'}
                 >
-                  <span>🏃 {t('vital.movimenti')}</span>
+                  <span>{t('vital.movimenti')}</span>
                   <span style={{ fontSize: 8.5, opacity: 0.8 }}>▼</span>
                 </div>
               </div>
