@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.77',
+    voci: {
+      it: [
+        'Fix Cloud Click: il badge ☁️ apre subito la sezione Cloud, non il menu iniziale.',
+      ],
+      en: [
+        'Fix Cloud Click: ☁️ badge now opens Cloud section directly, not the main menu.',
+      ],
+    },
+  },
+  {
     versione: '4.0.76',
     voci: {
       it: [
