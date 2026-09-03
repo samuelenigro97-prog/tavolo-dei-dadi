@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.59',
+    voci: {
+      it: [
+        'Deduplica Automatica PG: al caricamento rimuove i doppioni con stesso nome (es. import ripetuto), mantenendo solo il primo.',
+      ],
+      en: [
+        'Auto-Deduplicate Characters: on load removes duplicates with same name, keeping only the first.',
+      ],
+    },
+  },
+  {
     versione: '4.0.58',
     voci: {
       it: [

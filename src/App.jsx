@@ -1928,7 +1928,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.58';
+const APP_VERSION = '4.0.59';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2071,6 +2071,20 @@ function loadState() {
       for (const k of Object.keys(roster.personaggi)) {
         if (k.startsWith('pg-lyrian') || (/lyrian.*faenor/i.test(roster.personaggi[k]?.nome || '') && roster.personaggi[k]?.sesso === 'M')) {
           delete roster.personaggi[k];
+        }
+      }
+      // Deduplica per nome uguale (normalizzato): se due PG hanno stesso nome (es. import ripetuto), mantieni solo il primo
+      {
+        const visti = new Map();
+        for (const k of Object.keys(roster.personaggi)) {
+          const nomeNorm = String(roster.personaggi[k]?.nome || '').trim().toLowerCase();
+          if (!nomeNorm) continue;
+          if (visti.has(nomeNorm)) {
+            if (roster.attivo === k) roster.attivo = visti.get(nomeNorm);
+            delete roster.personaggi[k];
+          } else {
+            visti.set(nomeNorm, k);
+          }
         }
       }
 
