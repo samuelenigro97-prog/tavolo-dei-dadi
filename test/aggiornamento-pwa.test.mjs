@@ -11,10 +11,9 @@ test('aggiornamento PWA: non combina il reload del worker con location.replace',
   assert.doesNotMatch(app, /window\.location\.replace\(/);
 });
 
-test('aggiornamento PWA: tenta automaticamente una sola volta per build', () => {
-  assert.match(app, /sessionStorage\.getItem\(chiave\)/);
-  assert.match(app, /sessionStorage\.setItem\(chiave, 'tentato'\)/);
-  assert.match(app, /setTimeout\(forzaAggiornamento, 700\)/);
+test('aggiornamento PWA: tenta automaticamente in ogni browser', () => {
+  assert.match(app, /setTimeout\(forzaAggiornamento, 1200\)/);
+  assert.doesNotMatch(app, /sessionStorage\.getItem\(chiave\)/);
 });
 
 test('aggiornamento PWA: Safari non può restare bloccato su Aggiornamento', () => {

@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.74',
+    voci: {
+      it: [
+        'Aggiornamento Automatico Universale: su Chrome, Safari e Firefox la nuova versione si installa e ricarica da sola entro ~20s senza tap su Aggiorna.',
+      ],
+      en: [
+        'Universal Auto-Update: on Chrome, Safari and Firefox the new version installs and reloads automatically within ~20s without tapping Update.',
+      ],
+    },
+  },
+  {
     versione: '4.0.73',
     voci: {
       it: [

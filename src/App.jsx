@@ -1928,7 +1928,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.73';
+const APP_VERSION = '4.0.74';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3301,15 +3301,10 @@ export default function App() {
   // il pulsante lampeggia se c'è una nuova versione (rilevata in un modo o nell'altro)
   const nuovaVersione = !!aggiornamentoPronto || needRefresh;
 
-  // Aggiorna automaticamente una sola volta per ogni build pubblicata. La
-  // chiave in sessionStorage sopravvive al reload e impedisce il vecchio ciclo
-  // infinito se Safari dovesse continuare a servire la build precedente.
+  // Aggiornamento automatico in OGNI browser: appena version.json è nuova, ricarica da solo (senza tap su 🔄)
   useEffect(() => {
     if (!aggiornamentoPronto || aggiornando || sincronizzando) return;
-    const chiave = `tavolo-dei-dadi:update:${aggiornamentoPronto}`;
-    if (sessionStorage.getItem(chiave)) return;
-    sessionStorage.setItem(chiave, 'tentato');
-    const timer = setTimeout(forzaAggiornamento, 700);
+    const timer = setTimeout(forzaAggiornamento, 1200);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aggiornamentoPronto, aggiornando, sincronizzando]);
