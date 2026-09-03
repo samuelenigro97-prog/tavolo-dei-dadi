@@ -50,30 +50,7 @@ export const ICONE_5E = {
   'Percezione tellurica': '🐾',
   'Normale': '👁️', 'Normal': '👁️',
 
-  // Taglie
-  'Minuscola': '🐭', 'Tiny': '🐭',
-  'Piccola': '🦊', 'Small': '🦊',
-  'Media': '🧑', 'Medium': '🧑',
-  'Grande': '🐻', 'Large': '🐻',
-  'Enorme': '🐘', 'Huge': '🐘',
-  'Mastodontica': '🐉', 'Gargantuan': '🐉',
 
-  // Allineamenti
-  'Legale Buono': '⚖️', 'Lawful Good': '⚖️',
-  'Neutrale Buono': '🕊️', 'Neutral Good': '🕊️',
-  'Caotico Buono': '🌟', 'Chaotic Good': '🌟',
-  'Legale Neutrale': '📜', 'Lawful Neutral': '📜',
-  'Neutrale': '⚪', 'Neutral': '⚪', 'Neutrale Puro': '⚪', 'True Neutral': '⚪',
-  'Caotico Neutrale': '🎲', 'Chaotic Neutral': '🎲',
-  'Legale Malvagio': '⛓️', 'Lawful Evil': '⛓️',
-  'Neutrale Malvagio': '🖤', 'Neutral Evil': '🖤',
-  'Caotico Malvagio': '💀', 'Chaotic Evil': '💀',
-  'Senza Allineamento': '🔘', 'Unaligned': '🔘',
-
-  // Sesso
-  'maschio': '♂️', 'Maschio': '♂️', 'Male': '♂️',
-  'femmina': '♀️', 'Femmina': '♀️', 'Female': '♀️',
-  'altro': '⚧️', 'Altro': '⚧️', 'Other': '⚧️',
 
   // Scuole di Magia
   'Abiurazione': '🛡️', 'Abjuration': '🛡️',
@@ -115,19 +92,7 @@ export const ICONE_5E = {
   'Warlock': '👁️',
   'Artefice': '⚙️', 'Artificer': '⚙️',
 
-  // Specie principali
-  'Umano': '🧑', 'Human': '🧑',
-  'Elfo': '🧝', 'Elf': '🧝', 'Elfo dei Boschi': '🧝', 'Alto Elfo': '🧝', 'Drow': '🧝', 'Wood Elf': '🧝', 'High Elf': '🧝',
-  'Nano': '🧔', 'Dwarf': '🧔', 'Nano delle Colline': '🧔', 'Nano delle Montagne': '🧔', 'Hill Dwarf': '🧔', 'Mountain Dwarf': '🧔',
-  'Halfling': '🍀', 'Halfling Piedelesto': '🍀', 'Lightfoot Halfling': '🍀',
-  'Gnomo': '🍄', 'Gnome': '🍄', 'Gnomo delle Rocce': '🍄', 'Gnomo delle Foreste': '🍄', 'Rock Gnome': '🍄', 'Forest Gnome': '🍄',
-  'Dragonide': '🐲', 'Dragonborn': '🐲',
-  'Tiefling': '😈',
-  'Mezzelfo': '✨', 'Half-Elf': '✨',
-  'Mezzorco': '👹', 'Half-Orc': '👹',
-  'Aasimar': '👼',
-  'Golia': '🏔️', 'Goliath': '🏔️',
-  'Orco': '🐗', 'Orc': '🐗',
+
 };
 
 export function formattaVoceConIcona(v, formattaOpzione) {

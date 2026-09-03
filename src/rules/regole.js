@@ -494,9 +494,10 @@ export function classificaIncantesimoCombattimento(s) {
   const d = dettagliIncantesimo(s?.nome) || {};
   const desc = (s?.note || '') + ' ' + (spiegaIncantesimo(s?.nome) || '');
   const danno = s?.danno || d.danno || '';
-  const area = s?.area || d.area || '';
-  const mostraInCombattimento = Boolean(danno || area || /attacco magico|tiro per colpire|ts \w+|tiro salvezza|danni/i.test(desc));
   const isTS = /ts (\w+)|tiro salvezza/i.test(desc);
+  const haAttacco = /attacco/i.test(desc);
+  // Combattimento: solo TS (danno o controllo) oppure tiro per colpire con danni
+  const mostraInCombattimento = Boolean(isTS || (danno && haAttacco));
   return { mostraInCombattimento, isTS };
 }
 

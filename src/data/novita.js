@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.55',
+    voci: {
+      it: [
+        'Pulizia Anagrafica & Combattimento Mirato: rimosse emoticon da sesso/razza/taglia/allineamento e da Compagni/Famigli, bordi uniformati su tutte le tendine, titolo Movimento/Salti dinamico 5.5/5e, incantesimi in combattimento solo con danni via tiro o CD, tasti Monete rinominati Converti in MR/MA e Converti in MP.',
+      ],
+      en: [
+        'Clean Profile & Focused Combat: removed emojis from sex/species/size/alignment and Companions, unified dropdown borders, Movement/Jumps title dynamic 5.5/5e, combat spells only with damage via roll or save, coin buttons renamed Convert to CP/SP and Convert to PP.',
+      ],
+    },
+  },
+  {
     versione: '4.0.54',
     voci: {
       it: [

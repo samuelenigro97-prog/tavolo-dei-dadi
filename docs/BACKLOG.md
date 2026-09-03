@@ -1,30 +1,34 @@
 # Continua qui — stato reale di Tavolo dei Dadi
 
-Aggiornato il **25 agosto 2026**. Ultima versione pubblicata e verificata online: **v3.9.49**.
+Aggiornato il **03 settembre 2026**. Ultima versione pubblicata e verificata online: **v4.0.55**.
 App: https://samuelenigro97-prog.github.io/tavolo-dei-dadi/
 
 > Si lavora anche con altre IA sul repository. Prima di modificare o pubblicare:
 > controllare branch, modifiche locali e ultimo `main`; non sovrascrivere lavoro
 > non proprio e non far modificare `src/App.jsx` contemporaneamente.
 
-## Stato attuale: v3.9.49 su `main`
+## Stato attuale: v4.0.55 su `main`
 
-Tutti i rilasci recenti sono committati e sincronizzati direttamente su `main`.
+Tutti i rilasci recenti sono committati e sincronizzati direttamente su `main` (rebase del 03/09/2026 allineato a `origin/main`).
 
 ### Pubblicato nelle ultime tornate
 
 | Versione | Cosa |
 |---|---|
-| v3.9.49 | **Condivisione Stanza con QR Code**: generazione immediata di QR Code inquadrabile con la fotocamera per entrare nella stanza senza digitare |
-| v3.9.48 | **Spawn Rapido Mostri nel Combat Tracker**: menu rapido per aggiungere creature e mostri dal bestiario con CA, PF e iniziativa già calcolati |
-| v3.9.47 | **Forma Selvatica & Bestiario Druido**: sezione dedicata per Druidi (dal 2° liv) con catalogo bestie filtrato per GS/sottoclasse, statblock completo e tasto Trasformati (PF temp) |
-| v3.9.46 | **Inventario Zaino vs Equipaggiato**: filtri rapidi `📦 Tutti`, `🛡️ Indossati`, `🎒 Nello Zaino` e conteggio dettagliato dei pesi |
-| v3.9.45 | **Mobile Card View Combattimento**: tabelle Azioni, Bonus e Reazioni trasformate in card responsive touch su schermi smartphone |
-| v3.9.44 | **Filtri Grimorio Combattimento**: filtri rapidi a pillola (`🎯 Tutti`, `⭐ Preparati`, `⚡ Azione`, `⏳ Bonus`, `🛡️ Reazione`, `🧠 Conc.`, `📜 Rituali`) e rimozione definitiva banner persistenti |
-| v3.9.42 | **Automazione Riposo Breve/Lungo & Badge Condizioni**: gestione guidata dadi vita, ricariche risorse, badge colorati condizioni con tooltip regole |
-| v3.9.41 | **Diario di Sessione Potenziato**: tag D&D (`👤 PNG`, `📜 Quest`, `🗺️ Luoghi`, `💰 Bottino`, `⚔️ Scontri`), esportazione Markdown `.md` |
+| v4.0.53 | **Tavolo su Richiesta & Versione in Vista**: pannello dadi rimosso → tasto 🎲 modale in Sessione, versione sempre visibile in Profilo |
+| v4.0.52 | **Toolbar & Anagrafica Flessibile**: micro-badge con icone per 3 blocchi toolbar, anagrafica a larghezze proporzionali dinamiche |
+| v4.0.50 | **Diario in Toolbar**: Diario spostato da fondo scheda a modale 📜 nel blocco Sessione |
+| v4.0.49 | **Tiri Morte & Filigrana Carisma**: box Successi/Fallimenti ridisegnati, icona 🎭 più visibile |
+| v4.0.48 | **Toolbar & Combattimento**: 3 blocchi etichettati, filtri incantesimi riorganizzati, toggle armi, effetto Perla del Potere |
+| v3.9.49 | **Condivisione Stanza con QR Code**: generazione immediata di QR Code inquadrabile con la fotocamera |
+| v3.9.48 | **Spawn Rapido Mostri**: menu rapido bestiario con CA/PF/iniziativa già calcolati |
+| v3.9.47 | **Forma Selvatica & Bestiario Druido**: catalogo bestie filtrato GS/sottoclasse, statblock e Trasformati |
+| v3.9.46 | **Inventario Zaino vs Equipaggiato**: filtri `📦 Tutti`/`🛡️ Indossati`/`🎒 Zaino` e pesi dettagliati |
+| v3.9.45 | **Mobile Card View Combattimento**: Azioni/Bonus/Reazioni in card responsive |
+| v3.9.44 | **Filtri Grimorio**: pillole `🎯 Tutti`/`⭐ Preparati`/`⚡ Azione`/`⏳ Bonus`/`🛡️ Reazione`/`🧠 Conc.`/`📜 Rituali` |
+| v4.0.42–4.0.46 | **Audit & Sistema**: controlli D&D estesi, XP tracker, pozioni con meccaniche 5e, movimento/salti, reazioni, turn economy, guide abilità, concentrazione, cover, booster combattimento, Artefice, Warlock, manuali |
 
-Da 127 a **145 test** automatici, tutti verdi.
+`src/App.jsx` da 12k a **19.330 righe**, bundle PWA ~940 kB → ~890 kB, **145 test** verdi (12 suite).
 
 ### Perché la versione è passata da 2.100.0 a 3.0.0
 
@@ -215,28 +219,17 @@ considerarli definitivamente chiusi:
 Un difetto osservato durante la verifica torna nella roadmap aperta con passaggi
 riproducibili; non va riaperto soltanto per prudenza.
 
-### Roadmap Prioritaria Approvata
+### Roadmap Prioritaria (ex-approvata) — STATO 03/09/2026
 
-1. **Miglioramento Sezione Diario di Sessione** (IN CORSO):
-   - Grafica a pergamena/card moderna con evidenziazione data e numero sessione.
-   - Tag/Categorie rapide per le note di sessione (es. 👤 PNG incontrati, 🗺️ Luoghi esplorati, 📜 Quest / Obiettivi, 💰 Bottino / Ricompense, ⚔️ Combattimenti).
-   - Inserimento rapido di timestamp e formattazione punti elenco.
-   - Esportazione singola sessione o intero diario formattata in Markdown/Testo.
+1. **Diario di Sessione** — **✅ FATTO** (`v3.9.41`, poi `v4.0.50` modale toolbar): tag PNG/Quest/Luoghi/Bottino/Scontri, export `.md`, ora in modale Sessione (`src/App.jsx:18061`).
+2. **QoL Tavolo** — **✅ FATTO**: Riposo Breve/Lungo guidato (`v3.9.42`, `src/App.jsx:4969`), Badge Condizioni colorati con tooltip (`src/data/condizioni.js:13`). **Resta aperto**: badge header sync 🟢/🟠 (solo toast Cloud, non in header).
+3. **Filtri Grimorio** — **✅ FATTO** (`v3.9.44`, `076ee85`, `src/App.jsx:3234`).
+4. **Mobile Card Combattimento** — **✅ FATTO** (`v3.9.45`).
+5. **Zaino vs Equipaggiato** — **✅ FATTO** (`v3.9.46`, `src/App.jsx:3245` + `16428`). **Fix odierno 03/09**:rimosse emoticon da sesso/razza/taglia/allineamento (`src/ui/componenti.jsx:53`, `src/i18n.js:259`), bordi uniformati su tutte le tendine (`src/ui/stili.js:53`).
 
-2. **Quality of Life — Tavolo da Gioco**:
-   - **Automazione Riposo Breve e Lungo**: gestione guidata con spesa dadi vita, recupero automatico delle risorse con ricarica breve/lunga e ripristino PF/slot.
-   - **Indicatore Visivo Sincronizzazione DM**: badge di stato nell'header (🟢 In tempo reale / 🟠 Locale) per dare certezza che i dati siano sincronizzati.
-   - **Badge Luminosi per le Condizioni di Stato**: icone colorate sotto il nome del PG con tooltip immediato degli effetti meccanici (Vantaggio/Svantaggio).
-
-3. **Incantesimi — Filtri Rapidi di Combattimento**:
-   - Filtro rapido in cima: `[Tutti] [Solo Preparati] [Solo Rituali] [Per Tempo: Azione / Bonus / Reazione]`.
-   - Riduce drasticamente lo scroll durante il proprio turno.
-
-4. **Combattimento — Ottimizzazione Mobile (Azioni / Bonus / Reazioni)**:
-   - Vista a schede compatte (Card) su schermi stretti per evitare tabelle compresse o scroll orizzontale.
-
-5. **Inventario & Equipaggiamento — Zaino vs Equipaggiato**:
-   - Distinzione tra oggetti indossati/impugnati (attivi per CA e bonus) e oggetti stipati nello zaino.
+**Fix odierni aggiuntivi (non in roadmap):**
+- Titolo Movimento/Salti dinamico 5.5/5e per PG (`src/App.jsx:8056` usa `scheda?.versione`).
+- Combattimento: solo incantesimi con danni + tiro/CD mostrati (`src/rules/regole.js:490` `classificaIncantesimoCombattimento`).
 
 ### Scheda di Vaelion [COMPLETATO]
 

@@ -1928,7 +1928,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.53';
+const APP_VERSION = '4.0.55';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -8053,7 +8053,7 @@ export default function App() {
               {/* Header */}
               <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <strong style={{ fontSize: 15, color: C.goldDark }}>
-                  {lingua === 'en' ? `Movement, Jumps & Physical Capacity (${versione === '2024' ? '5.5' : '5e'})` : `Movimento, Salti & Capacità Fisiche (${versione === '2024' ? '5.5' : '5e'})`}
+                  {lingua === 'en' ? `Movement, Jumps & Physical Capacity (${(scheda?.versione || '2024') === '2024' ? '5.5' : '5e'})` : `Movimento, Salti & Capacità Fisiche (${(scheda?.versione || '2024') === '2024' ? '5.5' : '5e'})`}
                 </strong>
                 <button
                   type="button"
@@ -8100,7 +8100,7 @@ export default function App() {
                 <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                      {lingua === 'en' ? `Jump Calculator (${versione === '2024' ? '5.5' : '5e'}) (Strength-Based)` : `Calcolatore Salti (${versione === '2024' ? '5.5' : '5e'}) (Basato su Forza)`}
+                      {lingua === 'en' ? `Jump Calculator (${(scheda?.versione || '2024') === '2024' ? '5.5' : '5e'}) (Strength-Based)` : `Calcolatore Salti (${(scheda?.versione || '2024') === '2024' ? '5.5' : '5e'}) (Basato su Forza)`}
                     </div>
                     <span style={{ fontSize: 11, color: C.inkDim }}>FOR {mov.forPunteggio} ({conSegno(mov.modFor)})</span>
                   </div>
@@ -12093,7 +12093,7 @@ export default function App() {
                     </CampoModulo>
                   </div>
 
-<                  {/* Riga 2: Background, Classe (compatta), Sottoclasse (larga), P.E. (adeguato per 6 cifre) */}
+                  {/* Riga 2: Background, Classe (compatta), Sottoclasse (larga), P.E. (adeguato per 6 cifre) */}
                   <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.7fr 0.85fr 1.8fr 0.65fr', gap: 10, alignItems: 'end' }}>
                     <CampoModulo label={t("profilo.background")} boxClassName={String(scheda.background || '').length > 12 ? 'testo-compatto' : undefined}>
                       <CampoBloccato
@@ -15680,7 +15680,7 @@ export default function App() {
 
             {/* Sezione Compagni, Famigli ed Evocazioni Integrata */}
             <Sezione
-              titolo={lingua === 'en' ? '🐾 Companions, Familiars & Summons' : '🐾 Compagni, Famigli & Evocazioni'}
+              titolo={lingua === 'en' ? 'Companions, Familiars & Summons' : 'Compagni, Famigli & Evocazioni'}
               {...apertoProps('famigliEvocazioni', Boolean(
                 (Array.isArray(scheda.alleati) && scheda.alleati.length > 0) ||
                 (/warlock/i.test(scheda.classe || '') && /catena|chain/i.test(scheda.sottoclasse || '')) ||
@@ -16054,7 +16054,7 @@ export default function App() {
                   {/* Header Modale */}
                   <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <strong style={{ fontSize: 15, color: C.goldDark }}>
-                      🐾 {lingua === 'en' ? 'Summon / Add Companion or Familiar' : 'Evoca / Aggiungi Compagno o Famiglio'}
+                      {lingua === 'en' ? 'Summon / Add Companion or Familiar' : 'Evoca / Aggiungi Compagno o Famiglio'}
                     </strong>
                     <button
                       type="button"
@@ -16077,11 +16077,11 @@ export default function App() {
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                       {[
                         { id: 'tutti', label: lingua === 'en' ? 'All' : 'Tutti' },
-                        { id: 'famigli', label: '🦉 ' + (lingua === 'en' ? 'Familiars' : 'Famigli') },
-                        { id: 'compagni', label: '🐺 ' + (lingua === 'en' ? 'Class Companions' : 'Compagni di Classe') },
-                        { id: 'evocazioni', label: '✨ ' + (lingua === 'en' ? 'Summons' : 'Evocazioni') },
-                        { id: 'bestie', label: '🐴 ' + (lingua === 'en' ? 'Beasts' : 'Bestie') },
-                        { id: 'custom', label: '✏️ ' + (lingua === 'en' ? 'Custom' : 'Personalizzato') },
+                        { id: 'famigli', label: lingua === 'en' ? 'Familiars' : 'Famigli' },
+                        { id: 'compagni', label: lingua === 'en' ? 'Class Companions' : 'Compagni di Classe' },
+                        { id: 'evocazioni', label: lingua === 'en' ? 'Summons' : 'Evocazioni' },
+                        { id: 'bestie', label: lingua === 'en' ? 'Beasts' : 'Bestie' },
+                        { id: 'custom', label: lingua === 'en' ? 'Custom' : 'Personalizzato' },
                       ].map((cat) => (
                         <button
                           key={cat.id}
@@ -17092,10 +17092,10 @@ export default function App() {
                                   if (addMo > 0) aggiorna({ denari: { ...d, mr: mr % 100, ma: ma % 10, mo: (d.mo || 0) + addMo } });
                                   else alert(t('monete.insufficienti'));
                                 }}
-                              >🔄 {t('monete.converti')}</button>
+                              >{t('monete.converti')}</button>
                               <button
                                 style={{ ...styles.buttonMini, fontSize: 11, color: '#0077b6', borderColor: '#0077b6', whiteSpace: 'nowrap' }}
-                                title={lingua === 'en' ? 'Convert GP into Platinum (10 GP = 1 PP, reduces coin weight by 90%)' : 'Converti Monete d\'Oro in Platino (10 MO = 1 MP, riduce il peso del 90%)'}
+                                title={t('monete.converti_mp_tip')}
                                 onClick={() => {
                                   const mo = d.mo || 0;
                                   const addMp = Math.floor(mo / 10);
@@ -17105,7 +17105,7 @@ export default function App() {
                                     alert(lingua === 'en' ? 'Not enough GP (minimum 10 GP needed for 1 PP).' : 'Servono almeno 10 MO per ottenere 1 MP.');
                                   }
                                 }}
-                              >💎 {lingua === 'en' ? 'To PP (÷10 weight)' : 'In MP (÷10 peso)'}</button>
+                              >{t('monete.converti_mp')}</button>
                             </div>
                             <div title={t('monete.totale_tip', { n: numMonete })} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 7, minWidth: 0, fontSize: 12, color: C.goldDark, fontWeight: 700, textAlign: 'right', whiteSpace: 'nowrap' }}>
                               <IconaMonetaOro size={18} />
