@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.79',
+    voci: {
+      it: [
+        'Fix Guanti Sintonia Verde: lo slot sintonia ora verde anche con Guanti Potere/Forza e freccia FOR 19 corretta.',
+      ],
+      en: [
+        'Fix Gauntlets Attunement Green: attunement slot now green for Gauntlets Potere/Forza and arrow STR 19 fixed.',
+      ],
+    },
+  },
+  {
     versione: '4.0.78',
     voci: {
       it: [
