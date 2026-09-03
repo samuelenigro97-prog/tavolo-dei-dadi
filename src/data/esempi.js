@@ -443,7 +443,7 @@ export const WENDELL_JSON = {
   multiclasse: [],
   specie: "Halfling",
   subspecie: "Piedelesto",
-  allineamento: "Buono Caotico",
+  allineamento: "Caotico Buono",
   versione: "2014",
   livello: 6,
   pe: 0,

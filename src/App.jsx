@@ -1928,7 +1928,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.64';
+const APP_VERSION = '4.0.65';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2146,6 +2146,34 @@ function loadState() {
         if (s && /vaelion/i.test(s.nome || '') && Array.isArray(s.incantesimiLista)) {
           const nTru = s.incantesimiLista.filter((x) => x.livello === 0 && !x.bonus).length;
           if (nTru === 5 && (s.maxTrucchetti || 0) < 5) s.maxTrucchetti = 5;
+        }
+      }
+      // Normalizza allineamenti invertiti (es. Wendell "Buono Caotico" → "Caotico Buono")
+      {
+        const mappaAllineamenti = {
+          'buono caotico': 'Caotico Buono',
+          'buono legale': 'Legale Buono',
+          'buono neutrale': 'Neutrale Buono',
+          'caotico buono': 'Caotico Buono',
+          'legale buono': 'Legale Buono',
+          'neutrale buono': 'Neutrale Buono',
+          'caotico neutrale': 'Caotico Neutrale',
+          'legale neutrale': 'Legale Neutrale',
+          'neutrale': 'Neutrale',
+          'caotico malvagio': 'Caotico Malvagio',
+          'legale malvagio': 'Legale Malvagio',
+          'neutrale malvagio': 'Neutrale Malvagio',
+          'malvagio caotico': 'Caotico Malvagio',
+          'malvagio legale': 'Legale Malvagio',
+          'malvagio neutrale': 'Neutrale Malvagio',
+        };
+        for (const k of Object.keys(roster.personaggi)) {
+          const s = roster.personaggi[k];
+          if (!s?.allineamento) continue;
+          const norm = String(s.allineamento).trim().toLowerCase();
+          if (mappaAllineamenti[norm] && s.allineamento !== mappaAllineamenti[norm]) {
+            s.allineamento = mappaAllineamenti[norm];
+          }
         }
       }
 

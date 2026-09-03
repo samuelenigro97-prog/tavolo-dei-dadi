@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.65',
+    voci: {
+      it: [
+        'Fix Wendell Allineamento: "Buono Caotico" corretto in "Caotico Buono" + normalizzazione automatica per tutte le schede esistenti.',
+      ],
+      en: [
+        'Fix Wendell Alignment: "Buono Caotico" corrected to "Caotico Buono" with auto-normalization for existing sheets.',
+      ],
+    },
+  },
+  {
     versione: '4.0.64',
     voci: {
       it: [
