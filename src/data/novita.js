@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.75',
+    voci: {
+      it: [
+        'Fix Guanti Equip: equipaggiare i Guanti ora aggiunge automaticamente la sintonia e la freccia FOR → 19 appare subito.',
+      ],
+      en: [
+        'Fix Gauntlets Equip: equipping Gauntlets now auto-adds attunement and arrow STR → 19 shows immediately.',
+      ],
+    },
+  },
+  {
     versione: '4.0.74',
     voci: {
       it: [

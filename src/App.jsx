@@ -1928,7 +1928,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.74';
+const APP_VERSION = '4.0.75';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -16591,9 +16591,21 @@ export default function App() {
                   } else {
                     newAttacchi = newAttacchi.filter((a) => a.nome.toLowerCase() !== o.nome.toLowerCase());
                   }
+                  // 4) Oggetti con sintonia (es. Guanti FOR 19): equipaggiando aggiungi in sintonia se richiesto
+                  let nuovaSintonia = Array.isArray(scheda.sintonia) ? [...scheda.sintonia] : [];
+                  const nomeNorm = String(o.nome || '').toLowerCase();
+                  const inSintoniaIdx = nuovaSintonia.findIndex((s) => String(s).toLowerCase().includes(nomeNorm) || nomeNorm.includes(String(s).toLowerCase()));
+                  if (checked && o.richiedeSintonia && o.effettoMeccanico && inSintoniaIdx === -1) {
+                    if (nuovaSintonia.length < 3) nuovaSintonia.push(o.nome);
+                    else nuovaSintonia[2] = o.nome;
+                  } else if (!checked && inSintoniaIdx !== -1) {
+                    nuovaSintonia.splice(inSintoniaIdx, 1);
+                  }
+                  const sintoniaPatch = o.effettoMeccanico && o.richiedeSintonia ? { sintonia: nuovaSintonia } : {};
                   aggiorna({
                     inventario: inv.map((x) => (x.id === o.id ? { ...x, equip: checked } : x)),
-                    attacchi: newAttacchi
+                    attacchi: newAttacchi,
+                    ...sintoniaPatch,
                   });
                 };
                 const addItem = (nome) => {
