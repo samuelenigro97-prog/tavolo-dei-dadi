@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.78',
+    voci: {
+      it: [
+        'Sync Semplificato: un solo tasto per sync (ultimo), animazione cloud al posto della spunta e Home standalone.',
+      ],
+      en: [
+        'Sync Simplified: single sync button (last), cloud animation instead of checkmark and standalone Home.',
+      ],
+    },
+  },
+  {
     versione: '4.0.77',
     voci: {
       it: [

@@ -1928,7 +1928,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.77';
+const APP_VERSION = '4.0.78';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7706,9 +7706,8 @@ export default function App() {
                       <button style={styles.buttonMini} onClick={() => navigator.clipboard?.writeText(formattaCodiceSync(codiceSync))}>📋</button>
                     </div>
                     {ultimoSyncCodice && <div style={{ ...styles.detail, fontSize: 11, marginBottom: 8 }}>{lingua === 'en' ? 'Last sync:' : 'Ultimo salvataggio:'} {ultimoSyncCodice}</div>}
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button style={{ ...styles.button, flex: 1 }} onClick={caricaDaCodiceSync}>{t('cloud.carica_ora')}</button>
-                      <button style={styles.buttonMini} onClick={disattivaSyncCodice}>{t('cloud.disattiva')}</button>
+                    <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                      <button style={{ ...styles.button, flex: 1 }} onClick={disattivaSyncCodice}>{t('cloud.disattiva')}</button>
                     </div>
                   </>
                 ) : (
@@ -7716,7 +7715,6 @@ export default function App() {
                     <p style={{ ...styles.detail, fontSize: 12, marginTop: 0, marginBottom: 8, lineHeight: 1.5 }}>
                       {t('cloud.crea_desc')}
                     </p>
-                    <button style={{ ...styles.buttonPrimary, width: '100%', marginBottom: 10 }} onClick={creaCodiceSync}>{t('cloud.crea_btn')}</button>
                     <div style={{ display: 'flex', gap: 6 }}>
                       <input
                         type="text"
@@ -7732,8 +7730,9 @@ export default function App() {
                 )}
 
                 {syncCodiceStatus.text && (
-                  <div style={{ marginTop: 12, padding: 8, borderRadius: 6, background: syncCodiceStatus.type === 'error' ? 'rgba(255,0,0,0.1)' : syncCodiceStatus.type === 'success' ? 'rgba(0,255,0,0.1)' : 'rgba(255,255,255,0.05)', color: syncCodiceStatus.type === 'error' ? C.red : syncCodiceStatus.type === 'success' ? C.green : C.goldDark, fontSize: 12, textAlign: 'center' }}>
-                    {syncCodiceStatus.text}
+                  <div style={{ marginTop: 12, padding: 8, borderRadius: 6, background: syncCodiceStatus.type === 'error' ? 'rgba(255,0,0,0.1)' : syncCodiceStatus.type === 'success' ? 'rgba(0,255,0,0.1)' : 'rgba(255,255,255,0.05)', color: syncCodiceStatus.type === 'error' ? C.red : syncCodiceStatus.type === 'success' ? C.green : C.goldDark, fontSize: 12, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                    {syncCodiceStatus.type === 'success' ? <span className="cloud-spinner" style={{ width: 14, height: 14, border: `2px solid ${C.green}`, borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block' }} /> : null}
+                    <span>{syncCodiceStatus.text.replace('✅ ', '')}</span>
                   </div>
                 )}
               </div>
@@ -11198,8 +11197,8 @@ export default function App() {
                     gap: 6,
                   }}
                 >
-                  {/* Sinistra su Desktop: Solo Brand */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, userSelect: 'none', flexShrink: 0 }}>
+                  {/* Sinistra su Desktop: Home standalone, non dentro la barra laterale */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, userSelect: 'none', flexShrink: 0, alignSelf: 'center' }}>
                     <span style={{ fontSize: 18, lineHeight: 1 }}>🎲</span>
                     <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 16.5, fontWeight: 800, color: 'var(--c-title)', letterSpacing: 0.5, whiteSpace: 'nowrap', transition: 'color 0.2s ease', display: 'inline-flex', alignItems: 'center', gap: 2 }}>
                       Tavolo dei Dadi
