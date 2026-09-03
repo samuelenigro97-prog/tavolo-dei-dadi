@@ -1928,7 +1928,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.70';
+const APP_VERSION = '4.0.71';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3319,14 +3319,67 @@ export default function App() {
   const [chiusoBannerAggiornamento, setChiusoBannerAggiornamento] = useState(false);
   useEffect(() => {
     let attivo = true;
-    caricaImmaginiRoster(roster).then((conImmagini) => {
+    caricaImmaginiRoster(roster).then(async (conImmagini) => {
       if (!attivo) return;
-      const aggiunte = Object.keys(conImmagini.personaggi || {}).some((id) => {
+      let daAggiornare = { ...conImmagini, personaggi: { ...conImmagini.personaggi } };
+      let cambiato = false;
+      // Recupera immagini orfane da IndexedDB per PG senza ritratto (dopo deduplica)
+      try {
+        const db = await new Promise((res, rej) => {
+          const req = indexedDB.open('tavolo-dei-dadi-immagini', 1);
+          req.onsuccess = () => res(req.result);
+          req.onerror = () => rej(req.error);
+        });
+        const keys = await new Promise((res) => {
+          const tx = db.transaction('personaggi', 'readonly');
+          const store = tx.objectStore('personaggi');
+          const r = store.getAllKeys();
+          r.onsuccess = () => res(r.result || []);
+          r.onerror = () => res([]);
+        });
+        for (const id of Object.keys(daAggiornare.personaggi)) {
+          const pg = daAggiornare.personaggi[id];
+          if (pg?.ritratto && !String(pg.ritratto).startsWith('data:image/svg')) continue;
+          const nomeNorm = String(pg?.nome || '').trim().toLowerCase();
+          if (!nomeNorm) continue;
+          for (const k of keys) {
+            const ks = String(k);
+            if (!ks.endsWith(':ritratto')) continue;
+            const idOrig = ks.slice(0, -9);
+            if (daAggiornare.personaggi[idOrig]) continue; // già assegnato
+            // prova a caricare l'immagine orfana e verifica se il nome corrisponde (cerca snapshot)
+            const img = await new Promise((res) => {
+              const tx2 = db.transaction('personaggi', 'readonly');
+              const r2 = tx2.objectStore('personaggi').get(k);
+              r2.onsuccess = () => res(r2.result || '');
+              r2.onerror = () => res('');
+            });
+            if (!img || String(img).startsWith('data:image/svg') || String(img).length < 1000) continue;
+            // euristica: se l'id orfano conteneva parte del nome o se snapshot conferma
+            try {
+              const snapsRaw = localStorage.getItem('scheda-interattiva:snapshots');
+              if (snapsRaw) {
+                const snaps = JSON.parse(snapsRaw);
+                const match = snaps.some((s) => {
+                  const cand = s?.roster?.personaggi?.[idOrig];
+                  return cand && String(cand.nome || '').trim().toLowerCase() === nomeNorm && cand.ritratto && String(cand.ritratto).length > 1000;
+                });
+                if (!match) continue;
+              }
+            } catch {}
+            daAggiornare.personaggi[id] = { ...pg, ritratto: img };
+            cambiato = true;
+            break;
+          }
+        }
+        db.close();
+      } catch {}
+      const aggiunte = Object.keys(daAggiornare.personaggi || {}).some((id) => {
         const prima = roster.personaggi?.[id] || {};
-        const dopo = conImmagini.personaggi?.[id] || {};
+        const dopo = daAggiornare.personaggi?.[id] || {};
         return (!prima.ritratto && dopo.ritratto) || (!prima.mappaCampagna && dopo.mappaCampagna);
       });
-      if (aggiunte) setRoster(conImmagini);
+      if (aggiunte || cambiato) setRoster(daAggiornare);
     }).catch(() => { /* fallback localStorage per browser senza IndexedDB */ });
     return () => { attivo = false; };
     // Il recupero dal database immagini va eseguito una sola volta all'avvio.

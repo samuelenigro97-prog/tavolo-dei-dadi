@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.71',
+    voci: {
+      it: [
+        'Fix P.E. Teorico & Immagini Orfane: livello teorico mai sotto attuale, recupero immagini perse anche da IndexedDB orfano per qualsiasi PG.',
+      ],
+      en: [
+        'Fix XP Theoretical & Orphan Images: theoretical level never below actual, recovery of orphaned portraits from IndexedDB for any character.',
+      ],
+    },
+  },
+  {
     versione: '4.0.70',
     voci: {
       it: [

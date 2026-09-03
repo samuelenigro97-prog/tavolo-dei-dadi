@@ -1159,7 +1159,7 @@ export function dettagliEsperienza(pe, livello = 1) {
   const puoSalire = liv < 20 && peAttuali >= peProssimoLivello;
   const peMancanti = Math.max(0, peProssimoLivello - peAttuali);
 
-  // Calcola quale livello teorico raggiungerebbe con questi PE
+  // Calcola quale livello teorico raggiungerebbe con questi PE — mai sotto il livello attuale (evita Liv.1 con pe 0 ma liv 10)
   let livelloTeorico = 1;
   for (let l = 20; l >= 1; l--) {
     if (peAttuali >= PE_PER_LIVELLO[l]) {
@@ -1167,6 +1167,7 @@ export function dettagliEsperienza(pe, livello = 1) {
       break;
     }
   }
+  if (peAttuali < peMinLivello) livelloTeorico = Math.max(livelloTeorico, liv);
 
   return {
     livello: liv,
