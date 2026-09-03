@@ -1928,7 +1928,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.68';
+const APP_VERSION = '4.0.70';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2117,21 +2117,28 @@ function loadState() {
           }
         }
       }
-      // Fix Vaelion: guanti sempre equipaggiati + sintonia
+      // Fix Vaelion: guanti sempre equipaggiati + sintonia (gestisce sia Forza che Potere Orchesco)
       for (const k of Object.keys(roster.personaggi)) {
         const s = roster.personaggi[k];
         if (s && /vaelion/i.test(s.nome || '') && Array.isArray(s.inventario)) {
           for (const o of s.inventario) {
-            if (/guanti.*forza.*orchesca/i.test(o.nome || '')) {
+            if (/guanti/i.test(o.nome || '')) {
               o.equip = true;
               o.richiedeSintonia = true;
               if (!o.effettoMeccanico) o.effettoMeccanico = 'forza_impostata_19';
+              // normalizza nome a Forza per coerenza con VAELION_JSON
+              if (/potere/i.test(o.nome || '')) o.nome = 'Guanti della Forza Orchesca';
             }
           }
-          if (Array.isArray(s.sintonia) && !s.sintonia.some((x) => /guanti/i.test(x))) {
-            if (s.sintonia.length < 3) s.sintonia.push('Guanti della Forza Orchesca');
-            else s.sintonia[2] = 'Guanti della Forza Orchesca';
-          } else if (!Array.isArray(s.sintonia)) {
+          if (Array.isArray(s.sintonia)) {
+            const idx = s.sintonia.findIndex((x) => /guanti/i.test(x));
+            if (idx === -1) {
+              if (s.sintonia.length < 3) s.sintonia.push('Guanti della Forza Orchesca');
+              else s.sintonia[2] = 'Guanti della Forza Orchesca';
+            } else if (!/forza/i.test(s.sintonia[idx] || '')) {
+              s.sintonia[idx] = 'Guanti della Forza Orchesca';
+            }
+          } else {
             s.sintonia = ['Guanti della Forza Orchesca'];
           }
         }
@@ -11146,9 +11153,9 @@ export default function App() {
                   {/* Sinistra su Desktop: Solo Brand */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, userSelect: 'none', flexShrink: 0 }}>
                     <span style={{ fontSize: 18, lineHeight: 1 }}>🎲</span>
-                    <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 16.5, fontWeight: 800, color: 'var(--c-title)', letterSpacing: 0.5, whiteSpace: 'nowrap', transition: 'color 0.2s ease', display: 'inline-flex', alignItems: 'baseline', gap: 4 }}>
+                    <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 16.5, fontWeight: 800, color: 'var(--c-title)', letterSpacing: 0.5, whiteSpace: 'nowrap', transition: 'color 0.2s ease', display: 'inline-flex', alignItems: 'center', gap: 2 }}>
                       Tavolo dei Dadi
-                      <span className="app-version" style={{ fontSize: 8.5, color: C.inkDim, opacity: 0.75, fontWeight: 600, fontVariantNumeric: 'tabular-nums', letterSpacing: 0.3, whiteSpace: 'nowrap', verticalAlign: 'baseline' }}>
+                      <span className="app-version" style={{ fontSize: 8.5, color: C.inkDim, opacity: 0.75, fontWeight: 600, fontVariantNumeric: 'tabular-nums', letterSpacing: 0.3, whiteSpace: 'nowrap', lineHeight: 1, transform: 'translateY(1px)' }}>
                         v{APP_VERSION}
                       </span>
                     </span>

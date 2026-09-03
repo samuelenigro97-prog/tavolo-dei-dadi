@@ -12,6 +12,8 @@
 export function posizionePopover(r, vista = { innerWidth: 1024, innerHeight: 768 }) {
   const margine = 8;
   const destra = Math.max(margine, vista.innerWidth - r.right);
+  // Header: sempre sotto (r.top < 80) per evitare salto sopra→sotto
+  if (r.top < 80) return { destra, top: r.bottom + 4 };
   const spazioSotto = vista.innerHeight - r.bottom;
   return spazioSotto > 110
     ? { destra, top: r.bottom + 4 }

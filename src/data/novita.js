@@ -5,6 +5,28 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.70',
+    voci: {
+      it: [
+        'Nuvoletta Header Fissa: tooltip sezioni sempre sotto il tasto, senza salto sopra→sotto.',
+      ],
+      en: [
+        'Header Tooltip Fixed: section tooltips always below button, no jump above→below.',
+      ],
+    },
+  },
+  {
+    versione: '4.0.69',
+    voci: {
+      it: [
+        'Fix Guanti FOR 19 & Immagini: Guanti ora riconosciuti anche come Potere Orchesco con freccia → 19 sempre visibile, recupero immagini orfane per qualsiasi PG.',
+      ],
+      en: [
+        'Fix Gauntlets STR 19 & Images: Gauntlets now recognized as Potere Orchesco with arrow → 19, recovery of orphaned portraits for any character.',
+      ],
+    },
+  },
+  {
     versione: '4.0.68',
     voci: {
       it: [
