@@ -1928,7 +1928,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.71';
+const APP_VERSION = '4.0.72';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -6446,11 +6446,11 @@ export default function App() {
   const novitaNonLette = novitaViste !== ultimaVersioneNovita();
   const daNotificare = nAvvisi > 0 || novitaNonLette || !!nuovaVersione;
   const statoSync = (() => {
-    if (sincronizzando) return { label: lingua === 'en' ? 'Syncing…' : 'Sincronizzo…', color: C.goldDark, bg: 'rgba(201,162,39,0.18)', border: C.goldDark, icon: '🔄' };
-    if (typeof navigator !== 'undefined' && !navigator.onLine) return { label: 'Offline', color: C.red, bg: 'rgba(231,76,60,0.12)', border: C.red, icon: '🔴' };
+    if (sincronizzando) return { label: lingua === 'en' ? 'Syncing…' : 'Sincronizzo…', color: C.goldDark, bg: 'rgba(201,162,39,0.18)', border: C.goldDark, icon: '☁️' };
+    if (typeof navigator !== 'undefined' && !navigator.onLine) return { label: 'Offline', color: C.red, bg: 'rgba(231,76,60,0.12)', border: C.red, icon: '☁️' };
     const ok = (cloudStatus?.type === 'success' && String(cloudStatus.text).includes('Sincronizzato')) || (syncCodiceStatus?.type === 'success' && String(syncCodiceStatus.text).includes('Sincronizzato'));
-    if (ok) return { label: lingua === 'en' ? 'Live' : 'In tempo reale', color: '#2e9d4d', bg: 'rgba(46,157,77,0.12)', border: '#2e9d4d', icon: '🟢' };
-    return { label: lingua === 'en' ? 'Local' : 'Locale', color: C.goldDark, bg: 'rgba(201,162,39,0.12)', border: C.goldDark, icon: '🟠' };
+    if (ok) return { label: lingua === 'en' ? 'Live' : 'In tempo reale', color: '#2e9d4d', bg: 'rgba(46,157,77,0.12)', border: '#2e9d4d', icon: '☁️' };
+    return { label: lingua === 'en' ? 'Local' : 'Locale', color: C.goldDark, bg: 'rgba(201,162,39,0.12)', border: C.goldDark, icon: '☁️' };
   })();
 
   function calcolaDettaglioCorrezione(r, pg, lang = lingua) {
@@ -11301,28 +11301,26 @@ export default function App() {
                       >
                         <span className={daNotificare ? 'icona-campanello' : ''}>🔔</span>
                       </button>
-                      <div
+                      <button
                         title={`Sync: ${statoSync.label} — click per aprire Cloud`}
                         onClick={() => setMostraMenu(true)}
                         style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 4,
-                          fontSize: 10.5,
-                          fontWeight: 700,
+                          ...btnAzione,
                           color: statoSync.color,
                           background: statoSync.bg,
                           border: `1px solid ${statoSync.border}`,
                           borderRadius: 6,
                           padding: '2px 6px',
                           cursor: 'pointer',
-                          whiteSpace: 'nowrap',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: 13,
                           marginLeft: 2,
                         }}
                       >
-                        <span>{statoSync.icon}</span>
-                        <span>{statoSync.label}</span>
-                      </div>
+                        <span>☁️</span>
+                      </button>
                       <button
                         style={btnAzione}
                         title={lingua === 'it' ? 'Cambia in inglese' : 'Switch to Italian'}

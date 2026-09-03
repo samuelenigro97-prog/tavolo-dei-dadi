@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.72',
+    voci: {
+      it: [
+        'Sync Cloud Icona Colorata: rimosso testo Locale, resta solo ☁️ con bordo colorato (verde In tempo reale, giallo Locale, rosso Offline) come campanello notifiche.',
+      ],
+      en: [
+        'Sync Cloud Colored Icon: removed Locale text, only ☁️ with colored border (green Live, yellow Local, red Offline) like notification bell.',
+      ],
+    },
+  },
+  {
     versione: '4.0.71',
     voci: {
       it: [
