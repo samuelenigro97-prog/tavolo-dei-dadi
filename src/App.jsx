@@ -1928,7 +1928,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.61';
+const APP_VERSION = '4.0.62';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2138,6 +2138,14 @@ function loadState() {
         const s = roster.personaggi[k];
         if (s && /vaelion/i.test(s.nome || '') && s.versione === '2024') {
           s.versione = '2014';
+        }
+      }
+      // Fix Vaelion trucchetti 5→4 alert: ora 5 tru (Folata inclusa) → max 5
+      for (const k of Object.keys(roster.personaggi)) {
+        const s = roster.personaggi[k];
+        if (s && /vaelion/i.test(s.nome || '') && Array.isArray(s.incantesimiLista)) {
+          const nTru = s.incantesimiLista.filter((x) => x.livello === 0 && !x.bonus).length;
+          if (nTru === 5 && (s.maxTrucchetti || 0) < 5) s.maxTrucchetti = 5;
         }
       }
 
@@ -7301,7 +7309,7 @@ export default function App() {
                   onClick={() => { setMostraMenu(false); setTimeout(() => apriNotifiche(), 50); }}
                   title={t('notifiche.titolo')}
                 >
-                  <span>🔔</span> <span>{t('notifiche.titolo_breve')}{controlliAttivi.length > 0 ? ` (${controlliAttivi.length})` : novitaNonLette ? ' (!)' : ''}</span>
+                  <span>🔔</span> <span>{t('notifiche.titolo_breve')}{novitaNonLette ? ' (!)' : ''}</span>
                 </button>
                 <button
                   style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
@@ -9962,7 +9970,7 @@ export default function App() {
                       <div style={{ border: `1px solid ${certi ? C.red : C.gold}`, borderRadius: 8, padding: '8px 10px', background: certi ? 'color-mix(in srgb, var(--c-panel) 88%, #c83c3c)' : 'color-mix(in srgb, var(--c-panel) 88%, #c88c14)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 6 }}>
                           <div style={{ fontSize: 12.5, color: C.ink, fontWeight: 700 }}>
-                            ⚠️ {controlliAttivi.length} {controlliAttivi.length === 1 ? (lingua === 'en' ? 'thing to check' : 'cosa da verificare') : (lingua === 'en' ? 'things to check' : 'cose da verificare')}
+                            ⚠️ {lingua === 'en' ? 'Things to check' : 'Cose da verificare'}
                           </div>
                           {haCorreggibili && (
                             <button
@@ -11165,11 +11173,6 @@ export default function App() {
                         onClick={apriNotifiche}
                       >
                         <span className={daNotificare ? 'icona-campanello' : ''}>🔔</span>
-                        {daNotificare && (
-                          <span className="avvisi-pallino" aria-label={`${nAvvisi} notifiche`}>
-                            {nuovaVersione ? '★' : (controlliAttivi.length > 0 ? controlliAttivi.length : '!')}
-                          </span>
-                        )}
                       </button>
                       <button
                         style={btnAzione}
@@ -11325,9 +11328,7 @@ export default function App() {
                       <span style={{ fontSize: 13, lineHeight: 1 }}>☰</span>
                       <span>Menu</span>
                       {daNotificare && (
-                        <span className="avvisi-pallino" style={{ top: -3, right: -3 }}>
-                          {controlliAttivi.length > 0 ? controlliAttivi.length : '!'}
-                        </span>
+                        <span className="avvisi-pallino" style={{ top: -3, right: -3 }} aria-label="Notifiche" />
                       )}
                     </button>
                   </div>

@@ -167,6 +167,7 @@ export const VAELION_JSON = {
   classe: "Druido",
   sottoclasse: "Circolo della Luna",
   livello: 10,
+  maxTrucchetti: 5,
   background: "Eremita",
   specie: "Elfo dei Boschi",
   taglia: "Media",

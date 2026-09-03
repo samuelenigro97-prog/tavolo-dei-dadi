@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.62',
+    voci: {
+      it: [
+        'Notifiche solo Campanello & Fix Vaelion Trucchetti: rimosso numero dalle notifiche (resta solo 🔔 animata), Vaelion ora 5 trucchetti senza alert.',
+      ],
+      en: [
+        'Notifications Bell Only & Vaelion Cantrips Fix: removed count from notifications (only 🔔 animated), Vaelion now 5 cantrips without alert.',
+      ],
+    },
+  },
+  {
     versione: '4.0.61',
     voci: {
       it: [
