@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.64',
+    voci: {
+      it: [
+        'Colori Classe Ridisegnati: Guerriero rosso/bronzo, Ladro nero, Monaco zafferano/bianco, Stregone viola, Warlock nero/viola, Artefice rame/bronzo, Druido verde-marrone e Ranger verde foresta.',
+      ],
+      en: [
+        'Class Colors Redesigned: Fighter red/bronze, Rogue black, Monk saffron/white, Sorcerer purple, Warlock black/purple, Artificer copper/bronze, Druid green-brown and Ranger forest green.',
+      ],
+    },
+  },
+  {
     versione: '4.0.63',
     voci: {
       it: [
