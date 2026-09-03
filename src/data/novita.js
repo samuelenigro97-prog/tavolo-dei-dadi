@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.66',
+    voci: {
+      it: [
+        'Ordine Alfabetico Completo: tutti i sottomenu ora in ordine A-Z, incluse le sottoclassi nella sezione multiclasse.',
+      ],
+      en: [
+        'Full Alphabetical Order: all dropdowns now A-Z, including subclasses in multiclass section.',
+      ],
+    },
+  },
+  {
     versione: '4.0.65',
     voci: {
       it: [

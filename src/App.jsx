@@ -544,12 +544,12 @@ function TendinaLingue({ valoreLingue, onToggleLingua }) {
 function sottoclassiPerClasse(classe, manuali = null) {
   const c = coloreClasse(classe);
   const tutte = (c && SOTTOCLASSI_5E[c.match[0]]) || [];
-  if (!manuali) return tutte;
-  return tutte.filter((s) => {
+  const filtrate = !manuali ? tutte : tutte.filter((s) => {
     const f = SOTTOCLASSI_FONTI[s];
     if (!f) return true;
     return manuali[f] !== false;
   });
+  return [...filtrate].sort((a, b) => a.localeCompare(b, 'it'));
 }
 
 // Privilegi delle sottoclassi per livello (regole 2024). I nomi seguono le
@@ -1928,7 +1928,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.65';
+const APP_VERSION = '4.0.66';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
