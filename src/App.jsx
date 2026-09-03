@@ -1928,7 +1928,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.75';
+const APP_VERSION = '4.0.76';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -17274,8 +17274,19 @@ export default function App() {
               })()}
               {(() => {
                 // Oggetti magici sintonizzati: massimo 3 (regola 5e) → 3 slot compilabili.
-                const arr = Array.isArray(scheda.sintonia) ? scheda.sintonia : (scheda.sintonia ? [scheda.sintonia] : []);
-                const slots = [String(arr[0] || ''), String(arr[1] || ''), String(arr[2] || '')];
+                const attunatiEquipaggiati = (Array.isArray(scheda.inventario) ? scheda.inventario : []).filter((o) => o?.equip && o?.effettoMeccanico && o?.richiedeSintonia).map((o) => o.nome).slice(0, 3);
+                const arrBase = Array.isArray(scheda.sintonia) ? scheda.sintonia : (scheda.sintonia ? [scheda.sintonia] : []);
+                // Allinea automaticamente: se un oggetto è equipaggiato e richiede sintonia ma non è nei 3 slot, lo inserisce nel primo libero
+                const arrEffettiva = (() => {
+                  const a = [String(arrBase[0] || ''), String(arrBase[1] || ''), String(arrBase[2] || '')];
+                  for (const nome of attunatiEquipaggiati) {
+                    if (a.some((s) => String(s).toLowerCase() === String(nome).toLowerCase())) continue;
+                    const idxLibero = a.findIndex((s) => !String(s || '').trim());
+                    if (idxLibero !== -1) a[idxLibero] = nome;
+                  }
+                  return a;
+                })();
+                const slots = [String(arrEffettiva[0] || ''), String(arrEffettiva[1] || ''), String(arrEffettiva[2] || '')];
                 const setSlot = (i, v) => { const n = [...slots]; n[i] = v; aggiorna({ sintonia: n }); };
                 return (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20, alignItems: 'stretch', marginTop: 24, paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
@@ -17288,7 +17299,7 @@ export default function App() {
                             value={slots[i]}
                             onChange={(e) => setSlot(i, e.target.value)}
                             placeholder={t("equip.sintonia_ph")}
-                            style={{ ...styles.inlineInput, flex: 1, minWidth: 0, padding: '6px 10px', fontSize: 13 }}
+                            style={{ ...styles.inlineInput, flex: 1, minWidth: 0, padding: '6px 10px', fontSize: 13, background: attunatiEquipaggiati.some((n) => String(n).toLowerCase() === String(slots[i] || '').toLowerCase()) ? 'rgba(46,157,77,0.08)' : undefined, borderColor: attunatiEquipaggiati.some((n) => String(n).toLowerCase() === String(slots[i] || '').toLowerCase()) ? '#2e9d4d' : undefined }}
                           />
                         </div>
                       ))}

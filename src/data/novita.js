@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.76',
+    voci: {
+      it: [
+        'Sintonia Auto-Allineata: gli oggetti magici equipaggiati con sintonia appaiono subito nei 3 slot con bordo verde, senza scrittura manuale.',
+      ],
+      en: [
+        'Attunement Auto-Aligned: equipped magic items requiring attunement now auto-appear in the 3 slots with green border.',
+      ],
+    },
+  },
+  {
     versione: '4.0.75',
     voci: {
       it: [
