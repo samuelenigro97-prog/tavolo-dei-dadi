@@ -50,7 +50,7 @@ export const styles = {
     textTransform: 'uppercase',
     marginTop: 1,
   },
-  moduloCampo: { border: `1px solid ${C.border}`, borderRadius: 6, background: C.panelLight, minHeight: 22, padding: '3px 6px', width: '100%', display: 'flex', alignItems: 'center', boxSizing: 'border-box' },
+  moduloCampo: { border: `1px solid ${C.border}`, borderRadius: 6, background: 'transparent', minHeight: 22, padding: '3px 6px', width: '100%', display: 'flex', alignItems: 'center', boxSizing: 'border-box' },
   ritratto: {
     width: 132,
     height: 132,

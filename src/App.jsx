@@ -1928,7 +1928,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.55';
+const APP_VERSION = '4.0.56';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7793,7 +7793,7 @@ export default function App() {
                 {/* Scheda Riepilogo Livello e Barra Progresso */}
                 <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
-                    <div>
+                    <div style={{ textAlign: 'center', flex: 1 }}>
                       <div style={{ fontSize: 11, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 }}>
                         {lingua === 'en' ? 'Current Level' : 'Livello Attuale'}
                       </div>
@@ -7801,7 +7801,7 @@ export default function App() {
                         {t('profilo.livello')} {livTotale}
                       </div>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
+                    <div style={{ textAlign: 'center', flex: 1 }}>
                       <div style={{ fontSize: 11, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 }}>
                         {lingua === 'en' ? 'Next Level Goal' : 'Prossimo Livello'}
                       </div>

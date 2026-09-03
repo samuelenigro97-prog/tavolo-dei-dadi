@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.56',
+    voci: {
+      it: [
+        'Tracciatore P.E. Allineato: livello attuale centrato nel riquadro di riepilogo per simmetria con il prossimo livello.',
+      ],
+      en: [
+        'XP Tracker Aligned: current level centered in summary card for symmetry with next level.',
+      ],
+    },
+  },
+  {
     versione: '4.0.55',
     voci: {
       it: [
