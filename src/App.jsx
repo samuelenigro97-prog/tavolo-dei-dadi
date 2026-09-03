@@ -1928,7 +1928,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.67';
+const APP_VERSION = '4.0.68';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2136,18 +2136,19 @@ function loadState() {
           }
         }
       }
-      // Recupera immagini perse (Vaelion) da snapshots se ritratto è SVG/vuoto
+      // Recupera immagini perse per QUALSIASI PG da snapshots se ritratto è SVG/vuoto
       for (const k of Object.keys(roster.personaggi)) {
         const s = roster.personaggi[k];
-        if (s && /vaelion/i.test(s.nome || '') && (!s.ritratto || String(s.ritratto).startsWith('data:image/svg'))) {
+        if (s && (!s.ritratto || String(s.ritratto).startsWith('data:image/svg'))) {
           try {
             const snapsRaw = localStorage.getItem('scheda-interattiva:snapshots');
             if (snapsRaw) {
               const snaps = JSON.parse(snapsRaw);
               for (const snap of snaps) {
-                const cand = snap?.roster?.personaggi?.[k] || Object.values(snap?.roster?.personaggi || {}).find((p) => /vaelion/i.test(p?.nome || ''));
+                const cand = snap?.roster?.personaggi?.[k] || Object.values(snap?.roster?.personaggi || {}).find((p) => String(p?.nome || '').trim().toLowerCase() === String(s.nome || '').trim().toLowerCase());
                 if (cand?.ritratto && !String(cand.ritratto).startsWith('data:image/svg') && String(cand.ritratto).length > 1000) {
                   s.ritratto = cand.ritratto;
+                  if (cand?.mappaCampagna && !s.mappaCampagna) s.mappaCampagna = cand.mappaCampagna;
                   break;
                 }
               }
@@ -2169,6 +2170,14 @@ function loadState() {
           const nTru = s.incantesimiLista.filter((x) => x.livello === 0 && !x.bonus).length;
           if (nTru === 5 && (s.maxTrucchetti || 0) < 5) s.maxTrucchetti = 5;
         }
+      }
+      // Allinea P.E. al livello per tutti i PG: se pe < soglia del livello, porta a soglia (evita barra livello 10 con 0 P.E.)
+      for (const k of Object.keys(roster.personaggi)) {
+        const s = roster.personaggi[k];
+        const liv = Math.max(1, Math.min(20, Number(s?.livello) || 1));
+        const peMin = PE_PER_LIVELLO[liv] || 0;
+        const peAtt = Number(s?.pe) || 0;
+        if (peAtt < peMin) s.pe = peMin;
       }
       // Normalizza allineamenti invertiti (es. Wendell "Buono Caotico" → "Caotico Buono")
       {
@@ -6376,6 +6385,13 @@ export default function App() {
   const nAvvisi = (avvisoBackup ? 1 : 0) + controlliAttivi.length;
   const novitaNonLette = novitaViste !== ultimaVersioneNovita();
   const daNotificare = nAvvisi > 0 || novitaNonLette || !!nuovaVersione;
+  const statoSync = (() => {
+    if (sincronizzando) return { label: lingua === 'en' ? 'Syncing…' : 'Sincronizzo…', color: C.goldDark, bg: 'rgba(201,162,39,0.18)', border: C.goldDark, icon: '🔄' };
+    if (typeof navigator !== 'undefined' && !navigator.onLine) return { label: 'Offline', color: C.red, bg: 'rgba(231,76,60,0.12)', border: C.red, icon: '🔴' };
+    const ok = (cloudStatus?.type === 'success' && String(cloudStatus.text).includes('Sincronizzato')) || (syncCodiceStatus?.type === 'success' && String(syncCodiceStatus.text).includes('Sincronizzato'));
+    if (ok) return { label: lingua === 'en' ? 'Live' : 'In tempo reale', color: '#2e9d4d', bg: 'rgba(46,157,77,0.12)', border: '#2e9d4d', icon: '🟢' };
+    return { label: lingua === 'en' ? 'Local' : 'Locale', color: C.goldDark, bg: 'rgba(201,162,39,0.12)', border: C.goldDark, icon: '🟠' };
+  })();
 
   function calcolaDettaglioCorrezione(r, pg, lang = lingua) {
     const isEn = lang === 'en';
@@ -11225,6 +11241,28 @@ export default function App() {
                       >
                         <span className={daNotificare ? 'icona-campanello' : ''}>🔔</span>
                       </button>
+                      <div
+                        title={`Sync: ${statoSync.label} — click per aprire Cloud`}
+                        onClick={() => setMostraMenu(true)}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          fontSize: 10.5,
+                          fontWeight: 700,
+                          color: statoSync.color,
+                          background: statoSync.bg,
+                          border: `1px solid ${statoSync.border}`,
+                          borderRadius: 6,
+                          padding: '2px 6px',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          marginLeft: 2,
+                        }}
+                      >
+                        <span>{statoSync.icon}</span>
+                        <span>{statoSync.label}</span>
+                      </div>
                       <button
                         style={btnAzione}
                         title={lingua === 'it' ? 'Cambia in inglese' : 'Switch to Italian'}
@@ -12148,8 +12186,8 @@ export default function App() {
                 </div>
 
                 <div className="profilo-anagrafica-campi" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {/* Riga 1: Sesso, Specie/Razza (larga), Taglia (compatta), Allineamento (stretta) */}
-                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.65fr 1.15fr 0.6fr 1.6fr', gap: 10, alignItems: 'end' }}>
+                  {/* Riga 1: Sesso (leggermente allargata), Specie/Razza (larga), Taglia (compatta), Allineamento (stretta) */}
+                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.75fr 1.15fr 0.6fr 1.5fr', gap: 10, alignItems: 'end' }}>
                     <CampoModulo label={t("profilo.sesso")}>
                       <select
                         value={scheda.sesso || ''}
@@ -14812,6 +14850,7 @@ export default function App() {
                           {liv >= 1 && slot && (
                             <span style={{ fontSize: 11, color: C.inkDim, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 4, padding: '1px 5px' }}>
                               Slot: <strong style={{ color: (slot.totale - (slot.spesi || 0)) > 0 ? C.goldDark : C.red }}>{Math.max(0, slot.totale - (slot.spesi || 0))}</strong>/<Editable value={slot.totale} tipo="numero" width={18} onChange={(v) => aggiornaSlot({ totale: Math.max(0, parseInt(v, 10) || 0) })} />
+                              {COSTO_SLOT_IN_PUNTI[liv] ? <span style={{ marginLeft: 4, fontSize: 10, opacity: 0.85 }}>· {COSTO_SLOT_IN_PUNTI[liv]}pt</span> : null}
                             </span>
                           )}
                           <span style={{ fontSize: 11, color: C.inkDim, opacity: 0.8 }}>
@@ -17228,7 +17267,7 @@ export default function App() {
                             </div>
                             <div title={t('monete.totale_tip', { n: numMonete })} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 7, minWidth: 0, fontSize: 12, color: C.goldDark, fontWeight: 700, textAlign: 'right', whiteSpace: 'nowrap' }}>
                               <IconaMonetaOro size={18} />
-                              <span>≈ {totMo.toFixed(2)} MO · {pesoMonete.toFixed(2)} kg</span>
+                              <span>{pesoMonete.toFixed(2)} kg</span>
                             </div>
                           </div>
                           </>

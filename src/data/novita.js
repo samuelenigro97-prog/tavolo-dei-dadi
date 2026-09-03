@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.0.68',
+    voci: {
+      it: [
+        'Sesso/Allineamento + Sync + Incantesimi + Monete + P.E./Immagini: sesso allargato e allineamento stretto, badge sync stile notifiche (verde/giallo/rosso), costo slot in punti accanto agli slot e toggle Rituale, monete solo peso totale, P.E. allineati al livello e immagini recuperate.',
+      ],
+      en: [
+        'Sex/Alignment + Sync + Spells + Coins + XP/Images: wider Sex and narrower Alignment, sync badge like notifications (green/yellow/red), slot cost in points next to slots and Ritual toggle, coins weight only, XP aligned and images recovered.',
+      ],
+    },
+  },
+  {
     versione: '4.0.67',
     voci: {
       it: [
