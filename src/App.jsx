@@ -3998,8 +3998,9 @@ export default function App() {
       return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
     };
     const tintaClasse = acc ? acc[modo] : t.gold;
-    const coloreGlow = mescola(t.bg, tintaClasse, scuroEff ? 0.26 : 0.17);
-    const glowClasse = `radial-gradient(135% 95% at 50% -14%, ${hexRgba(coloreGlow, scuroEff ? 0.18 : 0.12)}, transparent 60%)`;
+    const coloreGlow = mescola(t.bg, tintaClasse, scuroEff ? 0.30 : 0.17);
+    const glowClasse = `radial-gradient(135% 95% at 50% -14%, ${hexRgba(coloreGlow, scuroEff ? 0.25 : 0.14)}, transparent 62%)`;
+    const auraClasseSotto = `radial-gradient(90% 75% at 50% 105%, ${hexRgba(tintaClasse, scuroEff ? 0.22 : 0.08)}, transparent 72%)`;
     const ambra = `radial-gradient(70% 46% at 50% -2%, rgba(224,162,74,${scuroEff ? 0.13 : 0.06}), transparent 66%)`;
     const vignetta = `radial-gradient(116% 116% at 50% 42%, transparent 52%, ${mescola(t.bg, '#000000', scuroEff ? 0.42 : 0.13)} 100%)`;
     const sfondoAmbiente = presetDati.sfondo || '';
@@ -4015,7 +4016,7 @@ export default function App() {
     const imgLayer = conImmagine
       ? `url("${baseUrl}ambientazioni/${fileImg}") center center / cover no-repeat`
       : '';
-    return [sfondoAmbiente, glowClasse, ambra, vignetta, velo, imgLayer, t.bg]
+    return [sfondoAmbiente, glowClasse, auraClasseSotto, ambra, vignetta, velo, imgLayer, t.bg]
       .filter(Boolean)
       .join(', ');
   }, [tema, sistemaScuro, oraTick, classeAttiva, presetColori]);
@@ -4054,6 +4055,19 @@ export default function App() {
     set('--c-border', t.border); set('--c-ink', t.ink); set('--c-ink-dim', t.inkDim);
     set('--c-gold', t.gold); set('--c-gold-dark', t.goldDark); set('--c-red', t.red);
     set('--c-green', t.green); set('--c-title', t.title);
+
+    const tintaClasse = acc ? acc[modo] : t.gold;
+    const hexRgba = (hex, a) => {
+      const m = /^#?([0-9a-fA-F]{6})$/.exec(hex || '');
+      if (!m) return `rgba(0,0,0,${a})`;
+      const n = parseInt(m[1], 16);
+      return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+    };
+    const aura1 = hexRgba(tintaClasse, scuroEff ? 0.32 : 0.14);
+    const aura2 = hexRgba(tintaClasse, scuroEff ? 0.22 : 0.08);
+    const auraOmbra = `0 4px 22px -2px ${aura1}, 0 12px 34px -4px ${aura2}, 0 1px 3px rgba(0,0,0,${scuroEff ? 0.45 : 0.06})`;
+    set('--c-aura-color', tintaClasse);
+    set('--c-shadow-aura', auraOmbra);
 
     // Rimuovi sfondi inline e backgroundAttachment su body che causano repaint lag durante lo scroll
     document.body.style.background = 'transparent';
