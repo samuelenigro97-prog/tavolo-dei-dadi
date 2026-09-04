@@ -28,7 +28,8 @@ export const styles = {
     padding: 12,
     marginBottom: 8,
     boxSizing: 'border-box',
-    boxShadow: '0 1px 4px rgba(60,50,30,0.08)',
+    boxShadow: '0 1px 3px rgba(60,50,30,0.06), 0 4px 12px rgba(60,50,30,0.04)',
+    transition: 'box-shadow 0.2s ease, border-color 0.2s ease',
   },
   panelTitle: {
     margin: '0 0 12px',
@@ -119,17 +120,22 @@ export const styles = {
       animation: rolling ? 'd20-spin 0.5s linear infinite' : 'd20-settle 0.35s ease-out',
       userSelect: 'none',
       paddingTop: facce === 4 ? 6 : 0,
+      fontVariantNumeric: 'tabular-nums',
     };
   },
   badge: (color) => ({
-    display: 'inline-block',
-    padding: '2px 10px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    padding: '2px 8px',
     borderRadius: 12,
     border: `1px solid ${color}`,
     color,
-    fontSize: 13,
-    letterSpacing: 1,
-    marginLeft: 8,
+    fontSize: 12,
+    fontWeight: 600,
+    letterSpacing: 0.5,
+    marginLeft: 6,
+    fontVariantNumeric: 'tabular-nums',
+    background: `${color}12`,
   }),
   detail: { color: C.inkDim, fontSize: 13 },
   button: {
@@ -141,6 +147,7 @@ export const styles = {
     fontFamily: 'inherit',
     fontSize: 14,
     cursor: 'pointer',
+    transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
   },
   buttonPrimary: {
     padding: '8px 18px',
@@ -152,6 +159,8 @@ export const styles = {
     fontSize: 15,
     fontWeight: 'bold',
     cursor: 'pointer',
+    boxShadow: '0 2px 6px rgba(184, 134, 11, 0.25)',
+    transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
   },
   buttonDanger: {
     padding: '4px 10px',
@@ -162,6 +171,7 @@ export const styles = {
     fontFamily: 'inherit',
     fontSize: 12,
     cursor: 'pointer',
+    transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
   },
   buttonMini: {
     padding: '5px 9px',
@@ -174,6 +184,7 @@ export const styles = {
     lineHeight: 1,
     cursor: 'pointer',
     flexShrink: 0,
+    transition: 'all 0.12s ease',
   },
   buttonDado: (facce) => ({
     padding: '5px 10px',
@@ -185,6 +196,8 @@ export const styles = {
     fontSize: 14,
     fontWeight: 'bold',
     cursor: 'pointer',
+    boxShadow: `0 2px 6px ${COLORE_DADO[facce]}40`,
+    transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
   }),
   modeButton: (active) => ({
     padding: '5px 12px',
@@ -195,6 +208,7 @@ export const styles = {
     fontFamily: 'inherit',
     fontSize: 13,
     cursor: 'pointer',
+    transition: 'all 0.15s ease',
   }),
   vitalBox: {
     textAlign: 'center',
@@ -211,6 +225,8 @@ export const styles = {
     boxSizing: 'border-box',
     position: 'relative',
     overflow: 'hidden',
+    boxShadow: '0 1px 3px rgba(60,50,30,0.05)',
+    transition: 'transform 0.15s ease, box-shadow 0.15s ease',
   },
   vitalLabel: {
     fontSize: 12,
@@ -237,6 +253,7 @@ export const styles = {
     lineHeight: 1.15,
     flexWrap: 'wrap',
     width: '100%',
+    fontVariantNumeric: 'tabular-nums',
   },
   abilityBlock: {
     background: C.panel,
@@ -263,6 +280,8 @@ export const styles = {
     cursor: 'pointer',
     padding: '0 8px',
     borderRadius: 8,
+    fontVariantNumeric: 'tabular-nums',
+    transition: 'transform 0.1s ease, color 0.15s ease',
   },
   skillRow: (rollable) => ({
     display: 'flex',
@@ -272,6 +291,7 @@ export const styles = {
     borderRadius: 6,
     cursor: rollable ? 'pointer' : 'default',
     fontSize: 14,
+    transition: 'background-color 0.12s ease',
   }),
   dot: (livello) => ({
     width: 15,
@@ -288,6 +308,7 @@ export const styles = {
     color: livello === 3 ? '#d4af37' : livello === 2 ? '#3a7ca8' : livello === 1 ? '#3e9b4f' : C.inkDim,
     cursor: 'pointer',
     userSelect: 'none',
+    transition: 'transform 0.15s ease',
   }),
   editable: {
     borderBottom: `1px dashed ${C.inkDim}`,
@@ -325,8 +346,9 @@ export const styles = {
     textTransform: 'uppercase',
     padding: '5px 8px',
     borderBottom: `1px solid ${C.border}`,
+    fontVariantNumeric: 'tabular-nums',
   },
-  td: { padding: '7px 8px', borderBottom: `1px solid ${C.border}`, verticalAlign: 'middle' },
+  td: { padding: '7px 8px', borderBottom: `1px solid ${C.border}`, verticalAlign: 'middle', fontVariantNumeric: 'tabular-nums' },
   pip: (attivo, colore) => ({
     width: 12,
     height: 12,
@@ -336,6 +358,8 @@ export const styles = {
     transform: 'rotate(45deg)',
     border: `2px solid ${colore}`,
     background: attivo ? colore : 'transparent',
+    boxShadow: attivo ? `0 0 6px ${colore}88` : 'none',
+    transition: 'all 0.18s cubic-bezier(0.4, 0, 0.2, 1)',
     cursor: 'pointer',
   }),
 };
@@ -368,6 +392,8 @@ html, body {
   -webkit-text-size-adjust: 100%;
   max-width: 100vw;
   overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 body {
   -webkit-overflow-scrolling: touch;
@@ -379,6 +405,30 @@ body {
 * {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Numeri tabulari per allineamento perfetto e zero layout shift */
+.tabular-nums, input[type="number"], .badge, .pip, td[data-label="inv.qta"] {
+  font-variant-numeric: tabular-nums;
+  -moz-font-feature-settings: "tnum";
+  -webkit-font-feature-settings: "tnum";
+  font-feature-settings: "tnum";
+}
+
+/* Scrollbar personalizzate sottili a tema */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--c-border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--c-gold);
 }
 
 /* ===================== SISTEMA GRAFICO UNIFICATO =====================
@@ -413,13 +463,27 @@ select {
   cursor: pointer;
 }
 
-/* Bottoni: interazione coerente ovunque (focus da tastiera, hover, pressione).
-   Non tocchiamo i colori scelti inline: aggiungiamo solo il comportamento. */
-button { font-family: inherit; cursor: pointer; transition: filter 0.12s ease, transform 0.05s ease; }
+/* Bottoni: interazione coerente ovunque (focus da tastiera, hover, pressione morbida). */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  transition: filter 0.15s cubic-bezier(0.4, 0, 0.2, 1), transform 0.08s ease, box-shadow 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
 button:focus-visible { outline: 2px solid var(--c-gold); outline-offset: 1px; }
-button:not(:disabled):hover { filter: brightness(1.07); }
-button:not(:disabled):active { transform: translateY(1px); }
-button:disabled { cursor: not-allowed; opacity: 0.55; }
+button:not(:disabled):hover { filter: brightness(1.06); }
+button:not(:disabled):active { transform: scale(0.97); }
+button:disabled { cursor: not-allowed; opacity: 0.5; }
+
+/* Transizione morbida sulle righe delle tabelle */
+tbody tr {
+  transition: background-color 0.12s ease;
+}
+tbody tr:hover {
+  background-color: rgba(184, 134, 11, 0.04);
+}
+:root[data-tema="scuro"] tbody tr:hover {
+  background-color: rgba(201, 162, 39, 0.06);
+}
 /* ==================================================================== */
 /* sezioni collassabili: niente marcatore nativo, freccia che ruota */
 .sezione > summary::-webkit-details-marker { display: none; }

@@ -6711,11 +6711,11 @@ export default function App() {
 
       {info && (
         <div
-          style={{ position: 'fixed', inset: 0, zIndex: 3100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'rgba(0,0,0,0.45)' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 3100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(5px)', WebkitBackdropFilter: 'blur(5px)' }}
           onClick={() => setInfo(null)}
         >
           <div
-            style={{ ...styles.panel, maxWidth: 360, width: '100%', position: 'relative', boxShadow: '0 8px 30px rgba(0,0,0,0.4)' }}
+            style={{ ...styles.panel, maxWidth: 360, width: '100%', position: 'relative', boxShadow: '0 12px 35px rgba(0,0,0,0.4)', borderTop: `2px solid ${C.goldDark}` }}
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 }}>
@@ -6737,7 +6737,7 @@ export default function App() {
       {/* Modal Statblock Bestia Forma Selvatica */}
       {bestiaDettaglio && (
         <div
-          style={{ position: 'fixed', inset: 0, zIndex: 3150, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.65)' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 3150, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)', WebkitBackdropFilter: 'blur(5px)' }}
           onClick={() => setBestiaDettaglio(null)}
         >
           <div

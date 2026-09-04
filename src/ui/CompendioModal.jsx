@@ -248,12 +248,14 @@ export function CompendioModal({
         position: 'fixed',
         inset: 0,
         zIndex: 2600,
-        background: 'rgba(0, 0, 0, 0.7)',
-        backdropFilter: 'blur(3px)',
+        background: 'rgba(0, 0, 0, 0.65)',
+        backdropFilter: 'blur(5px)',
+        WebkitBackdropFilter: 'blur(5px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '16px',
+        animation: 'fadeIn 0.15s ease-out',
       }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onChiudi();
@@ -267,7 +269,8 @@ export function CompendioModal({
           maxHeight: '90vh',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.45)',
+          borderTop: `2px solid ${C.goldDark}`,
           padding: 0,
           overflow: 'hidden',
           borderRadius: 12,
