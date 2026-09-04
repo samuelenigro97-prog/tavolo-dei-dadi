@@ -3,9 +3,25 @@
 import { C, COLORE_DADO } from './tema.js';
 
 export const styles = {
+  ambientBg: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100vw',
+    height: '100vh',
+    zIndex: -1,
+    pointerEvents: 'none',
+    transform: 'translate3d(0, 0, 0)',
+    WebkitTransform: 'translate3d(0, 0, 0)',
+    backfaceVisibility: 'hidden',
+    WebkitBackfaceVisibility: 'hidden',
+    willChange: 'transform',
+  },
   app: {
     minHeight: '100vh',
-    background: 'transparent', // lo sfondo tematico è sul body (cambia con la classe)
+    background: 'transparent', // lo sfondo tematico vive nel layer fisso GPU
     color: C.ink,
     fontFamily: "Georgia, 'Times New Roman', serif",
     paddingTop: 'max(8px, env(safe-area-inset-top))',
@@ -384,10 +400,10 @@ export const GLOBAL_CSS = `
     --c-green: #7fb069; --c-title: #de8f88;
   }
 }
-html, body {
+html {
   margin: 0;
   padding: 0;
-  background: ${C.bg};
+  background: var(--c-bg, #f4f1ea);
   -webkit-text-size-adjust: 100%;
   max-width: 100vw;
   overflow-x: clip;
@@ -395,7 +411,31 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  max-width: 100vw;
+  overflow-x: clip;
   -webkit-overflow-scrolling: touch;
+}
+#ambient-bg-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform;
 }
 /* box-sizing coerente: padding e bordi non allargano mai gli elementi
    (evita che i pannelli con width:100% sbordino a destra) */

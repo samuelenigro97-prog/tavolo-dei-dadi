@@ -3967,8 +3967,56 @@ export default function App() {
     };
   }, []);
 
-  // scuro effettivo + tinta della classe → variabili CSS su :root
-  const classeAttiva = schedaSolaLettura?.classe || roster?.personaggi?.[roster?.attivo]?.classe;
+  // Sfondo atmosferico dell'ambientazione calcolato via useMemo
+  // Viene renderizzato in un elemento fisso dedicato (#ambient-bg-layer con GPU compositing)
+  // eliminando completamente qualsiasi vibrazione, flickering o repaint durante lo scroll.
+  const ambientBackgroundStyle = useMemo(() => {
+    const scuroEff =
+      tema === 'scuro' || (tema === 'auto' && (sistemaScuro || eNotte()));
+    const modo = scuroEff ? 'scuro' : 'chiaro';
+    const presetDati = PRESET_COLORI.find((p) => p.id === presetColori) || PRESET_COLORI[0];
+    const t = { ...BASE_TEMA[modo], ...presetDati[modo] };
+    const acc = coloreClasse(classeAttiva);
+    if (acc) {
+      const colore = acc[modo];
+      t.title = colore;
+      t.gold = colore;
+      t.goldDark = colore;
+      if (scuroEff) {
+        t.bg = mescola(t.bg, colore, 0.07);
+        t.panelLight = mescola(t.panelLight, colore, 0.1);
+      }
+      t.border = mescola(t.border, colore, 0.2);
+    }
+    const hexRgba = (hex, a) => {
+      const m = /^#?([0-9a-fA-F]{6})$/.exec(hex || '');
+      if (!m) return `rgba(0,0,0,${a})`;
+      const n = parseInt(m[1], 16);
+      return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+    };
+    const tintaClasse = acc ? acc[modo] : t.gold;
+    const coloreGlow = mescola(t.bg, tintaClasse, scuroEff ? 0.26 : 0.17);
+    const glowClasse = `radial-gradient(135% 95% at 50% -14%, ${hexRgba(coloreGlow, scuroEff ? 0.18 : 0.12)}, transparent 60%)`;
+    const ambra = `radial-gradient(70% 46% at 50% -2%, rgba(224,162,74,${scuroEff ? 0.13 : 0.06}), transparent 66%)`;
+    const vignetta = `radial-gradient(116% 116% at 50% 42%, transparent 52%, ${mescola(t.bg, '#000000', scuroEff ? 0.42 : 0.13)} 100%)`;
+    const sfondoAmbiente = presetDati.sfondo || '';
+    const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/';
+    const idAmb = presetDati.id;
+    const conImmagine = idAmb && idAmb !== 'default';
+    const veloAlpha = scuroEff ? 0.5 : 0.32;
+    const velo = conImmagine
+      ? `linear-gradient(rgba(14,11,8,${veloAlpha}), rgba(14,11,8,${veloAlpha}))`
+      : '';
+    const AMB_NOTTE = new Set(['taverna', 'mercato', 'citta', 'dungeon', 'foresta', 'palude', 'notte', 'mare', 'tundra', 'montagna', 'tempesta', 'accampamento', 'deserto', 'tempio']);
+    const fileImg = (scuroEff && AMB_NOTTE.has(idAmb)) ? `${idAmb}-notte.jpg` : `${idAmb}.jpg`;
+    const imgLayer = conImmagine
+      ? `url("${baseUrl}ambientazioni/${fileImg}") center center / cover no-repeat`
+      : '';
+    return [sfondoAmbiente, glowClasse, ambra, vignetta, velo, imgLayer, t.bg]
+      .filter(Boolean)
+      .join(', ');
+  }, [tema, sistemaScuro, oraTick, classeAttiva, presetColori]);
+
   useEffect(() => {
     const scuroEff =
       tema === 'scuro' || (tema === 'auto' && (sistemaScuro || eNotte()));
@@ -3983,10 +4031,6 @@ export default function App() {
       t.title = colore;
       t.gold = colore;
       t.goldDark = colore;
-      // tonalità: bordi sempre, sfondo e pannelli solo in tema scuro. In tema
-      // chiaro, intonare anche lo sfondo verso colori "caldi" (rosso, arancio,
-      // cremisi) lo appiattisce contro il crema di base: restano quindi
-      // neutri, e solo testo/bordi portano il colore della classe.
       if (scuroEff) {
         t.bg = mescola(t.bg, colore, 0.07);
         t.panelLight = mescola(t.panelLight, colore, 0.1);
@@ -4007,47 +4051,11 @@ export default function App() {
     set('--c-border', t.border); set('--c-ink', t.ink); set('--c-ink-dim', t.inkDim);
     set('--c-gold', t.gold); set('--c-gold-dark', t.goldDark); set('--c-red', t.red);
     set('--c-green', t.green); set('--c-title', t.title);
-    // sfondo della scheda: alone tematico che cambia con la classe selezionata
-    // Sfondo atmosferico "tavolo a lume di candela" (ispirato alla palette D&D):
-    // bagliore della classe + luce ambrata calda in alto + vignettatura profonda.
-    const hexRgba = (hex, a) => {
-      const m = /^#?([0-9a-fA-F]{6})$/.exec(hex || '');
-      if (!m) return `rgba(0,0,0,${a})`;
-      const n = parseInt(m[1], 16);
-      return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
-    };
-    const tintaClasse = acc ? acc[modo] : t.gold;
-    const coloreGlow = mescola(t.bg, tintaClasse, scuroEff ? 0.26 : 0.17);
-    // In modalità giorno il colore miscelato è quasi bianco: opaco lavava la
-    // fotografia. La trasparenza conserva la tinta di classe senza sovraesporre.
-    const glowClasse = `radial-gradient(135% 95% at 50% -14%, ${hexRgba(coloreGlow, scuroEff ? 0.18 : 0.12)}, transparent 60%)`;
-    const ambra = `radial-gradient(70% 46% at 50% -2%, rgba(224,162,74,${scuroEff ? 0.13 : 0.06}), transparent 66%)`;
-    const vignetta = `radial-gradient(116% 116% at 50% 42%, transparent 52%, ${mescola(t.bg, '#000000', scuroEff ? 0.42 : 0.13)} 100%)`;
-    // sfondo atmosferico dell'ambientazione (gradienti tematici nei margini pagina)
-    const sfondoAmbiente = presetDati.sfondo || '';
-    // Immagine di sfondo a tema (foto libere/di pubblico dominio in
-    // public/ambientazioni/<id>.jpg): riempie i margini della pagina e cambia
-    // con il luogo. Il preset tecnico di base resta senza immagine.
-    const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/';
-    const idAmb = presetDati.id;
-    const conImmagine = idAmb && idAmb !== 'default';
-    // velo SCURO sopra la foto (non chiaro): così l'immagine resta ben visibile e
-    // "spicca" anche di giorno, mentre i pannelli opachi restano bianchi/leggibili.
-    // Di notte il velo è più intenso per un'atmosfera più cupa.
-    const veloAlpha = scuroEff ? 0.5 : 0.32;
-    const velo = conImmagine
-      ? `linear-gradient(rgba(14,11,8,${veloAlpha}), rgba(14,11,8,${veloAlpha}))`
-      : '';
-    // Di notte (tema scuro) usa la variante notturna dell'ambientazione, se esiste.
-    const AMB_NOTTE = new Set(['taverna', 'mercato', 'citta', 'dungeon', 'foresta', 'palude', 'notte', 'mare', 'tundra', 'montagna', 'tempesta', 'accampamento', 'deserto', 'tempio']);
-    const fileImg = (scuroEff && AMB_NOTTE.has(idAmb)) ? `${idAmb}-notte.jpg` : `${idAmb}.jpg`;
-    const imgLayer = conImmagine
-      ? `url("${baseUrl}ambientazioni/${fileImg}") center center / cover no-repeat`
-      : '';
-    document.body.style.background = [sfondoAmbiente, glowClasse, ambra, vignetta, velo, imgLayer, t.bg]
-      .filter(Boolean)
-      .join(', ');
-    document.body.style.backgroundAttachment = 'fixed';
+
+    // Rimuovi sfondi inline e backgroundAttachment su body che causano repaint lag durante lo scroll
+    document.body.style.background = 'transparent';
+    document.body.style.backgroundAttachment = '';
+
     try {
       localStorage.setItem('scheda-interattiva:tema', tema);
     } catch {
@@ -6779,6 +6787,7 @@ export default function App() {
 
   return (
     <div className="app-shell" style={styles.app}>
+      <div id="ambient-bg-layer" aria-hidden="true" style={{ ...styles.ambientBg, background: ambientBackgroundStyle }} />
       <style>{GLOBAL_CSS}</style>
 
 
