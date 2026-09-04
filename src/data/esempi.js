@@ -167,7 +167,7 @@ export const VAELION_JSON = {
   classe: "Druido",
   sottoclasse: "Circolo del Pastore",
   livello: 10,
-  maxTrucchetti: 5,
+  maxTrucchetti: 0,
   pe: 64000,
   background: "Eremita",
   specie: "Elfo dei Boschi",
@@ -293,7 +293,6 @@ export const VAELION_JSON = {
   },
   incantesimiLista: [
     { id: "vi-00", nome: "Randello Incantato", livello: 0, preparato: true, tempo: "Azione Bonus", gittata: "Tocco", note: "1 min: usa SAG su randello/bastone, danno 1d8" },
-    { id: "vi-01", nome: "Folata", livello: 0, preparato: true },
     { id: "vi-02", nome: "Frusta di Spine", livello: 0, preparato: true },
     { id: "vi-03", nome: "Guida", livello: 0, preparato: true },
     { id: "vi-04", nome: "Morsa del Gelo", livello: 0, preparato: true },

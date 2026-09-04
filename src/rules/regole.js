@@ -867,7 +867,9 @@ export function controlliScheda(scheda) {
     }
 
     // Trucchetti noti
-    const maxTruc = trucchettiMax(scheda.classe, scheda.livello || 1, scheda.sottoclasse);
+    const maxTruc = (Number(scheda.maxTrucchetti) > 0)
+      ? Number(scheda.maxTrucchetti)
+      : trucchettiMax(scheda.classe, scheda.livello || 1, scheda.sottoclasse);
     const nTruc = scheda.incantesimiLista.filter((s) => s.livello === 0 && !s.bonus).length;
     if (maxTruc != null && nTruc > maxTruc) {
       risultati.push({

@@ -4,7 +4,7 @@
   "classe": "Druido",
   "sottoclasse": "Circolo del Pastore",
   "livello": 10,
-  "maxTrucchetti": 5,
+  "maxTrucchetti": 0,
   "background": "Eremita",
   "specie": "Elfo dei Boschi",
   "taglia": "Media",

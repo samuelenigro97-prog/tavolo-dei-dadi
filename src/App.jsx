@@ -2187,7 +2187,7 @@ function loadState() {
           } catch {}
         }
       }
-      // Migrazione Vaelion 5.0: su richiesta, Vaelion usa le regole 2014
+      // Migrazione Vaelion 5.0 & Circolo del Pastore
       for (const k of Object.keys(roster.personaggi)) {
         const s = roster.personaggi[k];
         if (s && /vaelion/i.test(s.nome || '')) {
@@ -2205,14 +2205,11 @@ function loadState() {
               s.risorse.push({ nome: 'Totem Spirituale (Aura)', max: 1, attuali: 1, reset: 'Breve' });
             }
           }
-        }
-      }
-      // Fix Vaelion trucchetti 5→4 alert: ora 5 tru (Folata inclusa) → max 5
-      for (const k of Object.keys(roster.personaggi)) {
-        const s = roster.personaggi[k];
-        if (s && /vaelion/i.test(s.nome || '') && Array.isArray(s.incantesimiLista)) {
-          const nTru = s.incantesimiLista.filter((x) => x.livello === 0 && !x.bonus).length;
-          if (nTru === 5 && (s.maxTrucchetti || 0) < 5) s.maxTrucchetti = 5;
+          if (Array.isArray(s.incantesimiLista)) {
+            // Rimuovi 'Folata' se presente nei trucchetti di Vaelion (i 4 canonici sono Randello Incantato, Frusta di Spine, Guida, Morsa del Gelo)
+            s.incantesimiLista = s.incantesimiLista.filter((inc) => !(inc.livello === 0 && /^folata$/i.test(String(inc.nome || '').trim())));
+          }
+          if (s.maxTrucchetti === 5) s.maxTrucchetti = 0;
         }
       }
       // Allinea P.E. al livello per tutti i PG: se pe < soglia del livello, porta a soglia (evita barra livello 10 con 0 P.E.)
