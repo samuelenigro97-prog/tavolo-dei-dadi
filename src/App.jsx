@@ -13552,35 +13552,8 @@ export default function App() {
                       gap: 8,
                     }}
                   >
-                    {/* Intestazione Economia del Turno */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
-                      <strong style={{ fontSize: 12, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                        {lingua === 'en' ? 'Turn Economy & Actions' : 'Economia del Turno & Azioni'}
-                      </strong>
-                      <button
-                        type="button"
-                        onClick={resetTurno}
-                        style={{
-                          ...styles.buttonMini,
-                          fontSize: 10.5,
-                          padding: '2px 8px',
-                          fontWeight: 700,
-                          color: C.goldDark,
-                          borderColor: C.goldDark,
-                          background: 'rgba(201,162,39,0.12)',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 4,
-                          cursor: 'pointer',
-                        }}
-                        title={lingua === 'en' ? 'Reset all actions and movement for a new combat round' : 'Ripristina tutte le azioni e il movimento per iniziare un nuovo round'}
-                      >
-                        🔄 {lingua === 'en' ? 'New Turn' : 'Nuovo Turno'}
-                      </button>
-                    </div>
-
                     {/* Badge delle Azioni del Round */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 6 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 6 }}>
                       {/* 1. Azione */}
                       <button
                         type="button"
@@ -13668,6 +13641,29 @@ export default function App() {
                       >
                         <span>✋ {lingua === 'en' ? 'Free Object' : 'Interazione Oggetto'}</span>
                         <span>{turno.interazioneUsata ? '🔴' : '🟢'}</span>
+                      </button>
+
+                      {/* 5. Nuovo Turno */}
+                      <button
+                        type="button"
+                        onClick={resetTurno}
+                        style={{
+                          ...styles.buttonMini,
+                          padding: '4px 8px',
+                          fontSize: 11,
+                          fontWeight: 700,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 4,
+                          background: 'rgba(201,162,39,0.12)',
+                          borderColor: C.goldDark,
+                          color: C.goldDark,
+                          cursor: 'pointer',
+                        }}
+                        title={lingua === 'en' ? 'Reset all actions and movement for a new combat round' : 'Ripristina tutte le azioni e il movimento per iniziare un nuovo round'}
+                      >
+                        <span>🔄 {lingua === 'en' ? 'New Turn' : 'Nuovo Turno'}</span>
                       </button>
                     </div>
 
