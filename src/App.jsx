@@ -3967,6 +3967,9 @@ export default function App() {
     };
   }, []);
 
+  // Classe attiva per tinta e cornici
+  const classeAttiva = schedaSolaLettura?.classe || roster?.personaggi?.[roster?.attivo]?.classe;
+
   // Sfondo atmosferico dell'ambientazione calcolato via useMemo
   // Viene renderizzato in un elemento fisso dedicato (#ambient-bg-layer con GPU compositing)
   // eliminando completamente qualsiasi vibrazione, flickering o repaint durante lo scroll.
