@@ -40,30 +40,17 @@ class ErrorBoundary extends React.Component {
               </pre>
             )}
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <button
+              <a
+                href="./ripristino.html"
                 style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
                   background: '#d4af37', color: '#1a110b', border: 'none', borderRadius: 8,
-                  padding: '10px 18px', fontWeight: 800, fontSize: 14, cursor: 'pointer'
-                }}
-                onClick={async () => {
-                  if ('serviceWorker' in navigator) {
-                    try {
-                      const regs = await navigator.serviceWorker.getRegistrations();
-                      for (const r of regs) await r.unregister();
-                    } catch {}
-                  }
-                  if ('caches' in window) {
-                    try {
-                      const keys = await caches.keys();
-                      for (const k of keys) await caches.delete(k);
-                    } catch {}
-                  }
-                  this.setState({ hasError: false, error: null });
-                  window.location.reload();
+                  padding: '10px 18px', fontWeight: 800, fontSize: 14, cursor: 'pointer',
+                  textDecoration: 'none'
                 }}
               >
-                🔄 Ricarica Pagina
-              </button>
+                🔄 Svuota Cache e Ricarica
+              </a>
               <button
                 style={{
                   background: 'transparent', color: '#d4af37', border: '1px solid #d4af37',

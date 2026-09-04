@@ -35,7 +35,20 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          data5e: ['./src/data/dati5e.js', './src/data/incantesimi.js', './src/data/spiegazioni.js', './src/data/tabelleBackground.js'],
+          data5e: [
+            './src/data/dati5e.js',
+            './src/data/incantesimi.js',
+            './src/data/spiegazioni.js',
+            './src/data/tabelleBackground.js',
+            './src/dati/incantesimi-tasha.js',
+            './src/dati/incantesimi-xanathar.js',
+            './src/dati/talenti-tasha.js',
+            './src/dati/talenti-xanathar.js',
+            './src/dati/sottoclassi-tasha.js',
+            './src/dati/sottoclassi-xanathar.js',
+            './src/dati/artefice.js',
+            './src/dati/tratti-opzionali-tasha.js'
+          ],
           bestiario: ['./src/data/bestiario.js', './src/ritratti.js'],
           regole: ['./src/rules/regole.js', './src/rules/scheda.js', './src/rules/dadi.js'],
         },
