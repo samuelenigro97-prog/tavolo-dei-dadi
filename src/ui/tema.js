@@ -124,5 +124,14 @@ export const PRESET_COLORI = [
   },
 ];
 
+/**
+ * Restituisce un'ambientazione casuale tra quelle scenografiche (esclude 'default').
+ */
+export function ambientazioneCasuale() {
+  const opzioni = PRESET_COLORI.filter((p) => p.id && p.id !== 'default').map((p) => p.id);
+  const idx = Math.floor(Math.random() * opzioni.length);
+  return opzioni[idx] || 'foresta';
+}
+
 // Simbolo (emoji / testo) associato a ogni caratteristica — usato come sfondo opaco
 // all'interno del blocco caratteristica per evocare visivamente l'attributo.

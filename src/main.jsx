@@ -72,6 +72,9 @@ class ErrorBoundary extends React.Component {
                   try {
                     localStorage.removeItem('scheda-interattiva:v1');
                     localStorage.removeItem('tavolo-dei-dadi:scheda:v1');
+                    localStorage.removeItem('scheda-interattiva:preset-colori');
+                    localStorage.removeItem('scheda-interattiva:tema');
+                    localStorage.removeItem('scheda-interattiva:ambiente-audio');
                   } catch {}
                   window.location.reload();
                 }}

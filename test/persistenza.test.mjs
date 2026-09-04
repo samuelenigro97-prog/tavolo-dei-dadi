@@ -45,3 +45,17 @@ test('persistenza: ripristinare uno snapshot conserva le immagini correnti del P
   assert.equal(ripristinato.personaggi['pg-1'].ritratto, corrente.personaggi['pg-1'].ritratto);
   assert.equal(ripristinato.personaggi['pg-1'].mappaCampagna, corrente.personaggi['pg-1'].mappaCampagna);
 });
+
+test('ambientazione: al primo accesso sceglie un preset casuale scenografico e mai default (scheda bianca)', async () => {
+  const { PRESET_COLORI, ambientazioneCasuale } = await import('../src/ui/tema.js');
+  assert.ok(Array.isArray(PRESET_COLORI));
+  assert.ok(PRESET_COLORI.length >= 10);
+
+  const ambientazioniScenografiche = PRESET_COLORI.filter((p) => p.id && p.id !== 'default').map((p) => p.id);
+  for (let i = 0; i < 50; i++) {
+    const scelta = ambientazioneCasuale();
+    assert.notEqual(scelta, 'default', 'Non deve mai restituire la scheda bianca (default)');
+    assert.ok(ambientazioniScenografiche.includes(scelta), `Deve essere una delle ambientazioni scenografiche note: ${scelta}`);
+  }
+});
+

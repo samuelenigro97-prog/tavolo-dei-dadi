@@ -4,7 +4,7 @@ import { useRegisterSW } from 'virtual:pwa-register/react';
 import { ICONE_CLASSE, ICONE_SPECIE, ICONE_BESTIE_SVG, GALLERIA_BESTIE_PRESET, generaAvatarBestia, iconaBestia } from './ritratti';
 import { t, setLinguaAttuale, DIZIONARIO, traduciDato, linguaAttuale } from './i18n';
 import { avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro, sbloccaAudio, precaricaSfx } from './utils/audioAmbiente';
-import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI } from './ui/tema.js';
+import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI, ambientazioneCasuale } from './ui/tema.js';
 import { styles, GLOBAL_CSS } from './ui/stili.js';
 import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, Sezione, CampoBloccato, formattaVoceConIcona } from './ui/componenti.jsx';
 import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma } from './rules/scheda.js';
@@ -3656,8 +3656,19 @@ export default function App() {
   const [mostraModalMovimento, setMostraModalMovimento] = useState(false);
   const [mostraModalReazioni, setMostraModalReazioni] = useState(false);
   const [modalAbilitaGuida, setModalAbilitaGuida] = useState(null);
-  // Preset colori UI
-  const [presetColori, setPresetColori] = useState(() => localStorage.getItem('scheda-interattiva:preset-colori') || 'default');
+  // Preset colori UI / Ambientazione: al primo accesso (o se nessun preset è salvato / 'default'),
+  // carica un'ambientazione a caso tra quelle scenografiche invece della scheda bianca
+  const [presetColori, setPresetColori] = useState(() => {
+    try {
+      const salvato = localStorage.getItem('scheda-interattiva:preset-colori');
+      if (salvato && salvato !== 'default' && PRESET_COLORI.some((p) => p.id === salvato)) {
+        return salvato;
+      }
+    } catch { /* niente */ }
+    const casuale = ambientazioneCasuale();
+    try { localStorage.setItem('scheda-interattiva:preset-colori', casuale); } catch { /* niente */ }
+    return casuale;
+  });
   useEffect(() => {
     try { localStorage.setItem('scheda-interattiva:preset-colori', presetColori); } catch { /* niente */ }
   }, [presetColori]);
@@ -3669,7 +3680,18 @@ export default function App() {
   }, [temaCornici]);
 
   // Audio e Sottofondo Ambientale
-  const [ambienteAudio, setAmbienteAudio] = useState(() => localStorage.getItem('scheda-interattiva:ambiente-audio') || 'spento');
+  const [ambienteAudio, setAmbienteAudio] = useState(() => {
+    try {
+      const salvato = localStorage.getItem('scheda-interattiva:ambiente-audio');
+      if (salvato) return salvato;
+      const pres = localStorage.getItem('scheda-interattiva:preset-colori');
+      if (pres) {
+        const d = PRESET_COLORI.find((p) => p.id === pres);
+        if (d?.audio) return d.audio;
+      }
+    } catch { /* niente */ }
+    return 'spento';
+  });
   const [volumeAudio, setVolumeAudio] = useState(() => Number(localStorage.getItem('scheda-interattiva:volume-audio') || 0.5));
   const [volumeEffetti, setVolumeEffetti] = useState(() => Number(localStorage.getItem('scheda-interattiva:volume-effetti') || 0.65));
   const [urlCustomAudio, setUrlCustomAudio] = useState(() => localStorage.getItem('scheda-interattiva:url-audio-custom') || '');
