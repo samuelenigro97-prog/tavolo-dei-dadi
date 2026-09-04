@@ -277,6 +277,7 @@
     { "id": "auto-forma-selvatica", "nome": "Forma Selvatica", "attuali": 4, "max": 4, "reset": "breve" },
     { "id": "auto-totem-spirituale", "nome": "Totem Spirituale (Aura)", "attuali": 1, "max": 1, "reset": "breve" }
   ],
+  "sintonia": ["Mantello della Protezione", "Perla del Potere", "Guanti della Forza Orchesca"],
   "monete": { "mr": 0, "ma": 0, "me": 0, "mo": 250, "mp": 0 },
   "tratti": "Retaggio Fatato: Vantaggio ai TS contro l'essere affascinato. La magia non può addormentarti.\nMaschera della Selva: Puoi tentare di nasconderti anche quando sei parzialmente oscurato da fenomeni naturali.\nScurovisione 18m\nForma Selvatica (Azione Bonus / Azione): Grado Sfida max 3.\nTotale comunione con gli spiriti della foresta.\nPrivilegio Background (Scoperta): Conoscenza di un'importante verità cosmica o segreto del mondo.",
   "note": "STORIA & DETTAGLI:\nNato tra le Montagne Rauvin, membro degli Arpisti. Mentore: Un orso mannaro che gli ha insegnato il rispetto per tutte le creature viventi.\nAspetto Guida: Il fiume inarrestabile gli ricorda il ciclo eterno della natura."

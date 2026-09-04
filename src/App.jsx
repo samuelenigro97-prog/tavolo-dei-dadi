@@ -2120,40 +2120,48 @@ function loadState() {
           }
         }
       }
-      // Normalizza sintonia scritta come stringa con virgole in array
-      // (es. Vaelion da esempi.js): altrimenti push/splice la distruggerebbero
+      // Normalizza sintonia (da stringa a array se necessario)
       for (const k of Object.keys(roster.personaggi)) {
         const s = roster.personaggi[k];
-        if (s && typeof s.sintonia === 'string' && s.sintonia.includes(',')) {
-          s.sintonia = s.sintonia.split(',').map((x) => x.trim()).filter(Boolean).slice(0, 3);
+        if (s) {
+          if (typeof s.sintonia === 'string') {
+            s.sintonia = s.sintonia ? s.sintonia.split(',').map((x) => x.trim()).filter(Boolean).slice(0, 3) : [];
+          } else if (!Array.isArray(s.sintonia)) {
+            s.sintonia = [];
+          }
         }
       }
-      // Fix Vaelion: guanti sempre equipaggiati + sintonia (gestisce sia Forza che Potere Orchesco)
+      // Fix Vaelion: assicura equipaggiamento e sintonia corretti per Mantello, Perla e Guanti
       for (const k of Object.keys(roster.personaggi)) {
         const s = roster.personaggi[k];
-        if (s && /vaelion/i.test(s.nome || '') && Array.isArray(s.inventario)) {
-          for (const o of s.inventario) {
-            if (/guanti/i.test(o.nome || '')) {
-              o.equip = true;
-              o.richiedeSintonia = true;
-              if (!o.effettoMeccanico) o.effettoMeccanico = 'forza_impostata_19';
-              // normalizza nome a Forza per coerenza con VAELION_JSON
-              if (/potere/i.test(o.nome || '')) o.nome = 'Guanti della Forza Orchesca';
+        if (s && /vaelion/i.test(s.nome || '')) {
+          if (Array.isArray(s.inventario)) {
+            for (const o of s.inventario) {
+              if (/mantello (?:della |di )?prot/i.test(o.nome || '')) {
+                o.equip = true;
+                o.richiedeSintonia = true;
+                o.effettoMeccanico = 'classe_armatura_tiri_salvezza_1';
+              } else if (/guanti/i.test(o.nome || '')) {
+                o.equip = true;
+                o.richiedeSintonia = true;
+                o.effettoMeccanico = 'forza_impostata_19';
+                if (/potere/i.test(o.nome || '')) o.nome = 'Guanti della Forza Orchesca';
+              } else if (/perla del pot/i.test(o.nome || '')) {
+                o.equip = true;
+                o.richiedeSintonia = true;
+              }
             }
           }
-          if (Array.isArray(s.sintonia)) {
-            const idx = s.sintonia.findIndex((x) => /guanti/i.test(x));
-            if (idx === -1) {
-              if (s.sintonia.length < 3) s.sintonia.push('Guanti della Forza Orchesca');
-              else s.sintonia[2] = 'Guanti della Forza Orchesca';
-            } else if (!/forza/i.test(s.sintonia[idx] || '')) {
-              s.sintonia[idx] = 'Guanti della Forza Orchesca';
-            }
-          } else if (typeof s.sintonia === 'string' && String(s.sintonia).trim()) {
-            const esistente = String(s.sintonia).trim();
-            s.sintonia = /guanti/i.test(esistente) ? ['Guanti della Forza Orchesca'] : [esistente, 'Guanti della Forza Orchesca'].slice(0, 3);
+          const defaultSintoniaVaelion = ['Mantello della Protezione', 'Perla del Potere', 'Guanti della Forza Orchesca'];
+          if (!Array.isArray(s.sintonia) || s.sintonia.length === 0) {
+            s.sintonia = [...defaultSintoniaVaelion];
           } else {
-            s.sintonia = ['Guanti della Forza Orchesca'];
+            for (const voce of defaultSintoniaVaelion) {
+              const normVoce = voce.toLowerCase();
+              if (!s.sintonia.some((x) => String(x).toLowerCase().includes(normVoce.slice(0, 7)))) {
+                if (s.sintonia.length < 3) s.sintonia.push(voce);
+              }
+            }
           }
         }
       }
@@ -12234,8 +12242,8 @@ export default function App() {
                 </div>
 
                 <div className="profilo-anagrafica-campi" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {/* Riga 1: Sesso (leggermente allargata), Specie/Razza (larga), Taglia (compatta), Allineamento (stretta) */}
-                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.75fr 1.15fr 0.6fr 1.5fr', gap: 10, alignItems: 'end' }}>
+                  {/* Riga 1: Sesso, Specie/Razza, Taglia, Allineamento */}
+                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.9fr 1.35fr 0.65fr 1.1fr', gap: 10, alignItems: 'end' }}>
                     <CampoModulo label={t("profilo.sesso")}>
                       <select
                         value={scheda.sesso || ''}
@@ -12243,6 +12251,7 @@ export default function App() {
                         title={t('profilo.sesso_tooltip')}
                         style={{ background: 'transparent', border: 'none', color: 'inherit', fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 'inherit', width: '100%', outline: 'none', cursor: 'pointer' }}
                       >
+                        <option value="">{t('profilo.sesso_non_specificato')}</option>
                         <option value="maschio">{t('profilo.sesso_maschio')}</option>
                         <option value="femmina">{t('profilo.sesso_femmina')}</option>
                         <option value="altro">{t('profilo.sesso_altro')}</option>
@@ -13008,7 +13017,7 @@ export default function App() {
                     color: C.goldDark,
                     textAlign: 'center',
                     fontWeight: 600,
-                    marginTop: 3,
+                    marginTop: 7,
                     cursor: 'pointer',
                     padding: '2px 6px',
                     borderRadius: 4,
@@ -14202,6 +14211,9 @@ export default function App() {
                               const titoloRiga = spiegazioneEffetto ? `${cleanNome}: ${spiegazioneEffetto}` : undefined;
                               const armaDb = !a.isSpell ? trovaArma(a.nome) : null;
                               const { isVersatile, dado1M, dado2M, hasReach } = analizzaArmaVersatileEPortata(a, armaDb);
+                              const spellInLista = (scheda.incantesimiLista || []).find((x) => x.id === a.idIncantesimo || (x.nome && x.nome.toLowerCase() === cleanNome.toLowerCase()));
+                              const isTrucchetto = (spellInLista && spellInLista.livello === 0) || (spSpell && spSpell.livello === 0) || a.livello === 0;
+                              const iconaSpell = isTrucchetto ? '✨' : '🪄';
                               return (
                                 <tr key={a.id} className="attacchi-riga" title={titoloRiga}>
                                   <td style={styles.td} className="attacchi-nome">
@@ -14210,9 +14222,9 @@ export default function App() {
                                         <button
                                           type="button"
                                           style={{ background: 'transparent', border: 'none', padding: 0, fontSize: 16, cursor: 'help', display: 'inline-block', width: 22, textAlign: 'center' }}
-                                          title={titoloRiga || t('attacchi.incantesimo_integrato_tip')}
+                                          title={titoloRiga || (isTrucchetto ? (lingua === 'en' ? 'Cantrip (At-will)' : 'Trucchetto a volontà') : (lingua === 'en' ? 'Spell (Requires slot)' : 'Incantesimo con slot'))}
                                           onClick={() => setInfo({ titolo: cleanNome, testo: testoAttacco || spiegazioneEffetto || (lingua === 'en' ? 'No description available.' : 'Nessuna descrizione disponibile.') })}
-                                        >✨</button>
+                                        >{iconaSpell}</button>
                                       ) : (
                                         <select
                                           value=""
@@ -14267,23 +14279,23 @@ export default function App() {
                                           }}
                                           style={{ ...styles.inlineInput, appearance: 'none', width: 22, height: 22, padding: 0, textAlign: 'center', cursor: 'pointer', flexShrink: 0 }}
                                         >
-                                          <option value="">{cat === 'Reazione' ? '🪄' : cat === 'Bonus' ? '⚡' : '⚔️'}</option>
+                                          <option value="">{cat === 'Reazione' ? '⚡' : cat === 'Bonus' ? '⚡' : '⚔️'}</option>
                                           {cat === 'Reazione' ? (
                                             <>
                                               <optgroup label={lingua === 'en' ? 'Reaction Spells' : 'Incantesimi di Reazione'}>
-                                                {REAZIONI_5E.filter((x) => x.tipo === 'incantesimo').map((r) => <option key={r.nome} value={r.nome} title={r.note || spiegaIncantesimo(r.nome)}>{traduciDato(r.nome)}</option>)}
+                                                {REAZIONI_5E.filter((x) => x.tipo === 'incantesimo').map((r) => <option key={r.nome} value={r.nome} title={r.note || spiegaIncantesimo(r.nome)}>🪄 {traduciDato(r.nome)}</option>)}
                                               </optgroup>
                                               <optgroup label={lingua === 'en' ? 'Reactions & Features' : 'Reazioni e Privilegi'}>
-                                                {REAZIONI_5E.filter((x) => x.tipo !== 'incantesimo').map((r) => <option key={r.nome} value={r.nome} title={r.note || spiegaPrivilegio(r.nome)}>{traduciDato(r.nome)}</option>)}
+                                                {REAZIONI_5E.filter((x) => x.tipo !== 'incantesimo').map((r) => <option key={r.nome} value={r.nome} title={r.note || spiegaPrivilegio(r.nome)}>🛡️ {traduciDato(r.nome)}</option>)}
                                               </optgroup>
                                             </>
                                           ) : cat === 'Bonus' ? (
                                             <>
                                               <optgroup label={lingua === 'en' ? 'Bonus Actions & Weapons' : 'Azioni Bonus & Armi'}>
-                                                {AZIONI_BONUS_5E.filter((x) => x.tipo === 'combattimento' || x.tipo === 'talento' || x.tipo === 'privilegio').map((b) => <option key={b.nome} value={b.nome} title={b.note || spiegaPrivilegio(b.nome)}>{traduciDato(b.nome)}</option>)}
+                                                {AZIONI_BONUS_5E.filter((x) => x.tipo === 'combattimento' || x.tipo === 'talento' || x.tipo === 'privilegio').map((b) => <option key={b.nome} value={b.nome} title={b.note || spiegaPrivilegio(b.nome)}>⚔️ {traduciDato(b.nome)}</option>)}
                                               </optgroup>
                                               <optgroup label={lingua === 'en' ? 'Bonus Action Spells' : 'Incantesimi Azione Bonus'}>
-                                                {AZIONI_BONUS_5E.filter((x) => x.tipo === 'incantesimo').map((b) => <option key={b.nome} value={b.nome} title={b.note || spiegaIncantesimo(b.nome)}>{traduciDato(b.nome)}</option>)}
+                                                {AZIONI_BONUS_5E.filter((x) => x.tipo === 'incantesimo').map((b) => <option key={b.nome} value={b.nome} title={b.note || spiegaIncantesimo(b.nome)}>🪄 {traduciDato(b.nome)}</option>)}
                                               </optgroup>
                                             </>
                                           ) : (
@@ -17222,20 +17234,6 @@ export default function App() {
                                 </Fragment>
                               );
                             })}
-                            {(!filtroInventario || 'monete'.includes(filtroInventario.trim().toLowerCase())) && (
-                              <tr className="inventario-riga inventario-monete" style={{ opacity: 0.9 }} title="Monete d'oro: modificando qui aggiorni la sezione Monete (e viceversa). Il peso di tutte le monete è contato nell'ingombro.">
-                                <td data-label={t('inv.equip')} style={{ ...styles.td, textAlign: 'center' }}>
-                                  <IconaMonetaOro />
-                                </td>
-                                <td data-label={t('inv.nome')} style={styles.td}>Monete d'oro (MO)</td>
-                                <td data-label={t('inv.qta')} style={styles.td}>
-                                  <Editable value={dMon.mo || 0} tipo="numero" width={44} onChange={(v) => aggiorna({ denari: { ...scheda.denari, mo: Math.max(0, v) } })} title="Monete d'oro: sincronizzate con la sezione Monete" />
-                                </td>
-                                <td data-label={t('inv.sintonia')} style={{ ...styles.td, textAlign: 'center', color: C.inkDim }}>—</td>
-                                <td data-label={t('inv.peso')} style={{ ...styles.td, color: C.inkDim, whiteSpace: 'nowrap' }}>{pesoMonete.toFixed(2)} kg</td>
-                                <td className="inventario-azioni" style={styles.td} />
-                              </tr>
-                            )}
                           </tbody>
                         </table>
                       </div>
@@ -17247,7 +17245,21 @@ export default function App() {
                         list="inv-presets"
                         placeholder={t('inv.aggiungi_ph')}
                         style={{ ...styles.inlineInput, flex: 1, minWidth: 140, padding: '6px 10px' }}
-                        onKeyDown={(e) => { if (e.key === 'Enter' && e.target.value.trim()) { addItem(e.target.value.trim()); e.target.value = ''; } }}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          if (!v) return;
+                          const match = NOMI_OGGETTI.find((n) => n.toLowerCase() === v.trim().toLowerCase());
+                          if (match) {
+                            addItem(match);
+                            e.target.value = '';
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && e.target.value.trim()) {
+                            addItem(e.target.value.trim());
+                            e.target.value = '';
+                          }
+                        }}
                       />
                       <datalist id="inv-presets">{NOMI_OGGETTI.map((n) => <option key={n} value={n} />)}</datalist>
                       <button
@@ -17269,42 +17281,32 @@ export default function App() {
               })()}
               {(() => {
                 // Oggetti magici sintonizzati: massimo 3 (regola 5e) → 3 slot compilabili.
-                const attunatiEquipaggiati = (Array.isArray(scheda.inventario) ? scheda.inventario : []).filter((o) => o?.equip && o?.effettoMeccanico && o?.richiedeSintonia).map((o) => o.nome).slice(0, 3);
+                const attunatiEquipaggiati = (Array.isArray(scheda.inventario) ? scheda.inventario : []).filter((o) => o?.equip && (o?.effettoMeccanico || o?.richiedeSintonia)).map((o) => o.nome).slice(0, 3);
                 const arrBase = Array.isArray(scheda.sintonia) ? scheda.sintonia : (scheda.sintonia ? [scheda.sintonia] : []);
-                // Allinea automaticamente: se un oggetto è equipaggiato e richiede sintonia ma non è nei 3 slot, lo inserisce nel primo libero (match parziale per Guanti Potere/Forza)
-                const arrEffettiva = (() => {
-                  const a = [String(arrBase[0] || ''), String(arrBase[1] || ''), String(arrBase[2] || '')];
-                  const norm = (s) => String(s || '').toLowerCase();
-                  const matchGuanti = (s) => norm(s).includes('guanti');
-                  for (const nome of attunatiEquipaggiati) {
-                    const isGuantiNome = matchGuanti(nome);
-                    if (a.some((s) => isGuantiNome ? matchGuanti(s) : norm(s) === norm(nome))) continue;
-                    const idxLibero = a.findIndex((s) => !String(s || '').trim());
-                    if (idxLibero !== -1) a[idxLibero] = nome;
-                    else {
-                      const idxGuanti = a.findIndex((s) => matchGuanti(s));
-                      if (isGuantiNome && idxGuanti !== -1) a[idxGuanti] = nome;
-                    }
-                  }
-                  return a;
-                })();
-                const slots = [String(arrEffettiva[0] || ''), String(arrEffettiva[1] || ''), String(arrEffettiva[2] || '')];
+                const slots = [String(arrBase[0] || ''), String(arrBase[1] || ''), String(arrBase[2] || '')];
                 const setSlot = (i, v) => { const n = [...slots]; n[i] = v; aggiorna({ sintonia: n }); };
                 return (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20, alignItems: 'stretch', marginTop: 24, paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
                     <div style={{ background: C.panelLight, padding: '12px 14px', borderRadius: 8, border: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column' }}>
                       <div style={{ ...styles.panelTitle, marginBottom: 8 }}>{t("equip.sintonia")}</div>
-                      {[0, 1, 2].map((i) => (
-                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                          <span style={{ ...styles.detail, minWidth: 16, fontWeight: 600 }}>{i + 1}.</span>
-                          <input
-                            value={slots[i]}
-                            onChange={(e) => setSlot(i, e.target.value)}
-                            placeholder={t("equip.sintonia_ph")}
-                            style={{ ...styles.inlineInput, flex: 1, minWidth: 0, padding: '6px 10px', fontSize: 13, background: attunatiEquipaggiati.some((n) => { const a = String(n).toLowerCase(), b = String(slots[i] || '').toLowerCase(); return a.includes('guanti') && b.includes('guanti') ? true : a === b; }) ? 'rgba(46,157,77,0.08)' : undefined, borderColor: attunatiEquipaggiati.some((n) => { const a = String(n).toLowerCase(), b = String(slots[i] || '').toLowerCase(); return a.includes('guanti') && b.includes('guanti') ? true : a === b; }) ? '#2e9d4d' : undefined }}
-                          />
-                        </div>
-                      ))}
+                      {[0, 1, 2].map((i) => {
+                        const isAttivo = attunatiEquipaggiati.some((n) => {
+                          const a = String(n).toLowerCase().trim();
+                          const b = String(slots[i] || '').toLowerCase().trim();
+                          return a && b && (a.includes(b) || b.includes(a));
+                        });
+                        return (
+                          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                            <span style={{ ...styles.detail, minWidth: 16, fontWeight: 600 }}>{i + 1}.</span>
+                            <input
+                              value={slots[i]}
+                              onChange={(e) => setSlot(i, e.target.value)}
+                              placeholder={t("equip.sintonia_ph")}
+                              style={{ ...styles.inlineInput, flex: 1, minWidth: 0, padding: '6px 10px', fontSize: 13, background: isAttivo ? 'rgba(46,157,77,0.08)' : undefined, borderColor: isAttivo ? '#2e9d4d' : undefined }}
+                            />
+                          </div>
+                        );
+                      })}
                     </div>
                     
                     <div style={{ background: C.panelLight, padding: '12px 14px', borderRadius: 8, border: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column' }}>
@@ -17319,7 +17321,18 @@ export default function App() {
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 10, minWidth: 0, flexWrap: 'wrap' }}>
                             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                               <button
-                                style={{ ...styles.buttonMini, fontSize: 11, color: C.goldDark, borderColor: C.goldDark, whiteSpace: 'nowrap' }}
+                                style={{
+                                  ...styles.buttonMini,
+                                  fontSize: 11,
+                                  padding: '3px 8px',
+                                  borderRadius: 6,
+                                  color: C.goldDark,
+                                  borderColor: C.goldDark,
+                                  background: 'rgba(201,162,39,0.08)',
+                                  fontWeight: 600,
+                                  whiteSpace: 'nowrap',
+                                  cursor: 'pointer',
+                                }}
                                 title={t('monete.converti_tip')}
                                 onClick={() => {
                                   const mr = d.mr || 0;
@@ -17330,7 +17343,18 @@ export default function App() {
                                 }}
                               >{t('monete.converti')}</button>
                               <button
-                                style={{ ...styles.buttonMini, fontSize: 11, color: '#0077b6', borderColor: '#0077b6', whiteSpace: 'nowrap' }}
+                                style={{
+                                  ...styles.buttonMini,
+                                  fontSize: 11,
+                                  padding: '3px 8px',
+                                  borderRadius: 6,
+                                  color: C.goldDark,
+                                  borderColor: C.goldDark,
+                                  background: 'rgba(201,162,39,0.08)',
+                                  fontWeight: 600,
+                                  whiteSpace: 'nowrap',
+                                  cursor: 'pointer',
+                                }}
                                 title={t('monete.converti_mp_tip')}
                                 onClick={() => {
                                   const mo = d.mo || 0;
