@@ -4675,6 +4675,50 @@ export default function App() {
     setStorico((s) => [voce, ...s].slice(0, 60));
   }
 
+  // Reset automatico del turno (Azione, Azione Bonus, Reazione, Interazione, Movimento) quando tocca al PG nel Combat Tracker
+  const ultimoTurnoPgProcessatoRef = useRef(null);
+  useEffect(() => {
+    if (!combat.attivo || !Array.isArray(combat.combattenti) || combat.combattenti.length === 0) {
+      ultimoTurnoPgProcessatoRef.current = null;
+      return;
+    }
+    const ordinati = [...combat.combattenti].sort((a, b) => (Number(b.iniziativa) || 0) - (Number(a.iniziativa) || 0));
+    const n = ordinati.length;
+    const curTurno = Math.min(Math.max(0, combat.turno), Math.max(0, n - 1));
+    const cbAttivo = ordinati[curTurno];
+    if (!cbAttivo) return;
+
+    const isPgAttivo = cbAttivo.tipo === 'pg' && (
+      cbAttivo.nome === scheda?.nome ||
+      cbAttivo.id === 'pg-attivo' ||
+      ordinati.filter((x) => x.tipo === 'pg').length === 1
+    );
+
+    if (isPgAttivo) {
+      const turnoKey = `${combat.round}-${curTurno}-${cbAttivo.id}`;
+      if (ultimoTurnoPgProcessatoRef.current !== turnoKey) {
+        ultimoTurnoPgProcessatoRef.current = turnoKey;
+        aggiorna({
+          turnoAzioni: {
+            azione: false,
+            bonus: false,
+            interazione: false,
+            movimentoUsato: 0,
+            tatticaAttiva: null,
+          },
+          reazioneUsata: false,
+        });
+        registra({
+          etichetta: '🔄 Turno',
+          tipo: 'turno',
+          dettaglio: `Inizio turno Round ${combat.round}: tocca a ${scheda?.nome || 'te'}! Azioni e movimento ripristinati automaticamente.`,
+        });
+      }
+    } else {
+      ultimoTurnoPgProcessatoRef.current = null;
+    }
+  }, [combat.attivo, combat.round, combat.turno, combat.combattenti, scheda?.nome]);
+
   // --- Combat tracker ---
 
   /** Ordina esplicitamente i combattenti per iniziativa. Mantiene invariato il turno attivo. */
