@@ -3998,11 +3998,11 @@ export default function App() {
       return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
     };
     const tintaClasse = acc ? acc[modo] : t.gold;
-    const coloreGlow = mescola(t.bg, tintaClasse, scuroEff ? 0.30 : 0.17);
-    const glowClasse = `radial-gradient(135% 95% at 50% -14%, ${hexRgba(coloreGlow, scuroEff ? 0.25 : 0.14)}, transparent 62%)`;
-    const auraClasseSotto = `radial-gradient(90% 75% at 50% 105%, ${hexRgba(tintaClasse, scuroEff ? 0.22 : 0.08)}, transparent 72%)`;
-    const ambra = `radial-gradient(70% 46% at 50% -2%, rgba(224,162,74,${scuroEff ? 0.13 : 0.06}), transparent 66%)`;
-    const vignetta = `radial-gradient(116% 116% at 50% 42%, transparent 52%, ${mescola(t.bg, '#000000', scuroEff ? 0.42 : 0.13)} 100%)`;
+    const coloreGlow = mescola(t.bg, tintaClasse, scuroEff ? 0.22 : 0.12);
+    const glowClasse = `radial-gradient(150% 110% at 50% -18%, ${hexRgba(coloreGlow, scuroEff ? 0.15 : 0.08)}, transparent 75%)`;
+    const auraClasseSotto = `radial-gradient(120% 90% at 50% 110%, ${hexRgba(tintaClasse, scuroEff ? 0.13 : 0.05)}, transparent 80%)`;
+    const ambra = `radial-gradient(75% 50% at 50% -2%, rgba(224,162,74,${scuroEff ? 0.09 : 0.04}), transparent 70%)`;
+    const vignetta = `radial-gradient(120% 120% at 50% 42%, transparent 56%, ${mescola(t.bg, '#000000', scuroEff ? 0.38 : 0.11)} 100%)`;
     const sfondoAmbiente = presetDati.sfondo || '';
     const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/';
     const idAmb = presetDati.id;
@@ -4063,9 +4063,9 @@ export default function App() {
       const n = parseInt(m[1], 16);
       return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
     };
-    const aura1 = hexRgba(tintaClasse, scuroEff ? 0.32 : 0.14);
-    const aura2 = hexRgba(tintaClasse, scuroEff ? 0.22 : 0.08);
-    const auraOmbra = `0 4px 22px -2px ${aura1}, 0 12px 34px -4px ${aura2}, 0 1px 3px rgba(0,0,0,${scuroEff ? 0.45 : 0.06})`;
+    const aura1 = hexRgba(tintaClasse, scuroEff ? 0.18 : 0.08);
+    const aura2 = hexRgba(tintaClasse, scuroEff ? 0.12 : 0.04);
+    const auraOmbra = `0 6px 28px -4px ${aura1}, 0 16px 48px -8px ${aura2}, 0 1px 3px rgba(0,0,0,${scuroEff ? 0.35 : 0.05})`;
     set('--c-aura-color', tintaClasse);
     set('--c-shadow-aura', auraOmbra);
 
