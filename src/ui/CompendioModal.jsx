@@ -4,6 +4,7 @@ import { C } from './tema.js';
 import { styles } from './stili.js';
 import { INCANTESIMI_DB } from '../data/incantesimi.js';
 import { INCANTESIMI_XANATHAR } from '../dati/incantesimi-xanathar.js';
+import { INCANTESIMI_TASHA } from '../dati/incantesimi-tasha.js';
 import { ARMI_5E, ARMATURE_5E, STRUMENTI_5E, PESI_OGGETTI, TALENTI_FONTI, CONDIZIONI_5E } from '../data/dati5e.js';
 import { TALENTI_XANATHAR } from '../dati/talenti-xanathar.js';
 import { TALENTI_TASHA } from '../dati/talenti-tasha.js';
@@ -41,8 +42,22 @@ export function CompendioModal({
     const elenco = [];
 
     // 1. Incantesimi
-    const tuttiInc = { ...INCANTESIMI_DB, ...INCANTESIMI_XANATHAR, ...INCANTESIMI_TASHA };
-    for (const [nome, d] of Object.entries(tuttiInc)) {
+    const incMap = new Map();
+    for (const [nome, d] of Object.entries(INCANTESIMI_DB || {})) {
+      incMap.set(nome.toLowerCase(), { nome, ...d });
+    }
+    for (const inc of (INCANTESIMI_XANATHAR || [])) {
+      if (inc && inc.nome) {
+        incMap.set(inc.nome.toLowerCase(), { ...inc });
+      }
+    }
+    for (const inc of (INCANTESIMI_TASHA || [])) {
+      if (inc && inc.nome) {
+        incMap.set(inc.nome.toLowerCase(), { ...inc });
+      }
+    }
+    for (const d of incMap.values()) {
+      const nome = d.nome;
       const desc = d.desc || spiegaIncantesimo(nome) || '';
       elenco.push({
         id: `inc-${nome}`,
