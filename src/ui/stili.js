@@ -761,62 +761,6 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 [data-classe="nessuna"] .angolo-ornamento {
   display: none !important;
 }
-
-/* ===================== TEMI COFANETTI STORICI BECMI ===================== */
-[data-preset="scatola-rossa"] { --c-title: #b91c1c; }
-[data-preset="scatola-blu"]   { --c-title: #1d4ed8; }
-[data-preset="scatola-verde"] { --c-title: #0f766e; }
-[data-preset="scatola-nera"]  { --c-title: #18181b; }
-
-[data-preset^="scatola-"] .barra-superiore-fissa {
-  border: 2px solid #111827 !important;
-  border-radius: 8px !important;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.25) !important;
-}
-
-[data-preset^="scatola-"] .sezione,
-[data-preset^="scatola-"] .profilo-sezione {
-  border: 2px solid #111827 !important;
-  border-radius: 8px !important;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.22) !important;
-}
-
-[data-preset^="scatola-"] .profilo-sezione h2 {
-  border-top: 3px double #111827 !important;
-  border-bottom: 3px double #111827 !important;
-  color: var(--c-title) !important;
-  font-weight: 900 !important;
-  letter-spacing: 3px !important;
-  padding: 6px 0 !important;
-}
-
-[data-preset^="scatola-"] .sezione-titolo {
-  border-top: 3px double #111827 !important;
-  border-bottom: none !important;
-  color: var(--c-title) !important;
-  font-weight: 800 !important;
-  letter-spacing: 2.5px !important;
-}
-
-[data-preset^="scatola-"] .ritratto {
-  border: 3.5px solid #111827 !important;
-  box-shadow: 0 0 0 2px #ffffff, 0 4px 12px rgba(0,0,0,0.35) !important;
-  border-radius: 12px !important;
-}
-
-[data-preset^="scatola-"] .scudo {
-  border: 2px solid #111827 !important;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
-}
-
-[data-preset^="scatola-"] .blocco-car,
-[data-preset^="scatola-"] .blocco-sezione {
-  border: 1.5px solid #111827 !important;
-}
-
-[data-preset^="scatola-"] .angolo-ornamento {
-  display: none !important;
-}
 /* Corpo scheda: le sezioni ora sono a PIENA LARGHEZZA, impilate in verticale.
    L'ordine è controllato con 'order' (Combattimento/Magia prima, poi il resto). */
 .griglia-scheda {

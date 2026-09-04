@@ -1946,7 +1946,7 @@ const URL_ARCHIVIO_PG = (
 const URL_STANZE = (
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_STANZE_URL) || URL_ARCHIVIO_PG
 ).trim();
-const ORDINE_AMBIENTAZIONI = ['default', 'scatola-rossa', 'scatola-blu', 'scatola-verde', 'scatola-nera', 'taverna', 'mercato', 'citta', 'accampamento', 'foresta', 'palude', 'montagna', 'tundra', 'deserto', 'mare', 'tempesta', 'dungeon', 'tempio'];
+const ORDINE_AMBIENTAZIONI = ['default', 'taverna', 'mercato', 'citta', 'accampamento', 'foresta', 'palude', 'montagna', 'tundra', 'deserto', 'mare', 'tempesta', 'dungeon', 'tempio'];
 
 function iconaAmbientazione(id) {
   if (!id || id === 'default') return '📍';

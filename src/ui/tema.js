@@ -45,30 +45,6 @@ export const PRESET_COLORI = [
     scuro: {},
   },
   {
-    id: 'scatola-rossa', nome: '🔴 Scatola Rossa', audio: 'spento',
-    sfondo: 'radial-gradient(circle at 50% 8%, #dc2626 0%, #b91c1c 45%, #7f1d1d 90%, #450a0a 100%)',
-    chiaro: { bg: '#b91c1c', panel: '#ffffff', panelLight: '#faf7f2', border: '#111827', ink: '#111827', inkDim: '#4b5563', gold: '#b91c1c', goldDark: '#991b1b', red: '#dc2626', green: '#15803d', title: '#991b1b' },
-    scuro:  { bg: '#7f1d1d', panel: '#1c1917', panelLight: '#292524', border: '#fca5a5', ink: '#f5f5f4', inkDim: '#a8a29e', gold: '#ef4444', goldDark: '#f87171', red: '#f87171', green: '#4ade80', title: '#fca5a5' },
-  },
-  {
-    id: 'scatola-blu', nome: '🔵 Scatola Blu', audio: 'spento',
-    sfondo: 'radial-gradient(circle at 50% 8%, #2563eb 0%, #1d4ed8 45%, #1e3a8a 90%, #0f172a 100%)',
-    chiaro: { bg: '#1d4ed8', panel: '#ffffff', panelLight: '#f8fafc', border: '#111827', ink: '#111827', inkDim: '#4b5563', gold: '#1d4ed8', goldDark: '#1e40af', red: '#dc2626', green: '#15803d', title: '#1e40af' },
-    scuro:  { bg: '#172554', panel: '#0f172a', panelLight: '#1e293b', border: '#93c5fd', ink: '#f8fafc', inkDim: '#94a3b8', gold: '#3b82f6', goldDark: '#60a5fa', red: '#f87171', green: '#4ade80', title: '#93c5fd' },
-  },
-  {
-    id: 'scatola-verde', nome: '🟢 Scatola Verde', audio: 'spento',
-    sfondo: 'radial-gradient(circle at 50% 8%, #0d9488 0%, #0f766e 45%, #134e4a 90%, #042f2e 100%)',
-    chiaro: { bg: '#0f766e', panel: '#ffffff', panelLight: '#f0fdfa', border: '#111827', ink: '#111827', inkDim: '#4b5563', gold: '#0f766e', goldDark: '#115e59', red: '#dc2626', green: '#15803d', title: '#0f766e' },
-    scuro:  { bg: '#134e4a', panel: '#042f2e', panelLight: '#115e59', border: '#5eead4', ink: '#f0fdfa', inkDim: '#99f6e4', gold: '#14b8a6', goldDark: '#2dd4bf', red: '#f87171', green: '#4ade80', title: '#5eead4' },
-  },
-  {
-    id: 'scatola-nera', nome: '⚫ Scatola Nera', audio: 'spento',
-    sfondo: 'radial-gradient(circle at 50% 8%, #3f3f46 0%, #27272a 45%, #09090b 90%, #000000 100%)',
-    chiaro: { bg: '#18181b', panel: '#ffffff', panelLight: '#fafafa', border: '#111827', ink: '#111827', inkDim: '#52525b', gold: '#b8860b', goldDark: '#854d0e', red: '#dc2626', green: '#15803d', title: '#18181b' },
-    scuro:  { bg: '#09090b', panel: '#18181b', panelLight: '#27272a', border: '#e4e4e7', ink: '#f4f4f5', inkDim: '#a1a1aa', gold: '#fbbf24', goldDark: '#f59e0b', red: '#f87171', green: '#4ade80', title: '#f4f4f5' },
-  },
-  {
     id: 'taverna', nome: '🍺 Taverna', audio: 'taverna',
     sfondo: 'radial-gradient(55% 60% at 0% 20%, rgba(210,120,40,0.15), transparent 62%), radial-gradient(55% 60% at 100% 80%, rgba(180,90,20,0.13), transparent 62%)',
     chiaro: { bg: '#f7f1e8', panel: '#fdfbfa', panelLight: '#f2e8dc', border: '#d8c0a4', ink: '#321c10', inkDim: '#885c40', gold: '#b86214', goldDark: '#8c440a', title: '#8c440a' },
