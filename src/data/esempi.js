@@ -165,7 +165,7 @@ export const VAELION_JSON = {
   versione: "2014",
   nome: "Vaelion (Val) Leafwhisper",
   classe: "Druido",
-  sottoclasse: "Circolo della Luna",
+  sottoclasse: "Circolo del Pastore",
   livello: 10,
   maxTrucchetti: 5,
   pe: 64000,
@@ -330,7 +330,7 @@ export const VAELION_JSON = {
     { id: "v-inv-13", nome: "Sonaglio di zucca essiccata con bacche di agrifoglio", qta: 1, peso: 0.2, equip: true, categoria: "Focus", descrizione: "Oggetto prezioso e focus druidico legato alla sua infanzia tra le Montagne Rauvin." }
   ],
   risorse: [
-    { id: "auto-forma-selvatica", nome: "Forma Bestiale", attuali: 4, max: 4, reset: "breve" },
+    { id: "auto-forma-selvatica", nome: "Forma Selvatica", attuali: 2, max: 2, reset: "breve" },
     { id: "auto-totem-spirituale", nome: "Totem Spirituale (Aura)", attuali: 1, max: 1, reset: "breve" }
   ],
   denari: { mr: 0, ma: 0, me: 0, mo: 250, mp: 0 },
@@ -340,7 +340,7 @@ export const VAELION_JSON = {
   difetti: "Fatica a fidarsi di chi vive nelle grandi città o sfrutta le risorse naturali senza rispetto.",
   nemici: "Orchi della tribù Many Arrows (responsabili dell'attacco al rifugio), cacciatori di frodo e la corruzione latente delle foreste.",
   trattiSpecie: "Retaggio Fatato: Vantaggio ai TS contro l'essere affascinato. La magia non può addormentarti.\nMaschera della Selva: Puoi tentare di nasconderti anche quando sei parzialmente oscurato da fenomeni naturali.\nScurovisione 18m\nLingua dei Boschi: Puoi parlare con bestie e folletti; conosci il Silvano.",
-  privilegi: "PRIVILEGIO BACKGROUND (SCOPERTA):\nSei a conoscenza di un'unica e importantissima verità cosmica o segreto del mondo (il cerchio di pietre, il patto col Signore Fatato e la corruzione latente delle foreste).\n\nFORMA BESTIALE (Azione Bonus):\nGrado Sfida max: GS 3. Forme elementali al 10° livello.\n\nTOTEM SPIRITUALE (Azione Bonus):\nEvoca un'aura di 9m entro 18m per 1 minuto (Orso: +13 PF temp e vantaggio FOR; Unicorno: cure extra; Falco: vantaggio ad attacchi alleati).",
+  privilegi: "PRIVILEGI CIRCOLO DEL PASTORE:\n• Lingua dei Boschi (liv. 2): Comunichi con le bestie e i folletti, e parli, leggi e scrivi il Silvano.\n• Totem Spirituale (liv. 2 - Azione Bonus): Evochi un'aura totemica di 9m entro 18m per 1 minuto (Orso: +15 PF temp e vantaggio alle prove/TS di Forza; Falco: reazione per dare vantaggio agli attacchi e vantaggio a Percezione; Unicorno: +10 PF extra su magie di cura).\n• Evocatore Possente (liv. 6): Bestie e folletti che evochi hanno +2 PF per dado vita e i loro attacchi con armi naturali contano come magici.\n• Spirito Guardiano (liv. 10): Le tue evocazioni nell'aura del totem recuperano 5 PF all'inizio del turno e ottengono PF temp se ridotte a 0 PF.\n\nFORMA SELVATICA (Azione):\nGrado Sfida max 1 (terrestre, nuoto, volo), 2 usi per riposo.\n\nPRIVILEGIO BACKGROUND (SCOPERTA):\nSei a conoscenza di un'unica e importantissima verità cosmica o segreto del mondo (il cerchio di pietre, il patto col Signore Fatato e la corruzione latente delle foreste).",
   note: "ORIGINI & BACKSTORY:\n• Origine: Montagne Rauvin (famiglia di pastori elfici)\n• Affiliazione: Arpisti (rete di studiosi e guerrieri per l'equilibrio)\n• Mentore: Un orso mannaro che gli ha insegnato a rispettare tutte le creature viventi\n• Aspetto Guida: Il fiume inarrestabile gli ricorda il ciclo eterno della natura\n• Oggetto Prezioso: Un sonaglio di zucca essiccata con bacche di agrifoglio\n\nLE ORIGINI & IL PATTO COL PICCOLO POPOLO:\nFin da bambino cercava tracce degli spiriti. Seguendo un agnello smarrito, trovò un cerchio di pietre muschiose e ricevette la maschera d'alabastro da un Signore Fatato. Da quel giorno le bestie divennero compagne e la natura gli parlò con voce primordiale.\n\nIL MASSACRO & GLI ARPISTI:\nDopo l'attacco degli orchi dei Many Arrows in cui morirono i suoi compagni, ha consacrato la vita a proteggere la natura a ogni costo. Si è unito agli Arpisti e ha indagato sulla corruzione delle foreste prima di essere richiamato al Concilio."
 };
 

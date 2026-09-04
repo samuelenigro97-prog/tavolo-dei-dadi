@@ -1092,23 +1092,32 @@ export function calcolaPfCompagno(creatura, scheda) {
   const formula = String(creatura.pfFormula || '').trim();
   const liv = Math.max(1, Math.floor(scheda?.livello) || 1);
   const modInt = modificatore(scheda?.caratteristiche?.intelligenza || 10);
+  let basePf = 10;
 
   if (/5\s*\+\s*5\s*×\s*Livello/i.test(formula) || /5\s*\+\s*5\s*\*\s*Livello/i.test(formula)) {
-    return 5 + 5 * liv;
+    basePf = 5 + 5 * liv;
+  } else if (/4\s*\+\s*4\s*×\s*Livello/i.test(formula) || /4\s*\+\s*4\s*\*\s*Livello/i.test(formula)) {
+    basePf = 4 + 4 * liv;
+  } else if (/1\s*\+\s*Mod\s*INT\s*\+\s*5\s*×\s*Livello/i.test(formula) || /1\s*\+\s*INT\s*\+\s*5\s*\*\s*liv/i.test(formula)) {
+    basePf = Math.max(1, 1 + modInt + 5 * liv);
+  } else if (/2\s*\+\s*Mod\s*INT\s*\+\s*5\s*×\s*Livello/i.test(formula) || /2\s*\+\s*INT\s*\+\s*5\s*\*\s*liv/i.test(formula)) {
+    basePf = Math.max(1, 2 + modInt + 5 * liv);
+  } else if (/5\s*×\s*Livello/i.test(formula)) {
+    basePf = 5 * liv;
+  } else {
+    basePf = Number(creatura.pf) || 10;
   }
-  if (/4\s*\+\s*4\s*×\s*Livello/i.test(formula) || /4\s*\+\s*4\s*\*\s*Livello/i.test(formula)) {
-    return 4 + 4 * liv;
+
+  // Evocatore Possente (Circolo del Pastore liv 6+): +2 PF per ogni dado vita della creatura evocata
+  const isPastore = /pastore|shepherd/i.test(scheda?.sottoclasse || '') || /evocatore possente|mighty summoner/i.test(scheda?.privilegi || scheda?.privilegiSottoclasse || '');
+  const livDruido = /druido/i.test(scheda?.classe || '') ? (livelloDiClasse(scheda, 'druido') || liv) : 0;
+  if (isPastore && (livDruido >= 6 || !/druido/i.test(scheda?.classe || ''))) {
+    const matchDv = formula.match(/^(\d+)d\d+/i);
+    const numDv = matchDv ? parseInt(matchDv[1], 10) : (creatura.gsNum ? Math.max(1, Math.round(creatura.gsNum * 2)) : 1);
+    basePf += 2 * numDv;
   }
-  if (/1\s*\+\s*Mod\s*INT\s*\+\s*5\s*×\s*Livello/i.test(formula) || /1\s*\+\s*INT\s*\+\s*5\s*\*\s*liv/i.test(formula)) {
-    return Math.max(1, 1 + modInt + 5 * liv);
-  }
-  if (/2\s*\+\s*Mod\s*INT\s*\+\s*5\s*×\s*Livello/i.test(formula) || /2\s*\+\s*INT\s*\+\s*5\s*\*\s*liv/i.test(formula)) {
-    return Math.max(1, 2 + modInt + 5 * liv);
-  }
-  if (/5\s*×\s*Livello/i.test(formula)) {
-    return 5 * liv;
-  }
-  return Number(creatura.pf) || 10;
+
+  return basePf;
 }
 
 /**
@@ -1544,6 +1553,51 @@ export function trovaReazioniDisponibili(scheda) {
       innescoEn: 'When a hostile creature enters your reach while wielding a polearm.',
       effettoIt: 'Provochi un attacco di opportunità quando il nemico ENTRA nella tua portata.',
       effettoEn: 'Provoke an opportunity attack when the enemy ENTERS your reach.',
+    });
+  }
+
+  // Reazioni specifiche da Sottoclassi (Circolo del Pastore, Guardiano Ancestrale, Tomba, Natura)
+  if (testoPriv.includes('totem spirituale') || /pastore|shepherd/i.test(scheda?.sottoclasse || '')) {
+    addReazione({
+      nome: 'Totem Spirituale (Falco)',
+      tipo: 'privilegio',
+      innescoIt: 'Quando una creatura compie un tiro per colpire contro un bersaglio nell\'aura del Falco.',
+      innescoEn: 'When a creature makes an attack roll against a target in the Hawk spirit aura.',
+      effettoIt: 'Concedi Vantaggio a quel tiro per colpire.',
+      effettoEn: 'Grant Advantage on that attack roll.',
+    });
+  }
+
+  if (testoPriv.includes('spiriti protettori') || /ancestral/i.test(testoPriv)) {
+    addReazione({
+      nome: 'Spiriti Protettori',
+      tipo: 'privilegio',
+      innescoIt: 'Quando un alleato entro 9m subisce danni mentre sei in ira.',
+      innescoEn: 'When an ally within 30 ft takes damage while you are raging.',
+      effettoIt: 'Riduci il danno subito dall\'alleato di 2d6 (scala a 3d6 e 4d6).',
+      effettoEn: 'Reduce the damage taken by the ally by 2d6 (scales to 3d6 and 4d6).',
+    });
+  }
+
+  if (testoPriv.includes('sentinella della soglia')) {
+    addReazione({
+      nome: 'Sentinella della Soglia',
+      tipo: 'privilegio',
+      innescoIt: 'Quando una creatura entro 9m subisce un colpo critico.',
+      innescoEn: 'When a creature within 30 ft suffers a critical hit.',
+      effettoIt: 'Annulli il colpo critico trasformandolo in un colpo normale.',
+      effettoEn: 'Cancel the critical hit, turning it into a normal hit.',
+    });
+  }
+
+  if (testoPriv.includes('smorzare elementi')) {
+    addReazione({
+      nome: 'Smorzare Elementi',
+      tipo: 'privilegio',
+      innescoIt: 'Quando tu o un alleato entro 9m subite danni da acido, freddo, fuoco, fulmine o tuono.',
+      innescoEn: 'When you or an ally within 30 ft takes acid, cold, fire, lightning, or thunder damage.',
+      effettoIt: 'Concedi resistenza a quel tipo di danno per quell\'attacco.',
+      effettoEn: 'Grant resistance to that damage type for that attack.',
     });
   }
 

@@ -412,84 +412,887 @@ export const SPECIE_5E = {
   'Umano': ['Umano', 'Mezzelfo']
 };
 export const SUBCLASS_PRIVILEGI = {
-  // --- BARBARO (3, 6, 10, 14) — nomi ufficiali Manuale del Giocatore 2024 ---
-  'Berserker': { 3: 'Frenesia', 6: 'Ira Incontenibile', 10: 'Ritorsione', 14: 'Presenza Intimidatoria' },
-  'Cuore Selvaggio': { 3: 'Ira della Natura Selvaggia\nPortavoce degli Animali', 6: 'Aspetto della Natura Selvaggia', 10: 'Portavoce della Natura', 14: 'Potere della Natura Selvaggia' },
-  'Albero del Mondo': { 3: 'Vitalità dell’Albero', 6: 'Rami dell’Albero', 10: 'Radici d’Assalto', 14: 'Viaggio lungo l’Albero' },
-  'Zelota': { 3: 'Furia Divina\nGuerriero degli Dèi', 6: 'Focus Fanatico', 10: 'Presenza Zelante', 14: 'Ira degli Dèi' },
-
-  // --- BARDO (3, 6, 14) — nomi ufficiali 2024 ---
-  'Collegio della Danza': { 3: 'Scarto Smagliante', 6: 'Movimento Ispiratore\nScarto Coordinato', 14: 'Elusione Trainante' },
-  'Collegio del Fascino': { 3: 'Magia Ammaliante\nManto di Ispirazione', 6: 'Manto di Maestosità', 14: 'Maestosità Invitta' },
-  'Collegio della Sapienza': { 3: 'Competenze Bonus\nParole Taglienti', 6: 'Scoperte Magiche', 14: 'Abilità Impareggiabile' },
-  'Collegio del Valore': { 3: 'Addestramento Marziale\nIspirazione in Combattimento', 6: 'Attacco Extra', 14: 'Magia da Combattimento' },
-
-  // --- CHIERICO (3, 6, 17) — nomi ufficiali 2024 ---
-  'Dominio della Vita': { 3: 'Discepolo della Vita\nIncantesimi del Dominio\nPreservare Vita', 6: 'Guaritore Benedetto', 17: 'Guarigione Suprema' },
-  'Dominio della Luce': { 3: 'Bagliore di Interdizione\nFulgore dell’Alba\nIncantesimi del Dominio', 6: 'Bagliore di Interdizione Migliorato', 17: 'Corona di Luce' },
-  'Dominio dell’Inganno': { 3: 'Benedizione dell’Ingannatore\nInvocare Duplicato\nIncantesimi del Dominio', 6: 'Trasposizione dell’Ingannatore', 17: 'Duplicato Migliorato' },
-  'Dominio della Guerra': { 3: 'Colpo Guidato\nSacerdote di Guerra\nIncantesimi del Dominio', 6: 'Benedizione del Dio della Guerra', 17: 'Avatar della Battaglia' },
-
-  // --- DRUIDO (3, 6, 10, 14) — nomi ufficiali 2024 ---
-  'Circolo della Terra': { 3: 'Incantesimi del Circolo\nAusilio dalla Terra', 6: 'Recupero Naturale', 10: 'Interdizione della Natura', 14: 'Rifugio della Natura' },
-  'Circolo della Luna': { 3: 'Incantesimi del Circolo\nForme del Circolo', 10: 'Passo Chiardiluna', 14: 'Forma Lunare' },
-  'Circolo del Mare': { 3: 'Incantesimi del Circolo\nFuria dei Mari', 6: 'Affinità Acquatica', 10: 'Nato dalla Tempesta', 14: 'Dono Oceanico' },
-  'Circolo del Pastore': { 2: 'Lingua dei Boschi\nTotem Spirituale', 6: 'Evocatore Possente', 10: 'Spirito Guardiano', 14: 'Evocazioni Fedeli' },
-  'Circolo delle Stelle': { 3: 'Carta Celeste\nForma Siderale', 6: 'Profezia Cosmica', 10: 'Costellazioni Scintillanti', 14: 'Manto di Stelle' },
-
-  // --- GUERRIERO (3, 7, 10, 15, 18) — nomi ufficiali 2024 ---
-  'Maestro di Battaglia': { 3: 'Studioso di Guerra\nSuperiorità in Combattimento' },
-  'Campione': { 3: 'Atleta Straordinario\nCritico Migliorato', 7: 'Stile di Combattimento Aggiuntivo', 10: 'Guerriero Eroico', 15: 'Critico Superiore', 18: 'Sopravvissuto' },
-  'Cavaliere Mistico': { 3: 'Arma Vincolata\nIncantesimi', 7: 'Magia da Guerra', 10: 'Colpo Mistico', 15: 'Carica Arcana', 18: 'Magia da Guerra Migliorata' },
-  'Guerriero Psionico': { 3: 'Potere Psionico', 7: 'Adepto Telecinetico', 10: 'Scudo Mentale', 15: 'Baluardo della Forza', 18: 'Maestro della Telecinesi' },
-
-  // --- LADRO (3, 9, 13, 17) — nomi ufficiali 2024 ---
-  'Mistificatore Arcano': { 3: 'Gioco di Prestigio della Mano Magica\nIncantesimi', 9: 'Imboscata Magica', 13: 'Ingannatore Versatile', 17: 'Ladro di Incantesimi' },
-  'Assassino': { 3: 'Arnesi dell’Assassino\nAssassinare', 9: 'Maestro Infiltrato', 13: 'Avvelenare Armi', 17: 'Colpo di Morte' },
-  'Lama Spirituale': { 3: 'Lame Psichiche\nPotere Psionico', 9: 'Lame dell’Anima', 13: 'Velo Psichico', 17: 'Squarciare la Mente' },
-  'Furfante': { 3: 'Lavoro al Secondo Piano\nMani Veloci', 9: 'Furtività Suprema', 13: 'Usare Oggetto Magico', 17: 'Riflessi da Furfante' },
-
-  // --- MAGO (3, 6, 10, 14) — nomi ufficiali 2024 ---
-  'Abiuratore': { 3: 'Abiuratore Sapiente\nInterdizione Arcana', 6: 'Interdizione Proiettata', 10: 'Spezzamagia', 14: 'Resistenza agli Incantesimi' },
-  'Divinatore': { 3: 'Divinatore Sapiente\nPortento', 6: 'Divinazione Esperta', 10: 'Il Terzo Occhio', 14: 'Portento Superiore' },
-  'Invocatore': { 3: 'Invocatore Sapiente\nTrucchetto Potente', 6: 'Plasmare Incantesimi', 10: 'Invocazione Potente', 14: 'Saturazione Magica' },
-  'Illusionista': { 3: 'Illusionista Sapiente\nIllusioni Migliorate', 6: 'Creature Spettrali', 10: 'Sosia Illusorio', 14: 'Realtà Illusoria' },
-
-  // --- MONACO (3, 6, 11, 17) — nomi ufficiali 2024 ---
-  'Guerriero della Mano Aperta': { 3: 'Tecnica della Mano Aperta', 6: 'Integrità del Corpo', 11: 'Passo Lesto', 17: 'Palmo Tremante' },
-  'Guerriero della Misericordia': { 3: 'Mano del Dolore\nMano Guaritrice\nStrumenti di Misericordia', 6: 'Tocco del Medico', 11: 'Raffica di Guarigione e Dolore', 17: 'Mano della Misericordia Suprema' },
-  'Guerriero degli Elementi': { 3: 'Manipolare gli Elementi\nSintonia Elementale', 6: 'Esplosione Elementale', 11: 'Passo degli Elementi', 17: 'Quintessenza Elementale' },
-  'Guerriero dell’Ombra': { 3: 'Arti dell’Ombra', 6: 'Passo d’Ombra', 11: 'Passo d’Ombra Migliorato', 17: 'Manto di Ombre' },
-
-  // --- PALADINO (3, 7, 15, 20) — nomi ufficiali 2024 ---
-  'Giuramento di Devozione': { 3: 'Arma Consacrata\nIncantesimi del Giuramento', 7: 'Aura di Devozione', 15: 'Punizione Protettiva', 20: 'Nube Sacra' },
-  'Giuramento di Gloria': { 3: 'Atleta Impareggiabile\nPunizione Ispiratrice\nIncantesimi del Giuramento', 7: 'Aura di Alacrità', 15: 'Difesa Gloriosa', 20: 'Leggenda Vivente' },
-  'Giuramento degli Antichi': { 3: 'Furia della Natura\nIncantesimi del Giuramento', 7: 'Aura Guardiana', 15: 'Sentinella Imperitura', 20: 'Campione degli Antichi' },
-  'Giuramento di Vendetta': { 3: 'Voto di Inimicizia\nIncantesimi del Giuramento', 7: 'Vendetta Implacabile', 15: 'Anima Vendicativa', 20: 'Angelo Vendicatore' },
-
-  // --- RANGER (3, 7, 11, 15) — nomi ufficiali 2024 ---
-  'Signore delle Bestie': { 3: 'Compagno Primordiale', 7: 'Addestramento Eccezionale', 11: 'Furia Bestiale', 15: 'Condividi Incantesimi' },
-  'Viandante Fatato': { 3: 'Colpi Terribili\nFascino Ultraterreno\nIncantesimi del Viandante', 7: 'Scambio Seducente', 11: 'Rinforzi Fatati', 15: 'Viandante Velato' },
-  'Cacciatore delle Tenebre': { 3: 'Imboscata Terrificante\nVista dell’Ombra\nIncantesimi del Cacciatore', 7: 'Mente di Ferro', 11: 'Raffica del Cacciatore', 15: 'Schivata dell’Ombra' },
-  'Cacciatore': { 3: 'Preda del Cacciatore\nSapienza del Cacciatore', 7: 'Tattiche Difensive', 11: 'Preda del Cacciatore Superiore', 15: 'Difesa del Cacciatore Superiore' },
-
-  // --- STREGONE (3, 6, 14, 18) — nomi ufficiali 2024 ---
-  'Stregoneria Aberrante': { 3: 'Conversazione Telepatica\nIncantesimi Psionici', 6: 'Stregoneria Psionica\nDifese Psichiche', 14: 'Rivelazione della Carne', 18: 'Implosione Distorcente' },
-  'Stregoneria Draconica': { 3: 'Incantesimi Draconici\nResilienza Draconica', 6: 'Affinità Elementale', 14: 'Ali di Drago', 18: 'Seguace Draconico' },
-  'Stregoneria della Magia Selvaggia': { 3: 'Impulso di Magia Selvaggia\nOnde di Caos', 6: 'Piegare la Fortuna', 14: 'Caos Controllato', 18: 'Impulsi Domati' },
-  'Stregoneria Meccanica': { 3: 'Incantesimi Meccanici\nRipristino dell’Equilibrio', 6: 'Bastione della Legge', 14: 'Trance dell’Ordine', 18: 'Cavalleria Meccanica' },
-
-  // --- WARLOCK (3, 6, 10, 14) — nomi ufficiali 2024 ---
-  'Patrono Signore Fatato': { 3: 'Incantesimi del Signore Fatato\nMovimenti del Folletto', 6: 'Fuga Nebbiosa', 10: 'Difese Seducenti', 14: 'Magia Ammaliante' },
-  'Patrono Celestiale': { 3: 'Incantesimi Celestiali\nLuce Curatrice', 6: 'Anima Radiosa', 10: 'Resilienza Celestiale', 14: 'Vendetta Incandescente' },
-  'Patrono Immondo': { 3: 'Benedizione dell’Oscuro\nIncantesimi Immondi', 6: 'Fortuna dell’Oscuro', 10: 'Resilienza Immonda', 14: 'Scagliare all’Inferno' },
-  'Patrono Grande Antico': { 3: 'Incantesimi del Grande Antico\nIncantesimi Psichici\nMente Risvegliata', 6: 'Guerriero Chiaroveggente', 10: 'Scudo del Pensiero', 14: 'Creare Servitore' },
-
-  // --- ARTEFICE (3, 5, 9, 15) ---
-  'Alchimista': { 3: 'Competenza: arnesi da alchimista, elisir sperimentale\nIncantesimi: parola guaritrice, raggio di infermità', 5: 'Padronanza alchemica (+INT a cure/danni acido/fuoco/necrotico/veleno)', 9: 'Ricostituente prodigioso (PF temp da elisir)', 15: 'Purezza chimica (resistenze veleno/acido, immunità ad avvelenato)' },
-  'Armaiolo': { 3: 'Competenza: armature pesanti\nArmatura arcana (focus magico, no requisiti Forza)\nModello Guardiano o Infiltratore', 5: 'Attacco extra', 9: 'Modifiche all’armatura (4 parti infondibili, +2 infusioni)', 15: 'Armatura perfetta' },
-  'Artigliere': { 3: 'Competenza: arnesi da intagliatore\nIncantesimi: scudo, dardo tracciante\nCannone arcano (Lanciafiamme, Balista, Protettore)', 5: 'Arma da fuoco arcana (+1d8 danni agli incantesimi)', 9: 'Posizione esplosiva', 15: 'Cannoni fortificati (mezza copertura, 2 cannoni)' },
-  'Fabbro da Guerra': { 3: 'Competenza: armi da guerra\nPronto alla battaglia (INT per colpire e danni)\nDifensore d’acciaio (fedele costrutto da combattimento)', 5: 'Attacco extra', 9: 'Colpo arcano (2d6 forza extra o cura 2d6)', 15: 'Difensore migliorato (colpo arcano 4d6, +2 CA difensore)' },
+  "Berserker": {
+    "3": "Frenesia",
+    "6": "Ira Incontenibile",
+    "10": "Ritorsione",
+    "14": "Presenza Intimidatoria"
+  },
+  "Cuore Selvaggio": {
+    "3": "Ira della Natura Selvaggia\nPortavoce degli Animali",
+    "6": "Aspetto della Natura Selvaggia",
+    "10": "Portavoce della Natura",
+    "14": "Potere della Natura Selvaggia"
+  },
+  "Albero del Mondo": {
+    "3": "Vitalità dell’Albero",
+    "6": "Rami dell’Albero",
+    "10": "Radici d’Assalto",
+    "14": "Viaggio lungo l’Albero"
+  },
+  "Zelota": {
+    "3": "Furia Divina\nGuerriero degli Dèi",
+    "6": "Focus Fanatico",
+    "10": "Presenza Zelante",
+    "14": "Ira degli Dèi"
+  },
+  "Cammino dello Zelota": {
+    "3": "Furia Divina\nGuerriero degli Dèi",
+    "6": "Concentrazione Fanatica",
+    "10": "Presenza Zelante",
+    "14": "Ira Inestinguibile"
+  },
+  "Cammino della Bestia": {
+    "3": "Forma della Bestia",
+    "6": "Anima Bestiale",
+    "10": "Furia Infettiva",
+    "14": "Richiamo della Caccia"
+  },
+  "Cammino della Magia Selvaggia": {
+    "3": "Consapevolezza Magica\nImpulso di Magia Selvaggia",
+    "6": "Infusione Magica",
+    "10": "Ripercussione Instabile",
+    "14": "Magia Controllata"
+  },
+  "Guardiano Ancestrale": {
+    "3": "Protettori Ancestrali",
+    "6": "Spiriti Protettori",
+    "10": "Consultare gli Spiriti",
+    "14": "Antenati Vendicativi"
+  },
+  "Cammino del Guardiano Ancestrale": {
+    "3": "Protettori Ancestrali",
+    "6": "Spiriti Protettori",
+    "10": "Consultare gli Spiriti",
+    "14": "Antenati Vendicativi"
+  },
+  "Cammino dell’Araldo della Tempesta": {
+    "3": "Aura Tempestosa",
+    "6": "Anima Tempestosa",
+    "10": "Tempesta Protettrice",
+    "14": "Tempesta Furibonda"
+  },
+  "Cammino dell'Araldo della Tempesta": {
+    "3": "Aura Tempestosa",
+    "6": "Anima Tempestosa",
+    "10": "Tempesta Protettrice",
+    "14": "Tempesta Furibonda"
+  },
+  "Guerriero Totemico": {
+    "3": "Spirito Totemico\nParlare con gli Animali",
+    "6": "Aspetto della Bestia",
+    "10": "Camminatore dello Spirito",
+    "14": "Sintonizzazione Totemica"
+  },
+  "Cammino del Guerriero Totemico": {
+    "3": "Spirito Totemico\nParlare con gli Animali",
+    "6": "Aspetto della Bestia",
+    "10": "Camminatore dello Spirito",
+    "14": "Sintonizzazione Totemica"
+  },
+  "Collegio della Danza": {
+    "3": "Scarto Smagliante",
+    "6": "Movimento Ispiratore\nScarto Coordinato",
+    "14": "Elusione Trainante"
+  },
+  "Collegio del Fascino": {
+    "3": "Magia Ammaliante\nManto di Ispirazione",
+    "6": "Manto di Maestosità",
+    "14": "Maestosità Invitta"
+  },
+  "Collegio dell’Incanto": {
+    "3": "Manto di Ispirazione\nEsibizione Estasiante",
+    "6": "Manto di Maestà",
+    "14": "Maestosità Invitta"
+  },
+  "Collegio dell'Incanto": {
+    "3": "Manto di Ispirazione\nEsibizione Estasiante",
+    "6": "Manto di Maestà",
+    "14": "Maestosità Invitta"
+  },
+  "Collegio della Sapienza": {
+    "3": "Competenze Bonus\nParole Taglienti",
+    "6": "Scoperte Magiche",
+    "14": "Abilità Impareggiabile"
+  },
+  "Collegio del Valore": {
+    "3": "Addestramento Marziale\nIspirazione in Combattimento",
+    "6": "Attacco Extra",
+    "14": "Magia da Combattimento"
+  },
+  "Collegio della Creazione": {
+    "3": "Mota di Potenziale\nEsibizione della Creazione",
+    "6": "Animazione Creativa",
+    "14": "Crescendo Creativo"
+  },
+  "Collegio dell’Eloquenza": {
+    "3": "Linguaggio d’Argento\nParole Inquietanti",
+    "6": "Ispirazione Infallibile\nDiscorso Universale",
+    "14": "Ispirazione Contagiosa"
+  },
+  "Collegio dell'Eloquenza": {
+    "3": "Linguaggio d’Argento\nParole Inquietanti",
+    "6": "Ispirazione Infallibile\nDiscorso Universale",
+    "14": "Ispirazione Contagiosa"
+  },
+  "Collegio delle Spade": {
+    "3": "Competenze Bonus\nStile di Combattimento\nFioritura della Lama",
+    "6": "Attacco Extra",
+    "14": "Fioritura Superiore"
+  },
+  "Collegio degli Spadaccini": {
+    "3": "Competenze Bonus\nStile di Combattimento\nFioritura della Lama",
+    "6": "Attacco Extra",
+    "14": "Fioritura Superiore"
+  },
+  "Collegio dei Sussurri": {
+    "3": "Lame Psichiche\nParole di Terrore",
+    "6": "Manto dei Sussurri",
+    "14": "Sapere Oscuro"
+  },
+  "Dominio della Vita": {
+    "1": "Competenze Bonus\nDiscepolo della Vita",
+    "2": "Incanalare Divinità: Preservare Vita",
+    "3": "Discepolo della Vita\nIncantesimi del Dominio\nPreservare Vita",
+    "6": "Guaritore Benedetto",
+    "8": "Colpo Divino",
+    "17": "Guarigione Suprema"
+  },
+  "Dominio della Luce": {
+    "1": "Trucchetto Bonus\nBagliore di Interdizione",
+    "2": "Incanalare Divinità: Fulgore dell’Alba",
+    "3": "Bagliore di Interdizione\nFulgore dell’Alba\nIncantesimi del Dominio",
+    "6": "Bagliore di Interdizione Migliorato",
+    "8": "Lancio Incantesimi Potenziato",
+    "17": "Corona di Luce"
+  },
+  "Dominio dell’Inganno": {
+    "1": "Benedizione dell’Ingannatore",
+    "2": "Incanalare Divinità: Invocare Duplicato",
+    "3": "Benedizione dell’Ingannatore\nInvocare Duplicato\nIncantesimi del Dominio",
+    "6": "Trasposizione dell’Ingannatore",
+    "8": "Colpo Divino",
+    "17": "Duplicato Migliorato"
+  },
+  "Dominio dell'Inganno": {
+    "1": "Benedizione dell’Ingannatore",
+    "2": "Incanalare Divinità: Invocare Duplicato",
+    "3": "Benedizione dell’Ingannatore\nInvocare Duplicato\nIncantesimi del Dominio",
+    "6": "Trasposizione dell’Ingannatore",
+    "8": "Colpo Divino",
+    "17": "Duplicato Migliorato"
+  },
+  "Dominio della Guerra": {
+    "1": "Competenze Bonus\nSacerdote di Guerra",
+    "2": "Incanalare Divinità: Colpo Guidato",
+    "3": "Colpo Guidato\nSacerdote di Guerra\nIncantesimi del Dominio",
+    "6": "Benedizione del Dio della Guerra",
+    "8": "Colpo Divino",
+    "17": "Avatar della Battaglia"
+  },
+  "Dominio dell’Ordine": {
+    "1": "Competenze Bonus\nVoce dell’Autorità",
+    "2": "Incanalare Divinità: Ordine Intimidatorio",
+    "3": "Voce dell’Autorità\nIncantesimi del Dominio",
+    "6": "Incarnazione della Legge",
+    "8": "Colpo Divino",
+    "17": "Collera dell’Ordine"
+  },
+  "Dominio dell'Ordine": {
+    "1": "Competenze Bonus\nVoce dell’Autorità",
+    "2": "Incanalare Divinità: Ordine Intimidatorio",
+    "3": "Voce dell’Autorità\nIncantesimi del Dominio",
+    "6": "Incarnazione della Legge",
+    "8": "Colpo Divino",
+    "17": "Collera dell’Ordine"
+  },
+  "Dominio della Pace": {
+    "1": "Implementazione di Pace\nLegame Rincuorante",
+    "2": "Incanalare Divinità: Balsamo della Pace",
+    "3": "Legame Rincuorante\nIncantesimi del Dominio",
+    "6": "Legame Protettivo",
+    "8": "Incantesimi Potenti",
+    "17": "Legame Espanso"
+  },
+  "Dominio del Crepuscolo": {
+    "1": "Competenze Bonus\nOcchi della Notte\nVigilante Cauto",
+    "2": "Incanalare Divinità: Santuario del Crepuscolo",
+    "3": "Occhi della Notte\nIncantesimi del Dominio",
+    "6": "Passi del Crepuscolo",
+    "8": "Colpo Divino",
+    "17": "Santuario Illuminante"
+  },
+  "Dominio della Tempesta": {
+    "1": "Competenze Bonus\nFuria della Tempesta",
+    "2": "Incanalare Divinità: Furia Distruttiva",
+    "3": "Furia della Tempesta\nIncantesimi del Dominio",
+    "6": "Attacco Folgorante",
+    "8": "Colpo Divino",
+    "17": "Nato dalla Tempesta"
+  },
+  "Dominio della Natura": {
+    "1": "Accolito della Natura\nCompetenze Bonus",
+    "2": "Incanalare Divinità: Dominare Animali e Piante",
+    "3": "Accolito della Natura\nIncantesimi del Dominio",
+    "6": "Smorzare Elementi",
+    "8": "Colpo Divino",
+    "17": "Maestro della Natura"
+  },
+  "Dominio della Forgia": {
+    "1": "Competenze Bonus\nBenedizione della Forgia",
+    "2": "Incanalare Divinità: Creazione dell’Artigiano",
+    "3": "Benedizione della Forgia\nIncantesimi del Dominio",
+    "6": "Anima della Forgia",
+    "8": "Colpo Divino",
+    "17": "Santuario della Forgia"
+  },
+  "Dominio della Tomba": {
+    "1": "Cerchio della Mortalità\nOcchi della Tomba",
+    "2": "Incanalare Divinità: Sentiero per la Tomba",
+    "3": "Cerchio della Mortalità\nIncantesimi del Dominio",
+    "6": "Sentinella della Soglia",
+    "8": "Incantesimi Potenti",
+    "17": "Custode delle Anime"
+  },
+  "Circolo della Terra": {
+    "2": "Recupero Naturale\nIncantesimi del Circolo",
+    "3": "Incantesimi del Circolo\nAusilio dalla Terra",
+    "6": "Passo della Terra\nRecupero Naturale",
+    "10": "Interdizione della Natura",
+    "14": "Rifugio della Natura"
+  },
+  "Circolo della Luna": {
+    "2": "Forme del Circolo\nNutrimento Lunare",
+    "3": "Incantesimi del Circolo\nForme del Circolo",
+    "6": "Colpo Primordiale",
+    "10": "Forme Elementali\nPasso Chiardiluna",
+    "14": "Forma Lunare\nMille Forme"
+  },
+  "Circolo del Mare": {
+    "3": "Incantesimi del Circolo\nFuria dei Mari",
+    "6": "Affinità Acquatica",
+    "10": "Nato dalla Tempesta",
+    "14": "Dono Oceanico"
+  },
+  "Circolo del Pastore": {
+    "2": "Lingua dei Boschi\nTotem Spirituale",
+    "3": "Totem Spirituale\nLingua dei Boschi",
+    "6": "Evocatore Possente",
+    "10": "Spirito Guardiano",
+    "14": "Evocazioni Fedeli"
+  },
+  "Circolo delle Stelle": {
+    "2": "Carta Celeste\nForma Siderale",
+    "3": "Carta Celeste\nForma Siderale",
+    "6": "Profezia Cosmica",
+    "10": "Costellazioni Scintillanti",
+    "14": "Manto di Stelle"
+  },
+  "Circolo delle Spore": {
+    "2": "Spore dell’Aura\nEntità Simbiotica",
+    "3": "Entità Simbiotica\nIncantesimi del Circolo",
+    "6": "Infestazione Fungina",
+    "10": "Spore Diffuse",
+    "14": "Corpo Fungino"
+  },
+  "Circolo del Fuoco Selvaggio": {
+    "2": "Incantesimi del Fuoco\nSpirito del Fuoco Selvaggio",
+    "3": "Spirito del Fuoco Selvaggio\nIncantesimi del Circolo",
+    "6": "Legame Migliorato",
+    "10": "Fiamme Cauterizzanti",
+    "14": "Ritorno Fiammeggiante"
+  },
+  "Circolo dei Sogni": {
+    "2": "Balsamo della Corte d’Estate",
+    "3": "Balsamo della Corte d’Estate",
+    "6": "Focolare di Luce Lunare e Ombra",
+    "10": "Sentieri Nascosti",
+    "14": "Camminatore dei Sogni"
+  },
+  "Maestro di Battaglia": {
+    "3": "Superiorità in Combattimento\nStudioso di Guerra",
+    "7": "Conosci il Tuo Nemico",
+    "10": "Superiorità Migliorata",
+    "15": "Implacabile",
+    "18": "Superiorità Suprema"
+  },
+  "Campione": {
+    "3": "Critico Migliorato\nAtleta Straordinario",
+    "7": "Stile di Combattimento Aggiuntivo",
+    "10": "Guerriero Eroico",
+    "15": "Critico Superiore",
+    "18": "Sopravvissuto"
+  },
+  "Cavaliere Mistico": {
+    "3": "Lancio Incantesimi\nArma Vincolata",
+    "7": "Magia da Guerra",
+    "10": "Colpo Mistico",
+    "15": "Carica Arcana",
+    "18": "Magia da Guerra Migliorata"
+  },
+  "Guerriero Psionico": {
+    "3": "Potere Psionico",
+    "7": "Adepto Telecinetico",
+    "10": "Scudo Mentale",
+    "15": "Baluardo della Forza",
+    "18": "Maestro della Telecinesi"
+  },
+  "Psi Guerriero": {
+    "3": "Potere Psionico",
+    "7": "Adepto Telecinetico",
+    "10": "Scudo Mentale",
+    "15": "Baluardo della Forza",
+    "18": "Maestro della Telecinesi"
+  },
+  "Cavaliere Runico": {
+    "3": "Intagliatore di Rune\nStatura Gigantesca",
+    "7": "Scudo Runico",
+    "10": "Statura Grande",
+    "15": "Maestro delle Rune",
+    "18": "Colosso Runico"
+  },
+  "Arciere Arcano": {
+    "3": "Conoscenza Arcana\nTiro Arcano",
+    "7": "Freccia Magica\nTiro Curvo",
+    "10": "Tiro Arcano Aggiuntivo",
+    "15": "Tiro Continuo",
+    "18": "Tiro Arcano Migliorato"
+  },
+  "Cavaliere": {
+    "3": "Nato in Sella\nMarchio Implacabile",
+    "7": "Nobile Difensore",
+    "10": "Trattenere la Linea",
+    "15": "Carica Feroce",
+    "18": "Vigilante Vigile"
+  },
+  "Samurai": {
+    "3": "Spirito Combattivo\nCortigiano Elegante",
+    "7": "Saggezza Applicata",
+    "10": "Spirito Instancabile",
+    "15": "Colpo Rapido",
+    "18": "Forza di Volontà"
+  },
+  "Mistificatore Arcano": {
+    "3": "Gioco di Prestigio della Mano Magica\nLancio Incantesimi",
+    "9": "Imboscata Magica",
+    "13": "Ingannatore Versatile",
+    "17": "Ladro di Incantesimi"
+  },
+  "Assassino": {
+    "3": "Arnesi dell’Assassino\nAssassinare",
+    "9": "Maestro Infiltrato",
+    "13": "Avvelenare Armi\nImpostore",
+    "17": "Colpo di Morte"
+  },
+  "Lama Spirituale": {
+    "3": "Lame Psichiche\nPotere Psionico",
+    "9": "Lame dell’Anima",
+    "13": "Velo Psichico",
+    "17": "Squarciare la Mente"
+  },
+  "Furfante": {
+    "3": "Mani Veloci\nLavoro al Secondo Piano",
+    "9": "Furtività Suprema",
+    "13": "Usare Oggetto Magico",
+    "17": "Riflessi da Furfante"
+  },
+  "Fantasma": {
+    "3": "Sussurri dei Morti\nLamenti dall’Oltretomba",
+    "9": "Pegni di Morte",
+    "13": "Forma Spettrale",
+    "17": "Campione di Morte"
+  },
+  "Inquisitore": {
+    "3": "Orecchio per l’Inganno\nOcchio per il Dettaglio\nIntuizione di Combattimento",
+    "9": "Occhio da Segugio",
+    "13": "Occhio Cieco",
+    "17": "Occhio per la Debolezza"
+  },
+  "Inquisitivo": {
+    "3": "Orecchio per l’Inganno\nOcchio per il Dettaglio\nIntuizione di Combattimento",
+    "9": "Occhio da Segugio",
+    "13": "Occhio Cieco",
+    "17": "Occhio per la Debolezza"
+  },
+  "Pianificatore": {
+    "3": "Maestro degli Intrighi\nMaestro Tattico",
+    "9": "Manipolatore Sagace",
+    "13": "Guida Fuorviante",
+    "17": "Anima Impenetrabile"
+  },
+  "Mente Eccelsa": {
+    "3": "Maestro degli Intrighi\nMaestro Tattico",
+    "9": "Manipolatore Sagace",
+    "13": "Guida Fuorviante",
+    "17": "Anima Impenetrabile"
+  },
+  "Spadaccino": {
+    "3": "Eleganza Audace\nGioco di Gambe Frizzante",
+    "9": "Fascino Sfacciato",
+    "13": "Eleganza Manovrata",
+    "17": "Maestro del Duello"
+  },
+  "Scout": {
+    "3": "Guida Esperta\nSchivata del Tiratore",
+    "9": "Movimento Superiore",
+    "13": "Maestro dell’Imboscata",
+    "17": "Attacco Improvviso"
+  },
+  "Esploratore": {
+    "3": "Guida Esperta\nSchivata del Tiratore",
+    "9": "Movimento Superiore",
+    "13": "Maestro dell’Imboscata",
+    "17": "Attacco Improvviso"
+  },
+  "Abiuratore": {
+    "2": "Abiuratore Sapiente\nInterdizione Arcana",
+    "3": "Abiuratore Sapiente\nInterdizione Arcana",
+    "6": "Interdizione Proiettata",
+    "10": "Spezzamagia",
+    "14": "Resistenza agli Incantesimi"
+  },
+  "Divinatore": {
+    "2": "Divinatore Sapiente\nPortento",
+    "3": "Divinatore Sapiente\nPortento",
+    "6": "Divinazione Esperta",
+    "10": "Il Terzo Occhio",
+    "14": "Portento Superiore"
+  },
+  "Invocatore": {
+    "2": "Invocatore Sapiente\nPlasmare Incantesimi",
+    "3": "Invocatore Sapiente\nTrucchetto Potente",
+    "6": "Plasmare Incantesimi\nTrucchetto Potente",
+    "10": "Invocazione Potente",
+    "14": "Saturazione Magica"
+  },
+  "Illusionista": {
+    "2": "Illusionista Sapiente\nIllusioni Migliorate",
+    "3": "Illusionista Sapiente\nIllusioni Migliorate",
+    "6": "Creature Spettrali",
+    "10": "Sosia Illusorio",
+    "14": "Realtà Illusoria"
+  },
+  "Cantore della Lama": {
+    "2": "Addestramento da Guerra e Canzone\nCanto della Lama",
+    "3": "Canto della Lama",
+    "6": "Attacco Extra",
+    "10": "Canto di Difesa",
+    "14": "Canto di Vittoria"
+  },
+  "Ordine degli Scribi": {
+    "2": "Penna del Mago\nGrimorio Risvegliato",
+    "3": "Grimorio Risvegliato",
+    "6": "Manifesto del Grimorio",
+    "10": "Maestro degli Scroll",
+    "14": "Uno con la Parola"
+  },
+  "Necromante": {
+    "2": "Necromante Sapiente\nRaccolto Oscuro",
+    "3": "Raccolto Oscuro",
+    "6": "Servi Non Morti",
+    "10": "Inanimato alla Morte",
+    "14": "Comandare Non Morti"
+  },
+  "Trasmutatore": {
+    "2": "Trasmutatore Sapiente\nAlchimia Minore",
+    "3": "Alchimia Minore",
+    "6": "Pietra del Trasmutatore",
+    "10": "Mutaforma",
+    "14": "Maestro Trasmutatore"
+  },
+  "Ammaliatore": {
+    "2": "Ammaliatore Sapiente\nSguardo Ipnotico",
+    "3": "Sguardo Ipnotico",
+    "6": "Fascino Istintivo",
+    "10": "Incantesimo Diviso",
+    "14": "Modificare Ricordi"
+  },
+  "Evocatore": {
+    "2": "Evocatore Sapiente\nEvocazione Minore",
+    "3": "Evocazione Minore",
+    "6": "Trasposizione Benigna",
+    "10": "Evocazione Focalizzata",
+    "14": "Evocazioni Durevoli"
+  },
+  "Mago della Guerra": {
+    "2": "Deflessione Arcana\nIniziativa Tattica",
+    "3": "Deflessione Arcana",
+    "6": "Impulso di Potere",
+    "10": "Magia Durevole",
+    "14": "Deflessione Superiore"
+  },
+  "Magia della Guerra": {
+    "2": "Deflessione Arcana\nIniziativa Tattica",
+    "3": "Deflessione Arcana",
+    "6": "Impulso di Potere",
+    "10": "Magia Durevole",
+    "14": "Deflessione Superiore"
+  },
+  "Guerriero della Mano Aperta": {
+    "3": "Tecnica della Mano Aperta",
+    "6": "Integrità del Corpo",
+    "11": "Passo Lesto\nTranquillità",
+    "17": "Palmo Tremante"
+  },
+  "Guerriero della Misericordia": {
+    "3": "Mano del Dolore\nMano Guaritrice\nStrumenti di Misericordia",
+    "6": "Tocco del Medico",
+    "11": "Raffica di Guarigione e Dolore",
+    "17": "Mano della Misericordia Suprema"
+  },
+  "Via della Misericordia": {
+    "3": "Mano del Dolore\nMano Guaritrice\nStrumenti di Misericordia",
+    "6": "Tocco del Medico",
+    "11": "Raffica di Guarigione e Dolore",
+    "17": "Mano della Misericordia Suprema"
+  },
+  "Guerriero degli Elementi": {
+    "3": "Manipolare gli Elementi\nSintonia Elementale",
+    "6": "Esplosione Elementale",
+    "11": "Passo degli Elementi",
+    "17": "Quintessenza Elementale"
+  },
+  "Guerriero dell’Ombra": {
+    "3": "Arti dell’Ombra",
+    "6": "Passo d’Ombra",
+    "11": "Passo d’Ombra Migliorato\nInvisibilità nell’Ombra",
+    "17": "Manto di Ombre\nOpportunista"
+  },
+  "Guerriero dell'Ombra": {
+    "3": "Arti dell’Ombra",
+    "6": "Passo d’Ombra",
+    "11": "Passo d’Ombra Migliorato\nInvisibilità nell’Ombra",
+    "17": "Manto di Ombre\nOpportunista"
+  },
+  "Via del Sé Astrale": {
+    "3": "Braccia del Sé Astrale",
+    "6": "Volto del Sé Astrale",
+    "11": "Corpo del Sé Astrale",
+    "17": "Sé Astrale Risvegliato"
+  },
+  "Via della Forma Astrale": {
+    "3": "Braccia del Sé Astrale",
+    "6": "Volto del Sé Astrale",
+    "11": "Corpo del Sé Astrale",
+    "17": "Sé Astrale Risvegliato"
+  },
+  "Via del Maestro Ubriaco": {
+    "3": "Maestria dell’Ubriaco\nTecnica Ubriaca",
+    "6": "Passo Barcollante",
+    "11": "Fortuna dell’Ubriaco",
+    "17": "Furia Ubriaca"
+  },
+  "Via del Kensei": {
+    "3": "Armi del Kensei\nParata Agile\nColpo del Kensei",
+    "6": "Uno con la Lama",
+    "11": "Affilare la Lama",
+    "17": "Precisione Infallibile"
+  },
+  "Via dell’Anima Solare": {
+    "3": "Dardo Radioso del Sole",
+    "6": "Colpo dell’Onda Solare",
+    "11": "Esplosione del Sole Solare",
+    "17": "Scudo Solare"
+  },
+  "Via dell'Anima Solare": {
+    "3": "Dardo Radioso del Sole",
+    "6": "Colpo dell’Onda Solare",
+    "11": "Esplosione del Sole Solare",
+    "17": "Scudo Solare"
+  },
+  "Giuramento di Devozione": {
+    "3": "Arma Consacrata\nIncantesimi del Giuramento\nScacciare l’Empio",
+    "7": "Aura di Devozione",
+    "15": "Punizione Protettiva\nPurezza di Spirito",
+    "20": "Nube Sacra\nSanto della Luce"
+  },
+  "Giuramento di Gloria": {
+    "3": "Atleta Impareggiabile\nPunizione Ispiratrice\nIncantesimi del Giuramento",
+    "7": "Aura di Alacrità",
+    "15": "Difesa Gloriosa",
+    "20": "Leggenda Vivente"
+  },
+  "Giuramento della Gloria": {
+    "3": "Atleta Impareggiabile\nPunizione Ispiratrice\nIncantesimi del Giuramento",
+    "7": "Aura di Alacrità",
+    "15": "Difesa Gloriosa",
+    "20": "Leggenda Vivente"
+  },
+  "Giuramento degli Antichi": {
+    "3": "Furia della Natura\nIncantesimi del Giuramento\nScacciare l’Infedele",
+    "7": "Aura Guardiana",
+    "15": "Sentinella Imperitura",
+    "20": "Campione degli Antichi"
+  },
+  "Giuramento di Vendetta": {
+    "3": "Voto di Inimicizia\nIncantesimi del Giuramento",
+    "7": "Vendetta Implacabile",
+    "15": "Anima Vendicativa",
+    "20": "Angelo Vendicatore"
+  },
+  "Giuramento degli Osservatori": {
+    "3": "Volontà dell’Osservatore\nRimprovero dell’Abisso\nIncantesimi del Giuramento",
+    "7": "Aura della Sentinella",
+    "15": "Vendetta della Sentinella",
+    "20": "Baluardo Mortale"
+  },
+  "Giuramento di Conquista": {
+    "3": "Presenza Conquistatrice\nColpo Guidato\nIncantesimi del Giuramento",
+    "7": "Aura di Conquista",
+    "15": "Rimprovero Disdegnoso",
+    "20": "Conquistatore Invincibile"
+  },
+  "Giuramento di Redenzione": {
+    "3": "Emissario di Pace\nRimprovero al Violento\nIncantesimi del Giuramento",
+    "7": "Aura del Guardiano",
+    "15": "Spirito Protettivo",
+    "20": "Emissario di Redenzione"
+  },
+  "Giuramento della Corona": {
+    "3": "Sfida della Corona\nTrasformare le Maree\nIncantesimi del Giuramento",
+    "7": "Fedeltà Divina",
+    "15": "Spirito Incrollabile",
+    "20": "Campione Sublime"
+  },
+  "Signore delle Bestie": {
+    "3": "Compagno Primordiale\nCompagno del Ranger",
+    "7": "Addestramento Eccezionale",
+    "11": "Furia Bestiale",
+    "15": "Condividi Incantesimi"
+  },
+  "Viandante Fatato": {
+    "3": "Colpi Terribili\nFascino Ultraterreno\nIncantesimi del Viandante",
+    "7": "Scambio Seducente",
+    "11": "Rinforzi Fatati",
+    "15": "Viandante Velato"
+  },
+  "Cacciatore delle Tenebre": {
+    "3": "Imboscata Terrificante\nVista dell’Ombra\nIncantesimi del Cacciatore",
+    "7": "Mente di Ferro",
+    "11": "Raffica del Cacciatore",
+    "15": "Schivata dell’Ombra"
+  },
+  "Cacciatore": {
+    "3": "Preda del Cacciatore\nSapienza del Cacciatore",
+    "7": "Tattiche Difensive",
+    "11": "Preda del Cacciatore Superiore",
+    "15": "Difesa del Cacciatore Superiore"
+  },
+  "Custode dello Sciame": {
+    "3": "Sciame Raccolto\nIncantesimi dello Sciame",
+    "7": "Marea Sciamante",
+    "11": "Sciame Possente",
+    "15": "Dispersione Sciamante"
+  },
+  "Guardiano dello Sciame": {
+    "3": "Sciame Raccolto\nIncantesimi dello Sciame",
+    "7": "Marea Sciamante",
+    "11": "Sciame Possente",
+    "15": "Dispersione Sciamante"
+  },
+  "Uccisore di Mostri": {
+    "3": "Senso del Cacciatore\nPreda dell’Uccisore\nIncantesimi dell’Uccisore",
+    "7": "Difesa Soprannaturale",
+    "11": "Nemesi della Nemesi",
+    "15": "Contrattacco dell’Uccisore"
+  },
+  "Guardiano dell’Orizzonte": {
+    "3": "Portale Rilevato\nColpo Planare\nIncantesimi del Guardiano",
+    "7": "Passo Spettrale",
+    "11": "Attacco Distorcente",
+    "15": "Difesa Spettrale"
+  },
+  "Viandante dell'Orizzonte": {
+    "3": "Portale Rilevato\nColpo Planare\nIncantesimi del Guardiano",
+    "7": "Passo Spettrale",
+    "11": "Attacco Distorcente",
+    "15": "Difesa Spettrale"
+  },
+  "Stregoneria Aberrante": {
+    "1": "Conversazione Telepatica\nIncantesimi Psionici",
+    "3": "Conversazione Telepatica\nIncantesimi Psionici",
+    "6": "Stregoneria Psionica\nDifese Psichiche",
+    "14": "Rivelazione della Carne",
+    "18": "Implosione Distorcente"
+  },
+  "Mente Aberrante": {
+    "1": "Conversazione Telepatica\nIncantesimi Psionici",
+    "3": "Conversazione Telepatica\nIncantesimi Psionici",
+    "6": "Stregoneria Psionica\nDifese Psichiche",
+    "14": "Rivelazione della Carne",
+    "18": "Implosione Distorcente"
+  },
+  "Stregoneria Meccanica": {
+    "1": "Incantesimi Meccanici\nRipristino dell’Equilibrio",
+    "3": "Incantesimi Meccanici\nRipristino dell’Equilibrio",
+    "6": "Bastione della Legge",
+    "14": "Trance dell’Ordine",
+    "18": "Cavalleria Meccanica"
+  },
+  "Anima dell'Orologio": {
+    "1": "Incantesimi Meccanici\nRipristino dell’Equilibrio",
+    "3": "Incantesimi Meccanici\nRipristino dell’Equilibrio",
+    "6": "Bastione della Legge",
+    "14": "Trance dell’Ordine",
+    "18": "Cavalleria Meccanica"
+  },
+  "Stregoneria Draconica": {
+    "1": "Resilienza Draconica\nGuida dei Draghi",
+    "3": "Incantesimi Draconici\nResilienza Draconica",
+    "6": "Affinità Elementale",
+    "14": "Ali di Drago",
+    "18": "Seguace Draconico\nPresenza Draconica"
+  },
+  "Stregoneria della Magia Selvaggia": {
+    "1": "Impulso di Magia Selvaggia\nOnde di Caos",
+    "3": "Impulso di Magia Selvaggia\nOnde di Caos",
+    "6": "Piegare la Fortuna",
+    "14": "Caos Controllato",
+    "18": "Impulsi Domati\nBombardamento Magico"
+  },
+  "Stregoneria delle Ombre": {
+    "1": "Occhi dell’Oscurità\nForza delle Ombre",
+    "3": "Occhi dell’Oscurità\nForza delle Ombre",
+    "6": "Segugio del Presagio Infausto",
+    "14": "Passo d’Ombra",
+    "18": "Forma d’Ombra"
+  },
+  "Magia delle Ombre": {
+    "1": "Occhi dell’Oscurità\nForza delle Ombre",
+    "3": "Occhi dell’Oscurità\nForza delle Ombre",
+    "6": "Segugio del Presagio Infausto",
+    "14": "Passo d’Ombra",
+    "18": "Forma d’Ombra"
+  },
+  "Anima Divina": {
+    "1": "Magia Divina\nFavorito dagli Dèi",
+    "3": "Magia Divina\nFavorito dagli Dèi",
+    "6": "Guarigione Potenziata",
+    "14": "Ali Alate\nVolo Divino",
+    "18": "Ripristino Superiore"
+  },
+  "Stregoneria della Tempesta": {
+    "1": "Magia Tempestosa\nGuida del Vento",
+    "3": "Magia Tempestosa\nGuida del Vento",
+    "6": "Cuore della Tempesta\nGuida della Tempesta",
+    "14": "Furia della Tempesta",
+    "18": "Anima della Tempesta"
+  },
+  "Patrono Signore Fatato": {
+    "1": "Presenza Fatata\nIncantesimi del Signore Fatato",
+    "3": "Incantesimi del Signore Fatato\nMovimenti del Folletto",
+    "6": "Fuga Nebbiosa",
+    "10": "Difese Seducenti",
+    "14": "Magia Ammaliante\nDelirio Oscuro"
+  },
+  "Patrono Celestiale": {
+    "1": "Luce Curatrice\nTrucchetti Bonus\nIncantesimi Celestiali",
+    "3": "Incantesimi Celestiali\nLuce Curatrice",
+    "6": "Anima Radiosa",
+    "10": "Resilienza Celestiale",
+    "14": "Vendetta Incandescente"
+  },
+  "Il Celestiale": {
+    "1": "Luce Curatrice\nTrucchetti Bonus\nIncantesimi Celestiali",
+    "3": "Incantesimi Celestiali\nLuce Curatrice",
+    "6": "Anima Radiosa",
+    "10": "Resilienza Celestiale",
+    "14": "Vendetta Incandescente"
+  },
+  "Patrono Immondo": {
+    "1": "Benedizione dell’Oscuro\nIncantesimi Immondi",
+    "3": "Benedizione dell’Oscuro\nIncantesimi Immondi",
+    "6": "Fortuna dell’Oscuro",
+    "10": "Resilienza Immonda",
+    "14": "Scagliare all’Inferno"
+  },
+  "Patrono Grande Antico": {
+    "1": "Mente Risvegliata\nIncantesimi del Grande Antico",
+    "3": "Incantesimi del Grande Antico\nIncantesimi Psichici\nMente Risvegliata",
+    "6": "Guerriero Chiaroveggente\nScudo del Pensiero",
+    "10": "Scudo del Pensiero",
+    "14": "Creare Servitore"
+  },
+  "Patrono delle Profondità": {
+    "1": "Tentacolo delle Profondità\nDono del Mare\nIncantesimi delle Profondità",
+    "3": "Tentacolo delle Profondità\nIncantesimi delle Profondità",
+    "6": "Spirale Oceanica",
+    "10": "Difesa delle Profondità",
+    "14": "Trasporto delle Onde"
+  },
+  "Patrono dell'Insondabile": {
+    "1": "Tentacolo delle Profondità\nDono del Mare\nIncantesimi delle Profondità",
+    "3": "Tentacolo delle Profondità\nIncantesimi delle Profondità",
+    "6": "Spirale Oceanica",
+    "10": "Difesa delle Profondità",
+    "14": "Trasporto delle Onde"
+  },
+  "Patrono del Genio": {
+    "1": "Ricettacolo del Genio\nFuria Elementale\nIncantesimi del Genio",
+    "3": "Ricettacolo del Genio\nIncantesimi del Genio",
+    "6": "Dono Elementale",
+    "10": "Santuario del Ricettacolo",
+    "14": "Desiderio Limitato"
+  },
+  "Lama del Sortilegio": {
+    "1": "Maledizione della Lama Iettatrice\nGuerriero Hexblade\nIncantesimi del Sortilegio",
+    "3": "Maledizione della Lama Iettatrice\nIncantesimi del Sortilegio",
+    "6": "Spettro Maledetto",
+    "10": "Armatura della Maledizione",
+    "14": "Maestro dei Sortilegi"
+  },
+  "La Lama del Sortilegio": {
+    "1": "Maledizione della Lama Iettatrice\nGuerriero Hexblade\nIncantesimi del Sortilegio",
+    "3": "Maledizione della Lama Iettatrice\nIncantesimi del Sortilegio",
+    "6": "Spettro Maledetto",
+    "10": "Armatura della Maledizione",
+    "14": "Maestro dei Sortilegi"
+  },
+  "Lama Iettatrice": {
+    "1": "Maledizione della Lama Iettatrice\nGuerriero Hexblade\nIncantesimi del Sortilegio",
+    "3": "Maledizione della Lama Iettatrice\nIncantesimi del Sortilegio",
+    "6": "Spettro Maledetto",
+    "10": "Armatura della Maledizione",
+    "14": "Maestro dei Sortilegi"
+  },
+  "L’Immortale": {
+    "1": "Tra la Vita e la Morte\nIncantesimi dell’Immortale",
+    "3": "Tra la Vita e la Morte\nIncantesimi dell’Immortale",
+    "6": "Sfuggire alla Tomba",
+    "10": "Natura Imperitura",
+    "14": "Vita Indistruttibile"
+  },
+  "L'Immortale": {
+    "1": "Tra la Vita e la Morte\nIncantesimi dell’Immortale",
+    "3": "Tra la Vita e la Morte\nIncantesimi dell’Immortale",
+    "6": "Sfuggire alla Tomba",
+    "10": "Natura Imperitura",
+    "14": "Vita Indistruttibile"
+  },
+  "Alchimista": {
+    "3": "Competenze Bonus\nElisir Sperimentale",
+    "5": "Padronanza Alchemica",
+    "9": "Ricostituente Prodigioso",
+    "15": "Purezza Chimica"
+  },
+  "Armaiolo": {
+    "3": "Competenze Bonus\nArmatura Arcana\nModello Armatura",
+    "5": "Attacco Extra",
+    "9": "Modifiche all’Armatura",
+    "15": "Armatura Perfetta"
+  },
+  "Artigliere": {
+    "3": "Competenze Bonus\nCannone Arcano",
+    "5": "Arma da Fuoco Arcana",
+    "9": "Posizione Esplosiva",
+    "15": "Cannoni Fortificati"
+  },
+  "Fabbro da Guerra": {
+    "3": "Competenze Bonus\nPronto alla Battaglia\nDifensore d’Acciaio",
+    "5": "Attacco Extra",
+    "9": "Colpo Arcano",
+    "15": "Difensore Migliorato"
+  }
 };
 
 export const CARATT_INCANTATORE = {

@@ -2190,8 +2190,21 @@ function loadState() {
       // Migrazione Vaelion 5.0: su richiesta, Vaelion usa le regole 2014
       for (const k of Object.keys(roster.personaggi)) {
         const s = roster.personaggi[k];
-        if (s && /vaelion/i.test(s.nome || '') && s.versione === '2024') {
-          s.versione = '2014';
+        if (s && /vaelion/i.test(s.nome || '')) {
+          if (s.versione === '2024') s.versione = '2014';
+          if (s.sottoclasse === 'Circolo della Luna' || !s.sottoclasse) {
+            s.sottoclasse = 'Circolo del Pastore';
+          }
+          if (Array.isArray(s.risorse)) {
+            const idxForma = s.risorse.findIndex((r) => /forma selvatica/i.test(r.nome || ''));
+            if (idxForma !== -1 && (s.risorse[idxForma].nome || '').includes('GS 3')) {
+              s.risorse[idxForma].nome = 'Forma Selvatica (2/riposo breve, GS max 1, Nuotare/Volare)';
+            }
+            const hasTotem = s.risorse.some((r) => /totem spirituale/i.test(r.nome || ''));
+            if (!hasTotem) {
+              s.risorse.push({ nome: 'Totem Spirituale (Aura)', max: 1, attuali: 1, reset: 'Breve' });
+            }
+          }
         }
       }
       // Fix Vaelion trucchetti 5→4 alert: ora 5 tru (Folata inclusa) → max 5
