@@ -14052,7 +14052,7 @@ export default function App() {
                     onClick={() => aggiorna({ mostraArmiAttacco: scheda.mostraArmiAttacco === false })}
                     title={t('attacchi.armi_tip')}
                   >
-                    🗡️ {t('attacchi.armi')}: {scheda.mostraArmiAttacco !== false ? 'ON' : 'OFF'}
+                    {t('attacchi.armi')}: {scheda.mostraArmiAttacco !== false ? 'ON' : 'OFF'}
                   </button>
                   <button
                     type="button"
@@ -14070,7 +14070,7 @@ export default function App() {
                     onClick={() => aggiorna({ mostraIncantesimiAttacco: scheda.mostraIncantesimiAttacco === false })}
                     title={t('attacchi.incantesimi_offensivi_tip')}
                   >
-                    ✨ {t('attacchi.incantesimi_offensivi')}: {scheda.mostraIncantesimiAttacco !== false ? 'ON' : 'OFF'}
+                    {t('attacchi.incantesimi_offensivi')}: {scheda.mostraIncantesimiAttacco !== false ? 'ON' : 'OFF'}
                   </button>
                 </div>
               </div>
