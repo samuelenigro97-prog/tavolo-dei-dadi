@@ -141,14 +141,16 @@ export function CompendioModal({
 
     // 5. Condizioni
     for (const c of (CONDIZIONI_5E || [])) {
-      const eff = EFFETTI_CONDIZIONI[c] || [];
-      const desc = eff.join(' · ');
+      const effObj = EFFETTI_CONDIZIONI[c];
+      const desc = typeof effObj === 'string'
+        ? effObj
+        : (effObj?.[lingua] || effObj?.it || (Array.isArray(effObj) ? effObj.join(' · ') : ''));
       elenco.push({
         id: `cond-${c}`,
         tipo: 'condizione',
         nome: c,
         desc: desc || 'Condizione 5e che influenza azioni e movimenti.',
-        effetti: eff,
+        effetti: effObj,
         raw: c,
       });
     }
