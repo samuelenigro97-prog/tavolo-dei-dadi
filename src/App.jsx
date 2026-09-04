@@ -7,7 +7,7 @@ import { avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro, s
 import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI } from './ui/tema.js';
 import { styles, GLOBAL_CSS } from './ui/stili.js';
 import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, Sezione, CampoBloccato, formattaVoceConIcona } from './ui/componenti.jsx';
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile } from './rules/scheda.js';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON, WENDELL_JSON, LYRIAN_JSON } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from './data/condizioni.js';
@@ -19,6 +19,8 @@ import { generaCodiceSync, normalizzaCodiceSync, formattaCodiceSync, salvaSync, 
 import { posizionePopover, stilePopover } from './utils/popover.js';
 import { salvaJson, rosterSenzaImmagini, riagganciaImmagini, salvaImmaginiRoster, caricaImmaginiRoster, rimuoviImmaginePersonaggio, preservaImmaginiSeMancanti } from './utils/persistenza.js';
 import { datiTabelleBackground, TABELLE_BACKGROUND } from './data/tabelleBackground.js';
+import { CompendioModal } from './ui/CompendioModal.jsx';
+
 
 // ---------------------------------------------------------------------------
 // Palette e stili
@@ -3832,6 +3834,8 @@ export default function App() {
   const [dettaglioInc, setDettaglioInc] = useState(null); // id incantesimo aperto nel sottomenu
   const [mostraMenuEsporta, setMostraMenuEsporta] = useState(false);
   const [mostraDiarioModal, setMostraDiarioModal] = useState(false);
+  const [mostraCompendio, setMostraCompendio] = useState(false);
+
   const [posEsporta, setPosEsporta] = useState({ top: 50, left: 200 });
   const esportaBtnRef = useRef(null);
   const [conferma, setConferma] = useState(null); // { titolo, testo, onConferma } per la conferma in-app
@@ -4127,9 +4131,14 @@ export default function App() {
     setPassiUndo(storicoUndo.current.length);
   }
 
-  // Scorciatoia da tastiera globale: Ctrl+Z (Windows) / Cmd+Z (Mac)
+  // Scorciatoie da tastiera globali: Ctrl+Z / Cmd+Z (Undo) e Ctrl+K / Cmd+K (Compendio 5e)
   useEffect(() => {
     function onKey(e) {
+      if ((e.code === 'KeyK' || e.key === 'k' || e.key === 'K') && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        setMostraCompendio((prev) => !prev);
+        return;
+      }
       if ((e.code === 'KeyZ' || e.key === 'z' || e.key === 'Z') && (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey) {
         const el = e.target;
         const tag = el?.tagName;
@@ -4141,6 +4150,7 @@ export default function App() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+
 
   useEffect(() => () => clearInterval(intervalRef.current), []);
 
@@ -5066,15 +5076,42 @@ export default function App() {
     setUltimoAttaccoCritico(null);
   }
 
-  /** Scala di 1 la munizione adatta (se l'arma la usa e ne hai in inventario). */
+  /** Scala di 1 la munizione adatta (se l'arma la usa e ne hai in inventario o in contenitori). */
   function consumaMunizione(nomeArma) {
-    if (!armaUsaMunizioni(nomeArma)) return;
     const inv = scheda.inventario || [];
+    const info = analizzaMunizioniArma({ nome: nomeArma }, inv);
+    if (!info.usaMunizioni || !info.trovato) return;
+
     const re = regexMunizione(nomeArma);
-    const idx = inv.findIndex((o) => re.test(o.nome) && (Number(o.qta) || 0) > 0);
-    if (idx === -1) return;
-    aggiorna({ inventario: inv.map((o, i) => (i === idx ? { ...o, qta: Math.max(0, (Number(o.qta) || 0) - 1) } : o)) });
+    let consumata = false;
+
+    const newInv = inv.map((o) => {
+      if (consumata) return o;
+      if (re.test(o.nome) && (Number(o.qta) || 0) > 0) {
+        consumata = true;
+        return { ...o, qta: Math.max(0, (Number(o.qta) || 0) - 1) };
+      }
+      if (Array.isArray(o.contenuto)) {
+        let subConsumata = false;
+        const newContenuto = o.contenuto.map((sub) => {
+          if (subConsumata || consumata) return sub;
+          if (re.test(sub.nome) && (Number(sub.qta) || 0) > 0) {
+            subConsumata = true;
+            consumata = true;
+            return { ...sub, qta: Math.max(0, (Number(sub.qta) || 0) - 1) };
+          }
+          return sub;
+        });
+        if (subConsumata) return { ...o, contenuto: newContenuto };
+      }
+      return o;
+    });
+
+    if (consumata) {
+      aggiorna({ inventario: newInv });
+    }
   }
+
 
   /** Tira per colpire con un'arma e, se è a munizioni, ne scala una dall'inventario. */
   function tiraColpoArma(a) {
@@ -11371,7 +11408,9 @@ export default function App() {
                       </span>
                       <button style={btnAzione} title={t('tooltip.tema')} onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}>{tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'}</button>
                       <button ref={ambientazioneBtnRef} style={btnAzione} title={t('luogo.tooltip')} onClick={() => { if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
+                      <button style={{ ...btnAzione, ...(mostraCompendio ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }} onClick={() => setMostraCompendio(true)} title={`${t('compendio.titolo')} (Cmd+K)`}>🔍</button>
                       <button style={{ ...btnAzione, ...(mostraDiarioModal ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }} onClick={() => setMostraDiarioModal(true)} title={`${t('sez.diario')} (${(Array.isArray(scheda.diario) ? scheda.diario.length : 0)})`}>📜</button>
+
                       <button style={btnAzione} onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())} title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}>🗺️</button>
                       <button
                         data-combat-toggle="true"
@@ -14211,6 +14250,7 @@ export default function App() {
                               const titoloRiga = spiegazioneEffetto ? `${cleanNome}: ${spiegazioneEffetto}` : undefined;
                               const armaDb = !a.isSpell ? trovaArma(a.nome) : null;
                               const { isVersatile, dado1M, dado2M, hasReach } = analizzaArmaVersatileEPortata(a, armaDb);
+                              const infoMunizioni = !a.isSpell ? analizzaMunizioniArma(a, scheda.inventario, armaDb) : { usaMunizioni: false };
                               const spellInLista = (scheda.incantesimiLista || []).find((x) => x.id === a.idIncantesimo || (x.nome && x.nome.toLowerCase() === cleanNome.toLowerCase()));
                               const isTrucchetto = (spellInLista && spellInLista.livello === 0) || (spSpell && spSpell.livello === 0) || a.livello === 0;
                               const iconaSpell = isTrucchetto ? '✨' : '🪄';
@@ -14390,7 +14430,7 @@ export default function App() {
                                     </div>
                                   </td>
                                   <td style={styles.td} className="attacchi-note" data-label={t('combat.col_note')}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
                                       {hasReach && (
                                         <span
                                           style={{
@@ -14412,7 +14452,58 @@ export default function App() {
                                           📏 3m
                                         </span>
                                       )}
-                                      <Editable value={a.note} width={hasReach ? 95 : 130} onChange={(v) => aggiornaAttacco({ note: v })} title={titoloRiga || a.note || t('tip.click_modifica')} />
+                                      {infoMunizioni.usaMunizioni && (
+                                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
+                                          <span
+                                            style={{
+                                              fontSize: 9.5,
+                                              padding: '1px 5px',
+                                              borderRadius: 4,
+                                              background: infoMunizioni.totale > 0 ? 'rgba(201,162,39,0.14)' : 'rgba(239,68,68,0.12)',
+                                              border: `1px solid ${infoMunizioni.totale > 0 ? C.goldDark : '#ef4444'}`,
+                                              color: infoMunizioni.totale > 0 ? C.goldDark : '#dc2626',
+                                              fontWeight: 700,
+                                              display: 'inline-flex',
+                                              alignItems: 'center',
+                                              gap: 2,
+                                              cursor: 'help',
+                                            }}
+                                            title={infoMunizioni.totale > 0
+                                              ? (lingua === 'en' ? `${infoMunizioni.totale} ${infoMunizioni.nomeMunizione} in inventory` : `${infoMunizioni.totale} ${infoMunizioni.nomeMunizione} disponibili nello zaino`)
+                                              : (lingua === 'en' ? `Out of ammunition! (0 in inventory)` : `Munizioni esaurite! (0 nello zaino)`)}
+                                          >
+                                            🏹 {infoMunizioni.totale} {infoMunizioni.totale === 0 ? (lingua === 'en' ? 'empty' : 'esaurite') : ''}
+                                          </span>
+                                          {infoMunizioni.totale > 0 && (
+                                            <button
+                                              type="button"
+                                              style={{
+                                                ...styles.buttonMini,
+                                                fontSize: 9.5,
+                                                padding: '1px 4px',
+                                                height: 18,
+                                                minWidth: 20,
+                                                lineHeight: 1,
+                                                color: C.inkDim,
+                                                borderColor: C.border,
+                                                borderRadius: 3,
+                                              }}
+                                              title={lingua === 'en' ? `Use 1 ${infoMunizioni.nomeMunizione}` : `Consuma 1 ${infoMunizioni.nomeMunizione}`}
+                                              onClick={() => {
+                                                consumaMunizione(a.nome);
+                                                registra({
+                                                  etichetta: `🏹 ${infoMunizioni.nomeMunizione}`,
+                                                  tipo: 'tattica',
+                                                  dettaglio: `${scheda.nome || 'PG'} usa 1 ${infoMunizioni.nomeMunizione} (rimaste: ${Math.max(0, infoMunizioni.totale - 1)})`
+                                                });
+                                              }}
+                                            >
+                                              -1
+                                            </button>
+                                          )}
+                                        </div>
+                                      )}
+                                      <Editable value={a.note} width={hasReach || infoMunizioni.usaMunizioni ? 90 : 130} onChange={(v) => aggiornaAttacco({ note: v })} title={titoloRiga || a.note || t('tip.click_modifica')} />
                                     </div>
                                   </td>
                                   <td className="col-azioni attacchi-azioni" style={{ ...styles.td, textAlign: 'right' }}>
@@ -16902,7 +16993,25 @@ export default function App() {
                                       )}
                                     </div>
                                   </td>
-                                  <td data-label={t('inv.qta')} style={{ ...styles.td, ...((mostraEffetto || mostraUtilizzi || mostraContenuto) && senzaBordo) }}>×<Editable value={o.qta} tipo="numero" width={30} onChange={(v) => modInv(o.id, { qta: Math.max(0, v) })} /></td>
+                                  <td data-label={t('inv.qta')} style={{ ...styles.td, ...((mostraEffetto || mostraUtilizzi || mostraContenuto) && senzaBordo) }}>
+                                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                                      <button
+                                        type="button"
+                                        style={{ ...styles.buttonMini, padding: '0 4px', fontSize: 10.5, height: 20, minWidth: 20, lineHeight: 1 }}
+                                        title={t('tip.diminuisci')}
+                                        disabled={(Number(o.qta) || 0) <= 0}
+                                        onClick={() => modInv(o.id, { qta: Math.max(0, (Number(o.qta) || 0) - 1) })}
+                                      >−</button>
+                                      <span style={{ fontSize: 11, color: C.inkDim, userSelect: 'none' }}>×</span>
+                                      <Editable value={o.qta} tipo="numero" width={26} onChange={(v) => modInv(o.id, { qta: Math.max(0, v) })} />
+                                      <button
+                                        type="button"
+                                        style={{ ...styles.buttonMini, padding: '0 4px', fontSize: 10.5, height: 20, minWidth: 20, lineHeight: 1 }}
+                                        title={t('tip.aumenta')}
+                                        onClick={() => modInv(o.id, { qta: (Number(o.qta) || 0) + 1 })}
+                                      >＋</button>
+                                    </div>
+                                  </td>
                                   <td data-label={t('inv.sintonia')} style={{ ...styles.td, textAlign: 'center', ...((mostraEffetto || mostraUtilizzi || mostraContenuto) && senzaBordo) }}>
                                     <button
                                       type="button"
@@ -17955,6 +18064,18 @@ export default function App() {
                   type="button"
                   style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
                   onClick={() => {
+                    setMostraCompendio(true);
+                    setMostraMenuHubMobile(false);
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>🔍</span>
+                  <span>{t('compendio.titolo')}</span>
+                </button>
+
+                <button
+                  type="button"
+                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
+                  onClick={() => {
                     setMostraDiarioModal(true);
                     setMostraMenuHubMobile(false);
                   }}
@@ -17962,6 +18083,7 @@ export default function App() {
                   <span style={{ fontSize: 16 }}>📜</span>
                   <span>{t('sez.diario')} ({(Array.isArray(scheda.diario) ? scheda.diario.length : 0)})</span>
                 </button>
+
 
                 <button
                   type="button"
@@ -18659,6 +18781,72 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* ===== Modale Compendio 5e & Ricerca Rapida (Cmd+K) ===== */}
+      <CompendioModal
+        aperto={mostraCompendio}
+        onChiudi={() => setMostraCompendio(false)}
+        lingua={lingua}
+        onAggiungiIncantesimo={(spell) => {
+          const nomeSpell = spell.nome;
+          const giaInLista = (scheda.incantesimiLista || []).some((s) => s.nome.toLowerCase() === nomeSpell.toLowerCase());
+          if (giaInLista) {
+            setInfo({ titolo: nomeSpell, testo: lingua === 'en' ? `"${nomeSpell}" is already in your spells list.` : `"${nomeSpell}" è già presente nella tua lista incantesimi.` });
+          } else {
+            const nuovo = {
+              id: `spell-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+              nome: nomeSpell,
+              livello: spell.livello ?? 0,
+              scuola: spell.scuola || '',
+              preparato: spell.livello === 0,
+              rituale: spell.rituale,
+              conc: spell.conc,
+              tempo: spell.tempo || '',
+              gittata: spell.gittata || '',
+              danno: spell.danno || '',
+              tipoDanno: spell.tipoDanno || '',
+            };
+            aggiorna({ incantesimiLista: [...(scheda.incantesimiLista || []), nuovo] });
+            registra({ etichetta: `✨ ${nomeSpell}`, tipo: 'tattica', dettaglio: `${scheda.nome || 'PG'} aggiunge "${nomeSpell}" (${spell.livello === 0 ? 'Trucchetto' : `${spell.livello}° livello`}) al grimorio.` });
+          }
+        }}
+        onAggiungiInventario={(item) => {
+          const nuovo = completaUtilizziOggetto({
+            id: `inv-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            nome: item.nome,
+            qta: 1,
+            peso: item.peso || pesoStimato(item.nome) || 0.5,
+            categoria: item.sottoTipo === 'Arma' ? 'Arma' : item.sottoTipo === 'Armatura' ? 'Armatura' : item.sottoTipo === 'Pozione' ? 'Pozione' : 'Equipaggiamento',
+            equip: false,
+            note: item.desc || '',
+          });
+          aggiorna({ inventario: [...(scheda.inventario || []), nuovo] });
+          registra({ etichetta: `🎒 ${item.nome}`, tipo: 'tattica', dettaglio: `${scheda.nome || 'PG'} aggiunge "${item.nome}" all'inventario.` });
+        }}
+        onAggiungiAttacco={(weapon) => {
+          const nuovoAttacco = attaccoDaArma(weapon, scheda);
+          aggiorna({ attacchi: [...(scheda.attacchi || []), nuovoAttacco] });
+          registra({ etichetta: `⚔️ ${weapon.nome}`, tipo: 'tattica', dettaglio: `${scheda.nome || 'PG'} aggiunge "${weapon.nome}" agli attacchi rapidi.` });
+        }}
+        onApplicaCondizione={(condizione) => {
+          if (!scheda.condizioni.includes(condizione)) {
+            aggiorna({ condizioni: [...scheda.condizioni, condizione] });
+            registra({ etichetta: `🩸 ${condizione}`, tipo: 'condizione', dettaglio: `${scheda.nome || 'PG'} subisce la condizione "${condizione}".` });
+          }
+        }}
+        onAggiungiTalento={(talento) => {
+          const nuovo = {
+            id: `priv-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            nome: talento.nome,
+            tipo: talento.sottoTipo || 'Talento',
+            fonte: 'Talento',
+            testo: talento.desc || '',
+          };
+          aggiorna({ privilegi: [...(scheda.privilegi || []), nuovo] });
+          registra({ etichetta: `⭐ ${talento.nome}`, tipo: 'tattica', dettaglio: `${scheda.nome || 'PG'} aggiunge il talento/privilegio "${talento.nome}".` });
+        }}
+      />
+
 
       {/* ===== Modale Tavolo dei Dadi ===== */}
       {mostraDadiModal && (

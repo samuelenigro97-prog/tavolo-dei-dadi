@@ -194,6 +194,26 @@ export const PESI_OGGETTI = {
 };
 export const NOMI_OGGETTI = Object.keys(PESI_OGGETTI).sort((a, b) => a.localeCompare(b, 'it'));
 export const PESO_ARMATURA_TIPO = { leggera: 5, media: 9, pesante: 25 };
+export const ARMATURE_5E = [
+  // Pesante
+  { nome: 'Armatura a Piastre', match: ['piastre', 'plate'], tipo: 'pesante', base: 18, peso: 30, prezzo: '1.500 mo' },
+  { nome: 'Armatura a Strisce', match: ['chiodata', 'splint', 'strisce'], tipo: 'pesante', base: 17, peso: 27, prezzo: '200 mo' },
+  { nome: 'Cotta di Maglia', match: ['cotta di maglia', 'maglia', 'chain mail'], tipo: 'pesante', base: 16, peso: 25, prezzo: '75 mo' },
+  { nome: 'Armatura ad Anelli', match: ['anelli', 'ring mail'], tipo: 'pesante', base: 14, peso: 20, prezzo: '30 mo' },
+  // Media
+  { nome: 'Mezza Armatura', match: ['mezza piastra', 'mezza corazza', 'half plate', 'mezza armatura'], tipo: 'media', base: 15, peso: 20, prezzo: '750 mo' },
+  { nome: 'Corazza di Piastre', match: ['corazza', 'breastplate'], tipo: 'media', base: 14, peso: 10, prezzo: '400 mo' },
+  { nome: 'Armatura a Scaglie', match: ['a scaglie', 'scaglie', 'scale mail'], tipo: 'media', base: 14, peso: 22, prezzo: '50 mo' },
+  { nome: 'Giaco di Maglia', match: ['camaglia', 'giaco di maglia', 'chain shirt'], tipo: 'media', base: 13, peso: 10, prezzo: '50 mo' },
+  { nome: 'Armatura di Pelle', match: ['pelle', 'hide'], tipo: 'media', base: 12, peso: 6, prezzo: '10 mo' },
+  // Leggera
+  { nome: 'Cuoio Borchiato', match: ['cuoio borchiato', 'borchiat', 'studded'], tipo: 'leggera', base: 12, peso: 6, prezzo: '45 mo' },
+  { nome: 'Armatura di Cuoio', match: ['armatura di cuoio', 'cuoio', 'leather'], tipo: 'leggera', base: 11, peso: 5, prezzo: '10 mo' },
+  { nome: 'Armatura Imbottita', match: ['imbottita', 'padded'], tipo: 'leggera', base: 11, peso: 4, prezzo: '5 mo' },
+  // Scudo
+  { nome: 'Scudo', match: ['scudo', 'shield'], tipo: 'scudo', base: 2, peso: 3, prezzo: '10 mo' },
+];
+
 export const LINGUE_5E = [
   'Abissale', 'Celestiale', 'Comune', 'Draconico', 'Druidico', 'Elfico',
   'Gergo dei ladri', 'Gigante', 'Gnomesco', 'Goblin', 'Halfling', 'Infernale',

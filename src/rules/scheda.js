@@ -351,3 +351,81 @@ export function alternaImpugnaturaVersatile(attacco, armaDb = null) {
   };
 }
 
+/**
+ * Analizza se un attacco richiede munizioni (arco, balestra, fionda, cerbottana, arma da fuoco)
+ * e calcola la scorta residua nell'inventario (compresi oggetti all'interno di contenitori/faretre).
+ */
+export function analizzaMunizioniArma(attacco, inventario = [], armaDb = null) {
+  if (!attacco || attacco.isSpell) return { usaMunizioni: false, totale: 0, nomeMunizione: '', tipoMunizione: '', trovato: false };
+  const nome = String(attacco.nome || '').trim().toLowerCase();
+  const note = String(attacco.note || '').toLowerCase();
+  const arma = armaDb || null;
+
+  const isRangedMunizioni = !!(arma && arma.ranged && /munizion/i.test(arma.note || ''))
+    || /arco|balestra|fionda|cerbottana|blowgun|sling|crossbow|shortbow|longbow|pistol|moschetto|musket/i.test(nome)
+    || /munizion|ammo|ammunition/i.test(note);
+
+  if (!isRangedMunizioni) {
+    return { usaMunizioni: false, totale: 0, nomeMunizione: '', tipoMunizione: '', trovato: false };
+  }
+
+  let reMunizione;
+  let tipoMunizione = 'Munizioni';
+  if (/arco|bow/i.test(nome)) {
+    reMunizione = /frecc|arrow/i;
+    tipoMunizione = 'Frecce';
+  } else if (/balestra|crossbow/i.test(nome)) {
+    reMunizione = /(quadrell|verretton|dardo|bolt)/i;
+    tipoMunizione = 'Quadrelli';
+  } else if (/fionda|sling/i.test(nome)) {
+    reMunizione = /(proiettil|pallott|bullet|sling)/i;
+    tipoMunizione = 'Proiettili';
+  } else if (/cerbottana|blowgun/i.test(nome)) {
+    reMunizione = /(aghi|dardi|needle|dart)/i;
+    tipoMunizione = 'Aghi';
+  } else {
+    reMunizione = /(frecc|quadrell|proiettil|dardo|cartucc|pallott|munizion|arrow|bolt|bullet|ammo)/i;
+    tipoMunizione = 'Munizioni';
+  }
+
+  let totale = 0;
+  let nomeMunizione = '';
+  let primoItemId = null;
+  let primoSubId = null;
+
+  (inventario || []).forEach((o) => {
+    if (reMunizione.test(o.nome)) {
+      const q = Number(o.qta) || 0;
+      totale += q;
+      if (!nomeMunizione && q > 0) {
+        nomeMunizione = o.nome;
+        primoItemId = o.id;
+      }
+    }
+    if (Array.isArray(o.contenuto)) {
+      o.contenuto.forEach((sub) => {
+        if (reMunizione.test(sub.nome)) {
+          const sq = Number(sub.qta) || 0;
+          totale += sq;
+          if (!nomeMunizione && sq > 0) {
+            nomeMunizione = sub.nome;
+            primoItemId = o.id;
+            primoSubId = sub.id;
+          }
+        }
+      });
+    }
+  });
+
+  return {
+    usaMunizioni: true,
+    totale,
+    nomeMunizione: nomeMunizione || tipoMunizione,
+    tipoMunizione,
+    trovato: totale > 0,
+    itemId: primoItemId,
+    subId: primoSubId,
+  };
+}
+
+

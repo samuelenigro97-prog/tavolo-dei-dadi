@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, punteggioCaratteristica, formattaNomePg, bonusCopertura, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile } from '../src/rules/scheda.js';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, punteggioCaratteristica, formattaNomePg, bonusCopertura, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma } from '../src/rules/scheda.js';
 import { ABILITA, CARATTERISTICHE } from '../src/data/caratteristiche.js';
 import { spiegaIncantesimo } from '../src/data/spiegazioni.js';
 import { tiraDanni, parseEspressioneDado } from '../src/rules/dadi.js';
@@ -633,3 +633,50 @@ test('Armi Versatili & Portata 5e: identificazione e commutazione impugnatura 1M
   assert.equal(infoStocco.hasReach, false);
   assert.equal(infoStocco.isVersatile, false);
 });
+
+test('Munizioni 5e: identificazione e calcolo scorte inventario (analizzaMunizioniArma)', () => {
+  const inventario = [
+    { id: '1', nome: 'Frecce (20)', qta: 20 },
+    { id: '2', nome: 'Zaino da esploratore', qta: 1, contenuto: [
+      { id: '2a', nome: 'Quadrelli da balestra', qta: 30 },
+      { id: '2b', nome: 'Torcia', qta: 5 },
+    ]},
+    { id: '3', nome: 'Spada lunga', qta: 1 },
+  ];
+
+  // Arco lungo -> Frecce
+  const arco = { nome: 'Arco lungo', danno: '1d8+3' };
+  const resArco = analizzaMunizioniArma(arco, inventario);
+  assert.equal(resArco.usaMunizioni, true);
+  assert.equal(resArco.totale, 20);
+  assert.equal(resArco.trovato, true);
+  assert.equal(resArco.itemId, '1');
+
+  // Balestra pesante -> Quadrelli nel contenitore
+  const balestra = { nome: 'Balestra pesante', danno: '1d10+3' };
+  const resBalestra = analizzaMunizioniArma(balestra, inventario);
+  assert.equal(resBalestra.usaMunizioni, true);
+  assert.equal(resBalestra.totale, 30);
+  assert.equal(resBalestra.trovato, true);
+  assert.equal(resBalestra.itemId, '2');
+  assert.equal(resBalestra.subId, '2a');
+
+  // Fionda -> Nessun proiettile presente
+  const fionda = { nome: 'Fionda', danno: '1d4+3' };
+  const resFionda = analizzaMunizioniArma(fionda, inventario);
+  assert.equal(resFionda.usaMunizioni, true);
+  assert.equal(resFionda.totale, 0);
+  assert.equal(resFionda.trovato, false);
+
+  // Spada corta -> Non usa munizioni
+  const spada = { nome: 'Spada corta', danno: '1d6+3' };
+  const resSpada = analizzaMunizioniArma(spada, inventario);
+  assert.equal(resSpada.usaMunizioni, false);
+  assert.equal(resSpada.totale, 0);
+
+  // Incantesimo dardo di fuoco -> Non usa munizioni fisiche
+  const spell = { nome: 'Dardo di Fuoco', isSpell: true, danno: '1d10' };
+  const resSpell = analizzaMunizioniArma(spell, inventario);
+  assert.equal(resSpell.usaMunizioni, false);
+});
+
