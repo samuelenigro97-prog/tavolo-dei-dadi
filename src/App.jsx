@@ -13980,9 +13980,9 @@ export default function App() {
               })()}
 
               {/* Intestazione Combattimento & Filtri Armi / Incantesimi Offensivi */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(28px, 1fr) auto minmax(28px, 1fr)', alignItems: 'center', columnGap: 6, marginTop: 14, marginBottom: 8, borderBottom: `1.5px solid ${C.goldDark}`, paddingBottom: 6 }}>
+              <div className="sottosezione-titolo" style={{ display: 'grid', gridTemplateColumns: 'minmax(28px, 1fr) auto minmax(28px, 1fr)', alignItems: 'center', columnGap: 6, marginTop: 14, marginBottom: 8 }}>
                 <div />
-                <h3 style={{ ...styles.panelTitle, margin: 0, borderBottom: 'none', paddingBottom: 0, color: C.ink, textAlign: 'center', justifySelf: 'center' }}>
+                <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'center', justifySelf: 'center' }}>
                   {t('combat.titolo')}
                 </h3>
                 <div style={{ justifySelf: 'end', display: 'inline-flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -14115,9 +14115,9 @@ export default function App() {
                     return (
                       <div key={cat} style={{ marginBottom: 16 }}>
                         {cat !== 'Azione' && (
-                          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(28px, 1fr) auto minmax(28px, 1fr)', alignItems: 'center', columnGap: 6, marginTop: 16, marginBottom: 8, borderBottom: `1.5px solid ${C.goldDark}`, paddingBottom: 6 }}>
+                          <div className="sottosezione-titolo" style={{ display: 'grid', gridTemplateColumns: 'minmax(28px, 1fr) auto minmax(28px, 1fr)', alignItems: 'center', columnGap: 6, marginTop: 18, marginBottom: 8 }}>
                             <div />
-                            <h3 style={{ ...styles.panelTitle, margin: 0, borderBottom: 'none', paddingBottom: 0, color: C.ink, textAlign: 'center', justifySelf: 'center' }}>
+                            <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'center', justifySelf: 'center' }}>
                               {cat === 'Bonus' ? t('combat.azioni_bonus') : t('combat.reazioni')}
                             </h3>
                             <div style={{ justifySelf: 'end', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
@@ -14896,7 +14896,7 @@ export default function App() {
               </div>
               <div>
                 {(() => {
-                const bannerStyle = { ...styles.panelTitle, fontSize: 15, marginTop: 14, marginBottom: 8, borderBottom: `2px solid ${C.border}`, paddingBottom: 4 };
+                const bannerStyle = { ...styles.panelTitle, fontSize: 15, marginTop: 18, marginBottom: 8 };
                 const q = filtroIncantesimo.trim().toLowerCase();
                 const filtriAttivi = Boolean(q || filtroLivelloInc || filtroScuolaInc || filtroClasseInc || soloRitualiInc || soloPreparatiInc || soloConcInc || filtroTempoInc);
                 const match = (s) => {
@@ -15283,7 +15283,7 @@ export default function App() {
                 }
                 return (
                   <>
-                    <h3 style={{ ...bannerStyle, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 6 }}>
+                    <h3 className="sottosezione-titolo" style={{ ...bannerStyle, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 6 }}>
                       <span />
                       <span>{t('spell.trucchetti')}</span>
                       {maxTrucchetti != null ? (
@@ -15294,7 +15294,7 @@ export default function App() {
                     </h3>
                     {renderLivello(0)}
                     {maxLiv >= 1 && (
-                      <h3 style={{ ...bannerStyle, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 6 }}>
+                      <h3 className="sottosezione-titolo" style={{ ...bannerStyle, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 6 }}>
                         <span />
                         <span>{t('spell.incantesimi')}</span>
                         {maxIncantesimi != null ? (
