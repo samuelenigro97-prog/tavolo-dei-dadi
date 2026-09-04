@@ -1287,7 +1287,7 @@ import { spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spieg
 import { INCANTESIMI_DB, ALIAS_INCANTESIMI, datiIncantesimo } from './data/incantesimi.js';
 
 const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(INCANTESIMI_DB)])).sort((a, b) => a.localeCompare(b, 'it'));
-import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E, DEFAULT_MANUALI, MANUALI_INFO, SOTTOCLASSI_FONTI, TALENTI_FONTI, INCANTESIMI_FONTI, talentiPerManuali, incantesimiPerManuali, fonteValida, PE_PER_LIVELLO } from './data/dati5e.js';
+import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SESSO_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E, DEFAULT_MANUALI, MANUALI_INFO, SOTTOCLASSI_FONTI, TALENTI_FONTI, INCANTESIMI_FONTI, talentiPerManuali, incantesimiPerManuali, fonteValida, PE_PER_LIVELLO } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
 import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili, calcolaTurnoCombattimento, dettagliAbilita, calcolaTsConcentrazione, calcolaAttaccoFurtivo, calcolaIraBarbarica, calcolaPunizioneDivina, calcolaIspirazioneBardica, livelloDiClasse } from './rules/regole.js';
@@ -12372,17 +12372,13 @@ export default function App() {
                   {/* Riga 1: Sesso, Specie/Razza, Taglia, Allineamento */}
                   <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.9fr 1.35fr 0.65fr 1.1fr', gap: 10, alignItems: 'end' }}>
                     <CampoModulo label={t("profilo.sesso")}>
-                      <select
-                        value={scheda.sesso || ''}
-                        onChange={(e) => aggiorna({ sesso: e.target.value })}
+                      <CampoTendina
+                        value={scheda.sesso}
+                        opzioni={SESSO_5E}
+                        formattaOpzione={(v) => v === 'maschio' ? t('profilo.sesso_maschio') : v === 'femmina' ? t('profilo.sesso_femmina') : v === 'altro' ? t('profilo.sesso_altro') : v}
+                        onChange={(v) => aggiorna({ sesso: v, ...ritrattoAuto(scheda.classe, scheda.specie, scheda.nome) })}
                         title={t('profilo.sesso_tooltip')}
-                        style={{ background: 'transparent', border: 'none', color: 'inherit', fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 'inherit', width: '100%', outline: 'none', cursor: 'pointer' }}
-                      >
-                        <option value="">{t('profilo.sesso_non_specificato')}</option>
-                        <option value="maschio">{t('profilo.sesso_maschio')}</option>
-                        <option value="femmina">{t('profilo.sesso_femmina')}</option>
-                        <option value="altro">{t('profilo.sesso_altro')}</option>
-                      </select>
+                      />
                     </CampoModulo>
                     <CampoModulo label={versione === "2024" ? t("profilo.specie") : t("profilo.razza")}>
                       <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} formattaOpzione={(v) => nomeSpeciePerSesso(v, scheda.sesso, lingua)} onChange={(v) => { const sp = datiSpecieDi(v); aggiorna({ specie: v, ...(sp ? { velocita: sp.velocita, sensi: sp.sensi, taglia: sp.taglia, trattiSpecie: trattiSpecieTesto(sp.tratti) } : {}), ...abilitaConSpecie(v), ...ritrattoAuto(scheda.classe, v, scheda.nome) }); }} title={t('tip.scegli_specie')} />
@@ -13229,73 +13225,91 @@ export default function App() {
               {/* 4. Box Condizioni */}
               <div style={{ ...styles.vitalBox }}>
                 <div style={styles.vitalLabel}>{t("vital.condizioni")}</div>
-                <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center', justifyContent: 'center' }}>
-                  {(scheda.condizioni.length > 0 || scheda.effettoTaglia) && (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'center', justifyContent: 'center', maxHeight: 42, overflowY: 'auto' }}>
-                      {scheda.effettoTaglia && (
+                <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, flexWrap: 'wrap', minHeight: 22, width: '100%' }} title={t('tip.aggiungi_condizione')}>
+                    {scheda.effettoTaglia && (
+                      <span
+                        style={{
+                          background: 'rgba(0,0,0,0.04)',
+                          border: `1px solid ${scheda.effettoTaglia === 'ingrandito' ? (C.green || '#2e7d32') : (C.red || '#c0392b')}`,
+                          borderRadius: 6,
+                          padding: '2px 7px',
+                          fontSize: 11.5,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        <span style={{ color: scheda.effettoTaglia === 'ingrandito' ? (C.green || '#2e7d32') : (C.red || '#c0392b'), fontWeight: 700 }}>
+                          {scheda.effettoTaglia === 'ingrandito' ? '✨ Ingrandito' : '✨ Ridotto'}
+                        </span>
+                        <button
+                          type="button"
+                          style={{ background: 'transparent', border: 'none', color: '#c0392b', cursor: 'pointer', padding: 0, fontSize: 13, lineHeight: 1, fontWeight: 'bold' }}
+                          title="Rimuovi effetto taglia"
+                          onClick={() => aggiorna({ effettoTaglia: null })}
+                        >✕</button>
+                      </span>
+                    )}
+                    {scheda.condizioni.map((c) => {
+                      const col = COLORI_CONDIZIONI[c] || { bg: 'rgba(0,0,0,0.04)', border: C.border, text: C.ink };
+                      const ico = ICONE_CONDIZIONI[c] || '⚠️';
+                      return (
                         <span
+                          key={c}
                           style={{
-                            background: scheda.effettoTaglia === 'ingrandito' ? 'rgba(46,125,50,0.2)' : 'rgba(192,57,43,0.2)',
-                            border: `1px solid ${scheda.effettoTaglia === 'ingrandito' ? (C.green || '#2e7d32') : (C.red || '#c0392b')}`,
-                            borderRadius: 4,
-                            padding: '1px 5px',
+                            background: col.bg,
+                            border: `1px solid ${col.border}`,
+                            borderRadius: 6,
+                            padding: '2px 7px',
+                            fontSize: 11.5,
                             display: 'inline-flex',
                             alignItems: 'center',
-                            gap: 3,
-                            fontSize: 10,
+                            gap: 4,
+                            whiteSpace: 'nowrap',
                           }}
                         >
-                          <span style={{ color: scheda.effettoTaglia === 'ingrandito' ? (C.green || '#2e7d32') : (C.red || '#c0392b'), fontWeight: 700 }}>
-                            {scheda.effettoTaglia === 'ingrandito' ? '✨ Ingrandito (+1d4)' : '✨ Ridotto (−1d4)'}
-                          </span>
+                          <span style={{ color: col.text, fontWeight: 700 }}>{ico} {traduciDato(c)}</span>
                           <button
                             type="button"
-                            style={{ background: 'none', border: 0, padding: 0, color: C.inkDim, cursor: 'pointer', fontSize: 10, lineHeight: 1 }}
-                            title="Rimuovi effetto taglia"
-                            onClick={() => aggiorna({ effettoTaglia: null })}
+                            style={{ background: 'transparent', border: 'none', color: '#c0392b', cursor: 'pointer', padding: 0, fontSize: 13, lineHeight: 1, fontWeight: 'bold' }}
+                            title={t('tip.click_rimuovi')}
+                            onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
                           >✕</button>
                         </span>
-                      )}
-                      {scheda.condizioni.map((c) => {
-                        const col = COLORI_CONDIZIONI[c] || { bg: 'rgba(200,140,20,0.18)', border: C.goldDark, text: C.ink };
-                        const ico = ICONE_CONDIZIONI[c] || '⚠️';
-                        return (
-                          <span
-                            key={c}
-                            style={{
-                              background: col.bg,
-                              border: `1px solid ${col.border}`,
-                              borderRadius: 4,
-                              padding: '1px 5px',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: 3,
-                              fontSize: 10,
-                            }}
-                          >
-                            <span style={{ color: col.text, fontWeight: 700 }}>{ico} {traduciDato(c)}</span>
-                            <button
-                              type="button"
-                              style={{ background: 'none', border: 0, padding: 0, color: C.inkDim, cursor: 'pointer', fontSize: 10, lineHeight: 1 }}
-                              title={t('tip.click_rimuovi')}
-                              onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
-                            >✕</button>
-                          </span>
-                        );
-                      })}
-                    </div>
-                  )}
-                  <select
-                    value=""
-                    onChange={(e) => { if (e.target.value) aggiorna({ condizioni: [...scheda.condizioni, e.target.value] }); }}
-                    style={{ ...styles.inlineInput, fontSize: 10.5, padding: '2px 6px', height: 22, width: '100%', borderRadius: 4, background: C.panel, color: C.ink }}
-                    title={t('tip.aggiungi_condizione')}
-                  >
-                    <option value="">{lingua === 'en' ? 'None' : 'Nessuna'}</option>
-                    {CONDIZIONI_5E.filter((c) => !scheda.condizioni.includes(c)).sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((c) => (
-                      <option key={c} value={c}>{ICONE_CONDIZIONI[c] || '⚠️'} {traduciDato(c)}</option>
-                    ))}
-                  </select>
+                      );
+                    })}
+                    <label
+                      style={{
+                        background: 'rgba(0,0,0,0.04)',
+                        border: `1px dashed ${C.border}`,
+                        borderRadius: 6,
+                        color: C.goldDark,
+                        cursor: 'pointer',
+                        position: 'relative',
+                        fontWeight: 700,
+                        padding: '2px 6px',
+                        fontSize: 11.5,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                      title={t('common.aggiungi_lista')}
+                    >
+                      ➕
+                      <select
+                        value=""
+                        onChange={(e) => { if (e.target.value) aggiorna({ condizioni: [...scheda.condizioni, e.target.value] }); }}
+                        style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }}
+                      >
+                        <option value="">{t('common.aggiungi')}…</option>
+                        {CONDIZIONI_5E.filter((c) => !scheda.condizioni.includes(c)).sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((c) => (
+                          <option key={c} value={c}>{ICONE_CONDIZIONI[c] || '⚠️'} {traduciDato(c)}</option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>

@@ -333,7 +333,7 @@ export const styles = {
   },
   inlineInput: {
     background: C.panel,
-    border: `1px solid ${C.gold}`,
+    border: `1px solid ${C.border}`,
     borderRadius: 6,
     color: C.ink,
     fontFamily: 'inherit',

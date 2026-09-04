@@ -399,6 +399,7 @@ export const BACKGROUND_COMPETENZE = {
   Soldato: ['atletica', 'intimidire'],
   Viandante: ['intuizione', 'rapiditaDiMano'],
 };
+export const SESSO_5E = ['maschio', 'femmina', 'altro'];
 export const SPECIE_5E = {
   'Aasimar': ['Aasimar'],
   'Dragonide': ['Dragonide'],
