@@ -45,7 +45,19 @@ class ErrorBoundary extends React.Component {
                   background: '#d4af37', color: '#1a110b', border: 'none', borderRadius: 8,
                   padding: '10px 18px', fontWeight: 800, fontSize: 14, cursor: 'pointer'
                 }}
-                onClick={() => {
+                onClick={async () => {
+                  if ('serviceWorker' in navigator) {
+                    try {
+                      const regs = await navigator.serviceWorker.getRegistrations();
+                      for (const r of regs) await r.unregister();
+                    } catch {}
+                  }
+                  if ('caches' in window) {
+                    try {
+                      const keys = await caches.keys();
+                      for (const k of keys) await caches.delete(k);
+                    } catch {}
+                  }
                   this.setState({ hasError: false, error: null });
                   window.location.reload();
                 }}
@@ -57,7 +69,19 @@ class ErrorBoundary extends React.Component {
                   background: 'transparent', color: '#d4af37', border: '1px solid #d4af37',
                   borderRadius: 8, padding: '10px 18px', fontWeight: 700, fontSize: 14, cursor: 'pointer'
                 }}
-                onClick={() => {
+                onClick={async () => {
+                  if ('serviceWorker' in navigator) {
+                    try {
+                      const regs = await navigator.serviceWorker.getRegistrations();
+                      for (const r of regs) await r.unregister();
+                    } catch {}
+                  }
+                  if ('caches' in window) {
+                    try {
+                      const keys = await caches.keys();
+                      for (const k of keys) await caches.delete(k);
+                    } catch {}
+                  }
                   try {
                     localStorage.removeItem('scheda-interattiva:v1');
                     localStorage.removeItem('tavolo-dei-dadi:scheda:v1');
