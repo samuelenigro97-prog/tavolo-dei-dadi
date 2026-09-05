@@ -1854,41 +1854,41 @@ tbody tr:hover {
     text-transform: uppercase;
     letter-spacing: .4px;
   }
-  /* Inventario: sul telefono ogni oggetto diventa una scheda leggibile. Non si
-     perde alcuna colonna e non serve trascinare lateralmente la tabella. */
+  /* Inventario: sul telefono ogni oggetto diventa una scheda leggibile e ordinata */
   .inventario-wrap { overflow-x: visible !important; }
   .inventario-table, .inventario-table tbody { display: block; width: 100%; }
   .inventario-table thead { display: none; }
   .inventario-table .inventario-riga {
     display: grid;
-    grid-template-columns: 42px minmax(0, 1fr) auto;
-    align-items: center; gap: 3px 8px;
-    margin: 0 0 8px; padding: 8px;
+    grid-template-columns: 32px minmax(0, 1fr) auto auto;
+    align-items: center; gap: 6px 10px;
+    margin: 0 0 8px; padding: 10px 12px;
     border: 1px solid var(--c-border); border-radius: 9px;
     background: color-mix(in srgb, var(--c-panel-light) 84%, transparent);
     box-shadow: 0 1px 3px rgba(0,0,0,.1);
   }
   .inventario-table .inventario-riga > td {
     display: flex; align-items: center; min-width: 0;
-    padding: 3px 2px !important; border: 0 !important;
+    padding: 2px 0 !important; border: 0 !important;
   }
   .inventario-table .inventario-riga > td:nth-child(1) { grid-column: 1; grid-row: 1; justify-content: center; }
-  .inventario-table .inventario-riga > td:nth-child(2) { grid-column: 2 / 4; grid-row: 1; font-weight: 700; }
+  .inventario-table .inventario-riga > td:nth-child(2) { grid-column: 2 / -1; grid-row: 1; font-weight: 700; }
   .inventario-table .inventario-riga > td:nth-child(2) > * { max-width: 100%; }
-  .inventario-table .inventario-riga > td:nth-child(3) { grid-column: 1; grid-row: 2; justify-content: center; }
-  .inventario-table .inventario-riga > td:nth-child(4) { grid-column: 2; grid-row: 2; justify-content: flex-start; }
-  .inventario-table .inventario-riga > td:nth-child(5) { grid-column: 3; grid-row: 2; justify-content: flex-end; }
+  .inventario-table .inventario-riga > td:nth-child(3) { grid-column: 1 / 3; grid-row: 2; justify-content: flex-start; }
+  .inventario-table .inventario-riga > td:nth-child(4) { grid-column: 3; grid-row: 2; justify-content: center; }
+  .inventario-table .inventario-riga > td:nth-child(5) { grid-column: 4; grid-row: 2; justify-content: flex-end; }
   .inventario-table .inventario-riga > .inventario-azioni {
-    grid-column: 1 / -1; grid-row: 3; justify-content: flex-end;
+    grid-column: 1 / -1; grid-row: 3; justify-content: flex-end; gap: 6px;
     padding-top: 6px !important; border-top: 1px solid var(--c-border) !important;
   }
   .inventario-table .inventario-riga > td:nth-child(n+3):not(.inventario-azioni)::before {
-    content: attr(data-label); margin-right: 4px; color: var(--c-ink-dim);
-    font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
+    content: attr(data-label); margin-right: 5px; color: var(--c-ink-dim);
+    font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
+    flex-shrink: 0;
   }
-  .inventario-table .inventario-riga > .inventario-azioni button { min-width: 32px; min-height: 30px; }
+  .inventario-table .inventario-riga > .inventario-azioni button { min-width: 34px; min-height: 30px; }
   .inventario-table tr:not(.inventario-riga) { display: block; margin: -8px 0 8px; }
-  .inventario-table tr:not(.inventario-riga) td[colspan] { display: block; width: auto; padding: 8px !important; }
+  .inventario-table tr:not(.inventario-riga) td[colspan] { display: block; width: auto; padding: 8px 12px !important; }
 }
 .selettore-personaggio-desktop {
   display: flex !important;
