@@ -2364,6 +2364,15 @@ function loadState() {
           if (s.addestramento && (!s.addestramento.armi || !s.addestramento.armi.includes('scimitarre')) && VAELION_JSON.addestramento) {
             s.addestramento = { ...s.addestramento, armi: VAELION_JSON.addestramento.armi };
           }
+          if (Array.isArray(s.attacchi) && !s.attacchi.some((a) => /randello incantato|shillelagh/i.test(a.nome))) {
+            s.attacchi = VAELION_JSON.attacchi;
+          }
+          if (Array.isArray(s.incantesimiLista)) {
+            const haRandello = s.incantesimiLista.some((x) => /randello incantato|shillelagh/i.test(x.nome));
+            if (!haRandello) {
+              s.incantesimiLista.unshift({ id: "vi-00", nome: "Randello Incantato", livello: 0, preparato: true, tempo: "Azione Bonus", gittata: "Tocco", note: "1 min: usa SAG su randello/bastone, danno 1d8" });
+            }
+          }
         } else if (/wendell/i.test(s.nome) || id === 'pg-wendell') {
           if (!s.note && WENDELL_JSON.note) s.note = WENDELL_JSON.note;
           if (!s.trattiCaratteriali && WENDELL_JSON.trattiCaratteriali) s.trattiCaratteriali = WENDELL_JSON.trattiCaratteriali;
@@ -14334,18 +14343,24 @@ export default function App() {
 
                   const attacchiSpettro = (scheda.incantesimiLista || []).filter((s) => {
                     if (scheda.mostraIncantesimiAttacco === false || s.nascondiAttacco) return false;
+                    // I trucchetti (livello 0) sono sempre conosciuti/preparati.
+                    // Gli incantesimi di livello 1+ per le classi che preparano gli incantesimi (Druido, Chierico, Mago, Paladino, Artefice)
+                    // devono essere preparati (o bonus/sempre preparati) per comparire in combattimento!
+                    const isPreparato = s.livello === 0 || s.preparato || s.semprePreparato || s.bonus || !classePreparaIncantesimi(scheda.classe);
+                    if (!isPreparato) return false;
+
                     const cleanS = String(s.nome || '').replace(/^✨\s*/, '').trim().toLowerCase();
                     if (nomiSalvati.has(cleanS)) return false;
                     return classificaIncantesimoCombattimento(s).mostraInCombattimento;
                   }).map((s) => {
                     const d = dettagliIncantesimo(s.nome) || {};
                     const db = datiIncantesimo(s.nome) || {};
-                    const desc = (s.note || '') + ' ' + (spiegaIncantesimo(s.nome) || '');
-                    let danno = s.danno || d.danno || '';
+                    const desc = (s.note || '') + ' ' + (spiegaIncantesimo(s.nome) || '') + ' ' + (db.desc || '');
+                    let danno = s.danno || d.danno || db.danno || '';
                     if ((s.livello === 0 || db.livello === 0) && danno) {
                       danno = scalaDannoTrucchetto(danno, scheda.livello || 1, s.nome);
                     }
-                    const tipoDanno = s.tipoDanno || d.tipoDanno || '';
+                    const tipoDanno = s.tipoDanno || d.tipoDanno || db.tipoDanno || '';
                     const { isTS } = classificaIncantesimoCombattimento(s);
                     const tsMatch = desc.match(/ts\s+(destrezza|saggezza|costituzione|forza|intelligenza|carisma)/i);
                     const nomeTS = tsMatch ? ` (TS ${tsMatch[1].charAt(0).toUpperCase() + tsMatch[1].slice(1)})` : isTS ? ' (TS)' : '';
@@ -14354,10 +14369,12 @@ export default function App() {
                     const bonusComp = scheda.bonusCompetenza || 2;
                     const bonus = isTS ? 0 : bonusComp + modInc;
                     const cd = 8 + bonusComp + modInc;
-                    const note = (isTS ? `CD ${cd}${nomeTS}` : `Attacco Magico`) + (s.gittata || d.gittata ? ` • ${s.gittata || d.gittata}` : '') + (s.note ? ` • ${s.note}` : '');
+                    const isShillelagh = /randello incantato|shillelagh/i.test(s.nome);
+                    const dannoFormatted = isShillelagh ? `${danno}${conSegno(modInc)}` : danno;
+                    const note = (isTS ? `CD ${cd}${nomeTS}` : `Attacco Magico`) + (s.gittata || d.gittata || db.gittata ? ` • ${s.gittata || d.gittata || db.gittata}` : '') + (s.note ? ` • ${s.note}` : '');
 
                     let categoria = 'Azione';
-                    const tempo = (s.tempo || d.tempo || '').toUpperCase();
+                    const tempo = (s.tempo || d.tempo || db.tempo || '').toUpperCase();
                     if (tempo.includes('BONUS')) categoria = 'Bonus';
                     else if (tempo.includes('REAZ')) categoria = 'Reazione';
 
@@ -14370,14 +14387,21 @@ export default function App() {
                       nome: `${s.nome}`,
                       categoria,
                       bonus,
-                      danno,
+                      danno: dannoFormatted,
                       tipoDanno,
                       note
                     };
                   });
                   const attacchiVisibili = attacchiSalvati.filter((a) => {
                     if (a.isSpell) {
-                      return scheda.mostraIncantesimiAttacco !== false;
+                      if (scheda.mostraIncantesimiAttacco === false) return false;
+                      // Se è un incantesimo di livello >= 1, controlla se è preparato nella lista incantesimi
+                      const cleanA = String(a.nome || '').replace(/^✨\s*/, '').trim().toLowerCase();
+                      const spellMatch = (scheda.incantesimiLista || []).find((s) => (s.nome || '').trim().toLowerCase() === cleanA);
+                      if (spellMatch && spellMatch.livello > 0 && classePreparaIncantesimi(scheda.classe)) {
+                        if (!spellMatch.preparato && !spellMatch.semprePreparato && !spellMatch.bonus) return false;
+                      }
+                      return true;
                     }
                     return scheda.mostraArmiAttacco !== false;
                   });

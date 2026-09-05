@@ -242,6 +242,16 @@ export const VAELION_JSON = {
   lingue: "Comune, Sottocomune, Druidico, Silvano, Bestie, Folletti, Elfico",
   attacchi: [
     {
+      id: "v-a0",
+      nome: "Randello Incantato (Shillelagh)",
+      caratteristica: "saggezza",
+      competenza: true,
+      danno: "1d8+5",
+      tipoDanno: "Contundente",
+      bonus: 9,
+      note: "Magico con SAG (Randello/Bastone), gittata Tocco, durata 1 min"
+    },
+    {
       id: "v-a1",
       nome: "Randello",
       caratteristica: "forza",
@@ -269,7 +279,7 @@ export const VAELION_JSON = {
       danno: "2d6",
       tipoDanno: "Perforante",
       bonus: 9,
-      note: "Trascina 3m, gittata 9m"
+      note: "Trucchetto (Attacco Magico): trascina 3m, gittata 9m"
     },
     {
       id: "v-a4",
@@ -279,7 +289,7 @@ export const VAELION_JSON = {
       danno: "2d8",
       tipoDanno: "Freddo",
       bonus: 9,
-      note: "Svantaggio prox attacco, gittata 18m"
+      note: "Trucchetto (TS Costituzione CD 17): svantaggio prox attacco, gittata 18m"
     }
   ],
   incantatore: {

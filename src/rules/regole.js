@@ -493,12 +493,12 @@ export function classificaIncantesimoCombattimento(s) {
   const tipoDanno = s?.tipoDanno || db.tipoDanno || '';
   if (tipoDanno === 'Guarigione') return { mostraInCombattimento: false, isTS: false };
   const d = dettagliIncantesimo(s?.nome) || {};
-  const desc = (s?.note || '') + ' ' + (spiegaIncantesimo(s?.nome) || '');
-  const danno = s?.danno || d.danno || '';
-  const isTS = /ts (\w+)|tiro salvezza/i.test(desc);
-  const haAttacco = /attacco/i.test(desc);
-  // TS con danni + attacchi con danni (solo spell che infliggono danni via CD o tiro)
-  const mostraInCombattimento = Boolean(danno && (isTS || haAttacco));
+  const desc = (s?.note || '') + ' ' + (spiegaIncantesimo(s?.nome) || '') + ' ' + (db.desc || '');
+  const danno = s?.danno || d.danno || db.danno || '';
+  const isTS = /ts (\w+)|tiro salvezza|saving throw/i.test(desc);
+  const haAttacco = /attacco|attack|mischia|distanza|tocco/i.test(desc) || Boolean(db.danno || d.danno);
+  // TS con danni + attacchi con danni (o spell con danno es. Dardo Incantato, Randello Incantato)
+  const mostraInCombattimento = Boolean(danno && (isTS || haAttacco || /dardo incantato|magic missile|randello incantato|shillelagh/i.test(s?.nome || '')));
   return { mostraInCombattimento, isTS };
 }
 

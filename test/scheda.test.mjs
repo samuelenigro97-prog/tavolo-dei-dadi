@@ -355,7 +355,7 @@ test('tiraDanni: critico raddoppia i dadi ma non i modificatori fissi', () => {
   assert.match(critico.dettaglio, /2d8/);
 });
 
-test('classificaIncantesimoCombattimento: Frusta di Spine e Morsa del Gelo riconosciuti come incantesimi offensivi', async () => {
+test('classificaIncantesimoCombattimento: Frusta di Spine, Morsa del Gelo e Randello Incantato riconosciuti come incantesimi offensivi', async () => {
   const { classificaIncantesimoCombattimento } = await import('../src/rules/regole.js');
   const sp1 = classificaIncantesimoCombattimento({ nome: 'Frusta di Spine' });
   assert.equal(sp1.mostraInCombattimento, true);
@@ -364,6 +364,10 @@ test('classificaIncantesimoCombattimento: Frusta di Spine e Morsa del Gelo ricon
   const sp2 = classificaIncantesimoCombattimento({ nome: 'Morsa del Gelo' });
   assert.equal(sp2.mostraInCombattimento, true);
   assert.equal(sp2.isTS, true); // Tiro salvezza su Costituzione
+
+  const sp3 = classificaIncantesimoCombattimento({ nome: 'Randello Incantato' });
+  assert.equal(sp3.mostraInCombattimento, true);
+  assert.equal(sp3.isTS, false); // Attacco/potenziamento magico
 });
 
 test('formattaTitoloVoce: converte voci in MAIUSCOLO in Title Case preservando congiunzioni/preposizioni', async () => {
