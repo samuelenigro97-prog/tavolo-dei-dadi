@@ -15460,9 +15460,15 @@ export default function App() {
                             </span>
                           )}
                           {liv >= 1 && slot && (
-                            <span style={{ fontSize: 11, color: C.inkDim, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 4, padding: '1px 5px' }}>
-                              Slot: <strong style={{ color: (slot.totale - (slot.spesi || 0)) > 0 ? C.goldDark : C.red }}>{Math.max(0, slot.totale - (slot.spesi || 0))}</strong>/<Editable value={slot.totale} tipo="numero" width={18} onChange={(v) => aggiornaSlot({ totale: Math.max(0, parseInt(v, 10) || 0) })} />
-                              {COSTO_SLOT_IN_PUNTI[liv] ? <span style={{ marginLeft: 4, fontSize: 10, opacity: 0.85 }}>· {COSTO_SLOT_IN_PUNTI[liv]}pt</span> : null}
+                            <span
+                              title={lingua === 'en' ? 'Available / Total spell slots (click to edit total)' : 'Slot disponibili / totali (click per modificare il totale)'}
+                              style={{ fontSize: 11, color: C.inkDim, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 4, padding: '1px 6px', display: 'inline-flex', alignItems: 'center', gap: 3 }}
+                            >
+                              <span>✦</span>
+                              <strong style={{ color: (slot.totale - (slot.spesi || 0)) > 0 ? C.goldDark : C.red }}>{Math.max(0, slot.totale - (slot.spesi || 0))}</strong>
+                              <span>/</span>
+                              <Editable value={slot.totale} tipo="numero" width={18} onChange={(v) => aggiornaSlot({ totale: Math.max(0, parseInt(v, 10) || 0) })} />
+                              {COSTO_SLOT_IN_PUNTI[liv] ? <span style={{ marginLeft: 2, fontSize: 10, opacity: 0.75 }}>· {COSTO_SLOT_IN_PUNTI[liv]}pt</span> : null}
                             </span>
                           )}
                           <span style={{ fontSize: 11, color: C.inkDim, opacity: 0.8 }}>
