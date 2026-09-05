@@ -963,7 +963,7 @@ function trattiSpecieTesto(tratti) {
   return String(tratti || '')
     .split(/,(?![^(]*\))/)
     .map((x) => x.trim())
-    .filter(Boolean)
+    .filter((x) => Boolean(x) && !/^(?:scurovisione|darkvision)\b/i.test(x))
     .join('\n');
 }
 
@@ -2331,6 +2331,22 @@ function loadState() {
             s.trattiSpecie = trattiSpecieTesto(sp.tratti);
           }
         }
+        // Pulizia globale tratti di specie: rimuovi Scurovisione da trattiSpecie (è già in sensi)
+        if (typeof s.trattiSpecie === 'string' && /scurovisione|darkvision/i.test(s.trattiSpecie)) {
+          if (!s.sensi) {
+            const m = s.trattiSpecie.match(/(?:scurovisione|darkvision)[^\n,]*/i);
+            if (m) s.sensi = formattaTitoloVoce(m[0]);
+          }
+          s.trattiSpecie = s.trattiSpecie
+            .split('\n')
+            .filter((line) => !/^(?:\s*[-•*]\s*)?(?:scurovisione|darkvision)\b/i.test(line.trim()))
+            .join('\n')
+            .trim();
+        }
+        if (!s.sensi && s.specie) {
+          const sp = datiSpecieDi(s.specie);
+          if (sp?.sensi) s.sensi = sp.sensi;
+        }
         // "Fissa" il massimo di trucchetti/incantesimi per le schede che ne
         // conoscono più di quanti la classe suggerirebbe (import da PDF): senza
         // questo, togliere un incantesimo non sblocca mai il selettore.
@@ -2350,16 +2366,18 @@ function loadState() {
           if (!s.legami && VAELION_JSON.legami) s.legami = VAELION_JSON.legami;
           if (!s.difetti && VAELION_JSON.difetti) s.difetti = VAELION_JSON.difetti;
           if (!s.nemici && VAELION_JSON.nemici) s.nemici = VAELION_JSON.nemici;
+          if (!s.sensi && VAELION_JSON.sensi) s.sensi = VAELION_JSON.sensi;
           if (s.abilita) {
             if (s.abilita.addestrareAnimali === 1) s.abilita.addestrareAnimali = 2;
             if (s.abilita.natura === 1) s.abilita.natura = 2;
             if (s.abilita.percezione === 1) s.abilita.percezione = 2;
           }
-          if (s.trattiSpecie && (!s.trattiSpecie.includes('SENSI ACUTI') || s.trattiSpecie.includes('Vedi nella penombra') || s.trattiSpecie.includes('SCUROVISIONE')) && VAELION_JSON.trattiSpecie) {
+          if (s.trattiSpecie && (!s.trattiSpecie.includes('Sensi Acuti') || s.trattiSpecie.includes('Vedi nella penombra') || /scurovisione/i.test(s.trattiSpecie)) && VAELION_JSON.trattiSpecie) {
             s.trattiSpecie = VAELION_JSON.trattiSpecie;
           }
-          if (s.privilegi && !s.privilegi.includes('PRIVILEGI DI CLASSE') && VAELION_JSON.privilegi) {
+          if (s.privilegi && (s.privilegi.includes('PRIVILEGI DI CLASSE') || !s.privilegi.includes('Druidico')) && VAELION_JSON.privilegi) {
             s.privilegi = VAELION_JSON.privilegi;
+            s.privilegiSottoclasse = VAELION_JSON.privilegiSottoclasse;
           }
           if (s.addestramento && (!s.addestramento.armi || !s.addestramento.armi.includes('scimitarre')) && VAELION_JSON.addestramento) {
             s.addestramento = { ...s.addestramento, armi: VAELION_JSON.addestramento.armi };
@@ -2380,6 +2398,13 @@ function loadState() {
           if (!s.legami && WENDELL_JSON.legami) s.legami = WENDELL_JSON.legami;
           if (!s.difetti && WENDELL_JSON.difetti) s.difetti = WENDELL_JSON.difetti;
           if (!s.nemici && WENDELL_JSON.nemici) s.nemici = WENDELL_JSON.nemici;
+          if (s.privilegi && s.privilegi.includes('PRIVILEGI DI CLASSE') && WENDELL_JSON.privilegi) {
+            s.privilegi = WENDELL_JSON.privilegi;
+            s.privilegiSottoclasse = WENDELL_JSON.privilegiSottoclasse;
+          }
+          if (s.trattiSpecie && (s.trattiSpecie.includes('Fortunato:') || /scurovisione/i.test(s.trattiSpecie)) && WENDELL_JSON.trattiSpecie) {
+            s.trattiSpecie = WENDELL_JSON.trattiSpecie;
+          }
           if (s.abilita) {
             if (s.abilita.intrattenere === 1) s.abilita.intrattenere = 2;
             if (s.abilita.percezione === 1) s.abilita.percezione = 2;
@@ -2391,13 +2416,30 @@ function loadState() {
           if (!s.legami && ELEVORN_JSON.legami) s.legami = ELEVORN_JSON.legami;
           if (!s.difetti && ELEVORN_JSON.difetti) s.difetti = ELEVORN_JSON.difetti;
           if (!s.nemici && ELEVORN_JSON.nemici) s.nemici = ELEVORN_JSON.nemici;
+          if (s.privilegi && s.privilegi.includes('MULTICLASSE:') && ELEVORN_JSON.privilegi) {
+            s.privilegi = ELEVORN_JSON.privilegi;
+          }
+          if (s.trattiSpecie && (s.trattiSpecie.includes('Retaggio Fatato:') || /scurovisione/i.test(s.trattiSpecie)) && ELEVORN_JSON.trattiSpecie) {
+            s.trattiSpecie = ELEVORN_JSON.trattiSpecie;
+          }
           if (s.abilita) {
             if (s.abilita.atletica === 1) s.abilita.atletica = 2;
             if (s.abilita.intuizione === 1) s.abilita.intuizione = 2;
             if (s.abilita.percezione === 1) s.abilita.percezione = 2;
             if (s.abilita.sopravvivenza === 1) s.abilita.sopravvivenza = 2;
           }
+        } else if (/flyora/i.test(s.nome) || id === 'pg-flyora') {
+          if (s.trattiSpecie && /scurovisione/i.test(s.trattiSpecie) && FLYORA_JSON.trattiSpecie) {
+            s.trattiSpecie = FLYORA_JSON.trattiSpecie;
+          }
+          if (!s.sensi && FLYORA_JSON.sensi) s.sensi = FLYORA_JSON.sensi;
         } else if (/lyrian/i.test(s.nome) || id === 'pg-lyrian') {
+          if (s.privilegi && s.privilegi.includes('PRIVILEGI GUERRIERO') && LYRIAN_JSON.privilegi) {
+            s.privilegi = LYRIAN_JSON.privilegi;
+          }
+          if (s.trattiSpecie && /scurovisione/i.test(s.trattiSpecie) && LYRIAN_JSON.trattiSpecie) {
+            s.trattiSpecie = LYRIAN_JSON.trattiSpecie;
+          }
           if (s.abilita) {
             if (s.abilita.intimidire === 1) s.abilita.intimidire = 2;
             if (s.abilita.percezione === 1) s.abilita.percezione = 2;
@@ -2693,19 +2735,22 @@ function normalizeImported(rawDati) {
     })(),
     privilegiSottoclasse: str(dati.privilegiSottoclasse),
     trattiSpecie: (() => {
-      const ts = str(dati.trattiSpecie).trim();
+      let ts = str(dati.trattiSpecie).trim();
+      if (!ts && dati.tratti) ts = str(dati.tratti).trim();
       if (ts) {
         const voci = estraiVociLista(ts);
-        return voci.map((v) => {
-          const colonIdx = v.indexOf(':');
-          if (colonIdx > 0 && colonIdx <= 40) {
-            return `${formattaTitoloVoce(v.slice(0, colonIdx))}: ${v.slice(colonIdx + 1).trim()}`;
-          }
-          return formattaTitoloVoce(v);
-        }).join('\n');
+        return voci
+          .filter((v) => !/^(?:scurovisione|darkvision)\b/i.test(v.trim()))
+          .map((v) => {
+            const colonIdx = v.indexOf(':');
+            if (colonIdx > 0 && colonIdx <= 40) {
+              return `${formattaTitoloVoce(v.slice(0, colonIdx))}: ${v.slice(colonIdx + 1).trim()}`;
+            }
+            return formattaTitoloVoce(v);
+          }).join('\n');
       }
       const compSp = COMPETENZE_SPECIE[traduciEN(str(dati.specie))];
-      return Array.isArray(compSp) ? compSp.map(formattaTitoloVoce).join('\n') : '';
+      return Array.isArray(compSp) ? compSp.filter((v) => !/^(?:scurovisione|darkvision)\b/i.test(v.trim())).map(formattaTitoloVoce).join('\n') : '';
     })(),
     talenti: (() => {
       const tal = str(dati.talenti).trim();
@@ -2805,7 +2850,16 @@ function normalizeImported(rawDati) {
     sfinimento: Math.max(0, Math.min(6, num(dati.sfinimento, 0))),
     concentrazione: str(dati.concentrazione),
     resistenze: str(dati.resistenze),
-    sensi: str(dati.sensi),
+    sensi: (() => {
+      const s = str(dati.sensi).trim();
+      if (s) return s;
+      const sp = datiSpecieDi(dati.specie);
+      if (sp?.sensi) return sp.sensi;
+      const tsRaw = str(dati.trattiSpecie || dati.tratti);
+      const m = tsRaw.match(/(?:scurovisione|darkvision)[^\n,]*/i);
+      if (m) return formattaTitoloVoce(m[0]);
+      return '';
+    })(),
     addestramento: (() => {
       const clsAdd = addestramentoPerClasse(traduciEN(str(dati.classe))) || {};
       const armIn = dati.addestramento?.armature || {};

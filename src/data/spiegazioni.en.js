@@ -110,17 +110,21 @@ export const EN_TRATTI = {
   // Goliath
   'Retaggio dei giganti': 'You gain a benefit tied to a type of giant.',
   'Corporatura potente': 'You count as one size larger for carrying capacity and grappling.',
+  'Corporatura Possente': 'You count as one size larger for carrying capacity and grappling.',
   // Orco
   'Scatto adrenalinico': 'As a bonus action you can Dash and gain temporary HP.',
   'Resistenza implacabile': 'When you would drop to 0 HP, you drop to 1 instead (once per long rest).',
   // Tiefling
   'Presenza ultraterrena': 'You know the Thaumaturgy cantrip.',
+  'Resistenza Infernale': 'You have resistance to fire damage.',
+  'Eredità Infernale': 'You choose a legacy that gives you a cantrip and extra spells at levels 3 and 5. Your spellcasting ability is Charisma.',
   // Umano (2024)
   // Species ability score increases (2014 only)
   'Forza +2': 'In **2014** the Mountain Dwarf increases its **Strength score by 2**. In 2024 ability score increases no longer come from your species but from your **background**.',
   '+2 Carisma': 'In **2014** the Half-Elf increases **Charisma by 2** and two other scores of its choice by 1. In 2024 ability score increases come from your **background**.',
   // Elf (2014 subraces)
   '1 Trucchetto da Mago': 'You know one cantrip of your choice from the Wizard list: your spellcasting ability for it is **Intelligence**.',
+  'Trucchetto Extra': 'You know one cantrip of your choice from the Wizard list: your spellcasting ability for it is **Intelligence**.',
   'Competenza armi elfiche': 'You are proficient with the **longsword, shortsword, shortbow** and **longbow**.',
   'Addestramento nelle Armi Elfiche': 'You are proficient with the **shortsword, longsword, shortbow** and **longbow**.',
   'Lingua extra': 'You know one **additional language** of your choice, on top of the ones you already speak.',
@@ -131,6 +135,7 @@ export const EN_TRATTI = {
   'Sensibilità alla luce solare': 'In sunlight you have **disadvantage** on attack rolls and on Perception checks that rely on sight.',
   'Magia Drow': 'You know the **Dancing Lights** cantrip. At level 3 you can cast **Faerie Fire** and at level 5 **Darkness**, once each per Long Rest. Your spellcasting ability is **Charisma**.',
   'Armi drow': 'You are proficient with the **shortsword, rapier** and **hand crossbow**.',
+  'Addestramento nelle Armi Drow': 'You are proficient with the **shortsword, rapier** and **hand crossbow**.',
   // Gnome (2014 subraces)
   'Illusionista nato': 'You know the **Minor Illusion** cantrip: your spellcasting ability for it is **Intelligence**.',
   'Parlare con le piccole bestie': 'You can convey simple ideas to **Small or smaller beasts** through sound and gesture, and pick up their answers.',
@@ -141,6 +146,7 @@ export const EN_TRATTI = {
   // Dwarf / Half-orc (2014)
   'Competenza negli strumenti': "You are proficient with one type of **artisan's tools** of your choice: smith's tools, brewer's supplies or mason's tools.",
   'Competenza nelle armature leggere e medie': 'You are proficient with **light and medium armour**.',
+  'Addestramento nelle Armature Naniche': 'You are proficient with **light and medium armour**.',
   'Minaccioso': 'You gain proficiency in the **Intimidation** skill.',
   'Attacchi selvaggi': 'When you score a **critical hit** with a melee weapon attack, you roll **one additional damage die** and add it to the extra critical damage.',
   // Half-elf (2014)

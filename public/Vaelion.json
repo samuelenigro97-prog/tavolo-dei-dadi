@@ -277,8 +277,9 @@
     { "id": "auto-forma-selvatica", "nome": "Forma Selvatica", "attuali": 2, "max": 2, "reset": "breve" },
     { "id": "auto-totem-spirituale", "nome": "Totem Spirituale (Aura)", "attuali": 1, "max": 1, "reset": "breve" }
   ],
-  "sintonia": ["Mantello della Protezione", "Perla del Potere", "Guanti della Forza Orchesca"],
-  "monete": { "mr": 0, "ma": 0, "me": 0, "mo": 250, "mp": 0 },
-  "tratti": "Retaggio Fatato: Vantaggio ai TS contro l'essere affascinato. La magia non può addormentarti.\nMaschera della Selva: Puoi tentare di nasconderti anche quando sei parzialmente oscurato da fenomeni naturali.\nScurovisione 18m\nLingua dei Boschi: Comunichi con le bestie e i folletti, e parli, leggi e scrivi il Silvano.\nTotem Spirituale (Azione Bonus): Evochi un'aura totemica di 9m entro 18m per 1 minuto (Orso: +15 PF temp e vantaggio alle prove/TS di Forza; Falco: reazione per dare vantaggio agli attacchi e vantaggio a Percezione; Unicorno: +10 PF extra su magie di cura).\nEvocatore Possente: Le bestie e i folletti che evochi hanno +2 PF per dado vita e i loro attacchi con armi naturali contano come magici.\nSpirito Guardiano: Le tue evocazioni nell'aura del totem recuperano 5 PF all'inizio del turno e ottengono PF temp se ridotte a 0 PF.\nForma Selvatica (Azione): Grado Sfida max 1 (terrestre, nuoto, volo), 2 usi per riposo.\nPrivilegio Background (Scoperta): Conoscenza di un'importante verità cosmica o segreto del mondo.",
+  "sensi": "Scurovisione 18 m",
+  "trattiSpecie": "Sensi Acuti\nRetaggio Fatato\nTrance\nPasso Celere\nMaschera della Selva\nAddestramento nelle Armi Elfiche",
+  "privilegi": "Druidico\nLancio di Incantesimi\nForma Selvatica",
+  "privilegiSottoclasse": "Lingua dei Boschi\nTotem Spirituale\nEvocatore Possente\nSpirito Guardiano",
   "note": "STORIA & DETTAGLI:\nNato tra le Montagne Rauvin, membro degli Arpisti. Mentore: Un orso mannaro che gli ha insegnato il rispetto per tutte le creature viventi.\nAspetto Guida: Il fiume inarrestabile gli ricorda il ciclo eterno della natura."
 }

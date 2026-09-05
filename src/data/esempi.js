@@ -76,8 +76,9 @@ export const FLYORA_JSON = {
     { id: 3, nome: 'Borsa del Guaritore', max: 10, attuali: 10, ricarica: 'Nessuno' }
   ],
   privilegi: "Stregoneria Innata\nFonte di Magia\nOnde di Caos",
+  privilegiSottoclasse: "",
   metamagie: "Incantesimo Celato, Incantesimo Preciso",
-  trattiSpecie: "Retaggio Fatato\nScurovisione 18 m\nSensi Acuti (Intuizione, Percezione o Sopravvivenza)\nTrance",
+  trattiSpecie: "Retaggio Fatato\nSensi Acuti\nTrance\n1 Trucchetto da Mago\nAddestramento nelle Armi Elfiche",
   talenti: "Incantatore da Guerra\nGuaritore",
   equipaggiamento: "Focus Arcano (Cristallo)\nBorsa da erborista\nGiaciglio\nLibro (filosofia)\nDotazione da avventuriero\nAbiti da viaggiatore",
   lingue: "Comune, Elfico, Sottocomune",
@@ -136,13 +137,9 @@ export const ESEMPIO_GNOMO = {
     { livello: 4, nome: 'Invisibilità Superiore', tempo: 'AZ', gittata: 'contatto', note: 'Concentrazione' },
     { livello: 5, nome: 'Cono di Freddo', tempo: 'AZ', gittata: 'cono 18m', note: '8d8, TS COS' },
   ],
-  privilegi:
-    'RECUPERO ARCANO: 1 volta al giorno, con un riposo breve recuperi slot per un totale di 5 livelli.\n' +
-    'PLASMARE INCANTESIMI: crei varchi sicuri nelle aree dei tuoi incantesimi di invocazione.\n' +
-    'INCANTESIMO POTENZIATO: aggiungi INT ai danni degli incantesimi di invocazione.',
-  trattiSpecie:
-    'ASTUZIA GNOMESCA: vantaggio ai TS di INT, SAG e CAR contro la magia.\n' +
-    'SCUROVISIONE: vedi al buio entro 18 m.',
+  privilegi: "Recupero Arcano\nPlasmare Incantesimi\nIncantesimo Potenziato",
+  privilegiSottoclasse: "",
+  trattiSpecie: "Astuzia Gnomesca\nConoscenza degli Artefatti\nInventore",
   talenti: 'Adepto Elementale (fuoco): i tuoi incantesimi ignorano la resistenza al fuoco; gli 1 sui dadi di danno da fuoco contano come 2.',
   equipaggiamento: 'Libro degli incantesimi, bacchetta (focus arcano), dotazione da studioso, pozione di guarigione x2',
   sintonia: 'Bacchetta della Guerra Magica (+1 ai tiri per colpire con incantesimo)',
@@ -181,6 +178,7 @@ export const VAELION_JSON = {
   dadiVitaSpesi: 0,
   ca: 19,
   velocita: 10.5,
+  sensi: "Scurovisione 18 m",
   ispirazione: false,
   sfinimento: 0,
   armatura: {
@@ -352,8 +350,9 @@ export const VAELION_JSON = {
   ideali: "Equilibrio naturale: La natura e le sue creature devono essere protette dall'avidità cieca e dalla corruzione.",
   legami: "I boschi ancestrali delle Montagne Rauvin e il patto col Piccolo Popolo che gli ha donato la maschera d'alabastro.",
   difetti: "Fatica a fidarsi di chi vive nelle grandi città o sfrutta le risorse naturali senza rispetto.",
-  trattiSpecie: "Scurovisione (18 m)\nSensi Acuti\nRetaggio Fatato\nTrance\nAddestramento nelle Armi Elfiche\nPasso Celere (Flotta Elfica)\nMaschera della Selva",
-  privilegi: "PRIVILEGI DI CLASSE (DRUIDO LIV. 10):\n• Druidico: Conosci il Druidico, il linguaggio segreto dei druidi; puoi parlarlo e lasciare messaggi nascosti.\n• Lancio di Incantesimi: Saggezza come caratteristica da incantatore, preparazione incantesimi, uso di focus druidico e rituali.\n• Forma Selvatica (2 usi/Riposo Breve o Lungo): Con un'azione ti trasformi in una bestia conosciuta con Grado di Sfida max 1 (terrestre, nuoto, volo); durata 5 ore (metà livello).\n• Incrementi di Caratteristica / Talenti: 4° e 8° livello (Saggezza 20, Destrezza 15, Costituzione 14).\n\nPRIVILEGI CIRCOLO DEL PASTORE:\n• Lingua dei Boschi (liv. 2): Comunichi con bestie e folletti, e parli, leggi e scrivi il Silvano.\n• Totem Spirituale (liv. 2 - Azione Bonus): Evochi un'aura totemica di 9m entro 18m per 1 minuto (Orso: +15 PF temp e vantaggio a prove/TS di Forza; Falco: reazione per dare vantaggio all'attacco di un alleato e vantaggio a Percezione; Unicorno: +10 PF extra a tutte le creature nell'aura su magie di cura). 1/Riposo Breve o Lungo.\n• Evocatore Possente (liv. 6): Bestie e folletti che evochi hanno +2 PF per dado vita e i loro attacchi con armi naturali contano come magici.\n• Spirito Guardiano (liv. 10): Le tue evocazioni nell'aura del totem recuperano 5 PF all'inizio del proprio turno.\n\nPRIVILEGIO BACKGROUND (EREMITA - SCOPERTA):\nSei a conoscenza di un'unica e fondamentale verità cosmica o segreto della natura (il cerchio di pietre, il patto col Signore Fatato e la corruzione latente delle foreste).",
+  trattiSpecie: "Sensi Acuti\nRetaggio Fatato\nTrance\nPasso Celere\nMaschera della Selva\nAddestramento nelle Armi Elfiche",
+  privilegi: "Druidico\nLancio di Incantesimi\nForma Selvatica",
+  privilegiSottoclasse: "Lingua dei Boschi\nTotem Spirituale\nEvocatore Possente\nSpirito Guardiano",
   note: "ORIGINI & BACKSTORY:\n• Origine: Montagne Rauvin (famiglia di pastori elfici)\n• Affiliazione: Arpisti (rete di studiosi e guerrieri per l'equilibrio)\n• Mentore: Un orso mannaro che gli ha insegnato a rispettare tutte le creature viventi\n• Aspetto Guida: Il fiume inarrestabile gli ricorda il ciclo eterno della natura\n• Oggetto Prezioso: Un sonaglio di zucca essiccata con bacche di agrifoglio\n\nLE ORIGINI & IL PATTO COL PICCOLO POPOLO:\nFin da bambino cercava tracce degli spiriti. Seguendo un agnello smarrito, trovò un cerchio di pietre muschiose e ricevette la maschera d'alabastro da un Signore Fatato. Da quel giorno le bestie divennero compagne e la natura gli parlò con voce primordiale.\n\nIL MASSACRO & GLI ARPISTI:\nDopo l'attacco degli orchi dei Many Arrows in cui morirono i suoi compagni, ha consacrato la vita a proteggere la natura a ogni costo. Si è unito agli Arpisti e ha indagato sulla corruzione delle foreste prima di essere richiamato al Concilio."
 };
 
@@ -418,9 +417,9 @@ export const ELEVORN_JSON = {
   incantesimiLista: [],
   maxTrucchetti: 0,
   maxIncantesimi: 4,
-  privilegi: "MULTICLASSE: Guerriero 1 / Ranger 6 / Ladro 3 (Livello Totale: 10)\n\n• Guerriero (Liv. 1): Stile di Combattimento, Recuperare Energie (Second Wind 1d10+1).\n• Ranger (Liv. 6): Nemico Prescelto, Esploratore Naturale, Incantesimi da Ranger, Archetipo da Ranger, Movimento Straordinario.\n• Ladro (Liv. 3): Attacco Furtivo (2d6), Gergo Ladresco, Azione Scaltra (Cunning Action), Archetipo Ladresco.",
+  privilegi: "Stile di Combattimento\nRecuperare Energie\nNemico Prescelto\nEsploratore Naturale\nAttacco Furtivo\nGergo Ladresco\nAzione Scaltra",
   privilegiSottoclasse: "",
-  trattiSpecie: "Retaggio Fatato: Vantaggio ai TS contro l'essere affascinato, la magia non può addormentarti.\nScurovisione 18 m (60 ft).\nVersatilità nelle Abilità: Competenze aggiuntive da Mezzelfo.",
+  trattiSpecie: "Retaggio Fatato\nVersatilità nelle Abilità",
   talenti: "",
   metamagie: "",
   equipaggiamento: "",
@@ -567,8 +566,9 @@ export const WENDELL_JSON = {
   ideali: "Carità. Il ciarlatano distribuisce i soldi ottenuti tra coloro che ne hanno davvero bisogno. (Buono)",
   legami: "Il ciarlatano ha incastrato la persona sbagliata e ora deve evitarla in tutti i modi.",
   difetti: "Il ciarlatano non può fare a meno di tentare di truffare le persone più potenti di lui.",
-  trattiSpecie: "Fortunato: Quando ottieni 1 al d20 per tiro per colpire, prova di caratteristica o tiro salvezza, puoi ritirare il dado e devi usare il nuovo risultato.\nCoraggioso: Vantaggio ai tiri salvezza contro l'essere spaventato.\nAgilità Halfling: Puoi muoverti attraverso lo spazio di qualsiasi creatura di taglia più grande della tua.\nFurtività Innata (Piedelesto): Puoi tentare di nasconderti anche quando sei oscurato solo da una creatura di almeno una taglia più grande.",
-  privilegi: "PRIVILEGI DI CLASSE (BARDO LIV. 6):\n• Ispirazione Bardica (d8): Come azione bonus conferisce un dado d8 a una creatura entro 18m per tiri per colpire, prove o tiri salvezza (entro 10 min).\n• Factotum (Jack of All Trades): Aggiunge metà del bonus di competenza (+1) a ogni prova di caratteristica che non include già il bonus di competenza.\n• Canto di Riposo (d6): Durante un riposo breve, gli alleati recuperano +1d6 PF extra spendendo dadi vita.\n• Maestria (Expertise): Bonus di competenza raddoppiato su Inganno e Persuasione.\n• Fonte di Ispirazione: Gli usi di Ispirazione Bardica si ricaricano sia con un riposo breve che lungo.\n• Controfascino: Con un'azione inizia un'esibizione musicale: entro 9m gli alleati hanno vantaggio ai tiri salvezza contro essere affascinati o spaventati.\n\nPRIVILEGI SOTTOCLASSE (COLLEGIO DELL'INCANTO):\n• Manto di Ispirazione (liv. 3): Come azione bonus spende 1 dado di Ispirazione per conferire a fino a 4 creature entro 18m 8 PF temporanei e la possibilità di muoversi come reazione senza provocare attacchi di opportunità.\n• Esibizione Estasiante (liv. 3): Esibendosi per almeno 1 minuto, affascina fino a 4 umanoidi entro 18m per 1 ora (TS Saggezza CD 15). Ricarica: Riposo Breve/Lungo.\n• Manto di Maestà (liv. 6): Come azione bonus, per 1 minuto (concentrazione) può lanciare \"Comando\" come azione bonus ad ogni turno senza consumare slot incantesimo. 1 volta per Riposo Lungo.\n\nPRIVILEGIO BACKGROUND (FALSA IDENTITÀ):\nHa creato una seconda identità fittizia completa di documenti, conoscenze e camuffamenti. Truffa preferita: insinuarsi nelle vite degli altri e fare leva sulle loro debolezze.",
+  trattiSpecie: "Fortuna\nCoraggioso\nAgilità Halfling\nFurtività Naturale",
+  privilegi: "Ispirazione Bardica\nFactotum\nCanto di Riposo\nMaestria\nFonte di Ispirazione\nControfascino",
+  privilegiSottoclasse: "Manto di Ispirazione\nEsibizione Estasiante\nManto di Maestà",
   note: "ANAGRAFICA & ASPETTO:\n• Giocatore: Samuele\n• Età: 20 anni | Altezza: 1,00 m | Peso: 20 kg\n• Carnagione: Chiara | Occhi: Scuri | Capelli: Bianchi\n• Nemici: Mercante di Neverwinter \"Casimirus Breal\"\n\nLINGUAGGI: Comune, Halfling, Sottocomune\n\nCOMPETENZE:\n• Armature: Leggere\n• Armi: Semplici, Balestre a mano, Spade corte, Spade lunghe, Stocchi\n• Strumenti: Liuto, Flauto di Pan, Tamburo, Strumenti da Camuffamento",
   addestramento: {
     armature: { leggera: true, media: false, pesante: false, scudi: false },
@@ -684,9 +684,9 @@ export const LYRIAN_JSON = {
   ideali: "Libertà. Ognuno dovrebbe essere libero di percorrere il proprio sentiero e spezzare le proprie catene. (Neutrale)",
   legami: "Porta una profonda cicatrice che gli ricorda costantemente il suo legame indissolubile con la Lama Iettatrice.",
   difetti: "Diffida ciecamente di chi veste armature lucenti e predica verità assolute nei grandi templi delle città.",
-  nemici: "I cultisti delle Ombre che hanno distrutto il suo villaggio ancestrale.",
-  trattiSpecie: "Scurovisione: 18 metri.\nRetaggio Fatato: Vantaggio ai TS contro l'essere affascinato e immunità al sonno magico.\nTrance: Gli elfi non dormono; meditano profondamente per 4 ore al giorno.\nMaschera della Selva: Puoi tentare di nasconderti anche se sei oscurato solo da fenomeni naturali (fogliame, pioggia, nebbia).\nPasso Celere: Velocità base sul terreno pari a 10,5 metri (35 piedi).",
-  privilegi: "PRIVILEGI GUERRIERO (LIV. 4):\n• Stile di Combattimento: Duellare (+2 danni quando impugni un'arma da mischia in una mano e nessun'altra arma).\n• Recuperare Energie (Second Wind): Come azione bonus recuperi 1d10 + 4 PF (1/Riposo Breve o Lungo).\n• Azione Impetuosa (Action Surge): Puoi compiere un'azione aggiuntiva nel tuo turno (1/Riposo Breve o Lungo).\n• Archetipo Marziale (Campione): I tuoi attacchi con arma ottengono un colpo critico con un risultato di 19 o 20 al d20.\n• Incremento dei Punteggi di Caratteristica (4° liv.): Destrezza aumentata a 18 (+4).\n\nPRIVILEGI WARLOCK (HEXBLADE LIV. 1):\n• Maledizione della Lama Iettatrice (Hexblade's Curse): Come azione bonus maledici un nemico entro 9m per 1 minuto. Aggiungi il tuo bonus di competenza (+3) a tutti i tiri per i danni contro di lui; i tiri per colpire ottengono un colpo critico con 19-20; se il bersaglio muore, recuperi 4 PF (liv. Warlock 1 + CAR 3). 1/Riposo Breve o Lungo.\n• Guerriero Hexblade (Hex Warrior): Competenza in armature medie, scudi e armi da guerra. Puoi usare il modificatore di Carisma o Destrezza per attacco e danno con la tua arma toccata.\n• Magia del Patto (Pact Magic): 1 slot di 1° livello che si ricarica con un Riposo Breve.\n\nPRIVILEGIO BACKGROUND (FORESTIERO - VIAGGIATORE):\nRicordi perfettamente la conformazione del terreno, insediamenti e punti cospicui attorno a te, e puoi trovare cibo e acqua fresca per te e fino a 5 altre persone ogni giorno.",
+  trattiSpecie: "Sensi Acuti\nRetaggio Fatato\nTrance\nPasso Celere\nMaschera della Selva\nAddestramento nelle Armi Elfiche",
+  privilegi: "Stile di Combattimento\nRecuperare Energie\nAzione Impetuosa\nCritico Migliorato\nMaledizione della Lama Iettatrice\nGuerriero Hexblade\nMagia del Patto",
+  privilegiSottoclasse: "",
   note: "ANAGRAFICA & ASPETTO:\n• Nome: Lyrian Faenor detto \"Mezzafaccia\"\n• Sesso: M | Specie: Elfo dei Boschi | Taglia: Media\n• Classe: Guerriero 4 (Campione) / Warlock 1 (Lama Iettatrice)\n• Background: Forestiero | Allineamento: Neutrale\n• Iniziativa: +4 | Velocità: 10,5 m | CA: 18\n• Caratteristiche: FOR 10 (+0), DES 18 (+4), COS 15 (+2), INT 12 (+1), SAG 13 (+1), CAR 16 (+3)\n• Competenze TS: FOR (+3), COS (+5)\n• Abilità: Atletica (+3), Intimidire (+3), Percezione (+4), Sopravvivenza (+4)\n• Linguaggi: Comune, Elfico, Silvano\n• Strumenti: Flauto di Pan",
   addestramento: {
     armature: { leggera: true, media: true, pesante: true, scudi: true },

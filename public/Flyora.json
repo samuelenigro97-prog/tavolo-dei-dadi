@@ -132,7 +132,12 @@
     { "id": "r2", "nome": "Stregoneria Innata", "max": 2, "attuali": 2, "ricarica": "Lungo" },
     { "id": "r3", "nome": "Kit da Guaritore", "max": 10, "attuali": 10, "ricarica": "Nessuno" }
   ],
-  "tratti": "Stregoneria Innata\nFonte di Magia\nMetamagia: Incantesimo Celato, Preciso\nOnde di Caos\nRetaggio Fatato\nScurovisione\nTrance\nGuaritore\nGuerramaga",
+  "sensi": "Scurovisione 18 m",
+  "trattiSpecie": "Retaggio Fatato\nSensi Acuti\nTrance\n1 Trucchetto da Mago\nAddestramento nelle Armi Elfiche",
+  "privilegi": "Stregoneria Innata\nFonte di Magia\nOnde di Caos",
+  "privilegiSottoclasse": "",
+  "metamagie": "Incantesimo Celato, Incantesimo Preciso",
+  "talenti": "Incantatore da Guerra\nGuaritore",
   "equipaggiamento": "Focus Arcano (Cristallo)\nBorsa da erborista\nGiaciglio\nLibro (filosofia)\nDotazione da avventuriero\nAbiti da viaggiatore",
   "monete": { "mr": 0, "ma": 0, "me": 0, "mo": 74, "mp": 0 },
   "note": "Storia: Il personaggio ha trascorso i suoi primi anni rinchiuso in una capanna o un monastero molto distante..."

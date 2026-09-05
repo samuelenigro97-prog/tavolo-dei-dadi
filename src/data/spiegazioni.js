@@ -1521,16 +1521,20 @@ export const SPIEG_TRATTI = {
   // Goliath
   'Retaggio dei giganti': "Scegli un beneficio legato a un tipo di gigante (es. resistenza, uno scatto teletrasporto, danni extra). Puoi usarlo un numero di volte per riposo lungo pari al tuo bonus di competenza.",
   'Corporatura potente': "Conti come una creatura di taglia superiore per determinare la capacità di carico e il peso che puoi spingere, trascinare o sollevare.",
+  'Corporatura Possente': "Conti come una creatura di taglia superiore per determinare la capacità di carico e il peso che puoi spingere, trascinare o sollevare.",
   // Orco
   'Scatto adrenalinico': "Come azione bonus puoi compiere l'azione Scatto e ottieni punti ferita temporanei pari al tuo bonus di competenza. Recuperi l'uso con un riposo breve o lungo.",
   'Resistenza implacabile': "Quando scenderesti a 0 punti ferita senza essere ucciso sul colpo, resti invece a 1 punto ferita. Una volta per riposo lungo.",
   // Tiefling
   'Presenza ultraterrena': "Conosci il trucchetto Taumaturgia; la caratteristica da incantatore per lanciarlo è il Carisma.",
+  'Resistenza Infernale': 'Hai resistenza ai danni da fuoco.',
+  'Eredità Infernale': "Scegli un retaggio (Infernale, Abissale o degli Inferi): ti dà un trucchetto al 1° livello e un incantesimo al 3° e al 5°, lanciabili una volta per riposo lungo. La caratteristica da incantatore è il Carisma.",
   // Aumenti di caratteristica da specie (solo 5.0)
   'Forza +2': "Nella **5.0** il Nano delle Montagne aumenta il punteggio di **Forza di 2**. Nella 5.5 gli aumenti di caratteristica non arrivano più dalla specie ma dal **background**.",
   '+2 Carisma': "Nella **5.0** il Mezzelfo aumenta il **Carisma di 2** e altre due caratteristiche a scelta di 1. Nella 5.5 gli aumenti di caratteristica arrivano dal **background**.",
   // Elfo (sottorazze 5.0)
   '1 Trucchetto da Mago': "Conosci un trucchetto a tua scelta dalla lista del mago: la caratteristica da incantatore per lanciarlo è l'**Intelligenza**.",
+  'Trucchetto Extra': "Conosci un trucchetto a tua scelta dalla lista del mago: la caratteristica da incantatore per lanciarlo è l'**Intelligenza**.",
   'Competenza armi elfiche': 'Sei competente con **spada lunga, spada corta, arco corto** e **arco lungo**.',
   'Addestramento nelle Armi Elfiche': 'Sei competente con **spada corta, spada lunga, arco corto** e **arco lungo**.',
   'Lingua extra': 'Conosci una **lingua aggiuntiva** a tua scelta, oltre a quelle che parli già.',
@@ -1541,6 +1545,7 @@ export const SPIEG_TRATTI = {
   'Sensibilità alla luce solare': 'Alla luce del sole hai **svantaggio** ai tiri per colpire e alle prove di Percezione basate sulla vista.',
   'Magia Drow': 'Conosci il trucchetto **Luce danzante**. Al 3° livello puoi lanciare **Fuoco fatuo** e al 5° **Oscurità**, una volta ciascuno per riposo lungo. La caratteristica da incantatore è il **Carisma**.',
   'Armi drow': 'Sei competente con **spada corta, spadone** (rapier) e **balestra a mano**.',
+  'Addestramento nelle Armi Drow': 'Sei competente con **spada corta, stocco** (rapier) e **balestra a mano**.',
   // Gnomo (sottorazze 5.0)
   'Illusionista nato': "Conosci il trucchetto **Illusione minore**: la caratteristica da incantatore per lanciarlo è l'**Intelligenza**.",
   'Parlare con le piccole bestie': 'Riesci a comunicare idee semplici alle **bestie di taglia Piccola o inferiore** con suoni e gesti, e a coglierne le risposte.',
@@ -1551,6 +1556,7 @@ export const SPIEG_TRATTI = {
   // Nano / Mezzorco (5.0)
   'Competenza negli strumenti': 'Sei competente con un tipo di **arnesi da artigiano** a tua scelta fra attrezzi da fabbro, da birraio e da muratore.',
   'Competenza nelle armature leggere e medie': 'Sei competente con le **armature leggere e medie**.',
+  'Addestramento nelle Armature Naniche': 'Sei competente con le **armature leggere e medie**.',
   'Minaccioso': "Ottieni la competenza nell'abilità **Intimidire**.",
   'Attacchi selvaggi': 'Quando metti a segno un **colpo critico** con un attacco in mischia con arma, tiri **un dado di danno in più** e lo aggiungi ai danni extra del critico.',
   // Mezzelfo (5.0)
