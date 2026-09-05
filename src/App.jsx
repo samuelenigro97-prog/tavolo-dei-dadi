@@ -12643,7 +12643,7 @@ export default function App() {
 
                 <div className="profilo-anagrafica-campi" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {/* Riga 1: Sesso, Specie/Razza, Taglia, Allineamento */}
-                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.9fr 1.35fr 0.65fr 1.1fr', gap: 10, alignItems: 'end' }}>
+                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.65fr 1.3fr 0.6fr 1.45fr', gap: 10, alignItems: 'end' }}>
                     <CampoModulo label={t("profilo.sesso")}>
                       <CampoTendina
                         value={scheda.sesso}
@@ -12698,7 +12698,7 @@ export default function App() {
                         />
                       )}
                     </CampoModulo>
-                    <CampoModulo label={t("profilo.allineamento")}>
+                    <CampoModulo label={t("profilo.allineamento")} boxClassName={String(scheda.allineamento || '').length > 15 ? 'testo-compatto' : undefined}>
                       <CampoTendina value={scheda.allineamento} opzioni={ALLINEAMENTI_5E} onChange={(v) => aggiorna({ allineamento: v })} title={t('tip.scegli_allineamento')} />
                     </CampoModulo>
                   </div>
