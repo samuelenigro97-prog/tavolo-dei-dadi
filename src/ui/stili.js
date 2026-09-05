@@ -100,16 +100,17 @@ export const styles = {
     position: 'sticky',
     top: 'max(46px, calc(env(safe-area-inset-top) + 42px))',
     zIndex: 1100,
-    background: C.panel,
-    border: `1px solid ${C.gold}`,
-    borderRadius: 8,
-    padding: '6px 12px',
+    background: 'linear-gradient(135deg, var(--c-panel, #24201d) 0%, var(--c-panel-light, #2e2824) 100%)',
+    border: `1.5px solid ${C.gold}`,
+    borderRadius: 10,
+    padding: '8px 14px',
     marginBottom: 8,
     display: 'flex',
     flexDirection: 'column',
     gap: 4,
-    boxShadow: '0 4px 12px rgba(60,50,30,0.18)',
+    boxShadow: '0 8px 24px -2px rgba(0,0,0,0.45), 0 0 14px rgba(212,175,55,0.22), inset 0 1px 1px rgba(255,255,255,0.12)',
     minHeight: 38,
+    backdropFilter: 'blur(8px)',
   },
   dado: (rolling, crit, fumble, facce = 20) => {
     let clipPath = 'polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)'; // default d20 hexagon
@@ -119,38 +120,59 @@ export const styles = {
     else if (facce === 10 || facce === 100) clipPath = 'polygon(50% 5%, 95% 35%, 50% 95%, 5% 35%)'; // Kite
     else if (facce === 12) clipPath = 'polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)'; // Dodecagon approximation (use hexagon for now)
 
+    const bgDado = crit
+      ? 'radial-gradient(circle at 35% 35%, #fff9db 0%, #ffd700 45%, #b8860b 85%, #7a5800 100%)'
+      : fumble
+      ? 'radial-gradient(circle at 35% 35%, #ffcdd2 0%, #e53935 50%, #880e4f 90%, #310000 100%)'
+      : 'radial-gradient(circle at 35% 35%, rgba(255,255,255,0.15) 0%, var(--c-panel-light, #2f2a24) 60%, var(--c-panel, #1f1b18) 100%)';
+
+    const textDado = crit ? '#2a1a00' : fumble ? '#ffffff' : C.ink;
+    const borderDado = crit ? '#ffd700' : fumble ? '#ff1744' : (COLORE_DADO[facce] || COLORE_DADO[20]);
+    const glowDado = crit
+      ? '0 0 16px rgba(255, 215, 0, 0.8), 0 0 30px rgba(255, 215, 0, 0.4)'
+      : fumble
+      ? '0 0 16px rgba(255, 23, 68, 0.8), 0 0 28px rgba(183, 28, 28, 0.5)'
+      : `0 0 8px ${COLORE_DADO[facce] || COLORE_DADO[20]}55`;
+
     return {
-      width: 38,
-      height: 38,
+      width: 42,
+      height: 42,
       flexShrink: 0,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      fontSize: facce === 20 ? 16 : 14,
+      fontSize: facce === 20 ? 18 : 15,
       fontWeight: 'bold',
-      color: crit ? C.goldDark : fumble ? C.red : C.ink,
-      background: C.panelLight,
-      border: `2px solid ${crit ? C.gold : fumble ? C.red : (COLORE_DADO[facce] || COLORE_DADO[20])}`,
+      color: textDado,
+      background: bgDado,
+      border: `2px solid ${borderDado}`,
+      boxShadow: glowDado,
       clipPath,
-      animation: rolling ? 'd20-spin 0.5s linear infinite' : 'd20-settle 0.35s ease-out',
+      animation: rolling ? 'd20-spin 0.5s linear infinite' : 'd20-settle 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
       userSelect: 'none',
       paddingTop: facce === 4 ? 6 : 0,
       fontVariantNumeric: 'tabular-nums',
+      textShadow: crit ? '0 1px 0 rgba(255,255,255,0.6)' : fumble ? '0 1px 3px rgba(0,0,0,0.9)' : 'none',
+      transform: (crit || fumble) && !rolling ? 'scale(1.1)' : 'none',
+      transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease',
     };
   },
   badge: (color) => ({
     display: 'inline-flex',
     alignItems: 'center',
-    padding: '2px 8px',
+    gap: 4,
+    padding: '2px 9px',
     borderRadius: 12,
-    border: `1px solid ${color}`,
+    border: `1px solid ${color}88`,
     color,
     fontSize: 12,
-    fontWeight: 600,
+    fontWeight: 700,
     letterSpacing: 0.5,
     marginLeft: 6,
     fontVariantNumeric: 'tabular-nums',
-    background: `${color}12`,
+    background: `${color}18`,
+    boxShadow: `0 0 8px ${color}33`,
+    backdropFilter: 'blur(4px)',
   }),
   detail: { color: C.inkDim, fontSize: 13 },
   button: {
@@ -309,21 +331,21 @@ export const styles = {
     transition: 'background-color 0.12s ease',
   }),
   dot: (livello) => ({
-    width: 15,
-    height: 15,
+    width: 16,
+    height: 16,
     flexShrink: 0,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: 15,
-    // competenza chiara a colpo d'occhio, con colori a tinta fissa (non legati
-    // al tema/ambientazione attivo, altrimenti sotto certi preset finiscono per
-    // assomigliarsi): verde = competente, blu = competenza di classe/razza,
-    // oro = Maestria/Expertise (doppia competenza), anello tenue = non competente.
-    color: livello === 3 ? '#d4af37' : livello === 2 ? '#3a7ca8' : livello === 1 ? '#3e9b4f' : C.inkDim,
+    fontSize: livello === 3 ? 16 : livello === 2 ? 14 : 15,
+    // competenza chiara a colpo d'occhio con bagliore arcano e rune cesellate:
+    // oro = Maestria/Expertise (✦), azzurro = classe/razza (★), verde = competente (●), tenue = non competente (○).
+    color: livello === 3 ? '#ffd700' : livello === 2 ? '#38bdf8' : livello === 1 ? '#4ade80' : C.inkDim,
+    textShadow: livello === 3 ? '0 0 6px rgba(255, 215, 0, 0.75)' : livello === 2 ? '0 0 5px rgba(56, 189, 248, 0.65)' : livello === 1 ? '0 0 4px rgba(74, 222, 128, 0.55)' : 'none',
+    filter: livello > 0 ? 'drop-shadow(0 1px 2px rgba(0,0,0,0.35))' : 'none',
     cursor: 'pointer',
     userSelect: 'none',
-    transition: 'transform 0.15s ease',
+    transition: 'transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.15s ease, text-shadow 0.15s ease',
   }),
   editable: {
     borderBottom: `1px dashed ${C.inkDim}`,
@@ -563,6 +585,8 @@ tbody tr:hover {
 .sezione-titolo-testo {
   justify-self: center;
   text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 0 1px rgba(255, 255, 255, 0.08);
+  letter-spacing: 2px;
   transition: text-shadow 0.3s ease;
 }
 
@@ -1180,6 +1204,22 @@ tbody tr:hover {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(212, 175, 55, 0.3);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.ritratto-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55), 0 0 16px var(--c-aura-color, rgba(201, 162, 39, 0.35)), inset 0 0 0 1px rgba(212, 175, 55, 0.6);
+}
+.ritratto-box::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.65), inset 0 -38px 28px -10px rgba(0, 0, 0, 0.75);
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 0.25s ease;
 }
 .ritratto-box img {
   position: absolute;

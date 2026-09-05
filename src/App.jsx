@@ -4,7 +4,7 @@ import { useRegisterSW } from 'virtual:pwa-register/react';
 import { ICONE_CLASSE, ICONE_SPECIE, ICONE_BESTIE_SVG, GALLERIA_BESTIE_PRESET, generaAvatarBestia, iconaBestia } from './ritratti';
 import { t, setLinguaAttuale, DIZIONARIO, traduciDato, linguaAttuale } from './i18n';
 import { avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro, sbloccaAudio, precaricaSfx } from './utils/audioAmbiente';
-import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI, ambientazioneCasuale } from './ui/tema.js';
+import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI, ambientazioneCasuale, COLORE_SCUOLA } from './ui/tema.js';
 import { styles, GLOBAL_CSS } from './ui/stili.js';
 import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, Sezione, CampoBloccato, formattaVoceConIcona } from './ui/componenti.jsx';
 import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma } from './rules/scheda.js';
@@ -12707,16 +12707,17 @@ export default function App() {
                       const max = Math.max(1, maxPf + temp);
                       const percNormale = Math.max(0, Math.min(100, (att / max) * 100));
                       const percTemp = Math.max(0, Math.min(100, (temp / max) * 100));
-                      const coloreNormale = (att / Math.max(1, maxPf)) > 0.5 ? 'linear-gradient(90deg, #2e7d32, #4caf50)' : (att / Math.max(1, maxPf)) > 0.25 ? 'linear-gradient(90deg, #f57f17, #ffb300)' : 'linear-gradient(90deg, #c62828, #e53935)';
+                      const coloreNormale = (att / Math.max(1, maxPf)) > 0.5 ? 'linear-gradient(90deg, #1b5e20 0%, #2e7d32 40%, #4caf50 100%)' : (att / Math.max(1, maxPf)) > 0.25 ? 'linear-gradient(90deg, #e65100 0%, #f57f17 50%, #ffb300 100%)' : 'linear-gradient(90deg, #b71c1c 0%, #c62828 50%, #e53935 100%)';
                       const isCritico = att > 0 && (att / Math.max(1, maxPf)) <= 0.25;
+                      const glowColore = (att / Math.max(1, maxPf)) > 0.5 ? 'rgba(76,175,80,0.45)' : (att / Math.max(1, maxPf)) > 0.25 ? 'rgba(255,179,0,0.45)' : 'rgba(229,57,53,0.55)';
                       return (
-                        <div className={`profilo-barra-vita ${isCritico ? 'pf-barra-critica' : ''}`} style={{ position: 'relative', width: '100%', height: 26, borderRadius: 13, background: 'rgba(0,0,0,0.7)', border: `2px solid ${isBestia ? '#52b788' : C.goldDark}`, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.3)', overflow: 'hidden', margin: '2px 0', display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
-                          <div style={{ width: `${percNormale}%`, height: '100%', background: coloreNormale, transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: '0 0 10px rgba(76,175,80,0.5)', position: 'relative' }}>
-                            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)' }} />
+                        <div className={`profilo-barra-vita ${isCritico ? 'pf-barra-critica' : ''}`} style={{ position: 'relative', width: '100%', height: 26, borderRadius: 13, background: 'rgba(10,8,6,0.85)', border: `2px solid ${isBestia ? '#52b788' : C.goldDark}`, boxShadow: 'inset 0 3px 6px rgba(0,0,0,0.85), 0 2px 8px rgba(0,0,0,0.35), 0 0 1px rgba(255,255,255,0.2)', overflow: 'hidden', margin: '2px 0', display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
+                          <div style={{ width: `${percNormale}%`, height: '100%', background: coloreNormale, transition: 'width 0.35s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: `0 0 12px ${glowColore}`, position: 'relative' }}>
+                            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '48%', background: 'linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.08) 70%, rgba(255,255,255,0) 100%)' }} />
                           </div>
                           {temp > 0 && (
-                            <div style={{ width: `${percTemp}%`, height: '100%', background: 'linear-gradient(90deg, #1565c0, #42a5f5)', transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)', position: 'relative' }}>
-                              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)' }} />
+                            <div style={{ width: `${percTemp}%`, height: '100%', background: 'linear-gradient(90deg, #0d47a1 0%, #1565c0 50%, #42a5f5 100%)', transition: 'width 0.35s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: '0 0 10px rgba(66,165,245,0.5)', position: 'relative' }}>
+                              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '48%', background: 'linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.08) 70%, rgba(255,255,255,0) 100%)' }} />
                             </div>
                           )}
                           {/* Overlay cliccabile per modificare PF attuali */}
@@ -15158,15 +15159,20 @@ export default function App() {
                                     }}
                                     title={isDisponibile ? t('spell.slot_disp_tip') : t('spell.slot_speso_tip')}
                                     style={{
-                                      width: 15,
-                                      height: 15,
+                                      width: 17,
+                                      height: 17,
                                       borderRadius: '50%',
-                                      border: `1.8px solid ${C.goldDark}`,
-                                      background: isDisponibile ? C.goldDark : 'rgba(0,0,0,0.18)',
-                                      boxShadow: isDisponibile ? '0 0 5px rgba(214,169,15,0.5)' : 'inset 0 0 3px rgba(0,0,0,0.4)',
+                                      border: isDisponibile ? '1.5px solid rgba(255, 230, 130, 0.9)' : '1.5px solid rgba(120, 100, 70, 0.45)',
+                                      background: isDisponibile
+                                        ? 'radial-gradient(circle at 35% 30%, #ffffff 0%, #ffd700 35%, #d48800 70%, #8a5000 100%)'
+                                        : 'radial-gradient(circle at 40% 40%, rgba(55,48,42,0.6) 0%, rgba(18,15,12,0.85) 100%)',
+                                      boxShadow: isDisponibile
+                                        ? '0 0 8px rgba(255, 215, 0, 0.7), 0 0 2px rgba(255, 255, 255, 0.9), inset 0 1px 2px rgba(255,255,255,0.6)'
+                                        : 'inset 0 1.5px 3px rgba(0,0,0,0.7)',
+                                      transform: isDisponibile ? 'scale(1.05)' : 'scale(0.92)',
                                       cursor: 'pointer',
                                       padding: 0,
-                                      transition: 'all 0.15s ease',
+                                      transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
                                     }}
                                   />
                                 );
@@ -15241,6 +15247,28 @@ export default function App() {
                                   >
                                     {s.nome || t('menu.senza_nome')}
                                   </button>
+                                  {scuola && (
+                                    <span
+                                      style={{
+                                        fontSize: 10,
+                                        fontWeight: 700,
+                                        color: COLORE_SCUOLA[scuola.toLowerCase()] || C.goldDark,
+                                        border: `1px solid ${COLORE_SCUOLA[scuola.toLowerCase()] || C.goldDark}77`,
+                                        background: `${COLORE_SCUOLA[scuola.toLowerCase()] || C.goldDark}18`,
+                                        borderRadius: 6,
+                                        padding: '0 5px',
+                                        whiteSpace: 'nowrap',
+                                        flexShrink: 0,
+                                        boxShadow: `0 0 6px ${COLORE_SCUOLA[scuola.toLowerCase()] || C.goldDark}22`,
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: 2,
+                                      }}
+                                      title={`Scuola: ${traduciDato(scuola)}`}
+                                    >
+                                      🔮 {traduciDato(scuola)}
+                                    </span>
+                                  )}
                                   {s.catalogo && (
                                     <span
                                       style={{ fontSize: 10, fontWeight: 700, color: C.goldDark, border: `1px solid ${C.goldDark}`, background: 'rgba(201,162,39,0.12)', borderRadius: 6, padding: '0 4px', whiteSpace: 'nowrap', flexShrink: 0 }}
@@ -15256,7 +15284,6 @@ export default function App() {
                                   <div className="spell-chips" style={{ display: 'flex', flexWrap: 'nowrap', gap: 4, alignItems: 'center', overflowX: 'auto', flex: '1 1 auto', minWidth: 0 }}>
                                     {chip('⏱', t('spell.chip_tempo'), tempoLabel)}
                                     {chip('🎯', t('spell.chip_gittata'), gittata)}
-                                    {scuola && chip('🔮', 'Scuola', traduciDato(scuola))}
                                     {area && chip('📐', 'Area', area)}
                                     {(danno || tipoDanno) && !parseEspressioneDado(danno) && (
                                       chip('💥', 'Danno', [danno, tipoDanno].filter(Boolean).join(' '))

@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { t, traduciDato } from '../i18n.js';
-import { C } from './tema.js';
+import { C, COLORE_SCUOLA } from './tema.js';
 import { styles } from './stili.js';
 import { INCANTESIMI_DB } from '../data/incantesimi.js';
 import { INCANTESIMI_XANATHAR } from '../dati/incantesimi-xanathar.js';
@@ -519,8 +519,24 @@ export function CompendioModal({
                   </button>
                 </div>
                 {dettaglioSelezionato.tipo === 'incantesimo' && (
-                  <div style={{ fontSize: 11.5, color: C.inkDim, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    <span>🔮 {traduciDato(dettaglioSelezionato.scuola || 'Magia')}</span>
+                  <div style={{ fontSize: 11.5, color: C.inkDim, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                    {dettaglioSelezionato.scuola && (
+                      <span
+                        style={{
+                          color: COLORE_SCUOLA[dettaglioSelezionato.scuola.toLowerCase()] || C.goldDark,
+                          border: `1px solid ${COLORE_SCUOLA[dettaglioSelezionato.scuola.toLowerCase()] || C.goldDark}66`,
+                          background: `${COLORE_SCUOLA[dettaglioSelezionato.scuola.toLowerCase()] || C.goldDark}18`,
+                          borderRadius: 5,
+                          padding: '1px 6px',
+                          fontWeight: 700,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 3,
+                        }}
+                      >
+                        🔮 {traduciDato(dettaglioSelezionato.scuola)}
+                      </span>
+                    )}
                     <span>⏱ {traduciDato(dettaglioSelezionato.tempo || '1 Azione')}</span>
                     <span>🎯 {dettaglioSelezionato.gittata || 'Tocco'}</span>
                     {dettaglioSelezionato.conc && <span>⏳ {lingua === 'en' ? 'Concentration' : 'Concentrazione'}</span>}

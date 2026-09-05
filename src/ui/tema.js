@@ -133,5 +133,22 @@ export function ambientazioneCasuale() {
   return opzioni[idx] || 'foresta';
 }
 
-// Simbolo (emoji / testo) associato a ogni caratteristica — usato come sfondo opaco
-// all'interno del blocco caratteristica per evocare visivamente l'attributo.
+// Colori tematici per le 8 scuole di magia D&D 5e
+export const COLORE_SCUOLA = {
+  abiurazione: '#38bdf8',
+  abjuration: '#38bdf8',
+  ammaliamento: '#f472b6',
+  enchantment: '#f472b6',
+  divinazione: '#a78bfa',
+  divination: '#a78bfa',
+  evocazione: '#fb923c',
+  conjuration: '#fb923c',
+  illusione: '#c084fc',
+  illusion: '#c084fc',
+  invocazione: '#f87171',
+  evocation: '#f87171',
+  necromanzia: '#4ade80',
+  necromancy: '#4ade80',
+  trasmutazione: '#facc15',
+  transmutation: '#facc15',
+};
