@@ -3679,6 +3679,12 @@ export default function App() {
     try { localStorage.setItem('scheda-interattiva:tema-cornici', temaCornici); } catch { /* niente */ }
   }, [temaCornici]);
 
+  // Effetti Luminosi & Animazioni (Respiro Magico, Brillante, Hover, Statico)
+  const [effettoAnimazioni, setEffettoAnimazioni] = useState(() => localStorage.getItem('scheda-interattiva:animazioni-luce') || 'respiro');
+  useEffect(() => {
+    try { localStorage.setItem('scheda-interattiva:animazioni-luce', effettoAnimazioni); } catch { /* niente */ }
+  }, [effettoAnimazioni]);
+
   // Audio e Sottofondo Ambientale
   const [ambienteAudio, setAmbienteAudio] = useState(() => {
     try {
@@ -4050,24 +4056,42 @@ export default function App() {
         ? (chiaveClasse(classeAttiva) || 'generico')
         : temaCornici;
     root.dataset.classe = classeEffettiva;
+    root.dataset.animazioni = effettoAnimazioni;
     const set = (k, v) => root.style.setProperty(k, v);
     set('--c-bg', t.bg); set('--c-panel', t.panel); set('--c-panel-light', t.panelLight);
     set('--c-border', t.border); set('--c-ink', t.ink); set('--c-ink-dim', t.inkDim);
     set('--c-gold', t.gold); set('--c-gold-dark', t.goldDark); set('--c-red', t.red);
     set('--c-green', t.green); set('--c-title', t.title);
 
-    const tintaClasse = acc ? acc[modo] : t.gold;
+    const accTema = (temaCornici && temaCornici !== 'auto' && temaCornici !== 'disattivato') ? coloreClasse(temaCornici) : null;
+    const accEffettivo = accTema || acc;
+    const tintaClasse = accEffettivo ? accEffettivo[modo] : t.gold;
     const hexRgba = (hex, a) => {
       const m = /^#?([0-9a-fA-F]{6})$/.exec(hex || '');
       if (!m) return `rgba(0,0,0,${a})`;
       const n = parseInt(m[1], 16);
       return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
     };
-    const aura1 = hexRgba(tintaClasse, scuroEff ? 0.18 : 0.08);
-    const aura2 = hexRgba(tintaClasse, scuroEff ? 0.12 : 0.04);
+    const aura1 = hexRgba(tintaClasse, scuroEff ? 0.20 : 0.09);
+    const aura2 = hexRgba(tintaClasse, scuroEff ? 0.14 : 0.05);
+    const auraPulse1 = hexRgba(tintaClasse, scuroEff ? 0.36 : 0.18);
+    const auraPulse2 = hexRgba(tintaClasse, scuroEff ? 0.24 : 0.10);
+    const auraGlowMin = hexRgba(tintaClasse, scuroEff ? 0.14 : 0.06);
+    const auraGlowMax = hexRgba(tintaClasse, scuroEff ? 0.38 : 0.20);
+    const borderGlowMin = hexRgba(tintaClasse, scuroEff ? 0.45 : 0.30);
+    const borderGlowMax = hexRgba(tintaClasse, scuroEff ? 0.85 : 0.65);
     const auraOmbra = `0 6px 28px -4px ${aura1}, 0 16px 48px -8px ${aura2}, 0 1px 3px rgba(0,0,0,${scuroEff ? 0.35 : 0.05})`;
+
     set('--c-aura-color', tintaClasse);
     set('--c-shadow-aura', auraOmbra);
+    set('--c-aura-glow-1', aura1);
+    set('--c-aura-glow-2', aura2);
+    set('--c-aura-glow-pulse-1', auraPulse1);
+    set('--c-aura-glow-pulse-2', auraPulse2);
+    set('--c-aura-glow-min', auraGlowMin);
+    set('--c-aura-glow-max', auraGlowMax);
+    set('--c-border-glow-min', borderGlowMin);
+    set('--c-border-glow-max', borderGlowMax);
 
     // Rimuovi sfondi inline e backgroundAttachment su body che causano repaint lag durante lo scroll
     document.body.style.background = 'transparent';
@@ -4078,7 +4102,7 @@ export default function App() {
     } catch {
       // storage non disponibile: pazienza
     }
-  }, [tema, sistemaScuro, oraTick, classeAttiva, presetColori, temaCornici, schedaSolaLettura]);
+  }, [tema, sistemaScuro, oraTick, classeAttiva, presetColori, temaCornici, effettoAnimazioni, schedaSolaLettura]);
   const intervalRef = useRef(null);
   const jsonRef = useRef(null);
   const pdfRef = useRef(null);
@@ -7651,6 +7675,22 @@ export default function App() {
                     <option value="monaco">☯️ Monaco (Cerchio Zen & Giada)</option>
                     <option value="artefice">⚙️ Artefice (Ingranaggi & Ottone)</option>
                     <option value="disattivato">🔒 {lingua === 'en' ? 'Classic Minimal (No frames)' : 'Classico Minimal (Senza cornici)'}</option>
+                  </select>
+                </div>
+                <div style={{ gridColumn: 'span 2', marginTop: 4 }}>
+                  <div style={{ fontSize: 11, color: C.inkDim, marginBottom: 4, fontWeight: 600 }}>
+                    ✨ {lingua === 'en' ? 'Luminous Effects & Animations' : 'Effetti Luminosi & Animazioni'}
+                  </div>
+                  <select
+                    value={effettoAnimazioni}
+                    onChange={(e) => setEffettoAnimazioni(e.target.value)}
+                    style={{ ...styles.inlineInput, width: '100%', height: 32, padding: '4px 8px', borderRadius: 6, background: C.panel, color: C.ink, fontSize: 12, border: `1px solid ${C.border}` }}
+                    title={lingua === 'en' ? 'Choose ambient glow and breathing animation intensity' : 'Scegli l\'intensità del respiro magico e della luminescenza'}
+                  >
+                    <option value="respiro">✨ {lingua === 'en' ? 'Magical Breathing (Aura Pulse & Glowing Corners)' : 'Respiro Magico (Aura pulsante & Angoli vivi)'}</option>
+                    <option value="brillante">🌟 {lingua === 'en' ? 'Luminous Glow (Intense Glow & Shimmer)' : 'Luminescenza Intensa (Pulsazione & Scintillio)'}</option>
+                    <option value="hover">👆 {lingua === 'en' ? 'On Touch / Hover Only' : 'Reattivo al Tocco / Hover (Solo al passaggio)'}</option>
+                    <option value="statico">🔒 {lingua === 'en' ? 'Static (No animations)' : 'Statico (Nessuna animazione)'}</option>
                   </select>
                 </div>
               </div>
@@ -12043,7 +12083,7 @@ export default function App() {
                       {/* Bottone Ispirazione in basso a sinistra sul ritratto */}
                       <button
                         type="button"
-                        className="ritratto-ispirazione"
+                        className={`ritratto-ispirazione ${scheda.ispirazione ? 'ispirazione-attiva-glow' : ''}`}
                         title={scheda.ispirazione ? `${t('vital.ispirazione')}: ${t('common.attivo')} (Click per disattivare)` : `${t('vital.ispirazione')} (Click per attivare)`}
                         onClick={(e) => { e.stopPropagation(); aggiorna({ ispirazione: !scheda.ispirazione }); }}
                         style={{
@@ -12690,8 +12730,9 @@ export default function App() {
                       const percNormale = Math.max(0, Math.min(100, (att / max) * 100));
                       const percTemp = Math.max(0, Math.min(100, (temp / max) * 100));
                       const coloreNormale = (att / Math.max(1, maxPf)) > 0.5 ? 'linear-gradient(90deg, #2e7d32, #4caf50)' : (att / Math.max(1, maxPf)) > 0.25 ? 'linear-gradient(90deg, #f57f17, #ffb300)' : 'linear-gradient(90deg, #c62828, #e53935)';
+                      const isCritico = att > 0 && (att / Math.max(1, maxPf)) <= 0.25;
                       return (
-                        <div style={{ position: 'relative', width: '100%', height: 26, borderRadius: 13, background: 'rgba(0,0,0,0.7)', border: `2px solid ${isBestia ? '#52b788' : C.goldDark}`, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.3)', overflow: 'hidden', margin: '2px 0', display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
+                        <div className={`profilo-barra-vita ${isCritico ? 'pf-barra-critica' : ''}`} style={{ position: 'relative', width: '100%', height: 26, borderRadius: 13, background: 'rgba(0,0,0,0.7)', border: `2px solid ${isBestia ? '#52b788' : C.goldDark}`, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.3)', overflow: 'hidden', margin: '2px 0', display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
                           <div style={{ width: `${percNormale}%`, height: '100%', background: coloreNormale, transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: '0 0 10px rgba(76,175,80,0.5)', position: 'relative' }}>
                             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)' }} />
                           </div>

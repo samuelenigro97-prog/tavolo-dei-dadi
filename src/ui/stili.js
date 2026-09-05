@@ -553,9 +553,19 @@ tbody tr:hover {
 /* ===================== TEMI & CORNICI DI CLASSE ===================== */
 .sezione, .profilo-sezione {
   position: relative;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: var(--c-shadow-aura, 0 1px 3px rgba(60,50,30,0.06), 0 4px 12px rgba(60,50,30,0.04));
+  transition: border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s ease;
+  border-color: var(--c-border-glow-min, var(--c-border));
+  box-shadow: 0 6px 28px -4px var(--c-aura-glow-1, rgba(60,50,30,0.06)),
+              0 16px 48px -8px var(--c-aura-glow-2, rgba(60,50,30,0.04)),
+              0 1px 3px rgba(0, 0, 0, 0.35);
 }
+
+.sezione-titolo-testo {
+  justify-self: center;
+  text-align: center;
+  transition: text-shadow 0.3s ease;
+}
+
 .angolo-ornamento {
   position: absolute;
   width: 22px;
@@ -564,17 +574,166 @@ tbody tr:hover {
   background-size: contain;
   background-repeat: no-repeat;
   z-index: 2;
-  opacity: 0.85;
-  transition: opacity 0.2s ease, transform 0.2s ease, filter 0.2s ease;
+  opacity: 0.82;
+  filter: drop-shadow(0 0 2.5px var(--c-aura-color, rgba(201, 162, 39, 0.4)));
+  transition: opacity 0.3s ease, transform 0.3s ease, filter 0.3s ease;
 }
 .angolo-tl { top: 0; left: 0; }
 .angolo-tr { top: 0; right: 0; }
 .angolo-bl { bottom: 0; left: 0; }
 .angolo-br { bottom: 0; right: 0; }
 
+/* Reattività Hover & Focus luminoso */
+.sezione:hover,
+.profilo-sezione:hover {
+  border-color: var(--c-border-glow-max, var(--c-gold)) !important;
+  box-shadow: 0 8px 36px -2px var(--c-aura-glow-pulse-1, rgba(157, 78, 221, 0.35)),
+              0 20px 56px -4px var(--c-aura-glow-pulse-2, rgba(114, 9, 183, 0.24)),
+              0 0 16px 2px var(--c-aura-glow-min, rgba(157, 78, 221, 0.18)),
+              0 1px 4px rgba(0, 0, 0, 0.45) !important;
+}
+
+.sezione:hover .sezione-titolo-testo,
+.profilo-sezione:hover .sezione-titolo-testo {
+  text-shadow: 0 0 14px var(--c-aura-color, rgba(201,162,39,0.6)), 0 0 3px var(--c-title);
+}
+
 .sezione:hover .angolo-ornamento,
 .profilo-sezione:hover .angolo-ornamento {
   opacity: 1;
+  filter: drop-shadow(0 0 6px var(--c-aura-color, rgba(201, 162, 39, 0.9))) drop-shadow(0 0 14px var(--c-aura-glow-pulse-1, rgba(201, 162, 39, 0.5)));
+  transform: scale(1.08);
+}
+
+/* Modalità Animazione: 1. Respiro Magico (Default) */
+:root:not([data-animazioni="statico"]):not([data-animazioni="hover"]):not([data-animazioni="brillante"]) .sezione,
+:root:not([data-animazioni="statico"]):not([data-animazioni="hover"]):not([data-animazioni="brillante"]) .profilo-sezione,
+[data-animazioni="respiro"] .sezione,
+[data-animazioni="respiro"] .profilo-sezione {
+  animation: aura-respiro-magico 5.5s ease-in-out infinite alternate;
+}
+
+:root:not([data-animazioni="statico"]):not([data-animazioni="hover"]):not([data-animazioni="brillante"]) .angolo-ornamento,
+[data-animazioni="respiro"] .angolo-ornamento {
+  animation: angoli-respiro-magico 5.5s ease-in-out infinite alternate;
+}
+
+/* Modalità Animazione: 2. Luminescenza Intensa */
+[data-animazioni="brillante"] .sezione,
+[data-animazioni="brillante"] .profilo-sezione {
+  animation: aura-brillante 3.2s ease-in-out infinite alternate !important;
+}
+
+[data-animazioni="brillante"] .angolo-ornamento {
+  animation: angoli-brillante 3.2s ease-in-out infinite alternate !important;
+}
+
+/* Modalità Animazione: 3. Statica / Solo al tocco */
+[data-animazioni="statico"] .sezione,
+[data-animazioni="statico"] .profilo-sezione,
+[data-animazioni="statico"] .angolo-ornamento,
+[data-animazioni="hover"] .sezione,
+[data-animazioni="hover"] .profilo-sezione,
+[data-animazioni="hover"] .angolo-ornamento {
+  animation: none !important;
+}
+
+/* Keyframes di Respiro & Pulsazione Luminosa */
+@keyframes aura-respiro-magico {
+  0% {
+    box-shadow: 0 5px 24px -4px var(--c-aura-glow-1, rgba(60,50,30,0.06)),
+                0 14px 44px -8px var(--c-aura-glow-2, rgba(60,50,30,0.04)),
+                0 1px 3px rgba(0, 0, 0, 0.35);
+    border-color: var(--c-border-glow-min, var(--c-border));
+  }
+  100% {
+    box-shadow: 0 8px 34px -2px var(--c-aura-glow-pulse-1, rgba(157, 78, 221, 0.30)),
+                0 18px 54px -6px var(--c-aura-glow-pulse-2, rgba(114, 9, 183, 0.20)),
+                0 0 14px 1px var(--c-aura-glow-min, rgba(157, 78, 221, 0.15)),
+                0 1px 3px rgba(0, 0, 0, 0.40);
+    border-color: var(--c-border-glow-max, var(--c-gold));
+  }
+}
+
+@keyframes angoli-respiro-magico {
+  0% {
+    filter: drop-shadow(0 0 2px var(--c-aura-color, rgba(201, 162, 39, 0.35)));
+    opacity: 0.78;
+    transform: scale(1);
+  }
+  100% {
+    filter: drop-shadow(0 0 7px var(--c-aura-color, rgba(201, 162, 39, 0.85))) drop-shadow(0 0 12px var(--c-aura-glow-pulse-1, rgba(201, 162, 39, 0.4)));
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes aura-brillante {
+  0% {
+    box-shadow: 0 6px 28px -3px var(--c-aura-glow-pulse-1, rgba(157, 78, 221, 0.25)),
+                0 16px 48px -6px var(--c-aura-glow-pulse-2, rgba(114, 9, 183, 0.18)),
+                0 0 10px 1px var(--c-aura-glow-min, rgba(157, 78, 221, 0.12)),
+                0 1px 3px rgba(0, 0, 0, 0.35);
+    border-color: var(--c-border-glow-min, var(--c-border));
+  }
+  100% {
+    box-shadow: 0 10px 42px -2px var(--c-aura-glow-max, rgba(157, 78, 221, 0.45)),
+                0 22px 64px -4px var(--c-aura-glow-pulse-1, rgba(114, 9, 183, 0.32)),
+                0 0 22px 3px var(--c-aura-glow-pulse-1, rgba(157, 78, 221, 0.25)),
+                0 1px 4px rgba(0, 0, 0, 0.45);
+    border-color: var(--c-border-glow-max, var(--c-gold));
+  }
+}
+
+@keyframes angoli-brillante {
+  0% {
+    filter: drop-shadow(0 0 4px var(--c-aura-color, rgba(201, 162, 39, 0.5)));
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  100% {
+    filter: drop-shadow(0 0 9px var(--c-aura-color, rgba(201, 162, 39, 0.95))) drop-shadow(0 0 16px var(--c-aura-color, rgba(201, 162, 39, 0.6)));
+    opacity: 1;
+    transform: scale(1.10);
+  }
+}
+
+/* Animazione Ispirazione Attiva */
+@keyframes ispirazione-magica {
+  0% {
+    box-shadow: 0 0 8px rgba(240, 196, 63, 0.55), 0 0 2px #f0c43f;
+    border-color: #f0c43f;
+  }
+  100% {
+    box-shadow: 0 0 18px rgba(240, 196, 63, 0.95), 0 0 28px rgba(255, 215, 0, 0.5), inset 0 0 8px rgba(240, 196, 63, 0.4);
+    border-color: #fff3b0;
+    transform: scale(1.03);
+  }
+}
+.ispirazione-attiva-glow {
+  animation: ispirazione-magica 2.2s ease-in-out infinite alternate !important;
+}
+
+/* Animazione Battito Cardiaco PF Critici */
+@keyframes battito-cardiaco-critico {
+  0%, 100% {
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.8), 0 0 6px rgba(198, 40, 40, 0.4);
+    border-color: #c62828;
+  }
+  50% {
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.8), 0 0 18px 4px rgba(229, 57, 53, 0.85), 0 0 28px rgba(255, 23, 68, 0.45);
+    border-color: #ff5252;
+    transform: scale(1.015);
+  }
+}
+.pf-barra-critica {
+  animation: battito-cardiaco-critico 1.4s ease-in-out infinite alternate !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sezione, .profilo-sezione, .angolo-ornamento, .ispirazione-attiva-glow, .pf-barra-critica {
+    animation: none !important;
+  }
 }
 
 /* Default / Generico D&D Gold Corners */
@@ -584,9 +743,16 @@ tbody tr:hover {
 .angolo-br { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%23c9a227' stroke-width='1.8'><path d='M25 25H11M25 25V11M25 25l-8-8M21 25v-6M25 21h-6'/><circle cx='23' cy='23' r='1.8' fill='%23dcb84f'/></svg>"); }
 
 /* 1. Druido: Rami intrecciati, foglie, nodi silvestri 🌿 */
-[data-classe="druido"] .sezione, [data-classe="druido"] .profilo-sezione {
-  border-color: rgba(64, 145, 108, 0.45) !important;
-  box-shadow: 0 6px 28px -4px rgba(46, 125, 50, 0.20), 0 16px 48px -8px rgba(27, 67, 50, 0.14), 0 1px 3px rgba(0, 0, 0, 0.35) !important;
+[data-classe="druido"] {
+  --c-aura-color: #40916c;
+  --c-aura-glow-1: rgba(46, 125, 50, 0.20);
+  --c-aura-glow-2: rgba(27, 67, 50, 0.14);
+  --c-aura-glow-pulse-1: rgba(46, 125, 50, 0.34);
+  --c-aura-glow-pulse-2: rgba(27, 67, 50, 0.22);
+  --c-aura-glow-min: rgba(64, 145, 108, 0.15);
+  --c-aura-glow-max: rgba(64, 145, 108, 0.35);
+  --c-border-glow-min: rgba(64, 145, 108, 0.45);
+  --c-border-glow-max: rgba(82, 183, 136, 0.85);
 }
 [data-classe="druido"] .angolo-tl {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%2340916c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M3 24C3 12 12 3 24 3M3 3c6 0 10 4 10 10M3 3c0 6 4 10 10 10'/><circle cx='18' cy='7' r='2' fill='%2352b788'/><circle cx='7' cy='18' r='2' fill='%2352b788'/></svg>");
@@ -605,9 +771,16 @@ tbody tr:hover {
 }
 
 /* 2. Mago: Rune arcanee, cerchi cosmici, stelle ✦ 🔮 */
-[data-classe="mago"] .sezione, [data-classe="mago"] .profilo-sezione {
-  border-color: rgba(157, 78, 221, 0.45) !important;
-  box-shadow: 0 6px 28px -4px rgba(157, 78, 221, 0.22), 0 16px 48px -8px rgba(94, 96, 206, 0.15), 0 1px 3px rgba(0, 0, 0, 0.35) !important;
+[data-classe="mago"] {
+  --c-aura-color: #9d4edd;
+  --c-aura-glow-1: rgba(157, 78, 221, 0.22);
+  --c-aura-glow-2: rgba(94, 96, 206, 0.15);
+  --c-aura-glow-pulse-1: rgba(157, 78, 221, 0.38);
+  --c-aura-glow-pulse-2: rgba(94, 96, 206, 0.25);
+  --c-aura-glow-min: rgba(157, 78, 221, 0.16);
+  --c-aura-glow-max: rgba(157, 78, 221, 0.40);
+  --c-border-glow-min: rgba(157, 78, 221, 0.45);
+  --c-border-glow-max: rgba(199, 125, 255, 0.85);
 }
 [data-classe="mago"] .angolo-tl {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%239d4edd' stroke-width='1.8'><path d='M3 3h12M3 3v12M3 3l12 12M8 8l5-5M8 8l-5 5'/><circle cx='5' cy='5' r='2' fill='%239d4edd'/><circle cx='18' cy='3' r='1.2' fill='%234cc9f0'/><circle cx='3' cy='18' r='1.2' fill='%234cc9f0'/></svg>");
@@ -626,9 +799,16 @@ tbody tr:hover {
 }
 
 /* 3. Guerriero: Lame d'acciaio, borchie da scudo, ferro ⚔️ */
-[data-classe="guerriero"] .sezione, [data-classe="guerriero"] .profilo-sezione {
-  border-color: rgba(140, 58, 43, 0.45) !important;
-  box-shadow: 0 6px 28px -4px rgba(140, 58, 43, 0.18), 0 16px 48px -8px rgba(90, 40, 30, 0.12), 0 1px 3px rgba(0, 0, 0, 0.35) !important;
+[data-classe="guerriero"] {
+  --c-aura-color: #d98a5a;
+  --c-aura-glow-1: rgba(140, 58, 43, 0.18);
+  --c-aura-glow-2: rgba(90, 40, 30, 0.12);
+  --c-aura-glow-pulse-1: rgba(140, 58, 43, 0.32);
+  --c-aura-glow-pulse-2: rgba(90, 40, 30, 0.20);
+  --c-aura-glow-min: rgba(140, 58, 43, 0.14);
+  --c-aura-glow-max: rgba(140, 58, 43, 0.32);
+  --c-border-glow-min: rgba(140, 58, 43, 0.45);
+  --c-border-glow-max: rgba(217, 138, 90, 0.85);
 }
 [data-classe="guerriero"] .angolo-tl {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%236c757d' stroke-width='2' stroke-linecap='square'><path d='M3 3h16M3 3v16M3 3l14 14M8 3v5M3 8h5'/><rect x='4' y='4' width='4' height='4' fill='%23adb5bd'/></svg>");
@@ -647,9 +827,16 @@ tbody tr:hover {
 }
 
 /* 4. Ladro: Pugnali nascosti, ombre, angoli acuti 🗡️ */
-[data-classe="ladro"] .sezione, [data-classe="ladro"] .profilo-sezione {
-  border-color: rgba(73, 80, 87, 0.45) !important;
-  box-shadow: 0 6px 28px -4px rgba(35, 25, 55, 0.28), 0 16px 48px -8px rgba(15, 12, 25, 0.22), 0 1px 3px rgba(0, 0, 0, 0.45) !important;
+[data-classe="ladro"] {
+  --c-aura-color: #6c757d;
+  --c-aura-glow-1: rgba(35, 25, 55, 0.28);
+  --c-aura-glow-2: rgba(15, 12, 25, 0.22);
+  --c-aura-glow-pulse-1: rgba(45, 35, 70, 0.42);
+  --c-aura-glow-pulse-2: rgba(25, 20, 40, 0.32);
+  --c-aura-glow-min: rgba(73, 80, 87, 0.15);
+  --c-aura-glow-max: rgba(73, 80, 87, 0.35);
+  --c-border-glow-min: rgba(73, 80, 87, 0.45);
+  --c-border-glow-max: rgba(160, 160, 160, 0.80);
 }
 [data-classe="ladro"] .angolo-tl {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%23495057' stroke-width='1.8' stroke-linecap='round'><path d='M3 18L3 3l15 0M3 3l16 16M6 6l4-2 2 4-4 2z' fill='rgba(73,80,87,0.3)'/></svg>");
@@ -668,9 +855,16 @@ tbody tr:hover {
 }
 
 /* 5. Chierico: Raggi solari, croci sacre, aureola ☀️ 📿 */
-[data-classe="chierico"] .sezione, [data-classe="chierico"] .profilo-sezione {
-  border-color: rgba(224, 159, 62, 0.5) !important;
-  box-shadow: 0 6px 28px -4px rgba(224, 159, 62, 0.20), 0 16px 48px -8px rgba(168, 115, 0, 0.13), 0 1px 3px rgba(0, 0, 0, 0.35) !important;
+[data-classe="chierico"] {
+  --c-aura-color: #e09f3e;
+  --c-aura-glow-1: rgba(224, 159, 62, 0.20);
+  --c-aura-glow-2: rgba(168, 115, 0, 0.13);
+  --c-aura-glow-pulse-1: rgba(224, 159, 62, 0.36);
+  --c-aura-glow-pulse-2: rgba(168, 115, 0, 0.22);
+  --c-aura-glow-min: rgba(224, 159, 62, 0.16);
+  --c-aura-glow-max: rgba(224, 159, 62, 0.38);
+  --c-border-glow-min: rgba(224, 159, 62, 0.50);
+  --c-border-glow-max: rgba(255, 208, 74, 0.90);
 }
 [data-classe="chierico"] .angolo-tl {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%23e09f3e' stroke-width='2' stroke-linecap='round'><path d='M3 3h14M3 3v14M3 3l12 12M7 7a6 6 0 0 1 6-4M7 7a6 6 0 0 0-4 6'/><circle cx='8' cy='8' r='2' fill='%23fff3b0'/></svg>");
@@ -689,9 +883,16 @@ tbody tr:hover {
 }
 
 /* 6. Paladino: Scudo sacro, purezza, bordi solenni 🛡️ */
-[data-classe="paladino"] .sezione, [data-classe="paladino"] .profilo-sezione {
-  border-color: rgba(184, 134, 11, 0.5) !important;
-  box-shadow: 0 6px 28px -4px rgba(184, 134, 11, 0.20), 0 16px 48px -8px rgba(140, 100, 8, 0.14), 0 1px 3px rgba(0, 0, 0, 0.35) !important;
+[data-classe="paladino"] {
+  --c-aura-color: #b8860b;
+  --c-aura-glow-1: rgba(184, 134, 11, 0.20);
+  --c-aura-glow-2: rgba(140, 100, 8, 0.14);
+  --c-aura-glow-pulse-1: rgba(184, 134, 11, 0.36);
+  --c-aura-glow-pulse-2: rgba(140, 100, 8, 0.24);
+  --c-aura-glow-min: rgba(184, 134, 11, 0.16);
+  --c-aura-glow-max: rgba(184, 134, 11, 0.38);
+  --c-border-glow-min: rgba(184, 134, 11, 0.50);
+  --c-border-glow-max: rgba(255, 215, 0, 0.90);
 }
 [data-classe="paladino"] .angolo-tl {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%23b8860b' stroke-width='2'><path d='M3 3h14M3 3v14M3 3l14 14M3 11l8-8M3 17l14-14'/><polygon points='4,4 10,4 4,10' fill='%23ffd700'/></svg>");
@@ -710,9 +911,16 @@ tbody tr:hover {
 }
 
 /* 7. Bardo: Volute liriche, curve melodiche, note 🎵 🪕 */
-[data-classe="bardo"] .sezione, [data-classe="bardo"] .profilo-sezione {
-  border-color: rgba(181, 23, 158, 0.45) !important;
-  box-shadow: 0 6px 28px -4px rgba(181, 23, 158, 0.20), 0 16px 48px -8px rgba(114, 9, 183, 0.14), 0 1px 3px rgba(0, 0, 0, 0.35) !important;
+[data-classe="bardo"] {
+  --c-aura-color: #b5179e;
+  --c-aura-glow-1: rgba(181, 23, 158, 0.20);
+  --c-aura-glow-2: rgba(114, 9, 183, 0.14);
+  --c-aura-glow-pulse-1: rgba(181, 23, 158, 0.36);
+  --c-aura-glow-pulse-2: rgba(114, 9, 183, 0.24);
+  --c-aura-glow-min: rgba(181, 23, 158, 0.16);
+  --c-aura-glow-max: rgba(181, 23, 158, 0.38);
+  --c-border-glow-min: rgba(181, 23, 158, 0.45);
+  --c-border-glow-max: rgba(247, 37, 133, 0.85);
 }
 [data-classe="bardo"] .angolo-tl {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%23b5179e' stroke-width='2' stroke-linecap='round'><path d='M3 21C3 9 9 3 21 3M3 13c0-6 4-10 10-10M3 3l14 14'/><circle cx='8' cy='8' r='2' fill='%23f72585'/></svg>");
@@ -731,9 +939,16 @@ tbody tr:hover {
 }
 
 /* 8. Barbaro: Graffi selvaggi, zanne, asce primordiali 🪓 */
-[data-classe="barbaro"] .sezione, [data-classe="barbaro"] .profilo-sezione {
-  border-color: rgba(208, 0, 0, 0.45) !important;
-  box-shadow: 0 6px 28px -4px rgba(208, 0, 0, 0.22), 0 16px 48px -8px rgba(157, 2, 8, 0.15), 0 1px 3px rgba(0, 0, 0, 0.35) !important;
+[data-classe="barbaro"] {
+  --c-aura-color: #d00000;
+  --c-aura-glow-1: rgba(208, 0, 0, 0.22);
+  --c-aura-glow-2: rgba(157, 2, 8, 0.15);
+  --c-aura-glow-pulse-1: rgba(208, 0, 0, 0.38);
+  --c-aura-glow-pulse-2: rgba(157, 2, 8, 0.25);
+  --c-aura-glow-min: rgba(208, 0, 0, 0.16);
+  --c-aura-glow-max: rgba(208, 0, 0, 0.40);
+  --c-border-glow-min: rgba(208, 0, 0, 0.45);
+  --c-border-glow-max: rgba(255, 107, 94, 0.85);
 }
 [data-classe="barbaro"] .angolo-tl {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%23d00000' stroke-width='2.2' stroke-linecap='round'><path d='M3 3l14 6M3 3l6 14M3 3l18 18M7 3l4 12M3 7l12 4'/></svg>");
@@ -752,9 +967,16 @@ tbody tr:hover {
 }
 
 /* 9. Ranger: Nodi da cacciatore e frecce intagliate 🏹 */
-[data-classe="ranger"] .sezione, [data-classe="ranger"] .profilo-sezione {
-  border-color: rgba(43, 147, 72, 0.45) !important;
-  box-shadow: 0 6px 28px -4px rgba(43, 147, 72, 0.20), 0 16px 48px -8px rgba(0, 114, 0, 0.13), 0 1px 3px rgba(0, 0, 0, 0.35) !important;
+[data-classe="ranger"] {
+  --c-aura-color: #2b9348;
+  --c-aura-glow-1: rgba(43, 147, 72, 0.20);
+  --c-aura-glow-2: rgba(0, 114, 0, 0.13);
+  --c-aura-glow-pulse-1: rgba(43, 147, 72, 0.35);
+  --c-aura-glow-pulse-2: rgba(0, 114, 0, 0.22);
+  --c-aura-glow-min: rgba(43, 147, 72, 0.15);
+  --c-aura-glow-max: rgba(43, 147, 72, 0.35);
+  --c-border-glow-min: rgba(43, 147, 72, 0.45);
+  --c-border-glow-max: rgba(122, 183, 79, 0.85);
 }
 [data-classe="ranger"] .angolo-tl {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%232b9348' stroke-width='2' stroke-linecap='round'><path d='M3 3h12M3 3v12M3 3l14 14M7 13l6-6'/></svg>");
@@ -773,9 +995,16 @@ tbody tr:hover {
 }
 
 /* 10. Stregone: Mana grezzo e fulmini elementali ⚡ */
-[data-classe="stregone"] .sezione, [data-classe="stregone"] .profilo-sezione {
-  border-color: rgba(247, 37, 133, 0.45) !important;
-  box-shadow: 0 6px 28px -4px rgba(247, 37, 133, 0.22), 0 16px 48px -8px rgba(181, 23, 158, 0.15), 0 1px 3px rgba(0, 0, 0, 0.35) !important;
+[data-classe="stregone"] {
+  --c-aura-color: #f72585;
+  --c-aura-glow-1: rgba(247, 37, 133, 0.22);
+  --c-aura-glow-2: rgba(181, 23, 158, 0.15);
+  --c-aura-glow-pulse-1: rgba(247, 37, 133, 0.38);
+  --c-aura-glow-pulse-2: rgba(181, 23, 158, 0.25);
+  --c-aura-glow-min: rgba(247, 37, 133, 0.16);
+  --c-aura-glow-max: rgba(247, 37, 133, 0.40);
+  --c-border-glow-min: rgba(247, 37, 133, 0.45);
+  --c-border-glow-max: rgba(247, 37, 133, 0.85);
 }
 [data-classe="stregone"] .angolo-tl {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%23f72585' stroke-width='2' stroke-linecap='round'><path d='M3 3l10 0-5 7 7 0-10 9'/></svg>");
@@ -794,9 +1023,16 @@ tbody tr:hover {
 }
 
 /* 11. Warlock: Spire eldritch, occhi occulti e abisso 👁️ */
-[data-classe="warlock"] .sezione, [data-classe="warlock"] .profilo-sezione {
-  border-color: rgba(114, 9, 183, 0.5) !important;
-  box-shadow: 0 6px 28px -4px rgba(114, 9, 183, 0.25), 0 16px 48px -8px rgba(58, 12, 163, 0.18), 0 1px 3px rgba(0, 0, 0, 0.40) !important;
+[data-classe="warlock"] {
+  --c-aura-color: #7209b7;
+  --c-aura-glow-1: rgba(114, 9, 183, 0.25);
+  --c-aura-glow-2: rgba(58, 12, 163, 0.18);
+  --c-aura-glow-pulse-1: rgba(114, 9, 183, 0.42);
+  --c-aura-glow-pulse-2: rgba(58, 12, 163, 0.28);
+  --c-aura-glow-min: rgba(114, 9, 183, 0.18);
+  --c-aura-glow-max: rgba(114, 9, 183, 0.42);
+  --c-border-glow-min: rgba(114, 9, 183, 0.50);
+  --c-border-glow-max: rgba(138, 74, 158, 0.88);
 }
 [data-classe="warlock"] .angolo-tl {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%237209b7' stroke-width='2'><path d='M3 3c7 0 12 5 12 12M3 3c0 7 5 12 12 12'/><circle cx='8' cy='8' r='2.2' fill='%234361ee'/></svg>");
@@ -815,9 +1051,16 @@ tbody tr:hover {
 }
 
 /* 12. Monaco: Cerchio Zen (Enso) e giada ☯️ */
-[data-classe="monaco"] .sezione, [data-classe="monaco"] .profilo-sezione {
-  border-color: rgba(196, 138, 26, 0.45) !important;
-  box-shadow: 0 6px 28px -4px rgba(196, 138, 26, 0.18), 0 16px 48px -8px rgba(140, 95, 15, 0.12), 0 1px 3px rgba(0, 0, 0, 0.35) !important;
+[data-classe="monaco"] {
+  --c-aura-color: #c48a1a;
+  --c-aura-glow-1: rgba(196, 138, 26, 0.18);
+  --c-aura-glow-2: rgba(140, 95, 15, 0.12);
+  --c-aura-glow-pulse-1: rgba(196, 138, 26, 0.32);
+  --c-aura-glow-pulse-2: rgba(140, 95, 15, 0.20);
+  --c-aura-glow-min: rgba(196, 138, 26, 0.15);
+  --c-aura-glow-max: rgba(196, 138, 26, 0.35);
+  --c-border-glow-min: rgba(196, 138, 26, 0.45);
+  --c-border-glow-max: rgba(255, 232, 163, 0.85);
 }
 [data-classe="monaco"] .angolo-tl {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%2338b000' stroke-width='2.2' stroke-linecap='round'><path d='M3 15A12 12 0 0 1 15 3'/><circle cx='11' cy='11' r='2.5' fill='%2370e000'/></svg>");
@@ -836,9 +1079,16 @@ tbody tr:hover {
 }
 
 /* 13. Artefice: Ingranaggi di bronzo e ottone ⚙️ */
-[data-classe="artefice"] .sezione, [data-classe="artefice"] .profilo-sezione {
-  border-color: rgba(181, 101, 29, 0.45) !important;
-  box-shadow: 0 6px 28px -4px rgba(181, 101, 29, 0.20), 0 16px 48px -8px rgba(130, 70, 20, 0.13), 0 1px 3px rgba(0, 0, 0, 0.35) !important;
+[data-classe="artefice"] {
+  --c-aura-color: #b5651d;
+  --c-aura-glow-1: rgba(181, 101, 29, 0.20);
+  --c-aura-glow-2: rgba(130, 70, 20, 0.13);
+  --c-aura-glow-pulse-1: rgba(181, 101, 29, 0.35);
+  --c-aura-glow-pulse-2: rgba(130, 70, 20, 0.22);
+  --c-aura-glow-min: rgba(181, 101, 29, 0.15);
+  --c-aura-glow-max: rgba(181, 101, 29, 0.35);
+  --c-border-glow-min: rgba(181, 101, 29, 0.45);
+  --c-border-glow-max: rgba(212, 160, 106, 0.85);
 }
 [data-classe="artefice"] .angolo-tl {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='%23b5651d' stroke-width='2'><rect x='3' y='3' width='12' height='12' rx='2' fill='rgba(181,101,29,0.15)'/><circle cx='9' cy='9' r='2.5' fill='%23d4a373'/></svg>");
