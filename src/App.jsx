@@ -3897,6 +3897,30 @@ export default function App() {
   const syncCodicePendenteRef = useRef(false);
   codiceSyncRef.current = codiceSync;
 
+  const isCloudAttivo = Boolean((githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice));
+  const isCloudConfigurato = Boolean((githubToken && gistId) || codiceSync);
+  const statoColoreCloud = sincronizzando
+    ? '#f59e0b'
+    : isCloudAttivo
+      ? '#2e9d4d'
+      : isCloudConfigurato
+        ? '#f59e0b'
+        : '#ef4444';
+  const statoBgCloud = sincronizzando
+    ? 'rgba(245, 158, 11, 0.14)'
+    : isCloudAttivo
+      ? 'rgba(46, 157, 77, 0.14)'
+      : isCloudConfigurato
+        ? 'rgba(245, 158, 11, 0.09)'
+        : 'rgba(239, 68, 68, 0.09)';
+  const statoGlowCloud = sincronizzando
+    ? '0 0 8px rgba(245, 158, 11, 0.45)'
+    : isCloudAttivo
+      ? '0 0 8px rgba(46, 157, 77, 0.45)'
+      : isCloudConfigurato
+        ? '0 0 6px rgba(245, 158, 11, 0.25)'
+        : '0 0 6px rgba(239, 68, 68, 0.25)';
+
   // Level Up
   const [mostraLevelUp, setMostraLevelUp] = useState(false);
   const [mostraPrivilegi, setMostraPrivilegi] = useState(false); // panoramica privilegi per livello
@@ -6365,6 +6389,7 @@ export default function App() {
     }
     syncCodiceInCorsoRef.current = true;
     try {
+      setSincronizzando(true);
       if (!silenzioso) setSyncCodiceStatus({ text: 'Salvataggio in corso...', type: 'info' });
       const quando = Date.now();
       const rosterCloud = await caricaImmaginiRoster(rosterSyncRef.current).catch(() => rosterSyncRef.current);
@@ -6394,6 +6419,7 @@ export default function App() {
         setSyncCodiceStatus({ text: messaggioErroreSync(err.message), type: 'error' });
       }
     } finally {
+      setSincronizzando(false);
       syncCodiceInCorsoRef.current = false;
       if (syncCodicePendenteRef.current) {
         syncCodicePendenteRef.current = false;
@@ -7722,11 +7748,27 @@ export default function App() {
                   <span>📂</span> <span>{t('import_export.btn')}</span>
                 </button>
                 <button
-                  style={{ ...styles.button, width: '100%', minHeight: 38, gridColumn: 'span 2', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                  style={{
+                    ...styles.button,
+                    width: '100%',
+                    minHeight: 38,
+                    gridColumn: 'span 2',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    border: `1.5px solid ${statoColoreCloud}`,
+                    background: statoBgCloud,
+                    color: statoColoreCloud,
+                    fontWeight: 700,
+                    boxShadow: statoGlowCloud,
+                    transition: 'all 0.25s ease',
+                  }}
                   onClick={() => { setMostraMenu(false); setTimeout(() => { setCloudStatus({ text: '', type: '' }); setMostraCloud(true); }, 50); }}
-                  title={t('tooltip.cloud_off')}
+                  title={isCloudAttivo ? (lingua === 'en' ? 'Cloud Backup ACTIVE' : 'Backup Cloud ATTIVO') : (lingua === 'en' ? 'Cloud Backup NOT ACTIVE' : 'Backup Cloud NON ATTIVO')}
                 >
-                  <span>☁️</span> <span>Sincronizzazione Cloud</span>
+                  <span style={{ fontSize: 16 }}>☁️</span>
+                  <span>{lingua === 'en' ? 'Cloud Synchronization' : 'Sincronizzazione Cloud'}</span>
                 </button>
                 <div style={{ gridColumn: 'span 2', marginTop: 4 }}>
                   <div style={{ fontSize: 11, color: C.inkDim, marginBottom: 4, fontWeight: 600 }}>
@@ -7959,8 +8001,31 @@ export default function App() {
                 </div>
               </div>
             ) : (
-              <div style={{ padding: 12, borderRadius: 8, background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, marginBottom: 16 }}>
-                <div style={{ ...styles.detail, fontWeight: 'bold', marginBottom: 6 }}>{t('cloud.sync_codice_titolo')}</div>
+              <div style={{
+                padding: 12,
+                borderRadius: 8,
+                background: statoBgCloud,
+                border: `1.5px solid ${statoColoreCloud}`,
+                boxShadow: statoGlowCloud,
+                marginBottom: 16,
+                transition: 'all 0.3s ease',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <div style={{ ...styles.detail, fontWeight: 'bold', color: C.ink }}>{t('cloud.sync_codice_titolo')}</div>
+                  <span style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: '#fff',
+                    background: statoColoreCloud,
+                    padding: '2px 8px',
+                    borderRadius: 6,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                  }}>
+                    {sincronizzando ? '🟠 Sincronizzazione...' : isCloudAttivo ? '🟢 Backup Attivo' : isCloudConfigurato ? '🟠 In attesa' : '🔴 Non attivo'}
+                  </span>
+                </div>
                 {codiceSync && autoSyncCodice ? (
                   <>
                     <p style={{ ...styles.detail, fontSize: 12, marginTop: 0, marginBottom: 8, lineHeight: 1.5 }}>
@@ -11664,18 +11729,30 @@ export default function App() {
                         📂
                       </button>
                       <button
-                        style={{ ...btnAzione, color: C.goldDark, borderColor: C.goldDark }}
-                        title={githubToken && gistId ? (autoSync ? `Cloud: salvataggio automatico attivo${ultimoSync ? ` · ultimo ${ultimoSync}` : ''}` : 'Cloud configurato') : 'Sincronizza sul Cloud'}
+                        style={{
+                          ...btnAzione,
+                          color: statoColoreCloud,
+                          borderColor: statoColoreCloud,
+                          background: statoBgCloud,
+                          boxShadow: statoGlowCloud,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '4px 7px',
+                          transition: 'all 0.25s ease',
+                        }}
+                        title={
+                          sincronizzando
+                            ? (lingua === 'en' ? 'Cloud: synchronizing...' : 'Cloud: sincronizzazione in corso...')
+                            : isCloudAttivo
+                              ? (lingua === 'en' ? `Cloud backup ACTIVE · Last sync: ${ultimoSyncCodice || ultimoSync || 'recent'}` : `Backup cloud ATTIVO · Ultimo: ${ultimoSyncCodice || ultimoSync || 'recente'}`)
+                              : isCloudConfigurato
+                                ? (lingua === 'en' ? 'Cloud configured (auto-sync paused)' : 'Cloud configurato (salvataggio automatico in pausa)')
+                                : (lingua === 'en' ? 'Cloud backup NOT ACTIVE: click to configure' : 'Backup cloud NON ATTIVO: clicca per configurare')
+                        }
                         onClick={() => { setCloudStatus({ text: '', type: '' }); setSyncCodiceStatus({ text: '', type: '' }); setMostraCloud(true); }}
                       >
-                        ☁️
-                        {sincronizzando ? (
-                          <span style={{ fontSize: 10, marginLeft: 1 }}>🔄</span>
-                        ) : (githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice) ? (
-                          <span style={{ color: '#2e9d4d', fontWeight: 900, marginLeft: 1, fontSize: 12 }}>✓</span>
-                        ) : (
-                          <span style={{ color: '#c0392b', fontSize: 12, marginLeft: 1, fontWeight: 900 }}>!</span>
-                        )}
+                        <span style={{ fontSize: 14 }}>☁️</span>
                       </button>
                     </div>
 
@@ -18875,7 +18952,22 @@ export default function App() {
 
                 <button
                   type="button"
-                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
+                  style={{
+                    ...styles.button,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'flex-start',
+                    gap: 8,
+                    padding: '10px 12px',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    borderRadius: 8,
+                    background: statoBgCloud,
+                    border: `1.5px solid ${statoColoreCloud}`,
+                    color: statoColoreCloud,
+                    boxShadow: statoGlowCloud,
+                    transition: 'all 0.25s ease',
+                  }}
                   onClick={() => {
                     setCloudStatus({ text: '', type: '' });
                     setSyncCodiceStatus({ text: '', type: '' });
@@ -18885,8 +18977,7 @@ export default function App() {
                 >
                   <span style={{ fontSize: 16 }}>☁️</span>
                   <span>
-                    {lingua === 'en' ? 'Cloud Sync' : 'Salvataggio Cloud'}{' '}
-                    {(githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice) ? '✓' : ''}
+                    {lingua === 'en' ? 'Cloud Sync' : 'Salvataggio Cloud'}
                   </span>
                 </button>
               </div>
