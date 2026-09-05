@@ -15148,7 +15148,7 @@ export default function App() {
 
                         {liv >= 1 && slot && slot.totale > 0 && (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={(e) => e.stopPropagation()}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                               {Array.from({ length: slot.totale }, (_, i) => {
                                 const isDisponibile = i < (slot.totale - (slot.spesi || 0));
                                 return (
@@ -15164,39 +15164,30 @@ export default function App() {
                                     }}
                                     title={isDisponibile ? t('spell.slot_disp_tip') : t('spell.slot_speso_tip')}
                                     style={{
-                                      width: 17,
-                                      height: 17,
-                                      borderRadius: '50%',
-                                      border: isDisponibile ? '1.5px solid rgba(255, 230, 130, 0.9)' : '1.5px solid rgba(120, 100, 70, 0.45)',
+                                      width: 19,
+                                      height: 19,
+                                      borderRadius: 5,
+                                      border: isDisponibile ? `1.5px solid ${C.goldDark}` : `1.5px dashed ${C.border}`,
                                       background: isDisponibile
-                                        ? 'radial-gradient(circle at 35% 30%, #ffffff 0%, #ffd700 35%, #d48800 70%, #8a5000 100%)'
-                                        : 'radial-gradient(circle at 40% 40%, rgba(55,48,42,0.6) 0%, rgba(18,15,12,0.85) 100%)',
-                                      boxShadow: isDisponibile
-                                        ? '0 0 8px rgba(255, 215, 0, 0.7), 0 0 2px rgba(255, 255, 255, 0.9), inset 0 1px 2px rgba(255,255,255,0.6)'
-                                        : 'inset 0 1.5px 3px rgba(0,0,0,0.7)',
-                                      transform: isDisponibile ? 'scale(1.05)' : 'scale(0.92)',
+                                        ? 'linear-gradient(135deg, rgba(201,162,39,0.32) 0%, rgba(201,162,39,0.12) 100%)'
+                                        : 'rgba(0,0,0,0.03)',
+                                      boxShadow: isDisponibile ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
                                       cursor: 'pointer',
                                       padding: 0,
-                                      transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      color: isDisponibile ? C.goldDark : C.inkDim,
+                                      fontSize: 11,
+                                      fontWeight: 700,
+                                      transition: 'all 0.15s ease',
                                     }}
-                                  />
+                                  >
+                                    {isDisponibile ? '✦' : ''}
+                                  </button>
                                 );
                               })}
                             </div>
-                            <button
-                              type="button"
-                              className="no-stampa"
-                              onClick={() => aggiornaSlot({ spesi: Math.max(0, (slot.spesi || 0) - 1) })}
-                              style={{ ...styles.buttonMini, padding: '1px 6px', fontSize: 11, fontWeight: 700, color: C.green, borderColor: C.green }}
-                              title={t('spell.slot_piu_tip')}
-                            >+</button>
-                            <button
-                              type="button"
-                              className="no-stampa"
-                              onClick={() => aggiornaSlot({ spesi: Math.min(slot.totale, (slot.spesi || 0) + 1) })}
-                              style={{ ...styles.buttonMini, padding: '1px 6px', fontSize: 11, fontWeight: 700, color: C.red, borderColor: C.red }}
-                              title={t('spell.slot_meno_tip')}
-                            >−</button>
                           </div>
                         )}
                       </div>
