@@ -472,6 +472,8 @@ export const DIZIONARIO = {
     // Placeholder sezioni
     'tratti.ph': 'Es. Scurovisione, Astuzia gnomesca, Trance, Fortuna halfling…',
     'priv.ph': 'Nessun privilegio. Aggiungine uno.',
+    'priv.classe_titolo': 'Privilegi di Classe',
+    'priv.sub_titolo': 'Privilegi di Sottoclasse',
     'priv.panoramica_btn': 'Panoramica privilegi per livello',
     'priv.panoramica_sub': 'Panoramica sottoclasse',
     'priv.panoramica_sub_btn': 'Panoramica sottoclasse per livello',
@@ -1348,6 +1350,8 @@ export const DIZIONARIO = {
     // Section placeholders
     'tratti.ph': 'E.g. Darkvision, Gnome Cunning, Trance, Halfling Luck…',
     'priv.ph': 'No features. Add one.',
+    'priv.classe_titolo': 'Class Features',
+    'priv.sub_titolo': 'Subclass Features',
     'priv.panoramica_btn': 'Features overview by level',
     'priv.panoramica_sub': 'Subclass overview',
     'priv.panoramica_sub_btn': 'Subclass features by level',

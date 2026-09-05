@@ -15910,64 +15910,88 @@ export default function App() {
               {...apertoProps('privilegi', true)}
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {/* Blocco 1: Classe e Sottoclasse */}
-                  <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5, textAlign: 'center' }}>
-                      🛡️ {lingua === 'en' ? 'Class & Subclass Features' : 'Privilegi di Classe & Sottoclasse'}
+                  {/* Riga 1: Privilegi di Classe e Privilegi di Sottoclasse separati */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                    gap: 10
+                  }}>
+                    {/* Card 1: Privilegi di Classe */}
+                    <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
+                        🛡️ {t('priv.classe_titolo')}{scheda.classe ? ` (${traduciDato(scheda.classe)})` : ''}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, justifyContent: 'center' }}>
+                        <button
+                          style={{ ...styles.button, width: '100%', minHeight: 38, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                          onClick={() => setMostraPrivilegi(true)}
+                          title={t('tip.panoramica_priv')}
+                        >
+                          📖 {t("priv.panoramica_btn")} ({scheda.classe || t('profilo.nessuna')} Liv. {scheda.livello || 1})
+                        </button>
+                        {(scheda.multiclasse || []).map((m, mIdx) => (
+                          <button
+                            key={mIdx}
+                            style={{ ...styles.button, width: '100%', minHeight: 38, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                            onClick={() => setMostraPrivilegi(true)}
+                            title={t('tip.panoramica_priv')}
+                          >
+                            📖 {t("priv.panoramica_btn")} ({traduciDato(m.classe)} Liv. {m.livello || 1})
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    {(() => {
-                      const tutteLeSub = [
-                        ...(scheda.sottoclasse ? [{ classe: scheda.classe, livello: scheda.livello || 1, sottoclasse: scheda.sottoclasse }] : []),
-                        ...((scheda.multiclasse || []).filter((m) => m.sottoclasse).map((m) => ({ classe: m.classe, livello: m.livello || 1, sottoclasse: m.sottoclasse }))),
-                      ];
-                      const classiSenzaSubMaPronte = [
-                        ...((!scheda.sottoclasse && (scheda.livello || 1) >= livelloSceltaSottoclasse(scheda.classe, versione)) ? [{ classe: scheda.classe, livello: scheda.livello || 1, isMain: true }] : []),
-                        ...((scheda.multiclasse || []).filter((m) => !m.sottoclasse && (m.livello || 1) >= livelloSceltaSottoclasse(m.classe, versione)).map((m) => ({ classe: m.classe, livello: m.livello || 1, isMain: false }))),
-                      ];
-                      return (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                          {classiSenzaSubMaPronte.length > 0 && (
-                            <div style={{ background: 'rgba(200,140,20,0.1)', border: `1px dashed ${C.gold}`, borderRadius: 6, padding: '6px 8px' }}>
-                              {classiSenzaSubMaPronte.map((c, idx) => (
-                                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                                  <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 600 }}>{traduciDato(c.classe)}:</span>
-                                  <select
-                                    style={{ ...styles.inlineInput, fontSize: 12, padding: '3px 6px', flex: 1, minWidth: 130 }}
-                                    value=""
-                                    onChange={(e) => {
-                                      const sub = e.target.value;
-                                      if (!sub) return;
-                                      if (c.isMain) {
-                                        aggiorna({ sottoclasse: sub, privilegiSottoclasse: privilegiSottoclasseFinoA(sub, c.livello) });
-                                      } else {
-                                        aggiorna({
-                                          multiclasse: (scheda.multiclasse || []).map((m) => (m.classe === c.classe ? { ...m, sottoclasse: sub } : m)),
-                                        });
-                                      }
-                                    }}
-                                  >
-                                    <option value="">{lingua === 'en' ? 'Choose subclass…' : 'Scegli sottoclasse…'}</option>
-                                    {sottoclassiPerClasse(c.classe).map((sc) => (
-                                      <option key={sc} value={sc}>{traduciDato(sc)}</option>
-                                    ))}
-                                  </select>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                            <button
-                              style={{ ...styles.button, flex: 1, minWidth: 140, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-                              onClick={() => setMostraPrivilegi(true)}
-                              title={t('tip.panoramica_priv')}
-                            >
-                              📖 {t("priv.panoramica_btn")} ({scheda.classe || t('profilo.nessuna')} Liv. {scheda.livello || 1})
-                            </button>
+
+                    {/* Card 2: Privilegi di Sottoclasse */}
+                    <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
+                        🔮 {t('priv.sub_titolo')}{scheda.sottoclasse ? ` (${traduciDato(scheda.sottoclasse)})` : ''}
+                      </div>
+                      {(() => {
+                        const tutteLeSub = [
+                          ...(scheda.sottoclasse ? [{ classe: scheda.classe, livello: scheda.livello || 1, sottoclasse: scheda.sottoclasse }] : []),
+                          ...((scheda.multiclasse || []).filter((m) => m.sottoclasse).map((m) => ({ classe: m.classe, livello: m.livello || 1, sottoclasse: m.sottoclasse }))),
+                        ];
+                        const classiSenzaSubMaPronte = [
+                          ...((!scheda.sottoclasse && (scheda.livello || 1) >= livelloSceltaSottoclasse(scheda.classe, versione)) ? [{ classe: scheda.classe, livello: scheda.livello || 1, isMain: true }] : []),
+                          ...((scheda.multiclasse || []).filter((m) => !m.sottoclasse && (m.livello || 1) >= livelloSceltaSottoclasse(m.classe, versione)).map((m) => ({ classe: m.classe, livello: m.livello || 1, isMain: false }))),
+                        ];
+                        return (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, justifyContent: 'center' }}>
+                            {classiSenzaSubMaPronte.length > 0 && (
+                              <div style={{ background: 'rgba(200,140,20,0.1)', border: `1px dashed ${C.gold}`, borderRadius: 6, padding: '6px 8px', marginBottom: 4 }}>
+                                {classiSenzaSubMaPronte.map((c, idx) => (
+                                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                                    <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 600 }}>{traduciDato(c.classe)}:</span>
+                                    <select
+                                      style={{ ...styles.inlineInput, fontSize: 12, padding: '3px 6px', flex: 1, minWidth: 130 }}
+                                      value=""
+                                      onChange={(e) => {
+                                        const sub = e.target.value;
+                                        if (!sub) return;
+                                        if (c.isMain) {
+                                          aggiorna({ sottoclasse: sub, privilegiSottoclasse: privilegiSottoclasseFinoA(sub, c.livello) });
+                                        } else {
+                                          aggiorna({
+                                            multiclasse: (scheda.multiclasse || []).map((m) => (m.classe === c.classe ? { ...m, sottoclasse: sub } : m)),
+                                          });
+                                        }
+                                      }}
+                                    >
+                                      <option value="">{lingua === 'en' ? 'Choose subclass…' : 'Scegli sottoclasse…'}</option>
+                                      {sottoclassiPerClasse(c.classe).map((sc) => (
+                                        <option key={sc} value={sc}>{traduciDato(sc)}</option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                             {tutteLeSub.length > 0 ? (
                               tutteLeSub.map((subItem, sIdx) => (
                                 <button
                                   key={sIdx}
-                                  style={{ ...styles.button, flex: 1, minWidth: 140, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                                  style={{ ...styles.button, width: '100%', minHeight: 38, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                                   onClick={() => setMostraPrivilegiSub(subItem.sottoclasse || true)}
                                   title={t('tip.panoramica_priv_sub')}
                                 >
@@ -15975,17 +15999,17 @@ export default function App() {
                                 </button>
                               ))
                             ) : (
-                              <div style={{ ...styles.detail, fontSize: 11.5, display: 'flex', alignItems: 'center' }}>
+                              <div style={{ ...styles.detail, fontSize: 11.5, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 38 }}>
                                 {t('priv.sub_nessuna')}
                               </div>
                             )}
                           </div>
-                        </div>
-                      );
-                    })()}
+                        );
+                      })()}
+                    </div>
                   </div>
 
-                  {/* Blocchi 2 e 3: Tratti di Specie e Talenti affiancati */}
+                  {/* Riga 2: Tratti di Specie e Talenti affiancati */}
                   <div style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
