@@ -15567,99 +15567,101 @@ export default function App() {
                   const aggiornaSlot = (patch) => aggiorna({ slotIncantesimo: { ...scheda.slotIncantesimo, [liv]: { ...slot, ...patch } } });
                   // Quando la sezione è minimizzata (chiuso === true), mostriamo SOLO gli incantesimi preparati (e i trucchetti), nascondendo quelli non preparati / di catalogo
                   const spellsDaMostrare = chiuso
-                    ? spells.filter((s) => (liv === 0 || s.preparato !== false) && !s.catalogo)
+                    ? (liv === 0 ? [] : spells.filter((s) => s.preparato !== false && !s.catalogo))
                     : spells;
 
                   return (
-                    <div key={liv} style={{ marginBottom: 8, border: `1px solid ${C.border}`, borderRadius: 8, padding: 8, background: 'rgba(0,0,0,0.015)' }}>
-                      {/* Intestazione livello collassabile */}
-                      <div
-                        onClick={() => setLivelliIncChiusi((prev) => ({ ...prev, [liv]: !prev[liv] }))}
-                        title={chiuso ? (lingua === 'en' ? 'Click to show all spells (including unprepared)' : 'Clicca per mostrare tutti gli incantesimi (inclusi i non preparati)') : (lingua === 'en' ? 'Click to minimize and show only prepared spells' : 'Clicca per minimizzare e mostrare solo i preparati')}
-                        style={{
-                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                          cursor: 'pointer', userSelect: 'none', padding: '2px 4px',
-                          borderBottom: (chiuso && spellsDaMostrare.length === 0) ? 'none' : `1px solid ${C.border}`,
-                          paddingBottom: (chiuso && spellsDaMostrare.length === 0) ? 2 : 6, marginBottom: (chiuso && spellsDaMostrare.length === 0) ? 0 : 8,
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                          <span style={{ color: C.goldDark, fontSize: 13, fontWeight: 800 }}>{chiuso ? '▸' : '▾'}</span>
-                          <span style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: C.ink }}>
-                            {liv === 0 ? t('spell.trucchetti') : t('spell.n_livello', { n: liv })}
-                          </span>
-                          {isEccessoLiv && (
-                            <span style={{ fontSize: 10, fontWeight: 700, color: '#fff', background: '#ef4444', border: '1px solid #ef4444', borderRadius: 6, padding: '1px 6px' }}>
-                              🔴 {lingua === 'en' ? 'EXCESS' : 'IN ECCESSO'}
+                    <div key={liv} style={{ marginBottom: 12 }}>
+                      {/* Intestazione livello collassabile (solo per livelli >= 1, trucchetti ha la sua intestazione principale) */}
+                      {liv >= 1 && (
+                        <div
+                          onClick={() => setLivelliIncChiusi((prev) => ({ ...prev, [liv]: !prev[liv] }))}
+                          title={chiuso ? (lingua === 'en' ? 'Click to show all spells (including unprepared)' : 'Clicca per mostrare tutti gli incantesimi (inclusi i non preparati)') : (lingua === 'en' ? 'Click to minimize and show only prepared spells' : 'Clicca per minimizzare e mostrare solo i preparati')}
+                          style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            cursor: 'pointer', userSelect: 'none', padding: '4px 2px',
+                            borderBottom: (chiuso && spellsDaMostrare.length === 0) ? 'none' : `1px solid ${C.border}`,
+                            paddingBottom: (chiuso && spellsDaMostrare.length === 0) ? 2 : 6, marginBottom: (chiuso && spellsDaMostrare.length === 0) ? 0 : 8,
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                            <span style={{ color: C.goldDark, fontSize: 13, fontWeight: 800 }}>{chiuso ? '▸' : '▾'}</span>
+                            <span style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: C.ink }}>
+                              {t('spell.n_livello', { n: liv })}
                             </span>
-                          )}
-                          {isMancanteLiv && (
-                            <span style={{ fontSize: 10, fontWeight: 700, color: '#2e9d4d', background: 'rgba(46,157,77,0.15)', border: '1px solid #2e9d4d', borderRadius: 6, padding: '1px 6px' }}>
-                              🟢 {lingua === 'en' ? 'SLOTS TO CHOOSE' : 'SCELTE DISPONIBILI'}
+                            {isEccessoLiv && (
+                              <span style={{ fontSize: 10, fontWeight: 700, color: '#fff', background: '#ef4444', border: '1px solid #ef4444', borderRadius: 6, padding: '1px 6px' }}>
+                                🔴 {lingua === 'en' ? 'EXCESS' : 'IN ECCESSO'}
+                              </span>
+                            )}
+                            {isMancanteLiv && (
+                              <span style={{ fontSize: 10, fontWeight: 700, color: '#2e9d4d', background: 'rgba(46,157,77,0.15)', border: '1px solid #2e9d4d', borderRadius: 6, padding: '1px 6px' }}>
+                                🟢 {lingua === 'en' ? 'SLOTS TO CHOOSE' : 'SCELTE DISPONIBILI'}
+                              </span>
+                            )}
+                            {slot && (
+                              <span
+                                title={lingua === 'en' ? 'Available / Total spell slots (click to edit total)' : 'Slot disponibili / totali (click per modificare il totale)'}
+                                style={{ fontSize: 11, color: C.inkDim, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 4, padding: '1px 6px', display: 'inline-flex', alignItems: 'center', gap: 3 }}
+                              >
+                                <span>✦</span>
+                                <strong style={{ color: (slot.totale - (slot.spesi || 0)) > 0 ? C.goldDark : C.red }}>{Math.max(0, slot.totale - (slot.spesi || 0))}</strong>
+                                <span>/</span>
+                                <Editable value={slot.totale} tipo="numero" width={18} onChange={(v) => aggiornaSlot({ totale: Math.max(0, parseInt(v, 10) || 0) })} />
+                                {COSTO_SLOT_IN_PUNTI[liv] ? <span style={{ marginLeft: 2, fontSize: 10, opacity: 0.75 }}>· {COSTO_SLOT_IN_PUNTI[liv]}pt</span> : null}
+                              </span>
+                            )}
+                            <span style={{ fontSize: 11, color: C.inkDim, opacity: 0.8 }}>
+                              ({countLiv}{classePreparata ? ` · ${numPrep} prep.` : ''}{chiuso && countLiv > spellsDaMostrare.length ? ` · ${countLiv - spellsDaMostrare.length} non prep. nascosti` : ''})
                             </span>
-                          )}
-                          {liv >= 1 && slot && (
-                            <span
-                              title={lingua === 'en' ? 'Available / Total spell slots (click to edit total)' : 'Slot disponibili / totali (click per modificare il totale)'}
-                              style={{ fontSize: 11, color: C.inkDim, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 4, padding: '1px 6px', display: 'inline-flex', alignItems: 'center', gap: 3 }}
-                            >
-                              <span>✦</span>
-                              <strong style={{ color: (slot.totale - (slot.spesi || 0)) > 0 ? C.goldDark : C.red }}>{Math.max(0, slot.totale - (slot.spesi || 0))}</strong>
-                              <span>/</span>
-                              <Editable value={slot.totale} tipo="numero" width={18} onChange={(v) => aggiornaSlot({ totale: Math.max(0, parseInt(v, 10) || 0) })} />
-                              {COSTO_SLOT_IN_PUNTI[liv] ? <span style={{ marginLeft: 2, fontSize: 10, opacity: 0.75 }}>· {COSTO_SLOT_IN_PUNTI[liv]}pt</span> : null}
-                            </span>
-                          )}
-                          <span style={{ fontSize: 11, color: C.inkDim, opacity: 0.8 }}>
-                            ({countLiv}{liv >= 1 && classePreparata ? ` · ${numPrep} prep.` : ''}{chiuso && countLiv > spellsDaMostrare.length ? ` · ${countLiv - spellsDaMostrare.length} non prep. nascosti` : ''})
-                          </span>
-                        </div>
-
-                        {liv >= 1 && slot && slot.totale > 0 && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={(e) => e.stopPropagation()}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                              {Array.from({ length: slot.totale }, (_, i) => {
-                                const isDisponibile = i < (slot.totale - (slot.spesi || 0));
-                                return (
-                                  <button
-                                    key={i}
-                                    type="button"
-                                    onClick={() => {
-                                      if (isDisponibile) {
-                                        aggiornaSlot({ spesi: Math.min(slot.totale, (slot.spesi || 0) + 1) });
-                                      } else {
-                                        aggiornaSlot({ spesi: Math.max(0, (slot.spesi || 0) - 1) });
-                                      }
-                                    }}
-                                    title={isDisponibile ? t('spell.slot_disp_tip') : t('spell.slot_speso_tip')}
-                                    style={{
-                                      width: 19,
-                                      height: 19,
-                                      borderRadius: 5,
-                                      border: isDisponibile ? `1.5px solid ${C.goldDark}` : `1.5px dashed ${C.border}`,
-                                      background: isDisponibile
-                                        ? 'linear-gradient(135deg, rgba(201,162,39,0.32) 0%, rgba(201,162,39,0.12) 100%)'
-                                        : 'rgba(0,0,0,0.03)',
-                                      boxShadow: isDisponibile ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-                                      cursor: 'pointer',
-                                      padding: 0,
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      color: isDisponibile ? C.goldDark : C.inkDim,
-                                      fontSize: 11,
-                                      fontWeight: 700,
-                                      transition: 'all 0.15s ease',
-                                    }}
-                                  >
-                                    {isDisponibile ? '✦' : ''}
-                                  </button>
-                                );
-                              })}
-                            </div>
                           </div>
-                        )}
-                      </div>
+
+                          {slot && slot.totale > 0 && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={(e) => e.stopPropagation()}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                                {Array.from({ length: slot.totale }, (_, i) => {
+                                  const isDisponibile = i < (slot.totale - (slot.spesi || 0));
+                                  return (
+                                    <button
+                                      key={i}
+                                      type="button"
+                                      onClick={() => {
+                                        if (isDisponibile) {
+                                          aggiornaSlot({ spesi: Math.min(slot.totale, (slot.spesi || 0) + 1) });
+                                        } else {
+                                          aggiornaSlot({ spesi: Math.max(0, (slot.spesi || 0) - 1) });
+                                        }
+                                      }}
+                                      title={isDisponibile ? t('spell.slot_disp_tip') : t('spell.slot_speso_tip')}
+                                      style={{
+                                        width: 19,
+                                        height: 19,
+                                        borderRadius: 5,
+                                        border: isDisponibile ? `1.5px solid ${C.goldDark}` : `1.5px dashed ${C.border}`,
+                                        background: isDisponibile
+                                          ? 'linear-gradient(135deg, rgba(201,162,39,0.32) 0%, rgba(201,162,39,0.12) 100%)'
+                                          : 'rgba(0,0,0,0.03)',
+                                        boxShadow: isDisponibile ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                                        cursor: 'pointer',
+                                        padding: 0,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: isDisponibile ? C.goldDark : C.inkDim,
+                                        fontSize: 11,
+                                        fontWeight: 700,
+                                        transition: 'all 0.15s ease',
+                                      }}
+                                    >
+                                      {isDisponibile ? '✦' : ''}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
 
                       {/* Lista incantesimi del livello */}
                       {spellsDaMostrare.length > 0 && (
@@ -16056,12 +16058,30 @@ export default function App() {
                 }
                 return (
                   <>
-                    <div className="sottosezione-titolo" style={{ display: 'grid', gridTemplateColumns: 'minmax(28px, 1fr) auto minmax(28px, 1fr)', alignItems: 'center', columnGap: 6, marginTop: 18, marginBottom: 8 }}>
-                      <div />
+                    <div
+                      className="sottosezione-titolo"
+                      onClick={() => setLivelliIncChiusi((prev) => ({ ...prev, [0]: !prev[0] }))}
+                      title={livelliIncChiusi[0] ? (lingua === 'en' ? 'Click to expand cantrips' : 'Clicca per espandere i trucchetti') : (lingua === 'en' ? 'Click to collapse cantrips' : 'Clicca per comprimere i trucchetti')}
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'minmax(28px, 1fr) auto minmax(28px, 1fr)',
+                        alignItems: 'center',
+                        columnGap: 6,
+                        marginTop: 18,
+                        marginBottom: 8,
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                      }}
+                    >
+                      <div style={{ justifySelf: 'start', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ color: C.goldDark, fontSize: 13, fontWeight: 800 }}>
+                          {livelliIncChiusi[0] ? '▸' : '▾'}
+                        </span>
+                      </div>
                       <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'center', justifySelf: 'center', fontSize: 15 }}>
                         {t('spell.trucchetti')}
                       </h3>
-                      <div style={{ justifySelf: 'end', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      <div style={{ justifySelf: 'end', display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={(e) => e.stopPropagation()}>
                         {maxTrucchetti != null ? (
                           <span
                             style={{
