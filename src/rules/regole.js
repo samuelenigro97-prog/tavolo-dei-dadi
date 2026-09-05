@@ -878,8 +878,11 @@ export function controlliScheda(scheda) {
     if (maxInc != null && nIncanti > maxInc) {
       risultati.push({
         id: 'budget-incantesimi',
+        tipo: 'vai_a_sezione',
+        sezione: 'incantesimi',
         gravita: 'da_controllare',
         testo: `Incantesimi: hai ${nIncanti} incantesimi preparati/conosciuti (1° liv+), ma le regole per ${scheda.classe} al livello ${scheda.livello || 1} ne prevedono ${maxInc}.`,
+        correggibile: true,
       });
     }
 
@@ -891,8 +894,11 @@ export function controlliScheda(scheda) {
     if (maxTruc != null && nTruc > maxTruc) {
       risultati.push({
         id: 'budget-trucchetti',
+        tipo: 'vai_a_sezione',
+        sezione: 'incantesimi',
         gravita: 'da_controllare',
         testo: `Trucchetti: hai ${nTruc} trucchetti conosciuti, ma le regole per ${scheda.classe} al livello ${scheda.livello || 1} ne prevedono ${maxTruc}.`,
+        correggibile: true,
       });
     }
 
@@ -905,8 +911,11 @@ export function controlliScheda(scheda) {
           if (inc.livello > maxSlotLivello && !inc.bonus) {
             risultati.push({
               id: `incantesimo-troppo-alto-${inc.nome}`,
+              tipo: 'vai_a_sezione',
+              sezione: 'incantesimi',
               gravita: 'da_controllare',
               testo: `Incantesimi: "${inc.nome}" è di ${inc.livello}° livello, ma la scheda dispone di slot fino al ${maxSlotLivello}° livello.`,
+              correggibile: true,
             });
           }
         }
@@ -920,8 +929,11 @@ export function controlliScheda(scheda) {
       if (nomeN && visti.has(nomeN)) {
         risultati.push({
           id: `incantesimo-duplicato-${nomeN}`,
+          tipo: 'vai_a_sezione',
+          sezione: 'incantesimi',
           gravita: 'da_controllare',
           testo: `Incantesimi: "${inc.nome}" è inserito più di una volta nella lista incantesimi.`,
+          correggibile: true,
         });
       }
       if (nomeN) visti.add(nomeN);
@@ -956,8 +968,11 @@ export function controlliScheda(scheda) {
   if (Array.isArray(scheda.sintonia) && scheda.sintonia.filter(Boolean).length > 3) {
     risultati.push({
       id: 'sintonia-max',
+      tipo: 'vai_a_sezione',
+      sezione: 'equipaggiamento',
       gravita: 'certo',
       testo: `Sintonia: hai ${scheda.sintonia.filter(Boolean).length} oggetti sintonizzati. Il limite massimo in D&D 5e è di 3 oggetti contemporaneamente.`,
+      correggibile: true,
     });
   }
 
@@ -995,8 +1010,11 @@ export function controlliScheda(scheda) {
     if (add[tipo] === false) {
       risultati.push({
         id: `armatura-senza-competenza-${tipo}`,
+        tipo: 'vai_a_sezione',
+        sezione: 'addestramento',
         gravita: 'da_controllare',
         testo: `Armatura: indossi un'armatura ${tipo} senza avere la competenza segnata in Addestramento. In D&D 5e questo impone svantaggio alle prove di FOR/DES e impedisce il lancio di incantesimi.`,
+        correggibile: true,
       });
     }
   }
@@ -1005,8 +1023,11 @@ export function controlliScheda(scheda) {
     if (add.scudi === false) {
       risultati.push({
         id: 'scudo-senza-competenza',
+        tipo: 'vai_a_sezione',
+        sezione: 'addestramento',
         gravita: 'da_controllare',
         testo: `Scudo: impugni uno scudo senza avere la competenza segnata in Addestramento.`,
+        correggibile: true,
       });
     }
   }

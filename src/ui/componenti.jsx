@@ -615,10 +615,11 @@ export function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni,
  * cliccando il titolo si richiude per risparmiare spazio verticale.
  * Con `manigliaProps` mostra un segnalino ⠿ per trascinare e riordinare.
  */
-export function Sezione({ titolo, children, aperto = true, onToggleAperto, manigliaDrag = false, className = '', style = {}, azioni = null, innerRef = null, senzaAngoli = false }) {
+export function Sezione({ id, titolo, children, aperto = true, onToggleAperto, manigliaDrag = false, className = '', style = {}, azioni = null, innerRef = null, senzaAngoli = false }) {
   const trascinando = false;
   return (
     <details
+      id={id}
       ref={innerRef}
       open={aperto}
       onToggle={(e) => { const open = e.currentTarget.open; if (onToggleAperto && open !== aperto) onToggleAperto(open); }}

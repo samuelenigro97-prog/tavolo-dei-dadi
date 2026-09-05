@@ -515,6 +515,43 @@ test('controlliScheda: nessuna competenza segnata su una scheda vuota di classe 
   assert.ok(!trovati.some((r) => r.id.startsWith('fonte-')));
 });
 
+test('controlliScheda: incantesimi in eccesso e trucchetti generano avvisi correggibili con vai_a_sezione incantesimi', () => {
+  // Stregone liv 4 con 8 incantesimi di 1° liv+ (il cap 2024 è 7) e 6 trucchetti (il cap è 5)
+  const scheda = {
+    classe: 'Stregone',
+    livello: 4,
+    versione: '2024',
+    incantesimiLista: [
+      { id: '1', nome: 'Dardo Incantato', livello: 1 },
+      { id: '2', nome: 'Scudo', livello: 1 },
+      { id: '3', nome: 'Mani Brucianti', livello: 1 },
+      { id: '4', nome: 'Raggio di Gelo', livello: 0 },
+      { id: '5', nome: 'Luce', livello: 0 },
+      { id: '6', nome: 'Prestidigitazione', livello: 0 },
+      { id: '7', nome: 'Illusione Minore', livello: 0 },
+      { id: '8', nome: 'Messaggio', livello: 0 },
+      { id: '9', nome: 'Dardo di Fuoco', livello: 0 },
+      { id: '10', nome: 'Armatura Magica', livello: 1 },
+      { id: '11', nome: 'Immagine Speculare', livello: 2 },
+      { id: '12', nome: 'Passo Velato', livello: 2 },
+      { id: '13', nome: 'Raggio Rovente', livello: 2 },
+      { id: '14', nome: 'Suggestione', livello: 2 },
+    ],
+  };
+  const avvisi = controlliScheda(scheda);
+  const budgetInc = avvisi.find((a) => a.id === 'budget-incantesimi');
+  assert.ok(budgetInc, 'Dovrebbe segnalare budget incantesimi superato');
+  assert.equal(budgetInc.correggibile, true);
+  assert.equal(budgetInc.tipo, 'vai_a_sezione');
+  assert.equal(budgetInc.sezione, 'incantesimi');
+
+  const budgetTruc = avvisi.find((a) => a.id === 'budget-trucchetti');
+  assert.ok(budgetTruc, 'Dovrebbe segnalare budget trucchetti superato');
+  assert.equal(budgetTruc.correggibile, true);
+  assert.equal(budgetTruc.tipo, 'vai_a_sezione');
+  assert.equal(budgetTruc.sezione, 'incantesimi');
+});
+
 test('controlliScheda: tutti i personaggi predefiniti (Flyora, Gnomo, Vaelion, Elevorn, Wendell, Lyrian) hanno 0 avvisi', () => {
   const personaggi = [
     { nome: 'Flyora', json: FLYORA_JSON },
