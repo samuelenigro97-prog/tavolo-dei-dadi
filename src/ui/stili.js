@@ -575,17 +575,16 @@ tbody tr:hover {
 /* ===================== TEMI & CORNICI DI CLASSE ===================== */
 .sezione, .profilo-sezione {
   position: relative;
-  transition: border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.25s ease;
   border-color: var(--c-border-glow-min, var(--c-border));
-  box-shadow: 0 6px 28px -4px var(--c-aura-glow-1, rgba(60,50,30,0.06)),
-              0 16px 48px -8px var(--c-aura-glow-2, rgba(60,50,30,0.04)),
-              0 1px 3px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 3px 12px -2px var(--c-aura-glow-1, rgba(60,50,30,0.04)),
+              0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
 .sezione-titolo-testo {
   justify-self: center;
   text-align: center;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 0 1px rgba(255, 255, 255, 0.08);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
   letter-spacing: 2px;
   transition: text-shadow 0.3s ease;
 }
@@ -598,8 +597,8 @@ tbody tr:hover {
   background-size: contain;
   background-repeat: no-repeat;
   z-index: 2;
-  opacity: 0.82;
-  filter: drop-shadow(0 0 2.5px var(--c-aura-color, rgba(201, 162, 39, 0.4)));
+  opacity: 0.70;
+  filter: drop-shadow(0 0 1.5px var(--c-aura-color, rgba(201, 162, 39, 0.25)));
   transition: opacity 0.3s ease, transform 0.3s ease, filter 0.3s ease;
 }
 .angolo-tl { top: 0; left: 0; }
@@ -607,26 +606,25 @@ tbody tr:hover {
 .angolo-bl { bottom: 0; left: 0; }
 .angolo-br { bottom: 0; right: 0; }
 
-/* Reattività Hover & Focus luminoso */
+/* Reattività Hover & Focus luminoso (sobrio e morbido) */
 .sezione:hover,
 .profilo-sezione:hover {
   border-color: var(--c-border-glow-max, var(--c-gold)) !important;
-  box-shadow: 0 8px 36px -2px var(--c-aura-glow-pulse-1, rgba(157, 78, 221, 0.35)),
-              0 20px 56px -4px var(--c-aura-glow-pulse-2, rgba(114, 9, 183, 0.24)),
-              0 0 16px 2px var(--c-aura-glow-min, rgba(157, 78, 221, 0.18)),
-              0 1px 4px rgba(0, 0, 0, 0.45) !important;
+  box-shadow: 0 4px 18px -2px var(--c-aura-glow-pulse-1, rgba(201, 162, 39, 0.12)),
+              0 0 6px 1px var(--c-aura-glow-min, rgba(201, 162, 39, 0.08)),
+              0 1px 4px rgba(0, 0, 0, 0.35) !important;
 }
 
 .sezione:hover .sezione-titolo-testo,
 .profilo-sezione:hover .sezione-titolo-testo {
-  text-shadow: 0 0 14px var(--c-aura-color, rgba(201,162,39,0.6)), 0 0 3px var(--c-title);
+  text-shadow: 0 0 6px var(--c-aura-color, rgba(201,162,39,0.3)), 0 0 2px var(--c-title);
 }
 
 .sezione:hover .angolo-ornamento,
 .profilo-sezione:hover .angolo-ornamento {
-  opacity: 1;
-  filter: drop-shadow(0 0 6px var(--c-aura-color, rgba(201, 162, 39, 0.9))) drop-shadow(0 0 14px var(--c-aura-glow-pulse-1, rgba(201, 162, 39, 0.5)));
-  transform: scale(1.08);
+  opacity: 0.95;
+  filter: drop-shadow(0 0 3px var(--c-aura-color, rgba(201, 162, 39, 0.45)));
+  transform: scale(1.04);
 }
 
 /* Modalità Animazione: 1. Respiro Magico (Default) */
@@ -634,22 +632,22 @@ tbody tr:hover {
 :root:not([data-animazioni="statico"]):not([data-animazioni="hover"]):not([data-animazioni="brillante"]) .profilo-sezione,
 [data-animazioni="respiro"] .sezione,
 [data-animazioni="respiro"] .profilo-sezione {
-  animation: aura-respiro-magico 5.5s ease-in-out infinite alternate;
+  animation: aura-respiro-magico 6.5s ease-in-out infinite alternate;
 }
 
 :root:not([data-animazioni="statico"]):not([data-animazioni="hover"]):not([data-animazioni="brillante"]) .angolo-ornamento,
 [data-animazioni="respiro"] .angolo-ornamento {
-  animation: angoli-respiro-magico 5.5s ease-in-out infinite alternate;
+  animation: angoli-respiro-magico 6.5s ease-in-out infinite alternate;
 }
 
 /* Modalità Animazione: 2. Luminescenza Intensa */
 [data-animazioni="brillante"] .sezione,
 [data-animazioni="brillante"] .profilo-sezione {
-  animation: aura-brillante 3.2s ease-in-out infinite alternate !important;
+  animation: aura-brillante 4s ease-in-out infinite alternate !important;
 }
 
 [data-animazioni="brillante"] .angolo-ornamento {
-  animation: angoli-brillante 3.2s ease-in-out infinite alternate !important;
+  animation: angoli-brillante 4s ease-in-out infinite alternate !important;
 }
 
 /* Modalità Animazione: 3. Statica / Solo al tocco */
@@ -662,63 +660,58 @@ tbody tr:hover {
   animation: none !important;
 }
 
-/* Keyframes di Respiro & Pulsazione Luminosa */
+/* Keyframes di Respiro & Pulsazione Luminosa Morbida */
 @keyframes aura-respiro-magico {
   0% {
-    box-shadow: 0 5px 24px -4px var(--c-aura-glow-1, rgba(60,50,30,0.06)),
-                0 14px 44px -8px var(--c-aura-glow-2, rgba(60,50,30,0.04)),
-                0 1px 3px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 3px 12px -3px var(--c-aura-glow-1, rgba(60,50,30,0.03)),
+                0 1px 3px rgba(0, 0, 0, 0.25);
     border-color: var(--c-border-glow-min, var(--c-border));
   }
   100% {
-    box-shadow: 0 8px 34px -2px var(--c-aura-glow-pulse-1, rgba(157, 78, 221, 0.30)),
-                0 18px 54px -6px var(--c-aura-glow-pulse-2, rgba(114, 9, 183, 0.20)),
-                0 0 14px 1px var(--c-aura-glow-min, rgba(157, 78, 221, 0.15)),
-                0 1px 3px rgba(0, 0, 0, 0.40);
+    box-shadow: 0 4px 18px -2px var(--c-aura-glow-pulse-1, rgba(201, 162, 39, 0.10)),
+                0 0 6px 1px var(--c-aura-glow-min, rgba(201, 162, 39, 0.05)),
+                0 1px 3px rgba(0, 0, 0, 0.30);
     border-color: var(--c-border-glow-max, var(--c-gold));
   }
 }
 
 @keyframes angoli-respiro-magico {
   0% {
-    filter: drop-shadow(0 0 2px var(--c-aura-color, rgba(201, 162, 39, 0.35)));
-    opacity: 0.78;
+    filter: drop-shadow(0 0 1px var(--c-aura-color, rgba(201, 162, 39, 0.20)));
+    opacity: 0.68;
     transform: scale(1);
   }
   100% {
-    filter: drop-shadow(0 0 7px var(--c-aura-color, rgba(201, 162, 39, 0.85))) drop-shadow(0 0 12px var(--c-aura-glow-pulse-1, rgba(201, 162, 39, 0.4)));
-    opacity: 1;
-    transform: scale(1.06);
+    filter: drop-shadow(0 0 3.5px var(--c-aura-color, rgba(201, 162, 39, 0.45)));
+    opacity: 0.90;
+    transform: scale(1.03);
   }
 }
 
 @keyframes aura-brillante {
   0% {
-    box-shadow: 0 6px 28px -3px var(--c-aura-glow-pulse-1, rgba(157, 78, 221, 0.25)),
-                0 16px 48px -6px var(--c-aura-glow-pulse-2, rgba(114, 9, 183, 0.18)),
-                0 0 10px 1px var(--c-aura-glow-min, rgba(157, 78, 221, 0.12)),
-                0 1px 3px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 3px 14px -3px var(--c-aura-glow-pulse-1, rgba(201, 162, 39, 0.08)),
+                0 1px 3px rgba(0, 0, 0, 0.25);
     border-color: var(--c-border-glow-min, var(--c-border));
   }
   100% {
-    box-shadow: 0 10px 42px -2px var(--c-aura-glow-max, rgba(157, 78, 221, 0.45)),
-                0 22px 64px -4px var(--c-aura-glow-pulse-1, rgba(114, 9, 183, 0.32)),
-                0 0 22px 3px var(--c-aura-glow-pulse-1, rgba(157, 78, 221, 0.25)),
-                0 1px 4px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 5px 22px -2px var(--c-aura-glow-max, rgba(201, 162, 39, 0.16)),
+                0 0 8px 1px var(--c-aura-glow-pulse-1, rgba(201, 162, 39, 0.08)),
+                0 1px 3px rgba(0, 0, 0, 0.32);
     border-color: var(--c-border-glow-max, var(--c-gold));
   }
 }
 
 @keyframes angoli-brillante {
   0% {
-    filter: drop-shadow(0 0 4px var(--c-aura-color, rgba(201, 162, 39, 0.5)));
-    opacity: 0.85;
+    filter: drop-shadow(0 0 2px var(--c-aura-color, rgba(201, 162, 39, 0.30)));
+    opacity: 0.75;
     transform: scale(1);
   }
   100% {
-    filter: drop-shadow(0 0 9px var(--c-aura-color, rgba(201, 162, 39, 0.95))) drop-shadow(0 0 16px var(--c-aura-color, rgba(201, 162, 39, 0.6)));
-    opacity: 1;
-    transform: scale(1.10);
+    filter: drop-shadow(0 0 4.5px var(--c-aura-color, rgba(201, 162, 39, 0.55)));
+    opacity: 0.95;
+    transform: scale(1.05);
   }
 }
 
