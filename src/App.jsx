@@ -15395,6 +15395,12 @@ export default function App() {
                 const incInEccesso = maxIncantesimi != null && maxIncantesimi > 0 && nIncantiScelti > maxIncantesimi;
                 const incMancanti = maxIncantesimi != null && maxIncantesimi > 0 && nIncantiScelti < maxIncantesimi;
 
+                const conteggiNomi = {};
+                for (const s of (scheda.incantesimiLista || [])) {
+                  const nm = String(s.nome || '').trim().toLowerCase();
+                  if (nm) conteggiNomi[nm] = (conteggiNomi[nm] || 0) + 1;
+                }
+
                 const aggiungiInc = (nome, liv, manuale, bonus) => {
                   const d = dettagliIncantesimo(nome) || { tempo: manuale ? '1 Az.' : 'AZ', gittata: '', note: '' };
                   aggiorna({ incantesimiLista: [...scheda.incantesimiLista,
