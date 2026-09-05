@@ -14178,9 +14178,9 @@ export default function App() {
               })()}
 
               {/* Intestazione Combattimento & Filtri Armi / Incantesimi Offensivi */}
-              <div className="sottosezione-titolo" style={{ display: 'grid', gridTemplateColumns: 'minmax(28px, 1fr) auto minmax(28px, 1fr)', alignItems: 'center', columnGap: 6, marginTop: 14, marginBottom: 8 }}>
+              <div className="sottosezione-titolo" style={{ display: 'grid', gridTemplateColumns: 'minmax(28px, 1fr) auto minmax(28px, 1fr)', alignItems: 'center', columnGap: 6, marginTop: 18, marginBottom: 8 }}>
                 <div />
-                <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'center', justifySelf: 'center' }}>
+                <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'center', justifySelf: 'center', fontSize: 15 }}>
                   {t('combat.titolo')}
                 </h3>
                 <div style={{ justifySelf: 'end', display: 'inline-flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -14315,7 +14315,7 @@ export default function App() {
                         {cat !== 'Azione' && (
                           <div className="sottosezione-titolo" style={{ display: 'grid', gridTemplateColumns: 'minmax(28px, 1fr) auto minmax(28px, 1fr)', alignItems: 'center', columnGap: 6, marginTop: 18, marginBottom: 8 }}>
                             <div />
-                            <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'center', justifySelf: 'center' }}>
+                            <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'center', justifySelf: 'center', fontSize: 15 }}>
                               {cat === 'Bonus' ? t('combat.azioni_bonus') : t('combat.reazioni')}
                             </h3>
                             <div style={{ justifySelf: 'end', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
@@ -15035,7 +15035,6 @@ export default function App() {
               </div>
               <div>
                 {(() => {
-                const bannerStyle = { ...styles.panelTitle, fontSize: 15, marginTop: 18, marginBottom: 8 };
                 const q = filtroIncantesimo.trim().toLowerCase();
                 const filtriAttivi = Boolean(q || filtroLivelloInc || filtroScuolaInc || filtroClasseInc || soloRitualiInc || soloPreparatiInc || soloConcInc || filtroTempoInc);
                 const match = (s) => {
@@ -15439,27 +15438,35 @@ export default function App() {
                 }
                 return (
                   <>
-                    <h3 className="sottosezione-titolo" style={{ ...bannerStyle, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 6 }}>
-                      <span />
-                      <span>{t('spell.trucchetti')}</span>
-                      {maxTrucchetti != null ? (
-                        <span style={{ fontSize: 13, color: trucchettiPieno ? C.goldDark : C.inkDim, fontWeight: 'normal', display: 'flex', alignItems: 'center', justifySelf: 'end', textTransform: 'none', letterSpacing: 'normal' }}>
-                          {nTrucchetti} / <Editable value={maxTrucchetti} tipo="numero" width={32} title={lingua === 'en' ? 'Click to edit maximum (0 for auto)' : 'Click per modificare il massimo (0 per valore auto)'} onChange={(v) => aggiorna({ maxTrucchetti: Math.max(0, v) })} />
-                        </span>
-                      ) : <span />}
-                    </h3>
+                    <div className="sottosezione-titolo" style={{ display: 'grid', gridTemplateColumns: 'minmax(28px, 1fr) auto minmax(28px, 1fr)', alignItems: 'center', columnGap: 6, marginTop: 18, marginBottom: 8 }}>
+                      <div />
+                      <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'center', justifySelf: 'center', fontSize: 15 }}>
+                        {t('spell.trucchetti')}
+                      </h3>
+                      <div style={{ justifySelf: 'end', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        {maxTrucchetti != null ? (
+                          <span style={{ fontSize: 13, color: trucchettiPieno ? C.goldDark : C.inkDim, fontWeight: 'normal', display: 'inline-flex', alignItems: 'center', textTransform: 'none', letterSpacing: 'normal' }}>
+                            {nTrucchetti} / <Editable value={maxTrucchetti} tipo="numero" width={32} title={lingua === 'en' ? 'Click to edit maximum (0 for auto)' : 'Click per modificare il massimo (0 per valore auto)'} onChange={(v) => aggiorna({ maxTrucchetti: Math.max(0, v) })} />
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
                     {renderLivello(0)}
                     {maxLiv >= 1 && (
-                      <h3 className="sottosezione-titolo" style={{ ...bannerStyle, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 6 }}>
-                        <span />
-                        <span>{t('spell.incantesimi')}</span>
-                        {maxIncantesimi != null ? (
-                          <span style={{ fontSize: 13, color: (classePreparata ? preparatiPieni : incantesimiPieno) ? C.goldDark : C.inkDim, fontWeight: 'normal', display: 'flex', alignItems: 'center', justifySelf: 'end', textTransform: 'none', letterSpacing: 'normal' }}>
-                            ({classePreparata ? t('spell.preparati') : t('spell.conosciuti')}: {classePreparata ? nPreparati : nIncantesimi} / <Editable value={maxIncantesimi} tipo="numero" width={32} title={lingua === 'en' ? 'Click to edit maximum (0 for auto)' : 'Click per modificare il massimo (0 per valore auto)'} onChange={(v) => aggiorna({ maxIncantesimi: Math.max(0, v) })} />)
-                            {nBonus > 0 && <span style={{ color: C.goldDark, fontWeight: 700, marginLeft: 4 }}>✦ {nBonus}</span>}
-                          </span>
-                        ) : <span />}
-                      </h3>
+                      <div className="sottosezione-titolo" style={{ display: 'grid', gridTemplateColumns: 'minmax(28px, 1fr) auto minmax(28px, 1fr)', alignItems: 'center', columnGap: 6, marginTop: 18, marginBottom: 8 }}>
+                        <div />
+                        <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'center', justifySelf: 'center', fontSize: 15 }}>
+                          {t('spell.incantesimi')}
+                        </h3>
+                        <div style={{ justifySelf: 'end', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                          {maxIncantesimi != null ? (
+                            <span style={{ fontSize: 13, color: (classePreparata ? preparatiPieni : incantesimiPieno) ? C.goldDark : C.inkDim, fontWeight: 'normal', display: 'inline-flex', alignItems: 'center', textTransform: 'none', letterSpacing: 'normal' }}>
+                              ({classePreparata ? t('spell.preparati') : t('spell.conosciuti')}: {classePreparata ? nPreparati : nIncantesimi} / <Editable value={maxIncantesimi} tipo="numero" width={32} title={lingua === 'en' ? 'Click to edit maximum (0 for auto)' : 'Click per modificare il massimo (0 per valore auto)'} onChange={(v) => aggiorna({ maxIncantesimi: Math.max(0, v) })} />)
+                              {nBonus > 0 && <span style={{ color: C.goldDark, fontWeight: 700, marginLeft: 4 }}>✦ {nBonus}</span>}
+                            </span>
+                          ) : null}
+                        </div>
+                      </div>
                     )}
                     {livelliInc.map((liv) => renderLivello(liv))}
                   </>
