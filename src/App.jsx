@@ -2293,7 +2293,7 @@ function loadState() {
           s.attacchi = s.attacchi.map((a) => {
             if (!a || typeof a !== 'object') return a;
             let nome = a.nome;
-            if (nome === 'Bastone Incantato' || nome === 'Bastone ferrato incantato' || nome === 'Shillelagh' || nome === 'bastone incantato') {
+            if (nome === 'Bastone Incantato' || nome === 'Bastone ferrato incantato' || nome === 'Shillelagh' || nome === 'bastone incantato' || /^randello\s+incantato\s*\(/i.test(nome)) {
               nome = 'Randello Incantato';
             }
             let note = a.note ? a.note.replace(/bastone incantato/gi, 'Randello Incantato').replace(/\(shillelagh\)/gi, '').trim() : a.note;
@@ -14418,7 +14418,8 @@ export default function App() {
                     return att;
                   });
 
-                  const nomiSalvati = new Set(attacchiSalvati.map((a) => String(a.nome || '').replace(/^✨\s*/, '').trim().toLowerCase()));
+                  const normalizzaNomeAttacco = (str) => String(str || '').replace(/^✨\s*/, '').replace(/\s*\((shillelagh|bastone incantato)\)/gi, '').trim().toLowerCase();
+                  const nomiSalvati = new Set(attacchiSalvati.map((a) => normalizzaNomeAttacco(a.nome)));
 
                   const attacchiSpettro = (scheda.incantesimiLista || []).filter((s) => {
                     if (scheda.mostraIncantesimiAttacco === false || s.nascondiAttacco) return false;
@@ -14428,7 +14429,7 @@ export default function App() {
                     const isPreparato = s.livello === 0 || s.preparato || s.semprePreparato || s.bonus || !classePreparaIncantesimi(scheda.classe);
                     if (!isPreparato) return false;
 
-                    const cleanS = String(s.nome || '').replace(/^✨\s*/, '').trim().toLowerCase();
+                    const cleanS = normalizzaNomeAttacco(s.nome);
                     if (nomiSalvati.has(cleanS)) return false;
                     return classificaIncantesimoCombattimento(s).mostraInCombattimento;
                   }).map((s) => {

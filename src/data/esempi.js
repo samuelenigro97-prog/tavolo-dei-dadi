@@ -243,7 +243,7 @@ export const VAELION_JSON = {
   attacchi: [
     {
       id: "v-a0",
-      nome: "Randello Incantato (Shillelagh)",
+      nome: "Randello Incantato",
       caratteristica: "saggezza",
       competenza: true,
       danno: "1d8+5",
