@@ -7719,7 +7719,7 @@ export default function App() {
                   }}
                   title={t('import_export.tip')}
                 >
-                  <span>⇅</span> <span>{t('import_export.btn')}</span>
+                  <span>📂</span> <span>{t('import_export.btn')}</span>
                 </button>
                 <button
                   style={{ ...styles.button, width: '100%', minHeight: 38, gridColumn: 'span 2', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
@@ -10190,7 +10190,7 @@ export default function App() {
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
               <strong style={{ color: C.goldDark, fontSize: 13.5, display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span>📦</span> <span>{t('import_export.titolo')}</span>
+                <span>📂</span> <span>{t('import_export.titolo')}</span>
               </strong>
               <button style={styles.buttonMini} onClick={() => setMostraMenuEsporta(false)}>✕</button>
             </div>
@@ -11659,7 +11659,7 @@ export default function App() {
                           setMostraMenuEsporta((v) => !v);
                         }}
                       >
-                        ⇅
+                        📂
                       </button>
                       <button
                         style={{ ...btnAzione, color: C.goldDark, borderColor: C.goldDark }}
@@ -18861,7 +18861,7 @@ export default function App() {
                     setMostraMenuHubMobile(false);
                   }}
                 >
-                  <span style={{ fontSize: 16 }}>⇅</span>
+                  <span style={{ fontSize: 16 }}>📂</span>
                   <span>{t('import_export.btn')}</span>
                 </button>
 
