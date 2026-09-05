@@ -3928,7 +3928,19 @@ export default function App() {
     if (!sezioneId) return;
     setMostraNotifiche(false);
     setMostraControlliScheda(false);
-    aggiorna({ sezioniAperte: { ...(scheda.sezioniAperte || {}), [sezioneId]: true } });
+    const patch = { sezioniAperte: { ...(scheda?.sezioniAperte || {}), [sezioneId]: true } };
+    if (sezioneId === 'incantesimi') {
+      patch.livelliIncChiusi = {};
+      setFiltroIncantesimo('');
+      setFiltroLivelloInc('');
+      setFiltroScuolaInc('');
+      setFiltroClasseInc(scheda?.classe || '');
+      setSoloPreparatiInc(false);
+      setSoloConcInc(false);
+      setSoloRitualiInc(false);
+      setFiltroTempoInc('');
+    }
+    aggiorna(patch);
     setTimeout(() => {
       const el = document.getElementById(`sezione-${sezioneId}`) || document.getElementById(sezioneId) || document.querySelector(`.sezione-${sezioneId}`);
       if (el) {
@@ -3936,12 +3948,12 @@ export default function App() {
         const origShadow = el.style.boxShadow;
         const origBorder = el.style.borderColor;
         el.style.transition = 'box-shadow 0.3s ease, border-color 0.3s ease';
-        el.style.boxShadow = '0 0 20px rgba(200, 140, 20, 0.7)';
+        el.style.boxShadow = '0 0 24px rgba(200, 140, 20, 0.85)';
         el.style.borderColor = 'var(--c-gold-dark, #c88c14)';
         setTimeout(() => {
           el.style.boxShadow = origShadow;
           el.style.borderColor = origBorder;
-        }, 1800);
+        }, 2200);
       }
     }, 100);
   }
@@ -15005,6 +15017,117 @@ export default function App() {
                 })()}
               </div>
 
+              {/* Banner Guida Allineamento Magia (Mancanti vs In Eccesso) */}
+              {(() => {
+                const maxSpellLiv = Math.max(0, ...(incantesimiVisualizzati || []).map((s) => s.livello || 0));
+                const maxSlotLiv = Math.max(0, ...Object.entries(scheda?.slotIncantesimo || {}).filter(([_, v]) => Number(v?.totale) > 0).map(([k]) => parseInt(k, 10)));
+                const nIncantiScelti = classePreparata ? nPreparati : nIncantesimi;
+                const trucInEccesso = maxTrucchetti != null && maxTrucchetti > 0 && nTrucchetti > maxTrucchetti;
+                const trucMancanti = maxTrucchetti != null && maxTrucchetti > 0 && nTrucchetti < maxTrucchetti;
+                const incInEccesso = maxIncantesimi != null && maxIncantesimi > 0 && nIncantiScelti > maxIncantesimi;
+                const incMancanti = maxIncantesimi != null && maxIncantesimi > 0 && nIncantiScelti < maxIncantesimi;
+
+                const conteggiNomi = {};
+                for (const s of incLista) {
+                  const nm = String(s.nome || '').trim().toLowerCase();
+                  if (nm) conteggiNomi[nm] = (conteggiNomi[nm] || 0) + 1;
+                }
+                const incDuplicati = Object.keys(conteggiNomi).filter((nm) => conteggiNomi[nm] > 1);
+                const incTroppoAlti = incLista.filter((s) => s.livello > maxSlotLiv && maxSlotLiv > 0 && !s.bonus && !s.catalogo);
+
+                const haProblemi = trucInEccesso || trucMancanti || incInEccesso || incMancanti || incDuplicati.length > 0 || incTroppoAlti.length > 0;
+                if (!haProblemi) return null;
+
+                const haErroriGravi = trucInEccesso || incInEccesso || incDuplicati.length > 0 || incTroppoAlti.length > 0;
+
+                return (
+                  <div
+                    style={{
+                      marginTop: 10,
+                      marginBottom: 10,
+                      padding: '12px 14px',
+                      borderRadius: 8,
+                      border: `2px solid ${haErroriGravi ? '#ef4444' : '#2e9d4d'}`,
+                      background: haErroriGravi ? 'rgba(239, 68, 68, 0.09)' : 'rgba(46, 157, 77, 0.09)',
+                      boxShadow: haErroriGravi ? '0 0 14px rgba(239, 68, 68, 0.25)' : '0 0 14px rgba(46, 157, 77, 0.25)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 8,
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: haErroriGravi ? '#ef4444' : '#2e9d4d', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        {haErroriGravi ? '🔴' : '🟢'}
+                        {lingua === 'en' ? 'Spell Sheet Alignment Guide' : 'Guida Allineamento Incantesimi & Trucchetti'}
+                      </span>
+                      {classePreparata && incInEccesso && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const diff = nIncantiScelti - maxIncantesimi;
+                            let rimanenti = diff;
+                            const nuovaLista = [...(scheda.incantesimiLista || [])].reverse().map((x) => {
+                              if (rimanenti > 0 && x.livello >= 1 && !x.bonus && x.preparato !== false) {
+                                rimanenti--;
+                                return { ...x, preparato: false };
+                              }
+                              return x;
+                            }).reverse();
+                            aggiorna({ incantesimiLista: nuovaLista });
+                          }}
+                          style={{
+                            ...styles.buttonMini,
+                            fontSize: 11,
+                            padding: '3px 8px',
+                            background: '#ef4444',
+                            color: '#fff',
+                            borderColor: '#ef4444',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                          }}
+                          title={lingua === 'en' ? 'Automatically unprepare excess spells' : 'Deprepara automaticamente gli incantesimi in eccesso'}
+                        >
+                          ⚡ {lingua === 'en' ? `Auto-unprepare ${nIncantiScelti - maxIncantesimi} excess` : `Deprepara ${nIncantiScelti - maxIncantesimi} in eccesso`}
+                        </button>
+                      )}
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12, lineHeight: 1.45, color: C.ink }}>
+                      {trucInEccesso && (
+                        <div>
+                          🔴 <strong>{t('spell.trucchetti')} ({nTrucchetti}/{maxTrucchetti})</strong>: hai <strong>+{nTrucchetti - maxTrucchetti} trucchett{nTrucchetti - maxTrucchetti > 1 ? 'i' : 'o'} in più</strong> rispetto al limite. Clicca su <strong style={{ color: '#ef4444' }}>🗑️ Rimuovi</strong> su quelli evidenziati in rosso.
+                        </div>
+                      )}
+                      {trucMancanti && (
+                        <div>
+                          🟢 <strong>{t('spell.trucchetti')} ({nTrucchetti}/{maxTrucchetti})</strong>: mancano <strong>{maxTrucchetti - nTrucchetti} trucchett{maxTrucchetti - nTrucchetti > 1 ? 'i' : 'o'} da scegliere</strong>. Seleziona dai menu a tendina verdi <strong style={{ color: '#2e9d4d' }}>✨ ➕ Scegli mancanti</strong> nella sezione Trucchetti qui sotto.
+                        </div>
+                      )}
+                      {incInEccesso && (
+                        <div>
+                          🔴 <strong>{t('spell.incantesimi')} ({nIncantiScelti}/{maxIncantesimi})</strong>: hai <strong>+{nIncantiScelti - maxIncantesimi} incantesim{nIncantiScelti - maxIncantesimi > 1 ? 'i' : 'o'} {classePreparata ? 'preparati' : 'conosciuti'} in eccesso</strong>. {classePreparata ? 'Deprepara (☆ Non prep.) o elimina (🗑️ Rimuovi) quelli evidenziati in rosso.' : 'Elimina (🗑️ Rimuovi) quelli evidenziati in rosso.'}
+                        </div>
+                      )}
+                      {incMancanti && (
+                        <div>
+                          🟢 <strong>{t('spell.incantesimi')} ({nIncantiScelti}/{maxIncantesimi})</strong>: puoi {classePreparata ? 'preparare o scegliere' : 'scegliere'} altri <strong>{maxIncantesimi - nIncantiScelti} incantesim{maxIncantesimi - nIncantiScelti > 1 ? 'i' : 'o'}</strong>. Usa i selettori verdi <strong style={{ color: '#2e9d4d' }}>✨ ➕ Scegli mancanti</strong> sotto ciascun livello {classePreparata ? 'o clicca ✨ Prepara su quelli nel libro.' : '.'}
+                        </div>
+                      )}
+                      {incDuplicati.length > 0 && (
+                        <div>
+                          🔴 <strong>{lingua === 'en' ? 'Duplicate Spells' : 'Incantesimi Duplicati'}</strong>: {incDuplicati.map((d) => `"${d}"`).join(', ')} {incDuplicati.length > 1 ? 'sono presenti' : 'è presente'} più volte nella lista. Rimuovi le copie con <strong style={{ color: '#ef4444' }}>🗑️ Rimuovi</strong>.
+                        </div>
+                      )}
+                      {incTroppoAlti.length > 0 && (
+                        <div>
+                          🔴 <strong>{lingua === 'en' ? 'Spells without slots' : 'Incantesimi di livello superiore agli slot'}</strong>: {incTroppoAlti.map((d) => `"${d.nome}" (${d.livello}°)`).join(', ')} {incTroppoAlti.length > 1 ? 'richiedono slot non ancora disponibili' : 'richiede slot non ancora disponibili'} (max slot attuale: {maxSlotLiv}° liv).
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* Ricerca + filtri incantesimi */}
               <div style={{ marginTop: 14, marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <div className="spell-filters" style={{ display: 'grid', gridTemplateColumns: 'minmax(150px, 2fr) repeat(3, minmax(105px, 1fr))', gap: 6, alignItems: 'center' }}>
@@ -15243,36 +15366,48 @@ export default function App() {
                   const suggeriti = incantesimiClasseLivello(scheda.classe, liv, scheda.sottoclasse, versione);
                   const gia = new Set(scheda.incantesimiLista.filter((s) => s.livello === liv).map((s) => (s.nome || '').toLowerCase()));
                   return (
-                    <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
-                      <select
-                        className={`add-spell ${isLivMancante ? 'incantesimo-mancante-controllo' : ''}`}
-                        value=""
-                        style={{
-                          ...styles.buttonMini,
-                          fontSize: 12,
-                          padding: '5px 12px',
-                          fontWeight: isLivMancante ? 700 : 600,
-                          cursor: 'pointer',
-                          maxWidth: '100%',
-                          borderColor: isLivMancante ? '#2e9d4d' : undefined,
-                          background: isLivMancante ? 'rgba(46,157,77,0.14)' : undefined,
-                          color: isLivMancante ? '#2e9d4d' : undefined,
-                          boxShadow: isLivMancante ? '0 0 10px rgba(46,157,77,0.35)' : undefined,
-                        }}
-                        onChange={(e) => { const v = e.target.value; if (!v) return; aggiungiInc(v === '__manuale__' ? 'Nuovo incantesimo' : v, liv, v === '__manuale__', addBonusIncantesimo); e.target.value = ''; }}
-                      >
-                        <option value="">
-                          {isLivMancante
-                            ? `✨ ➕ ${t('spell.aggiungi')} (${numMancanti} ${lingua === 'en' ? 'missing' : 'da scegliere'})…`
-                            : `➕ ${t('spell.aggiungi')}…`}
-                        </option>
-                        <option value="__manuale__">{t('spell.scrivi_mano')}</option>
-                        {suggeriti.length > 0 && (
-                          <optgroup label={t('spell.incantesimi_da', { classe: scheda.classe })}>
-                            {[...suggeriti].sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n} disabled={gia.has(n.toLowerCase())}>{gia.has(n.toLowerCase()) ? `✓ ${n}` : n}</option>)}
-                          </optgroup>
-                        )}
-                      </select>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 }}>
+                      {isLivMancante && numMancanti > 0 && (
+                        <div style={{ fontSize: 11, fontWeight: 700, color: '#2e9d4d', display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <span>🟢</span>
+                          <span>
+                            {lingua === 'en'
+                              ? `${numMancanti} ${liv === 0 ? 'cantrip' : 'spell'}${numMancanti > 1 ? 's' : ''} to choose: select from class suggestions below`
+                              : `${numMancanti} ${liv === 0 ? 'trucchetto' : 'incantesimo'}${numMancanti > 1 ? (liv === 0 ? 'i' : 'i') : ''} da scegliere: seleziona dai suggeriti qui sotto`}
+                          </span>
+                        </div>
+                      )}
+                      <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                        <select
+                          className={`add-spell ${isLivMancante ? 'incantesimo-mancante-controllo' : ''}`}
+                          value=""
+                          style={{
+                            ...styles.buttonMini,
+                            fontSize: 12,
+                            padding: isLivMancante ? '6px 14px' : '5px 12px',
+                            fontWeight: isLivMancante ? 700 : 600,
+                            cursor: 'pointer',
+                            maxWidth: '100%',
+                            borderColor: isLivMancante ? '#2e9d4d' : undefined,
+                            background: isLivMancante ? 'rgba(46,157,77,0.18)' : undefined,
+                            color: isLivMancante ? '#2e9d4d' : undefined,
+                            boxShadow: isLivMancante ? '0 0 12px rgba(46,157,77,0.45)' : undefined,
+                          }}
+                          onChange={(e) => { const v = e.target.value; if (!v) return; aggiungiInc(v === '__manuale__' ? 'Nuovo incantesimo' : v, liv, v === '__manuale__', addBonusIncantesimo); e.target.value = ''; }}
+                        >
+                          <option value="">
+                            {isLivMancante
+                              ? `✨ ➕ ${t('spell.aggiungi')} (${numMancanti} ${lingua === 'en' ? 'missing' : 'da scegliere'})…`
+                              : `➕ ${t('spell.aggiungi')}…`}
+                          </option>
+                          <option value="__manuale__">{t('spell.scrivi_mano')}</option>
+                          {suggeriti.length > 0 && (
+                            <optgroup label={t('spell.incantesimi_da', { classe: scheda.classe })}>
+                              {[...suggeriti].sort((a, b) => a.localeCompare(b, lingua)).map((n) => <option key={n} value={n} disabled={gia.has(n.toLowerCase())}>{gia.has(n.toLowerCase()) ? `✓ ${n} (${lingua === 'en' ? 'already added' : 'già presente'})` : `✨ ${n}`}</option>)}
+                            </optgroup>
+                          )}
+                        </select>
+                      </div>
                     </div>
                   );
                 };
@@ -15314,6 +15449,16 @@ export default function App() {
                           <span style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: C.ink }}>
                             {liv === 0 ? t('spell.trucchetti') : t('spell.n_livello', { n: liv })}
                           </span>
+                          {isEccessoLiv && (
+                            <span style={{ fontSize: 10, fontWeight: 700, color: '#fff', background: '#ef4444', border: '1px solid #ef4444', borderRadius: 6, padding: '1px 6px' }}>
+                              🔴 {lingua === 'en' ? 'EXCESS' : 'IN ECCESSO'}
+                            </span>
+                          )}
+                          {isMancanteLiv && (
+                            <span style={{ fontSize: 10, fontWeight: 700, color: '#2e9d4d', background: 'rgba(46,157,77,0.15)', border: '1px solid #2e9d4d', borderRadius: 6, padding: '1px 6px' }}>
+                              🟢 {lingua === 'en' ? 'SLOTS TO CHOOSE' : 'SCELTE DISPONIBILI'}
+                            </span>
+                          )}
                           {liv >= 1 && slot && (
                             <span style={{ fontSize: 11, color: C.inkDim, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 4, padding: '1px 5px' }}>
                               Slot: <strong style={{ color: (slot.totale - (slot.spesi || 0)) > 0 ? C.goldDark : C.red }}>{Math.max(0, slot.totale - (slot.spesi || 0))}</strong>/<Editable value={slot.totale} tipo="numero" width={18} onChange={(v) => aggiornaSlot({ totale: Math.max(0, parseInt(v, 10) || 0) })} />
@@ -15385,7 +15530,10 @@ export default function App() {
                             const tipoDanno = s.tipoDanno || d?.tipoDanno || '';
                             const note = s.note || '';
 
-                            const isRowInEccesso = isEccessoLiv && !s.bonus && !s.catalogo && (liv === 0 || !classePreparata || s.preparato !== false);
+                            const nomeNorm = String(s.nome || '').trim().toLowerCase();
+                            const isDuplicato = !s.catalogo && (conteggiNomi[nomeNorm] || 0) > 1;
+                            const isTroppoAlto = !s.catalogo && !s.bonus && s.livello > maxSlotLiv && maxSlotLiv > 0;
+                            const isRowInEccesso = (isEccessoLiv && !s.bonus && !s.catalogo && (liv === 0 || !classePreparata || s.preparato !== false)) || isDuplicato || isTroppoAlto;
                             const isRowCatalogoMancante = isMancanteLiv && s.catalogo;
                             const isRowUnpreparedMancante = isMancanteLiv && classePreparata && liv >= 1 && s.preparato === false;
 
@@ -15419,29 +15567,37 @@ export default function App() {
                             return (
                               <div
                                 key={s.id}
-                                className={isRowInEccesso ? 'incantesimo-in-eccesso' : ''}
+                                className={
+                                  isRowInEccesso
+                                    ? 'incantesimo-in-eccesso'
+                                    : (isRowCatalogoMancante || isRowUnpreparedMancante
+                                      ? 'incantesimo-mancante-row'
+                                      : '')
+                                }
                                 style={{
                                   border: isRowInEccesso
-                                    ? '1.5px solid #ef4444'
+                                    ? '2px solid #ef4444'
                                     : (isRowCatalogoMancante
-                                      ? '1.5px solid #2e9d4d'
+                                      ? '2px solid #2e9d4d'
                                       : (isRowUnpreparedMancante
-                                        ? '1.5px dashed rgba(46,157,77,0.6)'
+                                        ? '1.5px dashed #2e9d4d'
                                         : `1px solid ${C.border}`)),
                                   borderRadius: 6,
                                   padding: '4px 8px',
                                   background: isRowInEccesso
-                                    ? 'rgba(239,68,68,0.08)'
+                                    ? 'rgba(239,68,68,0.1)'
                                     : (isRowCatalogoMancante
-                                      ? 'rgba(46,157,77,0.08)'
+                                      ? 'rgba(46,157,77,0.1)'
                                       : (isRowUnpreparedMancante
-                                        ? 'rgba(46,157,77,0.04)'
+                                        ? 'rgba(46,157,77,0.06)'
                                         : C.panelLight)),
                                   boxShadow: isRowInEccesso
-                                    ? '0 0 8px rgba(239,68,68,0.25)'
+                                    ? '0 0 10px rgba(239,68,68,0.3)'
                                     : (isRowCatalogoMancante
-                                      ? '0 0 8px rgba(46,157,77,0.25)'
-                                      : 'none'),
+                                      ? '0 0 10px rgba(46,157,77,0.3)'
+                                      : (isRowUnpreparedMancante
+                                        ? '0 0 8px rgba(46,157,77,0.2)'
+                                        : 'none')),
                                   opacity: (classePreparata && s.livello >= 1 && s.preparato === false && !isRowUnpreparedMancante) ? 0.5 : 1,
                                   transition: 'all 0.2s ease',
                                 }}
@@ -15454,16 +15610,58 @@ export default function App() {
                                   >
                                     {s.nome || t('menu.senza_nome')}
                                   </button>
-                                  {isRowInEccesso && (
+                                  {isDuplicato && (
                                     <span
                                       style={{
                                         fontSize: 10,
                                         fontWeight: 700,
-                                        color: '#ef4444',
+                                        color: '#fff',
                                         border: '1px solid #ef4444',
-                                        background: 'rgba(239,68,68,0.12)',
+                                        background: '#ef4444',
                                         borderRadius: 6,
-                                        padding: '0 5px',
+                                        padding: '0 6px',
+                                        whiteSpace: 'nowrap',
+                                        flexShrink: 0,
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: 2,
+                                      }}
+                                      title={lingua === 'en' ? 'Duplicate spell: remove one copy' : 'Incantesimo duplicato: rimuovine una copia'}
+                                    >
+                                      🔴 {lingua === 'en' ? 'Duplicate' : 'Duplicato'}
+                                    </span>
+                                  )}
+                                  {isTroppoAlto && (
+                                    <span
+                                      style={{
+                                        fontSize: 10,
+                                        fontWeight: 700,
+                                        color: '#fff',
+                                        border: '1px solid #ef4444',
+                                        background: '#ef4444',
+                                        borderRadius: 6,
+                                        padding: '0 6px',
+                                        whiteSpace: 'nowrap',
+                                        flexShrink: 0,
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: 2,
+                                      }}
+                                      title={lingua === 'en' ? `Level too high: you only have slots up to level ${maxSlotLiv}` : `Livello troppo alto: disponi di slot solo fino al ${maxSlotLiv}° livello`}
+                                    >
+                                      🔴 {lingua === 'en' ? 'No slot' : 'Senza slot'}
+                                    </span>
+                                  )}
+                                  {isRowInEccesso && !isDuplicato && !isTroppoAlto && (
+                                    <span
+                                      style={{
+                                        fontSize: 10,
+                                        fontWeight: 700,
+                                        color: '#fff',
+                                        border: '1px solid #ef4444',
+                                        background: '#ef4444',
+                                        borderRadius: 6,
+                                        padding: '0 6px',
                                         whiteSpace: 'nowrap',
                                         flexShrink: 0,
                                         display: 'inline-flex',
@@ -15472,7 +15670,28 @@ export default function App() {
                                       }}
                                       title={classePreparata && s.livello >= 1 ? (lingua === 'en' ? 'Excess spell: unprepare or delete' : 'Incantesimo in eccesso: deprepara o elimina') : (lingua === 'en' ? 'Excess spell: remove one' : 'Incantesimo in eccesso: rimuovine uno')}
                                     >
-                                      ⚠️ {lingua === 'en' ? 'In excess' : 'In eccesso'}
+                                      🔴 {lingua === 'en' ? 'In excess' : 'In eccesso'}
+                                    </span>
+                                  )}
+                                  {isRowUnpreparedMancante && (
+                                    <span
+                                      style={{
+                                        fontSize: 10,
+                                        fontWeight: 700,
+                                        color: '#2e9d4d',
+                                        border: '1px solid #2e9d4d',
+                                        background: 'rgba(46,157,77,0.14)',
+                                        borderRadius: 6,
+                                        padding: '0 6px',
+                                        whiteSpace: 'nowrap',
+                                        flexShrink: 0,
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: 2,
+                                      }}
+                                      title={lingua === 'en' ? 'Available to prepare' : 'Disponibile da preparare'}
+                                    >
+                                      🟢 {lingua === 'en' ? 'To prepare' : 'Da preparare'}
                                     </span>
                                   )}
                                   {scuola && (

@@ -874,15 +874,20 @@ export function controlliScheda(scheda) {
 
   // --- Verifica Incantesimi Preparati / Conosciuti ---
   if (scheda.classe && Array.isArray(scheda.incantesimiLista)) {
-    const maxInc = incantesimiMaxAuto(scheda, scheda.versione || '2024');
-    const nIncanti = scheda.incantesimiLista.filter((s) => s.livello > 0 && !s.bonus).length;
-    if (maxInc != null && nIncanti > maxInc) {
+    const maxInc = (Number(scheda.maxIncantesimi) > 0)
+      ? Number(scheda.maxIncantesimi)
+      : incantesimiMaxAuto(scheda, scheda.versione || '2024');
+    const isPrepClass = classePreparaIncantesimi(scheda.classe);
+    const nIncanti = isPrepClass
+      ? scheda.incantesimiLista.filter((s) => s.livello > 0 && !s.bonus && s.preparato !== false).length
+      : scheda.incantesimiLista.filter((s) => s.livello > 0 && !s.bonus).length;
+    if (maxInc != null && maxInc > 0 && nIncanti > maxInc) {
       risultati.push({
         id: 'budget-incantesimi',
         tipo: 'vai_a_sezione',
         sezione: 'incantesimi',
         gravita: 'da_controllare',
-        testo: `Incantesimi: hai ${nIncanti} incantesimi preparati/conosciuti (1° liv+), ma le regole per ${scheda.classe} al livello ${scheda.livello || 1} ne prevedono ${maxInc}.`,
+        testo: `Incantesimi: hai ${nIncanti} incantesimi ${isPrepClass ? 'preparati' : 'conosciuti'} (1° liv+), ma le regole per ${scheda.classe} al livello ${scheda.livello || 1} ne prevedono ${maxInc}.`,
         correggibile: true,
       });
     }

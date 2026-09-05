@@ -2079,27 +2079,33 @@ tbody tr:hover {
 
 /* Feedback visivo Incantesimi: Mancanti (Verde) / In Eccesso (Rosso) */
 .incantesimo-in-eccesso {
-  border: 1.5px solid #ef4444 !important;
-  background: rgba(239, 68, 68, 0.09) !important;
-  box-shadow: 0 0 8px rgba(239, 68, 68, 0.25) !important;
+  border: 2px solid #ef4444 !important;
+  background: rgba(239, 68, 68, 0.12) !important;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.35) !important;
   animation: pulsazione-rossa 2s ease-in-out infinite;
 }
 .incantesimo-mancante-controllo {
-  border: 1.5px solid #2e9d4d !important;
-  background: rgba(46, 157, 77, 0.12) !important;
-  box-shadow: 0 0 8px rgba(46, 157, 77, 0.3) !important;
+  border: 2px solid #2e9d4d !important;
+  background: rgba(46, 157, 77, 0.16) !important;
+  box-shadow: 0 0 10px rgba(46, 157, 77, 0.35) !important;
   animation: pulsazione-verde 2s ease-in-out infinite;
 }
+.incantesimo-mancante-row {
+  border: 1.5px solid #2e9d4d !important;
+  background: rgba(46, 157, 77, 0.08) !important;
+  box-shadow: 0 0 8px rgba(46, 157, 77, 0.25) !important;
+  animation: pulsazione-verde 2.5s ease-in-out infinite;
+}
 @keyframes pulsazione-verde {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(46, 157, 77, 0.4); border-color: #2e9d4d; }
-  50% { box-shadow: 0 0 0 4px rgba(46, 157, 77, 0.12); border-color: #3bb85d; }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(46, 157, 77, 0.5); border-color: #2e9d4d; }
+  50% { box-shadow: 0 0 0 6px rgba(46, 157, 77, 0.15); border-color: #3bb85d; }
 }
 @keyframes pulsazione-rossa {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); border-color: #ef4444; }
-  50% { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12); border-color: #f87171; }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); border-color: #ef4444; }
+  50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.15); border-color: #f87171; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .incantesimo-in-eccesso, .incantesimo-mancante-controllo { animation: none; }
+  .incantesimo-in-eccesso, .incantesimo-mancante-controllo, .incantesimo-mancante-row { animation: none; }
 }
 
 /* ------------------------------------------------------------------ */
