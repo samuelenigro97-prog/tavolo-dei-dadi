@@ -10310,17 +10310,19 @@ export default function App() {
               </div>
             </button>
 
-            <div style={{ borderTop: `1px dashed ${C.border}`, margin: '2px 0' }} />
-
             <button
-              style={{ ...styles.buttonMini, fontSize: 11, padding: '5px 8px', textAlign: 'left', color: C.goldDark }}
+              style={{ ...styles.button, fontSize: 12, padding: '7px 10px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8 }}
               onClick={() => {
                 esportaBackupCompleto();
                 setMostraMenuEsporta(false);
               }}
               title={t('esporta.backup_tutti_tip')}
             >
-              {t('esporta.backup_tutti')}
+              <span style={{ fontSize: 16 }}>🗄️</span>
+              <div>
+                <strong style={{ display: 'block' }}>{t('esporta.backup_tutti')}</strong>
+                <span style={{ fontSize: 10, color: C.inkDim, fontWeight: 'normal' }}>{t('esporta.backup_tutti_sub')}</span>
+              </div>
             </button>
           </div>
         </div>
