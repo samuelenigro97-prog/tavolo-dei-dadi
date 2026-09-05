@@ -14352,7 +14352,40 @@ export default function App() {
                     </div>
                   ) : null;
                   return [avvisoFocus, ...['Azione', 'Bonus', 'Reazione'].map((cat) => {
-                    const arr = listaAttacchiCompleta.filter((a) => (a.categoria || 'Azione') === cat);
+                    const arr = (() => {
+                      if (cat === 'Reazione') {
+                        const reazDisponibili = trovaReazioniDisponibili(scheda);
+                        const salvatiReaz = attacchiSalvati.filter((a) => (a.categoria || 'Azione') === 'Reazione');
+                        const nomiSalvati = new Set(salvatiReaz.map((a) => String(a.nome || '').replace(/^✨\s*/, '').trim().toLowerCase()));
+
+                        const autoReaz = reazDisponibili
+                          .filter((r) => !nomiSalvati.has(String(r.nome || '').replace(/^✨\s*/, '').trim().toLowerCase()))
+                          .map((r) => ({
+                            id: r.id || `reaz-auto-${r.tipo}-${String(r.nome || '').toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
+                            nome: r.nome,
+                            categoria: 'Reazione',
+                            tipo: r.tipo,
+                            isSpell: r.tipo === 'incantesimo' || r.isSpell,
+                            idIncantesimo: r.idIncantesimo,
+                            isTS: r.isTS,
+                            cd: r.cd,
+                            bonus: r.bonus !== undefined ? r.bonus : 0,
+                            danno: r.danno || '',
+                            tipoDanno: r.tipoDanno || '',
+                            innescoIt: r.innescoIt,
+                            innescoEn: r.innescoEn,
+                            effettoIt: r.effettoIt,
+                            effettoEn: r.effettoEn,
+                            note: r.note || (lingua === 'en' ? (r.innescoEn || r.effettoEn) : (r.innescoIt || r.effettoIt)) || '',
+                            hasReach: r.hasReach,
+                            isAuto: true,
+                          }));
+
+                        return [...salvatiReaz, ...autoReaz];
+                      }
+                      return listaAttacchiCompleta.filter((a) => (a.categoria || 'Azione') === cat);
+                    })();
+
                     if (arr.length === 0 && cat !== 'Azione' && cat !== 'Reazione') return null;
                     return (
                       <div key={cat} style={{ marginBottom: 16 }}>
@@ -14436,12 +14469,34 @@ export default function App() {
                           <tbody>
                             {arr.map((a) => {
                               const aggiornaAttacco = (patch) => {
+                                if (a.isAuto && !a.idIncantesimo) {
+                                  const nuovoAtt = {
+                                    id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
+                                    nome: a.nome,
+                                    categoria: 'Reazione',
+                                    bonus: typeof a.bonus === 'number' ? a.bonus : 0,
+                                    danno: a.danno || '',
+                                    tipoDanno: a.tipoDanno || '',
+                                    note: a.note || '',
+                                    ...patch,
+                                  };
+                                  aggiorna({
+                                    attacchi: [...(scheda.attacchi || []), nuovoAtt],
+                                  });
+                                  return;
+                                }
                                 if (a.isSpell) {
                                   const cleanPatch = { ...patch };
                                   if (cleanPatch.nome !== undefined) cleanPatch.nome = cleanPatch.nome.replace(/^✨\s*/, '');
-                                  aggiorna({
-                                    incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === a.idIncantesimo ? { ...x, ...cleanPatch } : x)),
-                                  });
+                                  if (a.idIncantesimo) {
+                                    aggiorna({
+                                      incantesimiLista: (scheda.incantesimiLista || []).map((x) => (x.id === a.idIncantesimo ? { ...x, ...cleanPatch } : x)),
+                                    });
+                                  } else {
+                                    aggiorna({
+                                      attacchi: (scheda.attacchi || []).map((x) => (x.id === a.id ? { ...x, ...patch } : x)),
+                                    });
+                                  }
                                 } else {
                                   const inv = scheda.inventario || [];
                                   let newInv = inv;
@@ -14459,7 +14514,7 @@ export default function App() {
                                     }
                                   }
                                   aggiorna({
-                                    attacchi: scheda.attacchi.map((x) => (x.id === a.id ? { ...x, ...patch } : x)),
+                                    attacchi: (scheda.attacchi || []).map((x) => (x.id === a.id ? { ...x, ...patch } : x)),
                                     inventario: newInv,
                                   });
                                 }
@@ -14495,38 +14550,42 @@ export default function App() {
                               const infoMunizioni = !a.isSpell ? analizzaMunizioniArma(a, scheda.inventario, armaDb) : { usaMunizioni: false };
                               const spellInLista = (scheda.incantesimiLista || []).find((x) => x.id === a.idIncantesimo || (x.nome && x.nome.toLowerCase() === cleanNome.toLowerCase()));
                               const isTrucchetto = (spellInLista && spellInLista.livello === 0) || (spSpell && spSpell.livello === 0) || a.livello === 0;
-                              const iconaSpell = isTrucchetto ? '✨' : '🪄';
+                              const iconaReazione = a.isSpell ? (isTrucchetto ? '✨' : '🪄')
+                                : (a.tipo === 'tattica' || a.tipo === 'attacco') ? '⚔️'
+                                : a.tipo === 'stile' ? '🛡️'
+                                : a.tipo === 'talento' ? '⭐'
+                                : a.tipo === 'manovra' ? '🎯'
+                                : a.tipo === 'specie' ? '🧬'
+                                : '⚡';
+
+                              const apriInfoReazione = () => {
+                                const tCond = a.innescoIt ? `🎯 **${lingua === 'en' ? 'Trigger' : 'Innesco'}**: ${lingua === 'en' ? (a.innescoEn || a.innescoIt) : a.innescoIt}\n\n` : '';
+                                const tEff = a.effettoIt ? `🛡️ **${lingua === 'en' ? 'Effect' : 'Effetto'}**: ${lingua === 'en' ? (a.effettoEn || a.effettoIt) : a.effettoIt}` : '';
+                                setInfo({
+                                  titolo: `${iconaReazione} ${cleanNome}`,
+                                  testo: (tCond + tEff) || testoAttacco || spiegazioneEffetto || (lingua === 'en' ? 'No description available.' : 'Nessuna descrizione disponibile.')
+                                });
+                              };
+
                               return (
                                 <tr key={a.id} className="attacchi-riga" title={titoloRiga}>
                                   <td style={styles.td} className="attacchi-nome">
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, width: '100%' }}>
-                                      {a.isSpell ? (
+                                      {a.isSpell || cat === 'Reazione' ? (
                                         <button
                                           type="button"
                                           style={{ background: 'transparent', border: 'none', padding: 0, fontSize: 16, cursor: 'help', display: 'inline-block', width: 22, textAlign: 'center' }}
-                                          title={titoloRiga || (isTrucchetto ? (lingua === 'en' ? 'Cantrip (At-will)' : 'Trucchetto a volontà') : (lingua === 'en' ? 'Spell (Requires slot)' : 'Incantesimo con slot'))}
-                                          onClick={() => setInfo({ titolo: cleanNome, testo: testoAttacco || spiegazioneEffetto || (lingua === 'en' ? 'No description available.' : 'Nessuna descrizione disponibile.') })}
-                                        >{iconaSpell}</button>
+                                          title={titoloRiga || (a.isSpell ? (isTrucchetto ? (lingua === 'en' ? 'Cantrip (At-will)' : 'Trucchetto a volontà') : (lingua === 'en' ? 'Spell (Requires slot)' : 'Incantesimo con slot')) : `${a.nome} (${lingua === 'en' ? 'Reaction' : 'Reazione'})`)}
+                                          onClick={apriInfoReazione}
+                                        >{iconaReazione}</button>
                                       ) : (
                                         <select
                                           value=""
-                                          title={
-                                            cat === 'Reazione'
-                                              ? "Scegli un incantesimo di reazione o una reazione"
-                                              : cat === 'Bonus'
-                                                ? "Scegli un'azione bonus o incantesimo bonus"
-                                                : t('tip.scegli_arma')
-                                          }
+                                          title={cat === 'Bonus' ? "Scegli un'azione bonus o incantesimo bonus" : t('tip.scegli_arma')}
                                           onChange={(e) => {
                                             const v = e.target.value;
                                             if (!v) return;
-                                            if (cat === 'Reazione') {
-                                              const r = REAZIONI_5E.find((x) => x.nome === v);
-                                              if (r) {
-                                                const desc = r.note || spiegaIncantesimo(r.nome) || spiegaPrivilegio(r.nome) || '';
-                                                aggiornaAttacco({ nome: r.nome, bonus: 0, danno: r.danno || '', tipoDanno: r.tipoDanno || '', note: desc });
-                                              }
-                                            } else if (cat === 'Bonus') {
+                                            if (cat === 'Bonus') {
                                               const b = AZIONI_BONUS_5E.find((x) => x.nome === v);
                                               if (b) {
                                                 const desc = b.note || spiegaIncantesimo(b.nome) || spiegaPrivilegio(b.nome) || '';
@@ -14561,17 +14620,8 @@ export default function App() {
                                           }}
                                           style={{ ...styles.inlineInput, appearance: 'none', width: 22, height: 22, padding: 0, textAlign: 'center', cursor: 'pointer', flexShrink: 0 }}
                                         >
-                                          <option value="">{cat === 'Reazione' ? '⚡' : cat === 'Bonus' ? '⚡' : '⚔️'}</option>
-                                          {cat === 'Reazione' ? (
-                                            <>
-                                              <optgroup label={lingua === 'en' ? 'Reaction Spells' : 'Incantesimi di Reazione'}>
-                                                {REAZIONI_5E.filter((x) => x.tipo === 'incantesimo').map((r) => <option key={r.nome} value={r.nome} title={r.note || spiegaIncantesimo(r.nome)}>🪄 {traduciDato(r.nome)}</option>)}
-                                              </optgroup>
-                                              <optgroup label={lingua === 'en' ? 'Reactions & Features' : 'Reazioni e Privilegi'}>
-                                                {REAZIONI_5E.filter((x) => x.tipo !== 'incantesimo').map((r) => <option key={r.nome} value={r.nome} title={r.note || spiegaPrivilegio(r.nome)}>🛡️ {traduciDato(r.nome)}</option>)}
-                                              </optgroup>
-                                            </>
-                                          ) : cat === 'Bonus' ? (
+                                          <option value="">{cat === 'Bonus' ? '⚡' : '⚔️'}</option>
+                                          {cat === 'Bonus' ? (
                                             <>
                                               <optgroup label={lingua === 'en' ? 'Bonus Actions & Weapons' : 'Azioni Bonus & Armi'}>
                                                 {AZIONI_BONUS_5E.filter((x) => x.tipo === 'combattimento' || x.tipo === 'talento' || x.tipo === 'privilegio').map((b) => <option key={b.nome} value={b.nome} title={b.note || spiegaPrivilegio(b.nome)}>⚔️ {traduciDato(b.nome)}</option>)}
@@ -14599,6 +14649,10 @@ export default function App() {
                                       <span style={{ ...styles.badge, background: 'rgba(201,162,39,0.15)', color: C.goldDark, border: `1px solid ${C.goldDark}`, padding: '2px 6px', fontWeight: 700 }} title="Tiro salvezza richiesto">
                                         CD {a.cd}
                                       </span>
+                                    ) : typeof a.bonus === 'string' && isNaN(Number(a.bonus)) ? (
+                                      <span style={{ ...styles.badge, background: 'rgba(59,130,246,0.12)', color: '#2563eb', border: '1px solid #3b82f6', padding: '2px 6px', fontWeight: 700 }}>
+                                        {a.bonus}
+                                      </span>
                                     ) : (
                                       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                         <button
@@ -14618,58 +14672,69 @@ export default function App() {
                                     )}
                                   </td>
                                   <td style={{ ...styles.td, color: dannoValido ? undefined : C.red }} className="attacchi-danno" data-label={t('combat.col_danno')}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
-                                      <button
-                                        style={{ ...styles.buttonMini, padding: '1px 6px', opacity: castBloccato ? 0.4 : 1, cursor: castBloccato ? 'not-allowed' : 'pointer', ...(isUltimoCrit ? { background: C.goldDark, color: '#fff', borderColor: C.goldDark, fontWeight: 700 } : {}) }}
-                                        title={castBloccato ? 'Equipaggia un focus per lanciare questo incantesimo' : isUltimoCrit ? `⚔️ Tira i danni CRITICI raddoppiati (${a.danno} ×2)` : `Tira i danni (${a.danno})`}
-                                        disabled={castBloccato}
-                                        onClick={() => {
-                                          if (!castBloccato) {
+                                    {a.danno ? (
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                                        <button
+                                          style={{ ...styles.buttonMini, padding: '1px 6px', opacity: castBloccato ? 0.4 : 1, cursor: castBloccato ? 'not-allowed' : 'pointer', ...(isUltimoCrit ? { background: C.goldDark, color: '#fff', borderColor: C.goldDark, fontWeight: 700 } : {}) }}
+                                          title={castBloccato ? 'Equipaggia un focus per lanciare questo incantesimo' : isUltimoCrit ? `⚔️ Tira i danni CRITICI raddoppiati (${a.danno} ×2)` : `Tira i danni (${a.danno})`}
+                                          disabled={castBloccato}
+                                          onClick={() => {
+                                            if (!castBloccato) {
+                                              tiraDanniPerAttacco(a, !!isUltimoCrit);
+                                              setUltimoAttaccoCritico(null);
+                                            }
+                                          }}
+                                        >
+                                          {isUltimoCrit ? '⚔️' : '🎲'}
+                                        </button>
+                                        <Editable
+                                          value={a.danno}
+                                          width={isVersatile ? 55 : 65}
+                                          onChange={(v) => aggiornaAttacco({ danno: v })}
+                                          onRoll={castBloccato ? undefined : () => {
                                             tiraDanniPerAttacco(a, !!isUltimoCrit);
                                             setUltimoAttaccoCritico(null);
-                                          }
-                                        }}
-                                      >
-                                        {isUltimoCrit ? '⚔️' : '🎲'}
-                                      </button>
-                                      <Editable
-                                        value={a.danno}
-                                        width={isVersatile ? 55 : 65}
-                                        onChange={(v) => aggiornaAttacco({ danno: v })}
-                                        onRoll={castBloccato ? undefined : () => {
-                                          tiraDanniPerAttacco(a, !!isUltimoCrit);
-                                          setUltimoAttaccoCritico(null);
-                                        }}
-                                        title={isUltimoCrit ? `⚔️ Critico attivo: doppio click per tirare i danni CRITICI (${a.danno} ×2)` : (titoloRiga || t('tip.click_mod_danni'))}
-                                      />
-                                      {isVersatile && (
-                                        <button
-                                          type="button"
-                                          onClick={() => {
-                                            const nuovoAttacco = alternaImpugnaturaVersatile(a, armaDb);
-                                            aggiornaAttacco(nuovoAttacco);
                                           }}
-                                          style={{
-                                            ...styles.buttonMini,
-                                            fontSize: 9.5,
-                                            padding: '1px 4px',
-                                            fontWeight: 700,
-                                            borderRadius: 4,
-                                            background: a.aDueMani ? 'rgba(201,162,39,0.2)' : 'rgba(0,0,0,0.04)',
-                                            borderColor: a.aDueMani ? C.goldDark : C.border,
-                                            color: a.aDueMani ? C.goldDark : C.inkDim,
-                                            cursor: 'pointer',
-                                            flexShrink: 0,
-                                          }}
-                                          title={a.aDueMani
-                                            ? (lingua === 'en' ? `Two-Handed Grip (${dado2M}): Click to switch to One-Handed (${dado1M})` : `Impugnatura a 2 Mani (${dado2M}): Clicca per passare a 1 Mano (${dado1M})`)
-                                            : (lingua === 'en' ? `One-Handed Grip (${dado1M}): Click to switch to Two-Handed (${dado2M})` : `Impugnatura a 1 Mano (${dado1M}): Clicca per passare a 2 Mani (${dado2M})`)}
-                                        >
-                                          {a.aDueMani ? `🙌 2M` : `✋ 1M`}
-                                        </button>
-                                      )}
-                                      <Editable value={a.tipoDanno} width={75} onChange={(v) => aggiornaAttacco({ tipoDanno: v })} title={titoloRiga} />
-                                    </div>
+                                          title={isUltimoCrit ? `⚔️ Critico attivo: doppio click per tirare i danni CRITICI (${a.danno} ×2)` : (titoloRiga || t('tip.click_mod_danni'))}
+                                        />
+                                        {isVersatile && (
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              const nuovoAttacco = alternaImpugnaturaVersatile(a, armaDb);
+                                              aggiornaAttacco(nuovoAttacco);
+                                            }}
+                                            style={{
+                                              ...styles.buttonMini,
+                                              fontSize: 9.5,
+                                              padding: '1px 4px',
+                                              fontWeight: 700,
+                                              borderRadius: 4,
+                                              background: a.aDueMani ? 'rgba(201,162,39,0.2)' : 'rgba(0,0,0,0.04)',
+                                              borderColor: a.aDueMani ? C.goldDark : C.border,
+                                              color: a.aDueMani ? C.goldDark : C.inkDim,
+                                              cursor: 'pointer',
+                                              flexShrink: 0,
+                                            }}
+                                            title={a.aDueMani
+                                              ? (lingua === 'en' ? `Two-Handed Grip (${dado2M}): Click to switch to One-Handed (${dado1M})` : `Impugnatura a 2 Mani (${dado2M}): Clicca per passare a 1 Mano (${dado1M})`)
+                                              : (lingua === 'en' ? `One-Handed Grip (${dado1M}): Click to switch to Two-Handed (${dado2M})` : `Impugnatura a 1 Mano (${dado1M}): Clicca per passare a 2 Mani (${dado2M})`)}
+                                          >
+                                            {a.aDueMani ? `🙌 2M` : `✋ 1M`}
+                                          </button>
+                                        )}
+                                        <Editable value={a.tipoDanno} width={75} onChange={(v) => aggiornaAttacco({ tipoDanno: v })} title={titoloRiga} />
+                                      </div>
+                                    ) : cat === 'Reazione' ? (
+                                      <span style={{ fontSize: 11, color: C.inkDim, fontStyle: 'italic' }}>
+                                        {a.effettoIt || a.innescoIt || '—'}
+                                      </span>
+                                    ) : (
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                                        <Editable value={a.danno} width={65} onChange={(v) => aggiornaAttacco({ danno: v })} />
+                                        <Editable value={a.tipoDanno} width={75} onChange={(v) => aggiornaAttacco({ tipoDanno: v })} />
+                                      </div>
+                                    )}
                                   </td>
                                   <td style={styles.td} className="attacchi-note" data-label={t('combat.col_note')}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
@@ -14749,36 +14814,76 @@ export default function App() {
                                     </div>
                                   </td>
                                   <td className="col-azioni attacchi-azioni" style={{ ...styles.td, textAlign: 'right' }}>
-                                    <button
-                                      style={styles.buttonDanger}
-                                      title={a.isSpell ? "Nascondi questo incantesimo dalla sezione Armi e attacchi" : "Elimina attacco"}
-                                      onClick={() => {
-                                        setConferma({
-                                          titolo: a.isSpell ? 'Nascondi attacco' : 'Elimina attacco',
-                                          testo: a.isSpell ? `Nascondere "${a.nome}" dalla lista attacchi?` : `Vuoi eliminare l'attacco "${a.nome}"?`,
-                                          onConferma: () => {
-                                            if (a.idIncantesimo) {
-                                              aggiorna({
-                                                incantesimiLista: (scheda.incantesimiLista || []).map((x) => (x.id === a.idIncantesimo ? { ...x, nascondiAttacco: true } : x)),
-                                                attacchi: (scheda.attacchi || []).filter((x) => x.id !== a.id)
+                                    <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
+                                      {cat === 'Reazione' && (
+                                        <button
+                                          type="button"
+                                          style={{
+                                            ...styles.buttonMini,
+                                            fontSize: 10,
+                                            padding: '2px 7px',
+                                            fontWeight: 700,
+                                            background: scheda.reazioneUsata ? 'rgba(239,68,68,0.12)' : 'rgba(46,157,77,0.14)',
+                                            borderColor: scheda.reazioneUsata ? '#ef4444' : '#2e9d4d',
+                                            color: scheda.reazioneUsata ? '#ef4444' : '#2e9d4d',
+                                            cursor: 'pointer',
+                                            whiteSpace: 'nowrap',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 3,
+                                          }}
+                                          title={scheda.reazioneUsata ? (lingua === 'en' ? 'Reaction USED this round. Click to restore.' : 'Reazione USATA in questo round. Clicca per ripristinare.') : (lingua === 'en' ? `Use ${a.nome} as reaction for this round` : `Usa ${a.nome} come reazione per questo round`)}
+                                          onClick={() => {
+                                            const nuovoStato = !scheda.reazioneUsata;
+                                            aggiorna({ reazioneUsata: nuovoStato });
+                                            if (nuovoStato) {
+                                              const desc = lingua === 'en' ? (a.effettoEn || a.innescoEn || a.note) : (a.effettoIt || a.innescoIt || a.note);
+                                              registra({
+                                                etichetta: `⚡ ${a.nome}`,
+                                                tipo: 'reazione',
+                                                dettaglio: `${a.nome}: ${desc || 'Reazione attivata'}`
                                               });
-                                            } else if (a.isSpell) {
-                                              aggiorna({
-                                                attacchi: (scheda.attacchi || []).filter((x) => x.id !== a.id)
-                                              });
-                                            } else {
-                                              const inv = scheda.inventario || [];
-                                              aggiorna({
-                                                attacchi: (scheda.attacchi || []).filter((x) => x.id !== a.id),
-                                                inventario: inv.map((x) => (x.nome.toLowerCase() === a.nome.toLowerCase() ? { ...x, equip: false } : x))
-                                              });
+                                              if (suoniEffOn) eseguiEffettoSonoro(a.isSpell ? 'magia' : 'arma', volumeEffetti);
                                             }
-                                          }
-                                        });
-                                      }}
-                                    >
-                                      ×
-                                    </button>
+                                          }}
+                                        >
+                                          <span>{scheda.reazioneUsata ? '🔴' : '⚡'}</span>
+                                          <span>{scheda.reazioneUsata ? (lingua === 'en' ? 'Used' : 'Usata') : (lingua === 'en' ? 'Use' : 'Usa')}</span>
+                                        </button>
+                                      )}
+                                      {!a.isAuto && (
+                                        <button
+                                          style={styles.buttonDanger}
+                                          title={a.isSpell ? "Nascondi questo incantesimo dalla sezione Armi e attacchi" : "Elimina attacco"}
+                                          onClick={() => {
+                                            setConferma({
+                                              titolo: a.isSpell ? 'Nascondi attacco' : 'Elimina attacco',
+                                              testo: a.isSpell ? `Nascondere "${a.nome}" dalla lista attacchi?` : `Vuoi eliminare l'attacco "${a.nome}"?`,
+                                              onConferma: () => {
+                                                if (a.idIncantesimo) {
+                                                  aggiorna({
+                                                    incantesimiLista: (scheda.incantesimiLista || []).map((x) => (x.id === a.idIncantesimo ? { ...x, nascondiAttacco: true } : x)),
+                                                    attacchi: (scheda.attacchi || []).filter((x) => x.id !== a.id)
+                                                  });
+                                                } else if (a.isSpell) {
+                                                  aggiorna({
+                                                    attacchi: (scheda.attacchi || []).filter((x) => x.id !== a.id)
+                                                  });
+                                                } else {
+                                                  const inv = scheda.inventario || [];
+                                                  aggiorna({
+                                                    attacchi: (scheda.attacchi || []).filter((x) => x.id !== a.id),
+                                                    inventario: inv.map((x) => (x.nome.toLowerCase() === a.nome.toLowerCase() ? { ...x, equip: false } : x))
+                                                  });
+                                                }
+                                              }
+                                            });
+                                          }}
+                                        >
+                                          ×
+                                        </button>
+                                      )}
+                                    </div>
                                   </td>
                                   </tr>
                                 );

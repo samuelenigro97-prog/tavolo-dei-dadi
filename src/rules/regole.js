@@ -7,6 +7,7 @@ import { CLASSI, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, SLOT_FULL_CASTER, SLOT
   TS_CLASSE, COMPETENZE_CLASSE, COMPETENZE_SPECIE, BACKGROUND_COMPETENZE,
   MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, PE_PER_LIVELLO, REAZIONI_5E, ARMI_5E, ARMATURE_5E } from '../data/dati5e.js';
 import { modificatore, conSegno, bonusCompetenzaDaLivello } from './dadi.js';
+import { punteggioCaratteristica } from './scheda.js';
 import { spiegaIncantesimo } from '../data/spiegazioni.js';
 import { INCANTESIMI_DB, datiIncantesimo } from '../data/incantesimi.js';
 import { ABILITA, CARATTERISTICHE } from '../data/caratteristiche.js';
@@ -1465,14 +1466,103 @@ export function trovaReazioniDisponibili(scheda) {
     reazioni.push(r);
   }
 
-  // 1. Tattica Universale Base
+  // Calcolo caratteristiche e bonus competenza
+  const liv = Number(scheda?.livello) || 1;
+  const bonusComp = Number(scheda?.bonusCompetenza) || bonusCompetenzaDaLivello(liv) || 2;
+  const modFor = modificatore(punteggioCaratteristica(scheda, 'forza'));
+  const modDes = modificatore(punteggioCaratteristica(scheda, 'destrezza'));
+  const modCon = modificatore(punteggioCaratteristica(scheda, 'costituzione'));
+  const modInt = modificatore(punteggioCaratteristica(scheda, 'intelligenza'));
+  const modSag = modificatore(punteggioCaratteristica(scheda, 'saggezza'));
+  const modCar = modificatore(punteggioCaratteristica(scheda, 'carisma'));
+
+  // Calcolo incantatore (CD e Bonus attacco magico)
+  const carInc = scheda?.incantatore?.caratteristica || CARATT_INCANTATORE[chiaveClasse(scheda?.classe)] || 'intelligenza';
+  const modInc = modificatore(punteggioCaratteristica(scheda, carInc));
+  const cdIncantesimi = 8 + bonusComp + modInc;
+  const bonusAttaccoMagico = bonusComp + modInc;
+
+  // Cerca arma da mischia equipaggiata o principale
+  const inv = Array.isArray(scheda?.inventario) ? scheda.inventario : [];
+  const attacchi = Array.isArray(scheda?.attacchi) ? scheda.attacchi : [];
+
+  let armaMischia = null;
+  // 1. Cerca in inventario tra gli oggetti equipaggiati
+  for (const o of inv) {
+    if (o.equip) {
+      const match = (ARMI_5E || []).find((w) => w.nome.toLowerCase() === (o.nome || '').toLowerCase() && !w.ranged);
+      if (match) {
+        armaMischia = { ...match, customNome: o.nome };
+        break;
+      }
+    }
+  }
+  // 2. Se non trovata in inventario equipaggiata, cerca tra gli attacchi salvati
+  if (!armaMischia) {
+    for (const a of attacchi) {
+      if (!a.isSpell && a.nome) {
+        const match = (ARMI_5E || []).find((w) => w.nome.toLowerCase() === a.nome.toLowerCase() && !w.ranged);
+        if (match) {
+          armaMischia = { ...match, customNome: a.nome, dannoCustom: a.danno, bonusCustom: a.bonus };
+          break;
+        }
+      }
+    }
+  }
+  // 3. Se non trovata, cerca qualsiasi arma da mischia in inventario
+  if (!armaMischia) {
+    for (const o of inv) {
+      const match = (ARMI_5E || []).find((w) => w.nome.toLowerCase() === (o.nome || '').toLowerCase() && !w.ranged);
+      if (match) {
+        armaMischia = { ...match, customNome: o.nome };
+        break;
+      }
+    }
+  }
+
+  // Calcolo statistiche dell'attacco in mischia per l'attacco di opportunità
+  let nomeArmaMischia = armaMischia ? (armaMischia.customNome || armaMischia.nome) : 'Colpo senz\'armi';
+  let bonusMischia = 0;
+  let dannoMischia = '1';
+  let tipoDannoMischia = 'Contundente';
+  let hasReach = false;
+
+  if (armaMischia) {
+    let modArma = armaMischia.finesse ? Math.max(modFor, modDes) : modFor;
+    const matchBonusMagico = String(nomeArmaMischia).match(/\+([123])/);
+    const bonusMagico = matchBonusMagico ? parseInt(matchBonusMagico[1], 10) : 0;
+    const modTot = modArma + bonusMagico;
+    bonusMischia = armaMischia.bonusCustom !== undefined ? armaMischia.bonusCustom : modTot + bonusComp;
+    dannoMischia = armaMischia.dannoCustom || (modTot === 0 ? armaMischia.danno : `${armaMischia.danno}${modTot > 0 ? '+' : ''}${modTot}`);
+    tipoDannoMischia = armaMischia.tipo || 'Da arma';
+    hasReach = Boolean(armaMischia.reach || armaMischia.portata || /portata|reach/i.test(armaMischia.note || '') || /alabarda|halberd|falcione|glaive|picca|pike|frusta|whip/i.test(nomeArmaMischia) || (armaMischia.proprieta && armaMischia.proprieta.some((p) => /portata|reach/i.test(p))));
+  } else {
+    // Monaco o colpo senz'armi base
+    const isMonk = /monaco|monk/i.test(scheda?.classe || '');
+    if (isMonk) {
+      const modMonk = Math.max(modFor, modDes);
+      bonusMischia = modMonk + bonusComp;
+      const dadoMonk = liv >= 17 ? '1d10' : liv >= 11 ? '1d8' : liv >= 5 ? '1d6' : '1d4';
+      dannoMischia = modMonk === 0 ? dadoMonk : `${dadoMonk}${modMonk > 0 ? '+' : ''}${modMonk}`;
+    } else {
+      bonusMischia = modFor + bonusComp;
+      dannoMischia = modFor > 0 ? `1+${modFor}` : '1';
+    }
+  }
+
+  // 1. Tattica Universale Base: Attacco di Opportunità
   addReazione({
     nome: 'Attacco di Opportunità',
     tipo: 'tattica',
+    bonus: bonusMischia,
+    danno: dannoMischia,
+    tipoDanno: tipoDannoMischia,
+    hasReach,
     innescoIt: 'Quando una creatura ostile che puoi vedere esce dalla tua portata in mischia.',
     innescoEn: 'When a hostile creature that you can see moves out of your melee reach.',
-    effettoIt: 'Compi un singolo attacco con arma da mischia contro la creatura che fugge.',
-    effettoEn: 'Make one melee attack with a weapon against the fleeing creature.',
+    effettoIt: `Compi un singolo attacco con arma da mischia (${nomeArmaMischia}${hasReach ? ' - Portata 3m' : ''}) contro la creatura che fugge.`,
+    effettoEn: `Make one melee weapon attack (${nomeArmaMischia}${hasReach ? ' - Reach 10ft' : ''}) against the fleeing creature.`,
+    note: `Arma: ${nomeArmaMischia}${hasReach ? ' (Portata 3m)' : ''}`,
   });
 
   // 2. Incantesimi di Reazione noti o preparati
@@ -1481,23 +1571,40 @@ export function trovaReazioniDisponibili(scheda) {
     const nomeInc = inc.nome || '';
     const sp = datiIncantesimo(nomeInc) || {};
     const tempo = (inc.tempo || sp.tempo || '').toLowerCase();
-    if (tempo.includes('reaz') || tempo.includes('react')) {
-      const matchDb = REAZIONI_5E.find((x) => x.nome.toLowerCase() === nomeInc.toLowerCase());
+    const matchDb = REAZIONI_5E.find((x) => x.nome.toLowerCase() === nomeInc.toLowerCase() && x.tipo === 'incantesimo');
+
+    if (tempo.includes('reaz') || tempo.includes('react') || matchDb) {
+      const desc = (inc.note || '') + ' ' + (spiegaIncantesimo(nomeInc) || '') + ' ' + (sp.desc || '');
+      const isTS = /ts\s|tiro salvezza|save/i.test(desc) || Boolean(inc.isTS);
+      const danno = inc.danno || matchDb?.danno || sp.danno || '';
+      const tipoDanno = inc.tipoDanno || matchDb?.tipoDanno || sp.tipoDanno || '';
+
       addReazione({
+        id: inc.id ? `spell-${inc.id}` : undefined,
+        idIncantesimo: inc.id,
         nome: nomeInc,
         tipo: 'incantesimo',
+        isSpell: true,
+        isTS,
+        cd: isTS ? cdIncantesimi : undefined,
+        bonus: isTS ? undefined : (danno || /attacco/i.test(desc) ? bonusAttaccoMagico : (matchDb?.bonus || undefined)),
+        danno,
+        tipoDanno,
         innescoIt: matchDb?.innescoIt || (sp.tempo ? sp.tempo : 'Quando si verifica la condizione di innesco dell\'incantesimo.'),
         innescoEn: matchDb?.innescoEn || (sp.tempo ? sp.tempo : 'When the spell trigger condition occurs.'),
         effettoIt: inc.note || matchDb?.note || sp.desc || '',
         effettoEn: matchDb?.noteEn || sp.desc || '',
+        note: inc.note || matchDb?.note || (sp.scuola ? `${sp.scuola} • ${sp.gittata || ''}` : ''),
       });
     }
   }
 
-  // 3. Privilegi di Classe & Sottoclasse
-  const testoPriv = `${scheda?.privilegi || ''}\n${scheda?.privilegiSottoclasse || ''}\n${scheda?.talenti || ''}`.toLowerCase();
-  
-  if (testoPriv.includes('schivata prodigiosa') || testoPriv.includes('uncanny dodge')) {
+  // 3. Privilegi di Classe, Sottoclasse, Tratti, Stili e Talenti
+  const testoPriv = `${scheda?.privilegi || ''}\n${scheda?.privilegiSottoclasse || ''}\n${scheda?.talenti || ''}\n${scheda?.tratti || ''}\n${scheda?.specie || ''}\n${scheda?.classe || ''}\n${scheda?.sottoclasse || ''}`.toLowerCase();
+  const livClasse = (cls) => livelloDiClasse(scheda, cls);
+
+  // Ladro: Schivata Prodigiosa (lvl 5)
+  if (testoPriv.includes('schivata prodigiosa') || testoPriv.includes('uncanny dodge') || livClasse('Ladro') >= 5) {
     addReazione({
       nome: 'Schivata Prodigiosa',
       tipo: 'privilegio',
@@ -1505,53 +1612,73 @@ export function trovaReazioniDisponibili(scheda) {
       innescoEn: 'When an attacker that you can see hits you with an attack.',
       effettoIt: 'Dimezza il danno dell\'attacco contro di te.',
       effettoEn: 'Halve the damage that you take from this attack.',
+      note: 'Dimezza danni subiti da attacco visibile',
     });
   }
 
-  if (testoPriv.includes('deviare proiettili') || testoPriv.includes('deflect missiles')) {
+  // Monaco: Deviare Proiettili (lvl 3)
+  if (testoPriv.includes('deviare proiettili') || testoPriv.includes('deflect missiles') || livClasse('Monaco') >= 3) {
+    const livMonaco = livClasse('Monaco') || liv;
+    const riduzioneForm = `1d10+${modDes + livMonaco}`;
     addReazione({
       nome: 'Deviare Proiettili',
       tipo: 'privilegio',
+      danno: riduzioneForm,
+      tipoDanno: 'Riduci danno',
       innescoIt: 'Quando vieni colpito da un attacco con arma a distanza.',
       innescoEn: 'When you are hit by a ranged weapon attack.',
-      effettoIt: 'Riduci il danno di 1d10 + Destrezza + Livello da Monaco. Se azzeri il danno, puoi afferrare e rilanciare il proiettile.',
-      effettoEn: 'Reduce the damage by 1d10 + Dexterity + Monk level. If reduced to 0, catch and throw it back.',
+      effettoIt: `Riduci il danno di 1d10 + DES (${conSegno(modDes)}) + Liv. Monaco (${livMonaco}). Se riduci a 0, puoi afferrare e rilanciare (1 Ki).`,
+      effettoEn: `Reduce damage by 1d10 + DEX (${conSegno(modDes)}) + Monk level (${livMonaco}). If reduced to 0, catch and throw (1 Ki).`,
+      note: `Riduci 1d10+${modDes + livMonaco} (DES+Liv)`,
     });
   }
 
-  if (testoPriv.includes('flash di genio') || testoPriv.includes('flash of genius')) {
+  // Artefice: Flash di Genio (lvl 7)
+  if (testoPriv.includes('flash di genio') || testoPriv.includes('flash of genius') || livClasse('Artefice') >= 7) {
     addReazione({
       nome: 'Flash di Genio',
       tipo: 'privilegio',
+      bonus: conSegno(modInt),
       innescoIt: 'Quando tu o un\'altra creatura entro 9 m che puoi vedere effettua una prova di caratteristica o un tiro salvezza.',
       innescoEn: 'When you or another creature you can see within 30 ft makes an ability check or saving throw.',
-      effettoIt: 'Aggiungi il tuo modificatore di Intelligenza al risultato del tiro.',
-      effettoEn: 'Add your Intelligence modifier to the roll result.',
+      effettoIt: `Aggiungi il tuo modificatore di Intelligenza (${conSegno(modInt)}) al risultato del tiro.`,
+      effettoEn: `Add your Intelligence modifier (${conSegno(modInt)}) to the roll result.`,
+      note: `+${modInt} INT a prova o TS entro 9m`,
     });
   }
 
-  if (testoPriv.includes('parole taglienti') || testoPriv.includes('cutting words')) {
+  // Bardo (Collegio del Sapere): Parole Taglienti (lvl 3)
+  if (testoPriv.includes('parole taglienti') || testoPriv.includes('cutting words') || (/sapere|lore/i.test(scheda?.sottoclasse || '') && livClasse('Bardo') >= 3)) {
+    const dadoBardo = liv >= 15 ? '1d12' : liv >= 10 ? '1d10' : liv >= 5 ? '1d8' : '1d6';
     addReazione({
       nome: 'Parole Taglienti',
       tipo: 'privilegio',
+      danno: dadoBardo,
+      tipoDanno: 'Sottrai dal tiro',
       innescoIt: 'Quando una creatura entro 18 m che puoi vedere effettua un tiro per colpire, prova di caratteristica o tiro per i danni.',
       innescoEn: 'When a creature that you can see within 60 ft makes an attack roll, ability check, or damage roll.',
-      effettoIt: 'Spendi 1 dado di Ispirazione Bardica e sottrai il risultato dal tiro del bersaglio.',
-      effettoEn: 'Spend 1 Bardic Inspiration die and subtract the result from the target roll.',
+      effettoIt: `Spendi 1 dado di Ispirazione Bardica (${dadoBardo}) e sottrai il risultato dal tiro del bersaglio.`,
+      effettoEn: `Spend 1 Bardic Inspiration die (${dadoBardo}) and subtract the result from the target roll.`,
+      note: `-${dadoBardo} dal tiro del nemico entro 18m`,
     });
   }
 
+  // Stile di combattimento: Intercettare
   if (testoPriv.includes('intercettare') || testoPriv.includes('interception')) {
     addReazione({
       nome: 'Intercettare',
       tipo: 'stile',
+      danno: `1d10+${bonusComp}`,
+      tipoDanno: 'Riduci danno',
       innescoIt: 'Quando una creatura entro 1,5 m da te che puoi vedere viene colpita da un attacco.',
       innescoEn: 'When a creature you can see within 5 ft is hit by an attack.',
-      effettoIt: 'Riduci il danno dell\'attacco di 1d10 + Bonus di Competenza (se impugni uno scudo o un\'arma).',
-      effettoEn: 'Reduce the attack damage by 1d10 + Proficiency Bonus (with shield or weapon).',
+      effettoIt: `Riduci il danno dell'attacco di 1d10 + Bonus Competenza (+${bonusComp}) mentre impugni uno scudo o un'arma.`,
+      effettoEn: `Reduce the attack damage by 1d10 + Proficiency Bonus (+${bonusComp}) with shield or weapon.`,
+      note: `Riduci 1d10+${bonusComp} danni a creatura entro 1,5m`,
     });
   }
 
+  // Stile di combattimento: Protezione
   if (testoPriv.includes('protezione') || testoPriv.includes('protection')) {
     addReazione({
       nome: 'Protezione',
@@ -1560,43 +1687,247 @@ export function trovaReazioniDisponibili(scheda) {
       innescoEn: 'When a creature you can see attacks a target other than you within 5 ft of you.',
       effettoIt: 'Imponi svantaggio al tiro per colpire dell\'attaccante (mentre impugni uno scudo).',
       effettoEn: 'Impose disadvantage on the attack roll (with shield).',
+      note: 'Svantaggio all\'attacco nemico contro alleato (con scudo)',
     });
   }
 
+  // Talento: Sentinella
   if (testoPriv.includes('sentinella') || testoPriv.includes('sentinel')) {
     addReazione({
       nome: 'Sentinella',
       tipo: 'talento',
-      innescoIt: 'Quando una creatura entro 1,5 m da te attacca un bersaglio diverso da te, oppure quando esce dalla tua portata anche se Disimpegna.',
-      innescoEn: 'When a creature within 5 ft makes an attack against a target other than you, or moves out of reach even if Disengaging.',
-      effettoIt: 'Compi un attacco con arma da mischia contro la creatura. Se colpisci, la sua velocità diventa 0 per il resto del turno.',
-      effettoEn: 'Make a melee weapon attack against the creature. On hit, its speed becomes 0 for the turn.',
+      bonus: bonusMischia,
+      danno: dannoMischia,
+      tipoDanno: tipoDannoMischia,
+      innescoIt: 'Quando una creatura entro 1,5 m attacca un bersaglio diverso da te, o esce dalla portata anche se Disimpegna.',
+      innescoEn: 'When a creature within 5 ft attacks a target other than you, or moves out of reach even if Disengaging.',
+      effettoIt: `Compi un attacco con arma da mischia (${nomeArmaMischia}). Se colpisci, la velocità del bersaglio diventa 0.`,
+      effettoEn: `Make a melee weapon attack (${nomeArmaMischia}). On hit, target's speed becomes 0.`,
+      note: 'Attacco di reazione; velocità 0 se colpisci',
     });
   }
 
+  // Talento: Duellante Difensivo
   if (testoPriv.includes('duellante difensivo') || testoPriv.includes('defensive duelist')) {
     addReazione({
       nome: 'Duellante Difensivo',
       tipo: 'talento',
-      innescoIt: 'Quando impugni un\'arma accurata con cui sei competente e una creatura ti colpisce con un attacco in mischia.',
+      bonus: `+${bonusComp} CA`,
+      innescoIt: 'Quando impugni un\'arma accurata con cui sei competente e una creatura ti colpisce in mischia.',
       innescoEn: 'When you are wielding a finesse weapon and a creature hits you with a melee attack.',
-      effettoIt: 'Aggiungi il tuo Bonus di Competenza alla tua CA contro quell\'attacco, trasformando potenzialmente il colpo in un mancato.',
-      effettoEn: 'Add your Proficiency Bonus to your AC against that attack, potentially causing it to miss.',
+      effettoIt: `Aggiungi il tuo Bonus di Competenza (+${bonusComp}) alla tua CA contro quell'attacco.`,
+      effettoEn: `Add your Proficiency Bonus (+${bonusComp}) to your AC against that attack.`,
+      note: `+${bonusComp} CA contro attacco in mischia`,
     });
   }
 
+  // Talento: Maestro d'Armi con Asta
   if (testoPriv.includes('maestro d\'armi con asta') || testoPriv.includes('polearm master')) {
     addReazione({
       nome: 'Asta: Intercettazione in Entrata',
       tipo: 'talento',
+      bonus: bonusMischia,
+      danno: dannoMischia,
+      tipoDanno: tipoDannoMischia,
       innescoIt: 'Quando una creatura ostile entra nella tua portata mentre impugni un\'arma ad asta.',
       innescoEn: 'When a hostile creature enters your reach while wielding a polearm.',
-      effettoIt: 'Provochi un attacco di opportunità quando il nemico ENTRA nella tua portata.',
-      effettoEn: 'Provoke an opportunity attack when the enemy ENTERS your reach.',
+      effettoIt: `Provochi un attacco di opportunità con ${nomeArmaMischia} quando il nemico ENTRA nella tua portata.`,
+      effettoEn: `Provoke an opportunity attack with ${nomeArmaMischia} when the enemy ENTERS your reach.`,
+      note: 'Attacco di opportunità all\'entrata nella portata',
     });
   }
 
-  // Reazioni specifiche da Sottoclassi (Circolo del Pastore, Guardiano Ancestrale, Tomba, Natura)
+  // Talento: Incantatore da Guerra
+  if (testoPriv.includes('incantatore da guerra') || testoPriv.includes('war caster')) {
+    addReazione({
+      nome: 'Incantatore da Guerra',
+      tipo: 'talento',
+      innescoIt: 'Quando una creatura ostile provoca un attacco di opportunità da te.',
+      innescoEn: 'When a hostile creature provokes an opportunity attack from you.',
+      effettoIt: 'Puoi lanciare un incantesimo con tempo di lancio di 1 azione (che bersaglia solo quella creatura) invece di un attacco con arma.',
+      effettoEn: 'Cast a spell with a casting time of 1 action (targeting only that creature) instead of an opportunity attack.',
+      note: 'Lancia un incantesimo da 1 azione come Attacco d\'Opportunità',
+    });
+  }
+
+  // Guerriero (Battle Master): Parata
+  if (testoPriv.includes('parata') || testoPriv.includes('parry')) {
+    addReazione({
+      nome: 'Parata',
+      tipo: 'manovra',
+      danno: `1d8+${modDes}`,
+      tipoDanno: 'Riduci danno',
+      innescoIt: 'Quando un nemico ti danneggia con un attacco in mischia.',
+      innescoEn: 'When a creature damages you with a melee attack.',
+      effettoIt: `Spendi 1 dado di superiorità: riduci il danno di 1d8 + DES (${conSegno(modDes)}).`,
+      effettoEn: `Spend 1 superiority die: reduce damage by 1d8 + DEX (${conSegno(modDes)}).`,
+      note: `Riduci 1d8+${modDes} danni in mischia`,
+    });
+  }
+
+  // Guerriero (Battle Master): Risposta
+  if (testoPriv.includes('risposta') || testoPriv.includes('riposte')) {
+    addReazione({
+      nome: 'Risposta',
+      tipo: 'manovra',
+      bonus: bonusMischia,
+      danno: `${dannoMischia}+1d8`,
+      tipoDanno: tipoDannoMischia,
+      innescoIt: 'Quando una creatura ti manca con un attacco in mischia.',
+      innescoEn: 'When a creature misses you with a melee attack.',
+      effettoIt: `Spendi 1 dado di superiorità e compi un attacco in mischia con ${nomeArmaMischia}, sommando 1d8 ai danni se colpisci.`,
+      effettoEn: `Spend 1 superiority die and make a melee attack with ${nomeArmaMischia}, adding 1d8 to damage on hit.`,
+      note: 'Attacco in mischia + 1d8 se il nemico manca',
+    });
+  }
+
+  // Chierico (Dominio della Luce): Bagliore Protettivo (lvl 1)
+  if (testoPriv.includes('bagliore protettivo') || testoPriv.includes('warding flare') || /luce|light/i.test(scheda?.sottoclasse || '')) {
+    addReazione({
+      nome: 'Bagliore Protettivo',
+      tipo: 'privilegio',
+      innescoIt: 'Quando una creatura entro 9 m che puoi vedere ti attacca.',
+      innescoEn: 'When a creature within 30 ft that you can see attacks you.',
+      effettoIt: 'Imponi svantaggio al tiro per colpire dell\'attaccante prima che colpisca o manchi.',
+      effettoEn: 'Impose disadvantage on the attack roll before it hits or misses.',
+      note: 'Svantaggio all\'attaccante entro 9m',
+    });
+  }
+
+  // Chierico (Dominio della Tempesta): Ira dell'Uragano (lvl 1)
+  if (testoPriv.includes('ira dell\'uragano') || testoPriv.includes('wrath of the storm') || /tempesta|tempest/i.test(scheda?.sottoclasse || '')) {
+    addReazione({
+      nome: 'Ira dell\'Uragano',
+      tipo: 'privilegio',
+      isTS: true,
+      cd: cdIncantesimi,
+      danno: '2d8',
+      tipoDanno: 'Fulmine o Tuono',
+      innescoIt: 'Quando una creatura entro 1,5 m ti colpisce con un attacco.',
+      innescoEn: 'When a creature within 5 ft hits you with an attack.',
+      effettoIt: `La creatura subisce 2d8 danni da fulmine o tuono (TS Destrezza CD ${cdIncantesimi} per dimezzare).`,
+      effettoEn: `Target takes 2d8 lightning or thunder damage (Dex save DC ${cdIncantesimi} for half).`,
+      note: `2d8 danni (TS Des CD ${cdIncantesimi})`,
+    });
+  }
+
+  // Chierico (Dominio della Tomba): Sentinella della Soglia (lvl 6)
+  if (testoPriv.includes('sentinella della soglia') || testoPriv.includes('sentinel at death') || (/tomba|grave/i.test(scheda?.sottoclasse || '') && livClasse('Chierico') >= 6)) {
+    addReazione({
+      nome: 'Sentinella della Soglia',
+      tipo: 'privilegio',
+      innescoIt: 'Quando tu o una creatura entro 9 m subite un colpo critico.',
+      innescoEn: 'When you or a creature within 30 ft suffers a critical hit.',
+      effettoIt: 'Annulli gli effetti del colpo critico trasformandolo in un colpo normale.',
+      effettoEn: 'Cancel the critical hit, turning it into a normal hit.',
+      note: 'Annulla critico nemico entro 9m',
+    });
+  }
+
+  // Chierico (Dominio della Natura): Smorzare Elementi (lvl 6)
+  if (testoPriv.includes('smorzare elementi') || testoPriv.includes('dampen elements') || (/natura|nature/i.test(scheda?.sottoclasse || '') && livClasse('Chierico') >= 6)) {
+    addReazione({
+      nome: 'Smorzare Elementi',
+      tipo: 'privilegio',
+      innescoIt: 'Quando tu o un alleato entro 9 m subite danni da acido, freddo, fuoco, fulmine o tuono.',
+      innescoEn: 'When you or an ally within 30 ft takes acid, cold, fire, lightning, or thunder damage.',
+      effettoIt: 'Concedi resistenza a quel tipo di danno per quell\'attacco.',
+      effettoEn: 'Grant resistance to that damage type for that attack.',
+      note: 'Resistenza a elemento a te o alleato entro 9m',
+    });
+  }
+
+  // Barbaro (Berserker): Ritorsione (lvl 14)
+  if (testoPriv.includes('ritorsione') || testoPriv.includes('retaliation') || (/berserker/i.test(scheda?.sottoclasse || '') && livClasse('Barbaro') >= 14)) {
+    addReazione({
+      nome: 'Ritorsione',
+      tipo: 'privilegio',
+      bonus: bonusMischia,
+      danno: dannoMischia,
+      tipoDanno: tipoDannoMischia,
+      innescoIt: 'Quando subisci danno da una creatura entro 1,5 m da te.',
+      innescoEn: 'When you take damage from a creature within 5 ft.',
+      effettoIt: `Compi un attacco con arma da mischia (${nomeArmaMischia}) contro l'attaccante.`,
+      effettoEn: `Make a melee weapon attack (${nomeArmaMischia}) against the attacker.`,
+      note: `Contrattacca chi ti colpisce con ${nomeArmaMischia}`,
+    });
+  }
+
+  // Barbaro (Guardiano Ancestrale): Spiriti Protettori (lvl 6)
+  if (testoPriv.includes('spiriti protettori') || testoPriv.includes('spirit shield') || (/ancestral/i.test(testoPriv) && livClasse('Barbaro') >= 6)) {
+    const livBarbaro = livClasse('Barbaro') || liv;
+    const dadiSpiriti = livBarbaro >= 14 ? '4d6' : livBarbaro >= 10 ? '3d6' : '2d6';
+    addReazione({
+      nome: 'Spiriti Protettori',
+      tipo: 'privilegio',
+      danno: dadiSpiriti,
+      tipoDanno: 'Riduci danno',
+      innescoIt: 'Quando un alleato entro 9 m subisce danni mentre sei in ira.',
+      innescoEn: 'When an ally within 30 ft takes damage while you are raging.',
+      effettoIt: `Riduci il danno subito dall'alleato di ${dadiSpiriti}.`,
+      effettoEn: `Reduce the damage taken by the ally by ${dadiSpiriti}.`,
+      note: `Riduci ${dadiSpiriti} danni subiti da alleato in ira`,
+    });
+  }
+
+  // Stregone (Magia Selvaggia): Piegare la Fortuna (lvl 6)
+  if (testoPriv.includes('piegare la fortuna') || testoPriv.includes('bend luck') || (/selvaggia|wild/i.test(scheda?.sottoclasse || '') && livClasse('Stregone') >= 6)) {
+    addReazione({
+      nome: 'Piegare la Fortuna',
+      tipo: 'privilegio',
+      danno: '1d4',
+      tipoDanno: '+/- al tiro',
+      innescoIt: 'Quando un\'altra creatura effettua un tiro per colpire, prova o TS.',
+      innescoEn: 'When another creature makes an attack roll, ability check, or save.',
+      effettoIt: 'Spendi 2 punti stregoneria: tira 1d4 e aggiungi o sottrai il risultato dal tiro del bersaglio.',
+      effettoEn: 'Spend 2 sorcery points: roll 1d4 and add or subtract it from the target roll.',
+      note: '±1d4 a tiro altrui (2 Punti Stregoneria)',
+    });
+  }
+
+  // Mago (Magia della Guerra): Deflessione Arcana (lvl 2)
+  if (testoPriv.includes('deflessione arcana') || testoPriv.includes('arcane deflection') || (/war magic|guerra/i.test(scheda?.sottoclasse || '') && livClasse('Mago') >= 2)) {
+    addReazione({
+      nome: 'Deflessione Arcana',
+      tipo: 'privilegio',
+      bonus: '+2 CA / +4 TS',
+      innescoIt: 'Quando vieni colpito da un attacco o fallisci un tiro salvezza.',
+      innescoEn: 'When you are hit by an attack or fail a saving throw.',
+      effettoIt: '+2 CA contro quell\'attacco oppure +4 al tiro salvezza fallito.',
+      effettoEn: '+2 AC against that attack or +4 to the failed saving throw.',
+      note: '+2 CA contro attacco o +4 a TS',
+    });
+  }
+
+  // Warlock (Arcifata): Fuga Nebbiosa (lvl 6)
+  if (testoPriv.includes('fuga nebbiosa') || testoPriv.includes('misty escape') || (/fey|fata/i.test(scheda?.sottoclasse || '') && livClasse('Warlock') >= 6)) {
+    addReazione({
+      nome: 'Fuga Nebbiosa',
+      tipo: 'privilegio',
+      innescoIt: 'Quando subisci danni da un attacco.',
+      innescoEn: 'When you take damage from an attack.',
+      effettoIt: 'Diventi invisibile e ti teletrasporti fino a 18 m in uno spazio visibile non occupato.',
+      effettoEn: 'Turn invisible and teleport up to 60 ft to an unoccupied space.',
+      note: 'Invisibilità e teletrasporto 18m al danno',
+    });
+  }
+
+  // Specie Goliath: Resistenza della Pietra
+  if (testoPriv.includes('resistenza della pietra') || testoPriv.includes('stone\'s endurance') || /goliath/i.test(scheda?.specie || '')) {
+    addReazione({
+      nome: 'Resistenza della Pietra',
+      tipo: 'specie',
+      danno: `1d12+${modCon}`,
+      tipoDanno: 'Riduci danno',
+      innescoIt: 'Quando subisci danno.',
+      innescoEn: 'When you take damage.',
+      effettoIt: `Riduci il danno subito di 1d12 + Costituzione (${conSegno(modCon)}).`,
+      effettoEn: `Reduce the damage taken by 1d12 + Constitution (${conSegno(modCon)}).`,
+      note: `Riduci 1d12+${modCon} danni (1/Riposo Breve)`,
+    });
+  }
+
+  // Druido (Pastore): Totem Spirituale (Falco)
   if (testoPriv.includes('totem spirituale') || /pastore|shepherd/i.test(scheda?.sottoclasse || '')) {
     addReazione({
       nome: 'Totem Spirituale (Falco)',
@@ -1605,53 +1936,26 @@ export function trovaReazioniDisponibili(scheda) {
       innescoEn: 'When a creature makes an attack roll against a target in the Hawk spirit aura.',
       effettoIt: 'Concedi Vantaggio a quel tiro per colpire.',
       effettoEn: 'Grant Advantage on that attack roll.',
+      note: 'Vantaggio al tiro per colpire nell\'aura',
     });
   }
 
-  if (testoPriv.includes('spiriti protettori') || /ancestral/i.test(testoPriv)) {
-    addReazione({
-      nome: 'Spiriti Protettori',
-      tipo: 'privilegio',
-      innescoIt: 'Quando un alleato entro 9m subisce danni mentre sei in ira.',
-      innescoEn: 'When an ally within 30 ft takes damage while you are raging.',
-      effettoIt: 'Riduci il danno subito dall\'alleato di 2d6 (scala a 3d6 e 4d6).',
-      effettoEn: 'Reduce the damage taken by the ally by 2d6 (scales to 3d6 and 4d6).',
-    });
-  }
-
-  if (testoPriv.includes('sentinella della soglia')) {
-    addReazione({
-      nome: 'Sentinella della Soglia',
-      tipo: 'privilegio',
-      innescoIt: 'Quando una creatura entro 9m subisce un colpo critico.',
-      innescoEn: 'When a creature within 30 ft suffers a critical hit.',
-      effettoIt: 'Annulli il colpo critico trasformandolo in un colpo normale.',
-      effettoEn: 'Cancel the critical hit, turning it into a normal hit.',
-    });
-  }
-
-  if (testoPriv.includes('smorzare elementi')) {
-    addReazione({
-      nome: 'Smorzare Elementi',
-      tipo: 'privilegio',
-      innescoIt: 'Quando tu o un alleato entro 9m subite danni da acido, freddo, fuoco, fulmine o tuono.',
-      innescoEn: 'When you or an ally within 30 ft takes acid, cold, fire, lightning, or thunder damage.',
-      effettoIt: 'Concedi resistenza a quel tipo di danno per quell\'attacco.',
-      effettoEn: 'Grant resistance to that damage type for that attack.',
-    });
-  }
-
-  // 4. Anche qualsiasi reazione aggiunta manualmente in scheda.attacchi
-  const attacchi = Array.isArray(scheda?.attacchi) ? scheda.attacchi : [];
+  // 4. Qualsiasi reazione aggiunta manualmente in scheda.attacchi
   for (const a of attacchi) {
     if ((a.categoria || '').toLowerCase() === 'reazione' && a.nome) {
       addReazione({
+        id: a.id,
         nome: a.nome,
         tipo: a.isSpell ? 'incantesimo' : 'attacco',
-        innescoIt: 'Reazione di combattimento preparata.',
-        innescoEn: 'Prepared combat reaction.',
+        isSpell: !!a.isSpell,
+        bonus: a.bonus,
+        danno: a.danno || '',
+        tipoDanno: a.tipoDanno || '',
+        innescoIt: a.note || 'Reazione di combattimento preparata.',
+        innescoEn: a.note || 'Prepared combat reaction.',
         effettoIt: a.note || (a.danno ? `${a.danno} ${a.tipoDanno || ''}` : ''),
         effettoEn: a.note || (a.danno ? `${a.danno} ${a.tipoDanno || ''}` : ''),
+        note: a.note || '',
       });
     }
   }

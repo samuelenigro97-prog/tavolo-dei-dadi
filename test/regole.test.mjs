@@ -940,10 +940,15 @@ test('calcolo movimento, salti e capacità fisiche 5e (calcolaMovimentoESalti)',
 });
 
 test('reazioni e inneschi di combattimento 5e (trovaReazioniDisponibili)', () => {
-  // 1. Scheda Ladro con Schivata Prodigiosa e Sentinella
+  // 1. Scheda Ladro con Schivata Prodigiosa, Sentinella e Stocco equipaggiato
   const ladro = {
     classe: 'Ladro',
     livello: 5,
+    bonusCompetenza: 3,
+    caratteristiche: { forza: 10, destrezza: 18 },
+    inventario: [
+      { nome: 'Stocco', equip: true, peso: 1, qta: 1 },
+    ],
     privilegi: 'Schivata Prodigiosa\nEvasione\nAttacco Furtivo',
     talenti: 'Sentinella',
     incantesimiLista: [],
@@ -955,18 +960,25 @@ test('reazioni e inneschi di combattimento 5e (trovaReazioniDisponibili)', () =>
   assert.ok(nomiLadro.includes('Schivata Prodigiosa'));
   assert.ok(nomiLadro.includes('Sentinella'));
 
+  const attOpp = reazioniLadro.find((r) => r.nome === 'Attacco di Opportunità');
+  assert.equal(attOpp.bonus, 7); // DES 18 (+4) + BC (+3) = 7
+  assert.equal(attOpp.danno, '1d8+4');
+
   const schivata = reazioniLadro.find((r) => r.nome === 'Schivata Prodigiosa');
   assert.equal(schivata.tipo, 'privilegio');
   assert.ok(schivata.innescoIt.includes('colpisce'));
 
-  // 2. Scheda Mago con incantesimi di reazione
+  // 2. Scheda Mago con incantesimi di reazione e CD
   const mago = {
     classe: 'Mago',
     livello: 5,
+    bonusCompetenza: 3,
+    caratteristiche: { intelligenza: 16 },
     incantesimiLista: [
-      { nome: 'Scudo', tempo: '1 reazione' },
-      { nome: 'Controincantesimo', tempo: '1 reazione' },
-      { nome: 'Palla di Fuoco', tempo: '1 azione' },
+      { id: '1', nome: 'Scudo', tempo: '1 reazione' },
+      { id: '2', nome: 'Controincantesimo', tempo: '1 reazione' },
+      { id: '3', nome: 'Rappresaglia Infernale', tempo: '1 reazione', danno: '2d10', tipoDanno: 'Fuoco' },
+      { id: '4', nome: 'Palla di Fuoco', tempo: '1 azione' },
     ],
   };
 
@@ -975,11 +987,54 @@ test('reazioni e inneschi di combattimento 5e (trovaReazioniDisponibili)', () =>
   assert.ok(nomiMago.includes('Attacco di Opportunità'));
   assert.ok(nomiMago.includes('Scudo'));
   assert.ok(nomiMago.includes('Controincantesimo'));
+  assert.ok(nomiMago.includes('Rappresaglia Infernale'));
   assert.ok(!nomiMago.includes('Palla di Fuoco'));
 
   const scudo = reazioniMago.find((r) => r.nome === 'Scudo');
   assert.equal(scudo.tipo, 'incantesimo');
   assert.ok(scudo.innescoIt.includes('colpito'));
+
+  const rappresaglia = reazioniMago.find((r) => r.nome === 'Rappresaglia Infernale');
+  assert.equal(rappresaglia.danno, '2d10');
+  assert.equal(rappresaglia.cd, 14); // 8 + 3 (BC) + 3 (INT) = 14
+
+  // 3. Scheda Guerriero con Alabarda (Portata), Intercettare e Risposta
+  const guerriero = {
+    classe: 'Guerriero',
+    sottoclasse: 'Maestro di Battaglia',
+    livello: 6,
+    bonusCompetenza: 3,
+    caratteristiche: { forza: 18, destrezza: 14 },
+    inventario: [
+      { nome: 'Alabarda', equip: true, peso: 3, qta: 1 },
+    ],
+    privilegi: 'Stile di Combattimento: Intercettare\nManovra: Risposta\nManovra: Parata',
+  };
+
+  const reazioniGuerriero = trovaReazioniDisponibili(guerriero);
+  const nomiGuerriero = reazioniGuerriero.map((r) => r.nome);
+  assert.ok(nomiGuerriero.includes('Attacco di Opportunità'));
+  assert.ok(nomiGuerriero.includes('Intercettare'));
+  assert.ok(nomiGuerriero.includes('Risposta'));
+  assert.ok(nomiGuerriero.includes('Parata'));
+
+  const attOppGuerriero = reazioniGuerriero.find((r) => r.nome === 'Attacco di Opportunità');
+  assert.equal(attOppGuerriero.hasReach, true);
+  assert.equal(attOppGuerriero.bonus, 7); // FOR 18 (+4) + 3 (BC) = 7
+  assert.equal(attOppGuerriero.danno, '1d10+4');
+
+  // 4. Monaco con Deviare Proiettili
+  const monaco = {
+    classe: 'Monaco',
+    livello: 4,
+    bonusCompetenza: 2,
+    caratteristiche: { destrezza: 16, saggezza: 14 },
+    privilegi: 'Deviare Proiettili',
+  };
+  const reazioniMonaco = trovaReazioniDisponibili(monaco);
+  const deviare = reazioniMonaco.find((r) => r.nome === 'Deviare Proiettili');
+  assert.ok(deviare);
+  assert.equal(deviare.danno, '1d10+7'); // 1d10 + DES (3) + Liv (4) = 1d10+7
 });
 
 test('economia del turno e tattiche di combattimento 5e (calcolaTurnoCombattimento)', () => {
