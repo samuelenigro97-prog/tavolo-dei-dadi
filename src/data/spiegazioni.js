@@ -1,7 +1,7 @@
 // Spiegazioni brevi per la "nuvoletta" informativa (privilegi, incantesimi, tratti).
 import { INCANTESIMI_DB, ALIAS_INCANTESIMI } from './incantesimi.js';
 
-const SPIEG_PRIVILEGI = {
+export const SPIEG_PRIVILEGI = {
   "Spirito Totemico": "Scegli uno spirito totemico (Orso: resistenza a tutti i danni tranne psichici; Aquila: scatto come azione bonus e svantaggio agli attacchi di opportunità; Lupo: vantaggio ai tuoi alleati in mischia contro i nemici entro 1,5m; Alce o Tigre per velocità o salti).",
   "Parlare con gli Animali": "Puoi lanciare Parlare con gli Animali e Senso delle Bestie come rituali.",
   "Aspetto della Bestia": "Ottieni benefici mistici basati sulla bestia scelta (es. capacità di carico raddoppiata, vista fino a 1,5 km o abilità nel seguire tracce).",
@@ -1487,7 +1487,7 @@ export function spiegaIncantesimo(nome) {
 }
 
 // Tratti di razza/specie e sensi comuni (tutte le razze), riassunti nostri.
-const SPIEG_TRATTI = {
+export const SPIEG_TRATTI = {
   'Scurovisione': "Vedi al buio entro 18 metri: la luce fioca diventa per te come luce intensa, e l'oscurità totale come luce fioca. In queste condizioni distingui solo tonalità di grigio, non i colori.",
   'Percezione cieca': "Percepisci ciò che ti circonda entro una breve distanza (di norma 3 metri) senza bisogno di vedere: entro quel raggio ignori la condizione di accecato e puoi individuare creature invisibili.",
   'Percezione tremorsensitiva': "Individui con precisione la posizione di creature e oggetti in movimento a contatto con il tuo stesso terreno o superficie, entro la distanza indicata. Non funziona contro chi vola o è incorporeo.",
@@ -1698,7 +1698,7 @@ export function spiegaTalento(nome) {
 }
 
 // Opzioni di Metamagia dello Stregone (5e), con riassunti nostri per la nuvoletta.
-const SPIEG_METAMAGIA = {
+export const SPIEG_METAMAGIA = {
   'Incantesimo Accurato': "*Costo: 1 Punto Stregoneria.*\nQuando lanci un incantesimo che obbliga altre creature a effettuare un tiro salvezza o che effettua un tiro per colpire, puoi proteggere i tuoi alleati. Scegli un numero massimo di creature pari al tuo modificatore di Carisma (minimo 1): quelle creature superano automaticamente il tiro salvezza e non subiscono danni se normalmente ne subirebbero la metà, e i tiri per colpire dell'incantesimo mancano automaticamente quei bersagli.",
   'Incantesimo Ammaliante': "*Costo: 1 Punto Stregoneria.*\nSe lanci un incantesimo di Ammaliamento o Illusione, puoi spendere 1 punto per far sì che la creatura bersaglio non si accorga in alcun modo che sei stato tu a incantarla o a influenzarne la mente.",
   'Incantesimo Celato': "*Costo: 1 Punto Stregoneria.*\nL'incantesimo viene lanciato senza alcuna componente Verbale, Somatica o Materiale (a meno che la componente Materiale non venga consumata o abbia un costo specifico in monete d'oro indicato nella descrizione dell'incantesimo). Perfetto per lanciare incantesimi di nascosto o quando sei legato o silenziato.",
