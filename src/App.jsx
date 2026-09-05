@@ -15134,11 +15134,8 @@ export default function App() {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, width: '100%', marginTop: 8 }}>
                       {/* Concentrazione: riquadro quadrato, in linea con gli altri tre */}
                       <div style={{ ...styles.vitalBox, padding: '30px 6px 8px', gap: 5, justifyContent: 'flex-start', background: attivo ? 'rgba(201,162,39,0.15)' : C.panelLight, borderColor: attivo ? C.goldDark : C.border }}>
-                        <div style={{ ...styles.vitalLabel, color: attivo ? C.goldDark : C.inkDim, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <div style={{ ...styles.vitalLabel, color: attivo ? C.goldDark : C.inkDim, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
                           <span>🧠</span> {t('conc.label')}
-                          {tsInfo.haIncantatoreDaGuerra && (
-                            <span title={lingua === 'en' ? 'War Caster: Advantage on concentration saves' : 'Incantatore da Guerra: Vantaggio sui TS di concentrazione'} style={{ fontSize: 9, color: '#2e9d4d' }}>⭐</span>
-                          )}
                         </div>
                         <select
                           value={scheda.concentrazione || ''}
@@ -15170,7 +15167,7 @@ export default function App() {
                             }
                           }}
                         >
-                          🎲 TS {conSegno(bonusCon)}{tsInfo.haIncantatoreDaGuerra ? ' ⭐' : ''}
+                          🎲 TS {conSegno(bonusCon)}
                         </button>
                         {attivo && (
                           <button style={{ ...styles.buttonMini, position: 'absolute', top: 4, right: 4, fontSize: 10, padding: '0 5px', height: 20, color: C.red, background: C.panel }} title={t('conc.termina')} onClick={() => aggiorna({ concentrazione: '' })}>✕</button>
