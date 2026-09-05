@@ -3679,12 +3679,6 @@ export default function App() {
     try { localStorage.setItem('scheda-interattiva:tema-cornici', temaCornici); } catch { /* niente */ }
   }, [temaCornici]);
 
-  // Effetti Luminosi & Animazioni (Respiro Magico, Brillante, Hover, Statico)
-  const [effettoAnimazioni, setEffettoAnimazioni] = useState(() => localStorage.getItem('scheda-interattiva:animazioni-luce') || 'respiro');
-  useEffect(() => {
-    try { localStorage.setItem('scheda-interattiva:animazioni-luce', effettoAnimazioni); } catch { /* niente */ }
-  }, [effettoAnimazioni]);
-
   // Audio e Sottofondo Ambientale
   const [ambienteAudio, setAmbienteAudio] = useState(() => {
     try {
@@ -4056,7 +4050,7 @@ export default function App() {
         ? (chiaveClasse(classeAttiva) || 'generico')
         : temaCornici;
     root.dataset.classe = classeEffettiva;
-    root.dataset.animazioni = effettoAnimazioni;
+    root.dataset.animazioni = 'respiro';
     const set = (k, v) => root.style.setProperty(k, v);
     set('--c-bg', t.bg); set('--c-panel', t.panel); set('--c-panel-light', t.panelLight);
     set('--c-border', t.border); set('--c-ink', t.ink); set('--c-ink-dim', t.inkDim);
@@ -4102,7 +4096,7 @@ export default function App() {
     } catch {
       // storage non disponibile: pazienza
     }
-  }, [tema, sistemaScuro, oraTick, classeAttiva, presetColori, temaCornici, effettoAnimazioni, schedaSolaLettura]);
+  }, [tema, sistemaScuro, oraTick, classeAttiva, presetColori, temaCornici, schedaSolaLettura]);
   const intervalRef = useRef(null);
   const jsonRef = useRef(null);
   const pdfRef = useRef(null);
@@ -7677,22 +7671,6 @@ export default function App() {
                     <option value="disattivato">🔒 {lingua === 'en' ? 'Classic Minimal (No frames)' : 'Classico Minimal (Senza cornici)'}</option>
                   </select>
                 </div>
-                <div style={{ gridColumn: 'span 2', marginTop: 4 }}>
-                  <div style={{ fontSize: 11, color: C.inkDim, marginBottom: 4, fontWeight: 600 }}>
-                    ✨ {lingua === 'en' ? 'Luminous Effects & Animations' : 'Effetti Luminosi & Animazioni'}
-                  </div>
-                  <select
-                    value={effettoAnimazioni}
-                    onChange={(e) => setEffettoAnimazioni(e.target.value)}
-                    style={{ ...styles.inlineInput, width: '100%', height: 32, padding: '4px 8px', borderRadius: 6, background: C.panel, color: C.ink, fontSize: 12, border: `1px solid ${C.border}` }}
-                    title={lingua === 'en' ? 'Choose ambient glow and breathing animation intensity' : 'Scegli l\'intensità del respiro magico e della luminescenza'}
-                  >
-                    <option value="respiro">✨ {lingua === 'en' ? 'Magical Breathing (Aura Pulse & Glowing Corners)' : 'Respiro Magico (Aura pulsante & Angoli vivi)'}</option>
-                    <option value="brillante">🌟 {lingua === 'en' ? 'Luminous Glow (Intense Glow & Shimmer)' : 'Luminescenza Intensa (Pulsazione & Scintillio)'}</option>
-                    <option value="hover">👆 {lingua === 'en' ? 'On Touch / Hover Only' : 'Reattivo al Tocco / Hover (Solo al passaggio)'}</option>
-                    <option value="statico">🔒 {lingua === 'en' ? 'Static (No animations)' : 'Statico (Nessuna animazione)'}</option>
-                  </select>
-                </div>
               </div>
             </div>
 
@@ -11251,24 +11229,6 @@ export default function App() {
                 </button>
               ))}
             </div>
-          </div>
-
-          {/* Effetti Luminosi & Animazioni */}
-          <div style={{ borderTop: `1px dashed ${C.border}`, paddingTop: 6 }}>
-            <div style={{ fontSize: 11, fontWeight: 'bold', color: C.goldDark, marginBottom: 4 }}>
-              ✨ {lingua === 'en' ? 'Luminous Effects & Animations' : 'Effetti Luminosi & Animazioni'}
-            </div>
-            <select
-              value={effettoAnimazioni}
-              onChange={(e) => setEffettoAnimazioni(e.target.value)}
-              style={{ ...styles.inlineInput, width: '100%', height: 30, padding: '2px 6px', borderRadius: 6, background: C.panelLight, color: C.ink, fontSize: 11.5, border: `1px solid ${C.border}` }}
-              title={lingua === 'en' ? 'Choose ambient glow and breathing animation intensity' : 'Scegli l\'intensità del respiro magico e della luminescenza'}
-            >
-              <option value="respiro">✨ {lingua === 'en' ? 'Magical Breathing' : 'Respiro Magico (Pulsante)'}</option>
-              <option value="brillante">🌟 {lingua === 'en' ? 'Luminous Glow' : 'Luminescenza Intensa'}</option>
-              <option value="hover">👆 {lingua === 'en' ? 'Touch / Hover Only' : 'Reattivo al Tocco / Hover'}</option>
-              <option value="statico">🔒 {lingua === 'en' ? 'Static' : 'Statico (Senza animazioni)'}</option>
-            </select>
           </div>
 
           <div style={{ fontSize: 10, color: C.inkDim, opacity: 0.8, textAlign: 'center' }}>
