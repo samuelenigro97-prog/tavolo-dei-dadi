@@ -24,6 +24,7 @@ import {
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from '../src/data/condizioni.js';
 import { CONDIZIONI_5E, PE_PER_LIVELLO } from '../src/data/dati5e.js';
 import { spiegaPrivilegio, spiegaInvocazione, spiegaInfusione, INVOCAZIONI_5E, INFUSIONI_ARTEFICE_5E } from '../src/data/spiegazioni.js';
+import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON, WENDELL_JSON, LYRIAN_JSON } from '../src/data/esempi.js';
 
 // --- Helper: sostituisce Math.random con una coda di valori deterministici ---
 function conRandom(valori, fn) {
@@ -512,6 +513,21 @@ test('controlliScheda: nessuna competenza segnata su una scheda vuota di classe 
   const trovati = controlliScheda(scheda);
   assert.ok(!trovati.some((r) => r.id === 'budget-abilita'));
   assert.ok(!trovati.some((r) => r.id.startsWith('fonte-')));
+});
+
+test('controlliScheda: tutti i personaggi predefiniti (Flyora, Gnomo, Vaelion, Elevorn, Wendell, Lyrian) hanno 0 avvisi', () => {
+  const personaggi = [
+    { nome: 'Flyora', json: FLYORA_JSON },
+    { nome: 'Gnomo', json: ESEMPIO_GNOMO },
+    { nome: 'Vaelion', json: VAELION_JSON },
+    { nome: 'Elevorn', json: ELEVORN_JSON },
+    { nome: 'Wendell', json: WENDELL_JSON },
+    { nome: 'Lyrian', json: LYRIAN_JSON },
+  ];
+  for (const { nome, json } of personaggi) {
+    const avvisi = controlliScheda(json);
+    assert.deepEqual(avvisi, [], `Il personaggio ${nome} ha avvisi di conformità: ${avvisi.map((a) => a.messaggio || a.id).join(', ')}`);
+  }
 });
 
 test('riposo lungo: le risorse di classe tornano al massimo, non a zero', () => {

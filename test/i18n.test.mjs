@@ -29,7 +29,7 @@ function chiaviUsate() {
   const usate = new Set();
   for (const f of ['src/App.jsx', 'src/ui/componenti.jsx']) {
     const src = readFileSync(join(RADICE, f), 'utf8');
-    for (const m of src.matchAll(/t\(\s*['"]([a-zA-Z0-9_.]+)['"]/g)) usate.add(m[1]);
+    for (const m of src.matchAll(/(?:^|[^a-zA-Z0-9_$])t\(\s*['"]([a-zA-Z0-9_.]+)['"]/g)) usate.add(m[1]);
   }
   return usate;
 }

@@ -7621,21 +7621,17 @@ export default function App() {
                   <span>{lingua === 'it' ? '🇮🇹' : '🇬🇧'}</span> <span>{t('common.lingua')}</span>
                 </button>
                 <button
-                  style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-                  onClick={() => { setMostraMenu(false); setTimeout(() => jsonRef.current?.click(), 50); }}
-                  title={t('tip.importa')}
-                >
-                  <span>⬇️</span> <span>Importa</span>
-                </button>
-                <button
-                  style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                  style={{ ...styles.button, width: '100%', minHeight: 38, gridColumn: 'span 2', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                   onClick={() => {
                     setMostraMenu(false);
-                    setTimeout(() => setMostraMenuEsporta(true), 50);
+                    setTimeout(() => {
+                      setPosEsporta({ top: 80, left: Math.max(16, (window.innerWidth - 320) / 2) });
+                      setMostraMenuEsporta(true);
+                    }, 50);
                   }}
-                  title={t('tip.esporta')}
+                  title={t('import_export.tip')}
                 >
-                  <span>⬆️</span> <span>Esporta</span>
+                  <span>⇅</span> <span>{t('import_export.btn')}</span>
                 </button>
                 <button
                   style={{ ...styles.button, width: '100%', minHeight: 38, gridColumn: 'span 2', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
@@ -10089,7 +10085,7 @@ export default function App() {
       <input ref={jsonRef} type="file" accept="application/json,.json,application/pdf,image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif,.pdf" multiple style={{ display: 'none' }} onChange={importaJson} />
       <input ref={mappaRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={caricaMappa} />
 
-      {/* Menu a comparsa Esporta */}
+      {/* Menu a comparsa Unificato Importa & Esporta */}
       {mostraMenuEsporta && (
         <div onClick={() => setMostraMenuEsporta(false)} style={{ position: 'fixed', inset: 0, zIndex: 1400, background: 'transparent' }}>
           <div
@@ -10097,26 +10093,97 @@ export default function App() {
             className="no-stampa"
             style={{
               position: 'fixed', top: posEsporta.top, left: posEsporta.left,
-              width: 'min(260px, calc(100vw - 16px))',
-              background: C.panel, border: `1px solid ${C.gold}`, borderRadius: 10,
-              boxShadow: '0 10px 30px rgba(0,0,0,0.45)', padding: '10px 12px', zIndex: 1401,
+              width: 'min(300px, calc(100vw - 16px))',
+              background: C.panel, border: `1.5px solid ${C.gold}`, borderRadius: 12,
+              boxShadow: '0 12px 36px rgba(0,0,0,0.55), 0 0 16px rgba(212,175,55,0.2)', padding: '12px 14px', zIndex: 1401,
               display: 'flex', flexDirection: 'column', gap: 6,
+              backdropFilter: 'blur(8px)',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-              <strong style={{ color: C.goldDark, fontSize: 13 }}>{t('esporta.opzioni_titolo')}</strong>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+              <strong style={{ color: C.goldDark, fontSize: 13.5, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span>📦</span> <span>{t('import_export.titolo')}</span>
+              </strong>
               <button style={styles.buttonMini} onClick={() => setMostraMenuEsporta(false)}>✕</button>
             </div>
 
+            {/* SEZIONE 1: IMPORTA */}
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.6, marginTop: 4 }}>
+              {t('import_export.sezione_importa')}
+            </div>
+
             <button
-              style={{ ...styles.button, fontSize: 12, padding: '7px 10px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 6 }}
+              style={{ ...styles.button, fontSize: 12, padding: '7px 10px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8 }}
+              onClick={() => {
+                setMostraMenuEsporta(false);
+                setTimeout(() => jsonRef.current?.click(), 50);
+              }}
+              title={t('import_export.carica_file_sub')}
+            >
+              <span style={{ fontSize: 16 }}>📂</span>
+              <div>
+                <strong style={{ display: 'block' }}>{t('import_export.carica_file')}</strong>
+                <span style={{ fontSize: 10, color: C.inkDim, fontWeight: 'normal' }}>{t('import_export.carica_file_sub')}</span>
+              </div>
+            </button>
+
+            <button
+              style={{ ...styles.button, fontSize: 12, padding: '7px 10px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8 }}
+              onClick={() => {
+                setMostraMenuEsporta(false);
+                setTimeout(() => {
+                  const txt = prompt(lingua === 'en' ? 'Paste character JSON text or shared link:' : 'Incolla qui il testo JSON della scheda o il link condiviso:');
+                  if (txt && txt.trim()) {
+                    try {
+                      let str = txt.trim();
+                      if (str.includes('?')) {
+                        const url = new URL(str, window.location.href);
+                        const p = url.searchParams.get('pg') || url.searchParams.get('s') || url.searchParams.get('p');
+                        if (p) {
+                          decodificaScheda(p).then((dati) => {
+                            if (dati) {
+                              const normalizzata = normalizeImported(dati);
+                              aggiorna(normalizzata);
+                              setInfo({ titolo: '✅ Importazione completata', testo: `Scheda "${normalizzata.nome || 'Personaggio'}" importata con successo dal link!` });
+                            }
+                          });
+                          return;
+                        }
+                      }
+                      const obj = JSON.parse(str);
+                      const normalizzata = normalizeImported(obj);
+                      aggiorna(normalizzata);
+                      setInfo({ titolo: '✅ Importazione completata', testo: `Scheda "${normalizzata.nome || 'Personaggio'}" importata con successo dal testo!` });
+                    } catch (err) {
+                      setInfo({ titolo: '❌ Errore importazione', testo: 'Il testo incollato non è un JSON valido o il link non contiene una scheda valida.' });
+                    }
+                  }
+                }, 50);
+              }}
+              title={t('import_export.incolla_json_sub')}
+            >
+              <span style={{ fontSize: 16 }}>📋</span>
+              <div>
+                <strong style={{ display: 'block' }}>{t('import_export.incolla_json')}</strong>
+                <span style={{ fontSize: 10, color: C.inkDim, fontWeight: 'normal' }}>{t('import_export.incolla_json_sub')}</span>
+              </div>
+            </button>
+
+            {/* SEZIONE 2: ESPORTA */}
+            <div style={{ borderTop: `1px dashed ${C.border}`, margin: '4px 0 2px' }} />
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.6 }}>
+              {t('import_export.sezione_esporta')}
+            </div>
+
+            <button
+              style={{ ...styles.button, fontSize: 12, padding: '7px 10px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8 }}
               onClick={() => {
                 esportaJson();
                 setMostraMenuEsporta(false);
               }}
               title={t('esporta.salva_json_tip')}
             >
-              <span>💾</span>
+              <span style={{ fontSize: 16 }}>💾</span>
               <div>
                 <strong style={{ display: 'block' }}>{t('esporta.salva_json')}</strong>
                 <span style={{ fontSize: 10, color: C.inkDim, fontWeight: 'normal' }}>{t('esporta.salva_json_sub')}</span>
@@ -10124,7 +10191,7 @@ export default function App() {
             </button>
 
             <button
-              style={{ ...styles.buttonPrimary, fontSize: 12, padding: '7px 10px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 6 }}
+              style={{ ...styles.buttonPrimary, fontSize: 12, padding: '7px 10px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8 }}
               onClick={() => {
                 setMostraMenuEsporta(false);
                 setTimeout(() => {
@@ -10133,7 +10200,7 @@ export default function App() {
               }}
               title={t('esporta.stampa_pdf_tip')}
             >
-              <span>🖨️</span>
+              <span style={{ fontSize: 16 }}>🖨️</span>
               <div>
                 <strong style={{ display: 'block' }}>{t('esporta.stampa_pdf')}</strong>
                 <span style={{ fontSize: 10, color: '#fff', opacity: 0.9, fontWeight: 'normal' }}>{t('esporta.stampa_pdf_sub')}</span>
@@ -10141,14 +10208,14 @@ export default function App() {
             </button>
 
             <button
-              style={{ ...styles.button, fontSize: 12, padding: '7px 10px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 6 }}
+              style={{ ...styles.button, fontSize: 12, padding: '7px 10px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8 }}
               onClick={() => {
                 condividiLink();
                 setMostraMenuEsporta(false);
               }}
               title={t('esporta.condividi_link_tip')}
             >
-              <span>🔗</span>
+              <span style={{ fontSize: 16 }}>🔗</span>
               <div>
                 <strong style={{ display: 'block' }}>{t('esporta.condividi_link')}</strong>
                 <span style={{ fontSize: 10, color: C.inkDim, fontWeight: 'normal' }}>{t('esporta.condividi_link_sub')}</span>
@@ -11483,25 +11550,22 @@ export default function App() {
                       >
                         {lingua === 'it' ? '🇮🇹' : '🇬🇧'}
                       </button>
-                      <button style={btnAzione} title="Importa JSON, PDF o immagini" onClick={() => jsonRef.current?.click()}>
-                        ⬇️
-                      </button>
                       <button
                         ref={esportaBtnRef}
                         style={{ ...btnAzione, ...(mostraMenuEsporta ? { borderColor: C.goldDark, color: C.goldDark } : {}) }}
-                        title={t('tip.esporta')}
+                        title={t('import_export.tip')}
                         onClick={() => {
                           if (!mostraMenuEsporta) {
                             const r = esportaBtnRef.current?.getBoundingClientRect();
                             if (r) setPosEsporta({
                               top: Math.max(8, Math.min(window.innerHeight - 200, r.bottom + 5)),
-                              left: Math.max(8, Math.min(window.innerWidth - 240, r.left)),
+                              left: Math.max(8, Math.min(window.innerWidth - 300, r.left - 100)),
                             });
                           }
                           setMostraMenuEsporta((v) => !v);
                         }}
                       >
-                        ⬆️
+                        ⇅
                       </button>
                       <button
                         style={{ ...btnAzione, color: C.goldDark, borderColor: C.goldDark }}
@@ -18136,25 +18200,13 @@ export default function App() {
                   type="button"
                   style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
                   onClick={() => {
-                    jsonRef.current?.click();
-                    setMostraMenuHubMobile(false);
-                  }}
-                >
-                  <span style={{ fontSize: 16 }}>⬇️</span>
-                  <span>{lingua === 'en' ? 'Import Sheet' : 'Importa Scheda'}</span>
-                </button>
-
-                <button
-                  type="button"
-                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
-                  onClick={() => {
-                    setPosEsporta({ top: 80, left: 20 });
+                    setPosEsporta({ top: 80, left: Math.max(10, (window.innerWidth - 300) / 2) });
                     setMostraMenuEsporta(true);
                     setMostraMenuHubMobile(false);
                   }}
                 >
-                  <span style={{ fontSize: 16 }}>⬆️</span>
-                  <span>{t('tip.esporta')}</span>
+                  <span style={{ fontSize: 16 }}>⇅</span>
+                  <span>{t('import_export.btn')}</span>
                 </button>
 
                 <button
