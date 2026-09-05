@@ -2342,7 +2342,7 @@ function loadState() {
           if (!(s.maxTrucchetti > 0) && baseTruc != null && nTruc > baseTruc) s.maxTrucchetti = nTruc;
           if (!(s.maxIncantesimi > 0) && baseInc != null && nInc > baseInc) s.maxIncantesimi = nInc;
         }
-        // Auto-idratazione campi background per personaggi predefiniti se vuoti
+        // Auto-idratazione campi background e competenze per personaggi predefiniti
         if (/vaelion/i.test(s.nome) || id === 'pg-vaelion') {
           if (!s.note && VAELION_JSON.note) s.note = VAELION_JSON.note;
           if (!s.trattiCaratteriali && VAELION_JSON.trattiCaratteriali) s.trattiCaratteriali = VAELION_JSON.trattiCaratteriali;
@@ -2350,6 +2350,20 @@ function loadState() {
           if (!s.legami && VAELION_JSON.legami) s.legami = VAELION_JSON.legami;
           if (!s.difetti && VAELION_JSON.difetti) s.difetti = VAELION_JSON.difetti;
           if (!s.nemici && VAELION_JSON.nemici) s.nemici = VAELION_JSON.nemici;
+          if (s.abilita) {
+            if (s.abilita.addestrareAnimali === 1) s.abilita.addestrareAnimali = 2;
+            if (s.abilita.natura === 1) s.abilita.natura = 2;
+            if (s.abilita.percezione === 1) s.abilita.percezione = 2;
+          }
+          if (s.trattiSpecie && !s.trattiSpecie.includes('SENSI ACUTI') && VAELION_JSON.trattiSpecie) {
+            s.trattiSpecie = VAELION_JSON.trattiSpecie;
+          }
+          if (s.privilegi && !s.privilegi.includes('PRIVILEGI DI CLASSE') && VAELION_JSON.privilegi) {
+            s.privilegi = VAELION_JSON.privilegi;
+          }
+          if (s.addestramento && (!s.addestramento.armi || !s.addestramento.armi.includes('scimitarre')) && VAELION_JSON.addestramento) {
+            s.addestramento = { ...s.addestramento, armi: VAELION_JSON.addestramento.armi };
+          }
         } else if (/wendell/i.test(s.nome) || id === 'pg-wendell') {
           if (!s.note && WENDELL_JSON.note) s.note = WENDELL_JSON.note;
           if (!s.trattiCaratteriali && WENDELL_JSON.trattiCaratteriali) s.trattiCaratteriali = WENDELL_JSON.trattiCaratteriali;
@@ -2357,6 +2371,10 @@ function loadState() {
           if (!s.legami && WENDELL_JSON.legami) s.legami = WENDELL_JSON.legami;
           if (!s.difetti && WENDELL_JSON.difetti) s.difetti = WENDELL_JSON.difetti;
           if (!s.nemici && WENDELL_JSON.nemici) s.nemici = WENDELL_JSON.nemici;
+          if (s.abilita) {
+            if (s.abilita.intrattenere === 1) s.abilita.intrattenere = 2;
+            if (s.abilita.percezione === 1) s.abilita.percezione = 2;
+          }
         } else if (/elevorn/i.test(s.nome) || id === 'pg-elevorn') {
           if (!s.note && ELEVORN_JSON.note) s.note = ELEVORN_JSON.note;
           if (!s.trattiCaratteriali && ELEVORN_JSON.trattiCaratteriali) s.trattiCaratteriali = ELEVORN_JSON.trattiCaratteriali;
@@ -2364,6 +2382,17 @@ function loadState() {
           if (!s.legami && ELEVORN_JSON.legami) s.legami = ELEVORN_JSON.legami;
           if (!s.difetti && ELEVORN_JSON.difetti) s.difetti = ELEVORN_JSON.difetti;
           if (!s.nemici && ELEVORN_JSON.nemici) s.nemici = ELEVORN_JSON.nemici;
+          if (s.abilita) {
+            if (s.abilita.atletica === 1) s.abilita.atletica = 2;
+            if (s.abilita.intuizione === 1) s.abilita.intuizione = 2;
+            if (s.abilita.percezione === 1) s.abilita.percezione = 2;
+            if (s.abilita.sopravvivenza === 1) s.abilita.sopravvivenza = 2;
+          }
+        } else if (/lyrian/i.test(s.nome) || id === 'pg-lyrian') {
+          if (s.abilita) {
+            if (s.abilita.intimidire === 1) s.abilita.intimidire = 2;
+            if (s.abilita.percezione === 1) s.abilita.percezione = 2;
+          }
         }
         roster.personaggi[id] = s;
       }

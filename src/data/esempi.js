@@ -107,7 +107,8 @@ export const ESEMPIO_GNOMO = {
   bonusCompetenza: 4,
   caratteristiche: { forza: 8, destrezza: 14, costituzione: 14, intelligenza: 20, saggezza: 12, carisma: 10 },
   tiriSalvezza: { forza: false, destrezza: false, costituzione: false, intelligenza: true, saggezza: true, carisma: false },
-  abilita: { arcano: 1, storia: 1, indagare: 1, religione: 1 },
+  // Sapiente (bg) → arcano, storia (●); Mago (classe) → indagare, religione (★)
+  abilita: { arcano: 1, storia: 1, indagare: 2, religione: 2 },
   attacchi: [
     { id: 1, nome: 'Dardo di Fuoco', bonus: 9, danno: '2d10', tipoDanno: 'Fuoco', note: 'Trucchetto, 36m' },
     { id: 2, nome: 'Raggio di Gelo', bonus: 9, danno: '2d8', tipoDanno: 'Freddo', note: 'Trucchetto, 18m, -3m velocità' },
@@ -204,9 +205,12 @@ export const VAELION_JSON = {
     saggezza: true,
     carisma: false
   },
+  // 0 = niente · 1 = competenza generica/background (●) · 2 = competenza di classe/razza (★) · 3 = maestria (✦)
+  // Druido → Addestrare Animali, Natura (stelle ★); Elfo dei Boschi (Sensi Acuti) → Percezione (stella ★);
+  // Eremita → Medicina, Religione (cerchietti ●).
   abilita: {
     acrobazia: 0,
-    addestrareAnimali: 1,
+    addestrareAnimali: 2,
     arcano: 0,
     atletica: 0,
     furtivita: 0,
@@ -216,8 +220,8 @@ export const VAELION_JSON = {
     intrattenere: 0,
     intuizione: 0,
     medicina: 1,
-    natura: 1,
-    percezione: 1,
+    natura: 2,
+    percezione: 2,
     persuasione: 0,
     rapiditaDiMano: 0,
     religione: 1,
@@ -231,9 +235,10 @@ export const VAELION_JSON = {
       pesante: false,
       scudi: true
     },
-    armi: "Bastoni ferrati, dardi, falcetti, giavellotti, lance, mazze, pugnali, fionde, spade corte, spade lunghe, archi corti, archi lunghi (Semplici)",
+    armi: "Bastoni ferrati, dardi, falcetti, giavellotti, lance, mazze, pugnali, fionde, scimitarre, spade corte, spade lunghe, archi corti, archi lunghi (Semplici)",
     strumenti: "Borsa da Erborista"
   },
+  competenzeExtra: "Armature leggere, medie (non metalliche), scudi; Bastoni ferrati, dardi, falcetti, giavellotti, lance, mazze, pugnali, fionde, scimitarre; Spade corte, spade lunghe, archi corti, archi lunghi; Borsa da erborista",
   lingue: "Comune, Sottocomune, Druidico, Silvano, Bestie, Folletti, Elfico",
   attacchi: [
     {
@@ -338,8 +343,8 @@ export const VAELION_JSON = {
   legami: "I boschi ancestrali delle Montagne Rauvin e il patto col Piccolo Popolo che gli ha donato la maschera d'alabastro.",
   difetti: "Fatica a fidarsi di chi vive nelle grandi città o sfrutta le risorse naturali senza rispetto.",
   nemici: "Orchi della tribù Many Arrows (responsabili dell'attacco al rifugio), cacciatori di frodo e la corruzione latente delle foreste.",
-  trattiSpecie: "Retaggio Fatato: Vantaggio ai TS contro l'essere affascinato. La magia non può addormentarti.\nMaschera della Selva: Puoi tentare di nasconderti anche quando sei parzialmente oscurato da fenomeni naturali.\nScurovisione 18m\nLingua dei Boschi: Puoi parlare con bestie e folletti; conosci il Silvano.",
-  privilegi: "PRIVILEGI CIRCOLO DEL PASTORE:\n• Lingua dei Boschi (liv. 2): Comunichi con le bestie e i folletti, e parli, leggi e scrivi il Silvano.\n• Totem Spirituale (liv. 2 - Azione Bonus): Evochi un'aura totemica di 9m entro 18m per 1 minuto (Orso: +15 PF temp e vantaggio alle prove/TS di Forza; Falco: reazione per dare vantaggio agli attacchi e vantaggio a Percezione; Unicorno: +10 PF extra su magie di cura).\n• Evocatore Possente (liv. 6): Bestie e folletti che evochi hanno +2 PF per dado vita e i loro attacchi con armi naturali contano come magici.\n• Spirito Guardiano (liv. 10): Le tue evocazioni nell'aura del totem recuperano 5 PF all'inizio del turno e ottengono PF temp se ridotte a 0 PF.\n\nFORMA SELVATICA (Azione):\nGrado Sfida max 1 (terrestre, nuoto, volo), 2 usi per riposo.\n\nPRIVILEGIO BACKGROUND (SCOPERTA):\nSei a conoscenza di un'unica e importantissima verità cosmica o segreto del mondo (il cerchio di pietre, il patto col Signore Fatato e la corruzione latente delle foreste).",
+  trattiSpecie: "SCUROVISIONE (18 m):\nVedi nella penombra come se fosse luce intensa e nel buio come penombra.\n\nSENSI ACUTI:\nCompetenza nell'abilità Percezione.\n\nRETAGGIO FATATO:\nVantaggio ai tiri salvezza contro l'essere affascinato e la magia non può farti addormentare.\n\nTRANCE:\nGli elfi non dormono: meditano profondamente per 4 ore al giorno, ottenendo gli stessi benefici di un riposo lungo umano di 8 ore.\n\nADDESTRAMENTO NELLE ARMI ELFICHE:\nCompetenza nelle spade corte, spade lunghe, archi corti e archi lunghi.\n\nPASSO CELERE (Flotta Elfica):\nVelocità base di 10,5 metri (35 ft).\n\nMASCHERA DELLA SELVA:\nPuoi tentare di nasconderti anche se sei oscurato solo da fenomeni naturali (fogliame, pioggia battente, neve, nebbia).",
+  privilegi: "PRIVILEGI DI CLASSE (DRUIDO LIV. 10):\n• Druidico: Conosci il Druidico, il linguaggio segreto dei druidi; puoi parlarlo e lasciare messaggi nascosti.\n• Lancio di Incantesimi: Saggezza come caratteristica da incantatore, preparazione incantesimi, uso di focus druidico e rituali.\n• Forma Selvatica (2 usi/Riposo Breve o Lungo): Con un'azione ti trasformi in una bestia conosciuta con Grado di Sfida max 1 (terrestre, nuoto, volo); durata 5 ore (metà livello).\n• Incrementi di Caratteristica / Talenti: 4° e 8° livello (Saggezza 20, Destrezza 15, Costituzione 14).\n\nPRIVILEGI CIRCOLO DEL PASTORE:\n• Lingua dei Boschi (liv. 2): Comunichi con bestie e folletti, e parli, leggi e scrivi il Silvano.\n• Totem Spirituale (liv. 2 - Azione Bonus): Evochi un'aura totemica di 9m entro 18m per 1 minuto (Orso: +15 PF temp e vantaggio a prove/TS di Forza; Falco: reazione per dare vantaggio all'attacco di un alleato e vantaggio a Percezione; Unicorno: +10 PF extra a tutte le creature nell'aura su magie di cura). 1/Riposo Breve o Lungo.\n• Evocatore Possente (liv. 6): Bestie e folletti che evochi hanno +2 PF per dado vita e i loro attacchi con armi naturali contano come magici.\n• Spirito Guardiano (liv. 10): Le tue evocazioni nell'aura del totem recuperano 5 PF all'inizio del proprio turno.\n\nPRIVILEGIO BACKGROUND (EREMITA - SCOPERTA):\nSei a conoscenza di un'unica e fondamentale verità cosmica o segreto della natura (il cerchio di pietre, il patto col Signore Fatato e la corruzione latente delle foreste).",
   note: "ORIGINI & BACKSTORY:\n• Origine: Montagne Rauvin (famiglia di pastori elfici)\n• Affiliazione: Arpisti (rete di studiosi e guerrieri per l'equilibrio)\n• Mentore: Un orso mannaro che gli ha insegnato a rispettare tutte le creature viventi\n• Aspetto Guida: Il fiume inarrestabile gli ricorda il ciclo eterno della natura\n• Oggetto Prezioso: Un sonaglio di zucca essiccata con bacche di agrifoglio\n\nLE ORIGINI & IL PATTO COL PICCOLO POPOLO:\nFin da bambino cercava tracce degli spiriti. Seguendo un agnello smarrito, trovò un cerchio di pietre muschiose e ricevette la maschera d'alabastro da un Signore Fatato. Da quel giorno le bestie divennero compagne e la natura gli parlò con voce primordiale.\n\nIL MASSACRO & GLI ARPISTI:\nDopo l'attacco degli orchi dei Many Arrows in cui morirono i suoi compagni, ha consacrato la vita a proteggere la natura a ogni costo. Si è unito agli Arpisti e ha indagato sulla corruzione delle foreste prima di essere richiamato al Concilio."
 };
 
@@ -374,24 +379,26 @@ export const ELEVORN_JSON = {
   condizioni: [],
   sfinimento: 0,
   tiriSalvezza: { forza: true, destrezza: false, costituzione: true, intelligenza: false, saggezza: false, carisma: false },
+  // Mezzelfo (Versatilità) → Percezione, Sopravvivenza (★); Guerriero/Ranger → Atletica, Intuizione (★);
+  // Ladro (Maestria) → Furtività, Inganno (✦); Eremita → Medicina, Religione (●).
   abilita: {
     acrobazia: 0,
     addestrareAnimali: 0,
     arcano: 0,
-    atletica: 1,
+    atletica: 2,
     furtivita: 3,
     indagare: 0,
     inganno: 3,
     intimidire: 0,
     intrattenere: 0,
-    intuizione: 1,
+    intuizione: 2,
     medicina: 1,
     natura: 0,
-    percezione: 1,
+    percezione: 2,
     persuasione: 0,
     rapiditaDiMano: 0,
     religione: 1,
-    sopravvivenza: 1,
+    sopravvivenza: 2,
     storia: 0
   },
   attacchi: [
@@ -462,6 +469,7 @@ export const WENDELL_JSON = {
   condizioni: [],
   sfinimento: 1,
   tiriSalvezza: { forza: false, destrezza: true, costituzione: false, intelligenza: false, saggezza: false, carisma: true },
+  // Bardo (classe) → Intrattenere, Percezione (★); Bardo (Maestria) → Inganno, Persuasione (✦); Ciarlatano (bg) → Rapidità di Mano (●).
   abilita: {
     acrobazia: 0,
     addestrareAnimali: 0,
@@ -471,11 +479,11 @@ export const WENDELL_JSON = {
     indagare: 0,
     inganno: 3,
     intimidire: 0,
-    intrattenere: 1,
+    intrattenere: 2,
     intuizione: 0,
     medicina: 0,
     natura: 0,
-    percezione: 1,
+    percezione: 2,
     persuasione: 3,
     rapiditaDiMano: 1,
     religione: 0,
@@ -592,6 +600,7 @@ export const LYRIAN_JSON = {
   armatura: { nome: 'Armatura di Cuoio Borchiato (CA 12)', tipo: 'leggera', base: 12, scudo: true, bonus: 0 },
   caratteristiche: { forza: 10, destrezza: 18, costituzione: 15, intelligenza: 12, saggezza: 13, carisma: 16 },
   tiriSalvezza: { forza: true, destrezza: false, costituzione: true, intelligenza: false, saggezza: false, carisma: false },
+  // Guerriero (classe) → Intimidire (★); Elfo dei Boschi (Sensi Acuti) → Percezione (★); Forestiero (bg) → Atletica, Sopravvivenza (●).
   abilita: {
     acrobazia: 0,
     addestrareAnimali: 0,
@@ -600,12 +609,12 @@ export const LYRIAN_JSON = {
     furtivita: 0,
     indagare: 0,
     inganno: 0,
-    intimidire: 1,
+    intimidire: 2,
     intrattenere: 0,
     intuizione: 0,
     medicina: 0,
     natura: 0,
-    percezione: 1,
+    percezione: 2,
     persuasione: 0,
     rapiditaDiMano: 0,
     religione: 0,
