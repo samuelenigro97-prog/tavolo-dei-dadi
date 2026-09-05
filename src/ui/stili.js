@@ -617,7 +617,8 @@ tbody tr:hover {
 
 .sezione:hover .sezione-titolo-testo,
 .profilo-sezione:hover .sezione-titolo-testo {
-  text-shadow: 0 0 6px var(--c-aura-color, rgba(201,162,39,0.3)), 0 0 2px var(--c-title);
+  /* Testo stabile senza cambio di colore o bagliori */
+  color: var(--c-ink);
 }
 
 .sezione:hover .angolo-ornamento,
@@ -1336,6 +1337,25 @@ tbody tr:hover {
 
 .profilo-col-sinistra .sezione { margin-bottom: 0 !important; }
 .profilo-col-sinistra .sezione > summary { font-size: 11.5px !important; letter-spacing: 0.7px !important; white-space: nowrap !important; overflow: hidden; text-overflow: ellipsis; }
+.profilo-col-sinistra .sezione-titolo-testo,
+.competenze-tier-2 .sezione-titolo-testo,
+.risorse-tier-3 .sezione-titolo-testo,
+.profilo-competenze-box .sezione-titolo-testo,
+.profilo-risorse-box .sezione-titolo-testo {
+  color: var(--c-ink) !important;
+  text-shadow: none !important;
+  transition: none !important;
+  filter: none !important;
+}
+.profilo-col-sinistra .sezione:hover .sezione-titolo-testo,
+.competenze-tier-2:hover .sezione-titolo-testo,
+.risorse-tier-3:hover .sezione-titolo-testo,
+.profilo-competenze-box:hover .sezione-titolo-testo,
+.profilo-risorse-box:hover .sezione-titolo-testo {
+  color: var(--c-ink) !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
 .profilo-griglia {
   display: grid;
   grid-template-columns: minmax(220px, 280px) minmax(340px, 1fr) minmax(180px, 310px);
