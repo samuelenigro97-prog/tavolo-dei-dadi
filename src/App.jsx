@@ -14734,71 +14734,12 @@ export default function App() {
                                       ×
                                     </button>
                                   </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
                         )}
-                        <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                          <input
-                            id={`wpn-add-input-${cat}`}
-                            list={`presets-${cat}`}
-                            placeholder={
-                              cat === 'Reazione'
-                                ? '+ Aggiungi reazione o incantesimo (Scudo, Controincantesimo, Attacco di opportunità...)'
-                                : cat === 'Bonus'
-                                  ? '+ Aggiungi azione bonus (Attacco seconda arma, Arma Spirituale, Smite...)'
-                                  : t('combat.aggiungi_ph')
-                            }
-                            style={{ ...styles.inlineInput, flex: 1, minWidth: 140, padding: '6px 8px' }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' && e.target.value.trim()) {
-                                const nomeInserito = e.target.value.trim();
-                                let nuova;
-                                const armaTrovata = trovaArma(nomeInserito);
-                                if (cat === 'Reazione') {
-                                  const r = REAZIONI_5E.find((x) => x.nome.toLowerCase() === nomeInserito.toLowerCase() || x.nome.toLowerCase().startsWith(nomeInserito.toLowerCase()));
-                                  nuova = r
-                                    ? { nome: r.nome, bonus: 0, danno: r.danno || '', tipoDanno: r.tipoDanno || '', note: r.note || '' }
-                                    : (armaTrovata ? attaccoDaArma(armaTrovata, scheda, nomeInserito) : { nome: nomeInserito, bonus: 0, danno: '', tipoDanno: '', note: '' });
-                                } else if (cat === 'Bonus') {
-                                  const b = AZIONI_BONUS_5E.find((x) => x.nome.toLowerCase() === nomeInserito.toLowerCase() || x.nome.toLowerCase().startsWith(nomeInserito.toLowerCase()));
-                                  nuova = b
-                                    ? { nome: b.nome, bonus: 0, danno: b.danno || '', tipoDanno: b.tipoDanno || '', note: b.note || '' }
-                                    : (armaTrovata ? attaccoDaArma(armaTrovata, scheda, nomeInserito) : { nome: nomeInserito, bonus: 0, danno: '', tipoDanno: '', note: '' });
-                                } else {
-                                  nuova = armaTrovata ? attaccoDaArma(armaTrovata, scheda, nomeInserito) : { nome: nomeInserito, bonus: 0, danno: '', tipoDanno: '', note: '' };
-                                }
-                                const inv = scheda.inventario || [];
-                                let newInv = inv;
-                                const isArma = Boolean(armaTrovata || cat === 'Azione' || ARMI_5E.some((w) => w.nome.toLowerCase() === nuova.nome.toLowerCase()));
-                                if (isArma) {
-                                  const idx = inv.findIndex((x) => x.nome.toLowerCase() === nuova.nome.toLowerCase());
-                                  if (idx >= 0) {
-                                    newInv = inv.map((x, i) => (i === idx ? { ...x, equip: true } : x));
-                                  } else {
-                                    newInv = [...inv, completaUtilizziOggetto({ id: `inv-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`, nome: nuova.nome, qta: 1, peso: pesoStimato(nuova.nome), equip: true, categoria: 'Arma' })];
-                                  }
-                                }
-                                aggiorna({
-                                  attacchi: [...scheda.attacchi, { ...nuova, id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, categoria: cat }],
-                                  inventario: newInv,
-                                });
-                                e.target.value = '';
-                              }
-                            }}
-                          />
-                          <datalist id={`presets-${cat}`}>
-                            {cat === 'Reazione' ? (
-                              REAZIONI_5E.map((r) => <option key={r.nome} value={r.nome} />)
-                            ) : cat === 'Bonus' ? (
-                              AZIONI_BONUS_5E.map((b) => <option key={b.nome} value={b.nome} />)
-                            ) : (
-                              [...ARMI_5E].sort((a, b) => a.nome.localeCompare(b.nome, 'it')).map((w) => <option key={w.nome} value={w.nome} />)
-                            )}
-                          </datalist>
-                        </div>
                       </div>
                     );
                   })];
