@@ -149,6 +149,6 @@ export const COLORE_SCUOLA = {
   evocation: '#f87171',
   necromanzia: '#4ade80',
   necromancy: '#4ade80',
-  trasmutazione: '#facc15',
-  transmutation: '#facc15',
+  trasmutazione: '#2dd4bf',
+  transmutation: '#2dd4bf',
 };
