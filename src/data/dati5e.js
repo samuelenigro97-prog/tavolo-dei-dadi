@@ -176,6 +176,14 @@ export const PESI_OGGETTI = {
   // Oggetto magico: peso fisso a prescindere dal contenuto (vedi funzione borsa
   // conservante nell'inventario, che aumenta la capacità di carico se equipaggiata).
   'Borsa Conservante': 7.5,
+  'Borsa conservante': 7.5,
+  'Borsa da cintura': 0.5,
+  'Borsa del guaritore': 1.5,
+  'Borsa di biglie': 1,
+  'Borsa di triboli': 1,
+  'Borsa da sella': 4,
+  'Borsa da cavallo': 4,
+  'Borsa per proiettili': 0.5,
   'Guanti del Potere Orchesco': 0.5,
   'Mantello della Protezione': 1,
   'Perla del Potere': 0,
@@ -192,7 +200,6 @@ export const PESI_OGGETTI = {
   'Arma +1': 1.5, 'Arma +2': 1.5, 'Arma +3': 1.5, 'Scudo +1': 3, 'Scudo +2': 3, 'Scudo +3': 3,
   'Armatura +1': 9, 'Armatura +2': 9, 'Armatura +3': 9,
 };
-export const NOMI_OGGETTI = Object.keys(PESI_OGGETTI).sort((a, b) => a.localeCompare(b, 'it'));
 export const PESO_ARMATURA_TIPO = { leggera: 5, media: 9, pesante: 25 };
 export const ARMATURE_5E = [
   // Pesante
@@ -327,6 +334,13 @@ export const ARMI_5E = [
   { nome: 'Balestra a mano', danno: '1d6', tipo: 'Perforante', note: 'Leggera, Munizioni, Caricamento (9/36 m)', ranged: true, maestria: 'Tormentare (Vex)' },
   { nome: 'Balestra pesante', danno: '1d10', tipo: 'Perforante', note: 'Munizioni, Pesante, Caricamento, Due mani (30/120 m)', ranged: true, maestria: 'Spingere (Push)' },
 ];
+
+export const NOMI_OGGETTI = Array.from(new Set([
+  ...Object.keys(PESI_OGGETTI),
+  ...(ARMI_5E || []).map((w) => w.nome),
+  ...(ARMATURE_5E || []).map((a) => a.nome),
+  ...(STRUMENTI_5E || []),
+])).sort((a, b) => a.localeCompare(b, 'it'));
 
 export const REAZIONI_5E = [
   // Incantesimi di reazione

@@ -1290,7 +1290,7 @@ const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(I
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SESSO_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E, DEFAULT_MANUALI, MANUALI_INFO, SOTTOCLASSI_FONTI, TALENTI_FONTI, INCANTESIMI_FONTI, talentiPerManuali, incantesimiPerManuali, fonteValida, PE_PER_LIVELLO } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili, calcolaTurnoCombattimento, dettagliAbilita, calcolaTsConcentrazione, calcolaAttaccoFurtivo, calcolaIraBarbarica, calcolaPunizioneDivina, calcolaIspirazioneBardica, livelloDiClasse } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, determinaIconaOggetto, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili, calcolaTurnoCombattimento, dettagliAbilita, calcolaTsConcentrazione, calcolaAttaccoFurtivo, calcolaIraBarbarica, calcolaPunizioneDivina, calcolaIspirazioneBardica, livelloDiClasse } from './rules/regole.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -3478,6 +3478,8 @@ export default function App() {
   const [filtroCatInventario, setFiltroCatInventario] = useState('tutti'); // 'tutti' | 'armi_armature' | 'pozioni' | 'magici' | 'attrezzi'
   const [effettoInventarioAperto, setEffettoInventarioAperto] = useState(null);
   const [apertiContenitori, setApertiContenitori] = useState({});
+  const [nuovoOggettoTesto, setNuovoOggettoTesto] = useState('');
+  const [suggerimentiInvAperti, setSuggerimentiInvAperti] = useState(false);
   const [bestiaDettaglio, setBestiaDettaglio] = useState(null); // bestia aperta in modale statblock
   const [fontePopover, setFontePopover] = useState(null); // { tipo: 'ts'|'car', key, top, left } menu "da cosa deriva il bonus" aperto
   useEffect(() => {
@@ -17001,6 +17003,36 @@ export default function App() {
                         </button>
                       ))}
                     </div>
+                    {/* Suggerimenti rapidi di aggiunta dal compendio se si cerca un oggetto non presente */}
+                    {filtroInventario.trim().length >= 2 && (() => {
+                      const q = filtroInventario.trim().toLowerCase();
+                      const nonPresenti = NOMI_OGGETTI.filter((n) => n.toLowerCase().includes(q) && !inv.some((o) => (o.nome || '').toLowerCase() === n.toLowerCase())).slice(0, 8);
+                      if (nonPresenti.length === 0) return null;
+                      return (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', padding: '6px 10px', background: 'rgba(201,162,39,0.09)', borderRadius: 8, border: `1px dashed ${C.goldDark}`, marginBottom: 10, fontSize: 12 }}>
+                          <span style={{ color: C.goldDark, fontWeight: 700 }}>
+                            💡 {lingua === 'en' ? 'Add from 5e compendium:' : 'Aggiungi direttamente dal compendio:'}
+                          </span>
+                          {nonPresenti.map((itemNome) => (
+                            <button
+                              key={itemNome}
+                              type="button"
+                              onClick={() => {
+                                addItem(itemNome);
+                                setFiltroInventario('');
+                              }}
+                              style={{ ...styles.buttonMini, fontSize: 11, padding: '3px 8px', borderRadius: 12, borderColor: C.goldDark, background: C.panel, color: C.ink, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                              title={lingua === 'en' ? `Click to add ${itemNome} directly to inventory` : `Clicca per aggiungere direttamente ${itemNome} all'inventario`}
+                            >
+                              <span>{determinaIconaOggetto(itemNome)}</span>
+                              <strong>{itemNome}</strong>
+                              <span style={{ fontSize: 10, color: C.inkDim }}>({pesoStimato(itemNome)} kg)</span>
+                            </button>
+                          ))}
+                        </div>
+                      );
+                    })()}
+
                     {/* Lista oggetti */}
                     {(inv.length > 0 || numMonete > 0) && (
                       <div className="inventario-wrap" style={{ overflowX: 'auto' }}>
@@ -17534,43 +17566,150 @@ export default function App() {
                         </table>
                       </div>
                     )}
-                    {/* Aggiungi oggetto: campo singolo unificato con autocompletamento */}
-                    <div style={{ display: 'flex', gap: 6, marginTop: 8, alignItems: 'center' }}>
-                      <input
-                        id="inv-add-input"
-                        list="inv-presets"
-                        placeholder={t('inv.aggiungi_ph')}
-                        style={{ ...styles.inlineInput, flex: 1, minWidth: 140, padding: '6px 10px' }}
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          if (!v) return;
-                          const match = NOMI_OGGETTI.find((n) => n.toLowerCase() === v.trim().toLowerCase());
-                          if (match) {
-                            addItem(match);
-                            e.target.value = '';
-                          }
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && e.target.value.trim()) {
-                            addItem(e.target.value.trim());
-                            e.target.value = '';
-                          }
-                        }}
-                      />
-                      <datalist id="inv-presets">{NOMI_OGGETTI.map((n) => <option key={n} value={n} />)}</datalist>
-                      <button
-                        type="button"
-                        style={{ ...styles.buttonPrimary, padding: '6px 14px', fontSize: 12, whiteSpace: 'nowrap' }}
-                        onClick={() => {
-                          const el = document.getElementById('inv-add-input');
-                          if (el && el.value.trim()) {
-                            addItem(el.value.trim());
-                            el.value = '';
-                          }
-                        }}
-                      >
-                        ➕ {t('comune.aggiungi') || 'Aggiungi'}
-                      </button>
+                    {/* Aggiungi oggetto: campo singolo unificato con autocompletamento interattivo */}
+                    <div style={{ position: 'relative', marginTop: 8 }}>
+                      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                        <input
+                          id="inv-add-input"
+                          list="inv-presets"
+                          type="text"
+                          value={nuovoOggettoTesto}
+                          placeholder={t('inv.aggiungi_ph')}
+                          style={{ ...styles.inlineInput, flex: 1, minWidth: 140, padding: '7px 10px', fontSize: 13 }}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            setNuovoOggettoTesto(v);
+                            // Controllo immediato se il valore corrisponde esattamente a un preset (es. selezione rapida)
+                            const match = NOMI_OGGETTI.find((n) => n.toLowerCase() === v.trim().toLowerCase());
+                            if (match && v.trim().length > 2 && (match === v || match.toLowerCase() === v.toLowerCase())) {
+                              addItem(match);
+                              setNuovoOggettoTesto('');
+                              setSuggerimentiInvAperti(false);
+                            } else {
+                              setSuggerimentiInvAperti(Boolean(v.trim()));
+                            }
+                          }}
+                          onInput={(e) => {
+                            const v = e.target.value;
+                            const match = NOMI_OGGETTI.find((n) => n.toLowerCase() === v.trim().toLowerCase());
+                            if (match && v.trim().length > 2 && (match === v || match.toLowerCase() === v.toLowerCase())) {
+                              addItem(match);
+                              setNuovoOggettoTesto('');
+                              setSuggerimentiInvAperti(false);
+                            }
+                          }}
+                          onFocus={() => {
+                            if (nuovoOggettoTesto.trim()) setSuggerimentiInvAperti(true);
+                          }}
+                          onBlur={() => {
+                            setTimeout(() => setSuggerimentiInvAperti(false), 200);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              const q = nuovoOggettoTesto.trim();
+                              if (!q) return;
+                              const match = NOMI_OGGETTI.find((n) => n.toLowerCase() === q.toLowerCase()) || q;
+                              addItem(match);
+                              setNuovoOggettoTesto('');
+                              setSuggerimentiInvAperti(false);
+                            } else if (e.key === 'Escape') {
+                              setSuggerimentiInvAperti(false);
+                            }
+                          }}
+                        />
+                        <datalist id="inv-presets">
+                          {NOMI_OGGETTI.map((n) => <option key={n} value={n} />)}
+                        </datalist>
+                        <button
+                          type="button"
+                          style={{ ...styles.buttonPrimary, padding: '7px 16px', fontSize: 12.5, whiteSpace: 'nowrap', fontWeight: 700 }}
+                          onClick={() => {
+                            const q = nuovoOggettoTesto.trim();
+                            if (q) {
+                              const match = NOMI_OGGETTI.find((n) => n.toLowerCase() === q.toLowerCase()) || q;
+                              addItem(match);
+                              setNuovoOggettoTesto('');
+                              setSuggerimentiInvAperti(false);
+                            }
+                          }}
+                        >
+                          ➕ {t('comune.aggiungi') || 'Aggiungi'}
+                        </button>
+                      </div>
+
+                      {/* Menu a tendina dei suggerimenti interattivi quando si digita */}
+                      {suggerimentiInvAperti && nuovoOggettoTesto.trim() && (() => {
+                        const q = nuovoOggettoTesto.trim().toLowerCase();
+                        const matches = NOMI_OGGETTI.filter((n) => n.toLowerCase().includes(q)).slice(0, 10);
+                        if (matches.length === 0) return null;
+                        return (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              left: 0,
+                              right: 110,
+                              bottom: '100%',
+                              marginBottom: 4,
+                              maxHeight: 230,
+                              overflowY: 'auto',
+                              background: C.panel,
+                              border: `1.5px solid ${C.goldDark}`,
+                              borderRadius: 8,
+                              boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
+                              zIndex: 100,
+                              padding: '4px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 2,
+                            }}
+                          >
+                            <div style={{ padding: '4px 8px', fontSize: 10.5, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5, borderBottom: `1px solid ${C.border}` }}>
+                              💡 {lingua === 'en' ? 'Click to add directly to inventory:' : 'Clicca per caricare direttamente nell’inventario:'}
+                            </div>
+                            {matches.map((itemNome) => {
+                              const peso = pesoStimato(itemNome);
+                              const icona = determinaIconaOggetto(itemNome);
+                              return (
+                                <button
+                                  key={itemNome}
+                                  type="button"
+                                  onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    addItem(itemNome);
+                                    setNuovoOggettoTesto('');
+                                    setSuggerimentiInvAperti(false);
+                                  }}
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    padding: '6px 10px',
+                                    borderRadius: 6,
+                                    border: 'none',
+                                    background: 'transparent',
+                                    color: C.ink,
+                                    fontSize: 12.5,
+                                    cursor: 'pointer',
+                                    textAlign: 'left',
+                                    transition: 'background 0.15s ease',
+                                  }}
+                                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(201,162,39,0.18)'; }}
+                                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                                >
+                                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 600 }}>
+                                    <span>{icona}</span>
+                                    <span>{itemNome}</span>
+                                  </span>
+                                  <span style={{ fontSize: 11, color: C.inkDim, marginLeft: 8 }}>
+                                    {peso > 0 ? `${peso} kg` : '—'}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 );

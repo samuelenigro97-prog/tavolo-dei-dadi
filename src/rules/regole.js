@@ -5,7 +5,7 @@ import { CLASSI, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, SLOT_FULL_CASTER, SLOT
   INCANTESIMI_CLASSE, CARATT_INCANTATORE, SOTTOCLASSE_TERZO_CASTER,
   SCUOLE_TERZO_CASTER_2014, SLOT_TERZO_CASTER, INC_MAX_TERZO, TRUCCHETTI_TERZO_CASTER,
   TS_CLASSE, COMPETENZE_CLASSE, COMPETENZE_SPECIE, BACKGROUND_COMPETENZE,
-  MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, PE_PER_LIVELLO, REAZIONI_5E } from '../data/dati5e.js';
+  MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, PE_PER_LIVELLO, REAZIONI_5E, ARMI_5E, ARMATURE_5E } from '../data/dati5e.js';
 import { modificatore, conSegno, bonusCompetenzaDaLivello } from './dadi.js';
 import { spiegaIncantesimo } from '../data/spiegazioni.js';
 import { INCANTESIMI_DB, datiIncantesimo } from '../data/incantesimi.js';
@@ -518,6 +518,23 @@ export function pesoArmatura(armatura) {
   if (!p) p = PESO_ARMATURA_TIPO[armatura.tipo] || 0;
   if (armatura.scudo) p += PESI_OGGETTI['Scudo'];
   return p;
+}
+
+export function determinaIconaOggetto(nome) {
+  if (!nome) return '📦';
+  const n = String(nome).trim().toLowerCase();
+  if (/scudo|shield/i.test(n) || (ARMATURE_5E || []).some((a) => (a.match || []).some((m) => n.includes(m.toLowerCase())) || a.nome.toLowerCase() === n)) return '🛡️';
+  if ((ARMI_5E || []).some((w) => w.nome.toLowerCase() === n || n.includes(w.nome.toLowerCase()))) return '⚔️';
+  if (/pozione|filtro|unguento|elisir|potion/i.test(n)) return '🧪';
+  if (/borsa|zaino|sacco|baule|cesta|contenitor|pouch|backpack|bag|custodia|faretra/i.test(n)) return '🎒';
+  if (/pergamena|libro|tomo|mappa|scroll|book|grimorio/i.test(n)) return '📜';
+  if (/anello|amuleto|mantello|stivali|bacchetta|bastone|verga|sfera|pietra|focus|cristallo|perla/i.test(n)) return '✨';
+  if (/arnesi|attrezzi|strumento|set|kit/i.test(n)) return '🔧';
+  if (/torcia|lanterna|lampada|candela/i.test(n)) return '🕯️';
+  if (/corda|rampino|catena/i.test(n)) return '🪢';
+  if (/monet|denar|oro|gemm|rubin|diamant|monete/i.test(n)) return '💰';
+  if (/abiti|veste|mantello|stivali|guanti|cintura|cappello/i.test(n)) return '🥋';
+  return '📦';
 }
 
 /** Contenuto standard 5e dei pacchetti di dotazione e contenitori comuni */
