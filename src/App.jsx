@@ -11482,13 +11482,6 @@ export default function App() {
                       </button>
                       <button
                         style={btnAzione}
-                        onClick={() => setRinominando(!rinominando)}
-                        title={t('tip.rinomina')}
-                      >
-                        ✎
-                      </button>
-                      <button
-                        style={btnAzione}
                         title={t('tip.levelup')}
                         onClick={() => {
                           const dvMatch = String(scheda.dadiVita || '').match(/d(\d+)/i);
@@ -11518,6 +11511,13 @@ export default function App() {
                         title={t('roll.tavolo_dadi')}
                       >
                         🎲
+                      </button>
+                      <button
+                        style={{ ...btnAzione, ...(mostraCompendio ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }}
+                        onClick={() => setMostraCompendio(true)}
+                        title={`${t('compendio.titolo')} (Cmd+K)`}
+                      >
+                        🔍
                       </button>
                     </div>
 
@@ -11592,7 +11592,6 @@ export default function App() {
                       </span>
                       <button style={btnAzione} title={t('tooltip.tema')} onClick={() => setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto')}>{tema === 'auto' ? '🌗' : tema === 'chiaro' ? '☀️' : '🌙'}</button>
                       <button ref={ambientazioneBtnRef} style={btnAzione} title={t('luogo.tooltip')} onClick={() => { if (!mostraPannelloAudio) { const r = ambientazioneBtnRef.current?.getBoundingClientRect(); if (r) setPosPannelloAudio({ top: Math.max(8, Math.min(window.innerHeight - 160, r.bottom + 5)), left: Math.max(8, Math.min(window.innerWidth - 288, r.left)) }); } setMostraPannelloAudio(!mostraPannelloAudio); }}>{iconaAmbientazione(presetColori)}</button>
-                      <button style={{ ...btnAzione, ...(mostraCompendio ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }} onClick={() => setMostraCompendio(true)} title={`${t('compendio.titolo')} (Cmd+K)`}>🔍</button>
                       <button style={{ ...btnAzione, ...(mostraDiarioModal ? { color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.15)' } : {}) }} onClick={() => setMostraDiarioModal(true)} title={`${t('sez.diario')} (${(Array.isArray(scheda.diario) ? scheda.diario.length : 0)})`}>📜</button>
 
                       <button style={btnAzione} onClick={() => (mappaCampagna ? setMappaAperta((v) => !v) : mappaRef.current?.click())} title={mappaCampagna ? (mappaAperta ? t('mappa.chiudi') : t('mappa.apri')) : t('mappa.carica')}>🗺️</button>
@@ -12426,12 +12425,15 @@ export default function App() {
                       }}
                     />
                   ) : (
-                    <div style={{ position: 'relative', width: '100%', display: 'flex', overflow: 'hidden', borderRadius: 8, border: `1.5px solid ${C.goldDark}`, height: 38, background: 'rgba(0,0,0,0.03)', boxSizing: 'border-box' }}>
+                    <div
+                      style={{ position: 'relative', width: '100%', display: 'flex', overflow: 'hidden', borderRadius: 8, border: `1.5px solid ${C.goldDark}`, height: 38, background: 'rgba(0,0,0,0.03)', boxSizing: 'border-box', cursor: isSolaLettura ? 'default' : 'pointer' }}
+                      onDoubleClick={() => { if (!isSolaLettura) setRinominando(true); }}
+                      title={t('nome.tooltip_selettore') + (!isSolaLettura ? (lingua === 'en' ? ' · Double click to rename' : ' · Doppio clic per rinominare') : '')}
+                    >
                       <select
                         style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', padding: '4px 74px 4px 12px', textOverflow: 'ellipsis', background: 'transparent', position: 'relative', zIndex: 2, border: 'none', height: '100%' }}
                         value={roster.attivo}
                         onChange={(e) => { setSchedaSolaLettura(null); setRoster((r) => ({ ...r, attivo: e.target.value })); }}
-                        title={t('nome.tooltip_selettore')}
                       >
                         {Object.entries(roster.personaggi).map(([id, p]) => (
                           <option key={id} value={id}>
@@ -18065,18 +18067,6 @@ export default function App() {
                   type="button"
                   style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
                   onClick={() => {
-                    setRinominando(!rinominando);
-                    setMostraMenuHubMobile(false);
-                  }}
-                >
-                  <span style={{ fontSize: 16 }}>✎</span>
-                  <span>{t('tip.rinomina')}</span>
-                </button>
-
-                <button
-                  type="button"
-                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
-                  onClick={() => {
                     const dvMatch = String(scheda.dadiVita || '').match(/d(\d+)/i);
                     const facceDV = dvMatch ? parseInt(dvMatch[1]) : 8;
                     const modCos = modificatore(punteggioCaratteristica(scheda, 'costituzione') || 10) || 0;
@@ -18206,6 +18196,18 @@ export default function App() {
                   type="button"
                   style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
                   onClick={() => {
+                    setMostraCompendio(true);
+                    setMostraMenuHubMobile(false);
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>🔍</span>
+                  <span>{t('compendio.titolo')}</span>
+                </button>
+
+                <button
+                  type="button"
+                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
+                  onClick={() => {
                     setTema(tema === 'auto' ? 'chiaro' : tema === 'chiaro' ? 'scuro' : 'auto');
                   }}
                 >
@@ -18224,18 +18226,6 @@ export default function App() {
                 >
                   <span style={{ fontSize: 16 }}>{iconaAmbientazione(presetColori)}</span>
                   <span>{t('luogo.tooltip')}</span>
-                </button>
-
-                <button
-                  type="button"
-                  style={{ ...styles.button, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: '10px 12px', fontSize: 13, fontWeight: 700, borderRadius: 8, background: C.panelLight, border: `1px solid ${C.border}`, color: C.ink }}
-                  onClick={() => {
-                    setMostraCompendio(true);
-                    setMostraMenuHubMobile(false);
-                  }}
-                >
-                  <span style={{ fontSize: 16 }}>🔍</span>
-                  <span>{t('compendio.titolo')}</span>
                 </button>
 
                 <button
@@ -18948,11 +18938,12 @@ export default function App() {
         </div>
       )}
 
-      {/* ===== Modale Compendio 5e & Ricerca Rapida (Cmd+K) ===== */}
+      {/* ===== Modale Ricerca Rapida (Cmd+K) ===== */}
       <CompendioModal
         aperto={mostraCompendio}
         onChiudi={() => setMostraCompendio(false)}
         lingua={lingua}
+        versione={versione}
         onAggiungiIncantesimo={(spell) => {
           const nomeSpell = spell.nome;
           const giaInLista = (scheda.incantesimiLista || []).some((s) => s.nome.toLowerCase() === nomeSpell.toLowerCase());

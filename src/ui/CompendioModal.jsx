@@ -10,13 +10,14 @@ import { TALENTI_XANATHAR } from '../dati/talenti-xanathar.js';
 import { TALENTI_TASHA } from '../dati/talenti-tasha.js';
 import { EFFETTI_CONDIZIONI } from '../data/condizioni.js';
 import { BESTIE, FAMIGLI, EVOCAZIONI, MOSTRI_5E } from '../data/bestiario.js';
-import { spiegaIncantesimo, spiegaPrivilegio, spiegaTalento, spiegaInvocazione, spiegaInfusione, INVOCAZIONI_5E, INFUSIONI_ARTEFICE_5E } from '../data/spiegazioni.js';
+import { spiegaIncantesimo, spiegaPrivilegio, spiegaTalento, spiegaInvocazione, spiegaInfusione, setEdizioneAttuale, INVOCAZIONI_5E, INFUSIONI_ARTEFICE_5E } from '../data/spiegazioni.js';
 
 
 export function CompendioModal({
   aperto,
   onChiudi,
   lingua = 'it',
+  versione = '2024',
   onAggiungiIncantesimo,
   onAggiungiInventario,
   onAggiungiAttacco,
@@ -37,8 +38,10 @@ export function CompendioModal({
     }
   }, [aperto]);
 
-  // Database unificato memoizzato
+  // Database unificato memoizzato in base all'edizione (5.0 vs 5.5)
+  const is2024 = String(versione) !== '2014';
   const vociCompendio = useMemo(() => {
+    setEdizioneAttuale(versione);
     const elenco = [];
 
     // 1. Incantesimi
@@ -78,8 +81,12 @@ export function CompendioModal({
       });
     }
 
-    // 2. Armi
+    // 2. Armi (con Maestrie per 5.5 / senza Maestrie per 5.0)
     for (const w of (ARMI_5E || [])) {
+      const descArma = is2024
+        ? `${w.danno ? `Danno: ${w.danno} ${w.tipoDanno || ''}. ` : ''}${w.note ? `Proprietà: ${w.note}. ` : ''}${w.maestria ? `Maestria: ${w.maestria}` : ''}`.trim()
+        : `${w.danno ? `Danno: ${w.danno} ${w.tipoDanno || ''}. ` : ''}${w.note ? `Proprietà: ${w.note}` : ''}`.trim();
+      const rawArma = is2024 ? w : { ...w, maestria: undefined };
       elenco.push({
         id: `arma-${w.nome}`,
         tipo: 'equip',
@@ -89,9 +96,9 @@ export function CompendioModal({
         tipoDanno: w.tipoDanno || '',
         peso: w.peso || 1,
         prezzo: w.prezzo || '',
-        note: w.note || '',
-        desc: `${w.danno ? `Danno: ${w.danno} ${w.tipoDanno || ''}. ` : ''}${w.note ? `Proprietà: ${w.note}` : ''}`,
-        raw: w,
+        note: is2024 && w.maestria ? (w.note ? `${w.note}, Maestria (${w.maestria})` : `Maestria (${w.maestria})`) : (w.note || ''),
+        desc: descArma,
+        raw: rawArma,
       });
     }
 
@@ -138,7 +145,6 @@ export function CompendioModal({
       }
     }
 
-
     // 5. Condizioni
     for (const c of (CONDIZIONI_5E || [])) {
       const effObj = EFFETTI_CONDIZIONI[c];
@@ -155,12 +161,17 @@ export function CompendioModal({
       });
     }
 
-    // 6. Talenti & Invocazioni & Infusioni
+    // 6. Talenti & Invocazioni & Infusioni (adattati a 5.0 vs 5.5)
     const talentiMap = new Map();
-    for (const nomeTal of Object.keys(TALENTI_FONTI || {})) {
+    for (const [nomeTal, fonte] of Object.entries(TALENTI_FONTI || {})) {
+      // Se il PG è 5.0 (2014), escludi Doni Epici e talenti esclusivi di Origine 2024
+      if (!is2024) {
+        if (/^dono\s+del/i.test(nomeTal)) continue;
+        if (['musico', 'artigiano', 'guida spirituale', 'attaccabrighe'].includes(nomeTal.toLowerCase())) continue;
+      }
       talentiMap.set(nomeTal.toLowerCase(), {
         nome: nomeTal,
-        requisiti: '',
+        requisiti: fonte === 'phb2024' ? (is2024 ? 'D&D 2024' : '') : '',
         desc: spiegaTalento(nomeTal) || '',
       });
     }
@@ -215,7 +226,6 @@ export function CompendioModal({
       });
     }
 
-
     // 7. Bestiario
     const tutteCreature = [...(BESTIE || []), ...(FAMIGLI || []), ...(EVOCAZIONI || []), ...(MOSTRI_5E || [])];
     const nomiVisti = new Set();
@@ -238,7 +248,7 @@ export function CompendioModal({
     }
 
     return elenco;
-  }, []);
+  }, [versione, is2024, lingua]);
 
   // Filtro di ricerca
   const risultati = useMemo(() => {
@@ -305,13 +315,28 @@ export function CompendioModal({
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 20 }}>🔍</span>
+            <span style={{ fontSize: 22 }}>🔍</span>
             <div>
-              <h3 id="compendio-titolo" style={{ margin: 0, fontSize: 16, fontWeight: 700, color: C.ink }}>
-                {t('compendio.titolo')}
-              </h3>
-              <div style={{ fontSize: 11, color: C.inkDim }}>
-                {lingua === 'en' ? 'Quick 5e database lookup (Cmd+K / Ctrl+K)' : 'Database rapido di regole, incantesimi e oggetti 5e (Cmd+K / Ctrl+K)'}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <h3 id="compendio-titolo" style={{ margin: 0, fontSize: 16, fontWeight: 700, color: C.ink }}>
+                  {t('compendio.titolo')}
+                </h3>
+                <span style={{
+                  fontSize: 10.5,
+                  fontWeight: 800,
+                  padding: '1px 7px',
+                  borderRadius: 6,
+                  background: String(versione) === '2014' ? 'rgba(184,134,11,0.14)' : 'rgba(46,139,87,0.14)',
+                  color: String(versione) === '2014' ? C.goldDark : '#2e8b57',
+                  border: `1px solid ${String(versione) === '2014' ? C.goldDark : '#2e8b57'}`
+                }}>
+                  {String(versione) === '2014' ? '📖 D&D 5.0 (2014)' : '⚔️ D&D 5.5 (2024)'}
+                </span>
+              </div>
+              <div style={{ fontSize: 11, color: C.inkDim, marginTop: 1 }}>
+                {lingua === 'en'
+                  ? `Quick rules & database lookup for D&D ${String(versione) === '2014' ? '5.0' : '5.5'} (Cmd+K / Ctrl+K)`
+                  : `Ricerca rapida e compendio per D&D ${String(versione) === '2014' ? '5.0' : '5.5'} (Cmd+K / Ctrl+K)`}
               </div>
             </div>
           </div>

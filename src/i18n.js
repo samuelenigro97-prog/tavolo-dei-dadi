@@ -227,9 +227,9 @@ export const DIZIONARIO = {
     'diario.elimina': 'Elimina questa voce',
     'diario.elimina_conferma': 'Vuoi eliminare questa voce del diario?',
     'sez.importa': 'Importa / esporta scheda',
-    // Compendio & Ricerca Rapida
-    'compendio.titolo': 'Compendio 5e & Ricerca Rapida',
-    'compendio.tasto': 'Compendio',
+    // Ricerca Rapida
+    'compendio.titolo': 'Ricerca Rapida',
+    'compendio.tasto': 'Ricerca Rapida',
     'compendio.cerca_ph': 'Cerca incantesimi, armi, armature, oggetti, condizioni, talenti, creature…',
     'compendio.tutti': 'Tutti',
     'compendio.incantesimi': 'Incantesimi',
@@ -1105,9 +1105,9 @@ export const DIZIONARIO = {
     'diario.elimina': 'Delete this entry',
     'diario.elimina_conferma': 'Delete this journal entry?',
     'sez.importa': 'Import / Export Sheet',
-    // Compendium & Quick Search
-    'compendio.titolo': '5e Compendium & Quick Search',
-    'compendio.tasto': 'Compendium',
+    // Quick Search
+    'compendio.titolo': 'Quick Search',
+    'compendio.tasto': 'Quick Search',
     'compendio.cerca_ph': 'Search spells, weapons, armor, items, conditions, feats, creatures…',
     'compendio.tutti': 'All',
     'compendio.incantesimi': 'Spells',
