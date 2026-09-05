@@ -11253,6 +11253,24 @@ export default function App() {
             </div>
           </div>
 
+          {/* Effetti Luminosi & Animazioni */}
+          <div style={{ borderTop: `1px dashed ${C.border}`, paddingTop: 6 }}>
+            <div style={{ fontSize: 11, fontWeight: 'bold', color: C.goldDark, marginBottom: 4 }}>
+              ✨ {lingua === 'en' ? 'Luminous Effects & Animations' : 'Effetti Luminosi & Animazioni'}
+            </div>
+            <select
+              value={effettoAnimazioni}
+              onChange={(e) => setEffettoAnimazioni(e.target.value)}
+              style={{ ...styles.inlineInput, width: '100%', height: 30, padding: '2px 6px', borderRadius: 6, background: C.panelLight, color: C.ink, fontSize: 11.5, border: `1px solid ${C.border}` }}
+              title={lingua === 'en' ? 'Choose ambient glow and breathing animation intensity' : 'Scegli l\'intensità del respiro magico e della luminescenza'}
+            >
+              <option value="respiro">✨ {lingua === 'en' ? 'Magical Breathing' : 'Respiro Magico (Pulsante)'}</option>
+              <option value="brillante">🌟 {lingua === 'en' ? 'Luminous Glow' : 'Luminescenza Intensa'}</option>
+              <option value="hover">👆 {lingua === 'en' ? 'Touch / Hover Only' : 'Reattivo al Tocco / Hover'}</option>
+              <option value="statico">🔒 {lingua === 'en' ? 'Static' : 'Statico (Senza animazioni)'}</option>
+            </select>
+          </div>
+
           <div style={{ fontSize: 10, color: C.inkDim, opacity: 0.8, textAlign: 'center' }}>
             🔊 Suoni ambientali ed effetti procedurali · Web Audio API & Freesound CC0
           </div>
