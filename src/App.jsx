@@ -6,7 +6,7 @@ import { t, setLinguaAttuale, DIZIONARIO, traduciDato, linguaAttuale } from './i
 import { avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro, sbloccaAudio, precaricaSfx } from './utils/audioAmbiente';
 import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI, ambientazioneCasuale, COLORE_SCUOLA } from './ui/tema.js';
 import { styles, GLOBAL_CSS } from './ui/stili.js';
-import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, Sezione, CampoBloccato, formattaVoceConIcona } from './ui/componenti.jsx';
+import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, estraiVociLista, Sezione, CampoBloccato, formattaVoceConIcona } from './ui/componenti.jsx';
 import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON, WENDELL_JSON, LYRIAN_JSON } from './data/esempi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
@@ -2355,7 +2355,7 @@ function loadState() {
             if (s.abilita.natura === 1) s.abilita.natura = 2;
             if (s.abilita.percezione === 1) s.abilita.percezione = 2;
           }
-          if (s.trattiSpecie && !s.trattiSpecie.includes('SENSI ACUTI') && VAELION_JSON.trattiSpecie) {
+          if (s.trattiSpecie && (!s.trattiSpecie.includes('SENSI ACUTI') || s.trattiSpecie.includes('Vedi nella penombra') || s.trattiSpecie.includes('SCUROVISIONE')) && VAELION_JSON.trattiSpecie) {
             s.trattiSpecie = VAELION_JSON.trattiSpecie;
           }
           if (s.privilegi && !s.privilegi.includes('PRIVILEGI DI CLASSE') && VAELION_JSON.privilegi) {
@@ -2695,26 +2695,28 @@ function normalizeImported(rawDati) {
     trattiSpecie: (() => {
       const ts = str(dati.trattiSpecie).trim();
       if (ts) {
-        return ts.split('\n').map((line) => {
-          const colonIdx = line.indexOf(':');
+        const voci = estraiVociLista(ts);
+        return voci.map((v) => {
+          const colonIdx = v.indexOf(':');
           if (colonIdx > 0 && colonIdx <= 40) {
-            return `${formattaTitoloVoce(line.slice(0, colonIdx))}: ${line.slice(colonIdx + 1).trim()}`;
+            return `${formattaTitoloVoce(v.slice(0, colonIdx))}: ${v.slice(colonIdx + 1).trim()}`;
           }
-          return formattaTitoloVoce(line);
+          return formattaTitoloVoce(v);
         }).join('\n');
       }
       const compSp = COMPETENZE_SPECIE[traduciEN(str(dati.specie))];
-      return Array.isArray(compSp) ? compSp.map(formattaTitoloVoce).join(', ') : '';
+      return Array.isArray(compSp) ? compSp.map(formattaTitoloVoce).join('\n') : '';
     })(),
     talenti: (() => {
       const tal = str(dati.talenti).trim();
       if (!tal) return '';
-      return tal.split('\n').map((line) => {
-        const colonIdx = line.indexOf(':');
+      const voci = estraiVociLista(tal);
+      return voci.map((v) => {
+        const colonIdx = v.indexOf(':');
         if (colonIdx > 0 && colonIdx <= 40) {
-          return `${formattaTitoloVoce(line.slice(0, colonIdx))}: ${line.slice(colonIdx + 1).trim()}`;
+          return `${formattaTitoloVoce(v.slice(0, colonIdx))}: ${v.slice(colonIdx + 1).trim()}`;
         }
-        return formattaTitoloVoce(line);
+        return formattaTitoloVoce(v);
       }).join('\n');
     })(),
     metamagie: str(dati.metamagie),
@@ -8134,7 +8136,7 @@ export default function App() {
                           • {sp ? (
                             <span
                               style={{ cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
-                              title={t('priv.tocca_spiegazione')}
+                              title={sp}
                               onClick={() => setInfo({ titolo: r, testo: sp })}
                             >{r}</span>
                           ) : r}
@@ -8225,7 +8227,7 @@ export default function App() {
                                 • {sp ? (
                                   <span
                                     style={{ cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3 }}
-                                    title={t('priv.tocca_spiegazione')}
+                                    title={sp}
                                     onClick={() => setInfo({ titolo: r, testo: sp })}
                                   >{r}</span>
                                 ) : r}

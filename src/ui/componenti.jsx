@@ -470,8 +470,31 @@ export function AreaTesto({ value, onChange, righe = 2, placeholder }) {
  * i campi per modificare/eliminare la voce. In fondo un pulsante per aggiungere.
  * Il valore resta un unico testo con a-capo (nessun cambio al modello dati).
  */
+export function estraiVociLista(value) {
+  const strVal = String(value || '').trim();
+  if (!strVal) return [];
+  if (/\n\s*\n/.test(strVal)) {
+    return strVal
+      .split(/\n\s*\n+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  const righeRaw = strVal.split('\n').map((r) => r.trim()).filter(Boolean);
+  const result = [];
+  for (let i = 0; i < righeRaw.length; i++) {
+    const curr = righeRaw[i];
+    if (curr.endsWith(':') && i + 1 < righeRaw.length && !righeRaw[i + 1].endsWith(':')) {
+      result.push(`${curr} ${righeRaw[i + 1]}`);
+      i++;
+    } else {
+      result.push(curr);
+    }
+  }
+  return result;
+}
+
 export function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni, onRoll, unicaRiga }) {
-  const righe = String(value || '').split('\n').map((r) => r.trim()).filter(Boolean);
+  const righe = estraiVociLista(value);
   const [edit, setEdit] = useState(null); // { index, valore }  (index -1 = nuova)
   const listId = useId();
   const salva = (nuove) => onChange(nuove.join('\n'));
@@ -488,17 +511,31 @@ export function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni,
 
   const estraiNomeVoce = (str) => {
     const s = String(str || '').trim();
+    const firstLineBreak = s.indexOf('\n');
+    if (firstLineBreak > 0) {
+      const line1 = s.slice(0, firstLineBreak).trim();
+      const rest = s.slice(firstLineBreak + 1).trim();
+      const cleanLine1 = line1.replace(/:$/, '').trim();
+      if (cleanLine1.length <= 50) {
+        return { nome: formattaTitoloVoce(cleanLine1), desc: rest };
+      }
+    }
     const idx = s.indexOf(':');
-    if (idx > 0 && idx <= 40) {
-      const nome = s.slice(0, idx).trim();
+    if (idx > 0 && idx <= 50) {
+      const nome = s.slice(0, idx).replace(/:$/, '').trim();
       const desc = s.slice(idx + 1).trim();
       if (desc) return { nome: formattaTitoloVoce(nome), desc };
+      return { nome: formattaTitoloVoce(nome), desc: '' };
     }
     const matchParen = s.match(/^([^(]+)\s*\(([^)]+)\)$/);
     if (matchParen && matchParen[1].trim().length <= 35) {
-      return { nome: formattaTitoloVoce(matchParen[1].trim()), desc: matchParen[2].trim() };
+      const parenContent = matchParen[2].trim();
+      if (/^\d+\s*m|ft|liv|anni|ore|settimane/i.test(parenContent) || parenContent.length <= 15) {
+        return { nome: formattaTitoloVoce(s.replace(/:$/, '')), desc: '' };
+      }
+      return { nome: formattaTitoloVoce(matchParen[1].trim().replace(/:$/, '')), desc: parenContent };
     }
-    return { nome: formattaTitoloVoce(s), desc: '' };
+    return { nome: formattaTitoloVoce(s.replace(/:$/, '')), desc: '' };
   };
 
   // Le opzioni possono arrivare come stringhe o come oggetti { nome, desc }.
@@ -507,7 +544,7 @@ export function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni,
     .sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'it', { sensitivity: 'base' }));
   const chip = { background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '5px 10px', fontSize: 13, cursor: 'pointer', color: C.ink, whiteSpace: unicaRiga ? 'nowrap' : 'normal' };
   const spEdit = edit
-    ? (lookup ? lookup(edit.valore) || lookup(formattaTitoloVoce(edit.valore)) : null) || estraiNomeVoce(edit.valore).desc || null
+    ? (lookup ? lookup(edit.valore) || lookup(estraiNomeVoce(edit.valore).nome) || lookup(formattaTitoloVoce(edit.valore)) : null) || estraiNomeVoce(edit.valore).desc || null
     : null;
   return (
     <>
@@ -515,7 +552,8 @@ export function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni,
         {righe.length === 0 && <span style={{ ...styles.detail, fontStyle: 'italic' }}>{placeholder || 'Nessuna voce.'}</span>}
         {righe.map((r, i) => {
           const { nome, desc } = estraiNomeVoce(r);
-          const sp = (lookup ? lookup(r) || lookup(nome) || lookup(formattaTitoloVoce(r)) : null) || desc;
+          const cleanNome = nome.replace(/\s*\(.*$/, '').trim();
+          const sp = (lookup ? lookup(r) || lookup(nome) || lookup(cleanNome) || lookup(formattaTitoloVoce(r)) : null) || desc;
           const isMagiaSelvaggia = /magia selvaggia/i.test(nome) && onRoll;
           return (
             <div key={i} style={{ display: 'flex', alignItems: 'center', flexShrink: unicaRiga ? 0 : 1 }}>

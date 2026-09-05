@@ -98,6 +98,7 @@ export const EN_TRATTI = {
   'Agilità halfling': 'You can move through the space of creatures larger than you.',
   'Fortuna': 'When you roll a 1 on the d20 for an attack, a check or a saving throw, you can reroll the die.',
   'Furtività naturale': 'You can try to hide even when obscured only by a creature larger than you.',
+  'Furtività Innata': 'You can try to hide even when obscured only by a creature larger than you.',
   // Aasimar
   'Resistenza celestiale': 'Resistance to necrotic and radiant damage.',
   'Mani guaritrici': 'You can heal HP equal to your level, once per long rest.',
@@ -121,9 +122,12 @@ export const EN_TRATTI = {
   // Elf (2014 subraces)
   '1 Trucchetto da Mago': 'You know one cantrip of your choice from the Wizard list: your spellcasting ability for it is **Intelligence**.',
   'Competenza armi elfiche': 'You are proficient with the **longsword, shortsword, shortbow** and **longbow**.',
+  'Addestramento nelle Armi Elfiche': 'You are proficient with the **shortsword, longsword, shortbow** and **longbow**.',
   'Lingua extra': 'You know one **additional language** of your choice, on top of the ones you already speak.',
   'Piedi veloci': 'Your base walking speed is **10.5 metres** instead of 9.',
+  'Passo Celere': 'Your base walking speed is **10.5 metres** (35 ft).',
   'Maschera della selva': 'You can try to **Hide** even when you are only lightly obscured by foliage, heavy rain, falling snow, mist or other natural phenomena.',
+  'Maschera della Selva': 'You can try to **Hide** even when you are only lightly obscured by foliage, heavy rain, falling snow, mist or other natural phenomena.',
   'Sensibilità alla luce solare': 'In sunlight you have **disadvantage** on attack rolls and on Perception checks that rely on sight.',
   'Magia Drow': 'You know the **Dancing Lights** cantrip. At level 3 you can cast **Faerie Fire** and at level 5 **Darkness**, once each per Long Rest. Your spellcasting ability is **Charisma**.',
   'Armi drow': 'You are proficient with the **shortsword, rapier** and **hand crossbow**.',
@@ -141,6 +145,7 @@ export const EN_TRATTI = {
   'Attacchi selvaggi': 'When you score a **critical hit** with a melee weapon attack, you roll **one additional damage die** and add it to the extra critical damage.',
   // Half-elf (2014)
   'Versatilità': 'You gain proficiency in **two skills** of your choice.',
+  'Versatilità nelle Abilità': 'You gain proficiency in **two skills** of your choice.',
   // Tiefling
   'Resistenza al fuoco': 'You have **resistance to fire damage**.',
   'Eredità infernale/abisso': 'You choose a legacy (Infernal, Abyssal or Chthonic): it gives you a **cantrip** at level 1 and one spell at level **3** and **5**, each castable once per Long Rest. Your spellcasting ability is **Charisma**.',

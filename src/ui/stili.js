@@ -2057,14 +2057,14 @@ tbody tr:hover {
   border: 1.5px solid var(--c-gold-dark, #c07718);
   box-shadow: 0 6px 20px rgba(0,0,0,0.65), 0 0 0 1px rgba(0,0,0,0.3);
   border-radius: 8px;
-  padding: 6px 12px;
+  padding: 8px 12px;
   font-family: inherit;
   font-size: 12px;
-  font-weight: 600;
-  line-height: 1.35;
-  max-width: 320px;
+  font-weight: 500;
+  line-height: 1.4;
+  max-width: min(380px, calc(100vw - 32px));
   white-space: pre-wrap;
-  text-align: center;
+  text-align: left;
   user-select: none;
   animation: nuvoletta-anim 0.12s cubic-bezier(0.16, 1, 0.3, 1);
 }
