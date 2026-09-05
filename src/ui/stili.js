@@ -1437,7 +1437,7 @@ tbody tr:hover {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
     gap: 6px !important;
-    align-items: start !important;
+    align-items: stretch !important;
     min-width: 0 !important;
     box-sizing: border-box !important;
   }
@@ -1449,8 +1449,18 @@ tbody tr:hover {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
+    height: 100% !important;
   }
-  .car-col-fisiche .car-tier-1,
+  .car-col-fisiche .car-tier-1 {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    flex: 1 1 auto !important;
+  }
   .car-col-mentali .car-tier-2,
   .car-col-mentali .car-tier-3 {
     display: flex !important;
@@ -1468,6 +1478,13 @@ tbody tr:hover {
     min-width: 0 !important;
     padding: 5px 6px !important;
     box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    flex: 1 1 auto !important;
+  }
+  .car-col-fisiche .blocco-car:nth-child(2) {
+    flex: 1.25 1 auto !important;
   }
   .car-col-fisiche .blocco-car > div:first-of-type,
   .car-col-mentali .blocco-car > div:first-of-type {
