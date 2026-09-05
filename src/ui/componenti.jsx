@@ -592,7 +592,9 @@ export function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni,
               <button style={styles.buttonMini} onClick={() => setEdit(null)} title={t('tip.chiudi')}>✕</button>
             </div>
             {spEdit && (
-              <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 12px', fontSize: 14, lineHeight: 1.4, marginBottom: 8 }}>{spEdit}</div>
+              <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', fontSize: 13.5, lineHeight: 1.5, marginBottom: 10, whiteSpace: 'pre-wrap', color: C.ink }}>
+                {spEdit}
+              </div>
             )}
             {edit.index === -1 ? (
               // Voce NUOVA: si sceglie dal menu a tendina (se ci sono opzioni)

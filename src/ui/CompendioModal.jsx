@@ -1010,7 +1010,7 @@ export function CompendioModal({
                   overflowY: 'auto',
                 }}
               >
-                {dettaglioSelezionato.desc || (lingua === 'en' ? 'No detailed description available.' : 'Nessuna descrizione dettagliata disponibile.')}
+                {String(dettaglioSelezionato.desc || '').replace(/\*\*([^*]+)\*\*/g, '$1') || (lingua === 'en' ? 'No detailed description available.' : 'Nessuna descrizione dettagliata disponibile.')}
               </div>
 
               {/* Bottoni di Azione */}

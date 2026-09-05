@@ -7013,13 +7013,10 @@ export default function App() {
               <button style={styles.buttonMini} onClick={() => setInfo(null)} title={t('tip.chiudi')}>✕</button>
             </div>
             <div 
-              style={{ fontSize: 14, lineHeight: 1.45, color: C.ink }}
-              dangerouslySetInnerHTML={{ 
-                __html: String(info.testo || '')
-                  .replace(/\n/g, '<br/>')
-                  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
-              }} 
-            />
+              style={{ fontSize: 14, lineHeight: 1.5, color: C.ink, whiteSpace: 'pre-wrap', maxHeight: '70vh', overflowY: 'auto' }}
+            >
+              {String(info.testo || '').replace(/\*\*([^*]+)\*\*/g, '$1')}
+            </div>
           </div>
         </div>
       )}
@@ -8769,7 +8766,7 @@ export default function App() {
           setMostraModalReazioni(false);
           setInfo({
             titolo: `⚡ ${r.nome}`,
-            testo: `🎯 **${lingua === 'en' ? 'Trigger' : 'Innesco'}**: ${lingua === 'en' ? r.innescoEn : r.innescoIt}\n\n🛡️ **${lingua === 'en' ? 'Effect' : 'Effetto'}**: ${lingua === 'en' ? r.effettoEn : r.effettoIt}`,
+            testo: `🎯 ${lingua === 'en' ? 'Trigger' : 'Innesco'}: ${lingua === 'en' ? r.innescoEn : r.innescoIt}\n\n🛡️ ${lingua === 'en' ? 'Effect' : 'Effetto'}: ${lingua === 'en' ? r.effettoEn : r.effettoIt}`,
           });
         };
 
@@ -13952,7 +13949,7 @@ export default function App() {
                     const d20 = tiraDado(20);
                     const tot = d20 + totBonus;
                     registra({ etichetta: '🙈 Nascondersi', tipo: 'prova', totale: tot, dettaglio: `Prova di Furtività (Nascondersi): 1d20 [${d20}] ${conSegno(totBonus)} = ${tot}` });
-                    setInfo({ titolo: `🙈 Furtività: ${tot}`, testo: `Hai tentato di nasconderti con un risultato di **${tot}** (d20 [${d20}] ${conSegno(totBonus)}). Confrontalo con la Percezione Passiva dei nemici.` });
+                    setInfo({ titolo: `🙈 Furtività: ${tot}`, testo: `Hai tentato di nasconderti con un risultato di ${tot} (d20 [${d20}] ${conSegno(totBonus)}). Confrontalo con la Percezione Passiva dei nemici.` });
                   } else if (nomeTattica === 'aiuto') {
                     setTurno({ azione: true, tatticaAttiva: 'aiuto' });
                     registra({ etichetta: '🤝 Aiuto', tipo: 'tattica', dettaglio: `${scheda.nome || 'PG'} compie l'azione di Aiuto: concede vantaggio al prossimo tiro per colpire o prova di caratteristica di un alleato.` });
@@ -14732,17 +14729,17 @@ export default function App() {
                               let testoAttacco = spiegazioneEffetto;
                               if (spSpell) {
                                 const dTags = [];
-                                if (spSpell.scuola) dTags.push(`🔮 **${lingua === 'en' ? 'School' : 'Scuola'}**: ${traduciDato(spSpell.scuola)}`);
-                                if (spSpell.tempo) dTags.push(`⏱ **${lingua === 'en' ? 'Casting Time' : 'Tempo di lancio'}**: ${traduciDato(spSpell.tempo)}`);
-                                if (spSpell.gittata) dTags.push(`🎯 **${lingua === 'en' ? 'Range' : 'Gittata'}**: ${spSpell.gittata}`);
-                                if (spSpell.area) dTags.push(`📐 **${lingua === 'en' ? 'Area' : 'Area'}**: ${spSpell.area}`);
-                                if (spSpell.danno || spSpell.tipoDanno) dTags.push(`💥 **${lingua === 'en' ? 'Damage' : 'Danno'}**: ${spSpell.danno || ''} ${spSpell.tipoDanno ? `(${traduciDato(spSpell.tipoDanno)})` : ''}`.trim());
-                                if (spSpell.conc) dTags.push(`⏳ **${lingua === 'en' ? 'Concentration' : 'Concentrazione'}**: ${lingua === 'en' ? 'Yes' : 'Sì'}`);
-                                if (spSpell.rituale) dTags.push(`📜 **${lingua === 'en' ? 'Ritual' : 'Rituale'}**: ${lingua === 'en' ? 'Yes' : 'Sì'}`);
+                                if (spSpell.scuola) dTags.push(`🔮 ${lingua === 'en' ? 'School' : 'Scuola'}: ${traduciDato(spSpell.scuola)}`);
+                                if (spSpell.tempo) dTags.push(`⏱ ${lingua === 'en' ? 'Casting Time' : 'Tempo di lancio'}: ${traduciDato(spSpell.tempo)}`);
+                                if (spSpell.gittata) dTags.push(`🎯 ${lingua === 'en' ? 'Range' : 'Gittata'}: ${spSpell.gittata}`);
+                                if (spSpell.area) dTags.push(`📐 ${lingua === 'en' ? 'Area' : 'Area'}: ${spSpell.area}`);
+                                if (spSpell.danno || spSpell.tipoDanno) dTags.push(`💥 ${lingua === 'en' ? 'Damage' : 'Danno'}: ${spSpell.danno || ''} ${spSpell.tipoDanno ? `(${traduciDato(spSpell.tipoDanno)})` : ''}`.trim());
+                                if (spSpell.conc) dTags.push(`⏳ ${lingua === 'en' ? 'Concentration' : 'Concentrazione'}: ${lingua === 'en' ? 'Yes' : 'Sì'}`);
+                                if (spSpell.rituale) dTags.push(`📜 ${lingua === 'en' ? 'Ritual' : 'Rituale'}: ${lingua === 'en' ? 'Yes' : 'Sì'}`);
                                 if (dTags.length > 0) testoAttacco = (testoAttacco ? testoAttacco + '\n\n' : '') + dTags.join('\n');
                               }
                               if (a.note && a.note !== spiegazioneEffetto) {
-                                testoAttacco = (testoAttacco ? testoAttacco + '\n\n' : '') + `📝 **${lingua === 'en' ? 'Personal Notes' : 'Note personali'}**: ${a.note}`;
+                                testoAttacco = (testoAttacco ? testoAttacco + '\n\n' : '') + `📝 ${lingua === 'en' ? 'Personal Notes' : 'Note personali'}: ${a.note}`;
                               }
                               
                               const titoloRiga = spiegazioneEffetto ? `${cleanNome}: ${spiegazioneEffetto}` : undefined;
@@ -14760,8 +14757,8 @@ export default function App() {
                                 : '⚡';
 
                               const apriInfoReazione = () => {
-                                const tCond = a.innescoIt ? `🎯 **${lingua === 'en' ? 'Trigger' : 'Innesco'}**: ${lingua === 'en' ? (a.innescoEn || a.innescoIt) : a.innescoIt}\n\n` : '';
-                                const tEff = a.effettoIt ? `🛡️ **${lingua === 'en' ? 'Effect' : 'Effetto'}**: ${lingua === 'en' ? (a.effettoEn || a.effettoIt) : a.effettoIt}` : '';
+                                const tCond = a.innescoIt ? `🎯 ${lingua === 'en' ? 'Trigger' : 'Innesco'}: ${lingua === 'en' ? (a.innescoEn || a.innescoIt) : a.innescoIt}\n\n` : '';
+                                const tEff = a.effettoIt ? `🛡️ ${lingua === 'en' ? 'Effect' : 'Effetto'}: ${lingua === 'en' ? (a.effettoEn || a.effettoIt) : a.effettoIt}` : '';
                                 setInfo({
                                   titolo: `${iconaReazione} ${cleanNome}`,
                                   testo: (tCond + tEff) || testoAttacco || spiegazioneEffetto || (lingua === 'en' ? 'No description available.' : 'Nessuna descrizione disponibile.')
@@ -15723,21 +15720,21 @@ export default function App() {
                             const isRowUnpreparedMancante = isMancanteLiv && classePreparata && liv >= 1 && s.preparato === false;
 
                             const dettagliTecnici = [];
-                            if (scuola) dettagliTecnici.push(`🔮 **${lingua === 'en' ? 'School' : 'Scuola'}**: ${traduciDato(scuola)}`);
-                            if (tempoLabel) dettagliTecnici.push(`⏱ **${lingua === 'en' ? 'Casting Time' : 'Tempo di lancio'}**: ${tempoLabel}`);
-                            if (gittata) dettagliTecnici.push(`🎯 **${lingua === 'en' ? 'Range' : 'Gittata'}**: ${gittata}`);
-                            if (area) dettagliTecnici.push(`📐 **${lingua === 'en' ? 'Area' : 'Area'}**: ${area}`);
-                            if (danno || tipoDanno) dettagliTecnici.push(`💥 **${lingua === 'en' ? 'Damage' : 'Danno'}**: ${danno || ''} ${tipoDanno ? `(${traduciDato(tipoDanno)})` : ''}`.trim());
-                            if (d?.conc || /concentrazione/i.test(spieg)) dettagliTecnici.push(`⏳ **${lingua === 'en' ? 'Concentration' : 'Concentrazione'}**: ${lingua === 'en' ? 'Yes' : 'Sì'}`);
-                            if (d?.rituale) dettagliTecnici.push(`📜 **${lingua === 'en' ? 'Ritual' : 'Rituale'}**: ${lingua === 'en' ? 'Yes' : 'Sì'}`);
-                            if (d?.classi && d.classi.length > 0) dettagliTecnici.push(`🧙‍♂️ **${lingua === 'en' ? 'Classes' : 'Classi'}**: ${d.classi.join(', ')}`);
+                            if (scuola) dettagliTecnici.push(`🔮 ${lingua === 'en' ? 'School' : 'Scuola'}: ${traduciDato(scuola)}`);
+                            if (tempoLabel) dettagliTecnici.push(`⏱ ${lingua === 'en' ? 'Casting Time' : 'Tempo di lancio'}: ${tempoLabel}`);
+                            if (gittata) dettagliTecnici.push(`🎯 ${lingua === 'en' ? 'Range' : 'Gittata'}: ${gittata}`);
+                            if (area) dettagliTecnici.push(`📐 ${lingua === 'en' ? 'Area' : 'Area'}: ${area}`);
+                            if (danno || tipoDanno) dettagliTecnici.push(`💥 ${lingua === 'en' ? 'Damage' : 'Danno'}: ${danno || ''} ${tipoDanno ? `(${traduciDato(tipoDanno)})` : ''}`.trim());
+                            if (d?.conc || /concentrazione/i.test(spieg)) dettagliTecnici.push(`⏳ ${lingua === 'en' ? 'Concentration' : 'Concentrazione'}: ${lingua === 'en' ? 'Yes' : 'Sì'}`);
+                            if (d?.rituale) dettagliTecnici.push(`📜 ${lingua === 'en' ? 'Ritual' : 'Rituale'}: ${lingua === 'en' ? 'Yes' : 'Sì'}`);
+                            if (d?.classi && d.classi.length > 0) dettagliTecnici.push(`🧙‍♂️ ${lingua === 'en' ? 'Classes' : 'Classi'}: ${d.classi.join(', ')}`);
 
                             let testoModal = spieg;
                             if (dettagliTecnici.length > 0) {
                               testoModal = (testoModal ? testoModal + '\n\n' : '') + dettagliTecnici.join('\n');
                             }
                             if (s.note && s.note !== spieg) {
-                              testoModal = (testoModal ? testoModal + '\n\n' : '') + `📝 **${lingua === 'en' ? 'Personal Notes' : 'Note personali'}**: ${s.note}`;
+                              testoModal = (testoModal ? testoModal + '\n\n' : '') + `📝 ${lingua === 'en' ? 'Personal Notes' : 'Note personali'}: ${s.note}`;
                             }
 
                             const chip = (icona, label, val) => val ? (
