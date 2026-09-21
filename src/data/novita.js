@@ -5,6 +5,21 @@
 
 export const NOVITA = [
   {
+    versione: '4.2.0',
+    voci: {
+      it: [
+        'Aggiunto ESLint al progetto: la prima scansione ha stanato tre tiri di dado rotti (Ispirazione Bardica, una prova di abilita con vantaggio/svantaggio, il TS Concentrazione con Incantatore da Guerra chiamavano funzioni che non esistevano piu\' e non facevano nulla al click) e un pulsante "Backup su GitHub Token" che andava in errore silenzioso: tutti corretti.',
+        'Rimossa una funzione di import PDF ormai morta e senza uso (il flusso vero passa da un\'altra funzione, ancora attiva).',
+        'Ripulite decine di voci duplicate nei dizionari di traduzione e nelle descrizioni di incantesimi/privilegi: restavano da una passata precedente e rendevano il file piu\' pesante da mantenere senza cambiare nulla per chi gioca.',
+      ],
+      en: [
+        'Added ESLint to the project: the first scan caught three broken dice rolls (Bardic Inspiration, an advantage/disadvantage skill check, the Concentration save with War Caster were calling functions that no longer existed and silently did nothing on click) and a "Backup to GitHub Token" button that failed silently: all fixed.',
+        'Removed a dead, unused PDF-import function (the real flow goes through a different, still-active one).',
+        'Cleaned up dozens of duplicate entries in the translation dictionaries and spell/feature descriptions: leftovers from an earlier pass that made the file heavier to maintain without changing anything for players.',
+      ],
+    },
+  },
+  {
     versione: '4.1.1',
     voci: {
       it: [

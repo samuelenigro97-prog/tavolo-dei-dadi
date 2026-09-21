@@ -1933,7 +1933,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.1.1';
+const APP_VERSION = '4.2.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -6140,65 +6140,7 @@ export default function App() {
     }
   }
 
-  /**
-   * Import da PDF con l'IA: manda il PDF (base64) all'endpoint di trascrizione
-   * (Cloudflare Worker o server locale), che risponde con il JSON della scheda.
-   */
-   async function transcribePdf(evento) {
-    const files = Array.from(evento.target.files || []);
-    evento.target.value = '';
-    if (!files.length) return;
-    setImportPending({ files, tipo: 'pdf' });
-    setMostraSceltaVersione(true);
-    return;
-    // Endpoint IA: prova prima quello configurato a mano, poi l'URL dell'archivio (stesso Worker), poi /api locale
-    const endpoint = (transcribeUrl || '').trim() || (typeof URL_ARCHIVIO_PG !== 'undefined' && URL_ARCHIVIO_PG ? URL_ARCHIVIO_PG : '') || (typeof URL_STANZE !== 'undefined' && URL_STANZE ? URL_STANZE : '') || '/api/transcribe';
-    setErroreImport('');
-    setPdfStato('loading');
-    try {
-      for (const file of files) {
-        const base64 = await new Promise((risolvi, rifiuta) => {
-          const fr = new FileReader();
-          fr.onload = () => risolvi(String(fr.result).split(',')[1] || '');
-          fr.onerror = () => rifiuta(new Error('lettura del file fallita'));
-          fr.readAsDataURL(file);
-        });
-        const mediaType = (() => {
-          if (file.type) return file.type;
-          const n = file.name.toLowerCase();
-          if (n.endsWith('.pdf')) return 'application/pdf';
-          if (n.endsWith('.png')) return 'image/png';
-          if (n.endsWith('.webp')) return 'image/webp';
-          if (n.endsWith('.gif')) return 'image/gif';
-          if (n.endsWith('.jpg') || n.endsWith('.jpeg')) return 'image/jpeg';
-          return 'image/jpeg';
-        })();
-        const isImage = mediaType.startsWith('image/');
-        const body = isImage
-          ? { fileBase64: base64, mediaType }
-          : { pdfBase64: base64, fileBase64: base64, mediaType: 'application/pdf' };
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        });
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.error || `errore ${res.status} su ${file.name}`);
-        }
-        const dati = await res.json();
-          nuovoPersonaggio(normalizeImported(dati));
-        }
-        setPdfStato('');
-        setMostraMenu(false);
-      } catch (e) {
-      setPdfStato('');
-      const dove = (transcribeUrl || URL_ARCHIVIO_PG || URL_STANZE || '').trim()
-        ? 'Controlla che l’endpoint IA sia corretto e attivo (Workers AI richiede [ai] binding).'
-        : 'Configura l’endpoint IA nelle impostazioni o imposta VITE_ARCHIVIO_PG_URL al deploy.';
-      setErroreImport(`Import da file fallito: ${e.message}. ${dove}`);
-    }
-  }
+
 
   // --- Cloud Sync (GitHub Gist) ---
 
@@ -6680,7 +6622,7 @@ export default function App() {
       if (codiceSyncRef.current && (autoSyncCodice || codiceSync)) {
         salvaSuCodiceSync(true);
       } else if (githubToken && gistId && autoSync) {
-        salvaSuGist(true);
+        salvaSuCloud(true);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -9008,8 +8950,14 @@ export default function App() {
               : `1d20 [${d}] ${conSegno(bonus)}`;
 
           conAnimazione(() => {
-            setDadoValore(tot);
-            setDadoDettaglio(`Prova di ${t('skill.' + modalAbilitaGuida)}${etichVant}: ${dettVant}`);
+            setTiro({
+              etichetta: `${t('skill.' + modalAbilitaGuida)}${etichVant}`,
+              naturale: d,
+              dadi: vantaggio === 0 ? [d1] : [d1, d2],
+              bonus,
+              totale: tot,
+              modalita: vantaggio === 1 ? 'vantaggio' : vantaggio === -1 ? 'svantaggio' : 'normale',
+            });
             registra({
               etichetta: `${t('skill.' + modalAbilitaGuida)}${etichVant}`,
               tipo: 'prova',
@@ -14429,8 +14377,14 @@ export default function App() {
                                 onClick={() => {
                                   const d = tiraDado(bardo.facce);
                                   conAnimazione(() => {
-                                    setDadoValore(d);
-                                    setDadoDettaglio(`Ispirazione Bardica (1${bardo.dado}): [${d}]`);
+                                    setTiro({
+                                      etichetta: '🎲 Ispirazione Bardica',
+                                      naturale: d,
+                                      dadi: [d],
+                                      bonus: 0,
+                                      totale: d,
+                                      modalita: 'normale',
+                                    });
                                     registra({ etichetta: '🎲 Ispirazione Bardica', tipo: 'dadi', totale: d, dettaglio: `1${bardo.dado} [${d}]` });
                                   }, d);
                                 }}
@@ -15234,8 +15188,14 @@ export default function App() {
                               const d = Math.max(d1, d2);
                               const tot = d + bonusCon;
                               conAnimazione(() => {
-                                setDadoValore(tot);
-                                setDadoDettaglio(`TS Concentrazione (Vantaggio War Caster): 2d20 [${d1}, ${d2}] max -> [${d}] ${conSegno(bonusCon)}`);
+                                setTiro({
+                                  etichetta: 'TS Concentrazione (War Caster)',
+                                  naturale: d,
+                                  dadi: [d1, d2],
+                                  bonus: bonusCon,
+                                  totale: tot,
+                                  modalita: 'vantaggio',
+                                });
                                 registra({ etichetta: 'TS Concentrazione (War Caster)', tipo: 'd20', naturale: d, totale: tot, dettaglio: `2d20 [${d1}, ${d2}] -> [${d}] ${conSegno(bonusCon)} = ${tot}` });
                               }, d);
                             } else {

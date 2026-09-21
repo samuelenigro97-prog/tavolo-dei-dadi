@@ -256,12 +256,17 @@ export function CompendioModal({
   const inputRef = useRef(null);
 
   useEffect(() => {
-    if (aperto) {
-      setTimeout(() => inputRef.current?.focus(), 50);
-    } else {
+    if (!aperto) return;
+    const focusTimer = setTimeout(() => inputRef.current?.focus(), 50);
+    // Il reset vive nel cleanup, non nel ramo "else": scatta comunque alla
+    // chiusura (quando aperto torna false l'effetto precedente viene ripulito
+    // prima del prossimo), ma senza il giro di render in più che chiamare
+    // setState direttamente nel corpo dell'effetto comporta.
+    return () => {
+      clearTimeout(focusTimer);
       setTestoCerca('');
       setDettaglioSelezionato(null);
-    }
+    };
   }, [aperto]);
 
   // Database unificato memoizzato in base all'edizione (5.0 vs 5.5)

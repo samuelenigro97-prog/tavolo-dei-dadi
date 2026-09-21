@@ -17,7 +17,7 @@ export function tiraDado(facce) {
 export function parseEspressioneDado(espressione) {
   if (typeof espressione !== 'string') return null;
   const pulita = espressione.toLowerCase().replace(/\s+/g, '');
-  if (!pulita || /[^0-9d+\-]/.test(pulita)) return null;
+  if (!pulita || /[^0-9d+-]/.test(pulita)) return null;
 
   // Spezza in token con il proprio segno: "1d8+2-1d4" -> ["1d8", "+2", "-1d4"]
   const token = pulita.match(/[+-]?[^+-]+/g);

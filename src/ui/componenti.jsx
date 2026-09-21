@@ -99,6 +99,10 @@ export function formattaVoceConIcona(v, formattaOpzione) {
   if (v == null || v === '') return '';
   const base = formattaOpzione ? formattaOpzione(v) : traduciDato(v);
   if (typeof base !== 'string') return base;
+  // Il Selettore di Variazione U+FE0F (️) è incluso per riconoscere anche gli
+  // emoji che lo usano per forzare la resa colorata (es. "⚔️"); verificato che
+  // la regex si comporta come atteso su testo semplice ed emoji con e senza VS16.
+  // eslint-disable-next-line no-misleading-character-class -- intenzionale, vedi sopra
   if (/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/u.test(base.trim())) return base;
   const ico = ICONE_5E[v] || ICONE_5E[String(v).trim()] || ICONE_5E[base] || ICONE_5E[String(base).trim()];
   return ico ? `${ico} ${base}` : base;
@@ -227,7 +231,6 @@ export function Editable({ value, onChange, onRoll, tipo = 'testo', width, style
         ...style,
       }}
       title={title || (onRoll ? '1 click: modifica · tieni premuto o doppio click: tira' : '1 click: modifica')}
-      onSelectStart={onRoll ? (e) => e.preventDefault() : undefined}
       onPointerDown={onRoll ? pointerDown : undefined}
       onPointerUp={onRoll ? pointerUp : undefined}
       onPointerLeave={onRoll ? pointerAnnulla : undefined}

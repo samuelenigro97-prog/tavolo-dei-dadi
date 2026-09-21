@@ -170,7 +170,6 @@ export const DIZIONARIO = {
     'vital.pf': 'Punti Ferita',
     'vital.pf_max_modifica': 'Punti Ferita massimi: clicca per correggerli a mano',
     'vital.riposo': 'Riposo',
-    'vital.ts_morte': 'Ts Morte',
     'vital.iniziativa': 'Iniziativa',
     'vital.statistiche_titolo': 'Statistiche Vitali e di Battaglia',
     'vital.movimento': 'Velocità',
@@ -190,20 +189,9 @@ export const DIZIONARIO = {
     'vital.reset_ts': 'Azzera TS',
     'vital.danno': 'Subisci danno',
     'vital.cura': 'Recupera punti ferita',
-    'vital.dadi_vita': 'Dadi Vita:',
-    'vital.dadi_vita_tooltip': 'Clicca per spendere 1 Dado Vita e recuperare Punti Ferita durante un Riposo Breve',
-    'vital.dado_tipo_tooltip': 'Tipo di dado vita determinato dalla classe',
-    'vital.spesi': 'Spesi:',
-    'vital.spesi_tooltip': 'Dadi Vita attualmente spesi / massimi disponibili',
-    'vital.usa': 'Usa',
-    'vital.usa_tooltip': 'Tira un Dado Vita per curarti',
     'vital.max_pf_tooltip': 'I Punti Ferita massimi si modificano dal Level Up.',
-    'vital.temporanei': '(+ Temp:',
     'vital.riposo_breve_tip': 'Riposo Breve: recupera risorse, incantesimi Warlock e permette di spendere Dadi Vita',
     'vital.riposo_lungo_tip': 'Riposo Lungo: recupera tutti i PF, metà dei Dadi Vita, slot incantesimo e risorse',
-    'vital.passive_tooltip': 'Punteggi passivi (10 + modificatore)',
-    'vital.riposo_breve_tooltip': 'Riposo Breve effettuato',
-    'vital.riposo_lungo_tooltip': 'Riposo Lungo effettuato',
     'vital.temp_chiudi': ')',
     
     // Sezioni Scheda
@@ -1056,7 +1044,6 @@ export const DIZIONARIO = {
     'vital.pf': 'Hit Points',
     'vital.pf_max_modifica': 'Maximum Hit Points: click to adjust by hand',
     'vital.riposo': 'Rest',
-    'vital.ts_morte': 'Death Saves',
     'vital.iniziativa': 'Initiative',
     'vital.statistiche_titolo': 'Vital & Combat Statistics',
     'vital.movimento': 'Speed',
@@ -1076,20 +1063,9 @@ export const DIZIONARIO = {
     'vital.reset_ts': 'Reset ST',
     'vital.danno': 'Take damage',
     'vital.cura': 'Heal HP',
-    'vital.dadi_vita': 'Hit Dice:',
-    'vital.dadi_vita_tooltip': 'Click to spend 1 Hit Die and recover HP during a Short Rest',
-    'vital.dado_tipo_tooltip': 'Hit Die type determined by class',
-    'vital.spesi': 'Spent:',
-    'vital.spesi_tooltip': 'Hit Dice currently spent / max available',
-    'vital.usa': 'Use',
-    'vital.usa_tooltip': 'Roll a Hit Die to heal',
     'vital.max_pf_tooltip': 'Max HP is modified on Level Up.',
-    'vital.temporanei': '(+ Temp:',
     'vital.riposo_breve_tip': 'Short Rest: recover resources, Warlock spells and spend Hit Dice',
     'vital.riposo_lungo_tip': 'Long Rest: recover all HP, half Hit Dice, spell slots and resources',
-    'vital.passive_tooltip': 'Passive scores (10 + modifier)',
-    'vital.riposo_breve_tooltip': 'Short Rest taken',
-    'vital.riposo_lungo_tooltip': 'Long Rest taken',
     'vital.temp_chiudi': ')',
 
     // Sezioni Scheda
@@ -1796,7 +1772,7 @@ export function t(chiave, valori = {}) {
 // si MOSTRA quando la lingua è "en". Le unità (m) restano invariate.
 const DATI_EN = {
   // Taglie
-  'Minuscola': 'Tiny', 'Piccola': 'Small', 'Media': 'Medium', 'Grande': 'Large', 'Enorme': 'Huge', 'Mastodontica': 'Gargantuan',
+  'Minuscola': 'Tiny', 'Piccola': 'Small', 'Grande': 'Large', 'Enorme': 'Huge', 'Mastodontica': 'Gargantuan',
   // Allineamenti
   'Legale Buono': 'Lawful Good', 'Neutrale Buono': 'Neutral Good', 'Caotico Buono': 'Chaotic Good',
   'Legale Neutrale': 'Lawful Neutral', 'Neutrale': 'Neutral', 'Caotico Neutrale': 'Chaotic Neutral',

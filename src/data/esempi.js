@@ -437,7 +437,6 @@ export const ELEVORN_JSON = {
     { id: "auto-recuperare-energie", nome: "Recuperare Energie", max: 1, attuali: 1, reset: "breve" },
     { id: "auto-attacco-furtivo", nome: "Attacco Furtivo (2d6)", max: 1, attuali: 1, reset: "breve" }
   ],
-  sfinimento: 0,
   concentrazione: "",
   resistenze: "",
   sensi: "Scurovisione 18 m (Darkvision 60), Percezione Passiva 16",
