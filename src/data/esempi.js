@@ -345,6 +345,22 @@ export const VAELION_JSON = {
     { id: "auto-forma-selvatica", nome: "Forma Selvatica", attuali: 2, max: 2, reset: "breve" },
     { id: "auto-totem-spirituale", nome: "Totem Spirituale (Aura)", attuali: 1, max: 1, reset: "breve" }
   ],
+  // Potere personalizzato di prova (vedi src/rules/poteri.js): il contatore
+  // "Debito" genera in automatico una voce in risorse (reset "manuale").
+  poteri: [
+    {
+      id: "potere-vaelion-patrono",
+      nome: "Potere del Patrono",
+      descrizione: "Vedo le Anime e i Fili Dorati e hanno Due Core su Testa e Cuore, e posso scegliere se assorbire l'anima e curarmi, o assorbire il Filo d'Oro e apprendere un segreto del mio Patrono e aumento il Debito di 1",
+      attivo: true,
+      contatori: [
+        { nome: "Debito", attuali: 5, max: null }
+      ],
+      modificatori: [
+        { bersaglio: "velocita", valore: 3, fonte: "Maschera" }
+      ]
+    }
+  ],
   denari: { mr: 0, ma: 0, me: 0, mo: 250, mp: 0 },
   trattiCaratteriali: "Silenzioso e riservato, parla poco con gli estranei ma è leale con chi guadagna la sua fiducia. Si sente a suo agio solo immerso nella natura incontaminata.",
   ideali: "Equilibrio naturale: La natura e le sue creature devono essere protette dall'avidità cieca e dalla corruzione.",

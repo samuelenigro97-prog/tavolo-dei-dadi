@@ -8,6 +8,7 @@ import { CLASSI, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, SLOT_FULL_CASTER, SLOT
   MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, PE_PER_LIVELLO, REAZIONI_5E, ARMI_5E, ARMATURE_5E } from '../data/dati5e.js';
 import { modificatore, conSegno, bonusCompetenzaDaLivello } from './dadi.js';
 import { punteggioCaratteristica } from './scheda.js';
+import { bonusPotereBersaglio } from './poteri.js';
 import { spiegaIncantesimo } from '../data/spiegazioni.js';
 import { INCANTESIMI_DB, datiIncantesimo } from '../data/incantesimi.js';
 import { ABILITA, CARATTERISTICHE } from '../data/caratteristiche.js';
@@ -1052,6 +1053,10 @@ export function risorseDopoRiposo(risorse, tipo) {
   return (Array.isArray(risorse) ? risorse : []).map((r) => {
     if (!r || !r.reset) return r;
     if (tipo === 'breve' && r.reset !== 'breve') return r;
+    // Un riposo lungo recupera anche tutto ciò che si recupera con uno breve,
+    // ma NON tocca risorse con reset non standard (es. 'manuale', usato dai
+    // contatori dei Poteri personalizzati): quelle si aggiornano solo a mano.
+    if (tipo === 'lungo' && r.reset !== 'breve' && r.reset !== 'lungo') return r;
     const max = Math.max(0, Number(r.max) || 0);
     return { ...r, attuali: max };
   });
@@ -1402,7 +1407,8 @@ export function analizzaPozione(nomePozione) {
 export function calcolaMovimentoESalti(scheda) {
   const forPunteggio = Math.max(1, Number(scheda?.caratteristiche?.forza) || 10);
   const modFor = modificatore(forPunteggio);
-  const velBase = Math.max(0, Number(scheda?.formaBestiale?.attiva ? (scheda.formaBestiale.velocita?.terra ?? 9) : (scheda?.velocita ?? 9)));
+  const velBaseSenzaPoteri = Number(scheda?.formaBestiale?.attiva ? (scheda.formaBestiale.velocita?.terra ?? 9) : (scheda?.velocita ?? 9));
+  const velBase = Math.max(0, velBaseSenzaPoteri + bonusPotereBersaglio(scheda, 'velocita'));
 
   // Salti (in metri, 1 ft = 0.3 m)
   const saltoLungoRincorsa = Number((forPunteggio * 0.3).toFixed(1));

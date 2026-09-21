@@ -7,7 +7,8 @@ import { avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro, s
 import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI, ambientazioneCasuale, COLORE_SCUOLA } from './ui/tema.js';
 import { styles, GLOBAL_CSS } from './ui/stili.js';
 import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, estraiVociLista, Sezione, CampoBloccato, formattaVoceConIcona } from './ui/componenti.jsx';
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma } from './rules/scheda.js';
+import { SezionePoteri, BadgePotere } from './ui/PoteriSezione.jsx';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma, iniziativaTotale, pfMassimiEffettivi } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON, WENDELL_JSON, LYRIAN_JSON } from './data/esempi.js';
 import { fixEquipaggiamentoVaelion, migrazioneRegoleVaelion, autoIdratazionePersonaggioPredefinito } from './data/migrazioniPersonaggi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
@@ -1292,6 +1293,7 @@ import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SESSO_5E, SOTTO
 import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
 import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, determinaIconaOggetto, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili, calcolaTurnoCombattimento, dettagliAbilita, calcolaTsConcentrazione, calcolaAttaccoFurtivo, calcolaIraBarbarica, calcolaPunizioneDivina, calcolaIspirazioneBardica, livelloDiClasse } from './rules/regole.js';
+import { normalizzaPoteri, sincronizzaRisorsePoteri, bonusPotereBersaglio } from './rules/poteri.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -1485,6 +1487,10 @@ function schedaVuota() {
     note: '',
     // stato di gioco
     risorse: [], // { id, nome, attuali, max, reset: 'breve' | 'lungo' | '' }
+    // Poteri personalizzati (homebrew): vedi src/rules/poteri.js. I contatori
+    // generano voci in `risorse` con reset 'manuale' (auto-sincronizzate,
+    // non toccarle a mano se non tramite la sezione Poteri).
+    poteri: [],
     sfinimento: 0, // livelli di sfinimento 0–6 (regole 2024)
     concentrazione: '', // incantesimo su cui ci si concentra ('' = niente)
     resistenze: '', // resistenze / immunità / vulnerabilità ai danni
@@ -1934,7 +1940,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.2.0';
+const APP_VERSION = '4.3.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2202,6 +2208,12 @@ function loadState() {
         // i dadi vita seguono sempre livello e classi correnti (anche multiclasse:
         // ricalcolare da un solo termine cancellerebbe il dado della seconda classe)
         s.dadiVita = calcolaFormulaDadiVita(s.classe, s.livello, s.multiclasse);
+        // Poteri personalizzati: normalizza i dati (schede vecchie/importate
+        // senza il campo) e ricrea le risorse "manuale" collegate ai contatori,
+        // così sono presenti anche appena dopo un import/una sincronizzazione
+        // da codice stanza, senza aspettare la prima modifica dalla sezione Poteri.
+        s.poteri = normalizzaPoteri(s.poteri);
+        s.risorse = sincronizzaRisorsePoteri(s.poteri, s.risorse);
         // assegna un id agli incantesimi che ne fossero privi (schede legacy),
         // così ognuno è modificabile singolarmente nel sottomenu
         if (Array.isArray(s.incantesimiLista)) {
@@ -2707,6 +2719,10 @@ function normalizeImported(rawDati) {
             }))
         : [],
     }, versionePin),
+    // Le risorse "manuale" collegate ai contatori vengono ricostruite subito
+    // dopo (vedi il loop di caricamento del roster): qui basta salvare i
+    // Poteri stessi, altrimenti un JSON riesportato/reimportato li perderebbe.
+    poteri: normalizzaPoteri(dati.poteri),
     sfinimento: Math.max(0, Math.min(6, num(dati.sfinimento, 0))),
     concentrazione: str(dati.concentrazione),
     resistenze: str(dati.resistenze),
@@ -4202,6 +4218,25 @@ export default function App() {
     });
   }, [roster.attivo, scheda?.classe, scheda?.livello, scheda?.versione, scheda?.caratteristiche, regoleVersione, isSolaLettura]);
 
+  // Stesso principio per i Poteri personalizzati: le risorse "manuale" dei
+  // loro contatori devono esserci anche per personaggi appena caricati (es.
+  // il roster predefinito) che non sono ancora passati dal salvataggio della
+  // sezione Poteri. sincronizzaRisorsePoteri ricostruisce sempre un array
+  // nuovo, quindi qui il confronto è per contenuto (JSON), non per riferimento.
+  useEffect(() => {
+    if (!scheda || isSolaLettura) return;
+    setRoster((r) => {
+      const corrente = r.personaggi[r.attivo];
+      if (!corrente) return r;
+      const sincronizzate = sincronizzaRisorsePoteri(corrente.poteri, corrente.risorse);
+      if (JSON.stringify(sincronizzate) === JSON.stringify(corrente.risorse || [])) return r;
+      return {
+        ...r,
+        personaggi: { ...r.personaggi, [r.attivo]: { ...corrente, risorse: sincronizzate } },
+      };
+    });
+  }, [roster.attivo, scheda?.poteri, isSolaLettura]);
+
   useEffect(() => {
     const esito = saveState(roster);
     salvaImmaginiRoster(roster).catch((err) => {
@@ -4907,12 +4942,12 @@ export default function App() {
 
   /** Aggiunge il personaggio attivo al combattimento, tirando l'iniziativa. */
   function aggiungiPgAlCombat() {
-    const initRoll = tiraDado(20) + modificatore(punteggioCaratteristica(scheda, 'destrezza'));
+    const initRoll = tiraDado(20) + iniziativaTotale(scheda);
     aggiungiCombattente('pg', {
       nome: scheda.nome, iniziativa: initRoll,
-      pfMax: scheda.pfMax, pfAttuali: scheda.pfAttuali, ca: caTotale(scheda),
+      pfMax: pfMassimiEffettivi(scheda), pfAttuali: scheda.pfAttuali, ca: caTotale(scheda),
     });
-    registra({ etichetta: `${t('vital.iniziativa')}: ${scheda.nome}`, tipo: 'd20', totale: initRoll, dettaglio: `d20 ${conSegno(modificatore(punteggioCaratteristica(scheda, 'destrezza')))}` });
+    registra({ etichetta: `${t('vital.iniziativa')}: ${scheda.nome}`, tipo: 'd20', totale: initRoll, dettaglio: `d20 ${conSegno(iniziativaTotale(scheda))}` });
   }
 
   /** Aggiorna (o inserisce) il PG attivo nel combat tracker con l'iniziativa tirata,
@@ -4927,7 +4962,7 @@ export default function App() {
         lista = [...c.combattenti, {
           id: `c-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           nome: scheda.nome, tipo: 'pg', iniziativa: valore,
-          pfMax: scheda.pfMax, pfAttuali: scheda.pfAttuali, pfTemp: 0, ca: caTotale(scheda),
+          pfMax: pfMassimiEffettivi(scheda), pfAttuali: scheda.pfAttuali, pfTemp: 0, ca: caTotale(scheda),
           condizioni: [], concentrazione: false, tsMorte: { successi: 0, fallimenti: 0 },
         }];
       }
@@ -5358,7 +5393,7 @@ export default function App() {
         const mappa = dadiVitaSpesiNormalizzati(s);
         return {
           ...s,
-          pfAttuali: Math.min(s.pfMax, s.pfAttuali + recupero),
+          pfAttuali: Math.min(pfMassimiEffettivi(s), s.pfAttuali + recupero),
           dadiVitaSpesi: { ...mappa, [facce]: (mappa[facce] || 0) + 1 },
         };
       });
@@ -5396,7 +5431,7 @@ export default function App() {
       }
       return {
         ...s,
-        pfAttuali: s.pfMax,
+        pfAttuali: pfMassimiEffettivi(s),
         pfTemp: 0,
         tsMorte: { successi: 0, fallimenti: 0 },
         slotIncantesimo: slot,
@@ -7137,7 +7172,7 @@ export default function App() {
                                 </span>
                                 <button
                                   type="button"
-                                  disabled={rimasti <= 0 || scheda.pfAttuali >= scheda.pfMax}
+                                  disabled={rimasti <= 0 || scheda.pfAttuali >= pfMassimiEffettivi(scheda)}
                                   onClick={() => tiraDadoVita(g.facce)}
                                   style={{
                                     ...styles.buttonMini,
@@ -12853,15 +12888,18 @@ export default function App() {
                       const isBestia = !!scheda.formaBestiale?.attiva;
                       const att = isBestia ? (Number(scheda.formaBestiale.pfAttuali) || 0) : (Number(scheda.pfAttuali) || 0);
                       const maxPf = isBestia ? (Number(scheda.formaBestiale.pfMax) || 10) : (Number(scheda.pfMax) || 10);
+                      // I Poteri bonus PF massimi contano solo in forma umanoide: la Forma
+                      // Bestiale ha un pfMax tutto suo, non derivato da scheda.pfMax.
+                      const maxPfEffettivo = isBestia ? maxPf : pfMassimiEffettivi(scheda);
                       const temp = isBestia ? 0 : (Number(scheda.pfTemp) || 0);
-                      const max = Math.max(1, maxPf + temp);
+                      const max = Math.max(1, maxPfEffettivo + temp);
                       const percNormale = Math.max(0, Math.min(100, (att / max) * 100));
                       const percTemp = Math.max(0, Math.min(100, (temp / max) * 100));
-                      const coloreNormale = (att / Math.max(1, maxPf)) > 0.5 ? 'linear-gradient(90deg, #1b5e20 0%, #2e7d32 40%, #4caf50 100%)' : (att / Math.max(1, maxPf)) > 0.25 ? 'linear-gradient(90deg, #e65100 0%, #f57f17 50%, #ffb300 100%)' : 'linear-gradient(90deg, #b71c1c 0%, #c62828 50%, #e53935 100%)';
-                      const isCritico = att > 0 && (att / Math.max(1, maxPf)) <= 0.25;
-                      const glowColore = (att / Math.max(1, maxPf)) > 0.5 ? 'rgba(76,175,80,0.45)' : (att / Math.max(1, maxPf)) > 0.25 ? 'rgba(255,179,0,0.45)' : 'rgba(229,57,53,0.55)';
+                      const coloreNormale = (att / Math.max(1, maxPfEffettivo)) > 0.5 ? 'linear-gradient(90deg, #1b5e20 0%, #2e7d32 40%, #4caf50 100%)' : (att / Math.max(1, maxPfEffettivo)) > 0.25 ? 'linear-gradient(90deg, #e65100 0%, #f57f17 50%, #ffb300 100%)' : 'linear-gradient(90deg, #b71c1c 0%, #c62828 50%, #e53935 100%)';
+                      const isCritico = att > 0 && (att / Math.max(1, maxPfEffettivo)) <= 0.25;
+                      const glowColore = (att / Math.max(1, maxPfEffettivo)) > 0.5 ? 'rgba(76,175,80,0.45)' : (att / Math.max(1, maxPfEffettivo)) > 0.25 ? 'rgba(255,179,0,0.45)' : 'rgba(229,57,53,0.55)';
                       return (
-                        <div className={`profilo-barra-vita ${isCritico ? 'pf-barra-critica' : ''}`} style={{ position: 'relative', width: '100%', height: 26, borderRadius: 13, background: 'rgba(10,8,6,0.85)', border: `2px solid ${isBestia ? '#52b788' : C.goldDark}`, boxShadow: 'inset 0 3px 6px rgba(0,0,0,0.85), 0 2px 8px rgba(0,0,0,0.35), 0 0 1px rgba(255,255,255,0.2)', overflow: 'hidden', margin: '2px 0', display: 'flex' }} title={`${att} / ${maxPf} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
+                        <div className={`profilo-barra-vita ${isCritico ? 'pf-barra-critica' : ''}`} style={{ position: 'relative', width: '100%', height: 26, borderRadius: 13, background: 'rgba(10,8,6,0.85)', border: `2px solid ${isBestia ? '#52b788' : C.goldDark}`, boxShadow: 'inset 0 3px 6px rgba(0,0,0,0.85), 0 2px 8px rgba(0,0,0,0.35), 0 0 1px rgba(255,255,255,0.2)', overflow: 'hidden', margin: '2px 0', display: 'flex' }} title={`${att} / ${maxPfEffettivo} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
                           <div style={{ width: `${percNormale}%`, height: '100%', background: coloreNormale, transition: 'width 0.35s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: `0 0 12px ${glowColore}`, position: 'relative' }}>
                             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '48%', background: 'linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.08) 70%, rgba(255,255,255,0) 100%)' }} />
                           </div>
@@ -12924,13 +12962,14 @@ export default function App() {
                                   } else {
                                     aggiorna({
                                       pfMax: nuovoMax,
-                                      pfAttuali: Math.min(Number(scheda.pfAttuali) || 0, nuovoMax),
+                                      pfAttuali: Math.min(Number(scheda.pfAttuali) || 0, nuovoMax + bonusPotereBersaglio(scheda, 'pf_massimi')),
                                     });
                                   }
                                 }}
                                 width={34}
                                 style={{ color: '#fff', fontWeight: 800, fontSize: 13.5, textShadow: '0 1px 3px rgba(0,0,0,0.9)', background: 'transparent', border: 'none' }}
                               />
+                              {!isBestia && <BadgePotere scheda={scheda} bersaglio="pf_massimi" unita="" />}
                             </span>
                           </div>
                         </div>
@@ -13004,7 +13043,7 @@ export default function App() {
                             formaBestiale: { ...scheda.formaBestiale, pfAttuali: Math.min(maxPf, att + quantita) }
                           });
                         } else {
-                          aggiorna({ pfAttuali: Math.min(scheda.pfMax, (Number(scheda.pfAttuali) || 0) + quantita) });
+                          aggiorna({ pfAttuali: Math.min(pfMassimiEffettivi(scheda), (Number(scheda.pfAttuali) || 0) + quantita) });
                         }
                       };
 
@@ -13197,11 +13236,12 @@ export default function App() {
               <div style={styles.vitalLabel}>{t("vital.ca")}</div>
               <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={styles.vitalValue}>
-                  {scheda.armatura.tipo === 'manuale' && !scheda.armatura.scudo && !scheda.armatura.bonus && !bonusClasseArmaturaOggetti(scheda) ? (
+                  {scheda.armatura.tipo === 'manuale' && !scheda.armatura.scudo && !scheda.armatura.bonus && !bonusClasseArmaturaOggetti(scheda) && !bonusPotereBersaglio(scheda, 'ca') ? (
                     <Editable value={scheda.ca} tipo="numero" onChange={(v) => aggiorna({ ca: v })} width={48} />
                   ) : (
                     <span title={t('tip.ca_calcolata')}>
                       {caTotale(scheda)}
+                      <BadgePotere scheda={scheda} bersaglio="ca" />
                       {bonusCopertura(scheda).ca > 0 && (
                         <span style={{ fontSize: 10, color: '#2e9d4d', fontWeight: 800, marginLeft: 3 }} title={bonusCopertura(scheda).labelIt}>
                           (+{bonusCopertura(scheda).ca})
@@ -13312,9 +13352,10 @@ export default function App() {
               <div style={styles.vitalLabel}>{t("vital.iniziativa")}</div>
               <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={styles.vitalValue}>
-                  <Rollable onRoll={() => lanciaD20(t('vital.iniziativa'), modificatore(punteggioCaratteristica(scheda, 'destrezza')), { dopoTiro: (tot) => sincronizzaIniziativaPg(tot) })}>
-                    {conSegno(modificatore(punteggioCaratteristica(scheda, 'destrezza')))}
+                  <Rollable onRoll={() => lanciaD20(t('vital.iniziativa'), iniziativaTotale(scheda), { dopoTiro: (tot) => sincronizzaIniziativaPg(tot) })}>
+                    {conSegno(iniziativaTotale(scheda))}
                   </Rollable>
+                  <BadgePotere scheda={scheda} bersaglio="iniziativa" unita="" />
                 </div>
               </div>
             </div>
@@ -13344,6 +13385,7 @@ export default function App() {
                   <div style={styles.vitalValue}>
                     <Editable value={scheda.velocita} tipo="numero" onChange={(v) => aggiorna({ velocita: v })} width={48} />
                     <span style={{ fontSize: 17, color: C.inkDim, marginLeft: 2, fontWeight: 600 }}> m</span>
+                    <BadgePotere scheda={scheda} bersaglio="velocita" />
                   </div>
                 )}
                 <div
@@ -15403,7 +15445,11 @@ export default function App() {
                   if (q && !(s.nome || '').toLowerCase().includes(q)) return false;
                   if (filtroLivelloInc && Number(s.livello) !== Number(filtroLivelloInc)) return false;
                   if (filtroScuolaInc && (s.scuola || d.scuola || '') !== filtroScuolaInc) return false;
-                  if (filtroClasseInc && !(d.classi || []).includes(filtroClasseInc)) return false;
+                  // Il filtro classe serve a restringere le proposte del CATALOGO (s.catalogo === true):
+                  // un incantesimo già salvato sul personaggio (s.catalogo falsy) deve comparire sempre,
+                  // anche se il catalogo non lo associa alla classe del filtro attivo (es. un trucchetto
+                  // multiclasse, o mancante nel catalogo per quella classe).
+                  if (filtroClasseInc && s.catalogo && !(d.classi || []).includes(filtroClasseInc)) return false;
                   if (soloRitualiInc && !(s.rituale === true || d.rituale === true)) return false;
                   if (soloPreparatiInc && !isPrep) return false;
                   if (soloConcInc && !isConc) return false;
@@ -16655,6 +16701,9 @@ export default function App() {
                       />
                     </div>
                   </div>
+
+                  {/* Riga 3: Poteri personalizzati (regole homebrew del tavolo) */}
+                  <SezionePoteri scheda={scheda} aggiorna={aggiorna} lingua={lingua} />
                 </div>
               </Sezione>
 

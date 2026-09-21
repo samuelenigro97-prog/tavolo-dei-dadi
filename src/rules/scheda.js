@@ -2,6 +2,7 @@
 // Funzioni pure (nessun React, nessuno stato): testabili in isolamento.
 import { modificatore, bonusCompetenzaDaLivello } from './dadi.js';
 import { ABILITA } from '../data/caratteristiche.js';
+import { bonusPotereBersaglio } from './poteri.js';
 
 export function formattaNomePg(nome) {
   if (!nome || typeof nome !== 'string') return '';
@@ -109,8 +110,9 @@ export function bonusCopertura(scheda) {
  * scudo (+2) ed eventuale bonus magico, più eventuale mezza/tre quarti copertura.
  */
 export function caTotale(scheda) {
+  const bonusPoteri = bonusPotereBersaglio(scheda, 'ca');
   if (scheda?.formaBestiale?.attiva && scheda.formaBestiale.ca != null) {
-    return Number(scheda.formaBestiale.ca) + bonusClasseArmaturaOggetti(scheda) + bonusCopertura(scheda).ca;
+    return Number(scheda.formaBestiale.ca) + bonusClasseArmaturaOggetti(scheda) + bonusCopertura(scheda).ca + bonusPoteri;
   }
   const a = scheda.armatura || {};
   const des = modificatore(punteggioCaratteristica(scheda, 'destrezza'));
@@ -120,7 +122,17 @@ export function caTotale(scheda) {
   else if (a.tipo === 'media') ca = (a.base || 0) + Math.min(des, 2);
   else if (a.tipo === 'pesante') ca = a.base || 0;
   else ca = Number(scheda.ca) || 0; // 'manuale': valore scritto a mano
-  return ca + (a.scudo ? 2 : 0) + (Number(a.bonus) || 0) + bonusClasseArmaturaOggetti(scheda) + bonusCopertura(scheda).ca;
+  return ca + (a.scudo ? 2 : 0) + (Number(a.bonus) || 0) + bonusClasseArmaturaOggetti(scheda) + bonusCopertura(scheda).ca + bonusPoteri;
+}
+
+/** Iniziativa totale: mod Destrezza + eventuali bonus dei Poteri personalizzati attivi. */
+export function iniziativaTotale(scheda) {
+  return modificatore(punteggioCaratteristica(scheda, 'destrezza')) + bonusPotereBersaglio(scheda, 'iniziativa');
+}
+
+/** PF massimi effettivi: valore scritto sulla scheda + eventuali bonus dei Poteri attivi. */
+export function pfMassimiEffettivi(scheda) {
+  return Math.max(1, (Number(scheda?.pfMax) || 0) + bonusPotereBersaglio(scheda, 'pf_massimi'));
 }
 
 /**
