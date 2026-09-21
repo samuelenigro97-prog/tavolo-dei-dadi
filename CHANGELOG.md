@@ -2,6 +2,50 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.3.0] – 2026-09-21
+
+### Corretto
+- **Trucchetti/incantesimi già salvati non sparivano più.** Il filtro classe
+  in cima alla sezione Incantesimi (`filtroClasseInc`) si applica in
+  automatico alla classe del personaggio a ogni apertura/cambio scheda
+  (`src/App.jsx`, `useEffect` righe ~4182). Se il catalogo (`src/data/incantesimi.js`)
+  non elencava quella classe per un incantesimo già salvato, l'incantesimo
+  spariva dalla lista pur restando conteggiato (es. Vaelion, Druido 10:
+  contatore 4/4 Trucchetti ma solo 3 mostrati, mancava Morsa del Gelo). Il
+  filtro ora si applica solo alle proposte del catalogo (`s.catalogo === true`),
+  mai a un incantesimo già presente sul personaggio (`src/App.jsx:15406`).
+- Aggiunta la classe Druido a Morsa del Gelo (Frostbite) nel catalogo
+  (`src/data/incantesimi.js:23`): è un trucchetto Druido/Mago/Stregone/Warlock
+  fin da Xanathar's Guide to Everything (5.0) ed è rimasto tale nel 5.5.
+- Un riposo lungo ricaricava per errore qualunque risorsa con un `reset`
+  diverso da vuoto, non solo `'breve'`/`'lungo'` (`risorseDopoRiposo`,
+  `src/rules/regole.js`): correzione necessaria perché i contatori dei nuovi
+  Poteri (reset `'manuale'`) restassero davvero manuali.
+
+### Aggiunto
+- **Nuova sottosezione "Poteri"** dentro "Privilegi, Tratti & Talenti": regole
+  personalizzate del tavolo (patti, benedizioni, maledizioni...) non coperte
+  da classi/talenti ufficiali. Modello dati per personaggio (`scheda.poteri`,
+  vedi `src/rules/poteri.js`): un array di `{ id, nome, descrizione, attivo,
+  contatori: [{ nome, attuali, max }], modificatori: [{ bersaglio, valore, fonte }] }`.
+  - Una scheda per potere (`src/ui/PoteriSezione.jsx`) con chip per contatori
+    e modificatori, descrizione, tasto "+" tratteggiato per aggiungere un
+    effetto e clic sulla scheda per aprire dettagli/modifica (elimina, riordina).
+  - Ogni contatore genera/aggiorna una voce in `scheda.risorse` con
+    `reset: 'manuale'` (mai toccata da riposo breve/lungo), sincronizzata nei
+    due sensi: un +/- fatto da "Risorse di Classe" si riflette sulla scheda
+    del potere e viceversa (`sincronizzaRisorsePoteri`, `valoreContatore`).
+  - I modificatori (bersagli: Velocità, CA, Iniziativa, PF Massimi) si sommano
+    ai valori corrispondenti della scheda (`caTotale`, `calcolaMovimentoESalti`,
+    `iniziativaTotale`, `pfMassimiEffettivi`) e mostrano la fonte con un badge
+    accanto al valore; spariscono se il potere viene disattivato o eliminato.
+  - Inclusi in export/import del roster, nella condivisione via link e nel
+    codice stanza (nessun cambiamento richiesto: entrambi serializzano la
+    scheda per intero); i personaggi esistenti restano invariati (`poteri`
+    di default `[]`).
+  - Potere di prova su Vaelion Leafwhisper: "Potere del Patrono" (contatore
+    Debito 5, modificatore +3m Velocità con fonte "Maschera").
+
 ## [4.0.55] – 2026-09-03
 ### Aggiunto / Modificato (da v3.9.49)
 - Toolbar a 3 blocchi, anagrafica proporzionale, diario in modale, Artefice/Warlock/Manuali, pozioni/movimento/reazioni/turn economy, audit D&D.

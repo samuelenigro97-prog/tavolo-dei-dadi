@@ -5,6 +5,19 @@
 
 export const NOVITA = [
   {
+    versione: '4.3.0',
+    voci: {
+      it: [
+        'Fix trucchetti nascosti: un incantesimo già salvato sul personaggio ora compare sempre nella sezione Trucchetti/Incantesimi, anche se il catalogo non lo associa alla classe del filtro attivo (es. Morsa del Gelo per i Druidi).',
+        'Aggiunta la nuova sezione "Poteri" dentro Privilegi, Tratti & Talenti: regole personalizzate del tavolo con contatori (collegati alle Risorse) e modificatori su Velocità/CA/Iniziativa/PF Massimi, con la fonte visibile su ogni bonus attivo.',
+      ],
+      en: [
+        'Fixed hidden cantrips: a spell already saved on the character now always shows in the Cantrips/Spells section, even if the catalog does not list it for the active class filter (e.g. Frostbite for Druids).',
+        'Added a new "Powers" section inside Features, Traits & Feats: custom table rules with counters (linked to Resources) and modifiers on Speed/AC/Initiative/Max HP, with the source shown on every active bonus.',
+      ],
+    },
+  },
+  {
     versione: '4.2.0',
     voci: {
       it: [
