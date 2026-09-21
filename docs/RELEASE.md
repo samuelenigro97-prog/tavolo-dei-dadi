@@ -1,20 +1,38 @@
-# Release manuale — Tavolo dei Dadi
+# Release — Tavolo dei Dadi
 
-In attesa di poter automatizzare via GitHub Actions, usa questa checklist.
+## Automazione CI/CD
 
-## Artifact da pubblicare
-- build PWA: contenuto di `dist/` compresso come `tavolo-dei-dadi-dist.zip`
-- opzionale: screenshot mobile/desktop della versione
+Il workflow `.github/workflows/deploy.yml` automatizza test, build e deploy:
+1. **Esecuzione test** — `npm test` (184 test su regole, persistenza, traduzioni, ecc.)
+2. **Build** — `npm run build` compila la PWA su `dist/`
+3. **Smoke test** — Playwright avvia `vite preview` e carica l'app in un browser reale; se la pagina lancia errori JS, il deploy blocca
+4. **Deploy** — GitHub Pages pubblica il contenuto di `dist/`
 
-## Checklist
-1. `npm ci`
-2. `npm test`
-3. `npm run build`
-4. Se è una release visibile, verifica che `APP_VERSION` sia stato alzato.
-5. Verifica l'app deployata: https://samuelenigro97-prog.github.io/tavolo-dei-dadi/
-6. Crea tag semver, es. `v2.89.0`.
-7. Crea la GitHub Release dal tag e carica `tavolo-dei-dadi-dist.zip`.
-8. Nel corpo release copia la sezione corrispondente da `CHANGELOG.md`.
+Ogni push su `main` avvia il workflow; controllare i check su GitHub per stato e log.
 
-## Da automatizzare
-Quando il token/integrazione avrà scope `workflow`, creare `.github/workflows/release.yml` con trigger su tag `v*`, test, build PWA, zip di `dist/` e pubblicazione release.
+## Verifica locale prima di pushare
+
+Prima di fare commit e push su `main`:
+
+1. `npm ci` — installa dipendenze esatte
+2. `npm test` — verifica che i 184 test passino
+3. `npm run build` — compila PWA
+4. `node test/smoke.mjs` — carica l'app in browser reale e verifica che non lanci errori JS
+
+Se tutto passa localmente, l'app è pronta per GitHub Pages.
+
+## Incrementare la versione
+
+Se la modifica è visibile (UI, regole, ambientazioni):
+- Aggiorna `APP_VERSION` in `src/App.jsx`
+- Aggiungi una riga a `CHANGELOG.md`
+
+Per modifiche non visibili (refactor, fix interni), la versione resta uguale.
+
+## Release manuale su GitHub (opzionale)
+
+Se vuoi creare una release pubblica:
+1. Crea un tag semver: `git tag v4.0.81 && git push origin v4.0.81`
+2. Su GitHub, crea una Release dal tag
+3. Nel corpo release, copia la sezione di `CHANGELOG.md`
+4. Allega `.zip` di `dist/` se desideri (opzionale)

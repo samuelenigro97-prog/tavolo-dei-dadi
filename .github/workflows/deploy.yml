@@ -24,7 +24,14 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run build
+      - name: Run tests
+        run: npm test
+      - name: Build and verify with smoke test
+        run: npm run build
+        env:
+          BASE_PATH: /tavolo-dei-dadi/
+      - name: Smoke test — start app in browser
+        run: node test/smoke.mjs
         env:
           BASE_PATH: /tavolo-dei-dadi/
       - uses: actions/upload-pages-artifact@v3
