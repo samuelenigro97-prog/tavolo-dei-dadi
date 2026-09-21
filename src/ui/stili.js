@@ -2342,4 +2342,22 @@ tbody tr:hover {
 @media (prefers-reduced-motion: reduce) {
   :root[data-lettura="facilitata"] .app-shell * { transition: none !important; }
 }
+/* ------------------------------------------------------------------ */
+/* COMPENDIO: tab delle categorie                                       */
+/* 11 categorie non stanno in una riga da 820px. Su schermo stretto     */
+/* scorrono in orizzontale (il dito lo scopre da solo, è il gesto        */
+/* naturale sopra una lista di chip). Da tablet in su non c'e' il tocco, */
+/* e senza barra di scorrimento visibile 4 categorie su 11 restavano     */
+/* semplicemente introvabili: vanno a capo invece.                      */
+/* ------------------------------------------------------------------ */
+.compendio-tabs {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+@media (min-width: 640px) {
+  .compendio-tabs {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+}
 `;

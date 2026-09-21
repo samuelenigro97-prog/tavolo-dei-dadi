@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.1.1',
+    voci: {
+      it: [
+        'Fix Ricerca Rapida/Compendio: da tablet in su le 11 categorie non stavano tutte in riga ed erano irraggiungibili al mouse (nessuna barra di scorrimento visibile). Ora vanno a capo su schermi larghi; su telefono restano a scorrimento con il dito.',
+      ],
+      en: [
+        'Fix Quick Search/Compendium: from tablet width up, the 11 categories did not all fit on one row and were unreachable with a mouse (no visible scrollbar). They now wrap on wide screens; on phone they still scroll by touch.',
+      ],
+    },
+  },
+  {
     versione: '4.1.0',
     voci: {
       it: [

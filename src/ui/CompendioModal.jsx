@@ -811,13 +811,16 @@ export function CompendioModal({
             )}
           </div>
 
-          {/* Categorie Tabs */}
+          {/* Categorie Tabs: sono 11 e su schermo stretto non ci stanno in
+              riga, quindi scorrono in orizzontale (naturale col dito); da
+              tablet in su .compendio-tabs le va invece a capo, perché al
+              mouse mancava qualunque indizio che ce ne fossero altre fuori
+              dal bordo (nessuna barra di scorrimento, nessuna sfumatura). */}
           <div
+            className="compendio-tabs"
             style={{
               display: 'flex',
               gap: 6,
-              flexWrap: 'nowrap',
-              overflowX: 'auto',
               paddingBottom: 6,
               WebkitOverflowScrolling: 'touch',
             }}
