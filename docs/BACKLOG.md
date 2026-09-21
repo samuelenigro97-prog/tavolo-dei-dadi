@@ -1,6 +1,6 @@
 # Continua qui — stato reale di Tavolo dei Dadi
 
-Aggiornato il **03 settembre 2026**. Ultima versione pubblicata e verificata online: **v4.0.80**.
+Aggiornato il **21 settembre 2026**. Ultima versione pubblicata e verificata online: **v4.0.80**.
 App: https://samuelenigro97-prog.github.io/tavolo-dei-dadi/
 
 > Si lavora anche con altre IA sul repository. Prima di modificare o pubblicare:
@@ -63,6 +63,10 @@ Su indicazione dell'utente si è passati alla serie **3.x**.
   già corretto e si trattava di cache.
 
 ### Da dove ripartire
+
+**0. CI/CD automatizzato** — Il workflow `.github/workflows/deploy.yml` esegue 
+test (184), build e smoke test su ogni push a `main`. La procedura locale di 
+verifica è documentata in `docs/RELEASE.md`. ✅ **Completato 21/09/2026**.
 
 **1. L'unica cosa in sospeso che dipende dall'utente** è la ripubblicazione del
 Worker su Cloudflare (vedi riquadro in cima). Prima di dare per rotta la
@@ -193,11 +197,13 @@ confrontato con i documenti originali e verificato nel cloud.
 
 ### Qualità verificata
 
-- **87 test** automatici su condivisione, persistenza, regole, stanze e traduzioni.
+- **184 test** automatici su condivisione, persistenza, regole, stanze, traduzioni, PWA e aggiornamenti.
 - Build di produzione riuscita.
-- Workflow GitHub Pages con test, smoke test, build e deploy.
+- **Workflow GitHub Pages automatizzato**: test → build → smoke test (Playwright) → deploy su GitHub Pages. Ogni push su `main` avvia i check; se test o smoke test falliscono, il deploy blocca.
+- Smoke test via Playwright carica l'app in un browser reale e verifica assenza di errori JS.
 - Traduzioni di incantesimi, privilegi, tratti, talenti, metamagie, nomi delle
   sottoclassi e scuole coperte dai test.
+- Documentazione in `docs/RELEASE.md` con procedura locale di verifica (npm test, smoke test) prima di push.
 
 ## Implementato ma da riverificare sul sito reale
 
