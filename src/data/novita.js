@@ -5,6 +5,19 @@
 
 export const NOVITA = [
   {
+    versione: '4.1.0',
+    voci: {
+      it: [
+        'Punti Ferita massimi finalmente modificabili: bastava un clic sul numero dopo la barra. Prima si poteva correggere solo il valore attuale.',
+        'Nuova sezione Leggibilità nel menù: "Lettura facilitata" (carattere senza grazie, lettere e righe più distanziate, niente ombre né cornici) e tre misure di testo. Restano opzioni: chi vuole l\'aspetto da manoscritto non cambia nulla.',
+      ],
+      en: [
+        'Maximum Hit Points are editable at last: just click the number after the bar. Only the current value could be corrected before.',
+        'New Readability section in the menu: "Easy reading" (sans-serif type, wider letter and line spacing, no shadows or frames) and three text sizes. Both are options: the manuscript look stays the default.',
+      ],
+    },
+  },
+  {
     versione: '4.0.80',
     voci: {
       it: [

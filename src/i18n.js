@@ -168,6 +168,7 @@ export const DIZIONARIO = {
     // Stats Vitali e di Combattimento
     'vital.ca': 'Classe Armatura',
     'vital.pf': 'Punti Ferita',
+    'vital.pf_max_modifica': 'Punti Ferita massimi: clicca per correggerli a mano',
     'vital.riposo': 'Riposo',
     'vital.ts_morte': 'Ts Morte',
     'vital.iniziativa': 'Iniziativa',
@@ -1053,6 +1054,7 @@ export const DIZIONARIO = {
     // Stats Vitali e di Combattimento
     'vital.ca': 'Armor Class',
     'vital.pf': 'Hit Points',
+    'vital.pf_max_modifica': 'Maximum Hit Points: click to adjust by hand',
     'vital.riposo': 'Rest',
     'vital.ts_morte': 'Death Saves',
     'vital.iniziativa': 'Initiative',

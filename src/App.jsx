@@ -1933,7 +1933,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.0.80';
+const APP_VERSION = '4.1.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3775,6 +3775,25 @@ export default function App() {
     try { localStorage.setItem('scheda-interattiva:tema-cornici', temaCornici); } catch { /* niente */ }
   }, [temaCornici]);
 
+  // Lettura facilitata: carattere senza grazie, lettere e righe più distanziate,
+  // niente ombre o filigrane. Nasce dal feedback di un playtester dislessico:
+  // resta un'opzione, così chi preferisce l'estetica "manoscritto" non perde nulla.
+  const [letturaFacilitata, setLetturaFacilitata] = useState(() => {
+    try { return localStorage.getItem('scheda-interattiva:lettura-facilitata') === '1'; } catch { return false; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem('scheda-interattiva:lettura-facilitata', letturaFacilitata ? '1' : '0'); } catch { /* niente */ }
+  }, [letturaFacilitata]);
+
+  // Dimensione del testo, indipendente dalla lettura facilitata: molti corpi
+  // della scheda stanno sotto gli 11px e su schermo piccolo sono faticosi.
+  const [dimensioneTesto, setDimensioneTesto] = useState(() => {
+    try { return localStorage.getItem('scheda-interattiva:dimensione-testo') || 'normale'; } catch { return 'normale'; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem('scheda-interattiva:dimensione-testo', dimensioneTesto); } catch { /* niente */ }
+  }, [dimensioneTesto]);
+
   // Audio e Sottofondo Ambientale
   const [ambienteAudio, setAmbienteAudio] = useState(() => {
     try {
@@ -4205,6 +4224,8 @@ export default function App() {
         : temaCornici;
     root.dataset.classe = classeEffettiva;
     root.dataset.animazioni = 'respiro';
+    root.dataset.lettura = letturaFacilitata ? 'facilitata' : 'normale';
+    root.dataset.testo = dimensioneTesto;
     const set = (k, v) => root.style.setProperty(k, v);
     set('--c-bg', t.bg); set('--c-panel', t.panel); set('--c-panel-light', t.panelLight);
     set('--c-border', t.border); set('--c-ink', t.ink); set('--c-ink-dim', t.inkDim);
@@ -4250,7 +4271,7 @@ export default function App() {
     } catch {
       // storage non disponibile: pazienza
     }
-  }, [tema, sistemaScuro, oraTick, classeAttiva, presetColori, temaCornici, schedaSolaLettura]);
+  }, [tema, sistemaScuro, oraTick, classeAttiva, presetColori, temaCornici, schedaSolaLettura, letturaFacilitata, dimensioneTesto]);
   const intervalRef = useRef(null);
   const jsonRef = useRef(null);
   const pdfRef = useRef(null);
@@ -7848,6 +7869,35 @@ export default function App() {
                     <option value="monaco">☯️ Monaco (Cerchio Zen & Giada)</option>
                     <option value="artefice">⚙️ Artefice (Ingranaggi & Ottone)</option>
                     <option value="disattivato">🔒 {lingua === 'en' ? 'Classic Minimal (No frames)' : 'Classico Minimal (Senza cornici)'}</option>
+                  </select>
+                </div>
+                <div style={{ gridColumn: 'span 2', marginTop: 8, paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
+                  <div style={{ fontSize: 11, color: C.inkDim, marginBottom: 6, fontWeight: 600 }}>
+                    ♿ {lingua === 'en' ? 'Readability' : 'Leggibilità'}
+                  </div>
+                  <label
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginBottom: 6, fontSize: 12 }}
+                    title={lingua === 'en'
+                      ? 'Sans-serif type, wider letter and line spacing, no shadows or frame decorations.'
+                      : 'Carattere senza grazie, lettere e righe più distanziate, niente ombre né cornici decorative.'}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={letturaFacilitata}
+                      onChange={(e) => setLetturaFacilitata(e.target.checked)}
+                      style={{ width: 16, height: 16, cursor: 'pointer', accentColor: C.goldDark }}
+                    />
+                    <span>{lingua === 'en' ? 'Easy reading' : 'Lettura facilitata'}</span>
+                  </label>
+                  <select
+                    value={dimensioneTesto}
+                    onChange={(e) => setDimensioneTesto(e.target.value)}
+                    style={{ ...styles.inlineInput, width: '100%', height: 32, padding: '4px 8px', borderRadius: 6, background: C.panel, color: C.ink, fontSize: 12, border: `1px solid ${C.border}` }}
+                    title={lingua === 'en' ? 'Scale the whole sheet, keeping the proportions between texts' : 'Ingrandisce tutta la scheda, mantenendo le proporzioni fra i testi'}
+                  >
+                    <option value="normale">🔤 {lingua === 'en' ? 'Normal text' : 'Testo normale'}</option>
+                    <option value="grande">🔠 {lingua === 'en' ? 'Large text' : 'Testo grande'}</option>
+                    <option value="enorme">🔡 {lingua === 'en' ? 'Very large text' : 'Testo molto grande'}</option>
                   </select>
                 </div>
               </div>
@@ -13044,7 +13094,36 @@ export default function App() {
                                 style={{ color: '#fff', fontWeight: 800, fontSize: 13.5, textShadow: '0 1px 3px rgba(0,0,0,0.9)', background: 'transparent', border: 'none' }}
                               />
                             </span>
-                            <span style={{ color: '#fff' }}>/ {maxPf}</span>
+                            <span style={{ color: '#fff' }}>/</span>
+                            {/* Il massimo è modificabile a mano: la formula automatica vale solo
+                                alla creazione, quindi chi ha tirato i dadi o ha bonus particolari
+                                (Nano, Robusto, oggetti magici) può correggerlo senza perderlo. */}
+                            <span style={{ color: '#fff', cursor: 'pointer' }}>
+                              <Editable
+                                value={maxPf}
+                                tipo="numero"
+                                title={t('vital.pf_max_modifica')}
+                                onChange={(v) => {
+                                  const nuovoMax = Math.max(1, Number(v) || 1);
+                                  if (isBestia) {
+                                    aggiorna({
+                                      formaBestiale: {
+                                        ...scheda.formaBestiale,
+                                        pfMax: nuovoMax,
+                                        pfAttuali: Math.min(Number(scheda.formaBestiale.pfAttuali) || 0, nuovoMax),
+                                      },
+                                    });
+                                  } else {
+                                    aggiorna({
+                                      pfMax: nuovoMax,
+                                      pfAttuali: Math.min(Number(scheda.pfAttuali) || 0, nuovoMax),
+                                    });
+                                  }
+                                }}
+                                width={34}
+                                style={{ color: '#fff', fontWeight: 800, fontSize: 13.5, textShadow: '0 1px 3px rgba(0,0,0,0.9)', background: 'transparent', border: 'none' }}
+                              />
+                            </span>
                           </div>
                         </div>
                       );

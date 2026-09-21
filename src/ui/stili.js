@@ -2237,4 +2237,109 @@ tbody tr:hover {
     margin: 10mm 12mm;
   }
 }
+/* ------------------------------------------------------------------ */
+/* LETTURA FACILITATA                                                   */
+/* Dal feedback di un playtester dislessico: "font troppo piccoli e     */
+/* poco leggibili, lettere molto attaccate, servirebbe uno schema più   */
+/* piatto e ordinato". È un'opzione, non il default: chi preferisce     */
+/* l'estetica manoscritta non perde nulla.                              */
+/* I corpi del testo sono dichiarati inline in App.jsx, quindi qui      */
+/* serve !important: un foglio di stile non batte uno stile inline.     */
+/* ------------------------------------------------------------------ */
+
+:root[data-lettura="facilitata"] .app-shell,
+:root[data-lettura="facilitata"] .app-shell *,
+:root[data-lettura="facilitata"] .nuvoletta-tooltip {
+  /* Nessuna grazia e lettere ben distinte fra loro: in questo stack la
+     "l" minuscola, la "I" maiuscola e la cifra "1" restano diverse.
+     Solo caratteri di sistema, così l'app resta leggibile offline. */
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+  /* "lettere molto attaccate" era la lamentela precisa. */
+  letter-spacing: 0.035em !important;
+  word-spacing: 0.08em !important;
+}
+
+:root[data-lettura="facilitata"] .app-shell {
+  line-height: 1.6 !important;
+}
+
+/* La barra in alto su telefono è già larga quanto lo schermo: allargare
+   anche le sue lettere spinge il pulsante Menu oltre il bordo (visibile
+   a 360px). Il carattere senza grazie resta, la spaziatura in più no —
+   è una barra di comandi, non un testo da leggere. */
+:root[data-lettura="facilitata"] .selettore-personaggio-mobile,
+:root[data-lettura="facilitata"] .selettore-personaggio-mobile * {
+  letter-spacing: normal !important;
+  word-spacing: normal !important;
+}
+
+/* I blocchi di testo lungo sono quelli in cui si perde la riga. */
+:root[data-lettura="facilitata"] .app-shell p,
+:root[data-lettura="facilitata"] .app-shell li,
+:root[data-lettura="facilitata"] .app-shell textarea {
+  line-height: 1.75 !important;
+  text-align: left !important;
+}
+
+/* Modalità piatta: via ombre e bagliori, che sulle lettere piccole si
+   leggono come sfocatura. La barra dei PF è esclusa: lì l'ombra serve a
+   staccare il numero bianco dal colore acceso della barra. */
+:root[data-lettura="facilitata"] .app-shell *:not(.profilo-barra-vita):not(.profilo-barra-vita *) {
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+/* Le cornici di classe sono decorazione pura: intorno a un testo che si
+   fatica già a leggere aggiungono solo rumore. Lo sfondo ambientale
+   invece resta — è la cosa che ai playtester è piaciuta di più. */
+:root[data-lettura="facilitata"] .angolo-tl,
+:root[data-lettura="facilitata"] .angolo-tr,
+:root[data-lettura="facilitata"] .angolo-bl,
+:root[data-lettura="facilitata"] .angolo-br {
+  display: none !important;
+}
+
+/* Il corsivo esteso penalizza il riconoscimento della parola: stesso
+   risalto, ottenuto con il peso invece che con l'inclinazione. */
+:root[data-lettura="facilitata"] .app-shell em,
+:root[data-lettura="facilitata"] .app-shell i {
+  font-style: normal !important;
+  font-weight: 600 !important;
+}
+
+/* Niente movimento dentro la scheda mentre si legge (lo sfondo, che è
+   fuori da .app-shell, continua ad animarsi). */
+:root[data-lettura="facilitata"] .app-shell * {
+  animation: none !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* DIMENSIONE DEL TESTO                                                 */
+/* 468 dei 943 corpi dichiarati in App.jsx stanno sotto i 12px. Essendo */
+/* inline non si possono riscalare uno per uno da CSS, quindi si ingran-*/
+/* disce l'intero documento: le proporzioni fra i testi restano intatte.*/
+/* Niente compensazione della larghezza: Chrome risolve già le percen-  */
+/* tuali nello spazio ingrandito, quindi il contenuto continua a occupa-*/
+/* re tutto lo schermo invece di sbordare. Compensare a mano lo rimpic- */
+/* ciolirebbe.                                                          */
+/* Lo zoom sta su <main>, non su <body>: la barra in alto ha i pulsanti */
+/* già al limite dei 390px e, ingrandita, finirebbe fuori schermo — le  */
+/* media query non si accorgono dello zoom e non possono rimediare. Chi */
+/* legge la scheda ingrandisce la scheda, non i comandi.                */
+/* ------------------------------------------------------------------ */
+
+:root[data-testo="grande"] .app-shell main { zoom: 1.12; }
+:root[data-testo="enorme"] .app-shell main { zoom: 1.25; }
+
+/* La barra in alto su telefono (titolo, dadi, Menu) sta dentro <main> ma
+   è già larga quanto lo schermo: ingrandita, il pulsante Menu finirebbe
+   oltre il bordo e html{overflow-x:clip} lo taglierebbe invece di far
+   scorrere. Lo zoom inverso la riporta alla dimensione nativa: sono
+   comandi, non testo da leggere. */
+:root[data-testo="grande"] .app-shell main .selettore-personaggio-mobile { zoom: calc(1 / 1.12); }
+:root[data-testo="enorme"] .app-shell main .selettore-personaggio-mobile { zoom: calc(1 / 1.25); }
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-lettura="facilitata"] .app-shell * { transition: none !important; }
+}
 `;
