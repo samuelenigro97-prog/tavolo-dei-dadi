@@ -1178,7 +1178,7 @@ export function limitiFormaSelvatica(livello, sottoclasse = '') {
   return { gsMax, nuoto: L >= 4, volo: L >= 8 };
 }
 
-/** Bestie che il Druido può assumere al livello indicato, dalla più forte. */
+/** Bestie che il Druido può assumere al livello indicato, dal GS più basso al più alto. */
 export function bestieDisponibili(livello, sottoclasse = '', bestie = BESTIE) {
   const limiti = limitiFormaSelvatica(livello, sottoclasse);
   if (!limiti) return [];
@@ -1186,7 +1186,7 @@ export function bestieDisponibili(livello, sottoclasse = '', bestie = BESTIE) {
     .filter((b) => b.gsNum <= limiti.gsMax)
     .filter((b) => (b.velocita.volo ? limiti.volo : true))
     .filter((b) => (b.velocita.nuoto ? limiti.nuoto : true))
-    .sort((a, b) => b.gsNum - a.gsNum || a.nome.localeCompare(b.nome, 'it'));
+    .sort((a, b) => a.gsNum - b.gsNum || a.nome.localeCompare(b.nome, 'it'));
 }
 
 
