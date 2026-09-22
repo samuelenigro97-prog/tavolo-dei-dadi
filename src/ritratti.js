@@ -92,6 +92,7 @@ export function iconaBestia(nome) {
   if (n.includes('ragno')) return '🕷️';
   if (n.includes('scorpione')) return '🦂';
   if (n.includes('cinghiale') || n.includes('maiale')) return '🐗';
+  if (n.includes('scimmia') || n.includes('gorilla')) return '🦍';
   if (n.includes('cavallo') || n.includes('pony') || n.includes('galoppo') || n.includes('mulo') || n.includes('asino')) return '🐎';
   if (n.includes('alce') || n.includes('cervo')) return '🦌';
   if (n.includes('rinoceronte')) return '🦏';
@@ -102,7 +103,7 @@ export function iconaBestia(nome) {
   if (n.includes('ratto') || n.includes('topo')) return '🐀';
   if (n.includes('granchio')) return '🦀';
   if (n.includes('vespa') || n.includes('ape') || n.includes('millepiedi')) return '🐝';
-  if (n.includes('anchilosauro') || n.includes('sauro') || n.includes('tirannosauro') || n.includes('dinosauro') || n.includes('lucertola')) return '🦖';
+  if (n.includes('anchilosauro') || n.includes('sauro') || n.includes('tirannosauro') || n.includes('dinosauro') || n.includes('lucertola') || n.includes('triceratopo')) return '🦖';
   return '🐾';
 }
 
@@ -120,9 +121,15 @@ function trovaPathBestia(nome) {
   if (n.includes('squalo') || n.includes('delfino') || n.includes('plesiosauro')) return ICONE_BESTIE_SVG['squalo'];
   if (n.includes('polpo') || n.includes('calamaro')) return ICONE_BESTIE_SVG['polpo'];
   if (n.includes('alce') || n.includes('cervo')) return ICONE_BESTIE_SVG['alce'];
-  if (n.includes('sauro') || n.includes('dinosauro') || n.includes('tirannosauro') || n.includes('lucertola')) return ICONE_BESTIE_SVG['dinosauro'];
+  if (n.includes('sauro') || n.includes('dinosauro') || n.includes('tirannosauro') || n.includes('lucertola') || n.includes('triceratopo')) return ICONE_BESTIE_SVG['dinosauro'];
   if (n.includes('pipistrello')) return ICONE_BESTIE_SVG['pipistrello'];
   if (n.includes('tasso') || n.includes('donnola')) return ICONE_BESTIE_SVG['tasso'];
+  // Nessuna silhouette dedicata per questi: usiamo la categoria esistente più vicina.
+  if (n.includes('rana') || n.includes('rospo')) return ICONE_BESTIE_SVG['coccodrillo'];
+  if (n.includes('granchio') || n.includes('millepiedi') || n.includes('vespa')) return ICONE_BESTIE_SVG['ragno'];
+  if (n.includes('scimmia') || n.includes('gorilla')) return ICONE_BESTIE_SVG['orso'];
+  if (n.includes('capra')) return ICONE_BESTIE_SVG['alce'];
+  if (n.includes('rinoceronte') || n.includes('elefante') || n.includes('mammut')) return ICONE_BESTIE_SVG['cinghiale'];
   return ICONE_BESTIE_SVG['lupo'];
 }
 

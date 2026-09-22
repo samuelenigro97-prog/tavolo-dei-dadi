@@ -5,6 +5,19 @@
 
 export const NOVITA = [
   {
+    versione: '4.6.0',
+    voci: {
+      it: [
+        'Sezione "Trasformazioni" migliorata: Forma Bestiale e Metamorfosi ora hanno liste creature separate (GS diversi tra le due), con un interruttore 🐾/🔮 per passare dall\'una all\'altra. Aggiunte Gorilla Gigante e Tirannosauro Rex, prima assenti dal catalogo.',
+        'In Forma Bestiale/Metamorfosi ora si vedono tutte e sei le caratteristiche (non solo quelle sostituite). Il tasto per tornare in sé si chiama "Torna alla Forma Normale" invece di "Ritorna Umanoide". Corrette una quindicina di illustrazioni generate che mostravano la sagoma sbagliata.',
+      ],
+      en: [
+        'Improved "Transformations" section: Wild Shape and Polymorph now have separate creature lists (different CR rules), with a 🐾/🔮 switch between them. Added Giant Ape and Tyrannosaurus Rex, missing from the catalog before.',
+        'While Wild Shaped/Polymorphed you now see all six characteristics, not just the replaced ones. The revert button is now "Revert to Normal Form" instead of "Revert to Humanoid". Fixed about fifteen generated artworks that showed the wrong silhouette.',
+      ],
+    },
+  },
+  {
     versione: '4.5.0',
     voci: {
       it: [

@@ -2,6 +2,35 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.6.0] – 2026-09-22
+
+### Corretto
+- **In Forma Bestiale/Metamorfosi ora si vedono tutte e sei le caratteristiche.**
+  Prima il pannello mostrava solo quelle sostituite dalla forma (3 per la
+  Forma Bestiale); ora mostra sempre tutte e sei, con quelle non sostituite
+  ("Tua") in chiaro ma leggermente attenuate, così non serve scendere alla
+  scheda per controllarle mentre si è trasformati.
+- Il tasto per tornare alla forma normale si chiamava "Ritorna Umanoide": per
+  un elfo o uno gnomo suonava strano. Ora è "Torna alla Forma Normale".
+- Icone e illustrazioni generate mancavano per una quindicina di creature del
+  catalogo (Rana/Rospo, Granchio, Millepiedi, Vespa, Scimmia/Gorilla, Capra,
+  Rinoceronte, Elefante, Mammut, Triceratopo...): finivano tutte con la
+  sagoma del lupo. Mappate sulla categoria esistente più vicina.
+
+### Aggiunto
+- **Sezione "Trasformazioni" con due liste separate.** Forma Bestiale e
+  Metamorfosi hanno regole di Grado di Sfida diverse (la prima segue la
+  tabella Forma Selvatica del Druido; la seconda, per Bardo/Stregone/Mago,
+  segue "GS ≤ livello del personaggio", senza limiti di nuoto/volo): ora un
+  interruttore 🐾 Forma Animale / 🔮 Metamorfosi mostra la lista giusta per
+  ciascuna. Compare per il Druido (Forma Animale), per Bardo/Stregone/Mago
+  (Metamorfosi con Polymorph in lista), o entrambi i tab se il personaggio è
+  idoneo a entrambe.
+- **Gorilla Gigante (GS 7) e Tirannosauro Rex (GS 8)** aggiunti al catalogo
+  creature: erano gli unici assenti nella fascia alta, raggiungibile solo con
+  la Metamorfosi (la tabella Forma Selvatica del Druido non arriva così in
+  alto nel gioco normale).
+
 ## [4.5.0] – 2026-09-22
 
 ### Aggiunto

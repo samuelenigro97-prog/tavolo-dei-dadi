@@ -13,7 +13,7 @@ import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON, WENDELL_JSON, L
 import { fixEquipaggiamentoVaelion, migrazioneRegoleVaelion, autoIdratazionePersonaggioPredefinito } from './data/migrazioniPersonaggi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from './data/condizioni.js';
-import { BESTIE, FAMIGLI, EVOCAZIONI, MOSTRI_5E, TUTTE_LE_CREATURE, bestieDisponibili, limitiFormaSelvatica } from './data/bestiario.js';
+import { BESTIE, FAMIGLI, EVOCAZIONI, MOSTRI_5E, TUTTE_LE_CREATURE, bestieDisponibili, limitiFormaSelvatica, creatureDisponibiliMetamorfosi, limitiMetamorfosi } from './data/bestiario.js';
 import { novitaRecenti, ultimaVersioneNovita } from './data/novita.js';
 import { codificaScheda, decodificaScheda, preparaPerCondivisione, costruisciLink, payloadDaUrl, LIMITE_PAYLOAD } from './utils/condivisione.js';
 import { creaStanza, apriStanza, normalizzaCodiceStanza, formattaCodiceStanza, DURATA_STANZA_ORE } from './utils/stanze.js';
@@ -1963,7 +1963,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.5.0';
+const APP_VERSION = '4.6.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3643,6 +3643,7 @@ export default function App() {
   const [mostraModalManuali, setMostraModalManuali] = useState(false);
   const [mostraModalRitrattoBestia, setMostraModalRitrattoBestia] = useState(false);
   const [urlRitrattoBestiaInput, setUrlRitrattoBestiaInput] = useState('');
+  const [tabTrasformazione, setTabTrasformazione] = useState('animale'); // 'animale' | 'metamorfosi'
   const [mostraModalAggiungiCompagno, setMostraModalAggiungiCompagno] = useState(false);
   const [filtroCompagnoCat, setFiltroCompagnoCat] = useState('tutti');
   const [cercaCompagnoText, setCercaCompagnoText] = useState('');
@@ -12028,9 +12029,9 @@ export default function App() {
                         [campoForma]: { ...formaAttiva.dati, attiva: false }
                       });
                     }}
-                    title={lingua === 'en' ? 'Revert to normal humanoid form' : 'Ritorna alla tua forma umanoide normale'}
+                    title={lingua === 'en' ? 'Revert to your normal form' : 'Ritorna alla tua forma normale'}
                   >
-                    👤 {lingua === 'en' ? 'Revert to Humanoid' : 'Ritorna Umanoide'}
+                    👤 {lingua === 'en' ? 'Revert to Normal Form' : 'Torna alla Forma Normale'}
                   </button>
                 </div>
               </div>
@@ -12097,26 +12098,26 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Caratteristiche sostituite dalla forma (con prove interattive):
-                  solo FOR/DES/COS per la Forma Bestiale, tutte e sei per la
-                  Metamorfosi (Polymorph sostituisce anche quelle mentali). */}
-              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${formaAttiva.tutteLeCaratteristiche ? 6 : 3}, 1fr)`, gap: 8, background: C.panel, padding: '8px 12px', borderRadius: 8, border: `1px solid ${C.border}`, textAlign: 'center', marginBottom: 10 }}>
-                {(formaAttiva.tutteLeCaratteristiche
-                  ? [['forza', 'FOR'], ['destrezza', 'DES'], ['costituzione', 'COS'], ['intelligenza', 'INT'], ['saggezza', 'SAG'], ['carisma', 'CAR']]
-                  : [['forza', 'FOR'], ['destrezza', 'DES'], ['costituzione', 'COS']]
-                ).map(([car, sigla]) => {
-                  const val = Number(formaAttiva.dati.car?.[car]) || 10;
-                  const mod = Math.floor((val - 10) / 2);
+              {/* Tutte e sei le caratteristiche: quelle sostituite dalla forma
+                  (FOR/DES/COS sempre, +INT/SAG/CAR solo con la Metamorfosi)
+                  hanno le prove interattive; le tue restano in chiaro, così
+                  non serve scendere alla scheda per vederle mentre sei
+                  trasformato. */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 8, background: C.panel, padding: '8px 12px', borderRadius: 8, border: `1px solid ${C.border}`, textAlign: 'center', marginBottom: 10 }}>
+                {[['forza', 'FOR'], ['destrezza', 'DES'], ['costituzione', 'COS'], ['intelligenza', 'INT'], ['saggezza', 'SAG'], ['carisma', 'CAR']].map(([car, sigla]) => {
+                  const sostituita = formaAttiva.tutteLeCaratteristiche || ['forza', 'destrezza', 'costituzione'].includes(car);
+                  const val = punteggioCaratteristica(scheda, car);
+                  const mod = modificatore(val);
                   return (
                     <div
                       key={car}
-                      style={{ cursor: 'pointer', padding: '4px', borderRadius: 6, transition: 'all 0.15s ease' }}
+                      style={{ cursor: 'pointer', padding: '4px', borderRadius: 6, transition: 'all 0.15s ease', opacity: sostituita ? 1 : 0.6 }}
                       onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0,0,0,0.05)'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-                      onClick={() => lanciaD20(`Prova di ${t('attr.' + car)} (${formaAttiva.dati.nome})`, mod, { tipoTiro: 'prova' })}
-                      title={`Clicca per tirare Prova di ${t('attr.' + car)}: 1d20 ${conSegno(mod)}`}
+                      onClick={() => lanciaD20(`Prova di ${t('attr.' + car)}${sostituita ? ` (${formaAttiva.dati.nome})` : ''}`, mod, { tipoTiro: 'prova' })}
+                      title={sostituita ? `Clicca per tirare Prova di ${t('attr.' + car)}: 1d20 ${conSegno(mod)}` : `Tua: non sostituita dalla forma. Clicca per tirare Prova di ${t('attr.' + car)}: 1d20 ${conSegno(mod)}`}
                     >
-                      <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: C.inkDim }}>{sigla} (Forma) 🎲</div>
+                      <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: C.inkDim }}>{sigla} ({sostituita ? 'Forma' : 'Tua'}) 🎲</div>
                       <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>
                         {val} <span style={{ color: C.goldDark, fontSize: 12.5 }}>({conSegno(mod)})</span>
                       </div>
@@ -16769,12 +16770,23 @@ export default function App() {
                 </div>
               </Sezione>
 
-            {/* Forma Bestiale (solo Druido dal 2° livello): subito sotto la Magia */}
-            {/(druido|druid)/i.test(scheda.classe || '') && (Number(scheda.livello) || 1) >= 2 && (
-              <Sezione titolo={lingua === 'en' ? 'Beast Form' : 'Forma Bestiale'} {...apertoProps('formaBestiale', true)}>
+            {/* Trasformazioni: Forma Bestiale (Druido dal 2° livello) e/o
+                Metamorfosi (Bardo/Stregone/Mago, che hanno Polymorph in lista) */}
+            {(() => {
+              const isDruido = /(druido|druid)/i.test(scheda.classe || '') && (Number(scheda.livello) || 1) >= 2;
+              const puoMetamorfosi = /(bardo|bard|stregone|sorcerer|mago|wizard)/i.test(scheda.classe || '');
+              if (!isDruido && !puoMetamorfosi) return null;
+              const mostraToggle = isDruido && puoMetamorfosi;
+              const tabEffettivo = mostraToggle ? tabTrasformazione : (isDruido ? 'animale' : 'metamorfosi');
+              return (
+              <Sezione titolo={lingua === 'en' ? 'Transformations' : 'Trasformazioni'} {...apertoProps('formaBestiale', true)}>
                 {(() => {
-                  const disp = bestieDisponibili(scheda.livello, scheda.sottoclasse);
-                  const lim = limitiFormaSelvatica(scheda.livello, scheda.sottoclasse);
+                  const disp = tabEffettivo === 'metamorfosi'
+                    ? creatureDisponibiliMetamorfosi(scheda.livello)
+                    : bestieDisponibili(scheda.livello, scheda.sottoclasse);
+                  const lim = tabEffettivo === 'metamorfosi'
+                    ? limitiMetamorfosi(scheda.livello)
+                    : limitiFormaSelvatica(scheda.livello, scheda.sottoclasse);
                   const bestiePref = Array.isArray(scheda.bestiePreferite) ? scheda.bestiePreferite : [];
                   const togglePref = (e, nomeBestia) => {
                     e.stopPropagation();
@@ -16787,13 +16799,31 @@ export default function App() {
 
                   return (
                     <div>
+                      {mostraToggle && (
+                        <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+                          <button
+                            type="button"
+                            onClick={() => setTabTrasformazione('animale')}
+                            style={{ ...styles.buttonMini, flex: 1, fontWeight: 800, padding: '6px 10px', fontSize: 12.5, background: tabEffettivo === 'animale' ? 'rgba(46,125,50,0.18)' : C.panel, borderColor: tabEffettivo === 'animale' ? '#3e7d32' : C.border, color: tabEffettivo === 'animale' ? '#1b4332' : C.inkDim }}
+                          >
+                            🐾 {lingua === 'en' ? 'Beast Shape' : 'Forma Animale'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setTabTrasformazione('metamorfosi')}
+                            style={{ ...styles.buttonMini, flex: 1, fontWeight: 800, padding: '6px 10px', fontSize: 12.5, background: tabEffettivo === 'metamorfosi' ? 'rgba(123,79,176,0.18)' : C.panel, borderColor: tabEffettivo === 'metamorfosi' ? '#7b4fb0' : C.border, color: tabEffettivo === 'metamorfosi' ? '#4a2e6b' : C.inkDim }}
+                          >
+                            🔮 {lingua === 'en' ? 'Polymorph' : 'Metamorfosi'}
+                          </button>
+                        </div>
+                      )}
                       <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
                         <span>
                           Grado di Sfida Max: <strong>GS {lim?.gsMax === 0.25 ? '1/4' : lim?.gsMax === 0.5 ? '1/2' : lim?.gsMax || '1/4'}</strong>
                           {lim?.nuoto && ' · 🏊 Nuoto'}
                           {lim?.volo && ' · 🦅 Volo'}
                         </span>
-                        <span style={{ opacity: 0.8 }}>{disp.length} bestie utilizzabili</span>
+                        <span style={{ opacity: 0.8 }}>{disp.length} {tabEffettivo === 'metamorfosi' ? 'creature utilizzabili' : 'bestie utilizzabili'}</span>
                       </div>
 
                       {/* Scorciatoie Forme Preferite (Accesso Rapido) */}
@@ -16889,7 +16919,8 @@ export default function App() {
                   );
                 })()}
               </Sezione>
-            )}
+              );
+            })()}
 
             {/* Sezione Compagni, Famigli ed Evocazioni Integrata */}
             <Sezione

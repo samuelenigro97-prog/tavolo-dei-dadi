@@ -776,6 +776,40 @@ export const BESTIE = [
     ],
     note: 'Forza 24 (+7), 126 PF e fino a 8d8+4d10+21 danni in carica.',
   },
+
+  // --- GRADO DI SFIDA 7 (oltre la tabella Forma Selvatica: solo Metamorfosi) ---
+  {
+    nome: 'Gorilla gigante', nomeEn: 'Giant Ape', gs: '7', gsNum: 7,
+    taglia: 'Enorme', ca: 12, pf: 157, pfFormula: '15d12 + 60',
+    velocita: { terra: 12, scalata: 12 },
+    car: { forza: 23, destrezza: 14, costituzione: 18, intelligenza: 7, saggezza: 12, carisma: 7 },
+    abilita: 'Atletica +9, Percezione +4',
+    sensi: 'Percezione passiva 14',
+    tratti: [],
+    azioni: [
+      'Attacco multiplo: due Pugni.',
+      'Pugno: +9 al tiro per colpire, portata 3 m, 3d10+6 danni contundenti.',
+      'Masso (a distanza): +9 al tiro per colpire, gittata 15/30 m, 7d6+6 danni contundenti.',
+    ],
+    note: '157 PF e attacco multiplo da 2 pugni: tra le più forti disponibili con la Metamorfosi.',
+  },
+
+  // --- GRADO DI SFIDA 8 (oltre la tabella Forma Selvatica: solo Metamorfosi) ---
+  {
+    nome: 'Tirannosauro rex', nomeEn: 'Tyrannosaurus Rex', gs: '8', gsNum: 8,
+    taglia: 'Enorme', ca: 13, pf: 136, pfFormula: '13d12 + 52',
+    velocita: { terra: 15 },
+    car: { forza: 25, destrezza: 10, costituzione: 19, intelligenza: 2, saggezza: 12, carisma: 9 },
+    abilita: 'Percezione +5',
+    sensi: 'Percezione passiva 15',
+    tratti: [],
+    azioni: [
+      'Attacco multiplo: un Morso e una Coda.',
+      'Morso: +10 al tiro per colpire, portata 3 m, 4d12+7 danni perforanti; su bersaglio Medio o più piccolo, afferrato (CD fuga 17) e trattenuto.',
+      'Coda: +10 al tiro per colpire, portata 3 m (non contro un bersaglio già afferrato), 4d8+7 danni contundenti.',
+    ],
+    note: '136 PF, morso da 4d12+7 con presa: la più forte tra le bestie disponibili con la Metamorfosi.',
+  },
 ];
 
 /** Famigli speciali / avanzati (Patto della Catena Warlock + Trova Famiglio + Compagni Tasha). */
@@ -1186,6 +1220,23 @@ export function bestieDisponibili(livello, sottoclasse = '', bestie = BESTIE) {
     .filter((b) => b.gsNum <= limiti.gsMax)
     .filter((b) => (b.velocita.volo ? limiti.volo : true))
     .filter((b) => (b.velocita.nuoto ? limiti.nuoto : true))
+    .sort((a, b) => a.gsNum - b.gsNum || a.nome.localeCompare(b.nome, 'it'));
+}
+
+/**
+ * Limite di GS per la Metamorfosi (Polymorph, regole 2014): "bestia con Grado
+ * di Sfida pari o inferiore al livello del bersaglio" — niente tabella
+ * separata come la Forma Selvatica, e nessuna restrizione di nuoto/volo.
+ */
+export function limitiMetamorfosi(livello) {
+  return { gsMax: Math.max(0, Number(livello) || 1) };
+}
+
+/** Bestie assumibili con la Metamorfosi al livello indicato, dal GS più basso al più alto. */
+export function creatureDisponibiliMetamorfosi(livello, bestie = BESTIE) {
+  const limiti = limitiMetamorfosi(livello);
+  return bestie
+    .filter((b) => b.gsNum <= limiti.gsMax)
     .sort((a, b) => a.gsNum - b.gsNum || a.nome.localeCompare(b.nome, 'it'));
 }
 

@@ -1936,6 +1936,7 @@ const DATI_EN = {
   'Anchilosauro': 'Ankylosaurus', 'Scorpione gigante': 'Giant Scorpion', 'Elefante': 'Elephant',
   'Stegosauro': 'Stegosaurus', 'Triceratopo': 'Triceratops', 'Coccodrillo gigante': 'Giant Crocodile',
   'Squalo gigante': 'Giant Shark', 'Unicorno': 'Unicorn',
+  'Gorilla gigante': 'Giant Ape', 'Tirannosauro rex': 'Tyrannosaurus Rex',
   // Evocazioni & Famigli speciali
   'Pseudodrago (Famiglio)': 'Pseudodragon (Familiar)', 'Imp (Famiglio)': 'Imp (Familiar)',
   'Folletto Quasit (Famiglio)': 'Quasit (Familiar)', 'Sprite (Famiglio)': 'Sprite (Familiar)',
