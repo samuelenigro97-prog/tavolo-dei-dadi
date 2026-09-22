@@ -2,6 +2,18 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.6.1] – 2026-09-22
+
+### Modificato
+- **Illustrazioni Forma Bestiale/Metamorfosi: sagome vere invece di categorie
+  riciclate.** La correzione precedente (4.6.0) rimappava una quindicina di
+  creature senza icona dedicata sulla categoria esistente più vicina (es.
+  Rana → sagoma coccodrillo, Elefante → sagoma cinghiale). Ora hanno una
+  silhouette propria, presa da game-icons.net (CC BY 3.0, autori lorc,
+  delapouite, skoll) come le altre: Rana/Rospo, Granchio, Millepiedi, Vespa,
+  Scimmia/Gorilla, Capra, Rinoceronte, Elefante, Mammut, Triceratopo, Ratto,
+  Cavallo/Pony.
+
 ## [4.6.0] – 2026-09-22
 
 ### Corretto

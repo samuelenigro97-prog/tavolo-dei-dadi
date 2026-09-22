@@ -541,6 +541,27 @@ test('Forma Bestiale: genera avatar SVG e icone coerenti per ogni animale', asyn
   assert.ok(svgOrso.includes('GS%201'));
 });
 
+test('Forma Bestiale: le categorie prima mancanti hanno una silhouette dedicata (non finiscono più sul lupo)', async () => {
+  const { generaAvatarBestia } = await import('../src/ritratti.js');
+  // Il badge del lupo (fallback di default, es. per un nome senza nessuna parola chiave nota).
+  const badgeLupoFallback = generaAvatarBestia({ nome: 'Creatura Sconosciuta XYZ' });
+  const categorie = ['Rana gigante', 'Granchio', 'Millepiedi gigante', 'Vespa gigante', 'Gorilla gigante', 'Scimmia gigante', 'Capra gigante', 'Rinoceronte', 'Elefante', 'Mammut', 'Triceratopo', 'Ratto', 'Pony', 'Cavallo da guerra'];
+  const badge = {};
+  for (const nome of categorie) {
+    badge[nome] = generaAvatarBestia({ nome });
+    assert.notEqual(badge[nome], badgeLupoFallback, `${nome} finisce ancora sulla sagoma di default (lupo)`);
+  }
+  // Ogni categoria distinta ha una silhouette diversa dalle altre (non tutte appiattite sulla stessa).
+  assert.notEqual(badge['Rana gigante'], badge['Granchio']);
+  assert.notEqual(badge['Gorilla gigante'], badge['Rinoceronte']);
+  assert.notEqual(badge['Elefante'], badge['Mammut']);
+  assert.notEqual(badge['Ratto'], badge['Pony']);
+  // Sinonimi della stessa categoria condividono la stessa silhouette.
+  assert.equal(badge['Gorilla gigante'].includes('GORILLA'), true);
+  assert.equal(generaAvatarBestia({ nome: 'Scimmia gigante' }).replace(/SCIMMIA%20GIGANTE/, ''), generaAvatarBestia({ nome: 'Gorilla gigante' }).replace(/GORILLA%20GIGANTE/, ''));
+  assert.equal(generaAvatarBestia({ nome: 'Pony' }).replace(/PONY/, ''), generaAvatarBestia({ nome: 'Cavallo da guerra' }).replace(/CAVALLO%20DA%20GUERRA/, ''));
+});
+
 test('Taglia 5e: calcolo taglia effettiva con Forma Bestiale, Ingrandire e Ridurre', async () => {
   const { tagliaEffettiva, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E } = await import('../src/rules/scheda.js');
   

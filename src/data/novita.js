@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.6.1',
+    voci: {
+      it: [
+        'Illustrazioni Forma Bestiale/Metamorfosi migliorate: una quindicina di creature (Rana, Granchio, Elefante, Gorilla, Triceratopo...) ora hanno una sagoma propria invece di una categoria riciclata.',
+      ],
+      en: [
+        'Improved Wild Shape/Polymorph artwork: about fifteen creatures (Frog, Crab, Elephant, Gorilla, Triceratops...) now have their own silhouette instead of a reused category.',
+      ],
+    },
+  },
+  {
     versione: '4.6.0',
     voci: {
       it: [
