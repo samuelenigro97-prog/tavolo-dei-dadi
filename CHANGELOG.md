@@ -2,6 +2,19 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.6.2] – 2026-09-22
+
+### Corretto
+- **Coerenza delle sagome Forma Bestiale/Metamorfosi**: le 15 icone originali
+  (Orso, Lupo, Aquila, Gufo, Ragno, Cinghiale, Serpente, Pantera, Coccodrillo,
+  Squalo, Polpo, Alce, Dinosauro, Pipistrello, Tasso) erano in realtà forme
+  generiche quasi identiche tra loro (un "pupazzo di neve" con due occhi),
+  non vere icone — molto meno dettagliate delle 12 aggiunte in 4.6.1, quindi
+  visivamente incoerenti se affiancate. Sostituite tutte con icone reali
+  game-icons.net (stessa fonte, stesso stile), inclusi Coccodrillo e Squalo
+  che prima non avevano mai avuto un'icona vera. In più, tre sagome erano
+  scambiate per errore tra loro (Pipistrello/Tasso/Dinosauro): corretto.
+
 ## [4.6.1] – 2026-09-22
 
 ### Modificato

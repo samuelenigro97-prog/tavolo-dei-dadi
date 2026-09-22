@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.6.2',
+    voci: {
+      it: [
+        'Tutte le sagome Forma Bestiale/Metamorfosi ora sono vere icone coerenti tra loro (prima le 15 originali erano forme generiche quasi identiche): sistemate anche Coccodrillo e Squalo, che non ne avevano mai avuta una vera.',
+      ],
+      en: [
+        'All Wild Shape/Polymorph silhouettes are now real, consistent icons (the original 15 were near-identical generic shapes): also fixed Crocodile and Shark, which never had a proper icon before.',
+      ],
+    },
+  },
+  {
     versione: '4.6.1',
     voci: {
       it: [
