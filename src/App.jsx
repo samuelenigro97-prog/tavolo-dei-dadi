@@ -8,7 +8,7 @@ import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI, ambientazioneCasuale, COLORE_
 import { styles, GLOBAL_CSS } from './ui/stili.js';
 import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, estraiVociLista, Sezione, CampoBloccato, formattaVoceConIcona } from './ui/componenti.jsx';
 import { SezionePoteri, BadgePotere } from './ui/PoteriSezione.jsx';
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma, iniziativaTotale, pfMassimiEffettivi } from './rules/scheda.js';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma, iniziativaTotale, pfMassimiEffettivi, effettiSfinimento } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON, WENDELL_JSON, LYRIAN_JSON } from './data/esempi.js';
 import { fixEquipaggiamentoVaelion, migrazioneRegoleVaelion, autoIdratazionePersonaggioPredefinito } from './data/migrazioniPersonaggi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
@@ -1291,7 +1291,7 @@ import { INCANTESIMI_DB, ALIAS_INCANTESIMI, datiIncantesimo } from './data/incan
 const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(INCANTESIMI_DB)])).sort((a, b) => a.localeCompare(b, 'it'));
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SESSO_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E, DEFAULT_MANUALI, MANUALI_INFO, SOTTOCLASSI_FONTI, TALENTI_FONTI, INCANTESIMI_FONTI, talentiPerManuali, incantesimiPerManuali, fonteValida, PE_PER_LIVELLO } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
-import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico } from './rules/dadi.js';
+import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico, modalitaEffettiva } from './rules/dadi.js';
 import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, determinaIconaOggetto, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili, calcolaTurnoCombattimento, dettagliAbilita, calcolaTsConcentrazione, calcolaAttaccoFurtivo, calcolaIraBarbarica, calcolaPunizioneDivina, calcolaIspirazioneBardica, livelloDiClasse } from './rules/regole.js';
 import { normalizzaPoteri, sincronizzaRisorsePoteri, bonusPotereBersaglio } from './rules/poteri.js';
 
@@ -1321,6 +1321,29 @@ function renderSpiegazioni(testo, lookup, setInfo) {
       </div>
     </div>
   );
+}
+
+/** Badge che mostra l'effetto dello Sfinimento su un valore della scheda
+ * (Velocità o PF Massimi), sullo stesso modello di BadgePotere. */
+function BadgeSfinimento({ scheda, bersaglio }) {
+  const eff = effettiSfinimento(scheda);
+  if (!eff.livello) return null;
+  if (bersaglio === 'velocita') {
+    if (eff.velocitaZero) {
+      return <span style={{ fontSize: 10.5, fontWeight: 700, color: C.red, marginLeft: 4 }} title="Sfinimento: velocità ridotta a 0">→0 (Sfin.)</span>;
+    }
+    if (eff.velocitaDimezzata) {
+      return <span style={{ fontSize: 10.5, fontWeight: 700, color: C.red, marginLeft: 4 }} title="Sfinimento: velocità dimezzata">½ (Sfin.)</span>;
+    }
+    if (eff.penalitaVelocita) {
+      return <span style={{ fontSize: 10.5, fontWeight: 700, color: C.red, marginLeft: 4 }} title="Sfinimento: -1,5m per livello">−{eff.penalitaVelocita}m (Sfin.)</span>;
+    }
+    return null;
+  }
+  if (bersaglio === 'pf_massimi' && eff.pfDimezzati) {
+    return <span style={{ fontSize: 10.5, fontWeight: 700, color: C.red, marginLeft: 4 }} title="Sfinimento: PF massimi dimezzati">½ (Sfin.)</span>;
+  }
+  return null;
 }
 
 const ICONE_CONDIZIONI = {
@@ -1940,7 +1963,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.3.0';
+const APP_VERSION = '4.4.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -5072,7 +5095,7 @@ export default function App() {
 
   /** Tiro di d20 generico con animazione. `extra` finisce nello stato del tiro. */
   function lanciaD20(etichetta, bonus, extra = {}) {
-    const { dopoTiro, magia, suono, ...restExtra } = extra;
+    const { dopoTiro, magia, suono, tipoTiro, ...restExtra } = extra;
     clearInterval(intervalRef.current);
     setDanni(null);
     setTiro(null);
@@ -5081,11 +5104,21 @@ export default function App() {
     if (suoniEffOn) eseguiEffettoSonoro(suono || (magia ? 'magia' : 'tiro'), volumeEffetti);
     intervalRef.current = setInterval(() => setFaccia(tiraDado(20)), 70);
 
-    // Sfinimento: nella 5.5 (2024) −2 a ogni tiro di d20 per livello; nella
-    // 5.0 (2014) gli effetti sono condizionali (nessuna penalità fissa qui).
-    const penSfinimento = versione === '2024' ? 2 * scheda.sfinimento : 0;
+    // Sfinimento, solo sui tiri del personaggio (tipoTiro valorizzato: non su
+    // quelli tirati per un alleato o una creatura del bestiario). Nella 5.5
+    // (2024) è −2 fisso per livello su ogni tiro; nella 5.0 (2014) sono soglie
+    // condizionali: svantaggio alle prove dal livello 1, agli attacchi e alle
+    // salvezze dal livello 3 (si combina con vantaggio/svantaggio manuale
+    // secondo la regola 5e: vantaggio+svantaggio insieme = tiro normale).
+    const sfin = tipoTiro ? effettiSfinimento(scheda) : null;
+    const penSfinimento = sfin ? sfin.penalitaD20 : 0;
+    const forzaSvantaggio = !!sfin && (
+      (tipoTiro === 'prova' && sfin.svantaggioProve) ||
+      ((tipoTiro === 'attacco' || tipoTiro === 'salvezza') && sfin.svantaggioAttacchiSalvezza)
+    );
     const bonusEff = bonus - penSfinimento;
-    const { naturale, dadi } = tiraD20(modalita);
+    const modalitaUsata = modalitaEffettiva(modalita, forzaSvantaggio);
+    const { naturale, dadi } = tiraD20(modalitaUsata);
     const sogliaCrit = (() => {
       const sottoclasse = String(scheda.sottoclasse || '').toLowerCase();
       const liv = Number(scheda.livello) || 1;
@@ -5117,8 +5150,9 @@ export default function App() {
         dadi,
         bonus: bonusEff,
         totale: naturale + bonusEff,
-        modalita,
+        modalita: modalitaUsata,
         sfinimento: penSfinimento,
+        svantaggioSfinimento: forzaSvantaggio,
         critico: isCritico,
         fumble: naturale === 1,
         ...restExtra,
@@ -5307,7 +5341,7 @@ export default function App() {
     // Il tiro per colpire è sempre un d20: spada, freccia e magia suonano solo
     // quando si tirano i rispettivi danni.
     const etichettaPresa = a?.aDueMani ? (lingua === 'en' ? ' (Two-Handed)' : ' (2 Mani)') : '';
-    lanciaD20(`Attacco: ${a.nome}${etichettaPresa}`, a.bonus, { attacco: a, magia: !!a.isSpell, suono: 'tiro' });
+    lanciaD20(`Attacco: ${a.nome}${etichettaPresa}`, a.bonus, { attacco: a, magia: !!a.isSpell, suono: 'tiro', tipoTiro: 'attacco' });
     if (!a.isSpell) consumaMunizione(a.nome);
   }
 
@@ -5321,7 +5355,13 @@ export default function App() {
     if (suoniEffOn) eseguiEffettoSonoro('tiro', volumeEffetti);
     intervalRef.current = setInterval(() => setFaccia(tiraDado(20)), 70);
 
-    const { naturale, dadi } = tiraD20(modalita);
+    // È un tiro salvezza a tutti gli effetti: sconta la penalità piatta del
+    // 2024 e lo svantaggio del 2014 (livello 3+) come ogni altra salvezza.
+    const sfin = effettiSfinimento(scheda);
+    const bonusEff = -sfin.penalitaD20;
+    const modalitaUsata = modalitaEffettiva(modalita, sfin.svantaggioAttacchiSalvezza);
+    const { naturale, dadi } = tiraD20(modalitaUsata);
+    const totale = naturale + bonusEff;
     setTimeout(() => {
       clearInterval(intervalRef.current);
       setFaccia(naturale);
@@ -5340,7 +5380,7 @@ export default function App() {
         if (naturale === 1) {
           fallimenti = Math.min(3, fallimenti + 2);
           esito = '1 naturale: due fallimenti!';
-        } else if (naturale >= 10) {
+        } else if (totale >= 10) {
           successi = Math.min(3, successi + 1);
           esito = 'Successo';
         } else {
@@ -5355,9 +5395,10 @@ export default function App() {
         etichetta: 'TS contro morte',
         naturale,
         dadi,
-        bonus: 0,
-        totale: naturale,
-        modalita,
+        bonus: bonusEff,
+        totale,
+        modalita: modalitaUsata,
+        sfinimento: sfin.penalitaD20,
         esito,
       });
     }, 850);
@@ -12022,7 +12063,7 @@ export default function App() {
                       style={{ cursor: 'pointer', padding: '4px', borderRadius: 6, transition: 'all 0.15s ease' }}
                       onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0,0,0,0.05)'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-                      onClick={() => lanciaD20(`Prova di Forza (${scheda.formaBestiale.nome})`, modFor)}
+                      onClick={() => lanciaD20(`Prova di Forza (${scheda.formaBestiale.nome})`, modFor, { tipoTiro: 'prova' })}
                       title={`Clicca per tirare Prova di Forza: 1d20 ${conSegno(modFor)}`}
                     >
                       <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: C.inkDim }}>FOR (Bestia) 🎲</div>
@@ -12040,7 +12081,7 @@ export default function App() {
                       style={{ cursor: 'pointer', padding: '4px', borderRadius: 6, transition: 'all 0.15s ease' }}
                       onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0,0,0,0.05)'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-                      onClick={() => lanciaD20(`Prova di Destrezza (${scheda.formaBestiale.nome})`, modDes)}
+                      onClick={() => lanciaD20(`Prova di Destrezza (${scheda.formaBestiale.nome})`, modDes, { tipoTiro: 'prova' })}
                       title={`Clicca per tirare Prova di Destrezza: 1d20 ${conSegno(modDes)}`}
                     >
                       <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: C.inkDim }}>DES (Bestia) 🎲</div>
@@ -12058,7 +12099,7 @@ export default function App() {
                       style={{ cursor: 'pointer', padding: '4px', borderRadius: 6, transition: 'all 0.15s ease' }}
                       onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0,0,0,0.05)'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-                      onClick={() => lanciaD20(`Prova di Costituzione (${scheda.formaBestiale.nome})`, modCos)}
+                      onClick={() => lanciaD20(`Prova di Costituzione (${scheda.formaBestiale.nome})`, modCos, { tipoTiro: 'prova' })}
                       title={`Clicca per tirare Prova di Costituzione: 1d20 ${conSegno(modCos)}`}
                     >
                       <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: C.inkDim }}>COS (Bestia) 🎲</div>
@@ -12147,6 +12188,7 @@ export default function App() {
                                         danno: az.danno,
                                       },
                                       suono: 'arma',
+                                      tipoTiro: 'attacco',
                                     });
                                   }}
                                   title={`Tira per Colpire: 1d20 ${conSegno(az.bonus)}`}
@@ -12970,6 +13012,7 @@ export default function App() {
                                 style={{ color: '#fff', fontWeight: 800, fontSize: 13.5, textShadow: '0 1px 3px rgba(0,0,0,0.9)', background: 'transparent', border: 'none' }}
                               />
                               {!isBestia && <BadgePotere scheda={scheda} bersaglio="pf_massimi" unita="" />}
+                              {!isBestia && <BadgeSfinimento scheda={scheda} bersaglio="pf_massimi" />}
                             </span>
                           </div>
                         </div>
@@ -13352,7 +13395,7 @@ export default function App() {
               <div style={styles.vitalLabel}>{t("vital.iniziativa")}</div>
               <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={styles.vitalValue}>
-                  <Rollable onRoll={() => lanciaD20(t('vital.iniziativa'), iniziativaTotale(scheda), { dopoTiro: (tot) => sincronizzaIniziativaPg(tot) })}>
+                  <Rollable onRoll={() => lanciaD20(t('vital.iniziativa'), iniziativaTotale(scheda), { dopoTiro: (tot) => sincronizzaIniziativaPg(tot), tipoTiro: 'prova' })}>
                     {conSegno(iniziativaTotale(scheda))}
                   </Rollable>
                   <BadgePotere scheda={scheda} bersaglio="iniziativa" unita="" />
@@ -13386,6 +13429,7 @@ export default function App() {
                     <Editable value={scheda.velocita} tipo="numero" onChange={(v) => aggiorna({ velocita: v })} width={48} />
                     <span style={{ fontSize: 17, color: C.inkDim, marginLeft: 2, fontWeight: 600 }}> m</span>
                     <BadgePotere scheda={scheda} bersaglio="velocita" />
+                    <BadgeSfinimento scheda={scheda} bersaglio="velocita" />
                   </div>
                 )}
                 <div
@@ -13589,7 +13633,7 @@ export default function App() {
                   )}
                   <div className="blocco-car-header" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                     <Rollable
-                      onRoll={() => lanciaD20(`Prova di ${t('attr.' + key)}`, mod)}
+                      onRoll={() => lanciaD20(`Prova di ${t('attr.' + key)}`, mod, { tipoTiro: 'prova' })}
                       style={{ ...styles.abilityMod, fontSize: 22, padding: '0 4px' }}
                       title={`Tieni premuto e rilascia: prova di ${t('attr.' + key)}`}
                     >
@@ -13661,7 +13705,7 @@ export default function App() {
                           padding: tsMancante ? '2px 4px' : styles.skillRow(true).padding,
                         }}
                         title={tsMancante ? `⚠️ ${tsMancante.testo} (Click per tirare, click sul pallino per impostare)` : `Tieni premuto e rilascia: tiro salvezza di ${t('attr.' + key)} · click sul pallino: competenza`}
-                        onRoll={() => lanciaD20(`Tiro salvezza: ${t('attr.' + key)}`, bonusTS)}
+                        onRoll={() => lanciaD20(`Tiro salvezza: ${t('attr.' + key)}`, bonusTS, { tipoTiro: 'salvezza' })}
                       >
                         <span
                           style={styles.dot(scheda.tiriSalvezza[key] ? 1 : 0)}
@@ -13732,7 +13776,7 @@ export default function App() {
                           padding: abMancante ? '2px 4px' : styles.skillRow(true).padding,
                         }}
                         title={abMancante ? `⚠️ ${abMancante.testo} (Click per tirare, click sul pallino per impostare)` : `Tieni premuto e rilascia: prova di ${t('skill.' + a.key)} · click sul pallino: niente → competenza (●) → competenza di classe/razza (★) → Maestria/Expertise, doppia competenza (✦)`}
-                        onRoll={() => lanciaD20(`${t('skill.' + a.key)}`, bonus)}
+                        onRoll={() => lanciaD20(`${t('skill.' + a.key)}`, bonus, { tipoTiro: 'prova' })}
                       >
                         <span
                           style={styles.dot(liv)}
@@ -15085,23 +15129,28 @@ export default function App() {
                           title={tsInfo.haIncantatoreDaGuerra ? `${t('conc.ts_tooltip')} (Vantaggio da Incantatore da Guerra)` : t('conc.ts_tooltip')}
                           onClick={() => {
                             if (tsInfo.haIncantatoreDaGuerra) {
-                              const d1 = tiraDado(20);
-                              const d2 = tiraDado(20);
-                              const d = Math.max(d1, d2);
-                              const tot = d + bonusCon;
+                              // Vantaggio da Incantatore da Guerra: se lo Sfinimento (2014,
+                              // liv. 3+) impone anche svantaggio, si annullano a vicenda (regola
+                              // 5e) e il tiro torna normale come qualunque altra salvezza.
+                              const sfin = effettiSfinimento(scheda);
+                              const modalitaUsata = modalitaEffettiva('vantaggio', sfin.svantaggioAttacchiSalvezza);
+                              const bonusConEff = bonusCon - sfin.penalitaD20;
+                              const { naturale: d, dadi } = tiraD20(modalitaUsata);
+                              const tot = d + bonusConEff;
                               conAnimazione(() => {
                                 setTiro({
                                   etichetta: 'TS Concentrazione (War Caster)',
                                   naturale: d,
-                                  dadi: [d1, d2],
-                                  bonus: bonusCon,
+                                  dadi,
+                                  bonus: bonusConEff,
                                   totale: tot,
-                                  modalita: 'vantaggio',
+                                  modalita: modalitaUsata,
+                                  sfinimento: sfin.penalitaD20,
                                 });
-                                registra({ etichetta: 'TS Concentrazione (War Caster)', tipo: 'd20', naturale: d, totale: tot, dettaglio: `2d20 [${d1}, ${d2}] -> [${d}] ${conSegno(bonusCon)} = ${tot}` });
+                                registra({ etichetta: 'TS Concentrazione (War Caster)', tipo: 'd20', naturale: d, totale: tot, dettaglio: `${dadi.length}d20 [${dadi.join(', ')}] -> [${d}] ${conSegno(bonusConEff)} = ${tot}` });
                               }, d);
                             } else {
-                              lanciaD20(t('conc.ts'), bonusCon);
+                              lanciaD20(t('conc.ts'), bonusCon, { tipoTiro: 'salvezza' });
                             }
                           }}
                         >
@@ -15128,7 +15177,7 @@ export default function App() {
                                 className="tirabile"
                                 style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
                                 title={t('spell.tira_attacco')}
-                                onClick={() => lanciaD20(t('spell.attacco_inc'), scheda.bonusCompetenza + modIncantatore, { magia: true })}
+                                onClick={() => lanciaD20(t('spell.attacco_inc'), scheda.bonusCompetenza + modIncantatore, { magia: true, tipoTiro: 'attacco' })}
                               >
                                 🎲 {conSegno(scheda.bonusCompetenza + modIncantatore)}
                               </span>
@@ -15881,7 +15930,7 @@ export default function App() {
                                           className="tirabile"
                                           style={{ ...styles.buttonMini, padding: '2px 6px', fontSize: 11, fontWeight: 700, color: C.goldDark, borderColor: C.goldDark, display: 'inline-flex', alignItems: 'center', gap: 2 }}
                                           title={t('spell.tira_attacco')}
-                                          onClick={() => lanciaD20(`${t('spell.attacco_inc')}: ${s.nome}`, scheda.bonusCompetenza + modIncantatore, { magia: true, attacco: { id: s.id, nome: s.nome, danno, tipoDanno, isSpell: true } })}
+                                          onClick={() => lanciaD20(`${t('spell.attacco_inc')}: ${s.nome}`, scheda.bonusCompetenza + modIncantatore, { magia: true, attacco: { id: s.id, nome: s.nome, danno, tipoDanno, isSpell: true }, tipoTiro: 'attacco' })}
                                         >
                                           🎯 {conSegno(scheda.bonusCompetenza + modIncantatore)}
                                         </button>

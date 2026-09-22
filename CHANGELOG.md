@@ -2,6 +2,28 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.4.0] – 2026-09-22
+
+### Aggiunto
+- **Effetti dello Sfinimento automatici sui tiri.** Prima il contatore Sfinimento
+  mostrava solo un promemoria testuale nel 2014; ora applica davvero le regole,
+  in `src/rules/scheda.js` (`effettiSfinimento`) e `src/rules/dadi.js`
+  (`modalitaEffettiva`):
+  - **5.5 (2024):** −2 ai tiri di d20 per livello (attacchi, prove, salvezze,
+    iniziativa) e −1,5m di velocità per livello, entrambi applicati solo ai
+    tiri/valori del personaggio (non a quelli di alleati o creature del
+    bestiario, tirati con lo stesso pulsante ma per conto terzi).
+  - **5.0 (2014):** soglie cumulative, come da Manuale del Giocatore — livello
+    1 svantaggio alle prove di caratteristica (inclusa l'Iniziativa), livello
+    2 velocità dimezzata, livello 3 svantaggio anche ad attacchi e tiri
+    salvezza (compresi TS contro morte e di Concentrazione, incluso il
+    vantaggio di Incantatore da Guerra: si annullano a vicenda, come da
+    regola 5e), livello 4 PF massimi dimezzati, livello 5 velocità a 0.
+  - Badge "Sfin." accanto a Velocità e PF Massimi quando l'effetto è attivo,
+    sullo stesso modello dei badge dei Poteri personalizzati.
+  - Il livello 6 (morte) resta segnalato solo a testo: non uccide il
+    personaggio in automatico.
+
 ## [4.3.0] – 2026-09-21
 
 ### Corretto

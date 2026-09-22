@@ -7,7 +7,7 @@ import { CLASSI, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, SLOT_FULL_CASTER, SLOT
   TS_CLASSE, COMPETENZE_CLASSE, COMPETENZE_SPECIE, BACKGROUND_COMPETENZE,
   MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, PE_PER_LIVELLO, REAZIONI_5E, ARMI_5E, ARMATURE_5E } from '../data/dati5e.js';
 import { modificatore, conSegno, bonusCompetenzaDaLivello } from './dadi.js';
-import { punteggioCaratteristica } from './scheda.js';
+import { punteggioCaratteristica, effettiSfinimento } from './scheda.js';
 import { bonusPotereBersaglio } from './poteri.js';
 import { spiegaIncantesimo } from '../data/spiegazioni.js';
 import { INCANTESIMI_DB, datiIncantesimo } from '../data/incantesimi.js';
@@ -1408,7 +1408,13 @@ export function calcolaMovimentoESalti(scheda) {
   const forPunteggio = Math.max(1, Number(scheda?.caratteristiche?.forza) || 10);
   const modFor = modificatore(forPunteggio);
   const velBaseSenzaPoteri = Number(scheda?.formaBestiale?.attiva ? (scheda.formaBestiale.velocita?.terra ?? 9) : (scheda?.velocita ?? 9));
-  const velBase = Math.max(0, velBaseSenzaPoteri + bonusPotereBersaglio(scheda, 'velocita'));
+  const velConPoteri = Math.max(0, velBaseSenzaPoteri + bonusPotereBersaglio(scheda, 'velocita'));
+  const sfin = effettiSfinimento(scheda);
+  const velBase = sfin.velocitaZero
+    ? 0
+    : sfin.velocitaDimezzata
+      ? Math.round((velConPoteri / 2) * 2) / 2
+      : Math.max(0, velConPoteri - sfin.penalitaVelocita);
 
   // Salti (in metri, 1 ft = 0.3 m)
   const saltoLungoRincorsa = Number((forPunteggio * 0.3).toFixed(1));

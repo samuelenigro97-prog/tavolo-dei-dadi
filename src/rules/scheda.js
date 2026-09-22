@@ -130,9 +130,34 @@ export function iniziativaTotale(scheda) {
   return modificatore(punteggioCaratteristica(scheda, 'destrezza')) + bonusPotereBersaglio(scheda, 'iniziativa');
 }
 
-/** PF massimi effettivi: valore scritto sulla scheda + eventuali bonus dei Poteri attivi. */
+/** PF massimi effettivi: valore scritto sulla scheda (dimezzato da Sfinimento
+ * 2014 di livello 4+) + eventuali bonus dei Poteri attivi. */
 export function pfMassimiEffettivi(scheda) {
-  return Math.max(1, (Number(scheda?.pfMax) || 0) + bonusPotereBersaglio(scheda, 'pf_massimi'));
+  const base = Number(scheda?.pfMax) || 0;
+  const dimezzato = effettiSfinimento(scheda).pfDimezzati ? Math.floor(base / 2) : base;
+  return Math.max(1, dimezzato + bonusPotereBersaglio(scheda, 'pf_massimi'));
+}
+
+/**
+ * Effetti meccanici del livello di Sfinimento (0–6): nella 5.5 (2024) è
+ * un'unica penalità piatta ai tiri di d20 e alla velocità per livello; nella
+ * 5.0 (2014) sono soglie cumulative (ogni livello aggiunge un effetto, quelli
+ * dei livelli precedenti restano attivi). Il livello 6 uccide in entrambe.
+ */
+export function effettiSfinimento(scheda) {
+  const livello = Math.max(0, Math.min(6, Number(scheda?.sfinimento) || 0));
+  const is2024 = scheda?.versione === '2024';
+  return {
+    livello,
+    morto: livello >= 6,
+    penalitaD20: is2024 ? 2 * livello : 0,
+    penalitaVelocita: is2024 ? 1.5 * livello : 0,
+    svantaggioProve: !is2024 && livello >= 1,
+    svantaggioAttacchiSalvezza: !is2024 && livello >= 3,
+    velocitaDimezzata: !is2024 && livello >= 2 && livello < 5,
+    velocitaZero: !is2024 && livello >= 5,
+    pfDimezzati: !is2024 && livello >= 4,
+  };
 }
 
 /**

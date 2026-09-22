@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.4.0',
+    voci: {
+      it: [
+        'Lo Sfinimento ora applica davvero le sue regole ai tiri, non solo a testo: nel 2024 −2 fisso per livello a ogni tiro di d20 e −1,5m di velocità; nel 2014 svantaggio alle prove dal livello 1, velocità dimezzata dal 2, svantaggio anche ad attacchi/salvezze dal 3, PF massimi dimezzati dal 4, velocità a 0 dal 5. Un badge "Sfin." avvisa su Velocità e PF Massimi quando è in corso.',
+      ],
+      en: [
+        'Exhaustion now actually applies its effects to rolls, not just as text: in 2024 a flat −2 per level on every d20 roll and −5ft of speed; in 2014 disadvantage on ability checks from level 1, speed halved from level 2, disadvantage on attacks/saves too from level 3, max HP halved from level 4, speed 0 from level 5. A "Exh." badge flags Speed and Max HP when it applies.',
+      ],
+    },
+  },
+  {
     versione: '4.3.0',
     voci: {
       it: [

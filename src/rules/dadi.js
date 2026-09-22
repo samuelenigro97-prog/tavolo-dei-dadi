@@ -99,4 +99,12 @@ export function tiraD20(modalita) {
   return { naturale, dadi: [a, b] };
 }
 
+/** Combina la modalità scelta a mano con uno svantaggio imposto da una regola
+ * (es. Sfinimento 2014): se un vantaggio manuale incontra uno svantaggio
+ * forzato si annullano a vicenda, come da regola 5e (tiro normale). */
+export function modalitaEffettiva(modalita, forzaSvantaggio) {
+  if (!forzaSvantaggio) return modalita;
+  return modalita === 'vantaggio' ? 'normale' : 'svantaggio';
+}
+
 export function capacitaCarico(forza) { return Math.max(1, (forza || 10) * 7.5); }
