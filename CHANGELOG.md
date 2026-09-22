@@ -2,6 +2,22 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.6.3] – 2026-09-22
+
+### Corretto
+- **"Forma Bestiale" e "Forma Selvatica" erano due nomi per la stessa cosa.**
+  Il tasto/banner/modale di trasformazione del Druido diceva "Forma
+  Bestiale", mentre la risorsa di classe generata automaticamente (usi per
+  riposo breve) si chiama "Forma Selvatica" — il termine ufficiale del
+  Manuale del Giocatore 2014. Chi non lo sapeva poteva aggiungere a mano una
+  seconda risorsa "Forma Bestiale" pensando fosse un'abilità diversa,
+  ritrovandosi due contatori scollegati per lo stesso privilegio. Uniformato
+  tutto il testo visibile (tasto, banner, titolo modale illustrazione, testo
+  alternativo immagine, tooltip taglia) su "Forma Selvatica"/"Wild Shape".
+  Non tocca il nome del campo dati (`scheda.formaBestiale`) né le schede
+  esistenti: se avevi già creato a mano una risorsa "Forma Bestiale"
+  duplicata, resta lì finché non la elimini tu da Risorse di Classe.
+
 ## [4.6.2] – 2026-09-22
 
 ### Corretto

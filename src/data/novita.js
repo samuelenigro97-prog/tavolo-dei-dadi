@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.6.3',
+    voci: {
+      it: [
+        'Uniformato il nome della trasformazione del Druido: era "Forma Bestiale" nel tasto/banner ma "Forma Selvatica" nella risorsa di classe automatica, facendo sembrare due abilità diverse. Ora dice sempre "Forma Selvatica" (il termine ufficiale).',
+      ],
+      en: [
+        'Unified the Druid transformation name: it said "Beast Form" in the button/banner but "Wild Shape" in the auto-generated class resource, looking like two different features. Now it always says "Wild Shape" (the official term).',
+      ],
+    },
+  },
+  {
     versione: '4.6.2',
     voci: {
       it: [

@@ -1963,7 +1963,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.6.2';
+const APP_VERSION = '4.6.3';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7130,7 +7130,7 @@ export default function App() {
                     setBestiaDettaglio(null);
                   }}
                 >
-                  🐾 {lingua === 'en' ? `Assume Beast Form (${bestiaDettaglio.pf} HP)` : `Assumi Forma Bestiale (${bestiaDettaglio.pf} PF)`}
+                  🐾 {lingua === 'en' ? `Assume Wild Shape (${bestiaDettaglio.pf} HP)` : `Assumi Forma Selvatica (${bestiaDettaglio.pf} PF)`}
                 </button>
               )}
               {bestiaDettaglio.gs != null && (
@@ -11091,7 +11091,7 @@ export default function App() {
                   <h2 style={{ ...styles.title, margin: 0, fontSize: 18, lineHeight: 1.2 }}>
                     {campoForma === 'metamorfosi'
                       ? (lingua === 'en' ? 'Polymorph Artwork' : 'Illustrazione Metamorfosi')
-                      : (lingua === 'en' ? 'Wild Shape Beast Artwork' : 'Illustrazione Forma Bestiale')}
+                      : (lingua === 'en' ? 'Wild Shape Beast Artwork' : 'Illustrazione Forma Selvatica')}
                   </h2>
                   <div style={{ ...styles.detail, fontSize: 11.5, color: C.inkDim, marginTop: 2 }}>
                     {formaAttiva?.dati?.nome || 'Bestia'} · {lingua === 'en' ? 'Choose official artwork, upload image, or paste URL' : 'Scegli illustrazioni ufficiali, carica un file o incolla un link'}
@@ -12000,7 +12000,7 @@ export default function App() {
                     <div style={{ fontSize: 16, fontWeight: 800, color: C.green || '#3e7d32', letterSpacing: 0.3 }}>
                       {campoForma === 'metamorfosi'
                         ? (lingua === 'en' ? 'ACTIVE POLYMORPH' : 'METAMORFOSI ATTIVA')
-                        : (lingua === 'en' ? 'ACTIVE BEAST FORM' : 'FORMA BESTIALE ATTIVA')}: {lingua === 'en' ? (formaAttiva.dati.nomeEn || formaAttiva.dati.nome) : formaAttiva.dati.nome}
+                        : (lingua === 'en' ? 'ACTIVE WILD SHAPE' : 'FORMA SELVATICA ATTIVA')}: {lingua === 'en' ? (formaAttiva.dati.nomeEn || formaAttiva.dati.nome) : formaAttiva.dati.nome}
                     </div>
                     <div style={{ fontSize: 11.5, color: C.inkDim, fontWeight: 600 }}>
                       {formaAttiva.dati.taglia} {formaAttiva.dati.tipo || 'bestia'} · GS {formaAttiva.dati.gs} · 🛡️ CA {formaAttiva.dati.ca} · 🐾 {formaAttiva.dati.velocita?.terra || 9}m
@@ -12335,7 +12335,7 @@ export default function App() {
                         <div style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
                           <img
                             src={generaAvatarBestia(formaAttiva.dati)}
-                            alt={`${campoForma === 'metamorfosi' ? 'Metamorfosi' : 'Forma Bestiale'}: ${formaAttiva.dati.nome}`}
+                            alt={`${campoForma === 'metamorfosi' ? 'Metamorfosi' : 'Forma Selvatica'}: ${formaAttiva.dati.nome}`}
                             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                           />
                           <div style={{ position: 'absolute', top: 6, right: 6, zIndex: 3, background: 'rgba(8, 28, 21, 0.92)', color: '#d8f3dc', border: '1px solid #52b788', borderRadius: 6, fontSize: 9.5, fontWeight: 800, padding: '2px 6px', textTransform: 'uppercase', letterSpacing: 0.5, boxShadow: '0 2px 6px rgba(0,0,0,0.4)' }}>
@@ -12669,7 +12669,7 @@ export default function App() {
                             padding: '1px 0',
                             cursor: 'help',
                           }}
-                          title={`Taglia modificata da ${isTrasformato ? `Forma Bestiale (${formaAttiva.dati.nome})` : 'Effetto Taglia'}: ${tagliaEffettiva(scheda)} (Taglia naturale: ${scheda.taglia || 'Media'}) · Spazio: ${SPAZIO_TAGLIA_5E[tagliaEffettiva(scheda)] || '1,5m'} · Lotta fino a: ${LOTTA_MAX_TAGLIA_5E[tagliaEffettiva(scheda)] || 'Grande'}`}
+                          title={`Taglia modificata da ${isTrasformato ? `${campoForma === 'metamorfosi' ? 'Metamorfosi' : 'Forma Selvatica'} (${formaAttiva.dati.nome})` : 'Effetto Taglia'}: ${tagliaEffettiva(scheda)} (Taglia naturale: ${scheda.taglia || 'Media'}) · Spazio: ${SPAZIO_TAGLIA_5E[tagliaEffettiva(scheda)] || '1,5m'} · Lotta fino a: ${LOTTA_MAX_TAGLIA_5E[tagliaEffettiva(scheda)] || 'Grande'}`}
                         >
                           <span style={{ fontWeight: 800, color: '#2e7d32', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
                             <span>{isTrasformato ? '🐾' : '✨'}</span>
