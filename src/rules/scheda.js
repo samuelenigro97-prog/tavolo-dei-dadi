@@ -66,11 +66,26 @@ export function bonusTiriSalvezzaOggetti(scheda) {
   }, 0);
 }
 
+/**
+ * Trasformazione attualmente attiva (Forma Bestiale o Metamorfosi), al più
+ * una alla volta. Metamorfosi (l'incantesimo Polymorph) sostituisce anche le
+ * caratteristiche mentali; Forma Bestiale (il privilegio Druido) no: chi la
+ * usa resta se stesso per Int/Sag/Car (Regole 5e PHB).
+ */
+export function trasformazioneAttiva(scheda) {
+  if (scheda?.metamorfosi?.attiva) return { campo: 'metamorfosi', dati: scheda.metamorfosi, tutteLeCaratteristiche: true };
+  if (scheda?.formaBestiale?.attiva) return { campo: 'formaBestiale', dati: scheda.formaBestiale, tutteLeCaratteristiche: false };
+  return null;
+}
+
 export function punteggioCaratteristica(scheda, caratteristica) {
-  // Se la Forma Bestiale è attiva, Forza, Destrezza e Costituzione sono sostituite dalle caratteristiche fisiche della bestia (Regole 5e PHB)
-  if (scheda?.formaBestiale?.attiva && ['forza', 'destrezza', 'costituzione'].includes(caratteristica)) {
-    const valBestia = scheda.formaBestiale.car?.[caratteristica];
-    if (valBestia != null) return Number(valBestia);
+  // Forma Bestiale: solo Forza/Destrezza/Costituzione sostituite dalla bestia
+  // (Regole 5e PHB). Metamorfosi: tutte e sei le caratteristiche, comprese
+  // quelle mentali (Polymorph sostituisce l'intero blocco della creatura).
+  const forma = trasformazioneAttiva(scheda);
+  if (forma && (forma.tutteLeCaratteristiche || ['forza', 'destrezza', 'costituzione'].includes(caratteristica))) {
+    const valForma = forma.dati.car?.[caratteristica];
+    if (valForma != null) return Number(valForma);
   }
   const base = Number(scheda?.caratteristiche?.[caratteristica]) || 0;
   const valori = oggettiConEffettoAttivo(scheda)
@@ -111,8 +126,9 @@ export function bonusCopertura(scheda) {
  */
 export function caTotale(scheda) {
   const bonusPoteri = bonusPotereBersaglio(scheda, 'ca');
-  if (scheda?.formaBestiale?.attiva && scheda.formaBestiale.ca != null) {
-    return Number(scheda.formaBestiale.ca) + bonusClasseArmaturaOggetti(scheda) + bonusCopertura(scheda).ca + bonusPoteri;
+  const forma = trasformazioneAttiva(scheda);
+  if (forma && forma.dati.ca != null) {
+    return Number(forma.dati.ca) + bonusClasseArmaturaOggetti(scheda) + bonusCopertura(scheda).ca + bonusPoteri;
   }
   const a = scheda.armatura || {};
   const des = modificatore(punteggioCaratteristica(scheda, 'destrezza'));
@@ -263,8 +279,9 @@ export const LOTTA_MAX_TAGLIA_5E = {
  * 3. Taglia base della scheda
  */
 export function tagliaEffettiva(scheda) {
-  if (scheda?.formaBestiale?.attiva && scheda.formaBestiale.taglia) {
-    return scheda.formaBestiale.taglia;
+  const forma = trasformazioneAttiva(scheda);
+  if (forma && forma.dati.taglia) {
+    return forma.dati.taglia;
   }
   const base = scheda?.taglia || 'Media';
   const idx = SCALE_TAGLIE_5E.indexOf(base);

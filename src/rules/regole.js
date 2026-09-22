@@ -7,7 +7,7 @@ import { CLASSI, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, SLOT_FULL_CASTER, SLOT
   TS_CLASSE, COMPETENZE_CLASSE, COMPETENZE_SPECIE, BACKGROUND_COMPETENZE,
   MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, PE_PER_LIVELLO, REAZIONI_5E, ARMI_5E, ARMATURE_5E } from '../data/dati5e.js';
 import { modificatore, conSegno, bonusCompetenzaDaLivello } from './dadi.js';
-import { punteggioCaratteristica, effettiSfinimento } from './scheda.js';
+import { punteggioCaratteristica, effettiSfinimento, trasformazioneAttiva } from './scheda.js';
 import { bonusPotereBersaglio } from './poteri.js';
 import { spiegaIncantesimo } from '../data/spiegazioni.js';
 import { INCANTESIMI_DB, datiIncantesimo } from '../data/incantesimi.js';
@@ -1407,7 +1407,8 @@ export function analizzaPozione(nomePozione) {
 export function calcolaMovimentoESalti(scheda) {
   const forPunteggio = Math.max(1, Number(scheda?.caratteristiche?.forza) || 10);
   const modFor = modificatore(forPunteggio);
-  const velBaseSenzaPoteri = Number(scheda?.formaBestiale?.attiva ? (scheda.formaBestiale.velocita?.terra ?? 9) : (scheda?.velocita ?? 9));
+  const formaMov = trasformazioneAttiva(scheda);
+  const velBaseSenzaPoteri = Number(formaMov ? (formaMov.dati.velocita?.terra ?? 9) : (scheda?.velocita ?? 9));
   const velConPoteri = Math.max(0, velBaseSenzaPoteri + bonusPotereBersaglio(scheda, 'velocita'));
   const sfin = effettiSfinimento(scheda);
   const velBase = sfin.velocitaZero

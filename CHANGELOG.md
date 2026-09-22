@@ -2,6 +2,31 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.5.0] – 2026-09-22
+
+### Aggiunto
+- **Metamorfosi** (l'incantesimo Polymorph), come nuova trasformazione a fianco
+  della Forma Bestiale già esistente. Riusa lo stesso meccanismo affidabile
+  della Forma Bestiale — sostituzione diretta delle statistiche via
+  `trasformazioneAttiva()` (`src/rules/scheda.js`), non un livello di badge —
+  ma con due differenze chiave dettate dalle regole 2014:
+  - **Tutte e sei le caratteristiche** vengono sostituite, comprese quelle
+    mentali (Forma Bestiale sostituisce solo For/Des/Cos, non Int/Sag/Car).
+    Ogni calcolo derivato (prove, tiri salvezza, CD, CA, iniziativa) si
+    aggiorna da solo perché tutti passano dalla stessa funzione
+    `punteggioCaratteristica`.
+  - Un pool di PF separato per la nuova forma, con lo stesso danno in
+    eccesso che torna al personaggio quando scende a 0 (regola PHB), la
+    stessa barra vita, lo stesso ritratto sostituibile (illustrazione
+    ufficiale, upload o link) e lo stesso pannello statistiche/azioni/tratti
+    della bestia già visti per la Forma Bestiale — includono già la
+    sostituzione automatica dell'immagine in base alla forma assunta.
+  - Attivabile dalla stessa scheda creatura del Bestiario/Compendio (nuovo
+    tasto "🔮 Metamorfosi" accanto a "🐾 Assumi Forma Bestiale"): le due
+    trasformazioni sono mutuamente esclusive, attivarne una disattiva l'altra.
+  - Personaggi esistenti non cambiano: senza `scheda.metamorfosi` il
+    personaggio si comporta esattamente come prima.
+
 ## [4.4.0] – 2026-09-22
 
 ### Aggiunto

@@ -8,7 +8,7 @@ import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI, ambientazioneCasuale, COLORE_
 import { styles, GLOBAL_CSS } from './ui/stili.js';
 import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, estraiVociLista, Sezione, CampoBloccato, formattaVoceConIcona } from './ui/componenti.jsx';
 import { SezionePoteri, BadgePotere } from './ui/PoteriSezione.jsx';
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma, iniziativaTotale, pfMassimiEffettivi, effettiSfinimento } from './rules/scheda.js';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma, iniziativaTotale, pfMassimiEffettivi, effettiSfinimento, trasformazioneAttiva } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON, WENDELL_JSON, LYRIAN_JSON } from './data/esempi.js';
 import { fixEquipaggiamentoVaelion, migrazioneRegoleVaelion, autoIdratazionePersonaggioPredefinito } from './data/migrazioniPersonaggi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
@@ -1963,7 +1963,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.4.0';
+const APP_VERSION = '4.5.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -4205,6 +4205,12 @@ export default function App() {
   const caratteristicaIncantatore = caratteristicaIncantatoreEffettiva(scheda);
   // versione delle regole del personaggio attivo (fallback: impostazione globale)
   const versione = scheda?.versione || regoleVersione || '2024';
+  // Trasformazione attiva (Forma Bestiale o Metamorfosi, al più una alla
+  // volta): `campoForma` dice quale campo della scheda scrivere/aggiornare,
+  // `formaAttiva.dati` è il suo contenuto in lettura.
+  const formaAttiva = trasformazioneAttiva(scheda);
+  const campoForma = formaAttiva?.campo || 'formaBestiale';
+  const isTrasformato = !!formaAttiva;
   // Allinea SUBITO le spiegazioni all'edizione del PG: le voci che cambiano fra
   // 5.0 e 5.5 mostrano solo le regole dell'edizione di questo personaggio.
   setEdizioneAttuale(versione);
@@ -5636,10 +5642,10 @@ export default function App() {
     const img = new Image();
     img.onload = () => {
       const ridotta = immagineRidotta(img, 1024, 500000, 0.88);
-      if (scheda.formaBestiale?.attiva) {
+      if (formaAttiva) {
         aggiorna({
-          formaBestiale: {
-            ...scheda.formaBestiale,
+          [campoForma]: {
+            ...formaAttiva.dati,
             ritratto: ridotta,
           },
         });
@@ -7117,12 +7123,46 @@ export default function App() {
 
                     aggiorna({
                       formaBestiale: forma,
+                      ...(scheda.metamorfosi?.attiva ? { metamorfosi: { ...scheda.metamorfosi, attiva: false } } : {}),
                       ...(risorseNuove ? { risorse: risorseNuove } : {})
                     });
                     setBestiaDettaglio(null);
                   }}
                 >
                   🐾 {lingua === 'en' ? `Assume Beast Form (${bestiaDettaglio.pf} HP)` : `Assumi Forma Bestiale (${bestiaDettaglio.pf} PF)`}
+                </button>
+              )}
+              {bestiaDettaglio.gs != null && (
+                <button
+                  style={{ ...styles.button, flex: 1, fontWeight: 700, borderColor: '#7b4fb0', color: '#7b4fb0' }}
+                  onClick={() => {
+                    const forma = {
+                      attiva: true,
+                      nome: bestiaDettaglio.nome,
+                      nomeEn: bestiaDettaglio.nomeEn || bestiaDettaglio.nome,
+                      taglia: bestiaDettaglio.taglia,
+                      tipo: bestiaDettaglio.tipo || 'bestia',
+                      gs: bestiaDettaglio.gs,
+                      ca: bestiaDettaglio.ca,
+                      pfMax: bestiaDettaglio.pf,
+                      pfAttuali: bestiaDettaglio.pf,
+                      pfFormula: bestiaDettaglio.pfFormula,
+                      velocita: bestiaDettaglio.velocita || { terra: 9 },
+                      car: bestiaDettaglio.car || { forza: 10, destrezza: 10, costituzione: 10, intelligenza: 10, saggezza: 10, carisma: 10 },
+                      abilita: bestiaDettaglio.abilita,
+                      sensi: bestiaDettaglio.sensi,
+                      tratti: bestiaDettaglio.tratti || [],
+                      azioni: bestiaDettaglio.azioni || [],
+                    };
+                    aggiorna({
+                      metamorfosi: forma,
+                      ...(scheda.formaBestiale?.attiva ? { formaBestiale: { ...scheda.formaBestiale, attiva: false } } : {}),
+                    });
+                    setBestiaDettaglio(null);
+                  }}
+                  title={lingua === 'en' ? 'Polymorph (Metamorphosis): replaces ALL characteristics, including mental ones' : 'Metamorfosi: sostituisce TUTTE le caratteristiche, incluse quelle mentali'}
+                >
+                  🔮 {lingua === 'en' ? `Metamorphosis (${bestiaDettaglio.pf} HP)` : `Metamorfosi (${bestiaDettaglio.pf} PF)`}
                 </button>
               )}
               <button
@@ -11048,10 +11088,12 @@ export default function App() {
                 <span style={{ fontSize: 24 }}>🐾</span>
                 <div>
                   <h2 style={{ ...styles.title, margin: 0, fontSize: 18, lineHeight: 1.2 }}>
-                    {lingua === 'en' ? 'Wild Shape Beast Artwork' : 'Illustrazione Forma Bestiale'}
+                    {campoForma === 'metamorfosi'
+                      ? (lingua === 'en' ? 'Polymorph Artwork' : 'Illustrazione Metamorfosi')
+                      : (lingua === 'en' ? 'Wild Shape Beast Artwork' : 'Illustrazione Forma Bestiale')}
                   </h2>
                   <div style={{ ...styles.detail, fontSize: 11.5, color: C.inkDim, marginTop: 2 }}>
-                    {scheda.formaBestiale?.nome || 'Bestia'} · {lingua === 'en' ? 'Choose official artwork, upload image, or paste URL' : 'Scegli illustrazioni ufficiali, carica un file o incolla un link'}
+                    {formaAttiva?.dati?.nome || 'Bestia'} · {lingua === 'en' ? 'Choose official artwork, upload image, or paste URL' : 'Scegli illustrazioni ufficiali, carica un file o incolla un link'}
                   </div>
                 </div>
               </div>
@@ -11067,26 +11109,26 @@ export default function App() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'rgba(0,0,0,0.03)', padding: 12, borderRadius: 10, border: `1px solid ${C.border}` }}>
               <div style={{ width: 84, height: 84, borderRadius: 10, overflow: 'hidden', border: '2px solid #52b788', flexShrink: 0, background: '#1b4332' }}>
                 <img
-                  src={generaAvatarBestia(scheda.formaBestiale)}
+                  src={generaAvatarBestia(formaAttiva?.dati)}
                   alt="Anteprima"
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 800, fontSize: 14, color: C.ink }}>
-                  🐾 {scheda.formaBestiale?.nome?.toUpperCase()}
+                  🐾 {formaAttiva?.dati?.nome?.toUpperCase()}
                 </div>
                 <div style={{ fontSize: 11.5, color: C.inkDim, marginTop: 2 }}>
-                  {scheda.formaBestiale?.ritratto ? (lingua === 'en' ? 'Custom portrait active' : 'Ritratto personalizzato attivo') : (lingua === 'en' ? 'Standard D&D vector artwork active' : 'Illustrazione vettoriale standard attiva')}
+                  {formaAttiva?.dati?.ritratto ? (lingua === 'en' ? 'Custom portrait active' : 'Ritratto personalizzato attivo') : (lingua === 'en' ? 'Standard D&D vector artwork active' : 'Illustrazione vettoriale standard attiva')}
                 </div>
-                {scheda.formaBestiale?.ritratto && (
+                {formaAttiva?.dati?.ritratto && (
                   <button
                     type="button"
                     style={{ ...styles.buttonMini, marginTop: 6, fontSize: 11, borderColor: '#d32f2f', color: '#d32f2f' }}
                     onClick={() => {
                       aggiorna({
-                        formaBestiale: {
-                          ...scheda.formaBestiale,
+                        [campoForma]: {
+                          ...formaAttiva.dati,
                           ritratto: null,
                         },
                       });
@@ -11138,10 +11180,10 @@ export default function App() {
                   onClick={() => {
                     const u = urlRitrattoBestiaInput.trim();
                     if (!u) return;
-                    if (scheda.formaBestiale?.attiva) {
+                    if (formaAttiva) {
                       aggiorna({
-                        formaBestiale: {
-                          ...scheda.formaBestiale,
+                        [campoForma]: {
+                          ...formaAttiva.dati,
                           ritratto: u,
                         },
                       });
@@ -11170,10 +11212,10 @@ export default function App() {
                     <div
                       key={g.id}
                       onClick={() => {
-                        if (scheda.formaBestiale?.attiva) {
+                        if (formaAttiva) {
                           aggiorna({
-                            formaBestiale: {
-                              ...scheda.formaBestiale,
+                            [campoForma]: {
+                              ...formaAttiva.dati,
                               ritratto: avatarSvg,
                             },
                           });
@@ -11938,7 +11980,7 @@ export default function App() {
             <h2 style={{ ...styles.panelTitle, margin: 0, width: '100%', textAlign: 'center' }}>{t("profilo.titolo")}</h2>
           </div>
           {/* ===== BANNER FORMA BESTIALE ATTIVA (Regole Ufficiali 5e PHB) ===== */}
-          {scheda.formaBestiale?.attiva && (
+          {isTrasformato && (
             <div
               style={{
                 background: 'linear-gradient(135deg, rgba(46,125,50,0.18) 0%, rgba(201,162,39,0.15) 100%)',
@@ -11952,17 +11994,19 @@ export default function App() {
               {/* Intestazione Banner */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, borderBottom: `1px solid ${C.border}`, paddingBottom: 8, marginBottom: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 26, lineHeight: 1 }}>🐾</span>
+                  <span style={{ fontSize: 26, lineHeight: 1 }}>{campoForma === 'metamorfosi' ? '🔮' : '🐾'}</span>
                   <div>
                     <div style={{ fontSize: 16, fontWeight: 800, color: C.green || '#3e7d32', letterSpacing: 0.3 }}>
-                      {lingua === 'en' ? 'ACTIVE BEAST FORM' : 'FORMA BESTIALE ATTIVA'}: {lingua === 'en' ? (scheda.formaBestiale.nomeEn || scheda.formaBestiale.nome) : scheda.formaBestiale.nome}
+                      {campoForma === 'metamorfosi'
+                        ? (lingua === 'en' ? 'ACTIVE POLYMORPH' : 'METAMORFOSI ATTIVA')
+                        : (lingua === 'en' ? 'ACTIVE BEAST FORM' : 'FORMA BESTIALE ATTIVA')}: {lingua === 'en' ? (formaAttiva.dati.nomeEn || formaAttiva.dati.nome) : formaAttiva.dati.nome}
                     </div>
                     <div style={{ fontSize: 11.5, color: C.inkDim, fontWeight: 600 }}>
-                      {scheda.formaBestiale.taglia} {scheda.formaBestiale.tipo || 'bestia'} · GS {scheda.formaBestiale.gs} · 🛡️ CA {scheda.formaBestiale.ca} · 🐾 {scheda.formaBestiale.velocita?.terra || 9}m
-                      {scheda.formaBestiale.velocita?.nuoto ? ` · 🏊 ${scheda.formaBestiale.velocita.nuoto}m` : ''}
-                      {scheda.formaBestiale.velocita?.volo ? ` · 🦅 ${scheda.formaBestiale.velocita.volo}m` : ''}
-                      {scheda.formaBestiale.velocita?.scalata ? ` · 🧗 ${scheda.formaBestiale.velocita.scalata}m` : ''}
-                      {scheda.formaBestiale.velocita?.scavo ? ` · ⛏️ ${scheda.formaBestiale.velocita.scavo}m` : ''}
+                      {formaAttiva.dati.taglia} {formaAttiva.dati.tipo || 'bestia'} · GS {formaAttiva.dati.gs} · 🛡️ CA {formaAttiva.dati.ca} · 🐾 {formaAttiva.dati.velocita?.terra || 9}m
+                      {formaAttiva.dati.velocita?.nuoto ? ` · 🏊 ${formaAttiva.dati.velocita.nuoto}m` : ''}
+                      {formaAttiva.dati.velocita?.volo ? ` · 🦅 ${formaAttiva.dati.velocita.volo}m` : ''}
+                      {formaAttiva.dati.velocita?.scalata ? ` · 🧗 ${formaAttiva.dati.velocita.scalata}m` : ''}
+                      {formaAttiva.dati.velocita?.scavo ? ` · ⛏️ ${formaAttiva.dati.velocita.scavo}m` : ''}
                     </div>
                   </div>
                 </div>
@@ -11981,7 +12025,7 @@ export default function App() {
                     style={{ ...styles.button, background: C.panel, borderColor: C.goldDark, color: C.ink, fontWeight: 700, fontSize: 12.5, padding: '6px 14px', borderRadius: 8 }}
                     onClick={() => {
                       aggiorna({
-                        formaBestiale: { ...scheda.formaBestiale, attiva: false }
+                        [campoForma]: { ...formaAttiva.dati, attiva: false }
                       });
                     }}
                     title={lingua === 'en' ? 'Revert to normal humanoid form' : 'Ritorna alla tua forma umanoide normale'}
@@ -11995,16 +12039,16 @@ export default function App() {
               <div style={{ marginBottom: 12 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                   <span style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>
-                    ❤️ {lingua === 'en' ? 'Beast Hit Points' : 'Punti Ferita della Bestia'}
+                    ❤️ {lingua === 'en' ? 'Form Hit Points' : 'Punti Ferita della Forma'}
                   </span>
                   <span style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>
-                    {scheda.formaBestiale.pfAttuali} / {scheda.formaBestiale.pfMax} PF
+                    {formaAttiva.dati.pfAttuali} / {formaAttiva.dati.pfMax} PF
                   </span>
                 </div>
                 {/* Barra Vita Bestia */}
                 <div style={{ width: '100%', height: 16, background: 'rgba(0,0,0,0.12)', borderRadius: 8, overflow: 'hidden', border: `1px solid ${C.border}` }}>
                   <div style={{
-                    width: `${Math.max(0, Math.min(100, ((Number(scheda.formaBestiale.pfAttuali) || 0) / (Number(scheda.formaBestiale.pfMax) || 1)) * 100))}%`,
+                    width: `${Math.max(0, Math.min(100, ((Number(formaAttiva.dati.pfAttuali) || 0) / (Number(formaAttiva.dati.pfMax) || 1)) * 100))}%`,
                     height: '100%',
                     background: 'linear-gradient(90deg, #2e7d32, #4caf50)',
                     transition: 'width 0.3s ease'
@@ -12027,7 +12071,7 @@ export default function App() {
                         border: `1px solid ${C.border}`,
                       }}
                       onClick={() => {
-                        const attuali = Number(scheda.formaBestiale.pfAttuali) || 0;
+                        const attuali = Number(formaAttiva.dati.pfAttuali) || 0;
                         const nuovo = attuali + delta;
                         if (nuovo <= 0) {
                           // Danni in eccesso passano ai PF del druido (Regola PHB)
@@ -12035,13 +12079,13 @@ export default function App() {
                           const pfDruidoNuovi = Math.max(0, (Number(scheda.pfAttuali ?? scheda.pf) || 0) - eccesso);
                           aggiorna({
                             pfAttuali: pfDruidoNuovi,
-                            formaBestiale: { ...scheda.formaBestiale, pfAttuali: 0, attiva: false }
+                            [campoForma]: { ...formaAttiva.dati, pfAttuali: 0, attiva: false }
                           });
                         } else {
                           aggiorna({
-                            formaBestiale: {
-                              ...scheda.formaBestiale,
-                              pfAttuali: Math.min(scheda.formaBestiale.pfMax, nuovo)
+                            [campoForma]: {
+                              ...formaAttiva.dati,
+                              pfAttuali: Math.min(formaAttiva.dati.pfMax, nuovo)
                             }
                           });
                         }
@@ -12053,73 +12097,43 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Statistiche Fisiche Sostituite: FOR, DES, COS della bestia (con prove di caratteristica interattive) */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, background: C.panel, padding: '8px 12px', borderRadius: 8, border: `1px solid ${C.border}`, textAlign: 'center', marginBottom: 10 }}>
-                {(() => {
-                  const forVal = Number(scheda.formaBestiale.car?.forza) || 10;
-                  const modFor = Math.floor((forVal - 10) / 2);
+              {/* Caratteristiche sostituite dalla forma (con prove interattive):
+                  solo FOR/DES/COS per la Forma Bestiale, tutte e sei per la
+                  Metamorfosi (Polymorph sostituisce anche quelle mentali). */}
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${formaAttiva.tutteLeCaratteristiche ? 6 : 3}, 1fr)`, gap: 8, background: C.panel, padding: '8px 12px', borderRadius: 8, border: `1px solid ${C.border}`, textAlign: 'center', marginBottom: 10 }}>
+                {(formaAttiva.tutteLeCaratteristiche
+                  ? [['forza', 'FOR'], ['destrezza', 'DES'], ['costituzione', 'COS'], ['intelligenza', 'INT'], ['saggezza', 'SAG'], ['carisma', 'CAR']]
+                  : [['forza', 'FOR'], ['destrezza', 'DES'], ['costituzione', 'COS']]
+                ).map(([car, sigla]) => {
+                  const val = Number(formaAttiva.dati.car?.[car]) || 10;
+                  const mod = Math.floor((val - 10) / 2);
                   return (
                     <div
+                      key={car}
                       style={{ cursor: 'pointer', padding: '4px', borderRadius: 6, transition: 'all 0.15s ease' }}
                       onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0,0,0,0.05)'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-                      onClick={() => lanciaD20(`Prova di Forza (${scheda.formaBestiale.nome})`, modFor, { tipoTiro: 'prova' })}
-                      title={`Clicca per tirare Prova di Forza: 1d20 ${conSegno(modFor)}`}
+                      onClick={() => lanciaD20(`Prova di ${t('attr.' + car)} (${formaAttiva.dati.nome})`, mod, { tipoTiro: 'prova' })}
+                      title={`Clicca per tirare Prova di ${t('attr.' + car)}: 1d20 ${conSegno(mod)}`}
                     >
-                      <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: C.inkDim }}>FOR (Bestia) 🎲</div>
+                      <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: C.inkDim }}>{sigla} (Forma) 🎲</div>
                       <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>
-                        {forVal} <span style={{ color: C.goldDark, fontSize: 12.5 }}>({conSegno(modFor)})</span>
+                        {val} <span style={{ color: C.goldDark, fontSize: 12.5 }}>({conSegno(mod)})</span>
                       </div>
                     </div>
                   );
-                })()}
-                {(() => {
-                  const desVal = Number(scheda.formaBestiale.car?.destrezza) || 10;
-                  const modDes = Math.floor((desVal - 10) / 2);
-                  return (
-                    <div
-                      style={{ cursor: 'pointer', padding: '4px', borderRadius: 6, transition: 'all 0.15s ease' }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0,0,0,0.05)'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-                      onClick={() => lanciaD20(`Prova di Destrezza (${scheda.formaBestiale.nome})`, modDes, { tipoTiro: 'prova' })}
-                      title={`Clicca per tirare Prova di Destrezza: 1d20 ${conSegno(modDes)}`}
-                    >
-                      <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: C.inkDim }}>DES (Bestia) 🎲</div>
-                      <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>
-                        {desVal} <span style={{ color: C.goldDark, fontSize: 12.5 }}>({conSegno(modDes)})</span>
-                      </div>
-                    </div>
-                  );
-                })()}
-                {(() => {
-                  const cosVal = Number(scheda.formaBestiale.car?.costituzione) || 10;
-                  const modCos = Math.floor((cosVal - 10) / 2);
-                  return (
-                    <div
-                      style={{ cursor: 'pointer', padding: '4px', borderRadius: 6, transition: 'all 0.15s ease' }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0,0,0,0.05)'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-                      onClick={() => lanciaD20(`Prova di Costituzione (${scheda.formaBestiale.nome})`, modCos, { tipoTiro: 'prova' })}
-                      title={`Clicca per tirare Prova di Costituzione: 1d20 ${conSegno(modCos)}`}
-                    >
-                      <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: C.inkDim }}>COS (Bestia) 🎲</div>
-                      <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>
-                        {cosVal} <span style={{ color: C.goldDark, fontSize: 12.5 }}>({conSegno(modCos)})</span>
-                      </div>
-                    </div>
-                  );
-                })()}
+                })}
               </div>
 
               {/* Tratti Speciali & Sensi della Bestia (se presenti) */}
-              {((scheda.formaBestiale.tratti && scheda.formaBestiale.tratti.length > 0) || scheda.formaBestiale.sensi) && (
+              {((formaAttiva.dati.tratti && formaAttiva.dati.tratti.length > 0) || formaAttiva.dati.sensi) && (
                 <div style={{ marginBottom: 10, background: 'rgba(0,0,0,0.02)', padding: '6px 10px', borderRadius: 6, border: `1px dashed ${C.border}` }}>
-                  {scheda.formaBestiale.sensi && (
-                    <div style={{ fontSize: 11.5, color: C.inkDim, marginBottom: (scheda.formaBestiale.tratti && scheda.formaBestiale.tratti.length > 0) ? 4 : 0 }}>
-                      👁️ <strong>{lingua === 'en' ? 'Senses' : 'Sensi'}:</strong> {scheda.formaBestiale.sensi}
+                  {formaAttiva.dati.sensi && (
+                    <div style={{ fontSize: 11.5, color: C.inkDim, marginBottom: (formaAttiva.dati.tratti && formaAttiva.dati.tratti.length > 0) ? 4 : 0 }}>
+                      👁️ <strong>{lingua === 'en' ? 'Senses' : 'Sensi'}:</strong> {formaAttiva.dati.sensi}
                     </div>
                   )}
-                  {scheda.formaBestiale.tratti && scheda.formaBestiale.tratti.map((tratto, tIdx) => (
+                  {formaAttiva.dati.tratti && formaAttiva.dati.tratti.map((tratto, tIdx) => (
                     <div key={tIdx} style={{ fontSize: 11.5, color: C.ink, lineHeight: 1.35, marginTop: 2 }}>
                       ✨ <em>{typeof tratto === 'string' ? tratto : tratto.nome}</em>
                     </div>
@@ -12128,13 +12142,13 @@ export default function App() {
               )}
 
               {/* Azioni & Attacchi della Bestia */}
-              {scheda.formaBestiale.azioni && scheda.formaBestiale.azioni.length > 0 && (
+              {formaAttiva.dati.azioni && formaAttiva.dati.azioni.length > 0 && (
                 <div>
                   <div style={{ fontSize: 11.5, fontWeight: 800, textTransform: 'uppercase', color: C.goldDark, marginBottom: 6 }}>
                     ⚔️ {lingua === 'en' ? 'Beast Attacks & Actions' : 'Azioni & Attacchi della Bestia'}
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    {scheda.formaBestiale.azioni.map((azRaw, idx) => {
+                    {formaAttiva.dati.azioni.map((azRaw, idx) => {
                       const az = parseAzioneBestia(azRaw);
                       return (
                         <div
@@ -12182,9 +12196,9 @@ export default function App() {
                                     gap: 4,
                                   }}
                                   onClick={() => {
-                                    lanciaD20(`Attacco (${scheda.formaBestiale.nome}): ${az.nome}`, az.bonus, {
+                                    lanciaD20(`Attacco (${formaAttiva.dati.nome}): ${az.nome}`, az.bonus, {
                                       attacco: {
-                                        nome: `${scheda.formaBestiale.nome}: ${az.nome}`,
+                                        nome: `${formaAttiva.dati.nome}: ${az.nome}`,
                                         danno: az.danno,
                                       },
                                       suono: 'arma',
@@ -12214,7 +12228,7 @@ export default function App() {
                                     gap: 4,
                                   }}
                                   onClick={() => {
-                                    lanciaDanniDiretti(`Danni (${scheda.formaBestiale.nome}): ${az.nome}`, az.danno);
+                                    lanciaDanniDiretti(`Danni (${formaAttiva.dati.nome}): ${az.nome}`, az.danno);
                                   }}
                                   title={`Tira Danni: ${az.danno}`}
                                 >
@@ -12256,17 +12270,17 @@ export default function App() {
                       className="ritratto-box"
                       style={{
                         borderRadius: 14, overflow: 'hidden',
-                        background: scheda.formaBestiale?.attiva
+                        background: isTrasformato
                           ? '#1b4332'
                           : ((!scheda.ritratto || scheda.ritratto.startsWith('data:image/svg')) ? (coloreClasse(scheda.classe)?.chiaro || C.panel) : C.panel),
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: scheda.formaBestiale?.attiva ? '0 0 16px rgba(46,125,50,0.6)' : 'inset 0 0 8px rgba(0,0,0,0.2)',
-                        border: scheda.formaBestiale?.attiva ? '2.5px solid #52b788' : `2px solid ${coloreClasse(scheda.classe) ? C.gold : C.border}`,
+                        boxShadow: isTrasformato ? '0 0 16px rgba(46,125,50,0.6)' : 'inset 0 0 8px rgba(0,0,0,0.2)',
+                        border: isTrasformato ? '2.5px solid #52b788' : `2px solid ${coloreClasse(scheda.classe) ? C.gold : C.border}`,
                         cursor: 'pointer', position: 'relative',
                       }}
-                      title={scheda.formaBestiale?.attiva ? `🐾 ${scheda.formaBestiale.nome}: Click per cambiare illustrazione o caricare immagine` : (scheda.ritratto ? 'Click: cambia immagine' : 'Click: carica l’immagine del personaggio')}
+                      title={isTrasformato ? `🐾 ${formaAttiva.dati.nome}: Click per cambiare illustrazione o caricare immagine` : (scheda.ritratto ? 'Click: cambia immagine' : 'Click: carica l’immagine del personaggio')}
                       onClick={() => {
-                        if (scheda.formaBestiale?.attiva) {
+                        if (isTrasformato) {
                           setMostraModalRitrattoBestia(true);
                         } else {
                           ritrattoRef.current?.click();
@@ -12316,15 +12330,15 @@ export default function App() {
                         </span>
                       </button>
 
-                      {scheda.formaBestiale?.attiva ? (
+                      {isTrasformato ? (
                         <div style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
                           <img
-                            src={generaAvatarBestia(scheda.formaBestiale)}
-                            alt={`Forma Bestiale: ${scheda.formaBestiale.nome}`}
+                            src={generaAvatarBestia(formaAttiva.dati)}
+                            alt={`${campoForma === 'metamorfosi' ? 'Metamorfosi' : 'Forma Bestiale'}: ${formaAttiva.dati.nome}`}
                             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                           />
                           <div style={{ position: 'absolute', top: 6, right: 6, zIndex: 3, background: 'rgba(8, 28, 21, 0.92)', color: '#d8f3dc', border: '1px solid #52b788', borderRadius: 6, fontSize: 9.5, fontWeight: 800, padding: '2px 6px', textTransform: 'uppercase', letterSpacing: 0.5, boxShadow: '0 2px 6px rgba(0,0,0,0.4)' }}>
-                            🐾 {lingua === 'en' ? 'Beast' : 'Bestia'}
+                            {campoForma === 'metamorfosi' ? '🔮' : '🐾'} {campoForma === 'metamorfosi' ? (lingua === 'en' ? 'Polymorph' : 'Metamorfosi') : (lingua === 'en' ? 'Beast' : 'Bestia')}
                           </div>
                           <button
                             type="button"
@@ -12367,7 +12381,7 @@ export default function App() {
                         )
                       )}
                     </div>
-                    {scheda.ritratto && !scheda.formaBestiale?.attiva && (
+                    {scheda.ritratto && !isTrasformato && (
                       <button
                         style={{ ...styles.buttonDanger, position: 'absolute', bottom: -6, right: -6, padding: '0 6px', background: C.panel, zIndex: 4 }}
                         title={t('tip.rimuovi_img')}
@@ -12654,10 +12668,10 @@ export default function App() {
                             padding: '1px 0',
                             cursor: 'help',
                           }}
-                          title={`Taglia modificata da ${scheda.formaBestiale?.attiva ? `Forma Bestiale (${scheda.formaBestiale.nome})` : 'Effetto Taglia'}: ${tagliaEffettiva(scheda)} (Taglia naturale: ${scheda.taglia || 'Media'}) · Spazio: ${SPAZIO_TAGLIA_5E[tagliaEffettiva(scheda)] || '1,5m'} · Lotta fino a: ${LOTTA_MAX_TAGLIA_5E[tagliaEffettiva(scheda)] || 'Grande'}`}
+                          title={`Taglia modificata da ${isTrasformato ? `Forma Bestiale (${formaAttiva.dati.nome})` : 'Effetto Taglia'}: ${tagliaEffettiva(scheda)} (Taglia naturale: ${scheda.taglia || 'Media'}) · Spazio: ${SPAZIO_TAGLIA_5E[tagliaEffettiva(scheda)] || '1,5m'} · Lotta fino a: ${LOTTA_MAX_TAGLIA_5E[tagliaEffettiva(scheda)] || 'Grande'}`}
                         >
                           <span style={{ fontWeight: 800, color: '#2e7d32', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-                            <span>{scheda.formaBestiale?.attiva ? '🐾' : '✨'}</span>
+                            <span>{isTrasformato ? '🐾' : '✨'}</span>
                             <span>{tagliaEffettiva(scheda)}</span>
                           </span>
                           <span
@@ -12672,7 +12686,7 @@ export default function App() {
                               whiteSpace: 'nowrap',
                             }}
                           >
-                            {scheda.formaBestiale?.attiva ? 'Bestia' : 'Attiva'}
+                            {isTrasformato ? (campoForma === 'metamorfosi' ? 'Metamorfosi' : 'Bestia') : 'Attiva'}
                           </span>
                         </div>
                       ) : (
@@ -12922,18 +12936,17 @@ export default function App() {
                   {/* Sezione Superiore: Punti Ferita — perfettamente centrata nello spazio disponibile */}
                   <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2px 0' }}>
                     <div style={{ ...styles.vitalLabel, position: 'static', margin: 0, marginBottom: 6, fontSize: 12 }}>
-                      ❤️ {t("vital.pf")} {scheda.formaBestiale?.attiva && <span style={{ color: '#2e7d32', fontWeight: 800 }}>· 🐾 {scheda.formaBestiale.nome}</span>}
+                      ❤️ {t("vital.pf")} {isTrasformato && <span style={{ color: '#2e7d32', fontWeight: 800 }}>· 🐾 {formaAttiva.dati.nome}</span>}
                     </div>
 
                     {/* BARRA DELLA VITA STILE VIDEOGIOCO */}
                     {(() => {
-                      const isBestia = !!scheda.formaBestiale?.attiva;
-                      const att = isBestia ? (Number(scheda.formaBestiale.pfAttuali) || 0) : (Number(scheda.pfAttuali) || 0);
-                      const maxPf = isBestia ? (Number(scheda.formaBestiale.pfMax) || 10) : (Number(scheda.pfMax) || 10);
+                      const att = isTrasformato ? (Number(formaAttiva.dati.pfAttuali) || 0) : (Number(scheda.pfAttuali) || 0);
+                      const maxPf = isTrasformato ? (Number(formaAttiva.dati.pfMax) || 10) : (Number(scheda.pfMax) || 10);
                       // I Poteri bonus PF massimi contano solo in forma umanoide: la Forma
                       // Bestiale ha un pfMax tutto suo, non derivato da scheda.pfMax.
-                      const maxPfEffettivo = isBestia ? maxPf : pfMassimiEffettivi(scheda);
-                      const temp = isBestia ? 0 : (Number(scheda.pfTemp) || 0);
+                      const maxPfEffettivo = isTrasformato ? maxPf : pfMassimiEffettivi(scheda);
+                      const temp = isTrasformato ? 0 : (Number(scheda.pfTemp) || 0);
                       const max = Math.max(1, maxPfEffettivo + temp);
                       const percNormale = Math.max(0, Math.min(100, (att / max) * 100));
                       const percTemp = Math.max(0, Math.min(100, (temp / max) * 100));
@@ -12941,7 +12954,7 @@ export default function App() {
                       const isCritico = att > 0 && (att / Math.max(1, maxPfEffettivo)) <= 0.25;
                       const glowColore = (att / Math.max(1, maxPfEffettivo)) > 0.5 ? 'rgba(76,175,80,0.45)' : (att / Math.max(1, maxPfEffettivo)) > 0.25 ? 'rgba(255,179,0,0.45)' : 'rgba(229,57,53,0.55)';
                       return (
-                        <div className={`profilo-barra-vita ${isCritico ? 'pf-barra-critica' : ''}`} style={{ position: 'relative', width: '100%', height: 26, borderRadius: 13, background: 'rgba(10,8,6,0.85)', border: `2px solid ${isBestia ? '#52b788' : C.goldDark}`, boxShadow: 'inset 0 3px 6px rgba(0,0,0,0.85), 0 2px 8px rgba(0,0,0,0.35), 0 0 1px rgba(255,255,255,0.2)', overflow: 'hidden', margin: '2px 0', display: 'flex' }} title={`${att} / ${maxPfEffettivo} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
+                        <div className={`profilo-barra-vita ${isCritico ? 'pf-barra-critica' : ''}`} style={{ position: 'relative', width: '100%', height: 26, borderRadius: 13, background: 'rgba(10,8,6,0.85)', border: `2px solid ${isTrasformato ? '#52b788' : C.goldDark}`, boxShadow: 'inset 0 3px 6px rgba(0,0,0,0.85), 0 2px 8px rgba(0,0,0,0.35), 0 0 1px rgba(255,255,255,0.2)', overflow: 'hidden', margin: '2px 0', display: 'flex' }} title={`${att} / ${maxPfEffettivo} PF${temp ? ` (+ ${temp} temp)` : ''}`}>
                           <div style={{ width: `${percNormale}%`, height: '100%', background: coloreNormale, transition: 'width 0.35s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: `0 0 12px ${glowColore}`, position: 'relative' }}>
                             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '48%', background: 'linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.08) 70%, rgba(255,255,255,0) 100%)' }} />
                           </div>
@@ -12958,17 +12971,17 @@ export default function App() {
                                 tipo="numero"
                                 onChange={(v) => {
                                   const danno = att - v;
-                                  if (isBestia) {
+                                  if (isTrasformato) {
                                     if (v <= 0) {
                                       const eccesso = Math.abs(v);
                                       const pfDruido = Math.max(0, (Number(scheda.pfAttuali) || 0) - eccesso);
                                       aggiorna({
                                         pfAttuali: pfDruido,
-                                        formaBestiale: { ...scheda.formaBestiale, pfAttuali: 0, attiva: false }
+                                        [campoForma]: { ...formaAttiva.dati, pfAttuali: 0, attiva: false }
                                       });
                                     } else {
                                       aggiorna({
-                                        formaBestiale: { ...scheda.formaBestiale, pfAttuali: Math.min(scheda.formaBestiale.pfMax, v) }
+                                        [campoForma]: { ...formaAttiva.dati, pfAttuali: Math.min(formaAttiva.dati.pfMax, v) }
                                       });
                                     }
                                   } else {
@@ -12993,12 +13006,12 @@ export default function App() {
                                 title={t('vital.pf_max_modifica')}
                                 onChange={(v) => {
                                   const nuovoMax = Math.max(1, Number(v) || 1);
-                                  if (isBestia) {
+                                  if (isTrasformato) {
                                     aggiorna({
-                                      formaBestiale: {
-                                        ...scheda.formaBestiale,
+                                      [campoForma]: {
+                                        ...formaAttiva.dati,
                                         pfMax: nuovoMax,
-                                        pfAttuali: Math.min(Number(scheda.formaBestiale.pfAttuali) || 0, nuovoMax),
+                                        pfAttuali: Math.min(Number(formaAttiva.dati.pfAttuali) || 0, nuovoMax),
                                       },
                                     });
                                   } else {
@@ -13011,8 +13024,8 @@ export default function App() {
                                 width={34}
                                 style={{ color: '#fff', fontWeight: 800, fontSize: 13.5, textShadow: '0 1px 3px rgba(0,0,0,0.9)', background: 'transparent', border: 'none' }}
                               />
-                              {!isBestia && <BadgePotere scheda={scheda} bersaglio="pf_massimi" unita="" />}
-                              {!isBestia && <BadgeSfinimento scheda={scheda} bersaglio="pf_massimi" />}
+                              {!isTrasformato && <BadgePotere scheda={scheda} bersaglio="pf_massimi" unita="" />}
+                              {!isTrasformato && <BadgeSfinimento scheda={scheda} bersaglio="pf_massimi" />}
                             </span>
                           </div>
                         </div>
@@ -13020,7 +13033,7 @@ export default function App() {
                     })()}
 
                     {/* PF Temporanei / Info PF Druido se in Forma Bestiale */}
-                    {scheda.formaBestiale?.attiva ? (
+                    {isTrasformato ? (
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, margin: '3px 0 4px' }}>
                         <span style={{ fontSize: 10, color: C.inkDim, background: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: 6, border: `1px solid ${C.border}` }}>
                           👤 {lingua === 'en' ? 'Humanoid HP (preserved)' : 'PF Umanoide (preservati)'}: <strong>{scheda.pfAttuali} / {scheda.pfMax}</strong>
@@ -13042,18 +13055,18 @@ export default function App() {
                     {(() => {
                       const applicaDannoRapido = (quantita) => {
                         if (effettiSonoriAttivi) eseguiEffettoSonoro('fallimento', volumeAudio);
-                        if (scheda.formaBestiale?.attiva) {
-                          const beastPf = Number(scheda.formaBestiale.pfAttuali) || 0;
+                        if (isTrasformato) {
+                          const beastPf = Number(formaAttiva.dati.pfAttuali) || 0;
                           if (quantita >= beastPf) {
                             const eccesso = quantita - beastPf;
                             const pfDruido = Math.max(0, (Number(scheda.pfAttuali) || 0) - eccesso);
                             aggiorna({
                               pfAttuali: pfDruido,
-                              formaBestiale: { ...scheda.formaBestiale, pfAttuali: 0, attiva: false }
+                              [campoForma]: { ...formaAttiva.dati, pfAttuali: 0, attiva: false }
                             });
                           } else {
                             aggiorna({
-                              formaBestiale: { ...scheda.formaBestiale, pfAttuali: beastPf - quantita }
+                              [campoForma]: { ...formaAttiva.dati, pfAttuali: beastPf - quantita }
                             });
                           }
                         } else {
@@ -13079,11 +13092,11 @@ export default function App() {
 
                       const applicaCuraRapida = (quantita) => {
                         if (effettiSonoriAttivi) eseguiEffettoSonoro('cura', volumeAudio);
-                        if (scheda.formaBestiale?.attiva) {
-                          const att = Number(scheda.formaBestiale.pfAttuali) || 0;
-                          const maxPf = Number(scheda.formaBestiale.pfMax) || 10;
+                        if (isTrasformato) {
+                          const att = Number(formaAttiva.dati.pfAttuali) || 0;
+                          const maxPf = Number(formaAttiva.dati.pfMax) || 10;
                           aggiorna({
-                            formaBestiale: { ...scheda.formaBestiale, pfAttuali: Math.min(maxPf, att + quantita) }
+                            [campoForma]: { ...formaAttiva.dati, pfAttuali: Math.min(maxPf, att + quantita) }
                           });
                         } else {
                           aggiorna({ pfAttuali: Math.min(pfMassimiEffettivi(scheda), (Number(scheda.pfAttuali) || 0) + quantita) });
@@ -13410,13 +13423,13 @@ export default function App() {
             >
               <div style={styles.vitalLabel}>{t("vital.movimento")}</div>
               <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                {scheda.formaBestiale?.attiva ? (
+                {isTrasformato ? (
                   <div style={{ ...styles.vitalValue, display: 'flex', alignItems: 'baseline', justifyContent: 'center', flexWrap: 'wrap', gap: 2 }}>
                     <span style={{ fontSize: 18, fontWeight: 800, color: '#2e7d32' }}>
-                      {scheda.formaBestiale.velocita?.terra ?? 9}
+                      {formaAttiva.dati.velocita?.terra ?? 9}
                     </span>
                     <span style={{ fontSize: 14, color: C.inkDim, fontWeight: 600 }}>m</span>
-                    {Object.entries(scheda.formaBestiale.velocita || {})
+                    {Object.entries(formaAttiva.dati.velocita || {})
                       .filter(([k]) => k !== 'terra')
                       .map(([k, v]) => (
                         <span key={k} style={{ fontSize: 10.5, color: '#2e7d32', fontWeight: 700, marginLeft: 2 }} title={`${k}: ${v}m`}>
@@ -13483,9 +13496,9 @@ export default function App() {
               <div style={{ ...styles.vitalBox }}>
                 <div style={styles.vitalLabel}>{t("vital.visione")}</div>
                 <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                  {scheda.formaBestiale?.attiva && scheda.formaBestiale.sensi ? (
-                    <div style={{ fontSize: 11.5, fontWeight: 700, color: '#2e7d32', textAlign: 'center', padding: '0 4px', lineHeight: 1.25 }} title={`Sensi della Bestia: ${scheda.formaBestiale.sensi}`}>
-                      🐾 {scheda.formaBestiale.sensi}
+                  {isTrasformato && formaAttiva.dati.sensi ? (
+                    <div style={{ fontSize: 11.5, fontWeight: 700, color: '#2e7d32', textAlign: 'center', padding: '0 4px', lineHeight: 1.25 }} title={`Sensi della Bestia: ${formaAttiva.dati.sensi}`}>
+                      🐾 {formaAttiva.dati.sensi}
                     </div>
                   ) : (
                     <CampoConTendina

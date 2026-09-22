@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, punteggioCaratteristica, formattaNomePg, bonusCopertura, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma } from '../src/rules/scheda.js';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, punteggioCaratteristica, formattaNomePg, bonusCopertura, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma, trasformazioneAttiva, pfMassimiEffettivi } from '../src/rules/scheda.js';
 import { ABILITA, CARATTERISTICHE } from '../src/data/caratteristiche.js';
 import { spiegaIncantesimo } from '../src/data/spiegazioni.js';
 import { tiraDanni, parseEspressioneDado } from '../src/rules/dadi.js';
@@ -474,6 +474,54 @@ test('Forma Bestiale: sostituisce FOR, DES, COS e CA con le statistiche della be
   assert.equal(bonusAbilita(druido, 'atletica'), -1); // FOR 8 (-1)
   assert.equal(bonusAbilita(druido, 'acrobazia'), 2); // DES 14 (+2)
   assert.equal(bonusAbilita(druido, 'furtivita'), 2); // DES 14 (+2)
+});
+
+test('Metamorfosi: sostituisce TUTTE le caratteristiche (comprese quelle mentali), a differenza della Forma Bestiale', () => {
+  const mago = schedaBase({
+    caratteristiche: { forza: 10, destrezza: 12, costituzione: 13, intelligenza: 18, saggezza: 11, carisma: 8 },
+    metamorfosi: {
+      attiva: true,
+      nome: 'Gorilla gigante',
+      ca: 12,
+      pfMax: 157,
+      pfAttuali: 157,
+      car: { forza: 19, destrezza: 14, costituzione: 18, intelligenza: 7, saggezza: 12, carisma: 7 },
+    },
+  });
+
+  // Metamorfosi: TUTTE le caratteristiche diventano quelle della creatura,
+  // comprese quelle mentali (a differenza della Forma Bestiale).
+  assert.equal(punteggioCaratteristica(mago, 'forza'), 19);
+  assert.equal(punteggioCaratteristica(mago, 'destrezza'), 14);
+  assert.equal(punteggioCaratteristica(mago, 'costituzione'), 18);
+  assert.equal(punteggioCaratteristica(mago, 'intelligenza'), 7);
+  assert.equal(punteggioCaratteristica(mago, 'saggezza'), 12);
+  assert.equal(punteggioCaratteristica(mago, 'carisma'), 7);
+  assert.equal(caTotale(mago), 12);
+
+  mago.metamorfosi.attiva = false;
+  assert.equal(punteggioCaratteristica(mago, 'intelligenza'), 18);
+  assert.equal(punteggioCaratteristica(mago, 'carisma'), 8);
+});
+
+test('trasformazioneAttiva: al più una attiva, Metamorfosi ha precedenza se entrambe risultassero attive', () => {
+  const scheda = { formaBestiale: null, metamorfosi: null };
+  assert.equal(trasformazioneAttiva(scheda), null);
+
+  scheda.formaBestiale = { attiva: true, nome: 'Orso' };
+  let forma = trasformazioneAttiva(scheda);
+  assert.equal(forma.campo, 'formaBestiale');
+  assert.equal(forma.tutteLeCaratteristiche, false);
+
+  scheda.metamorfosi = { attiva: true, nome: 'Gorilla gigante' };
+  forma = trasformazioneAttiva(scheda);
+  assert.equal(forma.campo, 'metamorfosi');
+  assert.equal(forma.tutteLeCaratteristiche, true);
+});
+
+test('pfMassimiEffettivi: non è mai influenzato da Forma Bestiale/Metamorfosi (hanno un pool di PF proprio)', () => {
+  const scheda = { pfMax: 40, metamorfosi: { attiva: true, pfMax: 157, car: {} } };
+  assert.equal(pfMassimiEffettivi(scheda), 40);
 });
 
 test('Forma Bestiale: genera avatar SVG e icone coerenti per ogni animale', async () => {

@@ -939,6 +939,18 @@ test('calcolo movimento, salti e capacità fisiche 5e (calcolaMovimentoESalti)',
   assert.equal(mg.spintaKg, 18 * 30 * 2); // 1080 kg
 });
 
+test('calcolaMovimentoESalti: Metamorfosi sostituisce la velocità come la Forma Bestiale', () => {
+  const mago = {
+    velocita: 9,
+    caratteristiche: { forza: 10 },
+    taglia: 'Media',
+    metamorfosi: { attiva: true, velocita: { terra: 15, volo: 24 }, car: { forza: 19 } },
+  };
+  const m = calcolaMovimentoESalti(mago);
+  assert.equal(m.velBase, 15);
+  assert.equal(m.scatto, 30);
+});
+
 test('reazioni e inneschi di combattimento 5e (trovaReazioniDisponibili)', () => {
   // 1. Scheda Ladro con Schivata Prodigiosa, Sentinella e Stocco equipaggiato
   const ladro = {

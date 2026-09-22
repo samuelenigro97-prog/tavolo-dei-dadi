@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.5.0',
+    voci: {
+      it: [
+        'Aggiunta la Metamorfosi (Polymorph) accanto alla Forma Bestiale: dalla scheda di una creatura nel Bestiario/Compendio, il tasto "🔮 Metamorfosi" sostituisce tutte e sei le caratteristiche (comprese quelle mentali) invece delle sole Forza/Destrezza/Costituzione. PF separati, ritratto sostituibile e pannello statistiche/azioni identici alla Forma Bestiale; le due trasformazioni sono mutuamente esclusive.',
+      ],
+      en: [
+        'Added Polymorph (Metamorphosis) alongside Wild Shape: from a creature\'s card in the Bestiary/Compendium, the "🔮 Polymorph" button replaces all six characteristics (including mental ones) instead of just Strength/Dexterity/Constitution. Separate HP pool, swappable portrait, and the same stats/actions panel as Wild Shape; the two transformations are mutually exclusive.',
+      ],
+    },
+  },
+  {
     versione: '4.4.0',
     voci: {
       it: [
