@@ -2,6 +2,19 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.7.0] – 2026-09-22
+
+### Aggiunto
+- **Nuova Ambientazione "📜 Vintage"** (Luogo → Ambientazione): palette
+  ispirata ai vecchi manuali italiani ed americani di D&D (pergamena
+  invecchiata, rosso bordeaux, oro), con i titoli delle sezioni e l'intestazione
+  dell'app in un font serif decorativo (Cinzel) invece del sans-serif di
+  sistema. Il font è autoospitato (nessun CDN) e precacheato dal service
+  worker, quindi resta disponibile offline come tutto il resto; l'accessibilità
+  "lettura facilitata" continua a forzare i caratteri di sistema come prima,
+  Vintage compreso. Nessun impatto sugli altri 13 preset: senza un font
+  dedicato continuano a usare il font di sistema di sempre.
+
 ## [4.6.3] – 2026-09-22
 
 ### Corretto

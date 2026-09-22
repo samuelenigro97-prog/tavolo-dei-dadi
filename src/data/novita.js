@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.7.0',
+    voci: {
+      it: [
+        'Nuova Ambientazione "📜 Vintage" (Luogo → Ambientazione): palette ispirata ai vecchi manuali D&D e titoli con font decorativo Cinzel, autoospitato e disponibile offline come il resto dell\'app.',
+      ],
+      en: [
+        'New "📜 Vintage" Setting (Place → Setting): palette inspired by old D&D rulebooks, with section titles in the decorative Cinzel font — self-hosted and available offline like the rest of the app.',
+      ],
+    },
+  },
+  {
     versione: '4.6.3',
     voci: {
       it: [

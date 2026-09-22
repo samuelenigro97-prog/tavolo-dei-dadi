@@ -77,8 +77,8 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // includo gli mp3 (loop ambientali CC0) così restano disponibili offline
-        globPatterns: ['**/*.{js,css,html,png,jpg,svg,mp3,ogg}'],
+        // includo gli mp3 (loop ambientali CC0) e i font autoospitati (tema Vintage) così restano disponibili offline
+        globPatterns: ['**/*.{js,css,html,png,jpg,svg,mp3,ogg,woff2}'],
         // gli mp3 pesano più del default: alzo il limite per la precache
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
         navigateFallbackDenylist: [/^\/api\//],

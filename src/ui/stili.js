@@ -34,7 +34,7 @@ export const styles = {
     margin: '0 auto 6px auto',
     padding: '12px 0 8px',
   },
-  title: { margin: 0, fontSize: 21, letterSpacing: 1, color: 'var(--c-title)' },
+  title: { margin: 0, fontSize: 21, letterSpacing: 1, color: 'var(--c-title)', fontFamily: 'var(--font-title, inherit)' },
   hint: { margin: '3px 0 0', color: C.inkDim, fontStyle: 'italic', fontSize: 12 },
   main: { maxWidth: 1080, margin: '0 auto' },
   panel: {
@@ -59,6 +59,7 @@ export const styles = {
     paddingTop: 2,
     paddingBottom: 4,
     letterSpacing: 2.5,
+    fontFamily: 'var(--font-title, inherit)',
   },
   // campo in stile modulo: valore su riga con etichetta sotto
   moduloLabel: {
@@ -402,11 +403,22 @@ export const styles = {
 };
 
 export const GLOBAL_CSS = `
+/* Font autoospitato (nessun CDN) per il tema Ambientazione "Vintage":
+   così resta disponibile offline, coerente con la regola "solo caratteri
+   di sistema" — qui è precacheato dal service worker come un asset normale. */
+@font-face {
+  font-family: 'Cinzel';
+  src: url('./fonts/cinzel-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
 :root {
   --c-bg: #f4f1ea; --c-panel: #ffffff; --c-panel-light: #f7f4ee;
   --c-border: #ddd5c6; --c-ink: #2b2620; --c-ink-dim: #8d8272;
   --c-gold: #b8860b; --c-gold-dark: #8a6508; --c-red: #b03a2e;
   --c-green: #3e7d32; --c-title: #9e2b25;
+  --font-title: inherit;
 }
 :root[data-tema="scuro"] {
   --c-bg: #171310; --c-panel: #211b16; --c-panel-light: #2a231c;

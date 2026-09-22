@@ -122,6 +122,16 @@ export const PRESET_COLORI = [
     chiaro: { bg: '#f0eaf8', panel: '#faf6ff', panelLight: '#f3eeff', border: '#c8b0e0', ink: '#1e1030', inkDim: '#7a5a9a', gold: '#7030b0', goldDark: '#521888', title: '#521888' },
     scuro:  { bg: '#0f0a1a', panel: '#1a1128', panelLight: '#221633', border: '#3a2252', ink: '#e0d0f4', inkDim: '#9a78c0', gold: '#a060e0', goldDark: '#c890ff', title: '#c890ff' },
   },
+  {
+    // Ispirato ai vecchi manuali Editrice Giochi/TSR: pergamena invecchiata,
+    // rosso bordeaux e oro. fontTitle usa il Cinzel autoospitato (vedi
+    // GLOBAL_CSS) solo per i titoli/intestazioni, mai per il testo corrente.
+    id: 'vintage', nome: '📜 Vintage', audio: 'spento',
+    sfondo: 'radial-gradient(60% 55% at 8% 10%, rgba(120,30,24,0.14), transparent 62%), radial-gradient(60% 55% at 92% 90%, rgba(20,60,58,0.12), transparent 62%)',
+    fontTitle: "'Cinzel', Georgia, 'Times New Roman', serif",
+    chiaro: { bg: '#ece2c8', panel: '#f6efdc', panelLight: '#efe4c4', border: '#c2a468', ink: '#2c2210', inkDim: '#7a6a44', gold: '#a8791e', goldDark: '#7a5510', title: '#7a1f1a' },
+    scuro:  { bg: '#161009', panel: '#211a10', panelLight: '#2a2114', border: '#5a4726', ink: '#e8dcbc', inkDim: '#a89468', gold: '#c9a13a', goldDark: '#e0bb5a', title: '#d97a6a' },
+  },
 ];
 
 /**
