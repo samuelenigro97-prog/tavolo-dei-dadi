@@ -4079,7 +4079,9 @@ export default function App() {
     const sfondoAmbiente = presetDati.sfondo || '';
     const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/';
     const idAmb = presetDati.id;
-    const conImmagine = idAmb && idAmb !== 'default';
+    // 'vintage' è un'estetica carta/tipografia (font + palette), non una scena
+    // illustrata: niente foto dedicata in public/ambientazioni/, come 'default'.
+    const conImmagine = idAmb && idAmb !== 'default' && idAmb !== 'vintage';
     const veloAlpha = scuroEff ? 0.5 : 0.32;
     const velo = conImmagine
       ? `linear-gradient(rgba(14,11,8,${veloAlpha}), rgba(14,11,8,${veloAlpha}))`

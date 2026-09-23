@@ -1140,6 +1140,21 @@ tbody tr:hover {
 [data-classe="nessuna"] .angolo-ornamento {
   display: none !important;
 }
+
+/* Ambientazione "Vintage": tocco da vecchio manuale sui pannelli — texture
+   carta leggerissima (solo gradienti CSS, nessuna immagine) + doppio filetto
+   come le cornici dei manuali Editrice Giochi/TSR. Usa outline (non
+   box-shadow) apposta: box-shadow è animato dal "respiro magico" e verrebbe
+   sovrascritto ad ogni fotogramma. Non tocca gli angoli ornamentali di
+   classe: restano quelli, qui è solo sfondo + cornice interna. */
+:root[data-preset="vintage"] .sezione,
+:root[data-preset="vintage"] .profilo-sezione {
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.015) 0px, transparent 1px, transparent 2px, rgba(0,0,0,0.015) 3px),
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.012) 0px, transparent 1px, transparent 2px, rgba(0,0,0,0.012) 3px);
+  outline: 1px solid var(--c-border);
+  outline-offset: -4px;
+}
 /* Corpo scheda: le sezioni ora sono a PIENA LARGHEZZA, impilate in verticale.
    L'ordine è controllato con 'order' (Combattimento/Magia prima, poi il resto). */
 .griglia-scheda {
