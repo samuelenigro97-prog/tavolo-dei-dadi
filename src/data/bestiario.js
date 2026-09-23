@@ -1240,6 +1240,23 @@ export function creatureDisponibiliMetamorfosi(livello, bestie = BESTIE) {
     .sort((a, b) => a.nome.localeCompare(b.nome, 'it'));
 }
 
+/**
+ * Raggruppa una lista di creature (già filtrata, es. da bestieDisponibili o
+ * creatureDisponibiliMetamorfosi) in "cartelle" per GS crescente, con le
+ * creature in ordine alfabetico dentro ogni gruppo. Non filtra né ordina la
+ * lista in input oltre a raggrupparla: chi la chiama decide già chi include.
+ */
+export function raggruppaPerGS(creature) {
+  const gruppi = new Map();
+  for (const c of (creature || [])) {
+    const chiave = c.gsNum;
+    if (!gruppi.has(chiave)) gruppi.set(chiave, { gsNum: chiave, gs: c.gs, creature: [] });
+    gruppi.get(chiave).creature.push(c);
+  }
+  return [...gruppi.values()]
+    .sort((a, b) => a.gsNum - b.gsNum)
+    .map((g) => ({ ...g, creature: [...g.creature].sort((a, b) => a.nome.localeCompare(b.nome, 'it')) }));
+}
 
 // ============================================================================
 // CATALOGO MOSTRI CLASSICI D&D 5e (SRD 5.1 / PHB / MM) PER IL COMBAT TRACKER

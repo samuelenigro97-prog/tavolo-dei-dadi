@@ -2,6 +2,25 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.12.0] – 2026-09-23
+
+### Aggiunto
+- **Creature raggruppate per GS nei popup Forma Selvatica/Metamorfosi.**
+  Invece di un'unica griglia piatta, le creature disponibili sono ora in
+  "cartelle" apribili per Grado di Sfida crescente (GS 0, GS 1/8, GS 1/4...),
+  ciascuna con le creature in ordine alfabetico al suo interno — così puoi
+  saltare direttamente al GS che ti interessa invece di scorrere tutto.
+
+### Verificato
+- **Copertura del catalogo creature**: per la Forma Selvatica il GS massimo
+  raggiungibile è 6 (Circolo della Luna, livello 20) — il catalogo (GS 0-8)
+  la copre interamente, nessuna lacuna. Per la Metamorfosi invece il limite
+  è "GS ≤ livello del personaggio", quindi ai livelli 9+ le regole
+  permetterebbero GS superiori a quelli presenti in catalogo (si ferma a
+  GS 8, Tirannosauro Rex): un personaggio di alto livello non troverebbe
+  nuove opzioni oltre il livello 8. Segnalato all'utente, in attesa di
+  decidere se/quante creature di GS alto aggiungere.
+
 ## [4.11.0] – 2026-09-23
 
 ### Aggiunto

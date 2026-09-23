@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.12.0',
+    voci: {
+      it: [
+        'Nei popup Forma Selvatica/Metamorfosi le creature sono ora raggruppate in cartelle per GS crescente (alfabetiche dentro ogni gruppo), invece di un\'unica griglia lunga.',
+      ],
+      en: [
+        'In the Wild Shape/Metamorphosis popups, creatures are now grouped into folders by increasing CR (alphabetical within each group) instead of one long grid.',
+      ],
+    },
+  },
+  {
     versione: '4.11.0',
     voci: {
       it: [

@@ -13,7 +13,7 @@ import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON, WENDELL_JSON, L
 import { fixEquipaggiamentoVaelion, migrazioneRegoleVaelion, autoIdratazionePersonaggioPredefinito } from './data/migrazioniPersonaggi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from './data/condizioni.js';
-import { BESTIE, FAMIGLI, EVOCAZIONI, MOSTRI_5E, TUTTE_LE_CREATURE, bestieDisponibili, limitiFormaSelvatica, creatureDisponibiliMetamorfosi, limitiMetamorfosi } from './data/bestiario.js';
+import { BESTIE, FAMIGLI, EVOCAZIONI, MOSTRI_5E, TUTTE_LE_CREATURE, bestieDisponibili, limitiFormaSelvatica, creatureDisponibiliMetamorfosi, limitiMetamorfosi, raggruppaPerGS } from './data/bestiario.js';
 import { novitaRecenti, ultimaVersioneNovita } from './data/novita.js';
 import { codificaScheda, decodificaScheda, preparaPerCondivisione, costruisciLink, payloadDaUrl, LIMITE_PAYLOAD } from './utils/condivisione.js';
 import { creaStanza, apriStanza, normalizzaCodiceStanza, formattaCodiceStanza, DURATA_STANZA_ORE } from './utils/stanze.js';
@@ -1963,7 +1963,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.11.0';
+const APP_VERSION = '4.12.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -16978,51 +16978,70 @@ export default function App() {
                           </div>
                         )}
 
-                        {/* Catalogo Completo Bestie Disponibili */}
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: 8 }}>
-                          {disp.map((b) => {
-                            const isFav = bestiePref.includes(b.nome);
-                            return (
-                              <div
-                                key={b.nome}
-                                onClick={() => setBestiaDettaglio(b)}
+                        {/* Catalogo Completo Bestie Disponibili, raggruppato per GS crescente
+                            ("cartelle" apribili) — dentro ogni gruppo, ordine alfabetico. */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {raggruppaPerGS(disp).map((gruppo) => (
+                            <details key={gruppo.gsNum} open>
+                              <summary
                                 style={{
-                                  background: C.panelLight,
-                                  border: `1px solid ${isFav ? C.gold : C.border}`,
-                                  borderRadius: 8,
-                                  padding: '8px 10px',
                                   cursor: 'pointer',
-                                  display: 'flex',
-                                  flexDirection: 'column',
-                                  gap: 3,
-                                  transition: 'transform 0.15s ease, border-color 0.15s ease',
+                                  fontSize: 12, fontWeight: 700, color: C.goldDark,
+                                  background: 'rgba(200,140,20,0.10)',
+                                  border: `1px solid ${C.border}`,
+                                  borderRadius: 6,
+                                  padding: '4px 8px',
+                                  marginBottom: 6,
+                                  listStyle: 'none',
+                                  userSelect: 'none',
                                 }}
-                                onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.goldDark; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                                onMouseLeave={(e) => { e.currentTarget.style.borderColor = isFav ? C.gold : C.border; e.currentTarget.style.transform = 'none'; }}
                               >
-                                <div style={{ fontWeight: 700, fontSize: 13, color: C.ink, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                  <span>{lingua === 'en' ? b.nomeEn : b.nome}</span>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => togglePref(e, b.nome)}
-                                      style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, fontSize: 12, opacity: isFav ? 1 : 0.4 }}
-                                      title={isFav ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'}
+                                GS {gruppo.gs} <span style={{ fontWeight: 500, color: C.inkDim }}>· {gruppo.creature.length} {gruppo.creature.length === 1 ? (lingua === 'en' ? 'creature' : 'creatura') : (lingua === 'en' ? 'creatures' : 'creature')}</span>
+                              </summary>
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: 8, marginBottom: 10 }}>
+                                {gruppo.creature.map((b) => {
+                                  const isFav = bestiePref.includes(b.nome);
+                                  return (
+                                    <div
+                                      key={b.nome}
+                                      onClick={() => setBestiaDettaglio(b)}
+                                      style={{
+                                        background: C.panelLight,
+                                        border: `1px solid ${isFav ? C.gold : C.border}`,
+                                        borderRadius: 8,
+                                        padding: '8px 10px',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: 3,
+                                        transition: 'transform 0.15s ease, border-color 0.15s ease',
+                                      }}
+                                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.goldDark; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = isFav ? C.gold : C.border; e.currentTarget.style.transform = 'none'; }}
                                     >
-                                      {isFav ? '⭐' : '☆'}
-                                    </button>
-                                    <span style={{ fontSize: 10, color: C.goldDark, background: 'rgba(200,140,20,0.15)', padding: '1px 5px', borderRadius: 10 }}>GS {b.gs}</span>
-                                  </div>
-                                </div>
-                                <div style={{ fontSize: 11, color: C.inkDim }}>
-                                  🛡️ CA {b.ca} · ❤️ {b.pf} PF
-                                </div>
-                                <div style={{ fontSize: 10, color: C.inkDim, opacity: 0.85 }}>
-                                  {b.taglia} · {b.velocita.volo ? `🦅 ${b.velocita.volo}m` : b.velocita.nuoto ? `🏊 ${b.velocita.nuoto}m` : `🐾 ${b.velocita.terra}m`}
-                                </div>
+                                      <div style={{ fontWeight: 700, fontSize: 13, color: C.ink, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span>{lingua === 'en' ? b.nomeEn : b.nome}</span>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => togglePref(e, b.nome)}
+                                          style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, fontSize: 12, opacity: isFav ? 1 : 0.4 }}
+                                          title={isFav ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'}
+                                        >
+                                          {isFav ? '⭐' : '☆'}
+                                        </button>
+                                      </div>
+                                      <div style={{ fontSize: 11, color: C.inkDim }}>
+                                        🛡️ CA {b.ca} · ❤️ {b.pf} PF
+                                      </div>
+                                      <div style={{ fontSize: 10, color: C.inkDim, opacity: 0.85 }}>
+                                        {b.taglia} · {b.velocita.volo ? `🦅 ${b.velocita.volo}m` : b.velocita.nuoto ? `🏊 ${b.velocita.nuoto}m` : `🐾 ${b.velocita.terra}m`}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
                               </div>
-                            );
-                          })}
+                            </details>
+                          ))}
                         </div>
                       </div>
                     );

@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { BESTIE, bestieDisponibili, limitiFormaSelvatica, limitiMetamorfosi, creatureDisponibiliMetamorfosi } from '../src/data/bestiario.js';
+import { BESTIE, bestieDisponibili, limitiFormaSelvatica, limitiMetamorfosi, creatureDisponibiliMetamorfosi, raggruppaPerGS } from '../src/data/bestiario.js';
 
 test('BESTIE: nessun duplicato, ogni voce ha le sei caratteristiche e i campi base', () => {
   const nomi = new Set();
@@ -62,4 +62,30 @@ test('Gorilla gigante e Tirannosauro rex hanno un blocco statistiche completo', 
   assert.ok(trex);
   assert.equal(trex.gsNum, 8);
   assert.equal(trex.taglia, 'Enorme');
+});
+
+test('raggruppaPerGS: gruppi in ordine di GS crescente, creature alfabetiche dentro ogni gruppo', () => {
+  const disp = creatureDisponibiliMetamorfosi(8); // include almeno GS 0, 1, ..., 8
+  const gruppi = raggruppaPerGS(disp);
+
+  // Ordine dei gruppi per GS crescente.
+  for (let i = 1; i < gruppi.length; i++) {
+    assert.ok(gruppi[i].gsNum > gruppi[i - 1].gsNum, `Gruppi non in ordine crescente: ${gruppi[i - 1].gs} poi ${gruppi[i].gs}`);
+  }
+
+  // Tutte le creature di un gruppo condividono lo stesso gsNum, e sono in ordine alfabetico.
+  for (const g of gruppi) {
+    for (const c of g.creature) assert.equal(c.gsNum, g.gsNum);
+    for (let i = 1; i < g.creature.length; i++) {
+      assert.ok(g.creature[i - 1].nome.localeCompare(g.creature[i].nome, 'it') <= 0);
+    }
+  }
+
+  // Nessuna creatura persa o duplicata nel raggruppamento.
+  const totaleRaggruppato = gruppi.reduce((n, g) => n + g.creature.length, 0);
+  assert.equal(totaleRaggruppato, disp.length);
+
+  // Lista vuota -> nessun gruppo, nessun errore.
+  assert.deepEqual(raggruppaPerGS([]), []);
+  assert.deepEqual(raggruppaPerGS(undefined), []);
 });
