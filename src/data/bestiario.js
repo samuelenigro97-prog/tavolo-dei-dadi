@@ -1227,6 +1227,16 @@ export function bestieDisponibili(livello, sottoclasse = '', bestie = BESTIE) {
  * Limite di GS per la Metamorfosi (Polymorph, regole 2014): "bestia con Grado
  * di Sfida pari o inferiore al livello del bersaglio" — niente tabella
  * separata come la Forma Selvatica, e nessuna restrizione di nuoto/volo.
+ *
+ * Nota: la parola chiave delle regole è "bestia" (tipo Beast). A livelli
+ * alti gsMax può superare 8 sulla carta, ma nel Manuale dei Mostri base non
+ * esiste una creatura di tipo Beast con GS superiore a 8 (Tirannosauro Rex):
+ * draghi, giganti, immondi e non-morti sono altri tipi, quindi non sono
+ * scelte legali per la Metamorfosi anche se il personaggio "potrebbe
+ * permetterseli". Il catalogo BESTIE che si ferma a GS 8 non è quindi una
+ * lacuna di dati: è già completo per tutto ciò che le regole permettono
+ * davvero. Verificato e confermato con l'utente il 2026-09-23: non
+ * aggiungere creature di altri tipi qui per "riempire" i livelli alti.
  */
 export function limitiMetamorfosi(livello) {
   return { gsMax: Math.max(0, Number(livello) || 1) };
