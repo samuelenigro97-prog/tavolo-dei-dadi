@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.16.0',
+    voci: {
+      it: [
+        'Sezione Azioni semplificata: restano sempre visibili solo Azione, Azione Bonus, Reazione, Movimento e Nuovo Turno. Tattiche, Copertura, Interazione Oggetto e Potenziamenti di Classe sono ora in un pannello "Altre opzioni" a comparsa (chiuso di default). Primo passo del redesign sezione per sezione.',
+      ],
+      en: [
+        'Simplified Actions section: only Action, Bonus Action, Reaction, Movement and New Turn stay always visible. Tactics, Cover, Object Interaction and Class Powers now live in a collapsible "More options" panel (closed by default). First step of the section-by-section redesign.',
+      ],
+    },
+  },
+  {
     versione: '4.15.0',
     voci: {
       it: [

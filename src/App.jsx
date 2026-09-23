@@ -1963,7 +1963,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.15.0';
+const APP_VERSION = '4.16.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3644,6 +3644,7 @@ export default function App() {
   const [mostraModalRitrattoBestia, setMostraModalRitrattoBestia] = useState(false);
   const [urlRitrattoBestiaInput, setUrlRitrattoBestiaInput] = useState('');
   const [tabTrasformazione, setTabTrasformazione] = useState(null); // null (popup chiuso) | 'animale' | 'metamorfosi'
+  const [azioniAltreAperte, setAzioniAltreAperte] = useState(false); // pannello "Altre opzioni" (Tattiche/Copertura/Poteri) nella sezione Azioni
   const [mostraModalAggiungiCompagno, setMostraModalAggiungiCompagno] = useState(false);
   const [filtroCompagnoCat, setFiltroCompagnoCat] = useState('tutti');
   const [cercaCompagnoText, setCercaCompagnoText] = useState('');
@@ -14041,6 +14042,11 @@ export default function App() {
                   }
                 };
 
+                const azioniAvanzateAttive = turno.interazioneUsata
+                  || turno.tatticaAttiva
+                  || (scheda.copertura && scheda.copertura !== 'nessuna')
+                  || scheda.applicaFurtivo || scheda.inIra || scheda.smiteAttivo || scheda.ispirazioneEroica;
+
                 return (
                   <div
                     style={{
@@ -14122,30 +14128,7 @@ export default function App() {
                         <span>{scheda.reazioneUsata ? '🔴' : '🟢'}</span>
                       </button>
 
-                      {/* 4. Interazione Oggetto */}
-                      <button
-                        type="button"
-                        onClick={() => setTurno({ interazione: !turno.interazioneUsata })}
-                        style={{
-                          ...styles.buttonMini,
-                          padding: '4px 8px',
-                          fontSize: 11,
-                          fontWeight: 700,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          background: turno.interazioneUsata ? 'rgba(239,68,68,0.08)' : 'rgba(46,157,77,0.1)',
-                          borderColor: turno.interazioneUsata ? '#ef4444' : '#2e9d4d',
-                          color: turno.interazioneUsata ? '#ef4444' : '#2e9d4d',
-                          cursor: 'pointer',
-                        }}
-                        title={lingua === 'en' ? 'Free Object Interaction (draw weapon, open door, etc.)' : 'Interazione gratuita con un oggetto (estrarre arma, aprire porta...)'}
-                      >
-                        <span>✋ {lingua === 'en' ? 'Free Object' : 'Interazione Oggetto'}</span>
-                        <span>{turno.interazioneUsata ? '🔴' : '🟢'}</span>
-                      </button>
-
-                      {/* 5. Nuovo Turno */}
+                      {/* 4. Nuovo Turno */}
                       <button
                         type="button"
                         onClick={resetTurno}
@@ -14169,326 +14152,362 @@ export default function App() {
                       </button>
                     </div>
 
-                    {/* Riga Movimento Residuo & Tattiche 5e */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, background: C.panel, padding: '6px 10px', borderRadius: 8, border: `1px solid ${C.border}` }}>
-                      {/* Movimento Residuo */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: 11.5, fontWeight: 700, color: C.ink }}>
-                          🏃 {lingua === 'en' ? 'Move:' : 'Movimento:'}{' '}
-                          <strong style={{ color: turno.movimentoRimanente > 0 ? '#2e9d4d' : C.red, fontSize: 13 }}>
-                            {turno.movimentoRimanente}m
-                          </strong>
-                          <span style={{ fontSize: 11, color: C.inkDim }}> / {turno.movimentoMax}m</span>
-                        </span>
-                        <div style={{ display: 'inline-flex', gap: 3 }}>
-                          <button
-                            type="button"
-                            onClick={() => setTurno({ movimentoUsato: Math.min(turno.movimentoMax, turno.movimentoUsato + 1.5) })}
-                            style={{ ...styles.buttonMini, fontSize: 9.5, padding: '1px 5px' }}
-                            title="-1.5m (1 quadretto)"
-                          >
-                            −1.5m
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setTurno({ movimentoUsato: Math.min(turno.movimentoMax, turno.movimentoUsato + 3) })}
-                            style={{ ...styles.buttonMini, fontSize: 9.5, padding: '1px 5px' }}
-                            title="-3m (2 quadretti)"
-                          >
-                            −3m
-                          </button>
-                          {turno.movimentoUsato > 0 && (
-                            <button
-                              type="button"
-                              onClick={() => setTurno({ movimentoUsato: 0 })}
-                              style={{ ...styles.buttonMini, fontSize: 9.5, padding: '1px 5px', color: C.inkDim }}
-                              title="Ripristina movimento intero"
-                            >
-                              ↺
-                            </button>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Pulsanti Tattiche Rapide 5e */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
-                        <button
-                          type="button"
-                          onClick={() => applicaTattica('schivata')}
-                          style={{
-                            ...styles.buttonMini,
-                            fontSize: 10,
-                            padding: '2px 6px',
-                            background: turno.tatticaAttiva === 'schivata' ? 'rgba(201,162,39,0.2)' : 'transparent',
-                            borderColor: turno.tatticaAttiva === 'schivata' ? C.goldDark : C.border,
-                            color: turno.tatticaAttiva === 'schivata' ? C.goldDark : C.ink,
-                          }}
-                          title={lingua === 'en' ? 'Dodge action (disadvantage to attackers, advantage on Dex saves)' : 'Azione Schivata (svantaggio a chi ti attacca, vantaggio ai TS Destrezza)'}
-                        >
-                          🛡️ {lingua === 'en' ? 'Dodge' : 'Schiva'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => applicaTattica('disimpegno')}
-                          style={{
-                            ...styles.buttonMini,
-                            fontSize: 10,
-                            padding: '2px 6px',
-                            background: turno.tatticaAttiva === 'disimpegno' ? 'rgba(59,130,246,0.2)' : 'transparent',
-                            borderColor: turno.tatticaAttiva === 'disimpegno' ? '#3b82f6' : C.border,
-                            color: turno.tatticaAttiva === 'disimpegno' ? '#3b82f6' : C.ink,
-                          }}
-                          title={lingua === 'en' ? 'Disengage action (movement does not provoke opportunity attacks)' : 'Azione Disimpegno (il tuo movimento non provoca attacchi di opportunità)'}
-                        >
-                          💨 {lingua === 'en' ? 'Disengage' : 'Disimpegnati'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => applicaTattica('scatto')}
-                          style={{
-                            ...styles.buttonMini,
-                            fontSize: 10,
-                            padding: '2px 6px',
-                            background: turno.tatticaAttiva === 'scatto' ? 'rgba(16,185,129,0.2)' : 'transparent',
-                            borderColor: turno.tatticaAttiva === 'scatto' ? '#10b981' : C.border,
-                            color: turno.tatticaAttiva === 'scatto' ? '#10b981' : C.ink,
-                          }}
-                          title={lingua === 'en' ? 'Dash action (doubles movement for the turn)' : 'Azione Scatto (raddoppia il movimento del turno)'}
-                        >
-                          🏃 {lingua === 'en' ? 'Dash' : 'Scatta'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => applicaTattica('nascondersi')}
-                          style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 6px' }}
-                          title={lingua === 'en' ? 'Hide action (Stealth check)' : 'Azione Nascondersi (prova rapida di Furtività)'}
-                        >
-                          🙈 {lingua === 'en' ? 'Hide' : 'Nasconditi'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => applicaTattica('aiuto')}
-                          style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 6px' }}
-                          title={lingua === 'en' ? 'Help action (grants advantage to an ally)' : 'Azione Aiuto (concede vantaggio a un alleato)'}
-                        >
-                          🤝 {lingua === 'en' ? 'Help' : 'Aiuta'}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Riga Copertura & Difesa Tattica 5e */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, background: C.panel, padding: '6px 10px', borderRadius: 8, border: `1px solid ${C.border}` }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 13 }}>🛡️</span>
-                        <strong style={{ fontSize: 11, color: C.ink }}>
-                          {lingua === 'en' ? 'Cover:' : 'Copertura:'}
+                    {/* Riga Movimento Residuo (sempre visibile) */}
+                    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6, background: C.panel, padding: '6px 10px', borderRadius: 8, border: `1px solid ${C.border}` }}>
+                      <span style={{ fontSize: 11.5, fontWeight: 700, color: C.ink }}>
+                        🏃 {lingua === 'en' ? 'Move:' : 'Movimento:'}{' '}
+                        <strong style={{ color: turno.movimentoRimanente > 0 ? '#2e9d4d' : C.red, fontSize: 13 }}>
+                          {turno.movimentoRimanente}m
                         </strong>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
-                        {TIPI_COPERTURA_5E.map((cop) => {
-                          const attivo = (scheda.copertura || 'nessuna') === cop.key;
-                          return (
-                            <button
-                              key={cop.key}
-                              type="button"
-                              onClick={() => {
-                                const nuovaCop = attivo ? 'nessuna' : cop.key;
-                                aggiorna({ copertura: nuovaCop });
-                                const copInfo = TIPI_COPERTURA_5E.find((c) => c.key === nuovaCop);
-                                if (nuovaCop !== 'nessuna') {
-                                  registra({
-                                    etichetta: '🛡️ Copertura',
-                                    tipo: 'tattica',
-                                    dettaglio: `${scheda.nome || 'PG'}: ${lingua === 'en' ? copInfo.labelEn : copInfo.labelIt} (${lingua === 'en' ? copInfo.descEn : copInfo.descIt})`,
-                                  });
-                                }
-                              }}
-                              style={{
-                                ...styles.buttonMini,
-                                fontSize: 10,
-                                padding: '2px 7px',
-                                fontWeight: attivo ? 700 : 500,
-                                background: attivo ? (cop.ca >= 5 ? 'rgba(239,68,68,0.18)' : cop.ca >= 2 ? 'rgba(46,157,77,0.18)' : 'rgba(201,162,39,0.18)') : 'transparent',
-                                borderColor: attivo ? (cop.ca >= 5 ? '#ef4444' : cop.ca >= 2 ? '#2e9d4d' : C.gold) : C.border,
-                                color: attivo ? (cop.ca >= 5 ? '#ef4444' : cop.ca >= 2 ? '#2e9d4d' : C.goldDark) : C.inkDim,
-                                cursor: 'pointer',
-                              }}
-                              title={lingua === 'en' ? cop.descEn : cop.descIt}
-                            >
-                              {lingua === 'en' ? cop.labelEn : cop.labelIt}
-                            </button>
-                          );
-                        })}
+                        <span style={{ fontSize: 11, color: C.inkDim }}> / {turno.movimentoMax}m</span>
+                      </span>
+                      <div style={{ display: 'inline-flex', gap: 3 }}>
+                        <button
+                          type="button"
+                          onClick={() => setTurno({ movimentoUsato: Math.min(turno.movimentoMax, turno.movimentoUsato + 1.5) })}
+                          style={{ ...styles.buttonMini, fontSize: 9.5, padding: '1px 5px' }}
+                          title="-1.5m (1 quadretto)"
+                        >
+                          −1.5m
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setTurno({ movimentoUsato: Math.min(turno.movimentoMax, turno.movimentoUsato + 3) })}
+                          style={{ ...styles.buttonMini, fontSize: 9.5, padding: '1px 5px' }}
+                          title="-3m (2 quadretti)"
+                        >
+                          −3m
+                        </button>
+                        {turno.movimentoUsato > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setTurno({ movimentoUsato: 0 })}
+                            style={{ ...styles.buttonMini, fontSize: 9.5, padding: '1px 5px', color: C.inkDim }}
+                            title="Ripristina movimento intero"
+                          >
+                            ↺
+                          </button>
+                        )}
                       </div>
                     </div>
-                    {/* Riga Meccaniche di Classe Speciali (Furtivo, Ira, Smite, Ispirazione) */}
-                    {(() => {
-                      const furtivo = calcolaAttaccoFurtivo(scheda);
-                      const ira = calcolaIraBarbarica(scheda);
-                      const smite = calcolaPunizioneDivina(scheda, 1, false);
-                      const bardo = calcolaIspirazioneBardica(scheda);
-                      const haIspirazioneEroica = Boolean(scheda.ispirazioneEroica);
 
-                      const haPotenziamenti = furtivo || ira || smite || bardo || haIspirazioneEroica;
-                      if (!haPotenziamenti) return null;
+                    {/* Interruttore "Altre opzioni": Interazione Oggetto, Tattiche, Copertura, Poteri di Classe */}
+                    <div
+                      onClick={() => setAzioniAltreAperte((v) => !v)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', userSelect: 'none', padding: '2px 2px' }}
+                      title={azioniAltreAperte
+                        ? (lingua === 'en' ? 'Click to collapse' : 'Clicca per comprimere')
+                        : (lingua === 'en' ? 'Click to expand' : 'Clicca per espandere')}
+                    >
+                      <span style={{ color: C.goldDark, fontSize: 12, fontWeight: 800 }}>{azioniAltreAperte ? '▾' : '▸'}</span>
+                      <span style={{ fontSize: 11.5, fontWeight: 700, color: C.inkDim }}>
+                        {lingua === 'en' ? 'More options (Tactics, Cover, Class Powers)' : 'Altre opzioni (Tattiche, Copertura, Poteri)'}
+                      </span>
+                      {azioniAvanzateAttive && !azioniAltreAperte && (
+                        <span style={{ fontSize: 9.5, fontWeight: 700, color: C.goldDark, background: 'rgba(201,162,39,0.18)', border: `1px solid ${C.gold}`, borderRadius: 999, padding: '1px 7px' }}>
+                          {lingua === 'en' ? 'active' : 'attive'}
+                        </span>
+                      )}
+                    </div>
 
-                      return (
+                    {azioniAltreAperte && (
+                      <>
+                        {/* Riga Interazione Oggetto & Tattiche Rapide 5e */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', background: C.panel, padding: '6px 10px', borderRadius: 8, border: `1px solid ${C.border}` }}>
+                          <button
+                            type="button"
+                            onClick={() => setTurno({ interazione: !turno.interazioneUsata })}
+                            style={{
+                              ...styles.buttonMini,
+                              fontSize: 10,
+                              padding: '2px 6px',
+                              fontWeight: turno.interazioneUsata ? 700 : 500,
+                              background: turno.interazioneUsata ? 'rgba(239,68,68,0.08)' : 'transparent',
+                              borderColor: turno.interazioneUsata ? '#ef4444' : C.border,
+                              color: turno.interazioneUsata ? '#ef4444' : C.ink,
+                            }}
+                            title={lingua === 'en' ? 'Free Object Interaction (draw weapon, open door, etc.)' : 'Interazione gratuita con un oggetto (estrarre arma, aprire porta...)'}
+                          >
+                            ✋ {lingua === 'en' ? 'Free Object' : 'Interazione Oggetto'} {turno.interazioneUsata ? '🔴' : '🟢'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => applicaTattica('schivata')}
+                            style={{
+                              ...styles.buttonMini,
+                              fontSize: 10,
+                              padding: '2px 6px',
+                              background: turno.tatticaAttiva === 'schivata' ? 'rgba(201,162,39,0.2)' : 'transparent',
+                              borderColor: turno.tatticaAttiva === 'schivata' ? C.goldDark : C.border,
+                              color: turno.tatticaAttiva === 'schivata' ? C.goldDark : C.ink,
+                            }}
+                            title={lingua === 'en' ? 'Dodge action (disadvantage to attackers, advantage on Dex saves)' : 'Azione Schivata (svantaggio a chi ti attacca, vantaggio ai TS Destrezza)'}
+                          >
+                            🛡️ {lingua === 'en' ? 'Dodge' : 'Schiva'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => applicaTattica('disimpegno')}
+                            style={{
+                              ...styles.buttonMini,
+                              fontSize: 10,
+                              padding: '2px 6px',
+                              background: turno.tatticaAttiva === 'disimpegno' ? 'rgba(59,130,246,0.2)' : 'transparent',
+                              borderColor: turno.tatticaAttiva === 'disimpegno' ? '#3b82f6' : C.border,
+                              color: turno.tatticaAttiva === 'disimpegno' ? '#3b82f6' : C.ink,
+                            }}
+                            title={lingua === 'en' ? 'Disengage action (movement does not provoke opportunity attacks)' : 'Azione Disimpegno (il tuo movimento non provoca attacchi di opportunità)'}
+                          >
+                            💨 {lingua === 'en' ? 'Disengage' : 'Disimpegnati'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => applicaTattica('scatto')}
+                            style={{
+                              ...styles.buttonMini,
+                              fontSize: 10,
+                              padding: '2px 6px',
+                              background: turno.tatticaAttiva === 'scatto' ? 'rgba(16,185,129,0.2)' : 'transparent',
+                              borderColor: turno.tatticaAttiva === 'scatto' ? '#10b981' : C.border,
+                              color: turno.tatticaAttiva === 'scatto' ? '#10b981' : C.ink,
+                            }}
+                            title={lingua === 'en' ? 'Dash action (doubles movement for the turn)' : 'Azione Scatto (raddoppia il movimento del turno)'}
+                          >
+                            🏃 {lingua === 'en' ? 'Dash' : 'Scatta'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => applicaTattica('nascondersi')}
+                            style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 6px' }}
+                            title={lingua === 'en' ? 'Hide action (Stealth check)' : 'Azione Nascondersi (prova rapida di Furtività)'}
+                          >
+                            🙈 {lingua === 'en' ? 'Hide' : 'Nasconditi'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => applicaTattica('aiuto')}
+                            style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 6px' }}
+                            title={lingua === 'en' ? 'Help action (grants advantage to an ally)' : 'Azione Aiuto (concede vantaggio a un alleato)'}
+                          >
+                            🤝 {lingua === 'en' ? 'Help' : 'Aiuta'}
+                          </button>
+                        </div>
+
+                        {/* Riga Copertura & Difesa Tattica 5e */}
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, background: C.panel, padding: '6px 10px', borderRadius: 8, border: `1px solid ${C.border}` }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span style={{ fontSize: 13 }}>⚡</span>
-                            <strong style={{ fontSize: 11, color: C.goldDark }}>
-                              {lingua === 'en' ? 'Class Powers & Boosters:' : 'Potenziamenti di Classe:'}
+                            <span style={{ fontSize: 13 }}>🛡️</span>
+                            <strong style={{ fontSize: 11, color: C.ink }}>
+                              {lingua === 'en' ? 'Cover:' : 'Copertura:'}
                             </strong>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
-                            {/* 1. Attacco Furtivo (Ladro) */}
-                            {furtivo && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const v = !scheda.applicaFurtivo;
-                                  aggiorna({ applicaFurtivo: v });
-                                  if (v) {
-                                    registra({ etichetta: '🗡️ Attacco Furtivo', tipo: 'tattica', dettaglio: `${scheda.nome || 'PG'} attiva Attacco Furtivo (+${furtivo.formula}) sul prossimo colpo!` });
-                                  }
-                                }}
-                                style={{
-                                  ...styles.buttonMini,
-                                  fontSize: 10,
-                                  padding: '2px 7px',
-                                  fontWeight: scheda.applicaFurtivo ? 700 : 500,
-                                  background: scheda.applicaFurtivo ? 'rgba(46,157,77,0.18)' : 'transparent',
-                                  borderColor: scheda.applicaFurtivo ? '#2e9d4d' : C.border,
-                                  color: scheda.applicaFurtivo ? '#2e9d4d' : C.inkDim,
-                                  cursor: 'pointer',
-                                }}
-                                title={lingua === 'en' ? `Apply Sneak Attack (+${furtivo.formula}) to next weapon damage roll` : `Applica i dadi di Attacco Furtivo (+${furtivo.formula}) al prossimo tiro danni`}
-                              >
-                                🗡️ {lingua === 'en' ? 'Sneak' : 'Furtivo'} (+{furtivo.formula}) {scheda.applicaFurtivo ? '●' : '○'}
-                              </button>
-                            )}
-
-                            {/* 2. Ira Barbarica (Barbaro) */}
-                            {ira && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const v = !scheda.inIra;
-                                  const ireUsate = v ? Math.min(ira.utilizziMax, (scheda.ireUsate || 0) + 1) : (scheda.ireUsate || 0);
-                                  aggiorna({ inIra: v, ireUsate });
-                                  registra({
-                                    etichetta: v ? '🔥 Entra in Ira' : '🔥 Fine Ira',
-                                    tipo: 'tattica',
-                                    dettaglio: v
-                                      ? `${scheda.nome || 'PG'} entra in Ira! (+${ira.bonusDanni} danni FOR, resistenza a contundente/perforante/tagliente, vantaggio a prove/TS FOR)`
-                                      : `${scheda.nome || 'PG'} termina l'Ira Barbarica.`,
-                                  });
-                                }}
-                                style={{
-                                  ...styles.buttonMini,
-                                  fontSize: 10,
-                                  padding: '2px 7px',
-                                  fontWeight: scheda.inIra ? 700 : 500,
-                                  background: scheda.inIra ? 'rgba(239,68,68,0.2)' : 'transparent',
-                                  borderColor: scheda.inIra ? '#ef4444' : C.border,
-                                  color: scheda.inIra ? '#ef4444' : C.inkDim,
-                                  cursor: 'pointer',
-                                }}
-                                title={lingua === 'en' ? `Rage (+${ira.bonusDanni} STR melee damage, physical resistances)` : `Ira Barbarica (+${ira.bonusDanni} danni mischia FOR, resistenze contundente/perforante/tagliente)`}
-                              >
-                                🔥 {lingua === 'en' ? 'Rage' : 'Ira'} (+{ira.bonusDanni}) {scheda.inIra ? '🔥 ATTIVA' : `(${Math.max(0, ira.utilizziMax - (scheda.ireUsate || 0))}/${ira.utilizziMax})`}
-                              </button>
-                            )}
-
-                            {/* 3. Punizione Divina (Paladino) */}
-                            {smite && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const v = !scheda.smiteAttivo;
-                                  aggiorna({ smiteAttivo: v, smiteSlot: 1 });
-                                  if (v) {
-                                    registra({ etichetta: '✨ Punizione Divina', tipo: 'tattica', dettaglio: `${scheda.nome || 'PG'} prepara Punizione Divina (+2d8 radiosi) sul prossimo colpo!` });
-                                  }
-                                }}
-                                style={{
-                                  ...styles.buttonMini,
-                                  fontSize: 10,
-                                  padding: '2px 7px',
-                                  fontWeight: scheda.smiteAttivo ? 700 : 500,
-                                  background: scheda.smiteAttivo ? 'rgba(201,162,39,0.2)' : 'transparent',
-                                  borderColor: scheda.smiteAttivo ? C.goldDark : C.border,
-                                  color: scheda.smiteAttivo ? C.goldDark : C.inkDim,
-                                  cursor: 'pointer',
-                                }}
-                                title={lingua === 'en' ? 'Divine Smite (+2d8 radiant, +1d8/slot)' : 'Punizione Divina (+2d8 radiosi, scala con lo slot)'}
-                              >
-                                ✨ Smite {scheda.smiteAttivo ? '● ATTIVO' : '○'}
-                              </button>
-                            )}
-
-                            {/* 4. Ispirazione Bardica (Bardo) */}
-                            {bardo && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const d = tiraDado(bardo.facce);
-                                  conAnimazione(() => {
-                                    setTiro({
-                                      etichetta: '🎲 Ispirazione Bardica',
-                                      naturale: d,
-                                      dadi: [d],
-                                      bonus: 0,
-                                      totale: d,
-                                      modalita: 'normale',
-                                    });
-                                    registra({ etichetta: '🎲 Ispirazione Bardica', tipo: 'dadi', totale: d, dettaglio: `1${bardo.dado} [${d}]` });
-                                  }, d);
-                                }}
-                                style={{
-                                  ...styles.buttonMini,
-                                  fontSize: 10,
-                                  padding: '2px 7px',
-                                  fontWeight: 700,
-                                  background: 'rgba(158,75,230,0.15)',
-                                  borderColor: '#9e4be6',
-                                  color: '#9e4be6',
-                                  cursor: 'pointer',
-                                }}
-                                title={lingua === 'en' ? `Roll Bardic Inspiration (1${bardo.dado})` : `Tira dado Ispirazione Bardica (1${bardo.dado})`}
-                              >
-                                🎲 {bardo.dado} {lingua === 'en' ? 'Inspiration' : 'Ispirazione'}
-                              </button>
-                            )}
-
-                            {/* 5. Ispirazione Eroica */}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const v = !scheda.ispirazioneEroica;
-                                aggiorna({ ispirazioneEroica: v });
-                                if (v) {
-                                  registra({ etichetta: '✨ Ispirazione Eroica', tipo: 'tattica', dettaglio: `${scheda.nome || 'PG'} ottiene Ispirazione Eroica (ritiro di un d20 a scelta)!` });
-                                }
-                              }}
-                              style={{
-                                ...styles.buttonMini,
-                                fontSize: 10,
-                                padding: '2px 7px',
-                                fontWeight: scheda.ispirazioneEroica ? 700 : 500,
-                                background: scheda.ispirazioneEroica ? 'rgba(234,179,8,0.2)' : 'transparent',
-                                borderColor: scheda.ispirazioneEroica ? '#eab308' : C.border,
-                                color: scheda.ispirazioneEroica ? '#eab308' : C.inkDim,
-                                cursor: 'pointer',
-                              }}
-                              title={lingua === 'en' ? 'Heroic Inspiration (reroll any d20)' : 'Ispirazione Eroica (ritira qualsiasi d20 prima o dopo il risultato)'}
-                            >
-                              ⭐ {lingua === 'en' ? 'Heroic' : 'Eroica'} {scheda.ispirazioneEroica ? '✨ DISPONIBILE' : '○'}
-                            </button>
+                            {TIPI_COPERTURA_5E.map((cop) => {
+                              const attivo = (scheda.copertura || 'nessuna') === cop.key;
+                              return (
+                                <button
+                                  key={cop.key}
+                                  type="button"
+                                  onClick={() => {
+                                    const nuovaCop = attivo ? 'nessuna' : cop.key;
+                                    aggiorna({ copertura: nuovaCop });
+                                    const copInfo = TIPI_COPERTURA_5E.find((c) => c.key === nuovaCop);
+                                    if (nuovaCop !== 'nessuna') {
+                                      registra({
+                                        etichetta: '🛡️ Copertura',
+                                        tipo: 'tattica',
+                                        dettaglio: `${scheda.nome || 'PG'}: ${lingua === 'en' ? copInfo.labelEn : copInfo.labelIt} (${lingua === 'en' ? copInfo.descEn : copInfo.descIt})`,
+                                      });
+                                    }
+                                  }}
+                                  style={{
+                                    ...styles.buttonMini,
+                                    fontSize: 10,
+                                    padding: '2px 7px',
+                                    fontWeight: attivo ? 700 : 500,
+                                    background: attivo ? (cop.ca >= 5 ? 'rgba(239,68,68,0.18)' : cop.ca >= 2 ? 'rgba(46,157,77,0.18)' : 'rgba(201,162,39,0.18)') : 'transparent',
+                                    borderColor: attivo ? (cop.ca >= 5 ? '#ef4444' : cop.ca >= 2 ? '#2e9d4d' : C.gold) : C.border,
+                                    color: attivo ? (cop.ca >= 5 ? '#ef4444' : cop.ca >= 2 ? '#2e9d4d' : C.goldDark) : C.inkDim,
+                                    cursor: 'pointer',
+                                  }}
+                                  title={lingua === 'en' ? cop.descEn : cop.descIt}
+                                >
+                                  {lingua === 'en' ? cop.labelEn : cop.labelIt}
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
-                      );
-                    })()}
+                        {/* Riga Meccaniche di Classe Speciali (Furtivo, Ira, Smite, Ispirazione) */}
+                        {(() => {
+                          const furtivo = calcolaAttaccoFurtivo(scheda);
+                          const ira = calcolaIraBarbarica(scheda);
+                          const smite = calcolaPunizioneDivina(scheda, 1, false);
+                          const bardo = calcolaIspirazioneBardica(scheda);
+                          const haIspirazioneEroica = Boolean(scheda.ispirazioneEroica);
+
+                          const haPotenziamenti = furtivo || ira || smite || bardo || haIspirazioneEroica;
+                          if (!haPotenziamenti) return null;
+
+                          return (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, background: C.panel, padding: '6px 10px', borderRadius: 8, border: `1px solid ${C.border}` }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <span style={{ fontSize: 13 }}>⚡</span>
+                                <strong style={{ fontSize: 11, color: C.goldDark }}>
+                                  {lingua === 'en' ? 'Class Powers & Boosters:' : 'Potenziamenti di Classe:'}
+                                </strong>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                                {/* 1. Attacco Furtivo (Ladro) */}
+                                {furtivo && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const v = !scheda.applicaFurtivo;
+                                      aggiorna({ applicaFurtivo: v });
+                                      if (v) {
+                                        registra({ etichetta: '🗡️ Attacco Furtivo', tipo: 'tattica', dettaglio: `${scheda.nome || 'PG'} attiva Attacco Furtivo (+${furtivo.formula}) sul prossimo colpo!` });
+                                      }
+                                    }}
+                                    style={{
+                                      ...styles.buttonMini,
+                                      fontSize: 10,
+                                      padding: '2px 7px',
+                                      fontWeight: scheda.applicaFurtivo ? 700 : 500,
+                                      background: scheda.applicaFurtivo ? 'rgba(46,157,77,0.18)' : 'transparent',
+                                      borderColor: scheda.applicaFurtivo ? '#2e9d4d' : C.border,
+                                      color: scheda.applicaFurtivo ? '#2e9d4d' : C.inkDim,
+                                      cursor: 'pointer',
+                                    }}
+                                    title={lingua === 'en' ? `Apply Sneak Attack (+${furtivo.formula}) to next weapon damage roll` : `Applica i dadi di Attacco Furtivo (+${furtivo.formula}) al prossimo tiro danni`}
+                                  >
+                                    🗡️ {lingua === 'en' ? 'Sneak' : 'Furtivo'} (+{furtivo.formula}) {scheda.applicaFurtivo ? '●' : '○'}
+                                  </button>
+                                )}
+
+                                {/* 2. Ira Barbarica (Barbaro) */}
+                                {ira && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const v = !scheda.inIra;
+                                      const ireUsate = v ? Math.min(ira.utilizziMax, (scheda.ireUsate || 0) + 1) : (scheda.ireUsate || 0);
+                                      aggiorna({ inIra: v, ireUsate });
+                                      registra({
+                                        etichetta: v ? '🔥 Entra in Ira' : '🔥 Fine Ira',
+                                        tipo: 'tattica',
+                                        dettaglio: v
+                                          ? `${scheda.nome || 'PG'} entra in Ira! (+${ira.bonusDanni} danni FOR, resistenza a contundente/perforante/tagliente, vantaggio a prove/TS FOR)`
+                                          : `${scheda.nome || 'PG'} termina l'Ira Barbarica.`,
+                                      });
+                                    }}
+                                    style={{
+                                      ...styles.buttonMini,
+                                      fontSize: 10,
+                                      padding: '2px 7px',
+                                      fontWeight: scheda.inIra ? 700 : 500,
+                                      background: scheda.inIra ? 'rgba(239,68,68,0.2)' : 'transparent',
+                                      borderColor: scheda.inIra ? '#ef4444' : C.border,
+                                      color: scheda.inIra ? '#ef4444' : C.inkDim,
+                                      cursor: 'pointer',
+                                    }}
+                                    title={lingua === 'en' ? `Rage (+${ira.bonusDanni} STR melee damage, physical resistances)` : `Ira Barbarica (+${ira.bonusDanni} danni mischia FOR, resistenze contundente/perforante/tagliente)`}
+                                  >
+                                    🔥 {lingua === 'en' ? 'Rage' : 'Ira'} (+{ira.bonusDanni}) {scheda.inIra ? '🔥 ATTIVA' : `(${Math.max(0, ira.utilizziMax - (scheda.ireUsate || 0))}/${ira.utilizziMax})`}
+                                  </button>
+                                )}
+
+                                {/* 3. Punizione Divina (Paladino) */}
+                                {smite && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const v = !scheda.smiteAttivo;
+                                      aggiorna({ smiteAttivo: v, smiteSlot: 1 });
+                                      if (v) {
+                                        registra({ etichetta: '✨ Punizione Divina', tipo: 'tattica', dettaglio: `${scheda.nome || 'PG'} prepara Punizione Divina (+2d8 radiosi) sul prossimo colpo!` });
+                                      }
+                                    }}
+                                    style={{
+                                      ...styles.buttonMini,
+                                      fontSize: 10,
+                                      padding: '2px 7px',
+                                      fontWeight: scheda.smiteAttivo ? 700 : 500,
+                                      background: scheda.smiteAttivo ? 'rgba(201,162,39,0.2)' : 'transparent',
+                                      borderColor: scheda.smiteAttivo ? C.goldDark : C.border,
+                                      color: scheda.smiteAttivo ? C.goldDark : C.inkDim,
+                                      cursor: 'pointer',
+                                    }}
+                                    title={lingua === 'en' ? 'Divine Smite (+2d8 radiant, +1d8/slot)' : 'Punizione Divina (+2d8 radiosi, scala con lo slot)'}
+                                  >
+                                    ✨ Smite {scheda.smiteAttivo ? '● ATTIVO' : '○'}
+                                  </button>
+                                )}
+
+                                {/* 4. Ispirazione Bardica (Bardo) */}
+                                {bardo && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const d = tiraDado(bardo.facce);
+                                      conAnimazione(() => {
+                                        setTiro({
+                                          etichetta: '🎲 Ispirazione Bardica',
+                                          naturale: d,
+                                          dadi: [d],
+                                          bonus: 0,
+                                          totale: d,
+                                          modalita: 'normale',
+                                        });
+                                        registra({ etichetta: '🎲 Ispirazione Bardica', tipo: 'dadi', totale: d, dettaglio: `1${bardo.dado} [${d}]` });
+                                      }, d);
+                                    }}
+                                    style={{
+                                      ...styles.buttonMini,
+                                      fontSize: 10,
+                                      padding: '2px 7px',
+                                      fontWeight: 700,
+                                      background: 'rgba(158,75,230,0.15)',
+                                      borderColor: '#9e4be6',
+                                      color: '#9e4be6',
+                                      cursor: 'pointer',
+                                    }}
+                                    title={lingua === 'en' ? `Roll Bardic Inspiration (1${bardo.dado})` : `Tira dado Ispirazione Bardica (1${bardo.dado})`}
+                                  >
+                                    🎲 {bardo.dado} {lingua === 'en' ? 'Inspiration' : 'Ispirazione'}
+                                  </button>
+                                )}
+
+                                {/* 5. Ispirazione Eroica */}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const v = !scheda.ispirazioneEroica;
+                                    aggiorna({ ispirazioneEroica: v });
+                                    if (v) {
+                                      registra({ etichetta: '✨ Ispirazione Eroica', tipo: 'tattica', dettaglio: `${scheda.nome || 'PG'} ottiene Ispirazione Eroica (ritiro di un d20 a scelta)!` });
+                                    }
+                                  }}
+                                  style={{
+                                    ...styles.buttonMini,
+                                    fontSize: 10,
+                                    padding: '2px 7px',
+                                    fontWeight: scheda.ispirazioneEroica ? 700 : 500,
+                                    background: scheda.ispirazioneEroica ? 'rgba(234,179,8,0.2)' : 'transparent',
+                                    borderColor: scheda.ispirazioneEroica ? '#eab308' : C.border,
+                                    color: scheda.ispirazioneEroica ? '#eab308' : C.inkDim,
+                                    cursor: 'pointer',
+                                  }}
+                                  title={lingua === 'en' ? 'Heroic Inspiration (reroll any d20)' : 'Ispirazione Eroica (ritira qualsiasi d20 prima o dopo il risultato)'}
+                                >
+                                  ⭐ {lingua === 'en' ? 'Heroic' : 'Eroica'} {scheda.ispirazioneEroica ? '✨ DISPONIBILE' : '○'}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </>
+                    )}
                   </div>
                 );
               })()}

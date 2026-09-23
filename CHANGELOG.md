@@ -2,6 +2,18 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.16.0] – 2026-09-23
+
+### Modificato
+- **Sezione "Azioni" semplificata**: restano sempre visibili solo Azione,
+  Azione Bonus, Reazione, Movimento e Nuovo Turno. Interazione Oggetto,
+  Tattiche (Schiva/Disimpegno/Scatto/Nascondersi/Aiuto), Copertura e i
+  Potenziamenti di Classe (Attacco Furtivo/Ira/Punizione Divina/Ispirazione)
+  sono ora dentro un pannello "Altre opzioni" a comparsa, chiuso di default,
+  con un'etichetta "attive" quando contiene qualcosa di acceso. Prima erano
+  15-20 pulsanti sempre impilati prima ancora della tabella degli attacchi.
+  Primo passo del redesign di semplificazione, sezione per sezione.
+
 ## [4.15.0] – 2026-09-23
 
 ### Rimosso
