@@ -338,11 +338,12 @@ export function SezionePoteri({ scheda, aggiorna, lingua = 'it' }) {
 
   return (
     <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(28px, 1fr) auto minmax(28px, 1fr)', alignItems: 'center', columnGap: 6, marginBottom: 8 }}>
+        <div />
+        <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5, textAlign: 'center' }}>
           ✨ {lingua === 'en' ? 'Powers' : 'Poteri'}
         </div>
-        <button type="button" style={{ ...styles.buttonMini, borderStyle: 'dashed' }} onClick={aggiungiPotere}>
+        <button type="button" style={{ ...styles.buttonMini, borderStyle: 'dashed', justifySelf: 'end' }} onClick={aggiungiPotere}>
           ➕ {lingua === 'en' ? 'Add power' : 'Aggiungi potere'}
         </button>
       </div>

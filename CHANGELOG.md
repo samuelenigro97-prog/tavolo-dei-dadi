@@ -2,6 +2,28 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.15.0] – 2026-09-23
+
+### Rimosso
+- **Sezione "Accessibilità" (Lettura Facilitata + Modalità Minimale + Dimensione
+  Testo)** tolta del tutto, su richiesta esplicita: era percepita come un'altra
+  cosa da configurare invece di una soluzione. Il lavoro di semplificazione
+  prosegue ora alla radice, sezione per sezione, invece che con un'opzione a
+  parte da attivare.
+
+### Corretto
+- **Titoli di sezione non sempre centrati.** Incantesimi/Trucchetti/
+  Combattimento/Reazioni e le etichette di Privilegi/Sottoclasse/Talenti/Poteri
+  ora sono SEMPRE centrati, anche a sezione ridotta.
+- **Angoli decorati che sparivano a sezione chiusa**: erano fratelli del titolo
+  dentro l'accordion e il browser li nascondeva insieme al contenuto quando la
+  sezione era ridotta. Ora restano visibili anche chiusa.
+- **Nuvoletta (tooltip) dei tasti che "saltava" da sopra a sotto**: quando il
+  tooltip doveva comparire sotto il tasto (vicino al bordo alto dello schermo),
+  l'animazione di comparsa era comunque quella pensata per "sopra", quindi per
+  un istante appariva sopra e poi scattava sotto a fine animazione. Ora ci sono
+  due animazioni distinte in base al lato.
+
 ## [4.14.0] – 2026-09-23
 
 ### Aggiunto

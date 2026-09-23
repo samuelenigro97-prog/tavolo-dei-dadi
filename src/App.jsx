@@ -1963,7 +1963,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.14.0';
+const APP_VERSION = '4.15.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3675,35 +3675,6 @@ export default function App() {
     try { localStorage.setItem('scheda-interattiva:tema-cornici', temaCornici); } catch { /* niente */ }
   }, [temaCornici]);
 
-  // Lettura facilitata: carattere senza grazie, lettere e righe più distanziate,
-  // niente ombre o filigrane. Nasce dal feedback di un playtester dislessico:
-  // resta un'opzione, così chi preferisce l'estetica "manoscritto" non perde nulla.
-  const [letturaFacilitata, setLetturaFacilitata] = useState(() => {
-    try { return localStorage.getItem('scheda-interattiva:lettura-facilitata') === '1'; } catch { return false; }
-  });
-  useEffect(() => {
-    try { localStorage.setItem('scheda-interattiva:lettura-facilitata', letturaFacilitata ? '1' : '0'); } catch { /* niente */ }
-  }, [letturaFacilitata]);
-
-  // Modalità Minimale: nasconde i dettagli tecnici secondari (gittata, tempo,
-  // scuola, note) in righe di Combattimento/Incantesimi già dense, e ingrandisce
-  // leggermente testo/spaziatura. Resta un'opzione (come Lettura facilitata):
-  // chi preferisce vedere tutto a colpo d'occhio non perde nulla.
-  const [modalitaMinimale, setModalitaMinimale] = useState(() => {
-    try { return localStorage.getItem('scheda-interattiva:modalita-minimale') === '1'; } catch { return false; }
-  });
-  useEffect(() => {
-    try { localStorage.setItem('scheda-interattiva:modalita-minimale', modalitaMinimale ? '1' : '0'); } catch { /* niente */ }
-  }, [modalitaMinimale]);
-
-  // Dimensione del testo, indipendente dalla lettura facilitata: molti corpi
-  // della scheda stanno sotto gli 11px e su schermo piccolo sono faticosi.
-  const [dimensioneTesto, setDimensioneTesto] = useState(() => {
-    try { return localStorage.getItem('scheda-interattiva:dimensione-testo') || 'normale'; } catch { return 'normale'; }
-  });
-  useEffect(() => {
-    try { localStorage.setItem('scheda-interattiva:dimensione-testo', dimensioneTesto); } catch { /* niente */ }
-  }, [dimensioneTesto]);
 
   // Audio e Sottofondo Ambientale
   const [ambienteAudio, setAmbienteAudio] = useState(() => {
@@ -4135,9 +4106,6 @@ export default function App() {
         : temaCornici;
     root.dataset.classe = classeEffettiva;
     root.dataset.animazioni = 'respiro';
-    root.dataset.lettura = letturaFacilitata ? 'facilitata' : 'normale';
-    root.dataset.testo = dimensioneTesto;
-    root.dataset.minimale = modalitaMinimale ? 'true' : 'false';
     const set = (k, v) => root.style.setProperty(k, v);
     set('--c-bg', t.bg); set('--c-panel', t.panel); set('--c-panel-light', t.panelLight);
     set('--c-border', t.border); set('--c-ink', t.ink); set('--c-ink-dim', t.inkDim);
@@ -4183,7 +4151,7 @@ export default function App() {
     } catch {
       // storage non disponibile: pazienza
     }
-  }, [tema, sistemaScuro, oraTick, classeAttiva, presetColori, temaCornici, schedaSolaLettura, letturaFacilitata, dimensioneTesto, modalitaMinimale]);
+  }, [tema, sistemaScuro, oraTick, classeAttiva, presetColori, temaCornici, schedaSolaLettura]);
   const intervalRef = useRef(null);
   const jsonRef = useRef(null);
   const pdfRef = useRef(null);
@@ -7860,49 +7828,6 @@ export default function App() {
                     <option value="monaco">☯️ Monaco (Cerchio Zen & Giada)</option>
                     <option value="artefice">⚙️ Artefice (Ingranaggi & Ottone)</option>
                     <option value="disattivato">🔒 {lingua === 'en' ? 'Classic Minimal (No frames)' : 'Classico Minimal (Senza cornici)'}</option>
-                  </select>
-                </div>
-                <div style={{ gridColumn: 'span 2', marginTop: 8, paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
-                  <div style={{ fontSize: 11, color: C.inkDim, marginBottom: 6, fontWeight: 600 }}>
-                    ♿ {lingua === 'en' ? 'Readability' : 'Leggibilità'}
-                  </div>
-                  <label
-                    style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginBottom: 6, fontSize: 12 }}
-                    title={lingua === 'en'
-                      ? 'Sans-serif type, wider letter and line spacing, no shadows or frame decorations.'
-                      : 'Carattere senza grazie, lettere e righe più distanziate, niente ombre né cornici decorative.'}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={letturaFacilitata}
-                      onChange={(e) => setLetturaFacilitata(e.target.checked)}
-                      style={{ width: 16, height: 16, cursor: 'pointer', accentColor: C.goldDark }}
-                    />
-                    <span>{lingua === 'en' ? 'Easy reading' : 'Lettura facilitata'}</span>
-                  </label>
-                  <label
-                    style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginBottom: 6, fontSize: 12 }}
-                    title={lingua === 'en'
-                      ? 'Hides secondary details (range, time, school, notes) in dense rows behind a click, and enlarges text/spacing a bit.'
-                      : 'Nasconde dietro un click i dettagli secondari (gittata, tempo, scuola, note) nelle righe più dense, e ingrandisce leggermente testo e spaziatura.'}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={modalitaMinimale}
-                      onChange={(e) => setModalitaMinimale(e.target.checked)}
-                      style={{ width: 16, height: 16, cursor: 'pointer', accentColor: C.goldDark }}
-                    />
-                    <span>{lingua === 'en' ? 'Minimal mode' : 'Modalità Minimale'}</span>
-                  </label>
-                  <select
-                    value={dimensioneTesto}
-                    onChange={(e) => setDimensioneTesto(e.target.value)}
-                    style={{ ...styles.inlineInput, width: '100%', height: 32, padding: '4px 8px', borderRadius: 6, background: C.panel, color: C.ink, fontSize: 12, border: `1px solid ${C.border}` }}
-                    title={lingua === 'en' ? 'Scale the whole sheet, keeping the proportions between texts' : 'Ingrandisce tutta la scheda, mantenendo le proporzioni fra i testi'}
-                  >
-                    <option value="normale">🔤 {lingua === 'en' ? 'Normal text' : 'Testo normale'}</option>
-                    <option value="grande">🔠 {lingua === 'en' ? 'Large text' : 'Testo grande'}</option>
-                    <option value="enorme">🔡 {lingua === 'en' ? 'Very large text' : 'Testo molto grande'}</option>
                   </select>
                 </div>
               </div>
@@ -14569,9 +14494,9 @@ export default function App() {
               })()}
 
               {/* Intestazione Combattimento & Filtri Armi / Incantesimi Offensivi */}
-              <div className="sottosezione-titolo" style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center', columnGap: 6, marginTop: 18, marginBottom: 8 }}>
+              <div className="sottosezione-titolo" style={{ display: 'grid', gridTemplateColumns: 'minmax(28px, 1fr) auto minmax(28px, 1fr)', alignItems: 'center', columnGap: 6, marginTop: 18, marginBottom: 8 }}>
                 <div />
-                <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'left', justifySelf: 'start', fontSize: 15 }}>
+                <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'center', justifySelf: 'center', fontSize: 15 }}>
                   {t('combat.titolo')}
                 </h3>
                 <div style={{ justifySelf: 'end', display: 'inline-flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -14753,9 +14678,9 @@ export default function App() {
                     return (
                       <div key={cat} style={{ marginBottom: 16 }}>
                         {cat !== 'Azione' && (
-                          <div className="sottosezione-titolo" style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center', columnGap: 6, marginTop: 18, marginBottom: 8 }}>
+                          <div className="sottosezione-titolo" style={{ display: 'grid', gridTemplateColumns: 'minmax(28px, 1fr) auto minmax(28px, 1fr)', alignItems: 'center', columnGap: 6, marginTop: 18, marginBottom: 8 }}>
                             <div />
-                            <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'left', justifySelf: 'start', fontSize: 15 }}>
+                            <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'center', justifySelf: 'center', fontSize: 15 }}>
                               {cat === 'Bonus' ? t('combat.azioni_bonus') : t('combat.reazioni')}
                             </h3>
                             <div style={{ justifySelf: 'end', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
@@ -16354,7 +16279,7 @@ export default function App() {
                       title={livelliIncChiusi[0] ? (lingua === 'en' ? 'Click to expand cantrips' : 'Clicca per espandere i trucchetti') : (lingua === 'en' ? 'Click to collapse cantrips' : 'Clicca per comprimere i trucchetti')}
                       style={{
                         display: 'grid',
-                        gridTemplateColumns: 'auto 1fr auto',
+                        gridTemplateColumns: 'minmax(28px, 1fr) auto minmax(28px, 1fr)',
                         alignItems: 'center',
                         columnGap: 6,
                         marginTop: 18,
@@ -16368,7 +16293,7 @@ export default function App() {
                           {livelliIncChiusi[0] ? '▸' : '▾'}
                         </span>
                       </div>
-                      <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'left', justifySelf: 'start', fontSize: 15 }}>
+                      <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'center', justifySelf: 'center', fontSize: 15 }}>
                         {t('spell.trucchetti')}
                       </h3>
                       <div style={{ justifySelf: 'end', display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={(e) => e.stopPropagation()}>
@@ -16398,9 +16323,9 @@ export default function App() {
                     </div>
                     {renderLivello(0)}
                     {maxLiv >= 1 && (
-                      <div className="sottosezione-titolo" style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center', columnGap: 6, marginTop: 18, marginBottom: 8 }}>
+                      <div className="sottosezione-titolo" style={{ display: 'grid', gridTemplateColumns: 'minmax(28px, 1fr) auto minmax(28px, 1fr)', alignItems: 'center', columnGap: 6, marginTop: 18, marginBottom: 8 }}>
                         <div />
-                        <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'left', justifySelf: 'start', fontSize: 15 }}>
+                        <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'center', justifySelf: 'center', fontSize: 15 }}>
                           {t('spell.incantesimi')}
                         </h3>
                         <div style={{ justifySelf: 'end', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
@@ -16889,7 +16814,7 @@ export default function App() {
                   }}>
                     {/* Card 1: Privilegi di Classe */}
                     <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column' }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5, textAlign: 'center' }}>
                         🛡️ {t('priv.classe_titolo')}{scheda.classe ? ` (${traduciDato(scheda.classe)})` : ''}
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, justifyContent: 'center' }}>
@@ -16915,7 +16840,7 @@ export default function App() {
 
                     {/* Card 2: Privilegi di Sottoclasse */}
                     <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column' }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5, textAlign: 'center' }}>
                         🔮 {t('priv.sub_titolo')}{scheda.sottoclasse ? ` (${traduciDato(scheda.sottoclasse)})` : ''}
                       </div>
                       {(() => {
@@ -16987,7 +16912,7 @@ export default function App() {
                     gap: 10
                   }}>
                     <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column' }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5, textAlign: 'center' }}>
                         🧬 {t("sez.tratti_specie")}{scheda.specie ? ` (${traduciDato(scheda.specie)})` : ''}
                       </div>
                       <ListaQuadratini
@@ -16999,7 +16924,7 @@ export default function App() {
                     </div>
 
                     <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column' }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5, textAlign: 'center' }}>
                         ⭐ {t("sez.talenti")}
                       </div>
                       <ListaQuadratini
@@ -21117,7 +21042,7 @@ function NuvolettaGlobale() {
 
   return (
     <div
-      className="nuvoletta-tooltip"
+      className={`nuvoletta-tooltip nuvoletta-tooltip--${tooltip.placement}`}
       style={{
         position: 'fixed',
         left: tooltip.x,

@@ -5,6 +5,23 @@
 
 export const NOVITA = [
   {
+    versione: '4.15.0',
+    voci: {
+      it: [
+        'Tolta la sezione "Accessibilità" (Lettura Facilitata, Modalità Minimale, Dimensione Testo): la semplificazione dell\'app riparte dalla radice, sezione per sezione, non da un\'opzione a parte.',
+        'Titoli di sezione (Incantesimi, Trucchetti, Combattimento, Privilegi, Poteri...) ora SEMPRE centrati, anche a sezione ridotta.',
+        'Fix: gli angoli decorati delle sezioni non sparivano più quando una sezione è chiusa.',
+        'Fix: il tooltip dei tasti non "salta" più da sopra a sotto quando compare vicino al bordo alto dello schermo.',
+      ],
+      en: [
+        'Removed the "Accessibility" section (Easy Reading, Minimal Mode, Text Size): app simplification now happens at the root, section by section, not as a separate toggle.',
+        'Section titles (Spells, Cantrips, Combat, Features, Powers...) are now ALWAYS centered, even when collapsed.',
+        'Fix: section corner decorations no longer disappear when a section is collapsed.',
+        'Fix: button tooltips no longer jump from above to below when appearing near the top edge of the screen.',
+      ],
+    },
+  },
+  {
     versione: '4.14.0',
     voci: {
       it: [
