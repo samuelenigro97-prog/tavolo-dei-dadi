@@ -5,6 +5,21 @@
 
 export const NOVITA = [
   {
+    versione: '4.19.0',
+    voci: {
+      it: [
+        'Randello Incantato ora nasconde automaticamente Randello e Bastone Ferrato dalla tabella Combattimento (arma non incantata ridondante).',
+        'Incantesimi: gli slot di livello mostrano una frazione leggibile (es. "3/4") accanto al titolo del livello; il conteggio Preparati è sceso nell\'intestazione del 1° Livello.',
+        'Abilità: tolto il tasto ℹ️ separato, ora basta cliccare sul nome dell\'abilità per aprire la guida (CD, sinergie strumenti).',
+      ],
+      en: [
+        'Shillelagh (Randello Incantato) now automatically hides the un-enchanted Club/Quarterstaff from the Combat table.',
+        'Spells: level slots now show a readable fraction (e.g. "3/4") next to the level title; the Prepared count moved down into the 1st Level header.',
+        'Skills: removed the separate ℹ️ button — click the skill name to open the guide (DCs, tool synergies).',
+      ],
+    },
+  },
+  {
     versione: '4.18.0',
     voci: {
       it: [

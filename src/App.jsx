@@ -1963,7 +1963,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.18.0';
+const APP_VERSION = '4.19.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -13901,33 +13901,19 @@ export default function App() {
                           {liv === 3 ? '✦' : liv === 2 ? '★\uFE0E' : liv === 1 ? '●' : '○'}
                         </span>
                         <strong style={{ width: 26, flexShrink: 0, textAlign: 'center' }}>{conSegno(bonus)}</strong>
-                        <span className="skill-nome" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0, flex: 1 }}>{t('skill.' + a.key)}</span>
-                        {abMancante && (
-                          <span style={{ marginLeft: 'auto', fontSize: 9.5, color: C.red, fontWeight: 700 }}>⚠️ Manca</span>
-                        )}
-                        <button
-                          type="button"
+                        <span
+                          className="skill-nome"
+                          style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0, flex: 1, cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 2 }}
                           onPointerDown={(e) => e.stopPropagation()}
                           onClick={(e) => {
                             e.stopPropagation();
                             setModalAbilitaGuida(a.key);
                           }}
-                          style={{
-                            background: 'transparent',
-                            border: 'none',
-                            padding: '0 2px',
-                            cursor: 'pointer',
-                            fontSize: 11,
-                            color: C.inkDim,
-                            opacity: 0.65,
-                            marginLeft: abMancante ? 4 : 'auto',
-                            lineHeight: 1,
-                            flexShrink: 0,
-                          }}
-                          title={lingua === 'en' ? 'View 5e rules, DCs, and tool synergies' : 'Guida 5e, CD di riferimento e sinergie con strumenti'}
-                        >
-                          ℹ️
-                        </button>
+                          title={lingua === 'en' ? 'Click for 5e rules, DCs, and tool synergies' : 'Click per guida 5e, CD di riferimento e sinergie con strumenti'}
+                        >{t('skill.' + a.key)}</span>
+                        {abMancante && (
+                          <span style={{ marginLeft: 'auto', fontSize: 9.5, color: C.red, fontWeight: 700 }}>⚠️ Manca</span>
+                        )}
                       </Rollable>
                     );
                   })}
@@ -14634,6 +14620,11 @@ export default function App() {
                       note
                     };
                   });
+                  // Randello Incantato (Shillelagh) incanta l'arma già impugnata (randello o
+                  // bastone ferrato): se il trucchetto è disponibile, l'attacco non incantato
+                  // con la stessa arma è ridondante (sempre peggiore: danno fisso 1d8 e
+                  // caratteristica da incantatore) e va nascosto dalla tabella.
+                  const haRandelloIncantato = attacchiSalvati.some((a) => /randello incantato|shillelagh/i.test(a.nome || ''));
                   const attacchiVisibili = attacchiSalvati.filter((a) => {
                     if (a.isSpell) {
                       if (scheda.mostraIncantesimiAttacco === false) return false;
@@ -14644,6 +14635,10 @@ export default function App() {
                         if (!spellMatch.preparato && !spellMatch.semprePreparato && !spellMatch.bonus) return false;
                       }
                       return true;
+                    }
+                    if (haRandelloIncantato) {
+                      const nomeArma = String(a.nome || '').trim().toLowerCase();
+                      if (nomeArma === 'randello' || nomeArma === 'bastone ferrato') return false;
                     }
                     return scheda.mostraArmiAttacco !== false;
                   });
@@ -15818,21 +15813,11 @@ export default function App() {
                             <span style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: C.ink }}>
                               {t('spell.n_livello', { n: liv })}
                             </span>
-                            {isEccessoLiv && (
-                              <span style={{ fontSize: 10, fontWeight: 700, color: '#fff', background: '#ef4444', border: '1px solid #ef4444', borderRadius: 6, padding: '1px 6px' }}>
-                                🔴 {lingua === 'en' ? 'EXCESS' : 'IN ECCESSO'}
-                              </span>
-                            )}
-                            {isMancanteLiv && (
-                              <span style={{ fontSize: 10, fontWeight: 700, color: '#2e9d4d', background: 'rgba(46,157,77,0.15)', border: '1px solid #2e9d4d', borderRadius: 6, padding: '1px 6px' }}>
-                                🟢 {lingua === 'en' ? 'SLOTS TO CHOOSE' : 'SCELTE DISPONIBILI'}
-                              </span>
-                            )}
-                          </div>
-
-                          {slot && slot.totale > 0 && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={(e) => e.stopPropagation()}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                            {slot && slot.totale > 0 && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }} onClick={(e) => e.stopPropagation()}>
+                                <span style={{ fontSize: 12, fontWeight: 700, color: C.goldDark }}>
+                                  {Math.max(0, slot.totale - (slot.spesi || 0))}/{slot.totale}
+                                </span>
                                 {Array.from({ length: slot.totale }, (_, i) => {
                                   const isDisponibile = i < (slot.totale - (slot.spesi || 0));
                                   return (
@@ -15872,7 +15857,42 @@ export default function App() {
                                   );
                                 })}
                               </div>
-                            </div>
+                            )}
+                            {isEccessoLiv && (
+                              <span style={{ fontSize: 10, fontWeight: 700, color: '#fff', background: '#ef4444', border: '1px solid #ef4444', borderRadius: 6, padding: '1px 6px' }}>
+                                🔴 {lingua === 'en' ? 'EXCESS' : 'IN ECCESSO'}
+                              </span>
+                            )}
+                            {isMancanteLiv && (
+                              <span style={{ fontSize: 10, fontWeight: 700, color: '#2e9d4d', background: 'rgba(46,157,77,0.15)', border: '1px solid #2e9d4d', borderRadius: 6, padding: '1px 6px' }}>
+                                🟢 {lingua === 'en' ? 'SLOTS TO CHOOSE' : 'SCELTE DISPONIBILI'}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* "Preparati" si trova qui (non più nell'intestazione "Incantesimi" sopra) per
+                              riusare lo spazio a destra lasciato libero dagli slot, spostati a fianco del titolo. */}
+                          {liv === 1 && maxIncantesimi != null && (
+                            <span
+                              onClick={(e) => e.stopPropagation()}
+                              style={{
+                                fontSize: 12.5,
+                                color: incInEccesso ? '#ef4444' : (incMancanti ? '#2e9d4d' : ((classePreparata ? preparatiPieni : incantesimiPieno) ? C.goldDark : C.inkDim)),
+                                fontWeight: (incInEccesso || incMancanti) ? 700 : 'normal',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 5,
+                                background: incInEccesso ? 'rgba(239,68,68,0.1)' : (incMancanti ? 'rgba(46,157,77,0.1)' : 'transparent'),
+                                border: `1px solid ${incInEccesso ? '#ef4444' : (incMancanti ? '#2e9d4d' : 'transparent')}`,
+                                borderRadius: 6,
+                                padding: (incInEccesso || incMancanti) ? '2px 7px' : '0',
+                              }}
+                            >
+                              {incInEccesso && <span>⚠️ +{nIncantiScelti - maxIncantesimi}</span>}
+                              {incMancanti && <span>✨ -{maxIncantesimi - nIncantiScelti}</span>}
+                              <span>({classePreparata ? t('spell.preparati') : t('spell.conosciuti')}: {nIncantiScelti} / <Editable value={maxIncantesimi} tipo="numero" width={32} title={lingua === 'en' ? 'Click to edit maximum (0 for auto)' : 'Click per modificare il massimo (0 per valore auto)'} onChange={(v) => aggiorna({ maxIncantesimi: Math.max(0, v) })} />)</span>
+                              {nBonus > 0 && <span style={{ color: C.goldDark, fontWeight: 700, marginLeft: 2 }}>✦ {nBonus}</span>}
+                            </span>
                           )}
                         </div>
                       )}
@@ -16341,31 +16361,9 @@ export default function App() {
                         <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'center', justifySelf: 'center', fontSize: 15 }}>
                           {t('spell.incantesimi')}
                         </h3>
-                        <div style={{ justifySelf: 'end', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                          {maxIncantesimi != null ? (
-                            <span
-                              style={{
-                                fontSize: 12.5,
-                                color: incInEccesso ? '#ef4444' : (incMancanti ? '#2e9d4d' : ((classePreparata ? preparatiPieni : incantesimiPieno) ? C.goldDark : C.inkDim)),
-                                fontWeight: (incInEccesso || incMancanti) ? 700 : 'normal',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: 5,
-                                textTransform: 'none',
-                                letterSpacing: 'normal',
-                                background: incInEccesso ? 'rgba(239,68,68,0.1)' : (incMancanti ? 'rgba(46,157,77,0.1)' : 'transparent'),
-                                border: `1px solid ${incInEccesso ? '#ef4444' : (incMancanti ? '#2e9d4d' : 'transparent')}`,
-                                borderRadius: 6,
-                                padding: (incInEccesso || incMancanti) ? '2px 7px' : '0',
-                              }}
-                            >
-                              {incInEccesso && <span>⚠️ +{nIncantiScelti - maxIncantesimi}</span>}
-                              {incMancanti && <span>✨ -{maxIncantesimi - nIncantiScelti}</span>}
-                              <span>({classePreparata ? t('spell.preparati') : t('spell.conosciuti')}: {nIncantiScelti} / <Editable value={maxIncantesimi} tipo="numero" width={32} title={lingua === 'en' ? 'Click to edit maximum (0 for auto)' : 'Click per modificare il massimo (0 per valore auto)'} onChange={(v) => aggiorna({ maxIncantesimi: Math.max(0, v) })} />)</span>
-                              {nBonus > 0 && <span style={{ color: C.goldDark, fontWeight: 700, marginLeft: 2 }}>✦ {nBonus}</span>}
-                            </span>
-                          ) : null}
-                        </div>
+                        {/* Il conteggio "Preparati" è sceso nell'intestazione del 1° Livello qui
+                            sotto, a fianco dei suoi slot: qui restava uno spazio vuoto sprecato. */}
+                        <div />
                       </div>
                     )}
                     {livelliInc.map((liv) => renderLivello(liv))}

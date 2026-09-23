@@ -2,6 +2,26 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.19.0] – 2026-09-23
+
+### Aggiunto
+- **Randello Incantato nasconde l'arma non incantata**: se hai il trucchetto
+  Randello Incantato (Shillelagh) nella lista attacchi, "Randello" e
+  "Bastone Ferrato" (le versioni non incantate della stessa arma) spariscono
+  automaticamente dalla tabella Combattimento, così restano solo attacchi
+  che userai davvero.
+
+### Modificato
+- **Incantesimi, slot più visibili**: gli slot del 1° Livello (e di ogni
+  livello) ora mostrano anche una frazione leggibile (es. "3/4") accanto al
+  titolo del livello, non solo i pallini cliccabili. Il conteggio
+  "(Preparati: X/Y)", prima nell'intestazione "Incantesimi", è sceso
+  nell'intestazione del 1° Livello, al posto lasciato libero dagli slot.
+- **Abilità, tolto il tasto ℹ️ ridondante**: apriva un modal con guida CD e
+  sinergie strumenti — contenuto diverso dal tooltip al passaggio del
+  mouse (che mostra solo le istruzioni d'uso). Ora lo stesso modal si apre
+  cliccando sul nome dell'abilità, senza un pulsante separato.
+
 ## [4.18.0] – 2026-09-23
 
 ### Rimosso
