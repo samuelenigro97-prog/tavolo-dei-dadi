@@ -1220,7 +1220,7 @@ export function bestieDisponibili(livello, sottoclasse = '', bestie = BESTIE) {
     .filter((b) => b.gsNum <= limiti.gsMax)
     .filter((b) => (b.velocita.volo ? limiti.volo : true))
     .filter((b) => (b.velocita.nuoto ? limiti.nuoto : true))
-    .sort((a, b) => a.gsNum - b.gsNum || a.nome.localeCompare(b.nome, 'it'));
+    .sort((a, b) => a.nome.localeCompare(b.nome, 'it'));
 }
 
 /**
@@ -1232,12 +1232,12 @@ export function limitiMetamorfosi(livello) {
   return { gsMax: Math.max(0, Number(livello) || 1) };
 }
 
-/** Bestie assumibili con la Metamorfosi al livello indicato, dal GS più basso al più alto. */
+/** Bestie assumibili con la Metamorfosi al livello indicato, in ordine alfabetico. */
 export function creatureDisponibiliMetamorfosi(livello, bestie = BESTIE) {
   const limiti = limitiMetamorfosi(livello);
   return bestie
     .filter((b) => b.gsNum <= limiti.gsMax)
-    .sort((a, b) => a.gsNum - b.gsNum || a.nome.localeCompare(b.nome, 'it'));
+    .sort((a, b) => a.nome.localeCompare(b.nome, 'it'));
 }
 
 

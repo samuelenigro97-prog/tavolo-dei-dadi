@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, punteggioCaratteristica, formattaNomePg, bonusCopertura, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma, trasformazioneAttiva, pfMassimiEffettivi } from '../src/rules/scheda.js';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, punteggioCaratteristica, formattaNomePg, bonusCopertura, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma, trasformazioneAttiva, pfMassimiEffettivi, estraiCategorieNota } from '../src/rules/scheda.js';
 import { ABILITA, CARATTERISTICHE } from '../src/data/caratteristiche.js';
 import { spiegaIncantesimo } from '../src/data/spiegazioni.js';
 import { tiraDanni, parseEspressioneDado } from '../src/rules/dadi.js';
@@ -751,5 +751,26 @@ test('Munizioni 5e: identificazione e calcolo scorte inventario (analizzaMunizio
   const spell = { nome: 'Dardo di Fuoco', isSpell: true, danno: '1d10' };
   const resSpell = analizzaMunizioniArma(spell, inventario);
   assert.equal(resSpell.usaMunizioni, false);
+});
+
+test('estraiCategorieNota: riconosce gittata, durata, tiro salvezza e proprietà nella nota di un attacco', () => {
+  const nota1 = 'Magico con SAG (Randello/Bastone), gittata Tocco, durata 1 min';
+  const cat1 = estraiCategorieNota(nota1);
+  assert.ok(cat1.some((c) => c.etichetta === 'Gittata' && c.testo === 'Tocco'));
+  assert.ok(cat1.some((c) => c.etichetta === 'Durata' && c.testo === '1 min'));
+
+  const nota2 = 'Trucchetto (TS Costituzione CD 17): svantaggio prox attacco, gittata 18m';
+  const cat2 = estraiCategorieNota(nota2);
+  assert.ok(cat2.some((c) => c.etichetta === 'Tiro Salvezza' && /CD 17/.test(c.testo)));
+  assert.ok(cat2.some((c) => c.etichetta === 'Gittata' && c.testo === '18m'));
+  assert.ok(cat2.some((c) => c.etichetta === 'Proprietà' && /Trucchetto/i.test(c.testo)));
+
+  const nota3 = 'Arma semplice (Versatile 1d8-3)';
+  const cat3 = estraiCategorieNota(nota3);
+  assert.ok(cat3.some((c) => c.etichetta === 'Proprietà' && /Versatile/i.test(c.testo)));
+
+  // Nota vuota -> nessuna categoria, nessun errore
+  assert.deepEqual(estraiCategorieNota(''), []);
+  assert.deepEqual(estraiCategorieNota(undefined), []);
 });
 

@@ -2,6 +2,45 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.9.0] – 2026-09-23
+
+### Aggiunto
+- **Note di Combattimento in categorie**: nella tabella Combattimento, invece
+  di un unico blocco di testo, le note di attacchi/incantesimi mostrano ora
+  piccoli tag separati per Gittata, Durata, Tiro Salvezza e Proprietà
+  (Trucchetto/Magico/Versatile/Maestria) quando riconoscibili nel testo. Le
+  Reazioni con Innesco/Effetto già strutturati (es. Assorbire Elementi, Totem
+  Spirituale) li mostrano come due tag distinti invece che come testo unico.
+  Il testo completo resta comunque visibile e modificabile come prima:
+  è un riassunto visivo aggiuntivo, non sostituisce i dati esistenti.
+
+### Corretto
+- **Metamorfosi non raggiungibile dai Druidi**: il tab per sfogliare le
+  creature di Metamorfosi (Polymorph) richiedeva Bardo/Stregone/Mago —
+  escludeva il Druido, che invece ha Metamorfosi nella propria lista
+  incantesimi. Un Druido non poteva mai vedere/scegliere creature oltre il
+  limite GS della Forma Selvatica (es. Gorilla Gigante, Tirannosauro Rex),
+  pur avendo i bottoni per usarle una volta aperto il dettaglio.
+- **Contatore Forma Selvatica/Metamorfosi che non calava mai**: il bottone
+  "Assumi Forma Selvatica" scalava un campo (`usi`) diverso da quello letto
+  altrove nell'app (`attuali`), quindi il contatore in Risorse di Classe non
+  si aggiornava mai cliccandolo. Corretto; ora se hai esaurito gli utilizzi
+  il bottone si disabilita e si ingrigisce invece di restare cliccabile.
+- **Elenco creature Forma Selvatica/Metamorfosi ora alfabetico** invece che
+  per Grado di Sfida crescente.
+- **Leggibilità campi Profilo**: Sesso e Specie/Razza potevano troncarsi
+  (es. "Maschio" tagliato) nella colonna più stretta della riga anagrafica;
+  ora usano lo stesso meccanismo "testo compatto" già in uso per Classe/
+  Sottoclasse/Allineamento, più margini minimi di colonna garantiti.
+
+### Modificato
+- Tolta la parola "Assumi" dal bottone Forma Selvatica; tolto il bottone
+  "Chiudi" dal modal di dettaglio creatura (restano il tasto ✕ in alto e il
+  click fuori dal modal) a favore di più spazio per i due bottoni azione.
+- Uniformato l'allineamento dei titoli di sotto-sezione (es. "Combattimento",
+  "Reazioni", "Incantesimi") a sinistra, come le altre etichette dell'app,
+  invece di alcuni centrati e altri a sinistra senza un criterio unico.
+
 ## [4.8.0] – 2026-09-23
 
 ### Modificato

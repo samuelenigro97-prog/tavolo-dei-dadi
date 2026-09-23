@@ -5,6 +5,23 @@
 
 export const NOVITA = [
   {
+    versione: '4.9.0',
+    voci: {
+      it: [
+        'Fix: i Druidi ora possono sfogliare la Metamorfosi (prima potevano solo la Forma Selvatica, con GS max molto più basso) — Gorilla Gigante e Tirannosauro Rex ora raggiungibili.',
+        'Fix: il contatore Forma Selvatica/Metamorfosi ora scala davvero quando la usi; se hai finito gli utilizzi il bottone si disabilita.',
+        'Creature di Forma Selvatica/Metamorfosi in ordine alfabetico; campi Sesso/Razza nel Profilo non si troncano più.',
+        'Note della tabella Combattimento divise in tag (Gittata, Durata, Tiro Salvezza, Proprietà) invece di un unico blocco di testo; le Reazioni mostrano Innesco/Effetto separati.',
+      ],
+      en: [
+        'Fix: Druids can now browse Metamorphosis too (previously only Wild Shape, with a much lower CR cap) — Giant Ape and Tyrannosaurus Rex now reachable.',
+        'Fix: the Wild Shape/Metamorphosis counter now actually decreases on use; the button disables once uses run out.',
+        'Wild Shape/Metamorphosis creatures now sorted alphabetically; Sex/Race fields on the Profile no longer get clipped.',
+        'Combat table notes split into tags (Range, Duration, Saving Throw, Property) instead of one text block; Reactions show Trigger/Effect separately.',
+      ],
+    },
+  },
+  {
     versione: '4.8.0',
     voci: {
       it: [

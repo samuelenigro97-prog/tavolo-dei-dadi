@@ -19,10 +19,10 @@ test('BESTIE: nessun duplicato, ogni voce ha le sei caratteristiche e i campi ba
   }
 });
 
-test('bestieDisponibili: ordina dal GS più basso al più alto', () => {
+test('bestieDisponibili: ordina alfabeticamente per nome', () => {
   const disp = bestieDisponibili(20, 'Circolo della Luna');
   for (let i = 1; i < disp.length; i++) {
-    assert.ok(disp[i].gsNum >= disp[i - 1].gsNum, `Ordine errato tra ${disp[i - 1].nome} e ${disp[i].nome}`);
+    assert.ok(disp[i - 1].nome.localeCompare(disp[i].nome, 'it') <= 0, `Ordine errato tra ${disp[i - 1].nome} e ${disp[i].nome}`);
   }
 });
 
@@ -42,9 +42,9 @@ test('creatureDisponibiliMetamorfosi: include creature GS più alto della tabell
   const liv8 = creatureDisponibiliMetamorfosi(8);
   assert.ok(liv8.some((c) => c.nome === 'Tirannosauro rex'));
 
-  // Ordine crescente per GS.
+  // Ordine alfabetico per nome.
   for (let i = 1; i < liv8.length; i++) {
-    assert.ok(liv8[i].gsNum >= liv8[i - 1].gsNum);
+    assert.ok(liv8[i - 1].nome.localeCompare(liv8[i].nome, 'it') <= 0);
   }
 
   // Nessun filtro di nuoto/volo: creature acquatiche/volanti disponibili anche a basso livello.

@@ -482,4 +482,38 @@ export function analizzaMunizioniArma(attacco, inventario = [], armaDb = null) {
   };
 }
 
+/**
+ * Spezza il testo libero di "note" di un attacco/azione in categorie
+ * riconoscibili (gittata, durata, tiro salvezza, proprietà) invece di un
+ * unico blocco di testo. Non modifica né consuma la nota originale: è solo
+ * un riassunto aggiuntivo per la tabella Combattimento — la nota completa
+ * resta modificabile com'era prima.
+ */
+export function estraiCategorieNota(nota) {
+  const testo = String(nota || '');
+  if (!testo.trim()) return [];
+  const categorie = [];
+
+  const gittata = testo.match(/gittata\s+([^,·]+?)(?=,|·|$)/i) || testo.match(/\brange\s+([^,·]+?)(?=,|·|$)/i);
+  if (gittata) categorie.push({ icona: '🎯', etichetta: 'Gittata', testo: gittata[1].trim(), colore: '#3b82f6' });
+
+  const durata = testo.match(/durata\s+([^,·]+?)(?=,|·|$)/i) || testo.match(/\bduration\s+([^,·]+?)(?=,|·|$)/i);
+  if (durata) categorie.push({ icona: '⏱️', etichetta: 'Durata', testo: durata[1].trim(), colore: '#7b4fb0' });
+
+  const ts = testo.match(/\b(?:TS|Saving Throw)\s+(\w+)/i);
+  const cdMatch = testo.match(/\bCD\s*(\d+)/i);
+  if (ts || cdMatch) {
+    categorie.push({
+      icona: '🎲',
+      etichetta: 'Tiro Salvezza',
+      testo: [ts?.[1] || '', cdMatch ? `CD ${cdMatch[1]}` : ''].filter(Boolean).join(' · '),
+      colore: '#ef4444',
+    });
+  }
+
+  const proprieta = testo.match(/\b(Trucchetto|Cantrip|Magico[^,·]*|Versatile[^,·]*|Maestria:\s*[^,·]+)/i);
+  if (proprieta) categorie.push({ icona: '🏷️', etichetta: 'Proprietà', testo: proprieta[1].trim(), colore: '#b8860b' });
+
+  return categorie;
+}
 

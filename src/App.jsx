@@ -8,7 +8,7 @@ import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI, ambientazioneCasuale, COLORE_
 import { styles, GLOBAL_CSS } from './ui/stili.js';
 import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, estraiVociLista, Sezione, CampoBloccato, formattaVoceConIcona } from './ui/componenti.jsx';
 import { SezionePoteri, BadgePotere } from './ui/PoteriSezione.jsx';
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma, iniziativaTotale, pfMassimiEffettivi, effettiSfinimento, trasformazioneAttiva } from './rules/scheda.js';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma, estraiCategorieNota, iniziativaTotale, pfMassimiEffettivi, effettiSfinimento, trasformazioneAttiva } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON, WENDELL_JSON, LYRIAN_JSON } from './data/esempi.js';
 import { fixEquipaggiamentoVaelion, migrazioneRegoleVaelion, autoIdratazionePersonaggioPredefinito } from './data/migrazioniPersonaggi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
@@ -1963,7 +1963,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.8.0';
+const APP_VERSION = '4.9.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7089,16 +7089,36 @@ export default function App() {
               </div>
             )}
 
+            {(() => {
+              // Usi residui letti dalle risorse di classe (campo reale: `attuali`, non `usi`).
+              // Se non esiste una risorsa dedicata, il bottone resta sempre attivo (nessun limite tracciato).
+              const risorsaFormaSelvatica = Array.isArray(scheda.risorse)
+                ? scheda.risorse.find((r) => /forma\s*(bestiale|selvatica)|wild\s*shape/i.test(r.nome || ''))
+                : null;
+              const risorsaMetamorfosi = Array.isArray(scheda.risorse)
+                ? scheda.risorse.find((r) => /metamorfosi|polymorph/i.test(r.nome || ''))
+                : null;
+              const formaSelvaticaEsaurita = risorsaFormaSelvatica && Number(risorsaFormaSelvatica.attuali) <= 0;
+              const metamorfosiEsaurita = risorsaMetamorfosi && Number(risorsaMetamorfosi.attuali) <= 0;
+              return (
             <div style={{ marginTop: 14, display: 'flex', gap: 8 }}>
               {bestiaDettaglio.gs != null && (
                 <button
-                  style={{ ...styles.button, flex: 1, fontWeight: 700, borderColor: C.green || '#3e7d32', color: C.green || '#3e7d32' }}
+                  disabled={formaSelvaticaEsaurita}
+                  style={{
+                    ...styles.button, flex: 1, fontWeight: 700,
+                    ...(formaSelvaticaEsaurita
+                      ? { borderColor: C.border, color: C.inkDim, background: C.panelLight, cursor: 'not-allowed', opacity: 0.6 }
+                      : { borderColor: C.green || '#3e7d32', color: C.green || '#3e7d32' }),
+                  }}
+                  title={formaSelvaticaEsaurita ? (lingua === 'en' ? 'No Wild Shape uses left' : 'Nessun utilizzo di Forma Selvatica rimasto') : undefined}
                   onClick={() => {
+                    if (formaSelvaticaEsaurita) return;
                     // Scala 1 uso da Forma Bestiale / Forma Selvatica nelle risorse di classe (se presente)
                     let risorseNuove = Array.isArray(scheda.risorse) ? scheda.risorse.map((r) => {
                       if (/forma\s*(bestiale|selvatica)|wild\s*shape/i.test(r.nome || '')) {
-                        const att = Number(r.usi) || 0;
-                        return { ...r, usi: Math.max(0, att - 1) };
+                        const att = Number(r.attuali) || 0;
+                        return { ...r, attuali: Math.max(0, att - 1) };
                       }
                       return r;
                     }) : scheda.risorse;
@@ -7130,13 +7150,28 @@ export default function App() {
                     setBestiaDettaglio(null);
                   }}
                 >
-                  🐾 {lingua === 'en' ? `Assume Wild Shape (${bestiaDettaglio.pf} HP)` : `Assumi Forma Selvatica (${bestiaDettaglio.pf} PF)`}
+                  🐾 {lingua === 'en' ? `Wild Shape (${bestiaDettaglio.pf} HP)` : `Forma Selvatica (${bestiaDettaglio.pf} PF)`}
                 </button>
               )}
               {bestiaDettaglio.gs != null && (
                 <button
-                  style={{ ...styles.button, flex: 1, fontWeight: 700, borderColor: '#7b4fb0', color: '#7b4fb0' }}
+                  disabled={metamorfosiEsaurita}
+                  style={{
+                    ...styles.button, flex: 1, fontWeight: 700,
+                    ...(metamorfosiEsaurita
+                      ? { borderColor: C.border, color: C.inkDim, background: C.panelLight, cursor: 'not-allowed', opacity: 0.6 }
+                      : { borderColor: '#7b4fb0', color: '#7b4fb0' }),
+                  }}
                   onClick={() => {
+                    if (metamorfosiEsaurita) return;
+                    // Scala 1 uso da Metamorfosi nelle risorse di classe (se presente)
+                    let risorseNuove = Array.isArray(scheda.risorse) ? scheda.risorse.map((r) => {
+                      if (/metamorfosi|polymorph/i.test(r.nome || '')) {
+                        const att = Number(r.attuali) || 0;
+                        return { ...r, attuali: Math.max(0, att - 1) };
+                      }
+                      return r;
+                    }) : scheda.risorse;
                     const forma = {
                       attiva: true,
                       nome: bestiaDettaglio.nome,
@@ -7158,21 +7193,20 @@ export default function App() {
                     aggiorna({
                       metamorfosi: forma,
                       ...(scheda.formaBestiale?.attiva ? { formaBestiale: { ...scheda.formaBestiale, attiva: false } } : {}),
+                      ...(risorseNuove ? { risorse: risorseNuove } : {}),
                     });
                     setBestiaDettaglio(null);
                   }}
-                  title={lingua === 'en' ? 'Polymorph (Metamorphosis): replaces ALL characteristics, including mental ones' : 'Metamorfosi: sostituisce TUTTE le caratteristiche, incluse quelle mentali'}
+                  title={metamorfosiEsaurita
+                    ? (lingua === 'en' ? 'No Metamorphosis uses left' : 'Nessun utilizzo di Metamorfosi rimasto')
+                    : (lingua === 'en' ? 'Polymorph (Metamorphosis): replaces ALL characteristics, including mental ones' : 'Metamorfosi: sostituisce TUTTE le caratteristiche, incluse quelle mentali')}
                 >
                   🔮 {lingua === 'en' ? `Metamorphosis (${bestiaDettaglio.pf} HP)` : `Metamorfosi (${bestiaDettaglio.pf} PF)`}
                 </button>
               )}
-              <button
-                style={{ ...styles.button, flex: 1 }}
-                onClick={() => setBestiaDettaglio(null)}
-              >
-                Chiudi
-              </button>
             </div>
+              );
+            })()}
           </div>
         </div>
       )}
@@ -12644,8 +12678,16 @@ export default function App() {
 
                 <div className="profilo-anagrafica-campi" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {/* Riga 1: Sesso, Specie/Razza, Taglia, Allineamento */}
-                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.65fr 1.3fr 0.6fr 1.45fr', gap: 10, alignItems: 'end' }}>
-                    <CampoModulo label={t("profilo.sesso")}>
+                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'minmax(58px, 0.65fr) minmax(100px, 1.3fr) minmax(56px, 0.6fr) minmax(110px, 1.45fr)', gap: 10, alignItems: 'end' }}>
+                    <CampoModulo
+                      label={t("profilo.sesso")}
+                      boxClassName={String(
+                        scheda.sesso === 'maschio' ? t('profilo.sesso_maschio')
+                        : scheda.sesso === 'femmina' ? t('profilo.sesso_femmina')
+                        : scheda.sesso === 'altro' ? t('profilo.sesso_altro')
+                        : scheda.sesso || ''
+                      ).length > 5 ? 'testo-compatto' : undefined}
+                    >
                       <CampoTendina
                         value={scheda.sesso}
                         opzioni={SESSO_5E}
@@ -12654,7 +12696,10 @@ export default function App() {
                         title={t('profilo.sesso_tooltip')}
                       />
                     </CampoModulo>
-                    <CampoModulo label={versione === "2024" ? t("profilo.specie") : t("profilo.razza")}>
+                    <CampoModulo
+                      label={versione === "2024" ? t("profilo.specie") : t("profilo.razza")}
+                      boxClassName={String(nomeSpeciePerSesso(scheda.specie, scheda.sesso, lingua) || '').length > 10 ? 'testo-compatto' : undefined}
+                    >
                       <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} formattaOpzione={(v) => nomeSpeciePerSesso(v, scheda.sesso, lingua)} onChange={(v) => { const sp = datiSpecieDi(v); aggiorna({ specie: v, ...(sp ? { velocita: sp.velocita, sensi: sp.sensi, taglia: sp.taglia, trattiSpecie: trattiSpecieTesto(sp.tratti) } : {}), ...abilitaConSpecie(v), ...ritrattoAuto(scheda.classe, v, scheda.nome) }); }} title={t('tip.scegli_specie')} />
                     </CampoModulo>
                     <CampoModulo label={t("profilo.taglia")}>
@@ -12705,7 +12750,7 @@ export default function App() {
                   </div>
 
                   {/* Riga 2: Background, Classe (compatta), Sottoclasse (larga), P.E. (adeguato per 6 cifre) */}
-                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: '0.7fr 0.85fr 1.8fr 0.65fr', gap: 10, alignItems: 'end' }}>
+                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'minmax(62px, 0.7fr) minmax(75px, 0.85fr) minmax(140px, 1.8fr) minmax(56px, 0.65fr)', gap: 10, alignItems: 'end' }}>
                     <CampoModulo label={t("profilo.background")} boxClassName={String(scheda.background || '').length > 12 ? 'testo-compatto' : undefined}>
                       <CampoBloccato
                         valore={traduciDato(scheda.background) || t('profilo.nessuno')}
@@ -14397,9 +14442,9 @@ export default function App() {
               })()}
 
               {/* Intestazione Combattimento & Filtri Armi / Incantesimi Offensivi */}
-              <div className="sottosezione-titolo" style={{ display: 'grid', gridTemplateColumns: 'minmax(28px, 1fr) auto minmax(28px, 1fr)', alignItems: 'center', columnGap: 6, marginTop: 18, marginBottom: 8 }}>
+              <div className="sottosezione-titolo" style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center', columnGap: 6, marginTop: 18, marginBottom: 8 }}>
                 <div />
-                <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'center', justifySelf: 'center', fontSize: 15 }}>
+                <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'left', justifySelf: 'start', fontSize: 15 }}>
                   {t('combat.titolo')}
                 </h3>
                 <div style={{ justifySelf: 'end', display: 'inline-flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -14581,9 +14626,9 @@ export default function App() {
                     return (
                       <div key={cat} style={{ marginBottom: 16 }}>
                         {cat !== 'Azione' && (
-                          <div className="sottosezione-titolo" style={{ display: 'grid', gridTemplateColumns: 'minmax(28px, 1fr) auto minmax(28px, 1fr)', alignItems: 'center', columnGap: 6, marginTop: 18, marginBottom: 8 }}>
+                          <div className="sottosezione-titolo" style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center', columnGap: 6, marginTop: 18, marginBottom: 8 }}>
                             <div />
-                            <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'center', justifySelf: 'center', fontSize: 15 }}>
+                            <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'left', justifySelf: 'start', fontSize: 15 }}>
                               {cat === 'Bonus' ? t('combat.azioni_bonus') : t('combat.reazioni')}
                             </h3>
                             <div style={{ justifySelf: 'end', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
@@ -14736,6 +14781,7 @@ export default function App() {
                               }
                               
                               const titoloRiga = spiegazioneEffetto ? `${cleanNome}: ${spiegazioneEffetto}` : undefined;
+                              const categorieNota = estraiCategorieNota(a.note);
                               const armaDb = !a.isSpell ? trovaArma(a.nome) : null;
                               const { isVersatile, dado1M, dado2M, hasReach } = analizzaArmaVersatileEPortata(a, armaDb);
                               const infoMunizioni = !a.isSpell ? analizzaMunizioniArma(a, scheda.inventario, armaDb) : { usaMunizioni: false };
@@ -15001,7 +15047,29 @@ export default function App() {
                                           )}
                                         </div>
                                       )}
-                                      <Editable value={a.note} width={hasReach || infoMunizioni.usaMunizioni ? 90 : 130} onChange={(v) => aggiornaAttacco({ note: v })} title={titoloRiga || a.note || t('tip.click_modifica')} />
+                                      {cat === 'Reazione' && (a.innescoIt || a.effettoIt) ? (
+                                        <>
+                                          {a.innescoIt && (
+                                            <span style={{ fontSize: 9.5, padding: '1px 5px', borderRadius: 4, background: 'rgba(59,130,246,0.12)', border: '1px solid #3b82f6', color: '#2563eb', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3 }} title={lingua === 'en' ? 'Trigger' : 'Innesco'}>
+                                              🎯 {lingua === 'en' ? (a.innescoEn || a.innescoIt) : a.innescoIt}
+                                            </span>
+                                          )}
+                                          {a.effettoIt && (
+                                            <span style={{ fontSize: 9.5, padding: '1px 5px', borderRadius: 4, background: 'rgba(123,79,176,0.12)', border: '1px solid #7b4fb0', color: '#7b4fb0', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3 }} title={lingua === 'en' ? 'Effect' : 'Effetto'}>
+                                              🛡️ {lingua === 'en' ? (a.effettoEn || a.effettoIt) : a.effettoIt}
+                                            </span>
+                                          )}
+                                        </>
+                                      ) : categorieNota.map((c, ci) => (
+                                        <span
+                                          key={ci}
+                                          style={{ fontSize: 9.5, padding: '1px 5px', borderRadius: 4, background: `${c.colore}1f`, border: `1px solid ${c.colore}`, color: c.colore, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3, whiteSpace: 'nowrap' }}
+                                          title={c.etichetta}
+                                        >
+                                          {c.icona} {c.testo}
+                                        </span>
+                                      ))}
+                                      <Editable value={a.note} width={hasReach || infoMunizioni.usaMunizioni || categorieNota.length > 0 ? 90 : 130} onChange={(v) => aggiornaAttacco({ note: v })} title={titoloRiga || a.note || t('tip.click_modifica')} />
                                     </div>
                                   </td>
                                   <td className="col-azioni attacchi-azioni" style={{ ...styles.td, textAlign: 'right' }}>
@@ -16107,7 +16175,7 @@ export default function App() {
                       title={livelliIncChiusi[0] ? (lingua === 'en' ? 'Click to expand cantrips' : 'Clicca per espandere i trucchetti') : (lingua === 'en' ? 'Click to collapse cantrips' : 'Clicca per comprimere i trucchetti')}
                       style={{
                         display: 'grid',
-                        gridTemplateColumns: 'minmax(28px, 1fr) auto minmax(28px, 1fr)',
+                        gridTemplateColumns: 'auto 1fr auto',
                         alignItems: 'center',
                         columnGap: 6,
                         marginTop: 18,
@@ -16121,7 +16189,7 @@ export default function App() {
                           {livelliIncChiusi[0] ? '▸' : '▾'}
                         </span>
                       </div>
-                      <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'center', justifySelf: 'center', fontSize: 15 }}>
+                      <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'left', justifySelf: 'start', fontSize: 15 }}>
                         {t('spell.trucchetti')}
                       </h3>
                       <div style={{ justifySelf: 'end', display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={(e) => e.stopPropagation()}>
@@ -16151,9 +16219,9 @@ export default function App() {
                     </div>
                     {renderLivello(0)}
                     {maxLiv >= 1 && (
-                      <div className="sottosezione-titolo" style={{ display: 'grid', gridTemplateColumns: 'minmax(28px, 1fr) auto minmax(28px, 1fr)', alignItems: 'center', columnGap: 6, marginTop: 18, marginBottom: 8 }}>
+                      <div className="sottosezione-titolo" style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center', columnGap: 6, marginTop: 18, marginBottom: 8 }}>
                         <div />
-                        <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'center', justifySelf: 'center', fontSize: 15 }}>
+                        <h3 style={{ ...styles.panelTitle, margin: 0, padding: 0, color: C.ink, textAlign: 'left', justifySelf: 'start', fontSize: 15 }}>
                           {t('spell.incantesimi')}
                         </h3>
                         <div style={{ justifySelf: 'end', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
@@ -16771,10 +16839,10 @@ export default function App() {
               </Sezione>
 
             {/* Trasformazioni: Forma Bestiale (Druido dal 2° livello) e/o
-                Metamorfosi (Bardo/Stregone/Mago, che hanno Polymorph in lista) */}
+                Metamorfosi (Bardo/Druido/Stregone/Mago, che hanno Polymorph in lista) */}
             {(() => {
               const isDruido = /(druido|druid)/i.test(scheda.classe || '') && (Number(scheda.livello) || 1) >= 2;
-              const puoMetamorfosi = /(bardo|bard|stregone|sorcerer|mago|wizard)/i.test(scheda.classe || '');
+              const puoMetamorfosi = /(bardo|bard|druido|druid|stregone|sorcerer|mago|wizard)/i.test(scheda.classe || '');
               if (!isDruido && !puoMetamorfosi) return null;
               const mostraToggle = isDruido && puoMetamorfosi;
               const tabEffettivo = mostraToggle ? tabTrasformazione : (isDruido ? 'animale' : 'metamorfosi');
