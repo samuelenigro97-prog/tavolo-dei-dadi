@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.10.0',
+    voci: {
+      it: [
+        'Trasformazioni più snelle: niente più griglia di 40-60 creature sempre aperta in scheda. Ora "Forma Selvatica" e "Metamorfosi" sono due bottoni compatti, ciascuno apre il proprio popup con la lista e le regole giuste.',
+      ],
+      en: [
+        'Leaner Transformations: no more a 40-60 creature grid always open on the sheet. "Wild Shape" and "Metamorphosis" are now two compact buttons, each opening its own popup with the right list and rules.',
+      ],
+    },
+  },
+  {
     versione: '4.9.0',
     voci: {
       it: [

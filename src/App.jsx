@@ -1963,7 +1963,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.9.0';
+const APP_VERSION = '4.10.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3643,7 +3643,7 @@ export default function App() {
   const [mostraModalManuali, setMostraModalManuali] = useState(false);
   const [mostraModalRitrattoBestia, setMostraModalRitrattoBestia] = useState(false);
   const [urlRitrattoBestiaInput, setUrlRitrattoBestiaInput] = useState('');
-  const [tabTrasformazione, setTabTrasformazione] = useState('animale'); // 'animale' | 'metamorfosi'
+  const [tabTrasformazione, setTabTrasformazione] = useState(null); // null (popup chiuso) | 'animale' | 'metamorfosi'
   const [mostraModalAggiungiCompagno, setMostraModalAggiungiCompagno] = useState(false);
   const [filtroCompagnoCat, setFiltroCompagnoCat] = useState('tutti');
   const [cercaCompagnoText, setCercaCompagnoText] = useState('');
@@ -16839,156 +16839,183 @@ export default function App() {
               </Sezione>
 
             {/* Trasformazioni: Forma Bestiale (Druido dal 2° livello) e/o
-                Metamorfosi (Bardo/Druido/Stregone/Mago, che hanno Polymorph in lista) */}
+                Metamorfosi (Bardo/Druido/Stregone/Mago, che hanno Polymorph in lista).
+                Ognuna è un bottone che apre il proprio popup (catalogoTrasformazioneModal
+                più sotto): niente più griglia di 40-60 creature sempre aperta in scheda. */}
             {(() => {
               const isDruido = /(druido|druid)/i.test(scheda.classe || '') && (Number(scheda.livello) || 1) >= 2;
               const puoMetamorfosi = /(bardo|bard|druido|druid|stregone|sorcerer|mago|wizard)/i.test(scheda.classe || '');
               if (!isDruido && !puoMetamorfosi) return null;
-              const mostraToggle = isDruido && puoMetamorfosi;
-              const tabEffettivo = mostraToggle ? tabTrasformazione : (isDruido ? 'animale' : 'metamorfosi');
+              const contaAnimale = isDruido ? bestieDisponibili(scheda.livello, scheda.sottoclasse).length : 0;
+              const contaMeta = puoMetamorfosi ? creatureDisponibiliMetamorfosi(scheda.livello).length : 0;
               return (
               <Sezione titolo={lingua === 'en' ? 'Transformations' : 'Trasformazioni'} {...apertoProps('formaBestiale', true)}>
-                {(() => {
-                  const disp = tabEffettivo === 'metamorfosi'
-                    ? creatureDisponibiliMetamorfosi(scheda.livello)
-                    : bestieDisponibili(scheda.livello, scheda.sottoclasse);
-                  const lim = tabEffettivo === 'metamorfosi'
-                    ? limitiMetamorfosi(scheda.livello)
-                    : limitiFormaSelvatica(scheda.livello, scheda.sottoclasse);
-                  const bestiePref = Array.isArray(scheda.bestiePreferite) ? scheda.bestiePreferite : [];
-                  const togglePref = (e, nomeBestia) => {
-                    e.stopPropagation();
-                    const nuove = bestiePref.includes(nomeBestia)
-                      ? bestiePref.filter((x) => x !== nomeBestia)
-                      : [...bestiePref, nomeBestia];
-                    aggiorna({ bestiePreferite: nuove });
-                  };
-                  const listaPref = disp.filter((b) => bestiePref.includes(b.nome));
-
-                  return (
-                    <div>
-                      {mostraToggle && (
-                        <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
-                          <button
-                            type="button"
-                            onClick={() => setTabTrasformazione('animale')}
-                            style={{ ...styles.buttonMini, flex: 1, fontWeight: 800, padding: '6px 10px', fontSize: 12.5, background: tabEffettivo === 'animale' ? 'rgba(46,125,50,0.18)' : C.panel, borderColor: tabEffettivo === 'animale' ? '#3e7d32' : C.border, color: tabEffettivo === 'animale' ? '#1b4332' : C.inkDim }}
-                          >
-                            🐾 {lingua === 'en' ? 'Beast Shape' : 'Forma Animale'}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setTabTrasformazione('metamorfosi')}
-                            style={{ ...styles.buttonMini, flex: 1, fontWeight: 800, padding: '6px 10px', fontSize: 12.5, background: tabEffettivo === 'metamorfosi' ? 'rgba(123,79,176,0.18)' : C.panel, borderColor: tabEffettivo === 'metamorfosi' ? '#7b4fb0' : C.border, color: tabEffettivo === 'metamorfosi' ? '#4a2e6b' : C.inkDim }}
-                          >
-                            🔮 {lingua === 'en' ? 'Polymorph' : 'Metamorfosi'}
-                          </button>
-                        </div>
-                      )}
-                      <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
-                        <span>
-                          Grado di Sfida Max: <strong>GS {lim?.gsMax === 0.25 ? '1/4' : lim?.gsMax === 0.5 ? '1/2' : lim?.gsMax || '1/4'}</strong>
-                          {lim?.nuoto && ' · 🏊 Nuoto'}
-                          {lim?.volo && ' · 🦅 Volo'}
-                        </span>
-                        <span style={{ opacity: 0.8 }}>{disp.length} {tabEffettivo === 'metamorfosi' ? 'creature utilizzabili' : 'bestie utilizzabili'}</span>
-                      </div>
-
-                      {/* Scorciatoie Forme Preferite (Accesso Rapido) */}
-                      {listaPref.length > 0 && (
-                        <div style={{ marginBottom: 12, padding: '8px 10px', background: 'rgba(214,169,15,0.08)', borderRadius: 8, border: `1px solid ${C.gold}` }}>
-                          <div style={{ fontSize: 11.5, fontWeight: 700, color: C.goldDark, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-                            ⭐ {lingua === 'en' ? 'Favorite Wild Shapes (Quick Access)' : 'Forme Preferite (Accesso Rapido)'}
-                          </div>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: 6 }}>
-                            {listaPref.map((b) => (
-                              <div
-                                key={`pref-${b.nome}`}
-                                onClick={() => setBestiaDettaglio(b)}
-                                style={{
-                                  background: C.panel,
-                                  border: `1.5px solid ${C.gold}`,
-                                  borderRadius: 8,
-                                  padding: '6px 8px',
-                                  cursor: 'pointer',
-                                  display: 'flex',
-                                  flexDirection: 'column',
-                                  gap: 2,
-                                  boxShadow: '0 2px 5px rgba(214,169,15,0.25)',
-                                }}
-                              >
-                                <div style={{ fontWeight: 700, fontSize: 12.5, color: C.ink, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                  <span>{lingua === 'en' ? b.nomeEn : b.nome}</span>
-                                  <button
-                                    type="button"
-                                    onClick={(e) => togglePref(e, b.nome)}
-                                    style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, fontSize: 13 }}
-                                    title="Rimuovi dai preferiti"
-                                  >
-                                    ⭐
-                                  </button>
-                                </div>
-                                <div style={{ fontSize: 10.5, color: C.inkDim }}>
-                                  🛡️ CA {b.ca} · ❤️ {b.pf} PF · GS {b.gs}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Catalogo Completo Bestie Disponibili */}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: 8 }}>
-                        {disp.map((b) => {
-                          const isFav = bestiePref.includes(b.nome);
-                          return (
-                            <div
-                              key={b.nome}
-                              onClick={() => setBestiaDettaglio(b)}
-                              style={{
-                                background: C.panelLight,
-                                border: `1px solid ${isFav ? C.gold : C.border}`,
-                                borderRadius: 8,
-                                padding: '8px 10px',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 3,
-                                transition: 'transform 0.15s ease, border-color 0.15s ease',
-                              }}
-                              onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.goldDark; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                              onMouseLeave={(e) => { e.currentTarget.style.borderColor = isFav ? C.gold : C.border; e.currentTarget.style.transform = 'none'; }}
-                            >
-                              <div style={{ fontWeight: 700, fontSize: 13, color: C.ink, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span>{lingua === 'en' ? b.nomeEn : b.nome}</span>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                                  <button
-                                    type="button"
-                                    onClick={(e) => togglePref(e, b.nome)}
-                                    style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, fontSize: 12, opacity: isFav ? 1 : 0.4 }}
-                                    title={isFav ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'}
-                                  >
-                                    {isFav ? '⭐' : '☆'}
-                                  </button>
-                                  <span style={{ fontSize: 10, color: C.goldDark, background: 'rgba(200,140,20,0.15)', padding: '1px 5px', borderRadius: 10 }}>GS {b.gs}</span>
-                                </div>
-                              </div>
-                              <div style={{ fontSize: 11, color: C.inkDim }}>
-                                🛡️ CA {b.ca} · ❤️ {b.pf} PF
-                              </div>
-                              <div style={{ fontSize: 10, color: C.inkDim, opacity: 0.85 }}>
-                                {b.taglia} · {b.velocita.volo ? `🦅 ${b.velocita.volo}m` : b.velocita.nuoto ? `🏊 ${b.velocita.nuoto}m` : `🐾 ${b.velocita.terra}m`}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })()}
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {isDruido && (
+                    <button
+                      type="button"
+                      onClick={() => setTabTrasformazione('animale')}
+                      style={{ ...styles.button, flex: '1 1 160px', fontWeight: 800, padding: '10px 12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, borderColor: '#3e7d32', color: '#1b4332', background: 'rgba(46,125,50,0.08)' }}
+                    >
+                      <span>🐾 {lingua === 'en' ? 'Wild Shape' : 'Forma Selvatica'}</span>
+                      <span style={{ fontSize: 11, fontWeight: 600, opacity: 0.8 }}>{contaAnimale} {lingua === 'en' ? 'available' : 'disponibili'}</span>
+                    </button>
+                  )}
+                  {puoMetamorfosi && (
+                    <button
+                      type="button"
+                      onClick={() => setTabTrasformazione('metamorfosi')}
+                      style={{ ...styles.button, flex: '1 1 160px', fontWeight: 800, padding: '10px 12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, borderColor: '#7b4fb0', color: '#4a2e6b', background: 'rgba(123,79,176,0.08)' }}
+                    >
+                      <span>🔮 {lingua === 'en' ? 'Metamorphosis' : 'Metamorfosi'}</span>
+                      <span style={{ fontSize: 11, fontWeight: 600, opacity: 0.8 }}>{contaMeta} {lingua === 'en' ? 'available' : 'disponibili'}</span>
+                    </button>
+                  )}
+                </div>
               </Sezione>
               );
             })()}
+
+            {/* Popup catalogo Forma Selvatica / Metamorfosi: si apre da uno dei due bottoni
+                sopra, mostra solo la lista pertinente con le sue regole/limiti. */}
+            {tabTrasformazione && (
+              <div
+                style={{ position: 'fixed', inset: 0, zIndex: 3120, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(3px)' }}
+                onClick={() => setTabTrasformazione(null)}
+              >
+                <div
+                  style={{ ...styles.panel, maxWidth: 640, width: '100%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 35px rgba(0,0,0,0.5)', border: `2px solid ${tabTrasformazione === 'metamorfosi' ? '#7b4fb0' : '#3e7d32'}` }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {(() => {
+                    const disp = tabTrasformazione === 'metamorfosi'
+                      ? creatureDisponibiliMetamorfosi(scheda.livello)
+                      : bestieDisponibili(scheda.livello, scheda.sottoclasse);
+                    const lim = tabTrasformazione === 'metamorfosi'
+                      ? limitiMetamorfosi(scheda.livello)
+                      : limitiFormaSelvatica(scheda.livello, scheda.sottoclasse);
+                    const bestiePref = Array.isArray(scheda.bestiePreferite) ? scheda.bestiePreferite : [];
+                    const togglePref = (e, nomeBestia) => {
+                      e.stopPropagation();
+                      const nuove = bestiePref.includes(nomeBestia)
+                        ? bestiePref.filter((x) => x !== nomeBestia)
+                        : [...bestiePref, nomeBestia];
+                      aggiorna({ bestiePreferite: nuove });
+                    };
+                    const listaPref = disp.filter((b) => bestiePref.includes(b.nome));
+
+                    return (
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: `2px solid ${C.border}`, paddingBottom: 8, marginBottom: 10 }}>
+                          <h2 style={{ fontSize: 17, margin: 0, color: tabTrasformazione === 'metamorfosi' ? '#7b4fb0' : '#3e7d32', fontWeight: 800 }}>
+                            {tabTrasformazione === 'metamorfosi' ? '🔮' : '🐾'} {lingua === 'en' ? (tabTrasformazione === 'metamorfosi' ? 'Metamorphosis' : 'Wild Shape') : (tabTrasformazione === 'metamorfosi' ? 'Metamorfosi' : 'Forma Selvatica')}
+                          </h2>
+                          <button style={styles.buttonMini} onClick={() => setTabTrasformazione(null)} title={t('tip.chiudi')}>✕</button>
+                        </div>
+                        <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+                          <span>
+                            Grado di Sfida Max: <strong>GS {lim?.gsMax === 0.25 ? '1/4' : lim?.gsMax === 0.5 ? '1/2' : lim?.gsMax || '1/4'}</strong>
+                            {lim?.nuoto && ' · 🏊 Nuoto'}
+                            {lim?.volo && ' · 🦅 Volo'}
+                          </span>
+                          <span style={{ opacity: 0.8 }}>{disp.length} {tabTrasformazione === 'metamorfosi' ? 'creature utilizzabili' : 'bestie utilizzabili'}</span>
+                        </div>
+
+                        {/* Scorciatoie Forme Preferite (Accesso Rapido) */}
+                        {listaPref.length > 0 && (
+                          <div style={{ marginBottom: 12, padding: '8px 10px', background: 'rgba(214,169,15,0.08)', borderRadius: 8, border: `1px solid ${C.gold}` }}>
+                            <div style={{ fontSize: 11.5, fontWeight: 700, color: C.goldDark, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                              ⭐ {lingua === 'en' ? 'Favorite Wild Shapes (Quick Access)' : 'Forme Preferite (Accesso Rapido)'}
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: 6 }}>
+                              {listaPref.map((b) => (
+                                <div
+                                  key={`pref-${b.nome}`}
+                                  onClick={() => setBestiaDettaglio(b)}
+                                  style={{
+                                    background: C.panel,
+                                    border: `1.5px solid ${C.gold}`,
+                                    borderRadius: 8,
+                                    padding: '6px 8px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 2,
+                                    boxShadow: '0 2px 5px rgba(214,169,15,0.25)',
+                                  }}
+                                >
+                                  <div style={{ fontWeight: 700, fontSize: 12.5, color: C.ink, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span>{lingua === 'en' ? b.nomeEn : b.nome}</span>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => togglePref(e, b.nome)}
+                                      style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, fontSize: 13 }}
+                                      title="Rimuovi dai preferiti"
+                                    >
+                                      ⭐
+                                    </button>
+                                  </div>
+                                  <div style={{ fontSize: 10.5, color: C.inkDim }}>
+                                    🛡️ CA {b.ca} · ❤️ {b.pf} PF · GS {b.gs}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Catalogo Completo Bestie Disponibili */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: 8 }}>
+                          {disp.map((b) => {
+                            const isFav = bestiePref.includes(b.nome);
+                            return (
+                              <div
+                                key={b.nome}
+                                onClick={() => setBestiaDettaglio(b)}
+                                style={{
+                                  background: C.panelLight,
+                                  border: `1px solid ${isFav ? C.gold : C.border}`,
+                                  borderRadius: 8,
+                                  padding: '8px 10px',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: 3,
+                                  transition: 'transform 0.15s ease, border-color 0.15s ease',
+                                }}
+                                onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.goldDark; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.borderColor = isFav ? C.gold : C.border; e.currentTarget.style.transform = 'none'; }}
+                              >
+                                <div style={{ fontWeight: 700, fontSize: 13, color: C.ink, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span>{lingua === 'en' ? b.nomeEn : b.nome}</span>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => togglePref(e, b.nome)}
+                                      style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, fontSize: 12, opacity: isFav ? 1 : 0.4 }}
+                                      title={isFav ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'}
+                                    >
+                                      {isFav ? '⭐' : '☆'}
+                                    </button>
+                                    <span style={{ fontSize: 10, color: C.goldDark, background: 'rgba(200,140,20,0.15)', padding: '1px 5px', borderRadius: 10 }}>GS {b.gs}</span>
+                                  </div>
+                                </div>
+                                <div style={{ fontSize: 11, color: C.inkDim }}>
+                                  🛡️ CA {b.ca} · ❤️ {b.pf} PF
+                                </div>
+                                <div style={{ fontSize: 10, color: C.inkDim, opacity: 0.85 }}>
+                                  {b.taglia} · {b.velocita.volo ? `🦅 ${b.velocita.volo}m` : b.velocita.nuoto ? `🏊 ${b.velocita.nuoto}m` : `🐾 ${b.velocita.terra}m`}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
 
             {/* Sezione Compagni, Famigli ed Evocazioni Integrata */}
             <Sezione

@@ -2,6 +2,23 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.10.0] – 2026-09-23
+
+### Modificato
+- **Trasformazioni: da griglia sempre aperta a due popup separati.** La
+  sezione "Trasformazioni" mostrava sempre in scheda l'intera griglia di
+  40-60 creature (con un toggle per passare da Forma Selvatica a
+  Metamorfosi), occupando molto spazio verticale anche quando non serviva.
+  Ora la sezione è compatta: due soli bottoni, "🐾 Forma Selvatica" e
+  "🔮 Metamorfosi", ciascuno con il conteggio delle creature disponibili.
+  Cliccandone uno si apre un popup dedicato con la lista filtrata secondo
+  le regole di quella specifica trasformazione (GS massimo, nuoto/volo per
+  la Forma Selvatica; GS ≤ livello senza restrizioni per la Metamorfosi) —
+  due "schede" indipendenti invece di una sola lista condivisa. Cliccare una
+  creatura nel popup apre come prima il dettaglio con le statistiche e i
+  bottoni per assumerla. Il banner "Forma Attiva" (quando una trasformazione
+  è in corso) non è stato toccato: resta sempre visibile come prima.
+
 ## [4.9.0] – 2026-09-23
 
 ### Aggiunto
