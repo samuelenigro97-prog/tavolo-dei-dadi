@@ -2,6 +2,20 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.8.0] – 2026-09-23
+
+### Modificato
+- **Il tocco "vecchio manuale" (4.7.0) non è più un'Ambientazione a scelta:
+  ora è fisso, sempre presente, indipendente dai colori/scena che scegli in
+  Luogo → Ambientazione.** Rimossa la voce "📜 Vintage" dal menu Ambientazione
+  (tornano ad essere 13 come prima). Al suo posto, su tutta l'app, sempre:
+  titoli delle sezioni e intestazione in font Cinzel (autoospitato, offline
+  come sempre), pannelli con texture carta leggerissima e doppio filetto
+  interno, filetto oro doppio sotto la barra superiore — indipendentemente
+  da quale Ambientazione/colore hai scelto. I colori restano personalizzabili
+  come prima (Taverna, Dungeon, Tempio Arcano...): quella è "atmosfera",
+  questa è l'identità fissa dell'app.
+
 ## [4.7.0] – 2026-09-22
 
 ### Aggiunto

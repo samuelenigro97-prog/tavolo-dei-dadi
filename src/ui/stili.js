@@ -403,9 +403,11 @@ export const styles = {
 };
 
 export const GLOBAL_CSS = `
-/* Font autoospitato (nessun CDN) per il tema Ambientazione "Vintage":
+/* Font autoospitato (nessun CDN) per l'identità "vecchio manuale" dell'app:
    così resta disponibile offline, coerente con la regola "solo caratteri
-   di sistema" — qui è precacheato dal service worker come un asset normale. */
+   di sistema" — qui è precacheato dal service worker come un asset normale.
+   È fisso: non dipende dall'Ambientazione scelta (quella resta solo colori
+   e scena/audio), è come l'app si presenta sempre. */
 @font-face {
   font-family: 'Cinzel';
   src: url('./fonts/cinzel-700.woff2') format('woff2');
@@ -418,7 +420,7 @@ export const GLOBAL_CSS = `
   --c-border: #ddd5c6; --c-ink: #2b2620; --c-ink-dim: #8d8272;
   --c-gold: #b8860b; --c-gold-dark: #8a6508; --c-red: #b03a2e;
   --c-green: #3e7d32; --c-title: #9e2b25;
-  --font-title: inherit;
+  --font-title: 'Cinzel', Georgia, 'Times New Roman', serif;
 }
 :root[data-tema="scuro"] {
   --c-bg: #171310; --c-panel: #211b16; --c-panel-light: #2a231c;
@@ -1141,19 +1143,25 @@ tbody tr:hover {
   display: none !important;
 }
 
-/* Ambientazione "Vintage": tocco da vecchio manuale sui pannelli — texture
-   carta leggerissima (solo gradienti CSS, nessuna immagine) + doppio filetto
-   come le cornici dei manuali Editrice Giochi/TSR. Usa outline (non
-   box-shadow) apposta: box-shadow è animato dal "respiro magico" e verrebbe
-   sovrascritto ad ogni fotogramma. Non tocca gli angoli ornamentali di
-   classe: restano quelli, qui è solo sfondo + cornice interna. */
-:root[data-preset="vintage"] .sezione,
-:root[data-preset="vintage"] .profilo-sezione {
+/* Identità fissa "vecchio manuale" sui pannelli — texture carta leggerissima
+   (solo gradienti CSS, nessuna immagine) + doppio filetto come le cornici dei
+   manuali Editrice Giochi/TSR. Sempre presente, indipendente dall'Ambientazione
+   scelta (quella cambia solo colori/scena). Usa outline (non box-shadow)
+   apposta: box-shadow è animato dal "respiro magico" e verrebbe sovrascritto
+   ad ogni fotogramma. Non tocca gli angoli ornamentali di classe: restano
+   quelli, qui è solo sfondo + cornice interna. */
+.sezione,
+.profilo-sezione {
   background-image:
     repeating-linear-gradient(0deg, rgba(0,0,0,0.015) 0px, transparent 1px, transparent 2px, rgba(0,0,0,0.015) 3px),
     repeating-linear-gradient(90deg, rgba(0,0,0,0.012) 0px, transparent 1px, transparent 2px, rgba(0,0,0,0.012) 3px);
   outline: 1px solid var(--c-border);
   outline-offset: -4px;
+}
+/* Filetto oro doppio sotto la barra superiore, come le cornici titolo dei
+   vecchi manuali — fisso, sempre presente. */
+.barra-superiore-fissa {
+  border-bottom: 3px double var(--c-gold) !important;
 }
 /* Corpo scheda: le sezioni ora sono a PIENA LARGHEZZA, impilate in verticale.
    L'ordine è controllato con 'order' (Combattimento/Magia prima, poi il resto). */

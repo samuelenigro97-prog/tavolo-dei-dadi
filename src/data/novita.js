@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.8.0',
+    voci: {
+      it: [
+        'Il tocco "vecchio manuale" ora è fisso su tutta l\'app (non più un\'Ambientazione a scelta): titoli in font Cinzel, pannelli con texture carta e doppio filetto, sempre presenti qualunque colore/Ambientazione tu scelga.',
+      ],
+      en: [
+        'The "old rulebook" touch is now fixed across the whole app (no longer a selectable Setting): Cinzel titles, paper-textured panels with a double frame, always present whatever color/Setting you pick.',
+      ],
+    },
+  },
+  {
     versione: '4.7.0',
     voci: {
       it: [

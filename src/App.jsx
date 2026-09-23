@@ -1963,7 +1963,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.7.0';
+const APP_VERSION = '4.8.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -4079,9 +4079,7 @@ export default function App() {
     const sfondoAmbiente = presetDati.sfondo || '';
     const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/';
     const idAmb = presetDati.id;
-    // 'vintage' è un'estetica carta/tipografia (font + palette), non una scena
-    // illustrata: niente foto dedicata in public/ambientazioni/, come 'default'.
-    const conImmagine = idAmb && idAmb !== 'default' && idAmb !== 'vintage';
+    const conImmagine = idAmb && idAmb !== 'default';
     const veloAlpha = scuroEff ? 0.5 : 0.32;
     const velo = conImmagine
       ? `linear-gradient(rgba(14,11,8,${veloAlpha}), rgba(14,11,8,${veloAlpha}))`
@@ -4133,7 +4131,6 @@ export default function App() {
     set('--c-border', t.border); set('--c-ink', t.ink); set('--c-ink-dim', t.inkDim);
     set('--c-gold', t.gold); set('--c-gold-dark', t.goldDark); set('--c-red', t.red);
     set('--c-green', t.green); set('--c-title', t.title);
-    set('--font-title', presetDati.fontTitle || 'inherit');
 
     const accTema = (temaCornici && temaCornici !== 'auto' && temaCornici !== 'disattivato') ? coloreClasse(temaCornici) : null;
     const accEffettivo = accTema || acc;
