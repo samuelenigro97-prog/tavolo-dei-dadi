@@ -91,7 +91,7 @@ function PotereCard({ potere, scheda, indice, totale, onApri, lingua }) {
           {potere.nome || (lingua === 'en' ? 'Unnamed power' : 'Potere senza nome')}
         </strong>
         {!potere.attivo && (
-          <span style={{ fontSize: 10, fontWeight: 700, color: C.inkDim, border: `1px solid ${C.border}`, borderRadius: 6, padding: '1px 6px' }}>
+          <span style={{ fontSize: 10.5, fontWeight: 700, color: C.inkDim, border: `1px solid ${C.border}`, borderRadius: 6, padding: '1px 6px' }}>
             {lingua === 'en' ? 'OFF' : 'DISATTIVATO'}
           </span>
         )}

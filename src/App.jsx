@@ -165,7 +165,7 @@ function TendinaCompetenzaCustom({
     ) : (
       gruppiFiltrati.map((g, gIdx) => (
         <div key={g.titolo || gIdx} style={{ marginBottom: 6 }}>
-          <div style={{ fontSize: 9.5, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.6, padding: '4px 6px 2px', borderTop: gIdx > 0 ? `1px dashed ${C.border}` : 'none', marginTop: gIdx > 0 ? 4 : 0 }}>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.6, padding: '4px 6px 2px', borderTop: gIdx > 0 ? `1px dashed ${C.border}` : 'none', marginTop: gIdx > 0 ? 4 : 0 }}>
             {g.titolo}
           </div>
           {g.voci.map((v, i) => renderItem(v, i))}
@@ -185,7 +185,7 @@ function TendinaCompetenzaCustom({
 
   return (
     <div style={{ marginBottom: 4, position: 'relative' }}>
-      <div className="campo-modulo-label" style={{ ...styles.moduloLabel, marginBottom: 2, fontSize: 10, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+      <div className="campo-modulo-label" style={{ ...styles.moduloLabel, marginBottom: 2, fontSize: 10.5, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5 }}>
         {label}
       </div>
       <button
@@ -211,7 +211,7 @@ function TendinaCompetenzaCustom({
         <span style={{ fontSize: 11, color: C.ink, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, marginRight: 6 }}>
           {anteprima}
         </span>
-        <span style={{ fontSize: 8, color: C.inkDim, flexShrink: 0 }}>{aperto ? '▲' : '▼'}</span>
+        <span style={{ fontSize: 10.5, color: C.inkDim, flexShrink: 0 }}>{aperto ? '▲' : '▼'}</span>
       </button>
 
       {aperto && (
@@ -247,7 +247,7 @@ function TendinaCompetenzaCustom({
               <button
                 type="button"
                 onClick={() => setAperto(false)}
-                style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 10, lineHeight: 1, width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 10.5, lineHeight: 1, width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >✕</button>
             </div>
 
@@ -275,7 +275,7 @@ function TendinaCompetenzaCustom({
                     <button
                       type="button"
                       onClick={() => setCerca('')}
-                      style={{ position: 'absolute', right: 4, background: 'transparent', border: 0, color: C.inkDim, fontSize: 10, cursor: 'pointer', padding: 2 }}
+                      style={{ position: 'absolute', right: 4, background: 'transparent', border: 0, color: C.inkDim, fontSize: 10.5, cursor: 'pointer', padding: 2 }}
                     >✕</button>
                   )}
                 </div>
@@ -1963,7 +1963,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.19.0';
+const APP_VERSION = '4.20.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3091,7 +3091,7 @@ function ArchivioDm({ url, onChiudi, onApri, onApriSolaLettura }) {
                             {[s.classe, s.sottoclasse, s.specie, s.livello ? `Liv. ${s.livello}` : ''].filter(Boolean).join(' · ')}
                             {s.pfMax ? ` · PF ${s.pfAttuali ?? '?'}/${s.pfMax}` : ''}
                           </div>
-                          <div style={{ ...styles.detail, fontSize: 10, opacity: 0.75, marginTop: 2 }}>
+                          <div style={{ ...styles.detail, fontSize: 10.5, opacity: 0.75, marginTop: 2 }}>
                             {quando(s.aggiornato)} · {s.dispositivo || '?'}
                           </div>
                         </div>
@@ -3146,23 +3146,23 @@ function ArchivioDm({ url, onChiudi, onApri, onApriSolaLettura }) {
                           {/* Statistiche Vitali */}
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(75px, 1fr))', gap: 6, textAlign: 'center' }}>
                             <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
-                              <div style={{ fontSize: 9.5, color: C.inkDim, fontWeight: 700 }}>CA</div>
+                              <div style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 700 }}>CA</div>
                               <div style={{ fontSize: 14, fontWeight: 800, color: C.goldDark }}>{ca ?? '—'}</div>
                             </div>
                             <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
-                              <div style={{ fontSize: 9.5, color: C.inkDim, fontWeight: 700 }}>PF</div>
+                              <div style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 700 }}>PF</div>
                               <div style={{ fontSize: 14, fontWeight: 800, color: C.red }}>{completa.pfAttuali ?? '?'}/{completa.pfMax ?? '?'}</div>
                             </div>
                             <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
-                              <div style={{ fontSize: 9.5, color: C.inkDim, fontWeight: 700 }}>VELOCITÀ</div>
+                              <div style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 700 }}>VELOCITÀ</div>
                               <div style={{ fontSize: 13, fontWeight: 700 }}>{completa.velocita} m</div>
                             </div>
                             <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
-                              <div style={{ fontSize: 9.5, color: C.inkDim, fontWeight: 700 }}>BONUS COMP.</div>
+                              <div style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 700 }}>BONUS COMP.</div>
                               <div style={{ fontSize: 13, fontWeight: 700 }}>{conSegno(completa.bonusCompetenza || 2)}</div>
                             </div>
                             <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
-                              <div style={{ fontSize: 9.5, color: C.inkDim, fontWeight: 700 }}>INIZIATIVA</div>
+                              <div style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 700 }}>INIZIATIVA</div>
                               <div style={{ fontSize: 13, fontWeight: 700 }}>{conSegno(modificatore(punteggioCaratteristica(completa, 'destrezza')))}</div>
                             </div>
                           </div>
@@ -3182,10 +3182,10 @@ function ArchivioDm({ url, onChiudi, onApri, onApriSolaLettura }) {
                               const hasTs = !!completa.tiriSalvezza?.[key];
                               return (
                                 <div key={sigla} style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 2px' }}>
-                                  <div style={{ fontSize: 9.5, fontWeight: 700, color: C.inkDim }}>{sigla}</div>
+                                  <div style={{ fontSize: 10.5, fontWeight: 700, color: C.inkDim }}>{sigla}</div>
                                   <div style={{ fontSize: 13, fontWeight: 800 }}>{conSegno(mod)}</div>
-                                  <div style={{ fontSize: 9, color: C.inkDim }}>{score}</div>
-                                  <div style={{ fontSize: 8.5, color: hasTs ? '#2e9d4d' : C.inkDim, fontWeight: hasTs ? 700 : 400 }}>
+                                  <div style={{ fontSize: 10.5, color: C.inkDim }}>{score}</div>
+                                  <div style={{ fontSize: 10.5, color: hasTs ? '#2e9d4d' : C.inkDim, fontWeight: hasTs ? 700 : 400 }}>
                                     {hasTs ? '🛡️ TS' : 'TS —'}
                                   </div>
                                 </div>
@@ -6967,15 +6967,15 @@ export default function App() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 12, textAlign: 'center' }}>
               <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
-                <div style={{ fontSize: 10, color: C.inkDim, textTransform: 'uppercase', fontWeight: 700 }}>{t('armor.classe_armatura')}</div>
+                <div style={{ fontSize: 10.5, color: C.inkDim, textTransform: 'uppercase', fontWeight: 700 }}>{t('armor.classe_armatura')}</div>
                 <div style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>🛡️ {bestiaDettaglio.ca}</div>
               </div>
               <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
-                <div style={{ fontSize: 10, color: C.inkDim, textTransform: 'uppercase', fontWeight: 700 }}>{t('vital.punti_ferita')}</div>
+                <div style={{ fontSize: 10.5, color: C.inkDim, textTransform: 'uppercase', fontWeight: 700 }}>{t('vital.punti_ferita')}</div>
                 <div style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>❤️ {bestiaDettaglio.pf} <span style={{ fontSize: 11, fontWeight: 'normal', color: C.inkDim }}>({bestiaDettaglio.pfFormula})</span></div>
               </div>
               <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
-                <div style={{ fontSize: 10, color: C.inkDim, textTransform: 'uppercase', fontWeight: 700 }}>{t('stat.velocita')}</div>
+                <div style={{ fontSize: 10.5, color: C.inkDim, textTransform: 'uppercase', fontWeight: 700 }}>{t('stat.velocita')}</div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginTop: 2 }}>
                   {bestiaDettaglio.velocita?.terra != null ? `${bestiaDettaglio.velocita.terra}m` : ''}{bestiaDettaglio.velocita?.nuoto ? ` · 🏊${bestiaDettaglio.velocita.nuoto}m` : ''}{bestiaDettaglio.velocita?.volo ? ` · 🦅${bestiaDettaglio.velocita.volo}m` : ''}{bestiaDettaglio.velocita?.scalata ? ` · 🧗${bestiaDettaglio.velocita.scalata}m` : ''}{bestiaDettaglio.velocita?.scavo ? ` · ⛏️${bestiaDettaglio.velocita.scavo}m` : ''}
                 </div>
@@ -6989,7 +6989,7 @@ export default function App() {
                 const mod = Math.floor((val - 10) / 2);
                 return (
                   <div key={k}>
-                    <div style={{ fontSize: 9, textTransform: 'uppercase', fontWeight: 700, color: C.inkDim }}>{k.slice(0, 3)}</div>
+                    <div style={{ fontSize: 10.5, textTransform: 'uppercase', fontWeight: 700, color: C.inkDim }}>{k.slice(0, 3)}</div>
                     <div style={{ fontSize: 13, fontWeight: 800 }}>{val}</div>
                     <div style={{ fontSize: 11, color: C.goldDark, fontWeight: 700 }}>{conSegno(mod)}</div>
                   </div>
@@ -7044,7 +7044,7 @@ export default function App() {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, flexWrap: 'wrap' }}>
                           <span style={{ fontWeight: 800, color: C.ink }}>⚔️ {az.nome}</span>
                           {az.cd != null && (
-                            <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 5px', background: 'rgba(214,169,15,0.18)', color: C.goldDark, borderRadius: 4, border: `1px solid ${C.gold}` }}>
+                            <span style={{ fontSize: 10.5, fontWeight: 700, padding: '1px 5px', background: 'rgba(214,169,15,0.18)', color: C.goldDark, borderRadius: 4, border: `1px solid ${C.gold}` }}>
                               🛡️ CD {az.cd}
                             </span>
                           )}
@@ -7678,7 +7678,7 @@ export default function App() {
         >
           <div style={{ ...styles.panel, maxWidth: 460, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
             <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 12, fontSize: 24, fontWeight: 800, color: 'var(--c-title)' }}>
-              Tavolo dei Dadi <span style={{ fontSize: 9.5, opacity: 0.65, fontWeight: 600, verticalAlign: 'middle', color: C.inkDim }}>v{APP_VERSION}</span>
+              Tavolo dei Dadi <span style={{ fontSize: 10.5, opacity: 0.65, fontWeight: 600, verticalAlign: 'middle', color: C.inkDim }}>v{APP_VERSION}</span>
             </h1>
 
             <button
@@ -8678,7 +8678,7 @@ export default function App() {
                         <span>{lingua === 'en' ? 'Standing jump:' : 'Da fermo:'}</span>
                         <strong style={{ color: C.ink, fontSize: 13 }}>{mov.saltoLungoFermo} m</strong>
                       </div>
-                      <div style={{ fontSize: 10, color: C.inkDim, marginTop: 2, lineHeight: 1.25 }}>
+                      <div style={{ fontSize: 10.5, color: C.inkDim, marginTop: 2, lineHeight: 1.25 }}>
                         {lingua === 'en' ? 'Clear low obstacle: Athletics DC 10. Difficult terrain landing: Acrobatics DC 10 or prone.' : 'Ostacolo basso: Atletica CD 10. Terreno difficile: Acrobazia CD 10 o prono.'}
                       </div>
                     </div>
@@ -8708,7 +8708,7 @@ export default function App() {
                   <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span>{lingua === 'en' ? 'Lifting & Dragging Capacity' : 'Sollevamento & Spinta / Trascinamento'}</span>
                     {mov.haCorporaturaPossente && (
-                      <span style={{ fontSize: 10, color: '#10b981', background: 'rgba(16,185,129,0.12)', border: '1px solid #10b981', padding: '1px 5px', borderRadius: 4, fontWeight: 700 }}>
+                      <span style={{ fontSize: 10.5, color: '#10b981', background: 'rgba(16,185,129,0.12)', border: '1px solid #10b981', padding: '1px 5px', borderRadius: 4, fontWeight: 700 }}>
                         ✨ {lingua === 'en' ? 'Powerful Build ×2' : 'Corporatura Possente ×2'}
                       </span>
                     )}
@@ -8717,12 +8717,12 @@ export default function App() {
                     <div style={{ background: C.panel, padding: '8px 10px', borderRadius: 6, border: `1px solid ${C.border}` }}>
                       <div style={{ fontSize: 11, color: C.inkDim }}>🏋️ {lingua === 'en' ? 'Max Overhead Lift:' : 'Sollevamento Massimo:'}</div>
                       <div style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>{mov.sollevamentoKg} kg</div>
-                      <div style={{ fontSize: 10, color: C.inkDim }}>{lingua === 'en' ? '(Strength × 15 kg)' : '(Forza × 15 kg)'}</div>
+                      <div style={{ fontSize: 10.5, color: C.inkDim }}>{lingua === 'en' ? '(Strength × 15 kg)' : '(Forza × 15 kg)'}</div>
                     </div>
                     <div style={{ background: C.panel, padding: '8px 10px', borderRadius: 6, border: `1px solid ${C.border}` }}>
                       <div style={{ fontSize: 11, color: C.inkDim }}>🚜 {lingua === 'en' ? 'Max Push / Drag:' : 'Spinta / Trascinamento Max:'}</div>
                       <div style={{ fontSize: 16, fontWeight: 800, color: C.goldDark }}>{mov.spintaKg} kg</div>
-                      <div style={{ fontSize: 10, color: C.inkDim }}>{lingua === 'en' ? '(Strength × 30 kg)' : '(Forza × 30 kg)'}</div>
+                      <div style={{ fontSize: 10.5, color: C.inkDim }}>{lingua === 'en' ? '(Strength × 30 kg)' : '(Forza × 30 kg)'}</div>
                     </div>
                   </div>
                 </div>
@@ -8863,7 +8863,7 @@ export default function App() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <span style={{ fontSize: 14 }}>{r.tipo === 'incantesimo' ? '🪄' : r.tipo === 'privilegio' ? '🛡️' : r.tipo === 'talento' ? '⭐' : '⚔️'}</span>
                           <strong style={{ fontSize: 13, color: C.ink }}>{r.nome}</strong>
-                          <span style={{ fontSize: 9.5, textTransform: 'uppercase', padding: '1px 5px', borderRadius: 4, background: 'rgba(0,0,0,0.06)', color: C.inkDim, fontWeight: 700 }}>
+                          <span style={{ fontSize: 10.5, textTransform: 'uppercase', padding: '1px 5px', borderRadius: 4, background: 'rgba(0,0,0,0.06)', color: C.inkDim, fontWeight: 700 }}>
                             {r.tipo}
                           </span>
                         </div>
@@ -8872,7 +8872,7 @@ export default function App() {
                             <button
                               type="button"
                               onClick={() => aggiungiAgliAttacchi(r)}
-                              style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 6px' }}
+                              style={{ ...styles.buttonMini, fontSize: 10.5, padding: '2px 6px' }}
                               title={lingua === 'en' ? 'Add to quick attacks list' : 'Aggiungi alla tabella attacchi/reazioni'}
                             >
                               ➕ {lingua === 'en' ? 'Pin' : 'Aggiungi'}
@@ -9105,11 +9105,11 @@ export default function App() {
                               🔧 {syn.strumento}
                             </strong>
                             {syn.posseduto ? (
-                              <span style={{ fontSize: 10, fontWeight: 700, color: '#2e9d4d', background: 'rgba(46,157,77,0.15)', padding: '1px 6px', borderRadius: 4 }}>
+                              <span style={{ fontSize: 10.5, fontWeight: 700, color: '#2e9d4d', background: 'rgba(46,157,77,0.15)', padding: '1px 6px', borderRadius: 4 }}>
                                 ✓ {lingua === 'en' ? 'Possessed / Proficient' : 'Posseduto / Addestrato'}
                               </span>
                             ) : (
-                              <span style={{ fontSize: 10, color: C.inkDim }}>
+                              <span style={{ fontSize: 10.5, color: C.inkDim }}>
                                 {lingua === 'en' ? 'Not in inventory' : 'Non posseduto'}
                               </span>
                             )}
@@ -9638,12 +9638,12 @@ export default function App() {
                                 <span style={{ fontWeight: 700, color: isNuovoLiv ? '#2e9d4d' : C.goldDark }}>{l}° Liv:</span>
                                 <span>{tot} {tot === 1 ? 'slot' : 'slot'}</span>
                                 {isNuovoLiv && (
-                                  <span style={{ fontSize: 10, background: '#2e9d4d', color: '#fff', padding: '1px 5px', borderRadius: 4, fontWeight: 800 }}>
+                                  <span style={{ fontSize: 10.5, background: '#2e9d4d', color: '#fff', padding: '1px 5px', borderRadius: 4, fontWeight: 800 }}>
                                     {lingua === 'it' ? 'NUOVO' : 'NEW'}
                                   </span>
                                 )}
                                 {isAumentato && (
-                                  <span style={{ fontSize: 10, background: '#d97706', color: '#fff', padding: '1px 5px', borderRadius: 4, fontWeight: 800 }}>
+                                  <span style={{ fontSize: 10.5, background: '#d97706', color: '#fff', padding: '1px 5px', borderRadius: 4, fontWeight: 800 }}>
                                     +{tot - prevTot}
                                   </span>
                                 )}
@@ -10036,7 +10036,7 @@ export default function App() {
                         <div key={lv} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' }}>
                           <span style={{ minWidth: 44 }}>Liv. {lv}</span>
                           <button
-                            style={{ ...styles.modeButton(!scelta), fontSize: 10, padding: '2px 7px' }}
+                            style={{ ...styles.modeButton(!scelta), fontSize: 10.5, padding: '2px 7px' }}
                             onClick={() => setB({ asiTalenti: { ...bozzaCrea.asiTalenti, [lv]: '' } })}
                           >+2 auto</button>
                           <select
@@ -10375,7 +10375,7 @@ export default function App() {
               <span style={{ fontSize: 16 }}>📂</span>
               <div>
                 <strong style={{ display: 'block' }}>{t('import_export.carica_file')}</strong>
-                <span style={{ fontSize: 10, color: C.inkDim, fontWeight: 'normal' }}>{t('import_export.carica_file_sub')}</span>
+                <span style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 'normal' }}>{t('import_export.carica_file_sub')}</span>
               </div>
             </button>
 
@@ -10417,7 +10417,7 @@ export default function App() {
               <span style={{ fontSize: 16 }}>📋</span>
               <div>
                 <strong style={{ display: 'block' }}>{t('import_export.incolla_json')}</strong>
-                <span style={{ fontSize: 10, color: C.inkDim, fontWeight: 'normal' }}>{t('import_export.incolla_json_sub')}</span>
+                <span style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 'normal' }}>{t('import_export.incolla_json_sub')}</span>
               </div>
             </button>
 
@@ -10438,7 +10438,7 @@ export default function App() {
               <span style={{ fontSize: 16 }}>💾</span>
               <div>
                 <strong style={{ display: 'block' }}>{t('esporta.salva_json')}</strong>
-                <span style={{ fontSize: 10, color: C.inkDim, fontWeight: 'normal' }}>{t('esporta.salva_json_sub')}</span>
+                <span style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 'normal' }}>{t('esporta.salva_json_sub')}</span>
               </div>
             </button>
 
@@ -10455,7 +10455,7 @@ export default function App() {
               <span style={{ fontSize: 16 }}>🖨️</span>
               <div>
                 <strong style={{ display: 'block' }}>{t('esporta.stampa_pdf')}</strong>
-                <span style={{ fontSize: 10, color: '#fff', opacity: 0.9, fontWeight: 'normal' }}>{t('esporta.stampa_pdf_sub')}</span>
+                <span style={{ fontSize: 10.5, color: '#fff', opacity: 0.9, fontWeight: 'normal' }}>{t('esporta.stampa_pdf_sub')}</span>
               </div>
             </button>
 
@@ -10470,7 +10470,7 @@ export default function App() {
               <span style={{ fontSize: 16 }}>🔗</span>
               <div>
                 <strong style={{ display: 'block' }}>{t('esporta.condividi_link')}</strong>
-                <span style={{ fontSize: 10, color: C.inkDim, fontWeight: 'normal' }}>{t('esporta.condividi_link_sub')}</span>
+                <span style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 'normal' }}>{t('esporta.condividi_link_sub')}</span>
               </div>
             </button>
 
@@ -10485,7 +10485,7 @@ export default function App() {
               <span style={{ fontSize: 16 }}>🗄️</span>
               <div>
                 <strong style={{ display: 'block' }}>{t('esporta.backup_tutti')}</strong>
-                <span style={{ fontSize: 10, color: C.inkDim, fontWeight: 'normal' }}>{t('esporta.backup_tutti_sub')}</span>
+                <span style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 'normal' }}>{t('esporta.backup_tutti_sub')}</span>
               </div>
             </button>
           </div>
@@ -10538,7 +10538,7 @@ export default function App() {
                       {nuvolettaCorrezioni.titolo}
                     </strong>
                     <button
-                      style={{ ...styles.buttonMini, padding: '1px 6px', fontSize: 10, lineHeight: 1 }}
+                      style={{ ...styles.buttonMini, padding: '1px 6px', fontSize: 10.5, lineHeight: 1 }}
                       onClick={() => setNuvolettaCorrezioni(null)}
                       title={lingua === 'en' ? 'Close' : 'Chiudi'}
                     >✕</button>
@@ -10574,7 +10574,7 @@ export default function App() {
                         <div style={{ marginTop: 6, paddingTop: 6, borderTop: `1px solid rgba(46, 157, 77, 0.25)`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
                           <span style={{ ...styles.detail, fontSize: 10.5 }}>{t('notifiche.controlli_ignorati', { n: scheda.controlliIgnorati.length })}</span>
                           <button
-                            style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 5px' }}
+                            style={{ ...styles.buttonMini, fontSize: 10.5, padding: '2px 5px' }}
                             onClick={() => aggiorna({ controlliIgnorati: [] })}
                           >
                             {t('notifiche.mostra_ignorati')}
@@ -10648,7 +10648,7 @@ export default function App() {
                           ))}
                           {ignorati.length > 0 && (
                             <button
-                              style={{ ...styles.buttonMini, fontSize: 10, alignSelf: 'flex-start', marginTop: 3 }}
+                              style={{ ...styles.buttonMini, fontSize: 10.5, alignSelf: 'flex-start', marginTop: 3 }}
                               onClick={() => aggiorna({ controlliIgnorati: [] })}
                             >↺ {lingua === 'en' ? `Show ${ignorati.length} ignored` : `Mostra anche i ${ignorati.length} ignorati`}</button>
                           )}
@@ -10752,7 +10752,7 @@ export default function App() {
               {nuvolettaCorrezioni.titolo}
             </strong>
             <button
-              style={{ ...styles.buttonMini, padding: '1px 6px', fontSize: 10 }}
+              style={{ ...styles.buttonMini, padding: '1px 6px', fontSize: 10.5 }}
               onClick={() => setNuvolettaCorrezioni(null)}
               title={lingua === 'en' ? 'Close' : 'Chiudi'}
             >✕</button>
@@ -11093,7 +11093,7 @@ export default function App() {
                             {lingua === 'it' ? m.nome : m.nomeEn}
                           </span>
                           <span style={{
-                            fontSize: 10, fontWeight: 800, padding: '1px 5px', borderRadius: 4,
+                            fontSize: 10.5, fontWeight: 800, padding: '1px 5px', borderRadius: 4,
                             background: m.colore, color: '#ffffff',
                           }}>
                             {m.codice}
@@ -11315,7 +11315,7 @@ export default function App() {
                       <div style={{ fontSize: 11, fontWeight: 700, textAlign: 'center', color: C.ink, lineHeight: 1.2 }}>
                         {g.nome}
                       </div>
-                      <div style={{ fontSize: 9.5, color: C.inkDim, textAlign: 'center' }}>
+                      <div style={{ fontSize: 10.5, color: C.inkDim, textAlign: 'center' }}>
                         {g.tag}
                       </div>
                     </div>
@@ -11554,13 +11554,13 @@ export default function App() {
                   }}
                 >
                   <span style={{ fontSize: 13 }}>{sfx.icona}</span>
-                  <span style={{ fontSize: 9.5, whiteSpace: 'nowrap' }}>{sfx.label}</span>
+                  <span style={{ fontSize: 10.5, whiteSpace: 'nowrap' }}>{sfx.label}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          <div style={{ fontSize: 10, color: C.inkDim, opacity: 0.8, textAlign: 'center' }}>
+          <div style={{ fontSize: 10.5, color: C.inkDim, opacity: 0.8, textAlign: 'center' }}>
             🔊 Suoni ambientali ed effetti procedurali · Web Audio API & Freesound CC0
           </div>
         </div>
@@ -11678,7 +11678,7 @@ export default function App() {
             );
 
             const stileEtichettaInline = {
-              fontSize: 9,
+              fontSize: 10.5,
               fontWeight: 800,
               letterSpacing: 0.6,
               textTransform: 'uppercase',
@@ -11712,7 +11712,7 @@ export default function App() {
                     <span style={{ fontSize: 18, lineHeight: 1 }}>🎲</span>
                     <span style={{ fontFamily: "var(--font-title, Georgia, 'Times New Roman', serif)", fontSize: 16.5, fontWeight: 800, color: 'var(--c-title)', letterSpacing: 0.5, whiteSpace: 'nowrap', transition: 'color 0.2s ease', display: 'inline-flex', alignItems: 'center', gap: 2 }}>
                       Tavolo dei Dadi
-                      <span className="app-version" style={{ fontSize: 8.5, color: C.inkDim, opacity: 0.75, fontWeight: 600, fontVariantNumeric: 'tabular-nums', letterSpacing: 0.3, whiteSpace: 'nowrap', lineHeight: 1, transform: 'translateY(1px)' }}>
+                      <span className="app-version" style={{ fontSize: 10.5, color: C.inkDim, opacity: 0.75, fontWeight: 600, fontVariantNumeric: 'tabular-nums', letterSpacing: 0.3, whiteSpace: 'nowrap', lineHeight: 1, transform: 'translateY(1px)' }}>
                         v{APP_VERSION}
                       </span>
                     </span>
@@ -11904,7 +11904,7 @@ export default function App() {
                     <span style={{ fontSize: 16, lineHeight: 1 }}>🎲</span>
                     <span style={{ fontFamily: "var(--font-title, Georgia, 'Times New Roman', serif)", fontSize: 15, fontWeight: 800, color: 'var(--c-title)', letterSpacing: 0.4, whiteSpace: 'nowrap', transition: 'color 0.2s ease', display: 'inline-flex', alignItems: 'center', gap: 2 }}>
                       Tavolo dei Dadi
-                      <span className="app-version" style={{ fontSize: 8, color: C.inkDim, opacity: 0.7, fontWeight: 600, fontVariantNumeric: 'tabular-nums', letterSpacing: 0.2, whiteSpace: 'nowrap', lineHeight: 1, transform: 'translateY(1px)' }}>
+                      <span className="app-version" style={{ fontSize: 10.5, color: C.inkDim, opacity: 0.7, fontWeight: 600, fontVariantNumeric: 'tabular-nums', letterSpacing: 0.2, whiteSpace: 'nowrap', lineHeight: 1, transform: 'translateY(1px)' }}>
                         v{APP_VERSION}
                       </span>
                     </span>
@@ -12188,7 +12188,7 @@ export default function App() {
                       onClick={() => lanciaD20(`Prova di ${t('attr.' + car)}${sostituita ? ` (${formaAttiva.dati.nome})` : ''}`, mod, { tipoTiro: 'prova' })}
                       title={sostituita ? `Clicca per tirare Prova di ${t('attr.' + car)}: 1d20 ${conSegno(mod)}` : `Tua: non sostituita dalla forma. Clicca per tirare Prova di ${t('attr.' + car)}: 1d20 ${conSegno(mod)}`}
                     >
-                      <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: C.inkDim }}>{sigla} ({sostituita ? 'Forma' : 'Tua'}) 🎲</div>
+                      <div style={{ fontSize: 10.5, fontWeight: 800, textTransform: 'uppercase', color: C.inkDim }}>{sigla} ({sostituita ? 'Forma' : 'Tua'}) 🎲</div>
                       <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>
                         {val} <span style={{ color: C.goldDark, fontSize: 12.5 }}>({conSegno(mod)})</span>
                       </div>
@@ -12393,7 +12393,7 @@ export default function App() {
                           {scheda.ispirazione ? '★' : '☆'}
                         </span>
                         <span style={{
-                          fontSize: 9.5, fontWeight: 700,
+                          fontSize: 10.5, fontWeight: 700,
                           color: scheda.ispirazione ? '#f0c43f' : '#ddd',
                           letterSpacing: 0.5,
                           textTransform: 'uppercase',
@@ -12409,7 +12409,7 @@ export default function App() {
                             alt={`${campoForma === 'metamorfosi' ? 'Metamorfosi' : 'Forma Selvatica'}: ${formaAttiva.dati.nome}`}
                             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                           />
-                          <div style={{ position: 'absolute', top: 6, right: 6, zIndex: 3, background: 'rgba(8, 28, 21, 0.92)', color: '#d8f3dc', border: '1px solid #52b788', borderRadius: 6, fontSize: 9.5, fontWeight: 800, padding: '2px 6px', textTransform: 'uppercase', letterSpacing: 0.5, boxShadow: '0 2px 6px rgba(0,0,0,0.4)' }}>
+                          <div style={{ position: 'absolute', top: 6, right: 6, zIndex: 3, background: 'rgba(8, 28, 21, 0.92)', color: '#d8f3dc', border: '1px solid #52b788', borderRadius: 6, fontSize: 10.5, fontWeight: 800, padding: '2px 6px', textTransform: 'uppercase', letterSpacing: 0.5, boxShadow: '0 2px 6px rgba(0,0,0,0.4)' }}>
                             {campoForma === 'metamorfosi' ? '🔮' : '🐾'} {campoForma === 'metamorfosi' ? (lingua === 'en' ? 'Polymorph' : 'Metamorfosi') : (lingua === 'en' ? 'Beast' : 'Bestia')}
                           </div>
                           <button
@@ -12417,7 +12417,7 @@ export default function App() {
                             style={{
                               position: 'absolute', top: 6, left: 6, zIndex: 3,
                               background: 'rgba(8, 28, 21, 0.9)', color: '#d8f3dc',
-                              border: '1px solid #52b788', borderRadius: 6, fontSize: 10,
+                              border: '1px solid #52b788', borderRadius: 6, fontSize: 10.5,
                               fontWeight: 800, padding: '2px 6px', cursor: 'pointer',
                               display: 'flex', alignItems: 'center', gap: 3,
                               boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
@@ -12448,7 +12448,7 @@ export default function App() {
                               alt={`Ritratto di ${scheda.nome}`}
                               style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                             />
-                            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.35)', color: '#fff', fontSize: 9, letterSpacing: 1, textAlign: 'center', padding: '2px 0' }}>{t("profilo.ritratto")}</div>
+                            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.35)', color: '#fff', fontSize: 10.5, letterSpacing: 1, textAlign: 'center', padding: '2px 0' }}>{t("profilo.ritratto")}</div>
                           </div>
                         )
                       )}
@@ -12581,10 +12581,21 @@ export default function App() {
                     const spiegazione = spiegaRisorsa(r.nome);
                     const automatica = String(r.id || '').startsWith('auto-');
                     const nomeVisualizzato = traduciDato(r.nome);
+                    // La risorsa "Forma Selvatica" apre direttamente il catalogo delle creature
+                    // (invece della sola descrizione): è qui che si "spende" un uso scegliendo
+                    // la forma, non con un bottone Trasformazioni separato altrove nella scheda.
+                    const isFormaSelvatica = /forma selvatica|wild shape/i.test(r.nome || '');
                     return (
                       <div key={r.id} style={{ marginBottom: 8, fontSize: 12, paddingBottom: 8, borderBottom: `1px dotted ${C.border}` }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                          {spiegazione ? (
+                          {isFormaSelvatica ? (
+                            <button
+                              type="button"
+                              title={lingua === 'en' ? 'Open the Wild Shape catalog (choose the beast to become)' : 'Apri il catalogo Forma Selvatica (scegli la bestia da assumere)'}
+                              onClick={() => setTabTrasformazione('animale')}
+                              style={{ padding: 0, border: 0, background: 'transparent', color: C.goldDark, font: 'inherit', fontWeight: 700, textAlign: 'left', cursor: 'pointer', textDecoration: 'underline dotted', textUnderlineOffset: 2, marginRight: 'auto', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
+                            >🐾 {nomeVisualizzato}</button>
+                          ) : spiegazione ? (
                             <button
                               type="button"
                               title={spiegazione}
@@ -12615,7 +12626,7 @@ export default function App() {
                             : <Editable value={r.max} tipo="numero" width={30} onChange={(v) => modifica({ max: Math.max(0, v), attuali: Math.min(Math.max(0, v), r.attuali) })} />}
                           </span>
                           {automatica ? (
-                            <span style={{ ...styles.detail, fontSize: 10, whiteSpace: 'nowrap', marginLeft: 'auto' }} title={t('tip.quando_ricarica')}>↻ {r.reset === 'breve' ? t('res.breve') : t('res.lungo')}</span>
+                            <span style={{ ...styles.detail, fontSize: 10.5, whiteSpace: 'nowrap', marginLeft: 'auto' }} title={t('tip.quando_ricarica')}>↻ {r.reset === 'breve' ? t('res.breve') : t('res.lungo')}</span>
                           ) : (
                             <select
                               style={{ ...styles.inlineInput, fontSize: 11, padding: '1px 3px', width: 'auto', marginLeft: 'auto' }}
@@ -12759,7 +12770,7 @@ export default function App() {
                           </span>
                           <span
                             style={{
-                              fontSize: 9,
+                              fontSize: 10.5,
                               color: '#1b4332',
                               background: 'rgba(46,125,50,0.15)',
                               border: '1px solid #52b788',
@@ -12834,13 +12845,13 @@ export default function App() {
                             const infoPe = dettagliEsperienza(scheda.pe, livTotale);
                             if (infoPe.puoSalire) {
                               return (
-                                <span style={{ fontSize: 9.5, fontWeight: 700, color: '#10b981', background: 'rgba(16,185,129,0.12)', border: '1px solid #10b981', padding: '0 4px', borderRadius: 3 }}>
+                                <span style={{ fontSize: 10.5, fontWeight: 700, color: '#10b981', background: 'rgba(16,185,129,0.12)', border: '1px solid #10b981', padding: '0 4px', borderRadius: 3 }}>
                                   ✨ Up!
                                 </span>
                               );
                             }
                             return (
-                              <span style={{ fontSize: 10, color: C.inkDim, fontWeight: 400 }}>
+                              <span style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 400 }}>
                                 {infoPe.percentuale}%
                               </span>
                             );
@@ -13118,7 +13129,7 @@ export default function App() {
                     {/* PF Temporanei / Info PF Druido se in Forma Bestiale */}
                     {isTrasformato ? (
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, margin: '3px 0 4px' }}>
-                        <span style={{ fontSize: 10, color: C.inkDim, background: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: 6, border: `1px solid ${C.border}` }}>
+                        <span style={{ fontSize: 10.5, color: C.inkDim, background: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: 6, border: `1px solid ${C.border}` }}>
                           👤 {lingua === 'en' ? 'Humanoid HP (preserved)' : 'PF Umanoide (preservati)'}: <strong>{scheda.pfAttuali} / {scheda.pfMax}</strong>
                         </span>
                       </div>
@@ -13128,7 +13139,7 @@ export default function App() {
                           style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#42a5f5', background: 'rgba(66,165,245,0.12)', border: '1px solid rgba(66,165,245,0.45)', borderRadius: 10, padding: '1px 8px' }}
                           title={t('vital.temporanei')}
                         >
-                          🛡️ <span style={{ fontSize: 9.5, color: C.inkDim, letterSpacing: 0.4, textTransform: 'uppercase' }}>{t("vital.temporanei")}</span>
+                          🛡️ <span style={{ fontSize: 10.5, color: C.inkDim, letterSpacing: 0.4, textTransform: 'uppercase' }}>{t("vital.temporanei")}</span>
                           <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={24} style={{ fontSize: 12, fontWeight: 'bold', color: '#42a5f5' }} />
                         </span>
                       </div>
@@ -13398,7 +13409,7 @@ export default function App() {
                       {caTotale(scheda)}
                       <BadgePotere scheda={scheda} bersaglio="ca" />
                       {bonusCopertura(scheda).ca > 0 && (
-                        <span style={{ fontSize: 10, color: '#2e9d4d', fontWeight: 800, marginLeft: 3 }} title={bonusCopertura(scheda).labelIt}>
+                        <span style={{ fontSize: 10.5, color: '#2e9d4d', fontWeight: 800, marginLeft: 3 }} title={bonusCopertura(scheda).labelIt}>
                           (+{bonusCopertura(scheda).ca})
                         </span>
                       )}
@@ -13406,7 +13417,7 @@ export default function App() {
                   )}
                 </div>
                 <select
-                  style={{ ...styles.inlineInput, fontSize: 10, padding: '1px 3px', maxWidth: '100%', marginTop: 2 }}
+                  style={{ ...styles.inlineInput, fontSize: 10.5, padding: '1px 3px', maxWidth: '100%', marginTop: 2 }}
                   value={scheda.armatura.tipo}
                   onChange={(e) => {
                     const tipo = e.target.value;
@@ -13424,7 +13435,7 @@ export default function App() {
                     return <option key={ta.key} value={ta.key} disabled={bloccato}>{t('armor.' + ta.key)}</option>;
                   })}
                 </select>
-                <div style={{ fontSize: 10, color: C.inkDim, display: 'flex', gap: 5, alignItems: 'center', justifyContent: 'center', marginTop: 4, flexWrap: 'wrap' }}>
+                <div style={{ fontSize: 10.5, color: C.inkDim, display: 'flex', gap: 5, alignItems: 'center', justifyContent: 'center', marginTop: 4, flexWrap: 'wrap' }}>
                   {(scheda.armatura.tipo === 'leggera' || scheda.armatura.tipo === 'media' || scheda.armatura.tipo === 'pesante') && (
                     <span title={`CA base dell'armatura. Esempi: ${ESEMPI_ARMATURA[scheda.armatura.tipo]}`}>base <Editable value={scheda.armatura.base} tipo="numero" width={24} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, base: Math.max(0, v) } })} /></span>
                   )}
@@ -13450,7 +13461,7 @@ export default function App() {
                 </div>
                 <div style={{ marginTop: 3, width: '100%' }}>
                   <select
-                    style={{ ...styles.inlineInput, fontSize: 9.5, padding: '1px 3px', width: '100%', maxWidth: '100%', color: (scheda.copertura && scheda.copertura !== 'nessuna') ? '#2e9d4d' : C.inkDim, fontWeight: (scheda.copertura && scheda.copertura !== 'nessuna') ? 700 : 400 }}
+                    style={{ ...styles.inlineInput, fontSize: 10.5, padding: '1px 3px', width: '100%', maxWidth: '100%', color: (scheda.copertura && scheda.copertura !== 'nessuna') ? '#2e9d4d' : C.inkDim, fontWeight: (scheda.copertura && scheda.copertura !== 'nessuna') ? 700 : 400 }}
                     value={scheda.copertura || 'nessuna'}
                     onChange={(e) => {
                       const v = e.target.value;
@@ -13468,7 +13479,7 @@ export default function App() {
                   </select>
                 </div>
                 {(!competenteInArmatura(scheda, scheda.armatura.tipo) || (scheda.armatura.scudo && !scheda.addestramento?.armature?.scudi)) && (
-                  <div style={{ fontSize: 9, color: C.red, marginTop: 3, lineHeight: 1.2 }} title={t('tip.senza_comp_armatura')}>
+                  <div style={{ fontSize: 10.5, color: C.red, marginTop: 3, lineHeight: 1.2 }} title={t('tip.senza_comp_armatura')}>
                     ⚠️ Non competente{!competenteInArmatura(scheda, scheda.armatura.tipo) ? ` (${scheda.armatura.tipo})` : ''}{scheda.armatura.scudo && !scheda.addestramento?.armature?.scudi ? ' (scudo)' : ''}
                   </div>
                 )}
@@ -13492,7 +13503,7 @@ export default function App() {
                   const bcAtteso = bonusCompetenzaDaLivello(livTot);
                   if (scheda.bonusCompetenza !== bcAtteso) {
                     return (
-                      <span className="tirabile" style={{ fontSize: 9, color: C.goldDark, cursor: 'pointer', marginTop: 1 }}
+                      <span className="tirabile" style={{ fontSize: 10.5, color: C.goldDark, cursor: 'pointer', marginTop: 1 }}
                         title={`Bonus corretto per liv. ${livTot}: ${conSegno(bcAtteso)}`}
                         onClick={() => aggiorna({ bonusCompetenza: bcAtteso })}>
                         auto {conSegno(bcAtteso)}
@@ -13547,7 +13558,7 @@ export default function App() {
                 <div
                   onClick={() => setMostraModalMovimento(true)}
                   style={{
-                    fontSize: 10,
+                    fontSize: 10.5,
                     color: C.goldDark,
                     textAlign: 'center',
                     fontWeight: 600,
@@ -13566,7 +13577,7 @@ export default function App() {
                   title={lingua === 'en' ? 'Click to open Movement, Jump & Carrying Calculator' : 'Clicca per aprire il Calcolatore Salti, Movimento e Capacità Fisiche'}
                 >
                   <span>{t('vital.movimenti')}</span>
-                  <span style={{ fontSize: 8.5, opacity: 0.8 }}>▼</span>
+                  <span style={{ fontSize: 10.5, opacity: 0.8 }}>▼</span>
                 </div>
               </div>
             </div>
@@ -13579,7 +13590,7 @@ export default function App() {
                   <button style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 13 }} onClick={() => aggiorna({ sfinimento: Math.min(6, scheda.sfinimento + 1) })} title={t('tip.aumenta')}>+</button>
                 </div>
                 {scheda.sfinimento > 0 && (
-                  <div style={{ fontSize: 9, color: C.red }} title={versione === '2024' ? 'Regole 2024: −2 ai tiri di d20 per livello' : `Regole 2014: ${SFINIMENTO_2014[scheda.sfinimento]}`}>
+                  <div style={{ fontSize: 10.5, color: C.red }} title={versione === '2024' ? 'Regole 2024: −2 ai tiri di d20 per livello' : `Regole 2014: ${SFINIMENTO_2014[scheda.sfinimento]}`}>
                     {versione === '2024' ? `−${scheda.sfinimento * 2}` : SFINIMENTO_2014[scheda.sfinimento]}
                   </div>
                 )}
@@ -13832,7 +13843,7 @@ export default function App() {
                         <strong style={{ width: 26, flexShrink: 0, textAlign: 'center' }}>{conSegno(bonusTS)}</strong>
                         <em className="skill-nome" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0, flex: 1 }}>{t('attr.tiro_salvezza')}</em>
                         {tsMancante && (
-                          <span style={{ marginLeft: 'auto', fontSize: 9.5, color: C.red, fontWeight: 700 }}>⚠️ Manca</span>
+                          <span style={{ marginLeft: 'auto', fontSize: 10.5, color: C.red, fontWeight: 700 }}>⚠️ Manca</span>
                         )}
                         {(() => {
                           const bonusOggettiTS = bonusTiriSalvezzaOggetti(scheda);
@@ -13849,7 +13860,7 @@ export default function App() {
                                   setFontePopover((v) => (v && v.tipo === 'ts' && v.key === key ? null : { tipo: 'ts', key, ...posizionePopover(r, window) }));
                                 }}
                                 title={t('inv.fonte_bonus_tip')}
-                                style={{ ...styles.buttonMini, fontSize: 10, padding: '0 5px', height: 18, lineHeight: '16px', color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.12)' }}
+                                style={{ ...styles.buttonMini, fontSize: 10.5, padding: '0 5px', height: 18, lineHeight: '16px', color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.12)' }}
                               >✨ +{bonusOggettiTS}</button>
                               {fontePopover?.tipo === 'ts' && fontePopover.key === key && createPortal(
                                 <div
@@ -13912,7 +13923,7 @@ export default function App() {
                           title={lingua === 'en' ? 'Click for 5e rules, DCs, and tool synergies' : 'Click per guida 5e, CD di riferimento e sinergie con strumenti'}
                         >{t('skill.' + a.key)}</span>
                         {abMancante && (
-                          <span style={{ marginLeft: 'auto', fontSize: 9.5, color: C.red, fontWeight: 700 }}>⚠️ Manca</span>
+                          <span style={{ marginLeft: 'auto', fontSize: 10.5, color: C.red, fontWeight: 700 }}>⚠️ Manca</span>
                         )}
                       </Rollable>
                     );
@@ -14151,7 +14162,7 @@ export default function App() {
                         <button
                           type="button"
                           onClick={() => setTurno({ movimentoUsato: Math.min(turno.movimentoMax, turno.movimentoUsato + 1.5) })}
-                          style={{ ...styles.buttonMini, fontSize: 9.5, padding: '1px 5px' }}
+                          style={{ ...styles.buttonMini, fontSize: 10.5, padding: '1px 5px' }}
                           title="-1.5m (1 quadretto)"
                         >
                           −1.5m
@@ -14159,7 +14170,7 @@ export default function App() {
                         <button
                           type="button"
                           onClick={() => setTurno({ movimentoUsato: Math.min(turno.movimentoMax, turno.movimentoUsato + 3) })}
-                          style={{ ...styles.buttonMini, fontSize: 9.5, padding: '1px 5px' }}
+                          style={{ ...styles.buttonMini, fontSize: 10.5, padding: '1px 5px' }}
                           title="-3m (2 quadretti)"
                         >
                           −3m
@@ -14168,7 +14179,7 @@ export default function App() {
                           <button
                             type="button"
                             onClick={() => setTurno({ movimentoUsato: 0 })}
-                            style={{ ...styles.buttonMini, fontSize: 9.5, padding: '1px 5px', color: C.inkDim }}
+                            style={{ ...styles.buttonMini, fontSize: 10.5, padding: '1px 5px', color: C.inkDim }}
                             title="Ripristina movimento intero"
                           >
                             ↺
@@ -14190,7 +14201,7 @@ export default function App() {
                         {lingua === 'en' ? 'More options (Tactics, Cover, Class Powers)' : 'Altre opzioni (Tattiche, Copertura, Poteri)'}
                       </span>
                       {azioniAvanzateAttive && !azioniAltreAperte && (
-                        <span style={{ fontSize: 9.5, fontWeight: 700, color: C.goldDark, background: 'rgba(201,162,39,0.18)', border: `1px solid ${C.gold}`, borderRadius: 999, padding: '1px 7px' }}>
+                        <span style={{ fontSize: 10.5, fontWeight: 700, color: C.goldDark, background: 'rgba(201,162,39,0.18)', border: `1px solid ${C.gold}`, borderRadius: 999, padding: '1px 7px' }}>
                           {lingua === 'en' ? 'active' : 'attive'}
                         </span>
                       )}
@@ -14205,7 +14216,7 @@ export default function App() {
                             onClick={() => setTurno({ interazione: !turno.interazioneUsata })}
                             style={{
                               ...styles.buttonMini,
-                              fontSize: 10,
+                              fontSize: 10.5,
                               padding: '2px 6px',
                               fontWeight: turno.interazioneUsata ? 700 : 500,
                               background: turno.interazioneUsata ? 'rgba(239,68,68,0.08)' : 'transparent',
@@ -14221,7 +14232,7 @@ export default function App() {
                             onClick={() => applicaTattica('schivata')}
                             style={{
                               ...styles.buttonMini,
-                              fontSize: 10,
+                              fontSize: 10.5,
                               padding: '2px 6px',
                               background: turno.tatticaAttiva === 'schivata' ? 'rgba(201,162,39,0.2)' : 'transparent',
                               borderColor: turno.tatticaAttiva === 'schivata' ? C.goldDark : C.border,
@@ -14236,7 +14247,7 @@ export default function App() {
                             onClick={() => applicaTattica('disimpegno')}
                             style={{
                               ...styles.buttonMini,
-                              fontSize: 10,
+                              fontSize: 10.5,
                               padding: '2px 6px',
                               background: turno.tatticaAttiva === 'disimpegno' ? 'rgba(59,130,246,0.2)' : 'transparent',
                               borderColor: turno.tatticaAttiva === 'disimpegno' ? '#3b82f6' : C.border,
@@ -14251,7 +14262,7 @@ export default function App() {
                             onClick={() => applicaTattica('scatto')}
                             style={{
                               ...styles.buttonMini,
-                              fontSize: 10,
+                              fontSize: 10.5,
                               padding: '2px 6px',
                               background: turno.tatticaAttiva === 'scatto' ? 'rgba(16,185,129,0.2)' : 'transparent',
                               borderColor: turno.tatticaAttiva === 'scatto' ? '#10b981' : C.border,
@@ -14264,7 +14275,7 @@ export default function App() {
                           <button
                             type="button"
                             onClick={() => applicaTattica('nascondersi')}
-                            style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 6px' }}
+                            style={{ ...styles.buttonMini, fontSize: 10.5, padding: '2px 6px' }}
                             title={lingua === 'en' ? 'Hide action (Stealth check)' : 'Azione Nascondersi (prova rapida di Furtività)'}
                           >
                             🙈 {lingua === 'en' ? 'Hide' : 'Nasconditi'}
@@ -14272,7 +14283,7 @@ export default function App() {
                           <button
                             type="button"
                             onClick={() => applicaTattica('aiuto')}
-                            style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 6px' }}
+                            style={{ ...styles.buttonMini, fontSize: 10.5, padding: '2px 6px' }}
                             title={lingua === 'en' ? 'Help action (grants advantage to an ally)' : 'Azione Aiuto (concede vantaggio a un alleato)'}
                           >
                             🤝 {lingua === 'en' ? 'Help' : 'Aiuta'}
@@ -14308,7 +14319,7 @@ export default function App() {
                                   }}
                                   style={{
                                     ...styles.buttonMini,
-                                    fontSize: 10,
+                                    fontSize: 10.5,
                                     padding: '2px 7px',
                                     fontWeight: attivo ? 700 : 500,
                                     background: attivo ? (cop.ca >= 5 ? 'rgba(239,68,68,0.18)' : cop.ca >= 2 ? 'rgba(46,157,77,0.18)' : 'rgba(201,162,39,0.18)') : 'transparent',
@@ -14357,7 +14368,7 @@ export default function App() {
                                     }}
                                     style={{
                                       ...styles.buttonMini,
-                                      fontSize: 10,
+                                      fontSize: 10.5,
                                       padding: '2px 7px',
                                       fontWeight: scheda.applicaFurtivo ? 700 : 500,
                                       background: scheda.applicaFurtivo ? 'rgba(46,157,77,0.18)' : 'transparent',
@@ -14389,7 +14400,7 @@ export default function App() {
                                     }}
                                     style={{
                                       ...styles.buttonMini,
-                                      fontSize: 10,
+                                      fontSize: 10.5,
                                       padding: '2px 7px',
                                       fontWeight: scheda.inIra ? 700 : 500,
                                       background: scheda.inIra ? 'rgba(239,68,68,0.2)' : 'transparent',
@@ -14416,7 +14427,7 @@ export default function App() {
                                     }}
                                     style={{
                                       ...styles.buttonMini,
-                                      fontSize: 10,
+                                      fontSize: 10.5,
                                       padding: '2px 7px',
                                       fontWeight: scheda.smiteAttivo ? 700 : 500,
                                       background: scheda.smiteAttivo ? 'rgba(201,162,39,0.2)' : 'transparent',
@@ -14450,7 +14461,7 @@ export default function App() {
                                     }}
                                     style={{
                                       ...styles.buttonMini,
-                                      fontSize: 10,
+                                      fontSize: 10.5,
                                       padding: '2px 7px',
                                       fontWeight: 700,
                                       background: 'rgba(158,75,230,0.15)',
@@ -14476,7 +14487,7 @@ export default function App() {
                                   }}
                                   style={{
                                     ...styles.buttonMini,
-                                    fontSize: 10,
+                                    fontSize: 10.5,
                                     padding: '2px 7px',
                                     fontWeight: scheda.ispirazioneEroica ? 700 : 500,
                                     background: scheda.ispirazioneEroica ? 'rgba(234,179,8,0.2)' : 'transparent',
@@ -15009,7 +15020,7 @@ export default function App() {
                                             }}
                                             style={{
                                               ...styles.buttonMini,
-                                              fontSize: 9.5,
+                                              fontSize: 10.5,
                                               padding: '1px 4px',
                                               fontWeight: 700,
                                               borderRadius: 4,
@@ -15044,7 +15055,7 @@ export default function App() {
                                       {hasReach && (
                                         <span
                                           style={{
-                                            fontSize: 9.5,
+                                            fontSize: 10.5,
                                             padding: '1px 5px',
                                             borderRadius: 4,
                                             background: 'rgba(59,130,246,0.12)',
@@ -15066,7 +15077,7 @@ export default function App() {
                                         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
                                           <span
                                             style={{
-                                              fontSize: 9.5,
+                                              fontSize: 10.5,
                                               padding: '1px 5px',
                                               borderRadius: 4,
                                               background: infoMunizioni.totale > 0 ? 'rgba(201,162,39,0.14)' : 'rgba(239,68,68,0.12)',
@@ -15089,7 +15100,7 @@ export default function App() {
                                               type="button"
                                               style={{
                                                 ...styles.buttonMini,
-                                                fontSize: 9.5,
+                                                fontSize: 10.5,
                                                 padding: '1px 4px',
                                                 height: 18,
                                                 minWidth: 20,
@@ -15124,12 +15135,12 @@ export default function App() {
                                         {cat === 'Reazione' && (a.innescoIt || a.effettoIt) ? (
                                           <>
                                             {a.innescoIt && (
-                                              <span style={{ fontSize: 9.5, padding: '1px 5px', borderRadius: 4, background: 'rgba(59,130,246,0.12)', border: '1px solid #3b82f6', color: '#2563eb', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3 }} title={lingua === 'en' ? 'Trigger' : 'Innesco'}>
+                                              <span style={{ fontSize: 10.5, padding: '1px 5px', borderRadius: 4, background: 'rgba(59,130,246,0.12)', border: '1px solid #3b82f6', color: '#2563eb', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3 }} title={lingua === 'en' ? 'Trigger' : 'Innesco'}>
                                                 🎯 {lingua === 'en' ? (a.innescoEn || a.innescoIt) : a.innescoIt}
                                               </span>
                                             )}
                                             {a.effettoIt && (
-                                              <span style={{ fontSize: 9.5, padding: '1px 5px', borderRadius: 4, background: 'rgba(123,79,176,0.12)', border: '1px solid #7b4fb0', color: '#7b4fb0', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3 }} title={lingua === 'en' ? 'Effect' : 'Effetto'}>
+                                              <span style={{ fontSize: 10.5, padding: '1px 5px', borderRadius: 4, background: 'rgba(123,79,176,0.12)', border: '1px solid #7b4fb0', color: '#7b4fb0', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3 }} title={lingua === 'en' ? 'Effect' : 'Effetto'}>
                                                 🛡️ {lingua === 'en' ? (a.effettoEn || a.effettoIt) : a.effettoIt}
                                               </span>
                                             )}
@@ -15137,7 +15148,7 @@ export default function App() {
                                         ) : categorieNota.map((c, ci) => (
                                           <span
                                             key={ci}
-                                            style={{ fontSize: 9.5, padding: '1px 5px', borderRadius: 4, background: `${c.colore}1f`, border: `1px solid ${c.colore}`, color: c.colore, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3, whiteSpace: 'nowrap' }}
+                                            style={{ fontSize: 10.5, padding: '1px 5px', borderRadius: 4, background: `${c.colore}1f`, border: `1px solid ${c.colore}`, color: c.colore, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3, whiteSpace: 'nowrap' }}
                                             title={c.etichetta}
                                           >
                                             {c.icona} {c.testo}
@@ -15162,7 +15173,7 @@ export default function App() {
                                           type="button"
                                           style={{
                                             ...styles.buttonMini,
-                                            fontSize: 10,
+                                            fontSize: 10.5,
                                             padding: '2px 7px',
                                             fontWeight: 700,
                                             background: scheda.reazioneUsata ? 'rgba(239,68,68,0.12)' : 'rgba(46,157,77,0.14)',
@@ -15322,7 +15333,7 @@ export default function App() {
                           🎲 TS {conSegno(bonusCon)}
                         </button>
                         {attivo && (
-                          <button style={{ ...styles.buttonMini, position: 'absolute', top: 4, right: 4, fontSize: 10, padding: '0 5px', height: 20, color: C.red, background: C.panel }} title={t('conc.termina')} onClick={() => aggiorna({ concentrazione: '' })}>✕</button>
+                          <button style={{ ...styles.buttonMini, position: 'absolute', top: 4, right: 4, fontSize: 10.5, padding: '0 5px', height: 20, color: C.red, background: C.panel }} title={t('conc.termina')} onClick={() => aggiorna({ concentrazione: '' })}>✕</button>
                         )}
                       </div>
                       {modIncantatore !== null && (
@@ -15859,12 +15870,12 @@ export default function App() {
                               </div>
                             )}
                             {isEccessoLiv && (
-                              <span style={{ fontSize: 10, fontWeight: 700, color: '#fff', background: '#ef4444', border: '1px solid #ef4444', borderRadius: 6, padding: '1px 6px' }}>
+                              <span style={{ fontSize: 10.5, fontWeight: 700, color: '#fff', background: '#ef4444', border: '1px solid #ef4444', borderRadius: 6, padding: '1px 6px' }}>
                                 🔴 {lingua === 'en' ? 'EXCESS' : 'IN ECCESSO'}
                               </span>
                             )}
                             {isMancanteLiv && (
-                              <span style={{ fontSize: 10, fontWeight: 700, color: '#2e9d4d', background: 'rgba(46,157,77,0.15)', border: '1px solid #2e9d4d', borderRadius: 6, padding: '1px 6px' }}>
+                              <span style={{ fontSize: 10.5, fontWeight: 700, color: '#2e9d4d', background: 'rgba(46,157,77,0.15)', border: '1px solid #2e9d4d', borderRadius: 6, padding: '1px 6px' }}>
                                 🟢 {lingua === 'en' ? 'SLOTS TO CHOOSE' : 'SCELTE DISPONIBILI'}
                               </span>
                             )}
@@ -15994,7 +16005,7 @@ export default function App() {
                                   {isDuplicato && (
                                     <span
                                       style={{
-                                        fontSize: 10,
+                                        fontSize: 10.5,
                                         fontWeight: 700,
                                         color: '#fff',
                                         border: '1px solid #ef4444',
@@ -16015,7 +16026,7 @@ export default function App() {
                                   {isTroppoAlto && (
                                     <span
                                       style={{
-                                        fontSize: 10,
+                                        fontSize: 10.5,
                                         fontWeight: 700,
                                         color: '#fff',
                                         border: '1px solid #ef4444',
@@ -16036,7 +16047,7 @@ export default function App() {
                                   {isRowInEccesso && !isDuplicato && !isTroppoAlto && (
                                     <span
                                       style={{
-                                        fontSize: 10,
+                                        fontSize: 10.5,
                                         fontWeight: 700,
                                         color: '#fff',
                                         border: '1px solid #ef4444',
@@ -16057,7 +16068,7 @@ export default function App() {
                                   {isRowUnpreparedMancante && (
                                     <span
                                       style={{
-                                        fontSize: 10,
+                                        fontSize: 10.5,
                                         fontWeight: 700,
                                         color: '#2e9d4d',
                                         border: '1px solid #2e9d4d',
@@ -16078,7 +16089,7 @@ export default function App() {
                                   {scuola && (
                                     <span
                                       style={{
-                                        fontSize: 10,
+                                        fontSize: 10.5,
                                         fontWeight: 700,
                                         color: COLORE_SCUOLA[scuola.toLowerCase()] || C.goldDark,
                                         border: `1px solid ${COLORE_SCUOLA[scuola.toLowerCase()] || C.goldDark}77`,
@@ -16100,7 +16111,7 @@ export default function App() {
                                   {s.catalogo && (
                                     <span
                                       style={{
-                                        fontSize: 10,
+                                        fontSize: 10.5,
                                         fontWeight: 700,
                                         color: isRowCatalogoMancante ? '#2e9d4d' : C.goldDark,
                                         border: `1px solid ${isRowCatalogoMancante ? '#2e9d4d' : C.goldDark}`,
@@ -16115,7 +16126,7 @@ export default function App() {
                                   {s.bonus && (
                                     <span
                                       title={t('spell.bonus_badge_tooltip')}
-                                      style={{ fontSize: 10, fontWeight: 700, color: C.goldDark, border: `1px solid ${C.goldDark}`, borderRadius: 6, padding: '0 4px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}
+                                      style={{ fontSize: 10.5, fontWeight: 700, color: C.goldDark, border: `1px solid ${C.goldDark}`, borderRadius: 6, padding: '0 4px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}
                                       onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, bonus: false } : x)) })}
                                     >✦ {t('spell.bonus_badge')}</span>
                                   )}
@@ -16161,7 +16172,7 @@ export default function App() {
                                         }}
                                       >
                                         {isUltimoCritInc ? '⚔️' : '💥'} {danno}{tipoDanno ? ` ${tipoDanno}` : ''}
-                                        <span aria-hidden style={{ fontSize: 9, opacity: 0.6 }}>🎲</span>
+                                        <span aria-hidden style={{ fontSize: 10.5, opacity: 0.6 }}>🎲</span>
                                       </button>
                                     </div>
                                   )}
@@ -16180,6 +16191,16 @@ export default function App() {
                                         🐾 {lingua === 'en' ? 'Summon' : 'Evoca'}
                                       </button>
                                     )}
+                                    {/metamorfosi|polymorph/i.test(s.nome || '') && (
+                                      <button
+                                        type="button"
+                                        style={{ ...styles.buttonMini, padding: '2px 7px', fontSize: 10.5, fontWeight: 700, color: C.goldDark, borderColor: C.gold, background: 'rgba(201,162,39,0.12)' }}
+                                        title={lingua === 'en' ? 'Open the polymorph catalog (choose the creature to become)' : 'Apri il catalogo Metamorfosi (scegli la creatura da assumere)'}
+                                        onClick={() => setTabTrasformazione('metamorfosi')}
+                                      >
+                                        🔮 {lingua === 'en' ? 'Polymorph' : 'Metamorfosi'}
+                                      </button>
+                                    )}
                                     {/ingrandire|ridurre|enlarge|reduce/i.test(s.nome || '') && (
                                       <div style={{ display: 'inline-flex', gap: 3, alignItems: 'center' }}>
                                         <button
@@ -16187,7 +16208,7 @@ export default function App() {
                                           style={{
                                             ...styles.buttonMini,
                                             padding: '2px 6px',
-                                            fontSize: 10,
+                                            fontSize: 10.5,
                                             fontWeight: 700,
                                             color: scheda.effettoTaglia === 'ingrandito' ? '#fff' : (C.green || '#2e7d32'),
                                             background: scheda.effettoTaglia === 'ingrandito' ? (C.green || '#2e7d32') : 'transparent',
@@ -16204,7 +16225,7 @@ export default function App() {
                                           style={{
                                             ...styles.buttonMini,
                                             padding: '2px 6px',
-                                            fontSize: 10,
+                                            fontSize: 10.5,
                                             fontWeight: 700,
                                             color: scheda.effettoTaglia === 'ridotto' ? '#fff' : (C.red || '#c0392b'),
                                             background: scheda.effettoTaglia === 'ridotto' ? (C.red || '#c0392b') : 'transparent',
@@ -16518,7 +16539,7 @@ export default function App() {
                               >
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                   <strong style={{ color: C.goldDark, fontSize: 12 }}>✨ {traduciDato(m)}</strong>
-                                  {spieg && <span style={{ fontSize: 10, color: C.inkDim }}>info ℹ️</span>}
+                                  {spieg && <span style={{ fontSize: 10.5, color: C.inkDim }}>info ℹ️</span>}
                                 </div>
                                 {spieg && (
                                   <div style={{ fontSize: 10.5, color: C.inkDim, lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
@@ -16610,7 +16631,7 @@ export default function App() {
                                 >
                                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <strong style={{ color: C.goldDark, fontSize: 12 }}>📜 {traduciDato(inv)}</strong>
-                                    {spieg && <span style={{ fontSize: 10, color: C.inkDim }}>info ℹ️</span>}
+                                    {spieg && <span style={{ fontSize: 10.5, color: C.inkDim }}>info ℹ️</span>}
                                   </div>
                                   {spieg && (
                                     <div style={{ fontSize: 10.5, color: C.inkDim, lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
@@ -16743,14 +16764,14 @@ export default function App() {
                                       <strong style={{ color: eAttiva ? '#059669' : C.goldDark, fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                         ⚙️ {traduciDato(inf)}
                                       </strong>
-                                      {spieg && <span style={{ fontSize: 9.5, color: C.inkDim }}>ℹ️</span>}
+                                      {spieg && <span style={{ fontSize: 10.5, color: C.inkDim }}>ℹ️</span>}
                                     </div>
 
                                     <button
                                       onClick={() => toggleAttiva(inf)}
                                       style={{
                                         ...styles.buttonMini,
-                                        fontSize: 10,
+                                        fontSize: 10.5,
                                         padding: '2px 8px',
                                         background: eAttiva ? '#10b981' : 'transparent',
                                         color: eAttiva ? '#fff' : C.ink,
@@ -16953,44 +16974,12 @@ export default function App() {
                 </div>
               </Sezione>
 
-            {/* Trasformazioni: Forma Bestiale (Druido dal 2° livello) e/o
-                Metamorfosi (Bardo/Druido/Stregone/Mago, che hanno Polymorph in lista).
-                Diretta: due bottoni sempre visibili, niente accordion da aprire —
-                ognuno apre il proprio popup (più sotto) con GS/regole pertinenti. */}
-            {(() => {
-              const isDruido = /(druido|druid)/i.test(scheda.classe || '') && (Number(scheda.livello) || 1) >= 2;
-              const puoMetamorfosi = /(bardo|bard|druido|druid|stregone|sorcerer|mago|wizard)/i.test(scheda.classe || '');
-              if (!isDruido && !puoMetamorfosi) return null;
-              const contaAnimale = isDruido ? bestieDisponibili(scheda.livello, scheda.sottoclasse).length : 0;
-              const contaMeta = puoMetamorfosi ? creatureDisponibiliMetamorfosi(scheda.livello).length : 0;
-              return (
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {isDruido && (
-                    <button
-                      type="button"
-                      onClick={() => setTabTrasformazione('animale')}
-                      style={{ ...styles.button, flex: '1 1 160px', fontWeight: 800, padding: '10px 12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, borderColor: '#3e7d32', color: '#1b4332', background: 'rgba(46,125,50,0.08)' }}
-                    >
-                      <span>🐾 {lingua === 'en' ? 'Wild Shape' : 'Forma Selvatica'}</span>
-                      <span style={{ fontSize: 11, fontWeight: 600, opacity: 0.8 }}>{contaAnimale} {lingua === 'en' ? 'available' : 'disponibili'}</span>
-                    </button>
-                  )}
-                  {puoMetamorfosi && (
-                    <button
-                      type="button"
-                      onClick={() => setTabTrasformazione('metamorfosi')}
-                      style={{ ...styles.button, flex: '1 1 160px', fontWeight: 800, padding: '10px 12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, borderColor: '#7b4fb0', color: '#4a2e6b', background: 'rgba(123,79,176,0.08)' }}
-                    >
-                      <span>🔮 {lingua === 'en' ? 'Metamorphosis' : 'Metamorfosi'}</span>
-                      <span style={{ fontSize: 11, fontWeight: 600, opacity: 0.8 }}>{contaMeta} {lingua === 'en' ? 'available' : 'disponibili'}</span>
-                    </button>
-                  )}
-                </div>
-              );
-            })()}
+            {/* Trasformazioni: niente bottoni dedicati in Azioni. Si aprono da dove si
+                "spendono" davvero: Forma Selvatica dalla sua risorsa in Risorse di Classe,
+                Metamorfosi dal bottone sulla riga dell'incantesimo stesso in Incantesimi. */}
 
-            {/* Popup catalogo Forma Selvatica / Metamorfosi: si apre da uno dei due bottoni
-                sopra, mostra solo la lista pertinente con le sue regole/limiti. */}
+            {/* Popup catalogo Forma Selvatica / Metamorfosi: mostra solo la lista
+                pertinente con le sue regole/limiti. */}
             {tabTrasformazione && (
               <div
                 style={{ position: 'fixed', inset: 0, zIndex: 3120, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(3px)' }}
@@ -17132,7 +17121,7 @@ export default function App() {
                                       <div style={{ fontSize: 11, color: C.inkDim }}>
                                         🛡️ CA {b.ca} · ❤️ {b.pf} PF
                                       </div>
-                                      <div style={{ fontSize: 10, color: C.inkDim, opacity: 0.85 }}>
+                                      <div style={{ fontSize: 10.5, color: C.inkDim, opacity: 0.85 }}>
                                         {b.taglia} · {b.velocita.volo ? `🦅 ${b.velocita.volo}m` : b.velocita.nuoto ? `🏊 ${b.velocita.nuoto}m` : `🐾 ${b.velocita.terra}m`}
                                       </div>
                                     </div>
@@ -17351,11 +17340,11 @@ export default function App() {
                                     }} />
                                   </div>
                                   <div style={{ display: 'flex', gap: 4 }}>
-                                    <button type="button" onClick={() => modificaPfAlleato(idx, -5)} style={{ ...styles.buttonMini, fontSize: 10, padding: '1px 5px', color: C.red }}>−5</button>
-                                    <button type="button" onClick={() => modificaPfAlleato(idx, -1)} style={{ ...styles.buttonMini, fontSize: 10, padding: '1px 5px', color: C.red }}>−1</button>
-                                    <button type="button" onClick={() => modificaPfAlleato(idx, 1)} style={{ ...styles.buttonMini, fontSize: 10, padding: '1px 5px', color: '#10b981' }}>+1</button>
-                                    <button type="button" onClick={() => modificaPfAlleato(idx, 5)} style={{ ...styles.buttonMini, fontSize: 10, padding: '1px 5px', color: '#10b981' }}>+5</button>
-                                    <button type="button" onClick={() => resetPfAlleato(idx)} style={{ ...styles.buttonMini, fontSize: 10, padding: '1px 6px', color: C.goldDark }} title="Ripristina PF Max">❤️ Max</button>
+                                    <button type="button" onClick={() => modificaPfAlleato(idx, -5)} style={{ ...styles.buttonMini, fontSize: 10.5, padding: '1px 5px', color: C.red }}>−5</button>
+                                    <button type="button" onClick={() => modificaPfAlleato(idx, -1)} style={{ ...styles.buttonMini, fontSize: 10.5, padding: '1px 5px', color: C.red }}>−1</button>
+                                    <button type="button" onClick={() => modificaPfAlleato(idx, 1)} style={{ ...styles.buttonMini, fontSize: 10.5, padding: '1px 5px', color: '#10b981' }}>+1</button>
+                                    <button type="button" onClick={() => modificaPfAlleato(idx, 5)} style={{ ...styles.buttonMini, fontSize: 10.5, padding: '1px 5px', color: '#10b981' }}>+5</button>
+                                    <button type="button" onClick={() => resetPfAlleato(idx)} style={{ ...styles.buttonMini, fontSize: 10.5, padding: '1px 6px', color: C.goldDark }} title="Ripristina PF Max">❤️ Max</button>
                                   </div>
                                 </div>
 
@@ -17391,7 +17380,7 @@ export default function App() {
                                             <button
                                               type="button"
                                               onClick={() => lanciaD20(`${all.nome}: ${az.nome}`, az.bonusAttacco || 0, { suono: 'tiro' })}
-                                              style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 6px', color: C.goldDark, borderColor: C.goldDark }}
+                                              style={{ ...styles.buttonMini, fontSize: 10.5, padding: '2px 6px', color: C.goldDark, borderColor: C.goldDark }}
                                               title={lingua === 'en' ? 'Roll attack' : 'Tiro per colpire'}
                                             >
                                               🎲 {conSegno(az.bonusAttacco || 0)}
@@ -17400,7 +17389,7 @@ export default function App() {
                                               <button
                                                 type="button"
                                                 onClick={() => tiraDanniPerAttacco({ id: az.id, nome: `${all.nome}: ${az.nome}`, danno: az.danno, tipoDanno: az.tipoDanno })}
-                                                style={{ ...styles.buttonMini, fontSize: 10, padding: '2px 6px', color: '#ef4444', borderColor: '#ef4444' }}
+                                                style={{ ...styles.buttonMini, fontSize: 10.5, padding: '2px 6px', color: '#ef4444', borderColor: '#ef4444' }}
                                                 title={lingua === 'en' ? 'Roll damage' : 'Tiro danni'}
                                               >
                                                 💥 {az.danno}
@@ -17409,7 +17398,7 @@ export default function App() {
                                           </div>
                                         </div>
                                         {az.testoCompleto && az.testoCompleto !== az.nome && (
-                                          <div style={{ fontSize: 10, color: C.inkDim, lineHeight: 1.25 }}>
+                                          <div style={{ fontSize: 10.5, color: C.inkDim, lineHeight: 1.25 }}>
                                             {az.testoCompleto}
                                           </div>
                                         )}
@@ -17429,7 +17418,7 @@ export default function App() {
                                         key={trIdx}
                                         onClick={() => setInfo({ titolo: `${all.nome}: ${titoloTratto}`, testo: tr })}
                                         style={{
-                                          fontSize: 10,
+                                          fontSize: 10.5,
                                           background: 'rgba(201,162,39,0.08)',
                                           border: '1px solid rgba(201,162,39,0.3)',
                                           color: C.goldDark,
@@ -17477,7 +17466,7 @@ export default function App() {
                             <div style={{ fontWeight: 700, fontSize: 11.5, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {lingua === 'en' ? c.nomeEn : c.nome}
                             </div>
-                            <div style={{ fontSize: 10, color: C.inkDim }}>
+                            <div style={{ fontSize: 10.5, color: C.inkDim }}>
                               🛡️ CA {c.ca} · ❤️ {c.pf} PF
                             </div>
                           </div>
@@ -17651,7 +17640,7 @@ export default function App() {
                                       🛡️ CA {c.ca} · ❤️ {pfCalc} PF {c.pfFormula ? `(${c.pfFormula})` : ''} · 👟 {typeof c.velocita === 'object' ? Object.entries(c.velocita).map(([k, v]) => `${k} ${v}m`).join(', ') : c.velocita}
                                     </div>
                                     {c.tipo && (
-                                      <div style={{ fontSize: 10, color: C.goldDark, marginTop: 1 }}>
+                                      <div style={{ fontSize: 10.5, color: C.goldDark, marginTop: 1 }}>
                                         {c.tipo}
                                       </div>
                                     )}
@@ -17884,7 +17873,7 @@ export default function App() {
                         <span style={{ fontWeight: 700 }}>⚖️ {t('inv.ingombro')}: <span style={{ color: colore }}>{pesoTot.toFixed(1)} / {cap.toFixed(0)} kg</span></span>
                         {stato !== 'ok' && <span style={{ color: colore, fontWeight: 700 }}>{t('inv.stato_' + stato)}</span>}
                       </div>
-                      <div style={{ ...styles.detail, marginTop: 2, fontSize: 10, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+                      <div style={{ ...styles.detail, marginTop: 2, fontSize: 10.5, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
                         <span>Taglia {tagliaAttiva} ×{moltiTaglia} · Spazio: {SPAZIO_TAGLIA_5E[tagliaAttiva]} · Spingi/trascina/solleva {spingiTrascina.toFixed(0)} kg (Lotta fino a: {LOTTA_MAX_TAGLIA_5E[tagliaAttiva]})</span>
                         <span>🛡️ Indossato: <strong>{pesoEquipTot.toFixed(1)} kg</strong> · 🎒 Zaino: <strong>{pesoZainoTot.toFixed(1)} kg</strong></span>
                       </div>
@@ -17892,25 +17881,29 @@ export default function App() {
                         <div style={{ width: `${perc}%`, height: '100%', background: colore, transition: 'width 0.25s ease' }} />
                       </div>
                     </div>
-                    {/* Barra di ricerca, filtri vista e pulizia esauriti */}
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', justifyContent: 'space-between' }}>
-                      <div style={{ display: 'flex', gap: 6, alignItems: 'center', flex: 1, minWidth: 220 }}>
+                    {/* Barra di ricerca, filtri vista/categoria e pulizia esauriti: tutto in
+                        un'unica riga (prima erano due righe separate, entrambe con un bottone
+                        "Tutti" che sembrava ripetuto — ora le due "Tutti" hanno icone diverse
+                        per distinguere a colpo d'occhio le due dimensioni di filtro: dove sta
+                        l'oggetto (Indossati/Zaino) e che tipo di oggetto è (Armi/Pozioni...). */}
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10, flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', gap: 6, alignItems: 'center', flex: 1, minWidth: 180 }}>
                         <input
                           type="text"
                           value={filtroInventario}
                           onChange={(e) => setFiltroInventario(e.target.value)}
                           placeholder="🔍 Cerca nell'inventario..."
-                          style={{ ...styles.inlineInput, flex: 1, minWidth: 140, padding: '5px 8px', fontSize: 12.5 }}
+                          style={{ ...styles.inlineInput, flex: 1, minWidth: 120, padding: '5px 8px', fontSize: 12.5 }}
                         />
                         {filtroInventario && (
                           <button style={styles.buttonMini} onClick={() => setFiltroInventario('')}>✕</button>
                         )}
                       </div>
-                      
+
                       {/* Segmented View Tabs: Tutti vs Equipaggiato vs Zaino */}
-                      <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                      <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
                         {[
-                          ['tutti', '📦 ' + (lingua === 'en' ? 'All' : 'Tutti')],
+                          ['tutti', '📍 ' + (lingua === 'en' ? 'All' : 'Tutti')],
                           ['equip', '🛡️ ' + (lingua === 'en' ? 'Equipped' : 'Indossati')],
                           ['zaino', '🎒 ' + (lingua === 'en' ? 'Backpack' : 'Zaino')],
                         ].map(([k, label]) => (
@@ -17932,49 +17925,51 @@ export default function App() {
                             {label}
                           </button>
                         ))}
-
-                        <button
-                          style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, fontSize: 11, padding: '4px 7px', marginLeft: 4 }}
-                          title={t('inv.pulisci_esauriti_tip')}
-                          onClick={() => {
-                            if (window.confirm(t('inv.pulisci_conferma'))) {
-                              aggiorna({ inventario: inv.filter((x) => (Number(x.qta) || 0) > 0) });
-                            }
-                          }}
-                        >
-                          🗑️
-                        </button>
                       </div>
-                    </div>
 
-                    {/* Barra Filtri Categoria Rapidi */}
-                    <div style={{ display: 'flex', gap: 5, overflowX: 'auto', paddingBottom: 6, marginBottom: 8, alignItems: 'center' }}>
-                      {[
-                        ['tutti', '📦 ' + (lingua === 'en' ? 'All Types' : 'Tutti i tipi')],
-                        ['armi_armature', '⚔️ ' + (lingua === 'en' ? 'Weapons & Armor' : 'Armi & Armature')],
-                        ['pozioni', '🧪 ' + (lingua === 'en' ? 'Potions' : 'Pozioni')],
-                        ['magici', '✨ ' + (lingua === 'en' ? 'Magic' : 'Magici')],
-                        ['attrezzi', '🔧 ' + (lingua === 'en' ? 'Tools' : 'Attrezzi')],
-                      ].map(([k, label]) => (
-                        <button
-                          key={k}
-                          type="button"
-                          onClick={() => setFiltroCatInventario(k)}
-                          style={{
-                            ...styles.buttonMini,
-                            fontSize: 11,
-                            padding: '3px 8px',
-                            whiteSpace: 'nowrap',
-                            borderRadius: 12,
-                            borderColor: filtroCatInventario === k ? C.goldDark : C.border,
-                            background: filtroCatInventario === k ? 'rgba(200,140,20,0.18)' : 'transparent',
-                            color: filtroCatInventario === k ? C.goldDark : C.inkDim,
-                            fontWeight: filtroCatInventario === k ? 700 : 500,
-                          }}
-                        >
-                          {label}
-                        </button>
-                      ))}
+                      <div style={{ width: 1, alignSelf: 'stretch', minHeight: 20, background: C.border }} />
+
+                      {/* Barra Filtri Categoria Rapidi */}
+                      <div style={{ display: 'flex', gap: 5, overflowX: 'auto', alignItems: 'center' }}>
+                        {[
+                          ['tutti', '🗂️ ' + (lingua === 'en' ? 'All Types' : 'Tutti i tipi')],
+                          ['armi_armature', '⚔️ ' + (lingua === 'en' ? 'Weapons & Armor' : 'Armi & Armature')],
+                          ['pozioni', '🧪 ' + (lingua === 'en' ? 'Potions' : 'Pozioni')],
+                          ['magici', '✨ ' + (lingua === 'en' ? 'Magic' : 'Magici')],
+                          ['attrezzi', '🔧 ' + (lingua === 'en' ? 'Tools' : 'Attrezzi')],
+                        ].map(([k, label]) => (
+                          <button
+                            key={k}
+                            type="button"
+                            onClick={() => setFiltroCatInventario(k)}
+                            style={{
+                              ...styles.buttonMini,
+                              fontSize: 11,
+                              padding: '3px 8px',
+                              whiteSpace: 'nowrap',
+                              borderRadius: 12,
+                              borderColor: filtroCatInventario === k ? C.goldDark : C.border,
+                              background: filtroCatInventario === k ? 'rgba(200,140,20,0.18)' : 'transparent',
+                              color: filtroCatInventario === k ? C.goldDark : C.inkDim,
+                              fontWeight: filtroCatInventario === k ? 700 : 500,
+                            }}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+
+                      <button
+                        style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, fontSize: 11, padding: '4px 7px' }}
+                        title={t('inv.pulisci_esauriti_tip')}
+                        onClick={() => {
+                          if (window.confirm(t('inv.pulisci_conferma'))) {
+                            aggiorna({ inventario: inv.filter((x) => (Number(x.qta) || 0) > 0) });
+                          }
+                        }}
+                      >
+                        🗑️
+                      </button>
                     </div>
                     {/* Suggerimenti rapidi di aggiunta dal compendio se si cerca un oggetto non presente */}
                     {filtroInventario.trim().length >= 2 && (() => {
@@ -17999,7 +17994,7 @@ export default function App() {
                             >
                               <span>{determinaIconaOggetto(itemNome)}</span>
                               <strong>{itemNome}</strong>
-                              <span style={{ fontSize: 10, color: C.inkDim }}>({pesoStimato(itemNome)} kg)</span>
+                              <span style={{ fontSize: 10.5, color: C.inkDim }}>({pesoStimato(itemNome)} kg)</span>
                             </button>
                           ))}
                         </div>
@@ -18172,7 +18167,7 @@ export default function App() {
                                           style={{
                                             ...styles.buttonMini,
                                             padding: '1px 6px',
-                                            fontSize: 10,
+                                            fontSize: 10.5,
                                             fontWeight: 700,
                                             color: '#2e9d4d',
                                             borderColor: '#2e9d4d',
@@ -19142,7 +19137,7 @@ export default function App() {
                     {lingua === 'en' ? 'Menu & Game Tools' : 'Menu & Strumenti'}
                   </h2>
                   <div style={{ fontSize: 12, color: 'var(--c-title)', fontWeight: 800, fontFamily: "var(--font-title, Georgia, 'Times New Roman', serif)" }}>
-                    Tavolo dei Dadi <span style={{ fontSize: 8.5, color: C.inkDim, opacity: 0.75, fontWeight: 600 }}>v{APP_VERSION}</span>
+                    Tavolo dei Dadi <span style={{ fontSize: 10.5, color: C.inkDim, opacity: 0.75, fontWeight: 600 }}>v{APP_VERSION}</span>
                   </div>
                 </div>
               </div>
@@ -20660,15 +20655,15 @@ export default function App() {
                             {t('ct.in_turno')}
                           </div>
                         ) : prossimo ? (
-                          <div style={{ background: '#2b75cb', color: '#ffffff', fontSize: 10, fontWeight: 800, textAlign: 'center', padding: '2px 6px', letterSpacing: 0.5, textTransform: 'uppercase' }}>
+                          <div style={{ background: '#2b75cb', color: '#ffffff', fontSize: 10.5, fontWeight: 800, textAlign: 'center', padding: '2px 6px', letterSpacing: 0.5, textTransform: 'uppercase' }}>
                             {t('ct.prossimo_turno')}
                           </div>
                         ) : offset > 0 && roundRelativo > combat.round ? (
-                          <div style={{ background: 'rgba(0,0,0,0.06)', color: C.inkDim, fontSize: 9.5, fontWeight: 700, textAlign: 'center', padding: '2px 6px' }}>
+                          <div style={{ background: 'rgba(0,0,0,0.06)', color: C.inkDim, fontSize: 10.5, fontWeight: 700, textAlign: 'center', padding: '2px 6px' }}>
                             🔄 Round {roundRelativo} · {cb.tipo === 'pg' ? '👤 Personaggio' : cb.tipo === 'alleato' ? '🛡️ Alleato' : '⚔️ Nemico'}
                           </div>
                         ) : (
-                          <div style={{ background: colBg, color: col, fontSize: 10, fontWeight: 700, textAlign: 'center', padding: '2px 6px', textTransform: 'uppercase', letterSpacing: 0.4 }}>
+                          <div style={{ background: colBg, color: col, fontSize: 10.5, fontWeight: 700, textAlign: 'center', padding: '2px 6px', textTransform: 'uppercase', letterSpacing: 0.4 }}>
                             {cb.tipo === 'pg' ? '👤 Personaggio' : cb.tipo === 'alleato' ? '🛡️ Alleato' : '⚔️ Nemico'}
                           </div>
                         )}
@@ -20691,7 +20686,7 @@ export default function App() {
                               }}
                               title={t('ct.iniziativa')}
                             >
-                              <span style={{ fontSize: 9, fontWeight: 900, color: C.inkDim, lineHeight: 1, letterSpacing: 0.5 }}>INIZ</span>
+                              <span style={{ fontSize: 10.5, fontWeight: 900, color: C.inkDim, lineHeight: 1, letterSpacing: 0.5 }}>INIZ</span>
                               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
                                 <input
                                   type="text"
@@ -20905,7 +20900,7 @@ export default function App() {
                           {/* TS Morte (se a 0 PF o PG) */}
                           {(morto || cb.tipo === 'pg') && (
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 11, background: 'rgba(0,0,0,0.02)', padding: '2px 4px', borderRadius: 4 }} title={t('vital.ts_morte')}>
-                              <span style={{ color: C.inkDim, fontSize: 10 }}>💀</span>
+                              <span style={{ color: C.inkDim, fontSize: 10.5 }}>💀</span>
                               {[1, 2, 3].map((i) => (
                                 <span key={`s${i}`} style={styles.pip(cb.tsMorte.successi >= i, C.green)} onClick={() => modCombat(cb.id, { tsMorte: { ...cb.tsMorte, successi: cb.tsMorte.successi >= i ? i - 1 : i } })} />
                               ))}
@@ -20922,7 +20917,7 @@ export default function App() {
                               <span
                                 key={cond}
                                 onClick={() => modCombat(cb.id, { condizioni: cb.condizioni.filter((x) => x !== cond) })}
-                                style={{ fontSize: 9.5, background: 'rgba(176,58,46,0.1)', color: C.red, border: `1px solid ${C.red}`, borderRadius: 4, padding: '0 4px', cursor: 'pointer', fontWeight: 600 }}
+                                style={{ fontSize: 10.5, background: 'rgba(176,58,46,0.1)', color: C.red, border: `1px solid ${C.red}`, borderRadius: 4, padding: '0 4px', cursor: 'pointer', fontWeight: 600 }}
                                 title={t('ct.rimuovi_cond')}
                               >
                                 {cond} ×
@@ -20931,7 +20926,7 @@ export default function App() {
                             <select
                               value=""
                               onChange={(e) => { if (e.target.value) modCombat(cb.id, { condizioni: [...cb.condizioni, e.target.value] }); }}
-                              style={{ ...styles.inlineInput, fontSize: 9.5, padding: '1px 3px', height: 20 }}
+                              style={{ ...styles.inlineInput, fontSize: 10.5, padding: '1px 3px', height: 20 }}
                             >
                               <option value="">＋ {t('ct.condizione')}</option>
                               {CONDIZIONI_5E.filter((c) => !cb.condizioni.includes(c)).sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((c) => (

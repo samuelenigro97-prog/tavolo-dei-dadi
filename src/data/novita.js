@@ -5,6 +5,23 @@
 
 export const NOVITA = [
   {
+    versione: '4.20.0',
+    voci: {
+      it: [
+        'Angoli decorati: fix definitivo, restano visibili E nella posizione giusta anche a sezione chiusa (il fix precedente li spostava male).',
+        'Trasformazioni integrate: niente più bottoni dedicati in Azioni. Forma Selvatica si apre dalla sua risorsa in Risorse di Classe, Metamorfosi da un bottone sulla riga dell\'incantesimo in Incantesimi.',
+        'Equipaggiamento: filtri uniti in una sola riga, le due "Tutti" (vista/tipo) ora hanno icone diverse.',
+        'Font minimi alzati a 10,5px in tutta l\'app: primo passo sulla leggibilità.',
+      ],
+      en: [
+        'Corner decorations: proper fix — they now stay visible AND correctly positioned when a section is collapsed (the earlier fix mispositioned them).',
+        'Transformations are now integrated instead of dedicated buttons: Wild Shape opens from its resource in Class Resources, Polymorph from a button on the spell\'s own row in Spells.',
+        'Equipment: filters merged into a single row; the two "All" filters (view/type) now use different icons.',
+        'Minimum font size raised to 10.5px app-wide: first step on readability.',
+      ],
+    },
+  },
+  {
     versione: '4.19.0',
     voci: {
       it: [

@@ -2,6 +2,35 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.20.0] – 2026-09-23
+
+### Corretto
+- **Angoli decorati ancora rotti a sezione chiusa (fix precedente incompleto)**:
+  il `display:block !important` non bastava — quando `<details>` è chiuso il
+  browser toglie dal flusso di layout tutto tranne `<summary>` a un livello
+  più basso di un semplice CSS, e gli angoli "bottom" finivano posizionati
+  SOPRA quelli "top" invece che sotto. Spostati fuori da `<details>` (in un
+  contenitore che lo avvolge): ora seguono sempre l'altezza reale della
+  sezione, aperta o chiusa.
+- **Filtri Equipaggiamento su due righe con "Tutti" ripetuto due volte**:
+  uniti in un'unica riga (ricerca, vista Tutti/Indossati/Zaino, tipo
+  Tutti i tipi/Armi/Pozioni/Magici/Attrezzi, pulizia esauriti); le due
+  "Tutti" ora hanno icone diverse (📍 vista, 🗂️ tipo) per distinguerle a
+  colpo d'occhio.
+
+### Modificato
+- **Trasformazioni integrate invece di bottoni dedicati**: tolti i due
+  bottoni "Forma Selvatica"/"Metamorfosi" in Azioni. Forma Selvatica si
+  apre ora cliccando la sua risorsa in Risorse di Classe (dove si "spende"
+  davvero un uso); Metamorfosi si apre da un bottone sulla riga
+  dell'incantesimo stesso in Incantesimi.
+- **Randello Incantato**: nasconde nella tabella Combattimento anche
+  "Bastone Ferrato" oltre a "Randello" (arma non incantata ridondante).
+- **Font minimi alzati a 10,5px**: circa 190 punti dell'app (badge, chip,
+  colonna Note, filtri) usavano testo sotto i 10px, il punto più debole
+  per la leggibilità segnalato. Primo passo di un lavoro più ampio sui
+  font (la scala resta da consolidare in un giro successivo).
+
 ## [4.19.0] – 2026-09-23
 
 ### Aggiunto

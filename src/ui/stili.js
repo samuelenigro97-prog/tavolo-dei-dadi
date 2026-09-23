@@ -620,13 +620,6 @@ tbody tr:hover {
 .angolo-bl { bottom: 0; left: 0; }
 .angolo-br { bottom: 0; right: 0; }
 
-/* Le cornici sono fratelli di <summary> dentro <details>: il browser nasconde
-   di norma tutto tranne <summary> quando l'accordion è chiuso, quindi senza
-   questo override sparivano a sezione ridotta invece di restare visibili. */
-details.sezione:not([open]) > .angolo-ornamento {
-  display: block !important;
-}
-
 /* Reattività Hover & Focus luminoso (sobrio e morbido) */
 .sezione:hover,
 .profilo-sezione:hover {
@@ -642,7 +635,9 @@ details.sezione:not([open]) > .angolo-ornamento {
   color: var(--c-ink);
 }
 
-.sezione:hover .angolo-ornamento,
+/* .angolo-ornamento ora è fratello (successivo) di <details class="sezione">,
+   non più figlio: da qui il combinatore ~ invece del discendente diretto. */
+.sezione:hover ~ .angolo-ornamento,
 .profilo-sezione:hover .angolo-ornamento {
   opacity: 0.95;
   filter: drop-shadow(0 0 3px var(--c-aura-color, rgba(201, 162, 39, 0.45)));
@@ -1577,7 +1572,7 @@ details.sezione:not([open]) > .angolo-ornamento {
 .campi-anagrafica .campo-modulo-box { padding: 0 1px !important; min-height: 26px !important; height: 26px; display: flex; align-items: center; overflow: hidden; font-size: 12px; font-weight: 600 !important; color: var(--c-ink) !important; font-family: inherit !important; }
 .campi-anagrafica .campo-modulo-box * { font-size: inherit; font-family: inherit; font-weight: 600; }
 .campi-anagrafica .campo-modulo-box.testo-compatto, .campi-anagrafica .campo-modulo-box.testo-compatto * { font-size: 10.5px !important; letter-spacing: -0.2px; }
-.campi-anagrafica .campo-modulo-label { font-size: 8.5px !important; margin-top: 2px; font-weight: 700 !important; letter-spacing: 0.25px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.campi-anagrafica .campo-modulo-label { font-size: 10.5px !important; margin-top: 2px; font-weight: 700 !important; letter-spacing: 0.25px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* Sottoclasse con più classi (multiclasse): una riga per classe, l'altezza fissa
     da campo singolo taglierebbe via le righe in più. */
 .campi-anagrafica .campo-modulo-box.sottoclasse-multi { height: auto !important; align-items: flex-start !important; overflow: visible !important; padding-top: 2px !important; padding-bottom: 2px !important; }
@@ -1921,7 +1916,7 @@ details.sezione:not([open]) > .angolo-ornamento {
     content: attr(data-label);
     margin-right: 6px;
     color: var(--c-ink-dim);
-    font-size: 10px;
+    font-size: 10.5px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .4px;
@@ -1955,7 +1950,7 @@ details.sezione:not([open]) > .angolo-ornamento {
   }
   .inventario-table .inventario-riga > td:nth-child(n+3):not(.inventario-azioni)::before {
     content: attr(data-label); margin-right: 5px; color: var(--c-ink-dim);
-    font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
     flex-shrink: 0;
   }
   .inventario-table .inventario-riga > .inventario-azioni button { min-width: 34px; min-height: 30px; }

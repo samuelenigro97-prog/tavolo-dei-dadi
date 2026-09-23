@@ -661,14 +661,39 @@ export function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni,
 export function Sezione({ id, titolo, children, aperto = true, onToggleAperto, manigliaDrag = false, className = '', style = {}, azioni = null, innerRef = null, senzaAngoli = false }) {
   const trascinando = false;
   return (
-    <details
-      id={id}
-      ref={innerRef}
-      open={aperto}
-      onToggle={(e) => { const open = e.currentTarget.open; if (onToggleAperto && open !== aperto) onToggleAperto(open); }}
-      style={{ ...styles.panel, opacity: trascinando ? 0.4 : 1, ...style }}
-      className={`sezione ${className}`.trim()}
-    >
+    // Le cornici decorate sono qui, fuori da <details>, non più fratelli di
+    // <summary> al suo interno: quando <details> è chiuso, il browser toglie
+    // dal flusso di layout tutto tranne <summary> a un livello più basso di
+    // un semplice display:none via CSS, e forzarne la visibilità con
+    // !important produceva angoli mal posizionati (quelli in basso finivano
+    // sopra quelli in alto). Da qui fuori seguono sempre l'altezza reale
+    // della sezione, aperta o chiusa che sia.
+    <div style={{ position: 'relative' }}>
+      <details
+        id={id}
+        ref={innerRef}
+        open={aperto}
+        onToggle={(e) => { const open = e.currentTarget.open; if (onToggleAperto && open !== aperto) onToggleAperto(open); }}
+        style={{ ...styles.panel, opacity: trascinando ? 0.4 : 1, ...style }}
+        className={`sezione ${className}`.trim()}
+      >
+        <summary className="sezione-titolo" style={{ ...styles.panelTitle, cursor: 'pointer', listStyle: 'none', marginBottom: 0, userSelect: 'none' }}>
+          <span className="sezione-titolo-sinistra">
+            <span className="freccia">▾</span>
+          </span>
+          <span className="sezione-titolo-testo">{titolo}</span>
+          {/* Comandi nella riga del titolo: il click non deve aprire/chiudere. */}
+          <span
+            className="sezione-titolo-azioni"
+            onClick={azioni ? (e) => { e.preventDefault(); e.stopPropagation(); } : undefined}
+          >{azioni}</span>
+        </summary>
+        <div style={{ marginTop: 10 }}>{children}</div>
+      </details>
+      {/* Le cornici sono qui, DOPO <details> e fuori da esso: fratelli, non
+          figlie. Fratelle di <summary> dentro <details> sparivano/si
+          rompevano a sezione chiusa (vedi nota in stili.js); da fuori
+          seguono sempre l'altezza reale della sezione, aperta o chiusa. */}
       {!senzaAngoli && (
         <>
           <span className="angolo-ornamento angolo-tl" aria-hidden="true" />
@@ -677,19 +702,7 @@ export function Sezione({ id, titolo, children, aperto = true, onToggleAperto, m
           <span className="angolo-ornamento angolo-br" aria-hidden="true" />
         </>
       )}
-      <summary className="sezione-titolo" style={{ ...styles.panelTitle, cursor: 'pointer', listStyle: 'none', marginBottom: 0, userSelect: 'none' }}>
-        <span className="sezione-titolo-sinistra">
-          <span className="freccia">▾</span>
-        </span>
-        <span className="sezione-titolo-testo">{titolo}</span>
-        {/* Comandi nella riga del titolo: il click non deve aprire/chiudere. */}
-        <span
-          className="sezione-titolo-azioni"
-          onClick={azioni ? (e) => { e.preventDefault(); e.stopPropagation(); } : undefined}
-        >{azioni}</span>
-      </summary>
-      <div style={{ marginTop: 10 }}>{children}</div>
-    </details>
+    </div>
   );
 }
 
