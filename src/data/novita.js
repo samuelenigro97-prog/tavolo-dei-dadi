@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.11.0',
+    voci: {
+      it: [
+        'Nuovo bottone "🐾 Evoca" sugli incantesimi di evocazione: apre subito il catalogo giusto (Bestie o Evocazioni) per scegliere la creatura, senza dover cercare la sezione Compagni a mano.',
+      ],
+      en: [
+        'New "🐾 Summon" button on summoning spells: opens the right catalog (Beasts or Summons) straight away to pick the creature, no more hunting for the Companions section.',
+      ],
+    },
+  },
+  {
     versione: '4.10.0',
     voci: {
       it: [

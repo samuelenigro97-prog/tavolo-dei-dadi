@@ -1963,7 +1963,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.10.0';
+const APP_VERSION = '4.11.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -16043,6 +16043,20 @@ export default function App() {
                                     </div>
                                   )}
                                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0, marginLeft: 'auto' }}>
+                                    {/famiglio|evoca|spiriti|spirit|elementale|summon|conjure|destriero|steed|trova|omuncolo|guardiano/i.test(s.nome || '') && (
+                                      <button
+                                        type="button"
+                                        style={{ ...styles.buttonMini, padding: '2px 7px', fontSize: 10.5, fontWeight: 700, color: C.goldDark, borderColor: C.gold, background: 'rgba(201,162,39,0.12)' }}
+                                        title={lingua === 'en' ? 'Open the summon/companion catalog for this spell' : 'Apri il catalogo evocazioni/compagni per questo incantesimo'}
+                                        onClick={() => {
+                                          setFiltroCompagnoCat(/animal|bestie|beast/i.test(s.nome || '') ? 'bestie' : 'evocazioni');
+                                          setCercaCompagnoText('');
+                                          setMostraModalAggiungiCompagno(true);
+                                        }}
+                                      >
+                                        🐾 {lingua === 'en' ? 'Summon' : 'Evoca'}
+                                      </button>
+                                    )}
                                     {/ingrandire|ridurre|enlarge|reduce/i.test(s.nome || '') && (
                                       <div style={{ display: 'inline-flex', gap: 3, alignItems: 'center' }}>
                                         <button

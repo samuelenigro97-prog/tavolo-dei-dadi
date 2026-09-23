@@ -2,6 +2,20 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.11.0] – 2026-09-23
+
+### Aggiunto
+- **Bottone "🐾 Evoca" sugli incantesimi di evocazione.** Sulla riga di ogni
+  incantesimo il cui nome richiama un'evocazione (Evoca/Evocare Animali,
+  Evoca Elementale, Trova Destriero, Spiriti Guardiani, ecc.) compare ora un
+  bottone che apre direttamente il catalogo "Evoca/Aggiungi Compagno" già
+  esistente nella sezione Compagni, Famigli & Evocazioni — pre-filtrato sulla
+  categoria giusta: "Bestie" per gli incantesimi tipo Evoca/Conjure Animali
+  (dove scegli tra le creature normali, come per la Forma Selvatica), oppure
+  "Evocazioni" per elementali/destrieri/spiriti specifici. Riusa la stessa
+  logica/dati già presenti (nessun nuovo catalogo creato): un click in meno
+  per passare dall'incantesimo alla scheda della creatura da evocare.
+
 ## [4.10.0] – 2026-09-23
 
 ### Modificato
