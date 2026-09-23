@@ -2,6 +2,26 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.18.0] – 2026-09-23
+
+### Rimosso
+- **Bottone "Scegli in Level Up" nei Trucchetti**: era sempre visibile anche a
+  scelte già complete. Resta solo l'avviso quando c'è ancora qualche
+  trucchetto da scegliere (indica comunque il Level Up come unico posto dove
+  farlo); il bottone-scorciatoia in più è sparito.
+
+### Aggiunto
+- **Sezione Poteri, bersaglio libero per i modificatori**: prima un
+  modificatore poteva agire solo su Velocità/CA/Iniziativa/PF Massimi. Ora
+  c'è anche "Altro (personalizzato)…", con un campo di testo libero per
+  descrivere qualunque effetto homebrew (es. "Vantaggio ai TS Carisma").
+  Nella scheda del potere, l'etichetta del bersaglio (es. "CA", "Velocità" o
+  quella scritta a mano) ora è sempre visibile nel chip, non solo al
+  passaggio del mouse.
+- **Sezione Poteri, chiarito lo scopo**: il titolo ora specifica "(regole
+  homebrew)" per chiarire che è il posto per le regole inventate al tavolo
+  (patti, benedizioni, maledizioni...), non per contenuti ufficiali.
+
 ## [4.17.0] – 2026-09-23
 
 ### Corretto

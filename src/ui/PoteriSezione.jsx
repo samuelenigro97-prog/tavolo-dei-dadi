@@ -11,6 +11,7 @@ import { Editable, AreaTesto } from './componenti.jsx';
 import { conSegno } from '../rules/dadi.js';
 import {
   BERSAGLI_MODIFICATORE_POTERE,
+  BERSAGLIO_LIBERO,
   nuovoPotere,
   nuovoContatore,
   nuovoModificatore,
@@ -23,7 +24,10 @@ import {
 function unitaBersaglio(chiave) {
   return BERSAGLI_MODIFICATORE_POTERE.find((b) => b.chiave === chiave)?.unita || '';
 }
-function labelBersaglio(chiave, lingua) {
+// Per un bersaglio libero (homebrew, non in elenco) l'etichetta è il testo scritto
+// a mano nel modificatore stesso, non una voce fissa: va passata da chi chiama.
+function labelBersaglio(chiave, lingua, bersaglioLibero) {
+  if (chiave === BERSAGLIO_LIBERO) return bersaglioLibero || (lingua === 'en' ? 'Other' : 'Altro');
   const b = BERSAGLI_MODIFICATORE_POTERE.find((x) => x.chiave === chiave);
   return b ? (lingua === 'en' ? b.labelEn : b.label) : chiave;
 }
@@ -111,8 +115,8 @@ function PotereCard({ potere, scheda, indice, totale, onApri, lingua }) {
           );
         })}
         {potere.modificatori.map((m, i) => (
-          <span key={i} style={{ ...chipStile, borderColor: C.goldDark, color: C.goldDark, fontWeight: 700 }} title={labelBersaglio(m.bersaglio, lingua)}>
-            {conSegno(Number(m.valore) || 0)}{unitaBersaglio(m.bersaglio)} ({m.fonte || potere.nome})
+          <span key={i} style={{ ...chipStile, borderColor: C.goldDark, color: C.goldDark, fontWeight: 700 }} title={m.fonte || potere.nome}>
+            {labelBersaglio(m.bersaglio, lingua, m.bersaglioLibero)} {conSegno(Number(m.valore) || 0)}{unitaBersaglio(m.bersaglio)} ({m.fonte || potere.nome})
           </span>
         ))}
         {sceltaEffetto ? (
@@ -239,11 +243,21 @@ function PotereModal({ potere, indice, totale, onChiudi, onAggiorna, onElimina, 
                 {BERSAGLI_MODIFICATORE_POTERE.map((b) => (
                   <option key={b.chiave} value={b.chiave}>{lingua === 'en' ? b.labelEn : b.label}</option>
                 ))}
+                <option value={BERSAGLIO_LIBERO}>{lingua === 'en' ? 'Other (custom)…' : 'Altro (personalizzato)…'}</option>
               </select>
+              {m.bersaglio === BERSAGLIO_LIBERO && (
+                <input
+                  value={m.bersaglioLibero}
+                  onChange={(e) => setModificatore(i, { bersaglioLibero: e.target.value })}
+                  placeholder={lingua === 'en' ? 'What does it affect? (e.g. Advantage on CHA saves)' : 'Su cosa agisce? (es. Vantaggio ai TS Carisma)'}
+                  style={{ ...styles.inlineInput, flex: 1, minWidth: 120, fontSize: 12, padding: '4px 6px' }}
+                />
+              )}
               <input
                 type="number"
                 value={m.valore}
                 onChange={(e) => setModificatore(i, { valore: Number(e.target.value) || 0 })}
+                title={lingua === 'en' ? 'Numeric value (use 0 or 1 for a yes/no effect, e.g. Advantage)' : 'Valore numerico (usa 0 o 1 per un effetto sì/no, es. Vantaggio)'}
                 style={{ ...styles.inlineInput, width: 56, fontSize: 12, padding: '4px 6px', textAlign: 'center' }}
               />
               <input
@@ -340,8 +354,8 @@ export function SezionePoteri({ scheda, aggiorna, lingua = 'it' }) {
     <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(28px, 1fr) auto minmax(28px, 1fr)', alignItems: 'center', columnGap: 6, marginBottom: 8 }}>
         <div />
-        <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5, textAlign: 'center' }}>
-          ✨ {lingua === 'en' ? 'Powers' : 'Poteri'}
+        <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5, textAlign: 'center' }} title={lingua === 'en' ? 'For rules invented at the table (not in the official books): pacts, blessings, curses, magic items with custom effects...' : 'Per le regole inventate al tavolo (non nei manuali ufficiali): patti, benedizioni, maledizioni, oggetti magici con effetti custom...'}>
+          ✨ {lingua === 'en' ? 'Powers' : 'Poteri'} <span style={{ textTransform: 'none', fontWeight: 500, letterSpacing: 'normal', color: C.inkDim, fontSize: 11 }}>({lingua === 'en' ? 'homebrew rules' : 'regole homebrew'})</span>
         </div>
         <button type="button" style={{ ...styles.buttonMini, borderStyle: 'dashed', justifySelf: 'end' }} onClick={aggiungiPotere}>
           ➕ {lingua === 'en' ? 'Add power' : 'Aggiungi potere'}

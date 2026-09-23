@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 
 import {
   BERSAGLI_MODIFICATORE_POTERE,
+  BERSAGLIO_LIBERO,
   nuovoPotere,
   normalizzaPotere,
   normalizzaPoteri,
@@ -41,7 +42,12 @@ test('normalizzaPotere: riempie i campi mancanti senza far esplodere nulla', () 
 
 test('normalizzaPotere: scarta modificatori con bersaglio sconosciuto', () => {
   const p = normalizzaPotere({ nome: 'X', modificatori: [{ bersaglio: 'inventato', valore: 99 }, { bersaglio: 'ca', valore: 1 }] });
-  assert.deepEqual(p.modificatori, [{ bersaglio: 'ca', valore: 1, fonte: '' }]);
+  assert.deepEqual(p.modificatori, [{ bersaglio: 'ca', bersaglioLibero: '', valore: 1, fonte: '' }]);
+});
+
+test('normalizzaPotere: accetta un bersaglio libero (homebrew) con etichetta scritta a mano', () => {
+  const p = normalizzaPotere({ nome: 'X', modificatori: [{ bersaglio: BERSAGLIO_LIBERO, bersaglioLibero: 'Vantaggio ai TS Carisma', valore: 1, fonte: 'Patto' }] });
+  assert.deepEqual(p.modificatori, [{ bersaglio: BERSAGLIO_LIBERO, bersaglioLibero: 'Vantaggio ai TS Carisma', valore: 1, fonte: 'Patto' }]);
 });
 
 test('bonusPotereBersaglio: somma solo i poteri attivi', () => {

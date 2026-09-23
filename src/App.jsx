@@ -1963,7 +1963,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.17.0';
+const APP_VERSION = '4.18.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -15716,39 +15716,18 @@ export default function App() {
                 const AddControl = (liv) => {
                   const isLivMancante = liv === 0 ? trucMancanti : incMancanti;
                   const numMancanti = liv === 0 ? (maxTrucchetti - nTrucchetti) : (maxIncantesimi - nIncantiScelti);
-                  // I trucchetti si scelgono solo nel Level Up (non più un menu qui): il
-                  // bottone porta direttamente lì invece di offrire un secondo modo di sceglierli.
+                  // I trucchetti si scelgono solo nel Level Up (non più un menu qui): niente
+                  // bottone qui, solo l'avviso quando ce n'è ancora qualcuno da scegliere.
                   if (liv === 0) {
+                    if (!(isLivMancante && numMancanti > 0)) return null;
                     return (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 }}>
-                        {isLivMancante && numMancanti > 0 && (
-                          <div style={{ fontSize: 11, fontWeight: 700, color: '#2e9d4d', display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <span>🟢</span>
-                            <span>
-                              {lingua === 'en'
-                                ? `${numMancanti} cantrip${numMancanti > 1 ? 's' : ''} to choose: pick ${numMancanti > 1 ? 'them' : 'it'} in Level Up`
-                                : `${numMancanti} trucchett${numMancanti > 1 ? 'i' : 'o'} da scegliere: si scelgono nel Level Up`}
-                            </span>
-                          </div>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => setMostraLevelUp(true)}
-                          style={{
-                            ...styles.buttonMini,
-                            fontSize: 12,
-                            padding: isLivMancante ? '6px 14px' : '5px 12px',
-                            fontWeight: isLivMancante ? 700 : 600,
-                            cursor: 'pointer',
-                            alignSelf: 'flex-start',
-                            borderColor: isLivMancante ? '#2e9d4d' : undefined,
-                            background: isLivMancante ? 'rgba(46,157,77,0.18)' : undefined,
-                            color: isLivMancante ? '#2e9d4d' : undefined,
-                            boxShadow: isLivMancante ? '0 0 12px rgba(46,157,77,0.45)' : undefined,
-                          }}
-                        >
-                          📈 {lingua === 'en' ? 'Choose in Level Up' : 'Scegli in Level Up'}
-                        </button>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: '#2e9d4d', display: 'flex', alignItems: 'center', gap: 4, marginTop: 8 }}>
+                        <span>🟢</span>
+                        <span>
+                          {lingua === 'en'
+                            ? `${numMancanti} cantrip${numMancanti > 1 ? 's' : ''} to choose: pick ${numMancanti > 1 ? 'them' : 'it'} in Level Up`
+                            : `${numMancanti} trucchett${numMancanti > 1 ? 'i' : 'o'} da scegliere: si scelgono nel Level Up`}
+                        </span>
                       </div>
                     );
                   }

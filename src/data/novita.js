@@ -5,6 +5,21 @@
 
 export const NOVITA = [
   {
+    versione: '4.18.0',
+    voci: {
+      it: [
+        'Tolto il bottone "Scegli in Level Up" sempre visibile nei Trucchetti: resta solo l\'avviso quando c\'è ancora qualcosa da scegliere.',
+        'Poteri: i modificatori ora possono avere un bersaglio libero (es. "Vantaggio ai TS Carisma"), non solo Velocità/CA/Iniziativa/PF Massimi. L\'etichetta del bersaglio è sempre visibile nel chip.',
+        'Poteri: il titolo della sezione ora specifica "(regole homebrew)" per chiarire a cosa serve.',
+      ],
+      en: [
+        'Removed the always-visible "Choose in Level Up" button in Cantrips: only the warning remains when something is still missing.',
+        'Powers: modifiers can now target anything (e.g. "Advantage on CHA saves"), not just Speed/AC/Initiative/Max HP. The target label is always visible on the chip.',
+        'Powers: the section title now says "(homebrew rules)" to clarify its purpose.',
+      ],
+    },
+  },
+  {
     versione: '4.17.0',
     voci: {
       it: [

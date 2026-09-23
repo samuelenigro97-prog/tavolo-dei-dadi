@@ -48,8 +48,12 @@ export function nuovoContatore(dati = {}) {
   return { nome: '', attuali: 0, max: null, ...dati };
 }
 
+/** Valore di `bersaglio` per un modificatore su un bersaglio libero (scritto a mano),
+ * per coprire qualsiasi effetto homebrew non previsto in BERSAGLI_MODIFICATORE_POTERE. */
+export const BERSAGLIO_LIBERO = 'altro';
+
 export function nuovoModificatore(dati = {}) {
-  return { bersaglio: BERSAGLI_MODIFICATORE_POTERE[0].chiave, valore: 0, fonte: '', ...dati };
+  return { bersaglio: BERSAGLI_MODIFICATORE_POTERE[0].chiave, bersaglioLibero: '', valore: 0, fonte: '', ...dati };
 }
 
 /** Difende da dati mancanti/malformati (schede vecchie, import parziali). */
@@ -69,8 +73,8 @@ export function normalizzaPotere(p) {
       : [],
     modificatori: Array.isArray(p.modificatori)
       ? p.modificatori
-          .filter((m) => m && BERSAGLI_MODIFICATORE_POTERE.some((b) => b.chiave === m.bersaglio))
-          .map((m) => ({ bersaglio: m.bersaglio, valore: Number(m.valore) || 0, fonte: String(m.fonte || '') }))
+          .filter((m) => m && (BERSAGLI_MODIFICATORE_POTERE.some((b) => b.chiave === m.bersaglio) || m.bersaglio === BERSAGLIO_LIBERO))
+          .map((m) => ({ bersaglio: m.bersaglio, bersaglioLibero: String(m.bersaglioLibero || ''), valore: Number(m.valore) || 0, fonte: String(m.fonte || '') }))
       : [],
   };
 }
