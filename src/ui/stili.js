@@ -2377,6 +2377,25 @@ tbody tr:hover {
 @media (prefers-reduced-motion: reduce) {
   :root[data-lettura="facilitata"] .app-shell * { transition: none !important; }
 }
+
+/* ------------------------------------------------------------------ */
+/* MODALITÀ MINIMALE                                                    */
+/* Nasconde i dettagli tecnici secondari (gittata/tempo/scuola/note) */
+/* nelle righe di Combattimento e Incantesimi, già dense di per sé,   */
+/* e ingrandisce leggermente quelle righe. Resta opzionale come la   */
+/* lettura facilitata: il dato non sparisce, è solo dietro un click  */
+/* (il nome dell'incantesimo/attacco resta cliccabile per i dettagli). */
+/* ------------------------------------------------------------------ */
+:root[data-minimale="true"] .spell-chips,
+:root[data-minimale="true"] .nota-dettagli {
+  display: none !important;
+}
+:root[data-minimale="true"] .spell-row {
+  zoom: 1.08;
+}
+:root[data-minimale="true"] .attacchi-table {
+  zoom: 1.08;
+}
 /* ------------------------------------------------------------------ */
 /* COMPENDIO: tab delle categorie                                       */
 /* 11 categorie non stanno in una riga da 820px. Su schermo stretto     */

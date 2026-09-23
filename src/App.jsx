@@ -1963,7 +1963,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.12.0';
+const APP_VERSION = '4.13.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3685,6 +3685,17 @@ export default function App() {
     try { localStorage.setItem('scheda-interattiva:lettura-facilitata', letturaFacilitata ? '1' : '0'); } catch { /* niente */ }
   }, [letturaFacilitata]);
 
+  // Modalità Minimale: nasconde i dettagli tecnici secondari (gittata, tempo,
+  // scuola, note) in righe di Combattimento/Incantesimi già dense, e ingrandisce
+  // leggermente testo/spaziatura. Resta un'opzione (come Lettura facilitata):
+  // chi preferisce vedere tutto a colpo d'occhio non perde nulla.
+  const [modalitaMinimale, setModalitaMinimale] = useState(() => {
+    try { return localStorage.getItem('scheda-interattiva:modalita-minimale') === '1'; } catch { return false; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem('scheda-interattiva:modalita-minimale', modalitaMinimale ? '1' : '0'); } catch { /* niente */ }
+  }, [modalitaMinimale]);
+
   // Dimensione del testo, indipendente dalla lettura facilitata: molti corpi
   // della scheda stanno sotto gli 11px e su schermo piccolo sono faticosi.
   const [dimensioneTesto, setDimensioneTesto] = useState(() => {
@@ -4126,6 +4137,7 @@ export default function App() {
     root.dataset.animazioni = 'respiro';
     root.dataset.lettura = letturaFacilitata ? 'facilitata' : 'normale';
     root.dataset.testo = dimensioneTesto;
+    root.dataset.minimale = modalitaMinimale ? 'true' : 'false';
     const set = (k, v) => root.style.setProperty(k, v);
     set('--c-bg', t.bg); set('--c-panel', t.panel); set('--c-panel-light', t.panelLight);
     set('--c-border', t.border); set('--c-ink', t.ink); set('--c-ink-dim', t.inkDim);
@@ -4171,7 +4183,7 @@ export default function App() {
     } catch {
       // storage non disponibile: pazienza
     }
-  }, [tema, sistemaScuro, oraTick, classeAttiva, presetColori, temaCornici, schedaSolaLettura, letturaFacilitata, dimensioneTesto]);
+  }, [tema, sistemaScuro, oraTick, classeAttiva, presetColori, temaCornici, schedaSolaLettura, letturaFacilitata, dimensioneTesto, modalitaMinimale]);
   const intervalRef = useRef(null);
   const jsonRef = useRef(null);
   const pdfRef = useRef(null);
@@ -7841,6 +7853,20 @@ export default function App() {
                       style={{ width: 16, height: 16, cursor: 'pointer', accentColor: C.goldDark }}
                     />
                     <span>{lingua === 'en' ? 'Easy reading' : 'Lettura facilitata'}</span>
+                  </label>
+                  <label
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginBottom: 6, fontSize: 12 }}
+                    title={lingua === 'en'
+                      ? 'Hides secondary details (range, time, school, notes) in dense rows behind a click, and enlarges text/spacing a bit.'
+                      : 'Nasconde dietro un click i dettagli secondari (gittata, tempo, scuola, note) nelle righe più dense, e ingrandisce leggermente testo e spaziatura.'}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={modalitaMinimale}
+                      onChange={(e) => setModalitaMinimale(e.target.checked)}
+                      style={{ width: 16, height: 16, cursor: 'pointer', accentColor: C.goldDark }}
+                    />
+                    <span>{lingua === 'en' ? 'Minimal mode' : 'Modalità Minimale'}</span>
                   </label>
                   <select
                     value={dimensioneTesto}
@@ -15047,29 +15073,31 @@ export default function App() {
                                           )}
                                         </div>
                                       )}
-                                      {cat === 'Reazione' && (a.innescoIt || a.effettoIt) ? (
-                                        <>
-                                          {a.innescoIt && (
-                                            <span style={{ fontSize: 9.5, padding: '1px 5px', borderRadius: 4, background: 'rgba(59,130,246,0.12)', border: '1px solid #3b82f6', color: '#2563eb', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3 }} title={lingua === 'en' ? 'Trigger' : 'Innesco'}>
-                                              🎯 {lingua === 'en' ? (a.innescoEn || a.innescoIt) : a.innescoIt}
-                                            </span>
-                                          )}
-                                          {a.effettoIt && (
-                                            <span style={{ fontSize: 9.5, padding: '1px 5px', borderRadius: 4, background: 'rgba(123,79,176,0.12)', border: '1px solid #7b4fb0', color: '#7b4fb0', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3 }} title={lingua === 'en' ? 'Effect' : 'Effetto'}>
-                                              🛡️ {lingua === 'en' ? (a.effettoEn || a.effettoIt) : a.effettoIt}
-                                            </span>
-                                          )}
-                                        </>
-                                      ) : categorieNota.map((c, ci) => (
-                                        <span
-                                          key={ci}
-                                          style={{ fontSize: 9.5, padding: '1px 5px', borderRadius: 4, background: `${c.colore}1f`, border: `1px solid ${c.colore}`, color: c.colore, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3, whiteSpace: 'nowrap' }}
-                                          title={c.etichetta}
-                                        >
-                                          {c.icona} {c.testo}
-                                        </span>
-                                      ))}
-                                      <Editable value={a.note} width={hasReach || infoMunizioni.usaMunizioni || categorieNota.length > 0 ? 90 : 130} onChange={(v) => aggiornaAttacco({ note: v })} title={titoloRiga || a.note || t('tip.click_modifica')} />
+                                      <span className="nota-dettagli" style={{ display: 'contents' }}>
+                                        {cat === 'Reazione' && (a.innescoIt || a.effettoIt) ? (
+                                          <>
+                                            {a.innescoIt && (
+                                              <span style={{ fontSize: 9.5, padding: '1px 5px', borderRadius: 4, background: 'rgba(59,130,246,0.12)', border: '1px solid #3b82f6', color: '#2563eb', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3 }} title={lingua === 'en' ? 'Trigger' : 'Innesco'}>
+                                                🎯 {lingua === 'en' ? (a.innescoEn || a.innescoIt) : a.innescoIt}
+                                              </span>
+                                            )}
+                                            {a.effettoIt && (
+                                              <span style={{ fontSize: 9.5, padding: '1px 5px', borderRadius: 4, background: 'rgba(123,79,176,0.12)', border: '1px solid #7b4fb0', color: '#7b4fb0', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3 }} title={lingua === 'en' ? 'Effect' : 'Effetto'}>
+                                                🛡️ {lingua === 'en' ? (a.effettoEn || a.effettoIt) : a.effettoIt}
+                                              </span>
+                                            )}
+                                          </>
+                                        ) : categorieNota.map((c, ci) => (
+                                          <span
+                                            key={ci}
+                                            style={{ fontSize: 9.5, padding: '1px 5px', borderRadius: 4, background: `${c.colore}1f`, border: `1px solid ${c.colore}`, color: c.colore, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3, whiteSpace: 'nowrap' }}
+                                            title={c.etichetta}
+                                          >
+                                            {c.icona} {c.testo}
+                                          </span>
+                                        ))}
+                                        <Editable value={a.note} width={hasReach || infoMunizioni.usaMunizioni || categorieNota.length > 0 ? 90 : 130} onChange={(v) => aggiornaAttacco({ note: v })} title={titoloRiga || a.note || t('tip.click_modifica')} />
+                                      </span>
                                     </div>
                                   </td>
                                   <td className="col-azioni attacchi-azioni" style={{ ...styles.td, textAlign: 'right' }}>

@@ -2,6 +2,20 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.13.0] – 2026-09-23
+
+### Aggiunto
+- **Nuovo interruttore "Modalità Minimale"** (Sistema → Leggibilità, accanto
+  a "Lettura facilitata"). Da provare, non ancora un cambiamento permanente:
+  quando attivo, le righe di Combattimento e Incantesimi — tra le più dense
+  della scheda — nascondono i dettagli tecnici secondari (gittata, tempo,
+  scuola, note) dietro un click, mostrando solo nome, bonus e danno, e il
+  testo delle righe si ingrandisce leggermente. Nulla viene eliminato: i
+  dettagli restano raggiungibili cliccando il nome dell'incantesimo/attacco
+  per aprirne la scheda completa. Come "Lettura facilitata", resta opzionale:
+  chi preferisce vedere tutto a colpo d'occhio non perde nulla lasciandolo
+  spento.
+
 ## [4.12.0] – 2026-09-23
 
 ### Aggiunto

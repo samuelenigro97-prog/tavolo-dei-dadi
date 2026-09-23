@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.13.0',
+    voci: {
+      it: [
+        'Nuovo interruttore "Modalità Minimale" (Sistema → Leggibilità): nasconde i dettagli tecnici secondari nelle righe di Combattimento/Incantesimi e ingrandisce leggermente il testo. Opzionale, da provare.',
+      ],
+      en: [
+        'New "Minimal Mode" toggle (System → Readability): hides secondary technical details on Combat/Spell rows and slightly enlarges text. Optional, give it a try.',
+      ],
+    },
+  },
+  {
     versione: '4.12.0',
     voci: {
       it: [
