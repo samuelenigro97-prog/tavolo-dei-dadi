@@ -5,6 +5,23 @@
 
 export const NOVITA = [
   {
+    versione: '4.14.0',
+    voci: {
+      it: [
+        'I trucchetti si scelgono ora nel Level Up (non più con un bottone a parte in Incantesimi).',
+        'Fix regole: danno subito a 0 PF ora fa scattare davvero il fallimento automatico ai TS Morte (e la morte istantanea se il danno in eccesso è troppo alto) — prima non succedeva mai.',
+        'Fix: il TS di Concentrazione ora scatta anche applicando danno dal Tracker di Combattimento, non solo dai tasti rapidi in scheda.',
+        'Trasformazioni sempre visibili (non più un pannello da aprire); tolta la scritta "Tavolo dei Dadi" duplicata nel Menu Iniziale.',
+      ],
+      en: [
+        'Cantrips are now chosen in Level Up (no longer a separate button in Spells).',
+        'Rules fix: taking damage at 0 HP now actually triggers the automatic death save failure (and instant death on massive overkill) — it never did before.',
+        'Fix: the Concentration save now also triggers when applying damage from the Combat Tracker, not just the quick buttons on the sheet.',
+        'Transformations always visible (no longer a panel to open); removed the duplicate "Tavolo dei Dadi" text in the Main Menu.',
+      ],
+    },
+  },
+  {
     versione: '4.13.0',
     voci: {
       it: [

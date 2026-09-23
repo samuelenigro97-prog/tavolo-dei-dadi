@@ -517,3 +517,41 @@ export function estraiCategorieNota(nota) {
   return categorie;
 }
 
+/**
+ * Regole PF 0 / danno massiccio (PHB 2014 p.197): subire danno mentre si è
+ * già a 0 PF costa un fallimento automatico ai Tiri Salvezza contro la
+ * Morte; se il danno "in eccesso" (quello che avanza dopo aver azzerato i
+ * PF) è pari o superiore ai PF massimi, la morte è istantanea. Pura logica,
+ * nessuno stato React: chi chiama applica il risultato con aggiorna().
+ *
+ * @param {number} pfMax PF massimi del personaggio
+ * @param {number} pfPrima PF attuali prima di subire questo danno (>= 0)
+ * @param {number} dannoReale danno che arriva davvero ai PF (dopo i PF temporanei)
+ * @param {{successi:number, fallimenti:number}} tsMortePrima stato attuale dei TS Morte
+ * @returns {{pfDopo:number, istantaneo:boolean, tsMorteDopo:{successi:number,fallimenti:number}|null}}
+ *   tsMorteDopo è null quando questo colpo non tocca i Tiri Salvezza contro la Morte
+ *   (il personaggio non era già a 0 PF e non ci è arrivato con un eccesso letale).
+ */
+export function esitoDannoPf0(pfMax, pfPrima, dannoReale, tsMortePrima) {
+  const max = Math.max(1, Number(pfMax) || 1);
+  const prima = Math.max(0, Number(pfPrima) || 0);
+  const danno = Math.max(0, Number(dannoReale) || 0);
+  const pfDopo = Math.max(0, prima - danno);
+  const eccesso = danno - prima; // quanto danno avanza dopo aver azzerato i PF (può essere negativo)
+
+  if (pfDopo > 0 || danno <= 0) {
+    return { pfDopo, istantaneo: false, tsMorteDopo: null };
+  }
+  if (eccesso >= max) {
+    return { pfDopo: 0, istantaneo: true, tsMorteDopo: { successi: 0, fallimenti: 3 } };
+  }
+  if (prima === 0) {
+    // Danno subito mentre si è già a 0 PF: un fallimento automatico.
+    const fallimenti = Math.min(3, (Number(tsMortePrima?.fallimenti) || 0) + 1);
+    return { pfDopo: 0, istantaneo: fallimenti >= 3, tsMorteDopo: { successi: Number(tsMortePrima?.successi) || 0, fallimenti } };
+  }
+  // Ha appena toccato 0 PF senza eccesso letale: nessun fallimento automatico
+  // (le regole lo prevedono solo per il danno subito mentre si è GIÀ a 0 PF).
+  return { pfDopo: 0, istantaneo: false, tsMorteDopo: null };
+}
+

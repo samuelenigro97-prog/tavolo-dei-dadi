@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, punteggioCaratteristica, formattaNomePg, bonusCopertura, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma, trasformazioneAttiva, pfMassimiEffettivi, estraiCategorieNota } from '../src/rules/scheda.js';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, punteggioCaratteristica, formattaNomePg, bonusCopertura, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma, trasformazioneAttiva, pfMassimiEffettivi, estraiCategorieNota, esitoDannoPf0 } from '../src/rules/scheda.js';
 import { ABILITA, CARATTERISTICHE } from '../src/data/caratteristiche.js';
 import { spiegaIncantesimo } from '../src/data/spiegazioni.js';
 import { tiraDanni, parseEspressioneDado } from '../src/rules/dadi.js';
@@ -772,5 +772,47 @@ test('estraiCategorieNota: riconosce gittata, durata, tiro salvezza e proprietà
   // Nota vuota -> nessuna categoria, nessun errore
   assert.deepEqual(estraiCategorieNota(''), []);
   assert.deepEqual(estraiCategorieNota(undefined), []);
+});
+
+test('esitoDannoPf0: fallimento automatico e morte istantanea per danno a PF 0', () => {
+  const nessunTs = { successi: 0, fallimenti: 0 };
+
+  // Danno normale che non azzera i PF: nessun effetto sui TS Morte.
+  let r = esitoDannoPf0(30, 20, 5, nessunTs);
+  assert.equal(r.pfDopo, 15);
+  assert.equal(r.istantaneo, false);
+  assert.equal(r.tsMorteDopo, null);
+
+  // Il colpo azzera i PF ma senza eccesso letale: nessun fallimento automatico
+  // (le regole lo prevedono solo per danno subito mentre si è GIÀ a 0 PF).
+  r = esitoDannoPf0(30, 10, 10, nessunTs);
+  assert.equal(r.pfDopo, 0);
+  assert.equal(r.istantaneo, false);
+  assert.equal(r.tsMorteDopo, null);
+
+  // Il colpo azzera i PF con un eccesso pari o superiore ai PF massimi -> morte istantanea.
+  r = esitoDannoPf0(30, 10, 45, nessunTs); // eccesso = 35 >= 30
+  assert.equal(r.istantaneo, true);
+  assert.deepEqual(r.tsMorteDopo, { successi: 0, fallimenti: 3 });
+
+  // Già a 0 PF, subisce altro danno (non letale) -> +1 fallimento automatico.
+  r = esitoDannoPf0(30, 0, 3, { successi: 1, fallimenti: 1 });
+  assert.equal(r.istantaneo, false);
+  assert.deepEqual(r.tsMorteDopo, { successi: 1, fallimenti: 2 });
+
+  // Già a 0 PF, terzo fallimento automatico -> morte.
+  r = esitoDannoPf0(30, 0, 3, { successi: 0, fallimenti: 2 });
+  assert.equal(r.istantaneo, true);
+  assert.deepEqual(r.tsMorteDopo, { successi: 0, fallimenti: 3 });
+
+  // Già a 0 PF, danno pari o superiore ai PF massimi -> morte istantanea diretta (non solo +1).
+  r = esitoDannoPf0(30, 0, 30, { successi: 0, fallimenti: 0 });
+  assert.equal(r.istantaneo, true);
+  assert.deepEqual(r.tsMorteDopo, { successi: 0, fallimenti: 3 });
+
+  // Nessun danno (es. delta 0 o negativo passato per errore) -> nessun effetto.
+  r = esitoDannoPf0(30, 0, 0, nessunTs);
+  assert.equal(r.istantaneo, false);
+  assert.equal(r.tsMorteDopo, null);
 });
 

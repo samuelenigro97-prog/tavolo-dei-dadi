@@ -2,6 +2,45 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.14.0] – 2026-09-23
+
+### Aggiunto
+- **Trucchetti scelti nel Level Up, non più con un bottone a parte in
+  Incantesimi.** Quando sali di livello e guadagni nuovi trucchetti (o ne hai
+  di arretrati da scegliere), il modal Passaggio di Livello mostra ora un
+  selettore con i trucchetti suggeriti per la classe: li scegli lì, si
+  aggiungono confermando il livello. Il bottone "aggiungi trucchetto" nella
+  sezione Incantesimi è sparito, sostituito da un rimando diretto al Level Up.
+
+### Corretto
+- **PF 0 / danno massiccio (PHB p.197) non era automatico.** Subire danno
+  mentre si è già a 0 PF ora costa in automatico un fallimento ai Tiri
+  Salvezza contro la Morte; se il danno in eccesso è pari o superiore ai PF
+  massimi, la morte è istantanea (3 fallimenti). Prima nessuno dei due tasti
+  danno (scheda e Tracker di Combattimento) lo applicava: un personaggio a
+  0 PF poteva incassare colpo dopo colpo senza che i Tiri Salvezza contro la
+  Morte se ne accorgessero mai.
+- **TS di Concentrazione mancante nel Tracker di Combattimento**: applicare
+  danno da lì (a differenza dei tasti rapidi in scheda) non proponeva mai il
+  tiro salvezza per mantenere la concentrazione. Corretto.
+- **"Tavolo dei Dadi vX" duplicato nel footer del Menu Iniziale**: compariva
+  sia nel titolo in alto che di nuovo nel footer in basso. Tolto dal footer,
+  resta solo il link alla licenza.
+
+### Modificato
+- La sezione "Trasformazioni" non è più un pannello a scomparsa (accordion):
+  i due bottoni Forma Selvatica/Metamorfosi sono sempre visibili senza dover
+  aprire nulla.
+
+### Verificato
+- **Audit delle automazioni di regole** (PF temporanei, Concentrazione,
+  Sfinimento sui tiri, Reazioni una volta a round, Riposo Breve/Lungo
+  incluso il caso speciale del Warlock, Ispirazione, vantaggio/svantaggio da
+  condizioni, munizioni): tutto corretto e collegato ai bottoni giusti,
+  tranne il caso PF 0/danno massiccio sopra, ora sistemato. Vantaggio/
+  svantaggio da condizioni (Prono, Afferrato, ecc.) resta manuale per scelta:
+  le condizioni sono tracciate ma non forzano automaticamente il tiro.
+
 ## [4.13.0] – 2026-09-23
 
 ### Aggiunto

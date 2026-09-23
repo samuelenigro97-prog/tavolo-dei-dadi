@@ -8,7 +8,7 @@ import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI, ambientazioneCasuale, COLORE_
 import { styles, GLOBAL_CSS } from './ui/stili.js';
 import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, estraiVociLista, Sezione, CampoBloccato, formattaVoceConIcona } from './ui/componenti.jsx';
 import { SezionePoteri, BadgePotere } from './ui/PoteriSezione.jsx';
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma, estraiCategorieNota, iniziativaTotale, pfMassimiEffettivi, effettiSfinimento, trasformazioneAttiva } from './rules/scheda.js';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma, estraiCategorieNota, esitoDannoPf0, iniziativaTotale, pfMassimiEffettivi, effettiSfinimento, trasformazioneAttiva } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON, WENDELL_JSON, LYRIAN_JSON } from './data/esempi.js';
 import { fixEquipaggiamentoVaelion, migrazioneRegoleVaelion, autoIdratazionePersonaggioPredefinito } from './data/migrazioniPersonaggi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
@@ -1963,7 +1963,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.13.0';
+const APP_VERSION = '4.14.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -5057,18 +5057,44 @@ export default function App() {
 
       let newPf = cb.pfAttuali;
       let newTemp = cb.pfTemp || 0;
+      let dannoReale = 0;
       if (delta < 0) {
         let dmg = -delta;
         const assorbito = Math.min(newTemp, dmg);
         newTemp -= assorbito;
         dmg -= assorbito;
         newPf = Math.max(0, cb.pfAttuali - dmg);
+        dannoReale = dmg;
       } else {
         newPf = Math.min(cb.pfMax, cb.pfAttuali + delta);
       }
 
-      if (cb.tipo === 'pg' && (cb.nome === scheda.nome || cb.id === 'pg-attivo' || c.combattenti.filter((x) => x.tipo === 'pg').length === 1)) {
-        aggiorna({ pfAttuali: newPf, pfTemp: newTemp });
+      const isPgAttivo = cb.tipo === 'pg' && (cb.nome === scheda.nome || cb.id === 'pg-attivo' || c.combattenti.filter((x) => x.tipo === 'pg').length === 1);
+      if (isPgAttivo) {
+        const patchPg = { pfAttuali: newPf, pfTemp: newTemp };
+        // PF 0 / danno massiccio (PHB p.197): stessa regola già applicata dai
+        // tasti rapidi danno/cura in scheda, qui per il danno dal Combat Tracker.
+        if (delta < 0) {
+          const esitoPf0 = esitoDannoPf0(scheda.pfMax, cb.pfAttuali, dannoReale, scheda.tsMorte);
+          if (esitoPf0.tsMorteDopo) {
+            patchPg.tsMorte = esitoPf0.tsMorteDopo;
+            registra({
+              etichetta: esitoPf0.istantaneo ? '💀 Morte' : '💀 TS Morte',
+              tipo: 'tattica',
+              dettaglio: esitoPf0.istantaneo
+                ? `${scheda.nome || 'PG'} muore: danno subito a 0 PF con eccesso pari o superiore ai PF massimi.`
+                : `${scheda.nome || 'PG'} subisce danno mentre è a 0 PF: fallimento automatico (${esitoPf0.tsMorteDopo.fallimenti}/3).`,
+            });
+          }
+        }
+        aggiorna(patchPg);
+        // TS di Concentrazione: la CD si calcola sul danno subito per intero
+        // (10 o metà danno, il più alto), i PF temporanei non lo riducono —
+        // stessa regola già applicata dai tasti rapidi danno/cura in scheda.
+        if (delta < 0 && scheda.concentrazione) {
+          const dannoSubito = -delta;
+          setCheckConc({ danno: dannoSubito, cd: Math.max(10, Math.floor(dannoSubito / 2)), spell: scheda.concentrazione, esito: null });
+        }
       } else if (cb.tipo === 'alleato' && Array.isArray(scheda.alleati) && cb.nome) {
         const alleatiAgg = scheda.alleati.map((a) =>
           (a.id === cb.id || a.nome.toLowerCase() === cb.nome.toLowerCase()) ? { ...a, pfAttuali: newPf } : a
@@ -7937,8 +7963,7 @@ export default function App() {
               </div>
             </div>
 
-            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11, color: C.muted }}>
-              <span>{t('menu.footer_versione', { v: APP_VERSION })}</span>
+            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}`, display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 11, color: C.muted }}>
               <a
                 href="https://dnd.wizards.com/resources/systems-reference-document"
                 target="_blank"
@@ -9240,6 +9265,13 @@ export default function App() {
         const trOld = trucchettiMax(targetClasse, targetLivelloVecchio, targetSottoclasse);
         const trNew = trucchettiMax(targetClasse, targetLivelloNuovo, targetSottoclasse);
         const nuoviTrucchetti = (trOld != null && trNew != null) ? Math.max(0, trNew - trOld) : (isNewMc && trNew != null ? trNew : 0);
+        // Quanti trucchetti scegliere qui: non solo quelli guadagnati con QUESTO
+        // livello, ma tutto il divario rispetto al totale conosciuto — così il
+        // Level Up assorbe anche eventuali trucchetti mai scelti in precedenza.
+        const trucchettiGiaConosciuti = (scheda.incantesimiLista || []).filter((s) => s.livello === 0 && !s.bonus).map((s) => (s.nome || '').toLowerCase());
+        const trucchettiDaScegliere = trNew != null ? Math.max(0, trNew - trucchettiGiaConosciuti.length) : 0;
+        const suggeritiTrucchetti = trucchettiDaScegliere > 0 ? incantesimiClasseLivello(targetClasse, 0, targetSottoclasse, versione) : [];
+        const trucchettiScelti = (levelUpBozza.trucchettiScelti || []).filter((n) => !trucchettiGiaConosciuti.includes(n.toLowerCase()));
         const incOld = incantesimiMaxAuto(scheda, versione);
         const incNew = incantesimiMaxAuto({ ...scheda, livello: isNewMc || isSecMc ? Math.max(1, num(scheda.livello, 1)) : targetLivelloNuovo }, versione);
         const nuoviIncantesimi = (incOld != null && incNew != null) ? Math.max(0, incNew - incOld) : 0;
@@ -9609,7 +9641,7 @@ export default function App() {
               )}
 
               {/* Progressione Magica (Slot, Cerchi sbloccati, Incantesimi da preparare/imparare) */}
-              {(slotStr || nuoviTrucchetti > 0 || nuoviIncantesimi > 0) && (
+              {(slotStr || trucchettiDaScegliere > 0 || nuoviIncantesimi > 0) && (
                 <div style={{ padding: '12px 0', borderBottom: haASI ? `1px solid ${C.border}` : 'none' }}>
                   {/* Intestazione Sezione */}
                   <div style={{ fontWeight: 700, marginBottom: 8, color: C.goldDark, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -9645,7 +9677,7 @@ export default function App() {
 
                   {/* Griglia Slot per Livello (Badge Eleganti) */}
                   {slotNuovi && Object.keys(slotNuovi).filter((l) => slotNuovi[l]?.totale > 0).length > 0 && (
-                    <div style={{ marginBottom: (nuoviTrucchetti > 0 || nuoviIncantesimi > 0) ? 10 : 0 }}>
+                    <div style={{ marginBottom: (trucchettiDaScegliere > 0 || nuoviIncantesimi > 0) ? 10 : 0 }}>
                       <div style={{ fontSize: 11.5, color: C.inkDim, marginBottom: 6, fontWeight: 600 }}>
                         {lingua === 'it' ? 'Disponibilità Slot Incantesimo:' : 'Spell Slot Availability:'}
                       </div>
@@ -9697,7 +9729,7 @@ export default function App() {
                   )}
 
                   {/* Incantesimi e Trucchetti da Scegliere */}
-                  {(nuoviTrucchetti > 0 || nuoviIncantesimi > 0) && (
+                  {(trucchettiDaScegliere > 0 || nuoviIncantesimi > 0) && (
                     <div style={{
                       background: 'rgba(0, 0, 0, 0.025)',
                       border: `1px solid ${C.border}`,
@@ -9717,15 +9749,58 @@ export default function App() {
                             <strong style={{ color: '#2e9d4d' }}>+{nuoviIncantesimi}</strong> {lingua === 'it' ? (nuoviIncantesimi === 1 ? 'incantesimo' : 'incantesimi') : (nuoviIncantesimi === 1 ? 'spell' : 'spells')}
                           </div>
                         )}
-                        {nuoviTrucchetti > 0 && (
-                          <div style={{ fontSize: 12, color: C.ink, display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <strong style={{ color: '#2e9d4d' }}>+{nuoviTrucchetti}</strong> {lingua === 'it' ? (nuoviTrucchetti === 1 ? 'trucchetto' : 'trucchetti') : (nuoviTrucchetti === 1 ? 'cantrip' : 'cantrips')}
+                      </div>
+                      {nuoviIncantesimi > 0 && (
+                        <div style={{ fontSize: 11, color: C.inkDim, marginTop: 2, fontStyle: 'italic' }}>
+                          {t('levelup.aggiungi_dopo')}
+                        </div>
+                      )}
+
+                      {/* Trucchetti: si scelgono qui, non più con un bottone a parte in Incantesimi. */}
+                      {trucchettiDaScegliere > 0 && (
+                        <div style={{ marginTop: nuoviIncantesimi > 0 ? 8 : 0, paddingTop: nuoviIncantesimi > 0 ? 8 : 0, borderTop: nuoviIncantesimi > 0 ? `1px dashed ${C.border}` : 'none' }}>
+                          <div style={{ fontSize: 12, color: C.ink, marginBottom: 6 }}>
+                            <strong style={{ color: '#2e9d4d' }}>{trucchettiScelti.length}/{trucchettiDaScegliere}</strong> {lingua === 'it'
+                              ? `trucchett${trucchettiDaScegliere === 1 ? 'o' : 'i'} da scegliere`
+                              : `cantrip${trucchettiDaScegliere === 1 ? '' : 's'} to choose`}
                           </div>
-                        )}
-                      </div>
-                      <div style={{ fontSize: 11, color: C.inkDim, marginTop: 2, fontStyle: 'italic' }}>
-                        {t('levelup.aggiungi_dopo')}
-                      </div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                            {suggeritiTrucchetti.map((nome) => {
+                              const selezionato = trucchettiScelti.some((n) => n.toLowerCase() === nome.toLowerCase());
+                              const pieno = !selezionato && trucchettiScelti.length >= trucchettiDaScegliere;
+                              return (
+                                <button
+                                  key={nome}
+                                  type="button"
+                                  disabled={pieno}
+                                  onClick={() => setLevelUpBozza((b) => ({
+                                    ...b,
+                                    trucchettiScelti: selezionato
+                                      ? trucchettiScelti.filter((n) => n.toLowerCase() !== nome.toLowerCase())
+                                      : [...trucchettiScelti, nome],
+                                  }))}
+                                  style={{
+                                    ...styles.buttonMini,
+                                    fontSize: 11.5,
+                                    padding: '4px 10px',
+                                    fontWeight: selezionato ? 700 : 500,
+                                    cursor: pieno ? 'not-allowed' : 'pointer',
+                                    opacity: pieno ? 0.4 : 1,
+                                    background: selezionato ? 'rgba(46,157,77,0.18)' : C.panel,
+                                    borderColor: selezionato ? '#2e9d4d' : C.border,
+                                    color: selezionato ? '#2e9d4d' : C.ink,
+                                  }}
+                                >
+                                  {selezionato ? '✓ ' : '✨ '}{nome}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <div style={{ fontSize: 10.5, color: C.inkDim, marginTop: 4, fontStyle: 'italic' }}>
+                            {lingua === 'it' ? 'Puoi anche non sceglierli ora e tornare qui più tardi.' : "You can also skip this now and come back here later."}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -9818,11 +9893,21 @@ export default function App() {
                   }
                 }
 
+                // Trucchetti scelti qui nel Level Up (non più con un bottone a parte in Incantesimi).
+                if (trucchettiScelti.length > 0) {
+                  const nuoviTrucchettiScelti = trucchettiScelti.map((nome) => {
+                    const d = dettagliIncantesimo(nome) || { tempo: '1 Az.', gittata: '', note: '' };
+                    return { id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, livello: 0, nome, tempo: d.tempo, gittata: d.gittata, note: d.note, scuola: d.scuola || '', area: d.area || '', danno: d.danno || '', tipoDanno: d.tipoDanno || '', preparato: true };
+                  });
+                  patch.incantesimiLista = [...(scheda.incantesimiLista || []), ...nuoviTrucchettiScelti];
+                }
+
                 // Sincronizza automaticamente anche le risorse di classe (Ki, Ira, Imposizione delle Mani, ecc.)
                 const schedaAggiornata = { ...scheda, ...patch };
                 patch.risorse = sincronizzaRisorseClasse(schedaAggiornata, versione);
 
                 aggiorna(patch);
+                setLevelUpBozza((b) => ({ ...b, trucchettiScelti: [] }));
                 setMostraLevelUp(false);
               }}
             >
@@ -13145,15 +13230,31 @@ export default function App() {
                           const temp = Number(scheda.pfTemp) || 0;
                           const att = Number(scheda.pfAttuali) || 0;
                           let patch = {};
+                          let dannoReale = quantita;
                           if (temp > 0) {
                             if (quantita <= temp) {
                               patch = { pfTemp: temp - quantita };
+                              dannoReale = 0;
                             } else {
                               const rim = quantita - temp;
                               patch = { pfTemp: 0, pfAttuali: Math.max(0, att - rim) };
+                              dannoReale = rim;
                             }
                           } else {
                             patch = { pfAttuali: Math.max(0, att - quantita) };
+                          }
+                          // PF 0 / danno massiccio (PHB p.197): danno subito già a 0 PF costa
+                          // un fallimento automatico ai TS Morte; se l'eccesso è >= PF massimi, morte istantanea.
+                          const esitoPf0 = esitoDannoPf0(scheda.pfMax, att, dannoReale, scheda.tsMorte);
+                          if (esitoPf0.tsMorteDopo) {
+                            patch.tsMorte = esitoPf0.tsMorteDopo;
+                            registra({
+                              etichetta: esitoPf0.istantaneo ? '💀 Morte' : '💀 TS Morte',
+                              tipo: 'tattica',
+                              dettaglio: esitoPf0.istantaneo
+                                ? `${scheda.nome || 'PG'} muore: danno subito a 0 PF con eccesso pari o superiore ai PF massimi.`
+                                : `${scheda.nome || 'PG'} subisce danno mentre è a 0 PF: fallimento automatico (${esitoPf0.tsMorteDopo.fallimenti}/3).`,
+                            });
                           }
                           aggiorna(patch);
                         }
@@ -15656,6 +15757,42 @@ export default function App() {
                 const AddControl = (liv) => {
                   const isLivMancante = liv === 0 ? trucMancanti : incMancanti;
                   const numMancanti = liv === 0 ? (maxTrucchetti - nTrucchetti) : (maxIncantesimi - nIncantiScelti);
+                  // I trucchetti si scelgono solo nel Level Up (non più un menu qui): il
+                  // bottone porta direttamente lì invece di offrire un secondo modo di sceglierli.
+                  if (liv === 0) {
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 }}>
+                        {isLivMancante && numMancanti > 0 && (
+                          <div style={{ fontSize: 11, fontWeight: 700, color: '#2e9d4d', display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <span>🟢</span>
+                            <span>
+                              {lingua === 'en'
+                                ? `${numMancanti} cantrip${numMancanti > 1 ? 's' : ''} to choose: pick ${numMancanti > 1 ? 'them' : 'it'} in Level Up`
+                                : `${numMancanti} trucchett${numMancanti > 1 ? 'i' : 'o'} da scegliere: si scelgono nel Level Up`}
+                            </span>
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setMostraLevelUp(true)}
+                          style={{
+                            ...styles.buttonMini,
+                            fontSize: 12,
+                            padding: isLivMancante ? '6px 14px' : '5px 12px',
+                            fontWeight: isLivMancante ? 700 : 600,
+                            cursor: 'pointer',
+                            alignSelf: 'flex-start',
+                            borderColor: isLivMancante ? '#2e9d4d' : undefined,
+                            background: isLivMancante ? 'rgba(46,157,77,0.18)' : undefined,
+                            color: isLivMancante ? '#2e9d4d' : undefined,
+                            boxShadow: isLivMancante ? '0 0 12px rgba(46,157,77,0.45)' : undefined,
+                          }}
+                        >
+                          📈 {lingua === 'en' ? 'Choose in Level Up' : 'Scegli in Level Up'}
+                        </button>
+                      </div>
+                    );
+                  }
                   const suggeriti = incantesimiClasseLivello(scheda.classe, liv, scheda.sottoclasse, versione);
                   const gia = new Set(scheda.incantesimiLista.filter((s) => s.livello === liv).map((s) => (s.nome || '').toLowerCase()));
                   return (
@@ -16882,8 +17019,8 @@ export default function App() {
 
             {/* Trasformazioni: Forma Bestiale (Druido dal 2° livello) e/o
                 Metamorfosi (Bardo/Druido/Stregone/Mago, che hanno Polymorph in lista).
-                Ognuna è un bottone che apre il proprio popup (catalogoTrasformazioneModal
-                più sotto): niente più griglia di 40-60 creature sempre aperta in scheda. */}
+                Diretta: due bottoni sempre visibili, niente accordion da aprire —
+                ognuno apre il proprio popup (più sotto) con GS/regole pertinenti. */}
             {(() => {
               const isDruido = /(druido|druid)/i.test(scheda.classe || '') && (Number(scheda.livello) || 1) >= 2;
               const puoMetamorfosi = /(bardo|bard|druido|druid|stregone|sorcerer|mago|wizard)/i.test(scheda.classe || '');
@@ -16891,7 +17028,6 @@ export default function App() {
               const contaAnimale = isDruido ? bestieDisponibili(scheda.livello, scheda.sottoclasse).length : 0;
               const contaMeta = puoMetamorfosi ? creatureDisponibiliMetamorfosi(scheda.livello).length : 0;
               return (
-              <Sezione titolo={lingua === 'en' ? 'Transformations' : 'Trasformazioni'} {...apertoProps('formaBestiale', true)}>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {isDruido && (
                     <button
@@ -16914,7 +17050,6 @@ export default function App() {
                     </button>
                   )}
                 </div>
-              </Sezione>
               );
             })()}
 
