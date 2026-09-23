@@ -5,6 +5,19 @@
 
 export const NOVITA = [
   {
+    versione: '4.17.0',
+    voci: {
+      it: [
+        'Fix: la colonna Note di Combattimento/Reazioni non ripete più due volte la stessa informazione (badge + testo per esteso). Quando i badge bastano, resta solo una matita ✏️ per modificare la nota.',
+        'Fix: il tooltip dei tasti non si sovrappone più ai titoli di sezione appena sopra.',
+      ],
+      en: [
+        'Fix: the Combat/Reactions Note column no longer repeats the same info twice (badges + full text). When badges already cover it, only an ✏️ pencil remains to edit the note.',
+        'Fix: button tooltips no longer overlap section titles right above them.',
+      ],
+    },
+  },
+  {
     versione: '4.16.0',
     voci: {
       it: [

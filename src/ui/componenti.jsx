@@ -118,7 +118,7 @@ function ordinaAlfabeticamente(opzioni, etichetta = traduciDato) {
  * definito, il click viene ritardato per distinguere il doppio click,
  * che invece lancia il tiro.
  */
-export function Editable({ value, onChange, onRoll, tipo = 'testo', width, style, title }) {
+export function Editable({ value, onChange, onRoll, tipo = 'testo', width, style, title, soloIcona }) {
   const [editing, setEditing] = useState(false);
   const [bozza, setBozza] = useState('');
   const [carica, setCarica] = useState(false);
@@ -238,7 +238,7 @@ export function Editable({ value, onChange, onRoll, tipo = 'testo', width, style
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
     >
-      {String(value ?? '') === '' ? '—' : String(value)}
+      {soloIcona ? '✏️' : (String(value ?? '') === '' ? '—' : String(value))}
     </span>
   );
 }

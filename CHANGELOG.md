@@ -2,6 +2,20 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.17.0] – 2026-09-23
+
+### Corretto
+- **Colonna Note di Combattimento/Reazioni ripetuta due volte**: i badge
+  colorati (Tocco, Gittata, Tiro Salvezza, Innesco/Effetto...) riassumono già
+  la nota, ma subito accanto veniva mostrato di nuovo lo stesso testo per
+  esteso. Ora, quando i badge coprono già l'informazione, il testo libero si
+  riduce a una sola matita ✏️ cliccabile (resta comunque modificabile con un
+  click, nessun dato perso).
+- **Nuvoletta che si sovrapponeva alle intestazioni vicine**: la soglia sotto
+  la quale il tooltip si apre verso il basso invece che verso l'alto era
+  troppo bassa (48px), causando sovrapposizioni con titoli di sezione appena
+  sopra la riga; alzata a 90px.
+
 ## [4.16.0] – 2026-09-23
 
 ### Modificato
