@@ -2,6 +2,19 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.25.0] – 2026-09-24
+
+### Sviluppo
+- **`CLAUDE.md` riscritto da zero**: era rimasto fermo a una versione
+  precedente del progetto (tema chiaro "foglio di carta", nome "Scheda
+  Interattiva", un backend Express che non esiste più, un solo personaggio
+  d'esempio). Aggiornato con lo stato reale: nome "Tavolo dei Dadi", tema
+  vintage chiaro+scuro, nessun server locale (solo Worker Cloudflare per la
+  trascrizione PDF), moduli estratti in `src/ui`/`src/rules`/`src/data`/
+  `src/dati`/`src/utils`, roster d'esempio a 4 personaggi (Vaelion attivo di
+  default), suite di test e2e, pattern "Altre opzioni"/"⋯" per la densità
+  delle righe, riferimento corretto a `docs/BACKLOG.md`.
+
 ## [4.24.0] – 2026-09-24
 
 ### Migliorato
