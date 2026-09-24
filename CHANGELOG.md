@@ -2,6 +2,15 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.24.0] – 2026-09-24
+
+### Migliorato
+- **Equipaggiamento meno affollato**: un oggetto senza contenitore, effetto o
+  utilizzi attivi ora mostra solo il cestino e un bottone "⋯" invece delle 4
+  icone (🎒✨⚡🗑) sempre visibili — le azioni si aprono solo quando servono.
+  Gli oggetti già attivi (contenitori, effetti attivi, con usi) continuano a
+  mostrare tutte le icone come prima.
+
 ## [4.23.0] – 2026-09-24
 
 ### Verificato

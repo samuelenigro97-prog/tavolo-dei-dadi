@@ -1965,7 +1965,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.23.0';
+const APP_VERSION = '4.24.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3473,6 +3473,10 @@ export default function App() {
   const [filtroCatInventario, setFiltroCatInventario] = useState('tutti'); // 'tutti' | 'armi_armature' | 'pozioni' | 'magici' | 'attrezzi'
   const [effettoInventarioAperto, setEffettoInventarioAperto] = useState(null);
   const [apertiContenitori, setApertiContenitori] = useState({});
+  // Per oggetti "semplici" (nessun contenitore/effetto/utilizzi già attivo) i tre
+  // bottoni avanzati restano dietro un "⋯": altrimenti ogni riga di zaino mostra
+  // sempre 4 pulsanti anche per una torcia o una corda che non li useranno mai.
+  const [azioniInvEspanse, setAzioniInvEspanse] = useState({});
   const [nuovoOggettoTesto, setNuovoOggettoTesto] = useState('');
   const [suggerimentiInvAperti, setSuggerimentiInvAperti] = useState(false);
   const [bestiaDettaglio, setBestiaDettaglio] = useState(null); // bestia aperta in modale statblock
@@ -18227,44 +18231,60 @@ export default function App() {
                                     )}
                                   </td>
                                   <td className="inventario-azioni" style={{ ...styles.td, textAlign: 'right', whiteSpace: 'nowrap', ...((mostraEffetto || mostraUtilizzi || mostraContenuto) && senzaBordo) }}>
-                                    <button
-                                      style={{ ...styles.buttonMini, color: isContainer ? C.goldDark : C.inkDim, borderColor: isContainer ? C.goldDark : C.border, background: isContainer ? 'rgba(201,162,39,0.12)' : undefined }}
-                                      title={isContainer ? t('inv.apri_contenitore') : (lingua === 'en' ? 'Add sub-items (turn into container)' : 'Inserisci sotto-oggetti (rendi contenitore)')}
-                                      onClick={() => {
-                                        if (isContainer) {
-                                          setApertiContenitori((prev) => ({ ...prev, [o.id]: !prev[o.id] }));
-                                          if (!Array.isArray(o.contenuto) || o.contenuto.length === 0) {
-                                            modInv(o.id, { contenuto: ottieniContenutoItem(o) });
-                                          }
-                                        } else {
-                                          const nomeSub = prompt(t('inv.prompt_nome_sub'));
-                                          if (nomeSub && nomeSub.trim()) {
-                                            const nuovo = { id: `sub-${Date.now()}`, nome: nomeSub.trim(), qta: 1, peso: pesoStimato(nomeSub.trim()), icona: '📦' };
-                                            modInv(o.id, { contenuto: [nuovo] });
-                                            setApertiContenitori((prev) => ({ ...prev, [o.id]: true }));
-                                          }
-                                        }
-                                      }}
-                                    >🎒</button>{' '}
-                                    <button
-                                      style={{ ...styles.buttonMini, color: effettoAttivo ? C.goldDark : C.inkDim, borderColor: effettoAttivo ? C.goldDark : C.border, background: effettoAttivo ? 'rgba(201,162,39,0.12)' : undefined }}
-                                      title={t('inv.gestisci_effetti')}
-                                      onClick={() => setEffettoInventarioAperto((id) => id === o.id ? null : o.id)}
-                                    >✨</button>{' '}
-                                    <button
-                                      style={{ ...styles.buttonMini, color: (o.usiMax > 0) ? C.goldDark : C.inkDim, borderColor: (o.usiMax > 0) ? C.goldDark : C.border, background: (o.usiMax > 0) ? 'rgba(201,162,39,0.12)' : undefined }}
-                                      title={t('inv.gestisci_utilizzi')}
-                                      onClick={() => {
-                                        if (o.usiMax > 0) {
-                                          modInv(o.id, { usi: undefined, usiMax: 0, ricarica: '', effetto: '' });
-                                        } else {
-                                          const noto = utilizziOggettoNoto(o.nome);
-                                          const defMax = noto ? noto.usiMax : 1;
-                                          const defUsi = noto ? noto.usi : defMax;
-                                          modInv(o.id, { usi: defUsi, usiMax: defMax, ricarica: noto ? noto.ricarica : 'manuale', effetto: noto ? noto.effetto : '' });
-                                        }
-                                      }}
-                                    >⚡</button>{' '}
+                                    {(() => {
+                                      const giaAttivo = isContainer || effettoAttivo || o.usiMax > 0;
+                                      if (!giaAttivo && !azioniInvEspanse[o.id]) {
+                                        return (
+                                          <button
+                                            style={{ ...styles.buttonMini, color: C.inkDim }}
+                                            title={lingua === 'en' ? 'More options (container, magic effect, uses)' : 'Altre opzioni (contenitore, effetto magico, utilizzi)'}
+                                            onClick={() => setAzioniInvEspanse((prev) => ({ ...prev, [o.id]: true }))}
+                                          >⋯</button>
+                                        );
+                                      }
+                                      return (
+                                        <>
+                                          <button
+                                            style={{ ...styles.buttonMini, color: isContainer ? C.goldDark : C.inkDim, borderColor: isContainer ? C.goldDark : C.border, background: isContainer ? 'rgba(201,162,39,0.12)' : undefined }}
+                                            title={isContainer ? t('inv.apri_contenitore') : (lingua === 'en' ? 'Add sub-items (turn into container)' : 'Inserisci sotto-oggetti (rendi contenitore)')}
+                                            onClick={() => {
+                                              if (isContainer) {
+                                                setApertiContenitori((prev) => ({ ...prev, [o.id]: !prev[o.id] }));
+                                                if (!Array.isArray(o.contenuto) || o.contenuto.length === 0) {
+                                                  modInv(o.id, { contenuto: ottieniContenutoItem(o) });
+                                                }
+                                              } else {
+                                                const nomeSub = prompt(t('inv.prompt_nome_sub'));
+                                                if (nomeSub && nomeSub.trim()) {
+                                                  const nuovo = { id: `sub-${Date.now()}`, nome: nomeSub.trim(), qta: 1, peso: pesoStimato(nomeSub.trim()), icona: '📦' };
+                                                  modInv(o.id, { contenuto: [nuovo] });
+                                                  setApertiContenitori((prev) => ({ ...prev, [o.id]: true }));
+                                                }
+                                              }
+                                            }}
+                                          >🎒</button>{' '}
+                                          <button
+                                            style={{ ...styles.buttonMini, color: effettoAttivo ? C.goldDark : C.inkDim, borderColor: effettoAttivo ? C.goldDark : C.border, background: effettoAttivo ? 'rgba(201,162,39,0.12)' : undefined }}
+                                            title={t('inv.gestisci_effetti')}
+                                            onClick={() => setEffettoInventarioAperto((id) => id === o.id ? null : o.id)}
+                                          >✨</button>{' '}
+                                          <button
+                                            style={{ ...styles.buttonMini, color: (o.usiMax > 0) ? C.goldDark : C.inkDim, borderColor: (o.usiMax > 0) ? C.goldDark : C.border, background: (o.usiMax > 0) ? 'rgba(201,162,39,0.12)' : undefined }}
+                                            title={t('inv.gestisci_utilizzi')}
+                                            onClick={() => {
+                                              if (o.usiMax > 0) {
+                                                modInv(o.id, { usi: undefined, usiMax: 0, ricarica: '', effetto: '' });
+                                              } else {
+                                                const noto = utilizziOggettoNoto(o.nome);
+                                                const defMax = noto ? noto.usiMax : 1;
+                                                const defUsi = noto ? noto.usi : defMax;
+                                                modInv(o.id, { usi: defUsi, usiMax: defMax, ricarica: noto ? noto.ricarica : 'manuale', effetto: noto ? noto.effetto : '' });
+                                              }
+                                            }}
+                                          >⚡</button>{' '}
+                                        </>
+                                      );
+                                    })()}
                                     <button
                                       style={{ ...styles.buttonMini, color: C.red }}
                                       title={t('modal.elimina')}

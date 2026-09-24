@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.24.0',
+    voci: {
+      it: [
+        'Equipaggiamento meno affollato: un oggetto senza contenitore/effetto/utilizzi attivi mostra solo il cestino e un bottone "⋯" per aprire le altre azioni, invece delle 4 icone sempre visibili.',
+      ],
+      en: [
+        'Less cluttered Equipment: an item with no active container/effect/uses now shows just the trash icon and an "⋯" button to reveal the other actions, instead of all 4 icons always on.',
+      ],
+    },
+  },
+  {
     versione: '4.23.0',
     voci: {
       it: [

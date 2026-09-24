@@ -23,4 +23,24 @@ test.describe('Equipaggiamento', () => {
     // Su schermo desktop devono stare alla stessa altezza (± piccola tolleranza).
     expect(Math.abs(rRicerca.y - rTutti.y)).toBeLessThan(10);
   });
+
+  test('un oggetto senza contenitore/effetto/utilizzi attivi mostra solo "⋯" e cestino, non 4 icone', async ({ page }) => {
+    const riga = page.locator('tr.inventario-riga').filter({ hasText: 'Antitossina' });
+    await expect(riga.getByRole('button', { name: '⋯' })).toBeVisible();
+    await expect(riga.getByText('🎒')).toHaveCount(0);
+    await expect(riga.getByText('✨')).toHaveCount(0);
+
+    await riga.getByRole('button', { name: '⋯' }).click();
+    await expect(riga.getByText('🎒')).toBeVisible();
+    await expect(riga.getByText('✨')).toBeVisible();
+    await expect(riga.getByText('⚡')).toBeVisible();
+  });
+
+  test('un oggetto con un effetto già attivo mostra sempre le 4 icone', async ({ page }) => {
+    const riga = page.locator('tr.inventario-riga').filter({ hasText: 'Perla del Potere' });
+    await expect(riga.getByRole('button', { name: '⋯' })).toHaveCount(0);
+    await expect(riga.getByText('🎒')).toBeVisible();
+    await expect(riga.getByText('✨')).toBeVisible();
+    await expect(riga.getByText('⚡')).toBeVisible();
+  });
 });
