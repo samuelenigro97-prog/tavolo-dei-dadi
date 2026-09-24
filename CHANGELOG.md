@@ -2,6 +2,26 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.32.0] – 2026-09-24
+
+### Corretto
+- **Campo "Background" nel Profilo troncato** ("BACKGR…"): la colonna della
+  griglia era troppo stretta per la parola intera. Allargata.
+- **Righe Reazioni troppo alte**: i badge Innesco/Effetto contenevano la
+  frase intera (anche 80+ caratteri), molto più larghi dei badge brevi di
+  Incantesimi ("Tocco", "1 Azione"). Ora sono troncati con "…" a una
+  larghezza fissa, col testo completo nel tooltip.
+- **Badge scuola di magia (Trasmutazione, Abiurazione...) di forma diversa
+  dagli altri badge**: bordo semitrasparente, meno padding verticale e un
+  bagliore che gli altri chip non hanno. Uniformato allo stesso stile.
+- **Ordine di Bonus/Danno in Combattimento**: comparivano subito dopo il
+  nome, prima delle note — in Incantesimi invece badge/note vengono prima
+  e i bottoni di tiro dopo. Stesso ordine ora in entrambe le sezioni.
+- **Badge "Trucchetto" ridondante in Combattimento**: la riga mostra già
+  l'icona ✨ per i trucchetti (contro 🪄 per gli incantesimi con slot); il
+  badge ripeteva la stessa informazione. Rimosso (restano "Magico",
+  "Versatile", "Maestria" quando pertinenti).
+
 ## [4.31.0] – 2026-09-24
 
 ### Corretto

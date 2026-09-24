@@ -541,7 +541,9 @@ export function estraiCategorieNota(nota) {
     });
   }
 
-  const proprieta = testo.match(/\b(Trucchetto|Cantrip|Magico[^,·]*|Versatile[^,·]*|Maestria:\s*[^,·]+)/i);
+  // "Trucchetto" non è più un badge: la riga lo mostra già con l'icona ✨
+  // iniziale (contro 🪄 degli incantesimi con slot), sarebbe un'informazione duplicata.
+  const proprieta = testo.match(/\b(Magico[^,·]*|Versatile[^,·]*|Maestria:\s*[^,·]+)/i);
   if (proprieta) categorie.push({ icona: '🏷️', etichetta: 'Proprietà', testo: proprieta[1].trim(), categoria: 'proprieta' });
 
   return categorie;

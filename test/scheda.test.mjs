@@ -763,7 +763,9 @@ test('estraiCategorieNota: riconosce gittata, durata, tiro salvezza e proprietà
   const cat2 = estraiCategorieNota(nota2);
   assert.ok(cat2.some((c) => c.etichetta === 'Tiro Salvezza' && /CD 17/.test(c.testo)));
   assert.ok(cat2.some((c) => c.etichetta === 'Gittata' && c.testo === '18m'));
-  assert.ok(cat2.some((c) => c.etichetta === 'Proprietà' && /Trucchetto/i.test(c.testo)));
+  // "Trucchetto" non genera più un badge Proprietà: è già indicato dall'icona ✨
+  // iniziale della riga, un badge separato sarebbe un'informazione duplicata.
+  assert.ok(!cat2.some((c) => c.etichetta === 'Proprietà' && /Trucchetto/i.test(c.testo)));
 
   const nota3 = 'Arma semplice (Versatile 1d8-3)';
   const cat3 = estraiCategorieNota(nota3);

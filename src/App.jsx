@@ -1965,7 +1965,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.31.0';
+const APP_VERSION = '4.32.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -12813,7 +12813,7 @@ export default function App() {
                   </div>
 
                   {/* Riga 2: Background, Classe (compatta), Sottoclasse (larga), P.E. (adeguato per 6 cifre) */}
-                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'minmax(62px, 0.7fr) minmax(75px, 0.85fr) minmax(140px, 1.8fr) minmax(56px, 0.65fr)', gap: 10, alignItems: 'end' }}>
+                  <div className="campi-anagrafica" style={{ display: 'grid', gridTemplateColumns: 'minmax(94px, 0.85fr) minmax(75px, 0.85fr) minmax(140px, 1.75fr) minmax(56px, 0.65fr)', gap: 10, alignItems: 'end' }}>
                     <CampoModulo label={t("profilo.background")} boxClassName={String(scheda.background || '').length > 12 ? 'testo-compatto' : undefined}>
                       <CampoBloccato
                         valore={traduciDato(scheda.background) || t('profilo.nessuno')}
@@ -15148,12 +15148,12 @@ export default function App() {
                                         {cat === 'Reazione' && (a.innescoIt || a.effettoIt) ? (
                                           <>
                                             {a.innescoIt && (
-                                              <span style={{ fontSize: 11, padding: '1px 5px', borderRadius: 4, background: `${coloreCategoria('innesco', notteAttiva)}1f`, border: `1px solid ${coloreCategoria('innesco', notteAttiva)}`, color: coloreCategoria('innesco', notteAttiva), fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3 }} title={lingua === 'en' ? 'Trigger' : 'Innesco'}>
+                                              <span style={{ fontSize: 11, padding: '1px 5px', borderRadius: 4, background: `${coloreCategoria('innesco', notteAttiva)}1f`, border: `1px solid ${coloreCategoria('innesco', notteAttiva)}`, color: coloreCategoria('innesco', notteAttiva), fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={`${lingua === 'en' ? 'Trigger' : 'Innesco'}: ${lingua === 'en' ? (a.innescoEn || a.innescoIt) : a.innescoIt}`}>
                                                 🎯 {lingua === 'en' ? (a.innescoEn || a.innescoIt) : a.innescoIt}
                                               </span>
                                             )}
                                             {a.effettoIt && (
-                                              <span style={{ fontSize: 11, padding: '1px 5px', borderRadius: 4, background: `${coloreCategoria('effetto', notteAttiva)}1f`, border: `1px solid ${coloreCategoria('effetto', notteAttiva)}`, color: coloreCategoria('effetto', notteAttiva), fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3 }} title={lingua === 'en' ? 'Effect' : 'Effetto'}>
+                                              <span style={{ fontSize: 11, padding: '1px 5px', borderRadius: 4, background: `${coloreCategoria('effetto', notteAttiva)}1f`, border: `1px solid ${coloreCategoria('effetto', notteAttiva)}`, color: coloreCategoria('effetto', notteAttiva), fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={`${lingua === 'en' ? 'Effect' : 'Effetto'}: ${lingua === 'en' ? (a.effettoEn || a.effettoIt) : a.effettoIt}`}>
                                                 🛡️ {lingua === 'en' ? (a.effettoEn || a.effettoIt) : a.effettoIt}
                                               </span>
                                             )}
@@ -16132,16 +16132,15 @@ export default function App() {
                                         fontSize: 11,
                                         fontWeight: 700,
                                         color: COLORE_SCUOLA[scuola.toLowerCase()] || C.goldDark,
-                                        border: `1px solid ${COLORE_SCUOLA[scuola.toLowerCase()] || C.goldDark}77`,
-                                        background: `${COLORE_SCUOLA[scuola.toLowerCase()] || C.goldDark}18`,
-                                        borderRadius: 6,
-                                        padding: '0 5px',
+                                        border: `1px solid ${COLORE_SCUOLA[scuola.toLowerCase()] || C.goldDark}`,
+                                        background: `${COLORE_SCUOLA[scuola.toLowerCase()] || C.goldDark}1f`,
+                                        borderRadius: 4,
+                                        padding: '1px 5px',
                                         whiteSpace: 'nowrap',
                                         flexShrink: 0,
-                                        boxShadow: `0 0 6px ${COLORE_SCUOLA[scuola.toLowerCase()] || C.goldDark}22`,
                                         display: 'inline-flex',
                                         alignItems: 'center',
-                                        gap: 2,
+                                        gap: 3,
                                       }}
                                       title={`Scuola: ${traduciDato(scuola)}`}
                                     >

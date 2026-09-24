@@ -1809,14 +1809,29 @@ tbody tr:hover {
   padding: 0 !important;
   border: 0 !important;
 }
+/* Ordine visivo (indipendente dall'ordine delle colonne nel markup):
+   nome → badge/note (che si espandono e spingono il resto a destra) →
+   tiro per colpire → tiro danni → azioni, come nelle righe di Incantesimi
+   (nome+badge a sinistra, poi i bottoni dado, poi le azioni finali). */
 .attacchi-table .attacchi-riga > .attacchi-nome {
+  order: 1;
   font-weight: 700;
   flex-shrink: 0;
 }
 .attacchi-table .attacchi-riga > .attacchi-note {
+  order: 2;
   flex: 1 1 auto;
 }
+.attacchi-table .attacchi-riga > .attacchi-bonus {
+  order: 3;
+  flex-shrink: 0;
+}
+.attacchi-table .attacchi-riga > .attacchi-danno {
+  order: 4;
+  flex-shrink: 0;
+}
 .attacchi-table .attacchi-riga > .attacchi-azioni {
+  order: 5;
   margin-left: auto;
   flex-shrink: 0;
 }

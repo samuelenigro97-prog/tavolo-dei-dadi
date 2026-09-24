@@ -5,6 +5,25 @@
 
 export const NOVITA = [
   {
+    versione: '4.32.0',
+    voci: {
+      it: [
+        'Fix: la scritta "Background" nel Profilo era troncata ("BACKGR…") — colonna allargata.',
+        'Le righe delle Reazioni erano diventate enormi per via del testo intero di Innesco/Effetto: ora sono troncate con "…" (testo completo al passaggio del mouse), come i badge brevi di Incantesimi.',
+        'I badge delle scuole di magia avevano una forma diversa dagli altri badge (bordo, spessore) — uniformati.',
+        'Bonus/Danno in Combattimento ora compaiono nello stesso ordine di Incantesimi: prima i badge, poi i tiri.',
+        'Tolto il badge "Trucchetto" in Combattimento: già indicato dall\'icona ✨ della riga, era ripetuto.',
+      ],
+      en: [
+        'Fix: the "Background" label in Profile was truncated ("BACKGR…") — column widened.',
+        'Reaction rows had become huge because Trigger/Effect showed the full sentence: now truncated with "…" (full text on hover), matching Spells\' short badges.',
+        'Spell school badges had a different shape from other badges (border, thickness) — made consistent.',
+        'Attack Bonus/Damage in Combat now appear in the same order as Spells: badges first, then rolls.',
+        'Removed the redundant "Cantrip" badge in Combat: already shown by the row\'s ✨ icon.',
+      ],
+    },
+  },
+  {
     versione: '4.31.0',
     voci: {
       it: [
