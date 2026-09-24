@@ -2,6 +2,20 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.22.0] – 2026-09-24
+
+### Sviluppo
+- **Suite di test end-to-end** (`@playwright/test`, cartella `e2e/`, un file
+  per sezione della scheda): 21 test coprono i comportamenti introdotti in
+  questa sessione — pannello "Altre opzioni" in Azioni, Randello Incantato
+  che nasconde l'arma non incantata, colonna Note senza testo ripetuto, slot
+  incantesimo e "Preparati" nell'intestazione del 1° Livello, sparizione del
+  bottone "Scegli in Level Up", sezione Poteri (titolo "regole homebrew" e
+  bersaglio libero nei modificatori), filtri Equipaggiamento su una riga,
+  Trasformazioni integrate (niente bottoni dedicati), tasto ℹ️ delle Abilità
+  sostituito dal click sul nome, angoli decorati delle sezioni corretti a
+  sezione chiusa. `npm run test:e2e` per lanciarla (vedi `e2e/README.md`).
+
 ## [4.21.0] – 2026-09-24
 
 ### Corretto

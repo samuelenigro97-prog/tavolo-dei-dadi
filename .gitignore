@@ -5,3 +5,6 @@ dist/
 .DS_Store
 scratchpad/
 .aider*
+test-results/
+playwright-report/
+blob-report/
