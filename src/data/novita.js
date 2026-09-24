@@ -5,6 +5,19 @@
 
 export const NOVITA = [
   {
+    versione: '4.35.0',
+    voci: {
+      it: [
+        'Fix vero: ogni riga di Combattimento ora ha lo stesso riquadro (bordo + sfondo) delle righe di Incantesimi, non solo un separatore in basso.',
+        'Il nome del personaggio ora usa lo stesso font decorativo del badge versione regole (5.0/5.5) accanto.',
+      ],
+      en: [
+        'Real fix: every Combat row now has the same box (border + background) as Spell rows, not just a bottom divider.',
+        'The character name now uses the same decorative font as the ruleset badge (5.0/5.5) next to it.',
+      ],
+    },
+  },
+  {
     versione: '4.34.0',
     voci: {
       it: [

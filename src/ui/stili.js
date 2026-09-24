@@ -1785,8 +1785,10 @@ tbody tr:hover {
 }
 /* Tabella attacchi (Combattimento/Reazioni): stesso linguaggio visivo delle
    righe di Incantesimi — nome + badge che scorrono in un'unica riga con
-   wrap, senza riquadro né etichette maiuscole (le icone bastano da sole). */
-.attacchi-table, .attacchi-table tbody { display: block; width: 100%; }
+   wrap, niente etichette maiuscole (le icone bastano da sole), e la stessa
+   "scheda" bordata/con sfondo di ogni riga di Incantesimi (non solo un
+   separatore in basso: un riquadro completo, uguale). */
+.attacchi-table, .attacchi-table tbody { display: flex; flex-direction: column; gap: 4px; width: 100%; }
 .attacchi-table thead { display: none; }
 .attacchi-table .attacchi-riga {
   display: flex;
@@ -1794,12 +1796,11 @@ tbody tr:hover {
   align-items: center;
   column-gap: 8px;
   row-gap: 4px;
-  padding: 8px 2px;
+  padding: 4px 8px;
   margin: 0;
-  border: 0;
-  border-bottom: 1px solid var(--c-border);
-  border-radius: 0;
-  background: transparent;
+  border: 1px solid var(--c-border);
+  border-radius: 6px;
+  background: var(--c-panel-light);
   box-shadow: none;
 }
 .attacchi-table .attacchi-riga > td {

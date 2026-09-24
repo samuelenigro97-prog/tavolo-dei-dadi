@@ -2,6 +2,19 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.35.0] – 2026-09-24
+
+### Corretto
+- **La vera differenza rimasta tra Combattimento e Incantesimi**: ogni riga
+  di Incantesimi è una "scheda" con bordo e sfondo (`C.panelLight`) propri,
+  non solo un separatore in basso — questo era sfuggito ai controlli
+  precedenti (avevo verificato badge e bottoni, non il riquadro dell'intera
+  riga). Ora `.attacchi-riga` ha lo stesso bordo/sfondo/padding/border-radius,
+  identico in entrambe le sezioni.
+- **Font del nome del personaggio**: usava il font di base invece del font
+  decorativo del titolo (lo stesso usato per il badge "5.0"/"5.5" accanto).
+  Ora coincidono.
+
 ## [4.34.0] – 2026-09-24
 
 ### Rimosso

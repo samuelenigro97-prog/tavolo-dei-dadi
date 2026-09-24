@@ -1965,7 +1965,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.34.0';
+const APP_VERSION = '4.35.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -12679,7 +12679,7 @@ export default function App() {
                   ) : rinominando ? (
                     <input
                       autoFocus
-                      style={{ ...styles.inlineInput, width: '100%', fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', height: 38, padding: '4px 60px 4px 12px', border: `1.5px solid ${C.goldDark}`, borderRadius: 8, boxSizing: 'border-box' }}
+                      style={{ ...styles.inlineInput, width: '100%', fontSize: 16, fontWeight: 'bold', fontFamily: "var(--font-title, Georgia, 'Times New Roman', serif)", color: 'var(--c-title)', height: 38, padding: '4px 60px 4px 12px', border: `1.5px solid ${C.goldDark}`, borderRadius: 8, boxSizing: 'border-box' }}
                       value={scheda.nome}
                       onChange={(e) => aggiorna({ nome: e.target.value })}
                       onBlur={() => {
@@ -12704,7 +12704,7 @@ export default function App() {
                       title={t('nome.tooltip_selettore') + (!isSolaLettura ? (lingua === 'en' ? ' · Double click to rename' : ' · Doppio clic per rinominare') : '')}
                     >
                       <select
-                        style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 16, fontWeight: 'bold', color: 'var(--c-title)', padding: '4px 74px 4px 12px', textOverflow: 'ellipsis', background: 'transparent', position: 'relative', zIndex: 2, border: 'none', height: '100%' }}
+                        style={{ ...styles.inlineInput, flex: 1, minWidth: 0, fontSize: 16, fontWeight: 'bold', fontFamily: "var(--font-title, Georgia, 'Times New Roman', serif)", color: 'var(--c-title)', padding: '4px 74px 4px 12px', textOverflow: 'ellipsis', background: 'transparent', position: 'relative', zIndex: 2, border: 'none', height: '100%' }}
                         value={roster.attivo}
                         onChange={(e) => { setSchedaSolaLettura(null); setRoster((r) => ({ ...r, attivo: e.target.value })); }}
                       >
