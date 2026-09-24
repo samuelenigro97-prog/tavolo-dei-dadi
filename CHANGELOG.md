@@ -2,6 +2,16 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.37.0] – 2026-09-24
+
+### Cambiato
+- **Tiro per colpire sempre giallo**: il bottone/valore del tiro per
+  colpire (Combattimento, Incantesimi, statblock Bestiario/Compagni) usava
+  `C.goldDark`, tinto dal colore di classe — su un Druido diventava verde
+  invece di oro/giallo, con una sfumatura diversa da personaggio a
+  personaggio. Ora usa un giallo fisso, uguale per tutti i personaggi e in
+  ogni sezione, distinto dal tiro salvezza (ambra) e dalla proprietà (oro).
+
 ## [4.36.0] – 2026-09-24
 
 ### Aggiunto

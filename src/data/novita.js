@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.37.0',
+    voci: {
+      it: [
+        'Il tiro per colpire ora è sempre giallo fisso (prima seguiva il colore di classe: su un Druido diventava verde), in ogni sezione (Combattimento, Incantesimi, Bestiario/Compagni).',
+      ],
+      en: [
+        'The attack roll is now always a fixed yellow (it used to follow the class color: green on a Druid), consistent everywhere (Combat, Spells, Bestiary/Companions).',
+      ],
+    },
+  },
+  {
     versione: '4.36.0',
     voci: {
       it: [

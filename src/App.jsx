@@ -1965,7 +1965,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.36.0';
+const APP_VERSION = '4.37.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7065,7 +7065,7 @@ export default function App() {
                             {az.bonus != null && (
                               <button
                                 type="button"
-                                style={{ ...styles.button, fontSize: 11, padding: '3px 8px', borderRadius: 4, fontWeight: 800, borderColor: C.gold, color: C.goldDark, background: 'rgba(201,162,39,0.12)', display: 'inline-flex', alignItems: 'center', gap: 3 }}
+                                style={{ ...styles.button, fontSize: 11, padding: '3px 8px', borderRadius: 4, fontWeight: 800, borderColor: coloreCategoria('attacco', notteAttiva), color: coloreCategoria('attacco', notteAttiva), background: `${coloreCategoria('attacco', notteAttiva)}1f`, display: 'inline-flex', alignItems: 'center', gap: 3 }}
                                 onClick={() => {
                                   lanciaD20(`Attacco (${bestiaDettaglio.nome}): ${az.nome}`, az.bonus, {
                                     attacco: { nome: `${bestiaDettaglio.nome}: ${az.nome}`, danno: az.danno },
@@ -12274,9 +12274,9 @@ export default function App() {
                                     padding: '4px 10px',
                                     borderRadius: 6,
                                     fontWeight: 800,
-                                    borderColor: C.gold,
-                                    color: C.goldDark,
-                                    background: 'rgba(201,162,39,0.12)',
+                                    borderColor: coloreCategoria('attacco', notteAttiva),
+                                    color: coloreCategoria('attacco', notteAttiva),
+                                    background: `${coloreCategoria('attacco', notteAttiva)}1f`,
                                     display: 'inline-flex',
                                     alignItems: 'center',
                                     gap: 4,
@@ -14992,7 +14992,7 @@ export default function App() {
                                     ) : (
                                       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                         <button
-                                          style={{ ...styles.buttonMini, padding: '1px 6px', opacity: castBloccato ? 0.4 : 1, cursor: castBloccato ? 'not-allowed' : 'pointer', color: C.goldDark, borderColor: C.goldDark }}
+                                          style={{ ...styles.buttonMini, padding: '1px 6px', opacity: castBloccato ? 0.4 : 1, cursor: castBloccato ? 'not-allowed' : 'pointer', color: coloreCategoria('attacco', notteAttiva), borderColor: coloreCategoria('attacco', notteAttiva) }}
                                           title={castBloccato ? 'Equipaggia un focus per lanciare questo incantesimo' : `Tira per colpire con ${a.nome}`}
                                           disabled={castBloccato}
                                           onClick={() => { if (!castBloccato) tiraColpoArma(a); }}
@@ -15003,7 +15003,7 @@ export default function App() {
                                           onChange={(v) => aggiornaAttacco({ bonus: Number(String(v).replace('+', '')) || 0 })}
                                           onRoll={castBloccato ? undefined : () => tiraColpoArma(a)}
                                           title={titoloRiga}
-                                          style={{ color: C.goldDark, fontWeight: 700 }}
+                                          style={{ color: coloreCategoria('attacco', notteAttiva), fontWeight: 700 }}
                                         />
                                       </div>
                                     )}
@@ -16191,7 +16191,7 @@ export default function App() {
                                       {modIncantatore !== null && (
                                         <button
                                           className="tirabile"
-                                          style={{ ...styles.buttonMini, padding: '2px 6px', fontSize: 11, fontWeight: 700, color: C.goldDark, borderColor: C.goldDark, display: 'inline-flex', alignItems: 'center', gap: 2 }}
+                                          style={{ ...styles.buttonMini, padding: '2px 6px', fontSize: 11, fontWeight: 700, color: coloreCategoria('attacco', notteAttiva), borderColor: coloreCategoria('attacco', notteAttiva), display: 'inline-flex', alignItems: 'center', gap: 2 }}
                                           title={t('spell.tira_attacco')}
                                           onClick={() => lanciaD20(`${t('spell.attacco_inc')}: ${s.nome}`, scheda.bonusCompetenza + modIncantatore, { magia: true, attacco: { id: s.id, nome: s.nome, danno, tipoDanno, isSpell: true }, tipoTiro: 'attacco' })}
                                         >
