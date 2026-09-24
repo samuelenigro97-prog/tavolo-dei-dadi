@@ -1965,7 +1965,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.32.0';
+const APP_VERSION = '4.33.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -14987,7 +14987,7 @@ export default function App() {
                                     ) : (
                                       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                         <button
-                                          style={{ ...styles.buttonMini, padding: '1px 6px', opacity: castBloccato ? 0.4 : 1, cursor: castBloccato ? 'not-allowed' : 'pointer' }}
+                                          style={{ ...styles.buttonMini, padding: '1px 6px', opacity: castBloccato ? 0.4 : 1, cursor: castBloccato ? 'not-allowed' : 'pointer', color: C.goldDark, borderColor: C.goldDark }}
                                           title={castBloccato ? 'Equipaggia un focus per lanciare questo incantesimo' : `Tira per colpire con ${a.nome}`}
                                           disabled={castBloccato}
                                           onClick={() => { if (!castBloccato) tiraColpoArma(a); }}
@@ -14998,6 +14998,7 @@ export default function App() {
                                           onChange={(v) => aggiornaAttacco({ bonus: Number(String(v).replace('+', '')) || 0 })}
                                           onRoll={castBloccato ? undefined : () => tiraColpoArma(a)}
                                           title={titoloRiga}
+                                          style={{ color: C.goldDark, fontWeight: 700 }}
                                         />
                                       </div>
                                     )}
@@ -15006,7 +15007,7 @@ export default function App() {
                                     {a.danno ? (
                                       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
                                         <button
-                                          style={{ ...styles.buttonMini, padding: '1px 6px', opacity: castBloccato ? 0.4 : 1, cursor: castBloccato ? 'not-allowed' : 'pointer', ...(isUltimoCrit ? { background: C.goldDark, color: '#fff', borderColor: C.goldDark, fontWeight: 700 } : {}) }}
+                                          style={{ ...styles.buttonMini, padding: '1px 6px', opacity: castBloccato ? 0.4 : 1, cursor: castBloccato ? 'not-allowed' : 'pointer', color: C.red, borderColor: C.red, background: 'transparent', ...(isUltimoCrit ? { background: C.goldDark, color: '#fff', borderColor: C.goldDark, fontWeight: 700 } : {}) }}
                                           title={castBloccato ? 'Equipaggia un focus per lanciare questo incantesimo' : isUltimoCrit ? `⚔️ Tira i danni CRITICI raddoppiati (${a.danno} ×2)` : `Tira i danni (${a.danno})`}
                                           disabled={castBloccato}
                                           onClick={() => {
@@ -15027,6 +15028,7 @@ export default function App() {
                                             setUltimoAttaccoCritico(null);
                                           }}
                                           title={isUltimoCrit ? `⚔️ Critico attivo: doppio click per tirare i danni CRITICI (${a.danno} ×2)` : (titoloRiga || t('tip.click_mod_danni'))}
+                                          style={{ color: C.red, fontWeight: 700 }}
                                         />
                                         {isVersatile && (
                                           <button

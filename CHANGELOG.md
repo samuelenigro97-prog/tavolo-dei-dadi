@@ -2,6 +2,15 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.33.0] – 2026-09-24
+
+### Corretto
+- **Ultima differenza reale tra Combattimento e Incantesimi**: i bottoni di
+  tiro per colpire/danno in Combattimento erano grigi/neutri, mentre in
+  Incantesimi sono colorati (oro per il tiro d'attacco — tinto dal colore
+  di classe come tutto il resto — rosso per il danno). Ora usano
+  esattamente lo stesso stile in entrambe le sezioni.
+
 ## [4.32.0] – 2026-09-24
 
 ### Corretto

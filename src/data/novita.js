@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.33.0',
+    voci: {
+      it: [
+        'Fix: i bottoni per tirare colpire/danno in Combattimento erano grigi mentre in Incantesimi sono colorati (oro/rosso) — ora sono identici in entrambe le sezioni.',
+      ],
+      en: [
+        'Fix: the attack/damage roll buttons in Combat were plain gray while Spells\' are colored (gold/red) — now identical in both sections.',
+      ],
+    },
+  },
+  {
     versione: '4.32.0',
     voci: {
       it: [
