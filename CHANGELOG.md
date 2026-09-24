@@ -2,6 +2,16 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.36.0] – 2026-09-24
+
+### Aggiunto
+- **Sezione "Azioni Bonus" sempre visibile in Combattimento**, posizionata
+  prima di Reazioni (era già lì nell'ordine interno, ma spariva del tutto
+  se il personaggio non aveva nessun attacco/incantesimo a danno con tempo
+  "Azione Bonus" equipaggiato/preparato). Ora, come Azione e Reazioni,
+  mostra sempre il proprio titolo, con un messaggio chiaro quando è vuota
+  invece di nascondersi.
+
 ## [4.35.0] – 2026-09-24
 
 ### Corretto

@@ -33,4 +33,14 @@ test.describe('Combattimento', () => {
     const reazioni = page.locator('tr.attacchi-riga').filter({ hasText: 'Attacco di Opportunità' });
     await expect(reazioni).toHaveCount(1);
   });
+
+  test('la sezione "Azioni Bonus" è sempre visibile, prima di Reazioni, anche vuota', async ({ page }) => {
+    const titoloBonus = page.getByRole('heading', { name: 'Azioni Bonus' });
+    const titoloReazioni = page.getByRole('heading', { name: 'Reazioni' });
+    await expect(titoloBonus).toBeVisible();
+    await expect(titoloReazioni).toBeVisible();
+    const posBonus = await titoloBonus.boundingBox();
+    const posReazioni = await titoloReazioni.boundingBox();
+    expect(posBonus.y).toBeLessThan(posReazioni.y);
+  });
 });

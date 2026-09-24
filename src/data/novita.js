@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.36.0',
+    voci: {
+      it: [
+        'Aggiunta la sezione "Azioni Bonus" in Combattimento, sempre visibile prima di Reazioni: prima appariva solo se c\'era già qualcosa dentro, ora mostra sempre il suo titolo (con un messaggio quando è vuota).',
+      ],
+      en: [
+        'Added the "Bonus Actions" section in Combat, always visible before Reactions: it used to appear only when something was already in it, now it always shows its title (with a message when empty).',
+      ],
+    },
+  },
+  {
     versione: '4.35.0',
     voci: {
       it: [

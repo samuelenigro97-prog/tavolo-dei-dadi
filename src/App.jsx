@@ -1965,7 +1965,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.35.0';
+const APP_VERSION = '4.36.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -14716,7 +14716,6 @@ export default function App() {
                       return listaAttacchiCompleta.filter((a) => (a.categoria || 'Azione') === cat);
                     })();
 
-                    if (arr.length === 0 && cat !== 'Azione' && cat !== 'Reazione') return null;
                     return (
                       <div key={cat} style={{ marginBottom: 16 }}>
                         {cat !== 'Azione' && (
@@ -14784,6 +14783,12 @@ export default function App() {
                             >
                               {lingua === 'en' ? 'Open Reaction Hub' : 'Apri Hub Reazioni'}
                             </button>
+                          </div>
+                        ) : cat === 'Bonus' && arr.length === 0 ? (
+                          <div style={{ padding: '8px 12px', background: C.panelLight, border: `1px dashed ${C.border}`, borderRadius: 8, fontSize: 12, color: C.inkDim }}>
+                            ⏳ {lingua === 'en'
+                              ? 'No bonus-action attack/spell equipped or prepared right now. One shows up here automatically as soon as a weapon or a damage bonus-action spell is equipped/prepared.'
+                              : 'Nessun attacco/incantesimo ad azione bonus equipaggiato o preparato al momento. Comparirà qui da solo appena equipaggi un\'arma o prepari un incantesimo a danno con tempo di lancio "Azione Bonus".'}
                           </div>
                         ) : (
                           <table className="attacchi-table" style={styles.table}>
