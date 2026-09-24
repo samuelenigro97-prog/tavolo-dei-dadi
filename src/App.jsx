@@ -1965,7 +1965,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.27.0';
+const APP_VERSION = '4.28.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -12605,8 +12605,8 @@ export default function App() {
                               type="button"
                               title={lingua === 'en' ? 'Open the Wild Shape catalog (choose the beast to become)' : 'Apri il catalogo Forma Selvatica (scegli la bestia da assumere)'}
                               onClick={() => setTabTrasformazione('animale')}
-                              style={{ padding: 0, border: 0, background: 'transparent', color: C.goldDark, font: 'inherit', fontWeight: 700, textAlign: 'left', cursor: 'pointer', textDecoration: 'underline dotted', textUnderlineOffset: 2, marginRight: 'auto', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
-                            >🐾 {nomeVisualizzato}</button>
+                              style={{ padding: 0, border: 0, background: 'transparent', color: C.goldDark, font: 'inherit', fontWeight: 600, textAlign: 'left', cursor: 'pointer', textDecoration: 'none', marginRight: 'auto', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
+                            >{nomeVisualizzato}</button>
                           ) : spiegazione ? (
                             <button
                               type="button"

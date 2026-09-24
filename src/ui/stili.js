@@ -1783,6 +1783,79 @@ tbody tr:hover {
   .app-header-group:first-of-type { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .app-header-language { grid-template-columns: 1fr; max-width: 100px !important; align-self: center; }
 }
+/* Tabella attacchi (Combattimento/Reazioni): ogni riga è una "scheda" con le
+   informazioni impilate e etichettate, come le righe di Incantesimi — non
+   solo su mobile, sempre, per uno stile coerente tra le due sezioni. */
+.attacchi-table, .attacchi-table tbody { display: block; width: 100%; }
+.attacchi-table thead { display: none; }
+.attacchi-table .attacchi-riga {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px 10px;
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--c-border);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--c-panel-light) 88%, transparent);
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+.attacchi-table .attacchi-riga > td {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: 2px 0 !important;
+  border: 0 !important;
+}
+.attacchi-table .attacchi-riga > .attacchi-nome {
+  grid-column: 1;
+  grid-row: 1;
+  font-weight: 700;
+}
+.attacchi-table .attacchi-riga > .attacchi-azioni {
+  grid-column: 2;
+  grid-row: 1;
+  justify-content: flex-end;
+}
+.attacchi-table .attacchi-riga > .attacchi-bonus {
+  grid-column: 1;
+  grid-row: 2;
+  justify-content: flex-start;
+}
+.attacchi-table .attacchi-riga > .attacchi-danno {
+  grid-column: 2;
+  grid-row: 2;
+  justify-content: flex-start;
+}
+.attacchi-table .attacchi-riga > .attacchi-note {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  width: 100%;
+  padding-top: 4px !important;
+  border-top: 1px dashed var(--c-border) !important;
+}
+.attacchi-table .attacchi-riga > td:not(.attacchi-nome):not(.attacchi-azioni)::before {
+  content: attr(data-label);
+  margin-right: 6px;
+  color: var(--c-ink-dim);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+@media (min-width: 720px) {
+  /* Su schermi larghi la scheda ha più respiro: Bonus/Danno affiancati a Nome/Azioni
+     invece di impilati, meno righe totali per ogni attacco. */
+  .attacchi-table .attacchi-riga {
+    grid-template-columns: minmax(0, 1.3fr) auto auto auto;
+    column-gap: 14px;
+  }
+  .attacchi-table .attacchi-riga > .attacchi-nome { grid-column: 1; grid-row: 1; }
+  .attacchi-table .attacchi-riga > .attacchi-bonus { grid-column: 2; grid-row: 1; }
+  .attacchi-table .attacchi-riga > .attacchi-danno { grid-column: 3; grid-row: 1; }
+  .attacchi-table .attacchi-riga > .attacchi-azioni { grid-column: 4; grid-row: 1; }
+  .attacchi-table .attacchi-riga > .attacchi-note { grid-row: 2; }
+}
 @media (max-width: 560px) {
   /* Magia: il selettore della caratteristica non condivide più la riga del
      titolo. Prima la griglia a tre colonne lo faceva sovrapporre a “Magia”. */
@@ -1863,64 +1936,6 @@ tbody tr:hover {
   .spell-table td:first-child button { white-space: normal !important; overflow-wrap: anywhere; }
   /* monete: su telefono 5 colonne sarebbero illeggibili, si passa a 3 */
   .griglia-monete { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
-  /* tabella attacchi: su mobile ogni arma/azione diventa una scheda comoda con i pulsanti dado ben visibili */
-  .attacchi-table, .attacchi-table tbody { display: block; width: 100%; }
-  .attacchi-table thead { display: none; }
-  .attacchi-table .attacchi-riga {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 6px 10px;
-    margin: 0 0 10px;
-    padding: 10px 12px;
-    border: 1px solid var(--c-border);
-    border-radius: 9px;
-    background: color-mix(in srgb, var(--c-panel-light) 88%, transparent);
-    box-shadow: 0 1px 4px rgba(0,0,0,.08);
-  }
-  .attacchi-table .attacchi-riga > td {
-    display: flex;
-    align-items: center;
-    min-width: 0;
-    padding: 2px 0 !important;
-    border: 0 !important;
-  }
-  .attacchi-table .attacchi-riga > .attacchi-nome {
-    grid-column: 1;
-    grid-row: 1;
-    font-weight: 700;
-  }
-  .attacchi-table .attacchi-riga > .attacchi-azioni {
-    grid-column: 2;
-    grid-row: 1;
-    justify-content: flex-end;
-  }
-  .attacchi-table .attacchi-riga > .attacchi-bonus {
-    grid-column: 1;
-    grid-row: 2;
-    justify-content: flex-start;
-  }
-  .attacchi-table .attacchi-riga > .attacchi-danno {
-    grid-column: 2;
-    grid-row: 2;
-    justify-content: flex-start;
-  }
-  .attacchi-table .attacchi-riga > .attacchi-note {
-    grid-column: 1 / -1;
-    grid-row: 3;
-    width: 100%;
-    padding-top: 4px !important;
-    border-top: 1px dashed var(--c-border) !important;
-  }
-  .attacchi-table .attacchi-riga > td:not(.attacchi-nome):not(.attacchi-azioni)::before {
-    content: attr(data-label);
-    margin-right: 6px;
-    color: var(--c-ink-dim);
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .4px;
-  }
   /* Inventario: sul telefono ogni oggetto diventa una scheda leggibile e ordinata */
   .inventario-wrap { overflow-x: visible !important; }
   .inventario-table, .inventario-table tbody { display: block; width: 100%; }

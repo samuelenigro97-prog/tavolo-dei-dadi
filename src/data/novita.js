@@ -5,6 +5,19 @@
 
 export const NOVITA = [
   {
+    versione: '4.28.0',
+    voci: {
+      it: [
+        'Combattimento e Reazioni ora hanno lo stesso stile "a schede" di Incantesimi: ogni riga si legge come una card, non più come una tabella stretta.',
+        'Fix: "Forma Selvatica" in Risorse di Classe non aveva un font diverso, era solo troppo in grassetto — uniformato alle altre risorse.',
+      ],
+      en: [
+        'Combat and Reactions now share the same "card" style as Spells: each row reads as a card instead of a cramped table.',
+        'Fix: "Wild Shape" in Class Resources didn\'t actually use a different font, it was just too bold — made consistent with the other resources.',
+      ],
+    },
+  },
+  {
     versione: '4.27.0',
     voci: {
       it: [

@@ -2,6 +2,22 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.28.0] – 2026-09-24
+
+### Migliorato
+- **Combattimento e Reazioni ora sono "schede" come Incantesimi**: ogni
+  attacco/reazione è una riga autonoma con nome, badge e pulsanti che si
+  dispongono liberamente (etichette Bonus Att./Danno e Tipo/Note davanti al
+  valore), non più celle di tabella rigide — stesso linguaggio visivo della
+  sezione Magia, su ogni dimensione di schermo.
+
+### Corretto
+- **"Forma Selvatica" in Risorse di Classe sembrava un font diverso**: era
+  in realtà lo stesso carattere ma in grassetto pesante e sottolineato
+  invece che nel peso normale delle altre risorse. Uniformato al peso delle
+  altre voci cliccabili (spiegazioni); rimossa anche l'icona 🐾 non più
+  necessaria per distinguerlo.
+
 ## [4.27.0] – 2026-09-24
 
 ### Corretto

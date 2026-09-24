@@ -14,7 +14,7 @@ test.describe('Trasformazioni integrate', () => {
   });
 
   test('cliccando "Forma Selvatica" in Risorse di Classe si apre il catalogo Bestie', async ({ page }) => {
-    await page.getByRole('button', { name: /🐾 Forma Selvatica/ }).click();
+    await page.getByRole('button', { name: 'Forma Selvatica', exact: true }).click();
     await expect(page.getByText(/Grado di Sfida Max/)).toBeVisible();
     await expect(page.getByText(/bestie utilizzabili/)).toBeVisible();
   });
