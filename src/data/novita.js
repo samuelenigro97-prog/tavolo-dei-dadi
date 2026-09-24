@@ -5,6 +5,19 @@
 
 export const NOVITA = [
   {
+    versione: '4.31.0',
+    voci: {
+      it: [
+        'Fix: Combattimento/Reazioni avevano un formato diverso da Incantesimi (riquadro, etichette maiuscole) nonostante il cambio precedente — ora sono davvero identiche: righe fluide senza riquadro né etichette.',
+        'Tolta l\'icona 🔮 dal badge della scuola di magia (Trasmutazione, Abiurazione...): basta il colore.',
+      ],
+      en: [
+        'Fix: Combat/Reactions still looked different from Spells (boxed rows, uppercase labels) despite the earlier change — now they truly match: flowing rows, no box, no labels.',
+        'Removed the 🔮 icon from the spell school badge (Transmutation, Abjuration...): the color alone is enough.',
+      ],
+    },
+  },
+  {
     versione: '4.30.0',
     voci: {
       it: [

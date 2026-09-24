@@ -2,6 +2,21 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.31.0] – 2026-09-24
+
+### Corretto
+- **Combattimento/Reazioni ancora "diverse" da Incantesimi**: la conversione
+  a schede di v4.28.0 aveva dato loro un formato TUTTO SUO (riquadro con
+  bordo/ombra, etichette maiuscole "BONUS ATT."/"DANNO E TIPO"/"NOTE") che
+  non esisteva affatto nelle righe di Incantesimi. Ora entrambe le sezioni
+  usano la stessa identica riga fluida: nome + badge che scorrono in
+  un'unica riga con separatore in basso, senza riquadro né etichette (le
+  icone bastano). Come effetto collaterale si risolve anche il bottone "×"
+  di eliminazione che sembrava incollato ai danni: ora è sempre isolato
+  all'estrema destra della riga.
+- **Icona 🔮 sul badge della scuola di magia** (Trasmutazione, Abiurazione,
+  ecc.) rimossa: il colore e il nome bastano, l'icona era ridondante.
+
 ## [4.30.0] – 2026-09-24
 
 ### Migliorato
