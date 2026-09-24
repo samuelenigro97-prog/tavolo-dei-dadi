@@ -2,6 +2,15 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.26.0] – 2026-09-24
+
+### Sviluppo
+- **`README.md` riscritto**: nome aggiornato a "Tavolo dei Dadi", rimossi i
+  riferimenti a un server Express locale che non esiste più, elenco
+  funzionalità allineato allo stato reale (Trasformazioni, poteri homebrew,
+  temi/Luoghi, condivisione a codice stanza, test), aggiunti due screenshot
+  della scheda (tema chiaro e scuro) sotto `docs/screenshots/`.
+
 ## [4.25.0] – 2026-09-24
 
 ### Sviluppo
