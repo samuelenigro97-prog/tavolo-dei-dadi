@@ -474,7 +474,7 @@ export const DIZIONARIO = {
     'priv.panoramica_sub_btn': 'Panoramica sottoclasse per livello',
     'priv.sub_nessuna': 'Scegli una sottoclasse per vedere la panoramica.',
     'priv.aiuto_sub': 'I privilegi in grigio non sono ancora sbloccati. I nomi sono riassunti indicativi: verifica sul manuale.',
-    'talenti.ph': 'Es. Robusto, Attento, Guaritore…',
+    'talenti.ph': 'Es. Robusto, Allerta, Guaritore…',
     'equip.ph': 'Zaino, corda, razioni… (scrivi o scegli dalla lista)',
     'equip.lingue': 'Lingue',
     'equip.lingue_tooltip': 'Lingue conosciute: aggiungi dalla tendina o scrivi',

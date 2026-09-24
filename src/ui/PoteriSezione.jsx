@@ -47,7 +47,7 @@ export function BadgePotere({ scheda, bersaglio, unita }) {
   const u = unita ?? unitaBersaglio(bersaglio);
   const fonti = mods.map((m) => `${conSegno(Number(m.valore) || 0)}${u} (${m.fonte})`).join(', ');
   return (
-    <span style={{ fontSize: 10.5, fontWeight: 700, color: C.goldDark, marginLeft: 4 }} title={fonti}>
+    <span style={{ fontSize: 11, fontWeight: 700, color: C.goldDark, marginLeft: 4 }} title={fonti}>
       {conSegno(tot)}{u}
     </span>
   );
@@ -58,7 +58,7 @@ const chipStile = {
   border: `1px solid ${C.border}`,
   borderRadius: 6,
   padding: '3px 8px',
-  fontSize: 11.5,
+  fontSize: 12,
   color: C.ink,
   display: 'inline-flex',
   alignItems: 'center',
@@ -91,7 +91,7 @@ function PotereCard({ potere, scheda, indice, totale, onApri, lingua }) {
           {potere.nome || (lingua === 'en' ? 'Unnamed power' : 'Potere senza nome')}
         </strong>
         {!potere.attivo && (
-          <span style={{ fontSize: 10.5, fontWeight: 700, color: C.inkDim, border: `1px solid ${C.border}`, borderRadius: 6, padding: '1px 6px' }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: C.inkDim, border: `1px solid ${C.border}`, borderRadius: 6, padding: '1px 6px' }}>
             {lingua === 'en' ? 'OFF' : 'DISATTIVATO'}
           </span>
         )}
@@ -107,7 +107,7 @@ function PotereCard({ potere, scheda, indice, totale, onApri, lingua }) {
                 value={attuali}
                 tipo="numero"
                 width={26}
-                style={{ fontSize: 11.5, fontWeight: 700 }}
+                style={{ fontSize: 12, fontWeight: 700 }}
                 onChange={(v) => onApri(potere.id, { tipo: 'contatore', indice: i, patch: { attuali: v } })}
               />
               {max != null ? ` / ${max}` : ' (?)'}

@@ -1410,7 +1410,7 @@ export const BACKGROUND_TALENTO_ORIGINE_2024 = {
   'Nobile': 'Abile',
   'Saggio': 'Iniziato alla Magia',
   'Scriba': 'Abile',
-  'Soldato': 'Mente Rapida',
+  'Soldato': 'Attaccante Selvaggio',
   'Viandante': 'Fortunato',
 };
 
@@ -2327,7 +2327,7 @@ export const TALENTI_FONTI = {
   'Magia degli Elfi dei Boschi': 'xanathar', 'Prodigio': 'xanathar',
 
   // PHB 2014 Classici
-  'Maestro delle Armi Grandi': 'phb2014', 'Tiratore Scelto': 'phb2014', 'Sentinella': 'phb2014',
+  'Grande Maestro d’Armi': 'phb2014', 'Tiratore Scelto': 'phb2014', 'Sentinella': 'phb2014',
   'Maestro delle Armature Medie': 'phb2014', 'Condottiero Ispiratore': 'phb2014', 'Resiliente': 'phb2014',
   'Mente Lucida': 'phb2014', 'Padrone delle Armi ad Asta': 'phb2014', 'Attore': 'phb2014', 'Atleta': 'phb2014',
   'Difensore con Due Armi': 'phb2014', 'Lottatore': 'phb2014', 'Adepto Elementale': 'phb2014',

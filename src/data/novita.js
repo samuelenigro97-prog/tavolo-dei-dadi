@@ -5,6 +5,19 @@
 
 export const NOVITA = [
   {
+    versione: '4.21.0',
+    voci: {
+      it: [
+        'Tolti 3 talenti duplicati (stesso talento sotto due nomi diversi): Allerta/Vigile, Attaccante Selvaggio/Mente Rapida, Grande Maestro d\'Armi/Maestro delle Armi Grandi. Verificati tutti i tratti di specie: nessuna voce inventata.',
+        'Scala dei font consolidata: da 24 taglie diverse a una decina di taglie fisse coerenti.',
+      ],
+      en: [
+        'Removed 3 duplicate feats (same feat under two names): Alert (two Italian names), Savage Attacker (two Italian names), Great Weapon Master (two Italian names). Verified all species traits: no fabricated entries found.',
+        'Consolidated font scale: from 24 different sizes down to about ten consistent fixed sizes.',
+      ],
+    },
+  },
+  {
     versione: '4.20.0',
     voci: {
       it: [

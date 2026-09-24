@@ -344,7 +344,7 @@ export function CampoConTendina({ value, opzioni, onChange, width, title, lookup
     border: `1px solid ${C.border}`,
     borderRadius: 6,
     padding: '2px 7px',
-    fontSize: 11.5,
+    fontSize: 12,
     color: C.ink,
     display: 'inline-flex',
     alignItems: 'center',
@@ -595,7 +595,7 @@ export function ListaQuadratini({ value, onChange, lookup, placeholder, opzioni,
               <button style={styles.buttonMini} onClick={() => setEdit(null)} title={t('tip.chiudi')}>✕</button>
             </div>
             {spEdit && (
-              <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', fontSize: 13.5, lineHeight: 1.5, marginBottom: 10, whiteSpace: 'pre-wrap', color: C.ink }}>
+              <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', fontSize: 14, lineHeight: 1.5, marginBottom: 10, whiteSpace: 'pre-wrap', color: C.ink }}>
                 {spEdit}
               </div>
             )}

@@ -138,7 +138,7 @@ function TendinaCompetenzaCustom({
         </span>
         <span
           style={{
-            fontSize: 11.5,
+            fontSize: 12,
             color: v.attivo ? C.ink : C.inkDim,
             fontWeight: v.attivo ? 700 : 400,
             flex: 1,
@@ -165,7 +165,7 @@ function TendinaCompetenzaCustom({
     ) : (
       gruppiFiltrati.map((g, gIdx) => (
         <div key={g.titolo || gIdx} style={{ marginBottom: 6 }}>
-          <div style={{ fontSize: 10.5, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.6, padding: '4px 6px 2px', borderTop: gIdx > 0 ? `1px dashed ${C.border}` : 'none', marginTop: gIdx > 0 ? 4 : 0 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.6, padding: '4px 6px 2px', borderTop: gIdx > 0 ? `1px dashed ${C.border}` : 'none', marginTop: gIdx > 0 ? 4 : 0 }}>
             {g.titolo}
           </div>
           {g.voci.map((v, i) => renderItem(v, i))}
@@ -185,7 +185,7 @@ function TendinaCompetenzaCustom({
 
   return (
     <div style={{ marginBottom: 4, position: 'relative' }}>
-      <div className="campo-modulo-label" style={{ ...styles.moduloLabel, marginBottom: 2, fontSize: 10.5, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+      <div className="campo-modulo-label" style={{ ...styles.moduloLabel, marginBottom: 2, fontSize: 11, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.5 }}>
         {label}
       </div>
       <button
@@ -211,7 +211,7 @@ function TendinaCompetenzaCustom({
         <span style={{ fontSize: 11, color: C.ink, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, marginRight: 6 }}>
           {anteprima}
         </span>
-        <span style={{ fontSize: 10.5, color: C.inkDim, flexShrink: 0 }}>{aperto ? '▲' : '▼'}</span>
+        <span style={{ fontSize: 11, color: C.inkDim, flexShrink: 0 }}>{aperto ? '▲' : '▼'}</span>
       </button>
 
       {aperto && (
@@ -243,11 +243,11 @@ function TendinaCompetenzaCustom({
           >
             {/* Header oro */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 8px', borderBottom: `1px solid ${C.border}`, background: 'rgba(200,140,20,0.08)' }}>
-              <span style={{ fontSize: 10.5, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.8 }}>{label}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.8 }}>{label}</span>
               <button
                 type="button"
                 onClick={() => setAperto(false)}
-                style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 10.5, lineHeight: 1, width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 11, lineHeight: 1, width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >✕</button>
             </div>
 
@@ -275,7 +275,7 @@ function TendinaCompetenzaCustom({
                     <button
                       type="button"
                       onClick={() => setCerca('')}
-                      style={{ position: 'absolute', right: 4, background: 'transparent', border: 0, color: C.inkDim, fontSize: 10.5, cursor: 'pointer', padding: 2 }}
+                      style={{ position: 'absolute', right: 4, background: 'transparent', border: 0, color: C.inkDim, fontSize: 11, cursor: 'pointer', padding: 2 }}
                     >✕</button>
                   )}
                 </div>
@@ -1330,18 +1330,18 @@ function BadgeSfinimento({ scheda, bersaglio }) {
   if (!eff.livello) return null;
   if (bersaglio === 'velocita') {
     if (eff.velocitaZero) {
-      return <span style={{ fontSize: 10.5, fontWeight: 700, color: C.red, marginLeft: 4 }} title="Sfinimento: velocità ridotta a 0">→0 (Sfin.)</span>;
+      return <span style={{ fontSize: 11, fontWeight: 700, color: C.red, marginLeft: 4 }} title="Sfinimento: velocità ridotta a 0">→0 (Sfin.)</span>;
     }
     if (eff.velocitaDimezzata) {
-      return <span style={{ fontSize: 10.5, fontWeight: 700, color: C.red, marginLeft: 4 }} title="Sfinimento: velocità dimezzata">½ (Sfin.)</span>;
+      return <span style={{ fontSize: 11, fontWeight: 700, color: C.red, marginLeft: 4 }} title="Sfinimento: velocità dimezzata">½ (Sfin.)</span>;
     }
     if (eff.penalitaVelocita) {
-      return <span style={{ fontSize: 10.5, fontWeight: 700, color: C.red, marginLeft: 4 }} title="Sfinimento: -1,5m per livello">−{eff.penalitaVelocita}m (Sfin.)</span>;
+      return <span style={{ fontSize: 11, fontWeight: 700, color: C.red, marginLeft: 4 }} title="Sfinimento: -1,5m per livello">−{eff.penalitaVelocita}m (Sfin.)</span>;
     }
     return null;
   }
   if (bersaglio === 'pf_massimi' && eff.pfDimezzati) {
-    return <span style={{ fontSize: 10.5, fontWeight: 700, color: C.red, marginLeft: 4 }} title="Sfinimento: PF massimi dimezzati">½ (Sfin.)</span>;
+    return <span style={{ fontSize: 11, fontWeight: 700, color: C.red, marginLeft: 4 }} title="Sfinimento: PF massimi dimezzati">½ (Sfin.)</span>;
   }
   return null;
 }
@@ -1963,7 +1963,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.20.0';
+const APP_VERSION = '4.21.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3038,7 +3038,7 @@ function ArchivioDm({ url, onChiudi, onApri, onApriSolaLettura }) {
     >
       <div style={{ ...styles.panel, maxWidth: 640, width: '100%', maxHeight: '88vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-          <strong style={{ color: C.goldDark, fontSize: 17 }}>🗂 Archivio PG</strong>
+          <strong style={{ color: C.goldDark, fontSize: 18 }}>🗂 Archivio PG</strong>
           <button style={styles.buttonMini} onClick={onChiudi}>✕</button>
         </div>
         <p style={{ ...styles.detail, marginTop: 0 }}>
@@ -3091,7 +3091,7 @@ function ArchivioDm({ url, onChiudi, onApri, onApriSolaLettura }) {
                             {[s.classe, s.sottoclasse, s.specie, s.livello ? `Liv. ${s.livello}` : ''].filter(Boolean).join(' · ')}
                             {s.pfMax ? ` · PF ${s.pfAttuali ?? '?'}/${s.pfMax}` : ''}
                           </div>
-                          <div style={{ ...styles.detail, fontSize: 10.5, opacity: 0.75, marginTop: 2 }}>
+                          <div style={{ ...styles.detail, fontSize: 11, opacity: 0.75, marginTop: 2 }}>
                             {quando(s.aggiornato)} · {s.dispositivo || '?'}
                           </div>
                         </div>
@@ -3138,7 +3138,7 @@ function ArchivioDm({ url, onChiudi, onApri, onApriSolaLettura }) {
                               <strong style={{ fontSize: 12, color: C.goldDark }}>👁️ Visualizzazione scheda (Sola lettura)</strong>
                               <span style={{ fontSize: 11, color: C.inkDim, marginLeft: 6 }}>Nessuna modifica ai dati</span>
                             </div>
-                            <button style={{ ...styles.buttonMini, background: '#2e9d4d', color: '#fff', borderColor: '#2e9d4d', fontSize: 10.5, fontWeight: 700 }} onClick={() => esportaScheda(s)}>
+                            <button style={{ ...styles.buttonMini, background: '#2e9d4d', color: '#fff', borderColor: '#2e9d4d', fontSize: 11, fontWeight: 700 }} onClick={() => esportaScheda(s)}>
                               ⬇️ Scarica file JSON
                             </button>
                           </div>
@@ -3146,23 +3146,23 @@ function ArchivioDm({ url, onChiudi, onApri, onApriSolaLettura }) {
                           {/* Statistiche Vitali */}
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(75px, 1fr))', gap: 6, textAlign: 'center' }}>
                             <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
-                              <div style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 700 }}>CA</div>
+                              <div style={{ fontSize: 11, color: C.inkDim, fontWeight: 700 }}>CA</div>
                               <div style={{ fontSize: 14, fontWeight: 800, color: C.goldDark }}>{ca ?? '—'}</div>
                             </div>
                             <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
-                              <div style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 700 }}>PF</div>
+                              <div style={{ fontSize: 11, color: C.inkDim, fontWeight: 700 }}>PF</div>
                               <div style={{ fontSize: 14, fontWeight: 800, color: C.red }}>{completa.pfAttuali ?? '?'}/{completa.pfMax ?? '?'}</div>
                             </div>
                             <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
-                              <div style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 700 }}>VELOCITÀ</div>
+                              <div style={{ fontSize: 11, color: C.inkDim, fontWeight: 700 }}>VELOCITÀ</div>
                               <div style={{ fontSize: 13, fontWeight: 700 }}>{completa.velocita} m</div>
                             </div>
                             <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
-                              <div style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 700 }}>BONUS COMP.</div>
+                              <div style={{ fontSize: 11, color: C.inkDim, fontWeight: 700 }}>BONUS COMP.</div>
                               <div style={{ fontSize: 13, fontWeight: 700 }}>{conSegno(completa.bonusCompetenza || 2)}</div>
                             </div>
                             <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
-                              <div style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 700 }}>INIZIATIVA</div>
+                              <div style={{ fontSize: 11, color: C.inkDim, fontWeight: 700 }}>INIZIATIVA</div>
                               <div style={{ fontSize: 13, fontWeight: 700 }}>{conSegno(modificatore(punteggioCaratteristica(completa, 'destrezza')))}</div>
                             </div>
                           </div>
@@ -3182,10 +3182,10 @@ function ArchivioDm({ url, onChiudi, onApri, onApriSolaLettura }) {
                               const hasTs = !!completa.tiriSalvezza?.[key];
                               return (
                                 <div key={sigla} style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 2px' }}>
-                                  <div style={{ fontSize: 10.5, fontWeight: 700, color: C.inkDim }}>{sigla}</div>
+                                  <div style={{ fontSize: 11, fontWeight: 700, color: C.inkDim }}>{sigla}</div>
                                   <div style={{ fontSize: 13, fontWeight: 800 }}>{conSegno(mod)}</div>
-                                  <div style={{ fontSize: 10.5, color: C.inkDim }}>{score}</div>
-                                  <div style={{ fontSize: 10.5, color: hasTs ? '#2e9d4d' : C.inkDim, fontWeight: hasTs ? 700 : 400 }}>
+                                  <div style={{ fontSize: 11, color: C.inkDim }}>{score}</div>
+                                  <div style={{ fontSize: 11, color: hasTs ? '#2e9d4d' : C.inkDim, fontWeight: hasTs ? 700 : 400 }}>
                                     {hasTs ? '🛡️ TS' : 'TS —'}
                                   </div>
                                 </div>
@@ -3194,7 +3194,7 @@ function ArchivioDm({ url, onChiudi, onApri, onApriSolaLettura }) {
                           </div>
 
                           {/* Dettagli sintetici: Attacchi, Incantesimi, Inventario, Note */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 5, background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '8px 10px', fontSize: 11.5 }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 5, background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '8px 10px', fontSize: 12 }}>
                             {completa.attacchi && completa.attacchi.length > 0 && (
                               <div>
                                 <strong>⚔️ Attacchi ({completa.attacchi.length}):</strong>{' '}
@@ -3990,7 +3990,7 @@ export default function App() {
     if (valore) {
       const txt = traduciDato(valore);
       const isLungo = txt.length > 20;
-      return <CampoBloccato valore={txt} title={t('profilo.sottoclasse_bloccata')} style={isLungo ? { fontSize: 11.5, letterSpacing: -0.2 } : undefined} />;
+      return <CampoBloccato valore={txt} title={t('profilo.sottoclasse_bloccata')} style={isLungo ? { fontSize: 12, letterSpacing: -0.2 } : undefined} />;
     }
     return (
       <CampoTendina
@@ -6967,15 +6967,15 @@ export default function App() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 12, textAlign: 'center' }}>
               <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
-                <div style={{ fontSize: 10.5, color: C.inkDim, textTransform: 'uppercase', fontWeight: 700 }}>{t('armor.classe_armatura')}</div>
+                <div style={{ fontSize: 11, color: C.inkDim, textTransform: 'uppercase', fontWeight: 700 }}>{t('armor.classe_armatura')}</div>
                 <div style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>🛡️ {bestiaDettaglio.ca}</div>
               </div>
               <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
-                <div style={{ fontSize: 10.5, color: C.inkDim, textTransform: 'uppercase', fontWeight: 700 }}>{t('vital.punti_ferita')}</div>
+                <div style={{ fontSize: 11, color: C.inkDim, textTransform: 'uppercase', fontWeight: 700 }}>{t('vital.punti_ferita')}</div>
                 <div style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>❤️ {bestiaDettaglio.pf} <span style={{ fontSize: 11, fontWeight: 'normal', color: C.inkDim }}>({bestiaDettaglio.pfFormula})</span></div>
               </div>
               <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px' }}>
-                <div style={{ fontSize: 10.5, color: C.inkDim, textTransform: 'uppercase', fontWeight: 700 }}>{t('stat.velocita')}</div>
+                <div style={{ fontSize: 11, color: C.inkDim, textTransform: 'uppercase', fontWeight: 700 }}>{t('stat.velocita')}</div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginTop: 2 }}>
                   {bestiaDettaglio.velocita?.terra != null ? `${bestiaDettaglio.velocita.terra}m` : ''}{bestiaDettaglio.velocita?.nuoto ? ` · 🏊${bestiaDettaglio.velocita.nuoto}m` : ''}{bestiaDettaglio.velocita?.volo ? ` · 🦅${bestiaDettaglio.velocita.volo}m` : ''}{bestiaDettaglio.velocita?.scalata ? ` · 🧗${bestiaDettaglio.velocita.scalata}m` : ''}{bestiaDettaglio.velocita?.scavo ? ` · ⛏️${bestiaDettaglio.velocita.scavo}m` : ''}
                 </div>
@@ -6989,7 +6989,7 @@ export default function App() {
                 const mod = Math.floor((val - 10) / 2);
                 return (
                   <div key={k}>
-                    <div style={{ fontSize: 10.5, textTransform: 'uppercase', fontWeight: 700, color: C.inkDim }}>{k.slice(0, 3)}</div>
+                    <div style={{ fontSize: 11, textTransform: 'uppercase', fontWeight: 700, color: C.inkDim }}>{k.slice(0, 3)}</div>
                     <div style={{ fontSize: 13, fontWeight: 800 }}>{val}</div>
                     <div style={{ fontSize: 11, color: C.goldDark, fontWeight: 700 }}>{conSegno(mod)}</div>
                   </div>
@@ -7044,13 +7044,13 @@ export default function App() {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, flexWrap: 'wrap' }}>
                           <span style={{ fontWeight: 800, color: C.ink }}>⚔️ {az.nome}</span>
                           {az.cd != null && (
-                            <span style={{ fontSize: 10.5, fontWeight: 700, padding: '1px 5px', background: 'rgba(214,169,15,0.18)', color: C.goldDark, borderRadius: 4, border: `1px solid ${C.gold}` }}>
+                            <span style={{ fontSize: 11, fontWeight: 700, padding: '1px 5px', background: 'rgba(214,169,15,0.18)', color: C.goldDark, borderRadius: 4, border: `1px solid ${C.gold}` }}>
                               🛡️ CD {az.cd}
                             </span>
                           )}
                         </div>
                         {az.desc && (
-                          <div style={{ fontSize: 11.5, color: C.ink }}>{az.desc}</div>
+                          <div style={{ fontSize: 12, color: C.ink }}>{az.desc}</div>
                         )}
                         {(az.bonus != null || az.danno) && (
                           <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginTop: 2, paddingTop: 4, borderTop: `1px dashed ${C.border}` }}>
@@ -7290,7 +7290,7 @@ export default function App() {
                             const rimasti = g.totale - (spesiMap[g.facce] || 0);
                             return (
                               <div key={g.facce} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: C.panelLight, padding: '5px 8px', borderRadius: 6, border: `1px solid ${C.border}` }}>
-                                <span style={{ fontSize: 11.5, fontWeight: 600 }}>
+                                <span style={{ fontSize: 12, fontWeight: 600 }}>
                                   d{g.facce}: <strong style={{ color: rimasti > 0 ? C.ink : C.red }}>{rimasti}</strong> / {g.totale} {lingua === 'en' ? 'left' : 'rimasti'}
                                 </span>
                                 <button
@@ -7320,7 +7320,7 @@ export default function App() {
 
                   <div style={{ fontSize: 11, color: C.inkDim, borderTop: `1px dashed ${C.border}`, paddingTop: 6, marginBottom: 12 }}>
                     ⚡ <strong>{lingua === 'en' ? 'Short rest auto-recharge:' : 'Ricarica automatica riposo breve:'}</strong>
-                    <div style={{ fontSize: 10.5, marginTop: 2 }}>
+                    <div style={{ fontSize: 11, marginTop: 2 }}>
                       {(() => {
                         const risorseBrevi = (scheda.risorse || []).filter((r) => r.ricarica === 'breve');
                         const isWarlock = /warlock|patto/i.test(scheda.classe || '');
@@ -7378,7 +7378,7 @@ export default function App() {
                   <div style={{ marginBottom: 8 }}>
                     {lingua === 'en' ? 'A Long Rest restores your adventurer completely:' : 'Il Riposo Lungo ripristina completamente il tuo avventuriero:'}
                   </div>
-                  <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11.5 }}>
+                  <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12 }}>
                     <li>❤️ <strong>{lingua === 'en' ? 'Hit Points:' : 'Punti Ferita:'}</strong> {lingua === 'en' ? `healed to maximum (${scheda.pfMax} HP)` : `ripristinati al massimo (${scheda.pfMax} PF)`}</li>
                     <li>🔮 <strong>{lingua === 'en' ? 'Spell Slots:' : 'Slot Incantesimo:'}</strong> {lingua === 'en' ? 'all spent slots fully restored' : 'tutti gli slot spesi tornano disponibili'}</li>
                     <li>🎲 <strong>{lingua === 'en' ? 'Hit Dice:' : 'Dadi Vita:'}</strong> {(() => {
@@ -7471,7 +7471,7 @@ export default function App() {
               </div>
 
               {tsInfo.haIncantatoreDaGuerra && !esito && (
-                <div style={{ fontSize: 11.5, background: 'rgba(46,157,77,0.12)', border: '1px solid #2e9d4d', borderRadius: 6, padding: '5px 8px', marginBottom: 10, color: '#2e9d4d', fontWeight: 600 }}>
+                <div style={{ fontSize: 12, background: 'rgba(46,157,77,0.12)', border: '1px solid #2e9d4d', borderRadius: 6, padding: '5px 8px', marginBottom: 10, color: '#2e9d4d', fontWeight: 600 }}>
                   ⭐ <strong>{lingua === 'en' ? 'War Caster / Eldritch Mind' : 'Incantatore da Guerra / Mente Occulta'}</strong>: {lingua === 'en' ? 'You have Advantage on concentration saves!' : 'Hai Vantaggio sui TS di concentrazione!'}
                 </div>
               )}
@@ -7541,7 +7541,7 @@ export default function App() {
           >
             <div style={{ ...styles.panel, maxWidth: 420, width: '100%', maxHeight: '88vh', overflowY: 'auto' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <strong style={{ color: C.goldDark, fontSize: 17 }}>{s.nome || 'Incantesimo'}</strong>
+                <strong style={{ color: C.goldDark, fontSize: 18 }}>{s.nome || 'Incantesimo'}</strong>
                 <button style={styles.buttonMini} onClick={() => setDettaglioInc(null)} title={t('tip.chiudi')}>✕</button>
               </div>
               <div style={{ ...styles.detail, marginBottom: 4 }}>{t('modal.modifica')} · {s.livello === 0 ? t('spell.trucchetto') : t('spell.inc_liv', { n: s.livello })}</div>
@@ -7678,7 +7678,7 @@ export default function App() {
         >
           <div style={{ ...styles.panel, maxWidth: 460, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
             <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 12, fontSize: 24, fontWeight: 800, color: 'var(--c-title)' }}>
-              Tavolo dei Dadi <span style={{ fontSize: 10.5, opacity: 0.65, fontWeight: 600, verticalAlign: 'middle', color: C.inkDim }}>v{APP_VERSION}</span>
+              Tavolo dei Dadi <span style={{ fontSize: 11, opacity: 0.65, fontWeight: 600, verticalAlign: 'middle', color: C.inkDim }}>v{APP_VERSION}</span>
             </h1>
 
             <button
@@ -7864,14 +7864,14 @@ export default function App() {
               <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>{t('menu.sezione_info')}</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
                 <button
-                  style={{ ...styles.button, width: '100%', height: 38, minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '0 6px', fontSize: 12.5, boxSizing: 'border-box' }}
+                  style={{ ...styles.button, width: '100%', height: 38, minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '0 6px', fontSize: 13, boxSizing: 'border-box' }}
                   onClick={() => { setMostraMenu(false); setMostraNoteLegali(true); }}
                   title={t('legali.titolo')}
                 >
                   <span>⚖️</span> <span>{t('menu.note_legali')}</span>
                 </button>
                 <button
-                  style={{ ...styles.button, width: '100%', height: 38, minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '0 6px', fontSize: 12.5, boxSizing: 'border-box' }}
+                  style={{ ...styles.button, width: '100%', height: 38, minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '0 6px', fontSize: 13, boxSizing: 'border-box' }}
                   onClick={() => { setMostraMenu(false); setMostraDonazioni(true); }}
                   title={t('donazioni.titolo')}
                 >
@@ -7881,7 +7881,7 @@ export default function App() {
                   href="https://github.com/samuelenigro97-prog/tavolo-dei-dadi"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ ...styles.button, textDecoration: 'none', width: '100%', height: 38, minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '0 6px', fontSize: 12.5, boxSizing: 'border-box' }}
+                  style={{ ...styles.button, textDecoration: 'none', width: '100%', height: 38, minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '0 6px', fontSize: 13, boxSizing: 'border-box' }}
                   title={t('menu.github_tip')}
                 >
                   <span>🐙</span> <span>{t('menu.github')}</span>
@@ -8250,7 +8250,7 @@ export default function App() {
                         <div style={{ flexShrink: 0, width: 48, fontWeight: 'bold', fontSize: 12, color: futuro ? C.inkDim : C.goldDark }}>
                           {t('priv.livello')} {L}
                         </div>
-                        <div style={{ flex: 1, fontSize: 12.5 }}>
+                        <div style={{ flex: 1, fontSize: 13 }}>
                           {feat.split('\n').map((r, i) => {
                             const sp = spiegaPrivilegio(r);
                             return (
@@ -8392,7 +8392,7 @@ export default function App() {
                   </div>
 
                   {/* Informazioni Dettagliate — allineata con Livello Attuale */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 11.5, color: C.inkDim, background: C.panel, padding: '8px 10px', borderRadius: 6, border: `1px solid ${C.border}`, textAlign: 'center' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 12, color: C.inkDim, background: C.panel, padding: '8px 10px', borderRadius: 6, border: `1px solid ${C.border}`, textAlign: 'center' }}>
                     <div>
                       {lingua === 'en' ? 'Threshold for current level:' : 'Soglia livello attuale:'} <strong>{infoPe.peMinLivello.toLocaleString()} P.E.</strong>
                     </div>
@@ -8513,7 +8513,7 @@ export default function App() {
 
                 {/* Tabella Ufficiale Soglie D&D 5e */}
                 <div>
-                  <div style={{ fontSize: 11.5, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 6 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 6 }}>
                     {lingua === 'en' ? `Official XP Progression Table (${versione === '2024' ? '5.5' : '5e'})` : `Tabella Ufficiale Soglie P.E. (${versione === '2024' ? '5.5' : '5e'})`}
                   </div>
                   <div style={{ maxHeight: 180, overflowY: 'auto', border: `1px solid ${C.border}`, borderRadius: 6 }}>
@@ -8551,7 +8551,7 @@ export default function App() {
                               <td style={{ padding: '4px 8px', color: C.inkDim }}>
                                 {conSegno(bc)}
                               </td>
-                              <td style={{ padding: '4px 8px', fontSize: 10.5 }}>
+                              <td style={{ padding: '4px 8px', fontSize: 11 }}>
                                 {isAttuale ? (
                                   <span style={{ color: C.goldDark, fontWeight: 700 }}>● {lingua === 'en' ? 'Current' : 'Attuale'}</span>
                                 ) : isRaggiunto ? (
@@ -8670,15 +8670,15 @@ export default function App() {
                       <div style={{ fontWeight: 700, fontSize: 12, color: C.ink }}>
                         {lingua === 'en' ? 'Long Jump' : 'Salto in Lungo'}
                       </div>
-                      <div style={{ fontSize: 11.5, color: C.inkDim, display: 'flex', justifyContent: 'space-between' }}>
+                      <div style={{ fontSize: 12, color: C.inkDim, display: 'flex', justifyContent: 'space-between' }}>
                         <span>{lingua === 'en' ? 'With 3m run-up:' : 'Con rincorsa (3m):'}</span>
                         <strong style={{ color: C.goldDark, fontSize: 13 }}>{mov.saltoLungoRincorsa} m</strong>
                       </div>
-                      <div style={{ fontSize: 11.5, color: C.inkDim, display: 'flex', justifyContent: 'space-between' }}>
+                      <div style={{ fontSize: 12, color: C.inkDim, display: 'flex', justifyContent: 'space-between' }}>
                         <span>{lingua === 'en' ? 'Standing jump:' : 'Da fermo:'}</span>
                         <strong style={{ color: C.ink, fontSize: 13 }}>{mov.saltoLungoFermo} m</strong>
                       </div>
-                      <div style={{ fontSize: 10.5, color: C.inkDim, marginTop: 2, lineHeight: 1.25 }}>
+                      <div style={{ fontSize: 11, color: C.inkDim, marginTop: 2, lineHeight: 1.25 }}>
                         {lingua === 'en' ? 'Clear low obstacle: Athletics DC 10. Difficult terrain landing: Acrobatics DC 10 or prone.' : 'Ostacolo basso: Atletica CD 10. Terreno difficile: Acrobazia CD 10 o prono.'}
                       </div>
                     </div>
@@ -8688,15 +8688,15 @@ export default function App() {
                       <div style={{ fontWeight: 700, fontSize: 12, color: C.ink }}>
                         🧗 {lingua === 'en' ? 'High Jump' : 'Salto in Alto'}
                       </div>
-                      <div style={{ fontSize: 11.5, color: C.inkDim, display: 'flex', justifyContent: 'space-between' }}>
+                      <div style={{ fontSize: 12, color: C.inkDim, display: 'flex', justifyContent: 'space-between' }}>
                         <span>{lingua === 'en' ? 'With 3m run-up:' : 'Con rincorsa (3m):'}</span>
                         <strong style={{ color: C.goldDark, fontSize: 13 }}>{mov.saltoAltoRincorsa} m</strong>
                       </div>
-                      <div style={{ fontSize: 11.5, color: C.inkDim, display: 'flex', justifyContent: 'space-between' }}>
+                      <div style={{ fontSize: 12, color: C.inkDim, display: 'flex', justifyContent: 'space-between' }}>
                         <span>{lingua === 'en' ? 'Standing jump:' : 'Da fermo:'}</span>
                         <strong style={{ color: C.ink, fontSize: 13 }}>{mov.saltoAltoFermo} m</strong>
                       </div>
-                      <div style={{ fontSize: 10.5, color: C.inkDim, borderTop: `1px dashed ${C.border}`, paddingTop: 4, marginTop: 2 }}>
+                      <div style={{ fontSize: 11, color: C.inkDim, borderTop: `1px dashed ${C.border}`, paddingTop: 4, marginTop: 2 }}>
                         🤲 {lingua === 'en' ? 'Reach with arms:' : 'Presa a braccia tese:'} <strong style={{ color: C.ink }}>{mov.altezzaRaggiungibile} m</strong>
                       </div>
                     </div>
@@ -8708,7 +8708,7 @@ export default function App() {
                   <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span>{lingua === 'en' ? 'Lifting & Dragging Capacity' : 'Sollevamento & Spinta / Trascinamento'}</span>
                     {mov.haCorporaturaPossente && (
-                      <span style={{ fontSize: 10.5, color: '#10b981', background: 'rgba(16,185,129,0.12)', border: '1px solid #10b981', padding: '1px 5px', borderRadius: 4, fontWeight: 700 }}>
+                      <span style={{ fontSize: 11, color: '#10b981', background: 'rgba(16,185,129,0.12)', border: '1px solid #10b981', padding: '1px 5px', borderRadius: 4, fontWeight: 700 }}>
                         ✨ {lingua === 'en' ? 'Powerful Build ×2' : 'Corporatura Possente ×2'}
                       </span>
                     )}
@@ -8717,12 +8717,12 @@ export default function App() {
                     <div style={{ background: C.panel, padding: '8px 10px', borderRadius: 6, border: `1px solid ${C.border}` }}>
                       <div style={{ fontSize: 11, color: C.inkDim }}>🏋️ {lingua === 'en' ? 'Max Overhead Lift:' : 'Sollevamento Massimo:'}</div>
                       <div style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>{mov.sollevamentoKg} kg</div>
-                      <div style={{ fontSize: 10.5, color: C.inkDim }}>{lingua === 'en' ? '(Strength × 15 kg)' : '(Forza × 15 kg)'}</div>
+                      <div style={{ fontSize: 11, color: C.inkDim }}>{lingua === 'en' ? '(Strength × 15 kg)' : '(Forza × 15 kg)'}</div>
                     </div>
                     <div style={{ background: C.panel, padding: '8px 10px', borderRadius: 6, border: `1px solid ${C.border}` }}>
                       <div style={{ fontSize: 11, color: C.inkDim }}>🚜 {lingua === 'en' ? 'Max Push / Drag:' : 'Spinta / Trascinamento Max:'}</div>
                       <div style={{ fontSize: 16, fontWeight: 800, color: C.goldDark }}>{mov.spintaKg} kg</div>
-                      <div style={{ fontSize: 10.5, color: C.inkDim }}>{lingua === 'en' ? '(Strength × 30 kg)' : '(Forza × 30 kg)'}</div>
+                      <div style={{ fontSize: 11, color: C.inkDim }}>{lingua === 'en' ? '(Strength × 30 kg)' : '(Forza × 30 kg)'}</div>
                     </div>
                   </div>
                 </div>
@@ -8822,7 +8822,7 @@ export default function App() {
                         ? (lingua === 'en' ? 'Reaction USED this round' : 'Reazione USATA in questo round')
                         : (lingua === 'en' ? 'Reaction AVAILABLE' : 'Reazione DISPONIBILE')}
                     </strong>
-                    <div style={{ fontSize: 10.5, color: C.inkDim }}>
+                    <div style={{ fontSize: 11, color: C.inkDim }}>
                       {lingua === 'en' ? 'Max 1 reaction per round. Resets at start of your turn.' : 'Massimo 1 reazione per round. Si ripristina all\'inizio del tuo turno.'}
                     </div>
                   </div>
@@ -8863,7 +8863,7 @@ export default function App() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <span style={{ fontSize: 14 }}>{r.tipo === 'incantesimo' ? '🪄' : r.tipo === 'privilegio' ? '🛡️' : r.tipo === 'talento' ? '⭐' : '⚔️'}</span>
                           <strong style={{ fontSize: 13, color: C.ink }}>{r.nome}</strong>
-                          <span style={{ fontSize: 10.5, textTransform: 'uppercase', padding: '1px 5px', borderRadius: 4, background: 'rgba(0,0,0,0.06)', color: C.inkDim, fontWeight: 700 }}>
+                          <span style={{ fontSize: 11, textTransform: 'uppercase', padding: '1px 5px', borderRadius: 4, background: 'rgba(0,0,0,0.06)', color: C.inkDim, fontWeight: 700 }}>
                             {r.tipo}
                           </span>
                         </div>
@@ -8872,7 +8872,7 @@ export default function App() {
                             <button
                               type="button"
                               onClick={() => aggiungiAgliAttacchi(r)}
-                              style={{ ...styles.buttonMini, fontSize: 10.5, padding: '2px 6px' }}
+                              style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 6px' }}
                               title={lingua === 'en' ? 'Add to quick attacks list' : 'Aggiungi alla tabella attacchi/reazioni'}
                             >
                               ➕ {lingua === 'en' ? 'Pin' : 'Aggiungi'}
@@ -8899,7 +8899,7 @@ export default function App() {
                       </div>
 
                       {/* Innesco */}
-                      <div style={{ fontSize: 11.5, color: C.goldDark, background: 'rgba(201,162,39,0.08)', padding: '4px 8px', borderRadius: 6, lineHeight: 1.3 }}>
+                      <div style={{ fontSize: 12, color: C.goldDark, background: 'rgba(201,162,39,0.08)', padding: '4px 8px', borderRadius: 6, lineHeight: 1.3 }}>
                         🎯 <strong>{lingua === 'en' ? 'Trigger' : 'Innesco'}:</strong> {lingua === 'en' ? r.innescoEn : r.innescoIt}
                       </div>
 
@@ -9042,7 +9042,7 @@ export default function App() {
               {/* Corpo Modale: Descrizione, CD e Sinergie */}
               <div style={{ padding: '16px 18px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {/* Descrizione 5e */}
-                <div style={{ fontSize: 12.5, color: C.ink, lineHeight: 1.45, background: C.panel, padding: '10px 12px', borderRadius: 8, border: `1px solid ${C.border}` }}>
+                <div style={{ fontSize: 13, color: C.ink, lineHeight: 1.45, background: C.panel, padding: '10px 12px', borderRadius: 8, border: `1px solid ${C.border}` }}>
                   {lingua === 'en' ? infoAb.descrizioneEn : infoAb.descrizioneIt}
                 </div>
 
@@ -9059,7 +9059,7 @@ export default function App() {
                           display: 'flex',
                           alignItems: 'baseline',
                           gap: 8,
-                          fontSize: 11.5,
+                          fontSize: 12,
                           padding: '4px 8px',
                           background: C.panelLight,
                           borderRadius: 6,
@@ -9069,7 +9069,7 @@ export default function App() {
                         <strong style={{ width: 44, color: ex.cd >= 25 ? C.red : ex.cd >= 20 ? C.goldDark : '#2e9d4d', flexShrink: 0 }}>
                           CD {ex.cd}
                         </strong>
-                        <span style={{ width: 85, color: C.inkDim, fontSize: 10.5, flexShrink: 0, fontWeight: 600 }}>
+                        <span style={{ width: 85, color: C.inkDim, fontSize: 11, flexShrink: 0, fontWeight: 600 }}>
                           ({lingua === 'en' ? ex.diffEn : ex.diffIt})
                         </span>
                         <span style={{ color: C.ink, lineHeight: 1.3 }}>
@@ -9105,11 +9105,11 @@ export default function App() {
                               🔧 {syn.strumento}
                             </strong>
                             {syn.posseduto ? (
-                              <span style={{ fontSize: 10.5, fontWeight: 700, color: '#2e9d4d', background: 'rgba(46,157,77,0.15)', padding: '1px 6px', borderRadius: 4 }}>
+                              <span style={{ fontSize: 11, fontWeight: 700, color: '#2e9d4d', background: 'rgba(46,157,77,0.15)', padding: '1px 6px', borderRadius: 4 }}>
                                 ✓ {lingua === 'en' ? 'Possessed / Proficient' : 'Posseduto / Addestrato'}
                               </span>
                             ) : (
-                              <span style={{ fontSize: 10.5, color: C.inkDim }}>
+                              <span style={{ fontSize: 11, color: C.inkDim }}>
                                 {lingua === 'en' ? 'Not in inventory' : 'Non posseduto'}
                               </span>
                             )}
@@ -9265,8 +9265,8 @@ export default function App() {
                     }}
                   />
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14 }}>{traduciDato(scheda.classe)} <span style={{ fontSize: 11.5, fontWeight: 500, color: C.inkDim }}>({t('levelup.classe_principale')})</span></div>
-                    <div style={{ fontSize: 11.5, color: C.inkDim }}>Avanza da Liv. {scheda.livello || 1} → <strong style={{ color: C.goldDark }}>Liv. {(scheda.livello || 1) + 1}</strong></div>
+                    <div style={{ fontWeight: 700, fontSize: 14 }}>{traduciDato(scheda.classe)} <span style={{ fontSize: 12, fontWeight: 500, color: C.inkDim }}>({t('levelup.classe_principale')})</span></div>
+                    <div style={{ fontSize: 12, color: C.inkDim }}>Avanza da Liv. {scheda.livello || 1} → <strong style={{ color: C.goldDark }}>Liv. {(scheda.livello || 1) + 1}</strong></div>
                   </div>
                   <span style={{ fontSize: 12, color: C.goldDark, fontWeight: 700, background: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: 6 }}>DV: d{dadoVitaClasse(scheda.classe)}</span>
                 </label>
@@ -9284,8 +9284,8 @@ export default function App() {
                       }}
                     />
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 700, fontSize: 14 }}>{traduciDato(m.classe)} <span style={{ fontSize: 11.5, fontWeight: 500, color: C.inkDim }}>({t('levelup.classe_secondaria')})</span></div>
-                      <div style={{ fontSize: 11.5, color: C.inkDim }}>Avanza da Liv. {m.livello || 1} → <strong style={{ color: C.goldDark }}>Liv. {(num(m.livello, 1)) + 1}</strong></div>
+                      <div style={{ fontWeight: 700, fontSize: 14 }}>{traduciDato(m.classe)} <span style={{ fontSize: 12, fontWeight: 500, color: C.inkDim }}>({t('levelup.classe_secondaria')})</span></div>
+                      <div style={{ fontSize: 12, color: C.inkDim }}>Avanza da Liv. {m.livello || 1} → <strong style={{ color: C.goldDark }}>Liv. {(num(m.livello, 1)) + 1}</strong></div>
                     </div>
                     <span style={{ fontSize: 12, color: C.goldDark, fontWeight: 700, background: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: 6 }}>DV: d{dadoVitaClasse(m.classe)}</span>
                   </label>
@@ -9331,7 +9331,7 @@ export default function App() {
 
             {/* SE NUOVA CLASSE MULTICLASSE: REQUISITI E COMPETENZE 5E */}
             {isNewMc && compMc && (
-              <div style={{ background: 'rgba(0,102,204,0.06)', border: '1px solid rgba(0,102,204,0.35)', borderRadius: 8, padding: '10px 12px', marginBottom: 14, fontSize: 12.5 }}>
+              <div style={{ background: 'rgba(0,102,204,0.06)', border: '1px solid rgba(0,102,204,0.35)', borderRadius: 8, padding: '10px 12px', marginBottom: 14, fontSize: 13 }}>
                 <div style={{ fontWeight: 700, color: '#0066cc', marginBottom: 4 }}>
                   {t('levelup.nuova_classe_info')}: {traduciDato(targetClasse)}
                 </div>
@@ -9465,7 +9465,7 @@ export default function App() {
 
             {/* PANORAMICA DETTAGLIATA AVANZAMENTO ("COSA OTTIENI CON QUESTO LIVELLO") */}
             <div style={{ background: 'rgba(0,0,0,0.02)', border: `1px solid ${C.border}`, borderRadius: 10, padding: '12px 14px', marginBottom: 16, fontSize: 13 }}>
-              <div style={{ fontWeight: 700, color: C.goldDark, marginBottom: 10, fontSize: 13.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${C.border}`, paddingBottom: 6 }}>
+              <div style={{ fontWeight: 700, color: C.goldDark, marginBottom: 10, fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${C.border}`, paddingBottom: 6 }}>
                 <span>{t('levelup.anteprima_titolo')}</span>
                 <span style={{ fontSize: 12, color: C.inkDim, fontWeight: 500 }}>{traduciDato(targetClasse)} → Liv. {targetLivelloNuovo}</span>
               </div>
@@ -9547,7 +9547,7 @@ export default function App() {
                   </div>
                 </div>
               ) : haSub && !mostraSceltaSub ? (
-                <div style={{ padding: '6px 0', color: C.inkDim, fontSize: 12.5 }}>{t('levelup.sub_guadagna')} ({traduciDato(targetClasse)})</div>
+                <div style={{ padding: '6px 0', color: C.inkDim, fontSize: 13 }}>{t('levelup.sub_guadagna')} ({traduciDato(targetClasse)})</div>
               ) : null}
 
               {/* Progressioni Meccaniche & Risorse */}
@@ -9558,7 +9558,7 @@ export default function App() {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {progressioni.map((p, idx) => (
-                      <div key={idx} style={{ fontSize: 12.5, color: C.ink }}>
+                      <div key={idx} style={{ fontSize: 13, color: C.ink }}>
                         <strong>{p.nome}:</strong> {p.desc}
                       </div>
                     ))}
@@ -9592,7 +9592,7 @@ export default function App() {
                         <div style={{ color: '#2e9d4d', fontWeight: 800, fontSize: 13 }}>
                           {t('levelup.sblocchi', { n: nuovoLivInc })}
                         </div>
-                        <div style={{ color: C.inkDim, fontSize: 11.5, marginTop: 1 }}>
+                        <div style={{ color: C.inkDim, fontSize: 12, marginTop: 1 }}>
                           {lingua === 'it'
                             ? `Ora hai accesso agli incantesimi di ${nuovoLivInc}° cerchio.`
                             : `You now have access to ${nuovoLivInc}${nuovoLivInc === 1 ? 'st' : nuovoLivInc === 2 ? 'nd' : nuovoLivInc === 3 ? 'rd' : 'th'} level spells.`}
@@ -9604,7 +9604,7 @@ export default function App() {
                   {/* Griglia Slot per Livello (Badge Eleganti) */}
                   {slotNuovi && Object.keys(slotNuovi).filter((l) => slotNuovi[l]?.totale > 0).length > 0 && (
                     <div style={{ marginBottom: (trucchettiDaScegliere > 0 || nuoviIncantesimi > 0) ? 10 : 0 }}>
-                      <div style={{ fontSize: 11.5, color: C.inkDim, marginBottom: 6, fontWeight: 600 }}>
+                      <div style={{ fontSize: 12, color: C.inkDim, marginBottom: 6, fontWeight: 600 }}>
                         {lingua === 'it' ? 'Disponibilità Slot Incantesimo:' : 'Spell Slot Availability:'}
                       </div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -9638,12 +9638,12 @@ export default function App() {
                                 <span style={{ fontWeight: 700, color: isNuovoLiv ? '#2e9d4d' : C.goldDark }}>{l}° Liv:</span>
                                 <span>{tot} {tot === 1 ? 'slot' : 'slot'}</span>
                                 {isNuovoLiv && (
-                                  <span style={{ fontSize: 10.5, background: '#2e9d4d', color: '#fff', padding: '1px 5px', borderRadius: 4, fontWeight: 800 }}>
+                                  <span style={{ fontSize: 11, background: '#2e9d4d', color: '#fff', padding: '1px 5px', borderRadius: 4, fontWeight: 800 }}>
                                     {lingua === 'it' ? 'NUOVO' : 'NEW'}
                                   </span>
                                 )}
                                 {isAumentato && (
-                                  <span style={{ fontSize: 10.5, background: '#d97706', color: '#fff', padding: '1px 5px', borderRadius: 4, fontWeight: 800 }}>
+                                  <span style={{ fontSize: 11, background: '#d97706', color: '#fff', padding: '1px 5px', borderRadius: 4, fontWeight: 800 }}>
                                     +{tot - prevTot}
                                   </span>
                                 )}
@@ -9665,7 +9665,7 @@ export default function App() {
                       flexDirection: 'column',
                       gap: 4,
                     }}>
-                      <div style={{ fontSize: 11.5, fontWeight: 700, color: C.ink, display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: C.ink, display: 'flex', alignItems: 'center', gap: 5 }}>
                         <span>📖</span>
                         <span>{lingua === 'it' ? 'Da imparare / preparare:' : 'To learn / prepare:'}</span>
                       </div>
@@ -9707,7 +9707,7 @@ export default function App() {
                                   }))}
                                   style={{
                                     ...styles.buttonMini,
-                                    fontSize: 11.5,
+                                    fontSize: 12,
                                     padding: '4px 10px',
                                     fontWeight: selezionato ? 700 : 500,
                                     cursor: pieno ? 'not-allowed' : 'pointer',
@@ -9722,7 +9722,7 @@ export default function App() {
                               );
                             })}
                           </div>
-                          <div style={{ fontSize: 10.5, color: C.inkDim, marginTop: 4, fontStyle: 'italic' }}>
+                          <div style={{ fontSize: 11, color: C.inkDim, marginTop: 4, fontStyle: 'italic' }}>
                             {lingua === 'it' ? 'Puoi anche non sceglierli ora e tornare qui più tardi.' : "You can also skip this now and come back here later."}
                           </div>
                         </div>
@@ -9874,7 +9874,7 @@ export default function App() {
                 ))}
                 <button
                   type="button"
-                  style={{ ...styles.buttonMini, fontSize: 11.5, padding: '3px 8px', color: C.goldDark, borderColor: C.goldDark, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                  style={{ ...styles.buttonMini, fontSize: 12, padding: '3px 8px', color: C.goldDark, borderColor: C.goldDark, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}
                   onClick={() => setMostraModalManuali(true)}
                   title={lingua === 'it' ? 'Configura i manuali e le espansioni attive (Tasha, Xanathar, ecc.)' : 'Configure active sourcebooks (Tasha, Xanathar, etc.)'}
                 >
@@ -10036,7 +10036,7 @@ export default function App() {
                         <div key={lv} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' }}>
                           <span style={{ minWidth: 44 }}>Liv. {lv}</span>
                           <button
-                            style={{ ...styles.modeButton(!scelta), fontSize: 10.5, padding: '2px 7px' }}
+                            style={{ ...styles.modeButton(!scelta), fontSize: 11, padding: '2px 7px' }}
                             onClick={() => setB({ asiTalenti: { ...bozzaCrea.asiTalenti, [lv]: '' } })}
                           >+2 auto</button>
                           <select
@@ -10353,14 +10353,14 @@ export default function App() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
-              <strong style={{ color: C.goldDark, fontSize: 13.5, display: 'flex', alignItems: 'center', gap: 5 }}>
+              <strong style={{ color: C.goldDark, fontSize: 14, display: 'flex', alignItems: 'center', gap: 5 }}>
                 <span>📂</span> <span>{t('import_export.titolo')}</span>
               </strong>
               <button style={styles.buttonMini} onClick={() => setMostraMenuEsporta(false)}>✕</button>
             </div>
 
             {/* SEZIONE 1: IMPORTA */}
-            <div style={{ fontSize: 10.5, fontWeight: 700, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.6, marginTop: 4 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.6, marginTop: 4 }}>
               {t('import_export.sezione_importa')}
             </div>
 
@@ -10375,7 +10375,7 @@ export default function App() {
               <span style={{ fontSize: 16 }}>📂</span>
               <div>
                 <strong style={{ display: 'block' }}>{t('import_export.carica_file')}</strong>
-                <span style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 'normal' }}>{t('import_export.carica_file_sub')}</span>
+                <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 'normal' }}>{t('import_export.carica_file_sub')}</span>
               </div>
             </button>
 
@@ -10417,13 +10417,13 @@ export default function App() {
               <span style={{ fontSize: 16 }}>📋</span>
               <div>
                 <strong style={{ display: 'block' }}>{t('import_export.incolla_json')}</strong>
-                <span style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 'normal' }}>{t('import_export.incolla_json_sub')}</span>
+                <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 'normal' }}>{t('import_export.incolla_json_sub')}</span>
               </div>
             </button>
 
             {/* SEZIONE 2: ESPORTA */}
             <div style={{ borderTop: `1px dashed ${C.border}`, margin: '4px 0 2px' }} />
-            <div style={{ fontSize: 10.5, fontWeight: 700, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.6 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.inkDim, textTransform: 'uppercase', letterSpacing: 0.6 }}>
               {t('import_export.sezione_esporta')}
             </div>
 
@@ -10438,7 +10438,7 @@ export default function App() {
               <span style={{ fontSize: 16 }}>💾</span>
               <div>
                 <strong style={{ display: 'block' }}>{t('esporta.salva_json')}</strong>
-                <span style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 'normal' }}>{t('esporta.salva_json_sub')}</span>
+                <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 'normal' }}>{t('esporta.salva_json_sub')}</span>
               </div>
             </button>
 
@@ -10455,7 +10455,7 @@ export default function App() {
               <span style={{ fontSize: 16 }}>🖨️</span>
               <div>
                 <strong style={{ display: 'block' }}>{t('esporta.stampa_pdf')}</strong>
-                <span style={{ fontSize: 10.5, color: '#fff', opacity: 0.9, fontWeight: 'normal' }}>{t('esporta.stampa_pdf_sub')}</span>
+                <span style={{ fontSize: 11, color: '#fff', opacity: 0.9, fontWeight: 'normal' }}>{t('esporta.stampa_pdf_sub')}</span>
               </div>
             </button>
 
@@ -10470,7 +10470,7 @@ export default function App() {
               <span style={{ fontSize: 16 }}>🔗</span>
               <div>
                 <strong style={{ display: 'block' }}>{t('esporta.condividi_link')}</strong>
-                <span style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 'normal' }}>{t('esporta.condividi_link_sub')}</span>
+                <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 'normal' }}>{t('esporta.condividi_link_sub')}</span>
               </div>
             </button>
 
@@ -10485,7 +10485,7 @@ export default function App() {
               <span style={{ fontSize: 16 }}>🗄️</span>
               <div>
                 <strong style={{ display: 'block' }}>{t('esporta.backup_tutti')}</strong>
-                <span style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 'normal' }}>{t('esporta.backup_tutti_sub')}</span>
+                <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 'normal' }}>{t('esporta.backup_tutti_sub')}</span>
               </div>
             </button>
           </div>
@@ -10538,7 +10538,7 @@ export default function App() {
                       {nuvolettaCorrezioni.titolo}
                     </strong>
                     <button
-                      style={{ ...styles.buttonMini, padding: '1px 6px', fontSize: 10.5, lineHeight: 1 }}
+                      style={{ ...styles.buttonMini, padding: '1px 6px', fontSize: 11, lineHeight: 1 }}
                       onClick={() => setNuvolettaCorrezioni(null)}
                       title={lingua === 'en' ? 'Close' : 'Chiudi'}
                     >✕</button>
@@ -10550,7 +10550,7 @@ export default function App() {
                           <span>{v.icona}</span>
                           <span>{v.campo}</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10.5, flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, flexWrap: 'wrap' }}>
                           <span style={{ textDecoration: 'line-through', opacity: 0.8, color: C.red }}>{v.prima}</span>
                           <span style={{ color: '#2e9d4d', fontWeight: 800 }}>➔</span>
                           <span style={{ color: '#2e9d4d', fontWeight: 700 }}>{v.dopo}</span>
@@ -10572,9 +10572,9 @@ export default function App() {
                       </div>
                       {(scheda.controlliIgnorati || []).length > 0 && (
                         <div style={{ marginTop: 6, paddingTop: 6, borderTop: `1px solid rgba(46, 157, 77, 0.25)`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
-                          <span style={{ ...styles.detail, fontSize: 10.5 }}>{t('notifiche.controlli_ignorati', { n: scheda.controlliIgnorati.length })}</span>
+                          <span style={{ ...styles.detail, fontSize: 11 }}>{t('notifiche.controlli_ignorati', { n: scheda.controlliIgnorati.length })}</span>
                           <button
-                            style={{ ...styles.buttonMini, fontSize: 10.5, padding: '2px 5px' }}
+                            style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 5px' }}
                             onClick={() => aggiorna({ controlliIgnorati: [] })}
                           >
                             {t('notifiche.mostra_ignorati')}
@@ -10592,12 +10592,12 @@ export default function App() {
                     return (
                       <div style={{ border: `1px solid ${certi ? C.red : C.gold}`, borderRadius: 8, padding: '8px 10px', background: certi ? 'color-mix(in srgb, var(--c-panel) 88%, #c83c3c)' : 'color-mix(in srgb, var(--c-panel) 88%, #c88c14)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 6 }}>
-                          <div style={{ fontSize: 12.5, color: C.ink, fontWeight: 700 }}>
+                          <div style={{ fontSize: 13, color: C.ink, fontWeight: 700 }}>
                             ⚠️ {lingua === 'en' ? 'Things to check' : 'Cose da verificare'}
                           </div>
                           {haCorreggibili && (
                             <button
-                              style={{ ...styles.buttonMini, fontSize: 10.5, padding: '3px 7px', background: '#2e9d4d', color: '#fff', borderColor: '#2e9d4d', fontWeight: 700, boxShadow: '0 2px 5px rgba(46,157,77,0.35)' }}
+                              style={{ ...styles.buttonMini, fontSize: 11, padding: '3px 7px', background: '#2e9d4d', color: '#fff', borderColor: '#2e9d4d', fontWeight: 700, boxShadow: '0 2px 5px rgba(46,157,77,0.35)' }}
                               onClick={correggiTuttiControlli}
                               title={lingua === 'en' ? 'Apply all fixes with one click' : 'Applica tutte le correzioni con un click'}
                             >
@@ -10608,7 +10608,7 @@ export default function App() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                           {controlliAttivi.map((r) => (
                             <div key={r.id} style={{ display: 'flex', flexDirection: 'column', gap: 5, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 6, padding: '7px 9px' }}>
-                              <div style={{ fontSize: 11.5, color: C.ink, lineHeight: 1.4 }}>
+                              <div style={{ fontSize: 12, color: C.ink, lineHeight: 1.4 }}>
                                 {r.gravita === 'certo' ? '🔴' : '🟡'} {r.testo}
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6, marginTop: 2, paddingTop: 4, borderTop: `1px solid ${C.border}`, opacity: 0.95 }}>
@@ -10616,7 +10616,7 @@ export default function App() {
                                   <button
                                     style={{
                                       ...styles.buttonMini,
-                                      fontSize: 10.5,
+                                      fontSize: 11,
                                       padding: '2px 8px',
                                       background: r.tipo === 'vai_a_sezione' ? '#8b5cf6' : (r.tipo === 'rimuovi_abilita' ? '#d97706' : '#2e9d4d'),
                                       color: '#fff',
@@ -10637,7 +10637,7 @@ export default function App() {
                                   </button>
                                 )}
                                 <button
-                                  style={{ ...styles.buttonMini, fontSize: 10.5, padding: '2px 8px' }}
+                                  style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px' }}
                                   title={lingua === 'en' ? 'Do not show this again for this character' : 'Non segnalarlo più per questo personaggio'}
                                   onClick={() => aggiorna({ controlliIgnorati: [...ignorati, r.id] })}
                                 >
@@ -10648,7 +10648,7 @@ export default function App() {
                           ))}
                           {ignorati.length > 0 && (
                             <button
-                              style={{ ...styles.buttonMini, fontSize: 10.5, alignSelf: 'flex-start', marginTop: 3 }}
+                              style={{ ...styles.buttonMini, fontSize: 11, alignSelf: 'flex-start', marginTop: 3 }}
                               onClick={() => aggiorna({ controlliIgnorati: [] })}
                             >↺ {lingua === 'en' ? `Show ${ignorati.length} ignored` : `Mostra anche i ${ignorati.length} ignorati`}</button>
                           )}
@@ -10676,7 +10676,7 @@ export default function App() {
                     💾 Scarica backup
                   </button>
                   <button
-                    style={{ ...styles.buttonMini, fontSize: 10.5 }}
+                    style={{ ...styles.buttonMini, fontSize: 11 }}
                     onClick={() => { try { localStorage.setItem('scheda-interattiva:snooze-backup', String(Date.now() + 3 * 24 * 3600 * 1000)); } catch { /* niente */ } setPromemoriaBackup(false); }}
                     title="Ricordamelo tra qualche giorno"
                   >Più tardi</button>
@@ -10697,7 +10697,7 @@ export default function App() {
                     </div>
                     <ul style={{ margin: 0, paddingLeft: 16 }}>
                       {(lingua === 'en' ? n.voci.en : n.voci.it).map((v, i) => (
-                        <li key={i} style={{ fontSize: 11.5, color: C.ink, lineHeight: 1.4 }}>{v}</li>
+                        <li key={i} style={{ fontSize: 12, color: C.ink, lineHeight: 1.4 }}>{v}</li>
                       ))}
                     </ul>
                   </div>
@@ -10708,7 +10708,7 @@ export default function App() {
             {/* SEZIONE 4: RICARICA / AGGIORNAMENTO PWA */}
             <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 8 }}>
               <button
-                style={{ ...styles.button, width: '100%', fontSize: 11.5, padding: '6px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                style={{ ...styles.button, width: '100%', fontSize: 12, padding: '6px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                 onClick={() => {
                   if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.getRegistrations().then((regs) => {
@@ -10752,7 +10752,7 @@ export default function App() {
               {nuvolettaCorrezioni.titolo}
             </strong>
             <button
-              style={{ ...styles.buttonMini, padding: '1px 6px', fontSize: 10.5 }}
+              style={{ ...styles.buttonMini, padding: '1px 6px', fontSize: 11 }}
               onClick={() => setNuvolettaCorrezioni(null)}
               title={lingua === 'en' ? 'Close' : 'Chiudi'}
             >✕</button>
@@ -10764,7 +10764,7 @@ export default function App() {
                   <span>{v.icona}</span>
                   <span>{v.campo}</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10.5, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, flexWrap: 'wrap' }}>
                   <span style={{ textDecoration: 'line-through', opacity: 0.8, color: C.red }}>{v.prima}</span>
                   <span style={{ color: '#2e9d4d', fontWeight: 800 }}>➔</span>
                   <span style={{ color: '#2e9d4d', fontWeight: 700 }}>{v.dopo}</span>
@@ -11016,7 +11016,7 @@ export default function App() {
                   <h2 style={{ ...styles.title, margin: 0, fontSize: 18, lineHeight: 1.2 }}>
                     {lingua === 'it' ? 'Manuali & Fonti di Regole' : 'Sourcebooks & Rulesets'}
                   </h2>
-                  <div style={{ ...styles.detail, fontSize: 11.5, color: C.inkDim, marginTop: 2 }}>
+                  <div style={{ ...styles.detail, fontSize: 12, color: C.inkDim, marginTop: 2 }}>
                     {lingua === 'it' ? 'Attiva o disattiva i manuali di gioco per personalizzare classi e opzioni.' : 'Enable or disable rule sourcebooks to customize classes and options.'}
                   </div>
                 </div>
@@ -11089,17 +11089,17 @@ export default function App() {
                       <span style={{ fontSize: 24, lineHeight: 1 }}>{m.icona}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                          <span style={{ fontWeight: 800, fontSize: 13.5, color: C.ink }}>
+                          <span style={{ fontWeight: 800, fontSize: 14, color: C.ink }}>
                             {lingua === 'it' ? m.nome : m.nomeEn}
                           </span>
                           <span style={{
-                            fontSize: 10.5, fontWeight: 800, padding: '1px 5px', borderRadius: 4,
+                            fontSize: 11, fontWeight: 800, padding: '1px 5px', borderRadius: 4,
                             background: m.colore, color: '#ffffff',
                           }}>
                             {m.codice}
                           </span>
                         </div>
-                        <div style={{ fontSize: 11.5, color: C.inkDim, marginTop: 3, lineHeight: 1.35 }}>
+                        <div style={{ fontSize: 12, color: C.inkDim, marginTop: 3, lineHeight: 1.35 }}>
                           {lingua === 'it' ? m.descrizione : m.descrizioneEn}
                         </div>
                       </div>
@@ -11164,7 +11164,7 @@ export default function App() {
                       ? (lingua === 'en' ? 'Polymorph Artwork' : 'Illustrazione Metamorfosi')
                       : (lingua === 'en' ? 'Wild Shape Beast Artwork' : 'Illustrazione Forma Selvatica')}
                   </h2>
-                  <div style={{ ...styles.detail, fontSize: 11.5, color: C.inkDim, marginTop: 2 }}>
+                  <div style={{ ...styles.detail, fontSize: 12, color: C.inkDim, marginTop: 2 }}>
                     {formaAttiva?.dati?.nome || 'Bestia'} · {lingua === 'en' ? 'Choose official artwork, upload image, or paste URL' : 'Scegli illustrazioni ufficiali, carica un file o incolla un link'}
                   </div>
                 </div>
@@ -11190,7 +11190,7 @@ export default function App() {
                 <div style={{ fontWeight: 800, fontSize: 14, color: C.ink }}>
                   🐾 {formaAttiva?.dati?.nome?.toUpperCase()}
                 </div>
-                <div style={{ fontSize: 11.5, color: C.inkDim, marginTop: 2 }}>
+                <div style={{ fontSize: 12, color: C.inkDim, marginTop: 2 }}>
                   {formaAttiva?.dati?.ritratto ? (lingua === 'en' ? 'Custom portrait active' : 'Ritratto personalizzato attivo') : (lingua === 'en' ? 'Standard D&D vector artwork active' : 'Illustrazione vettoriale standard attiva')}
                 </div>
                 {formaAttiva?.dati?.ritratto && (
@@ -11217,7 +11217,7 @@ export default function App() {
               <strong style={{ display: 'block', fontSize: 13, color: C.ink, marginBottom: 4 }}>
                 📁 {lingua === 'en' ? 'Upload from your device' : 'Carica immagine dal tuo dispositivo'}
               </strong>
-              <div style={{ fontSize: 11.5, color: C.inkDim, marginBottom: 8 }}>
+              <div style={{ fontSize: 12, color: C.inkDim, marginBottom: 8 }}>
                 {lingua === 'en' ? 'Upload any PNG, JPG or WebP image from your computer or phone.' : 'Supporta qualsiasi immagine PNG, JPG o WebP dal tuo computer o smartphone.'}
               </div>
               <button
@@ -11235,7 +11235,7 @@ export default function App() {
               <strong style={{ display: 'block', fontSize: 13, color: C.ink, marginBottom: 4 }}>
                 🌐 {lingua === 'en' ? 'Paste image URL (Internet / AI generated)' : 'Incolla link da internet o immagine generata'}
               </strong>
-              <div style={{ fontSize: 11.5, color: C.inkDim, marginBottom: 8 }}>
+              <div style={{ fontSize: 12, color: C.inkDim, marginBottom: 8 }}>
                 {lingua === 'en' ? 'Paste any direct image URL from D&D Beyond, Pinterest, Midjourney, etc.' : 'Incolla il link diretto di un’illustrazione da Pinterest, Google Immagini, D&D Beyond o generatore AI.'}
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
@@ -11244,7 +11244,7 @@ export default function App() {
                   placeholder="https://.../bestia.jpg"
                   value={urlRitrattoBestiaInput}
                   onChange={(e) => setUrlRitrattoBestiaInput(e.target.value)}
-                  style={{ ...styles.inlineInput, flex: 1, padding: '7px 10px', fontSize: 12.5 }}
+                  style={{ ...styles.inlineInput, flex: 1, padding: '7px 10px', fontSize: 13 }}
                 />
                 <button
                   type="button"
@@ -11315,7 +11315,7 @@ export default function App() {
                       <div style={{ fontSize: 11, fontWeight: 700, textAlign: 'center', color: C.ink, lineHeight: 1.2 }}>
                         {g.nome}
                       </div>
-                      <div style={{ fontSize: 10.5, color: C.inkDim, textAlign: 'center' }}>
+                      <div style={{ fontSize: 11, color: C.inkDim, textAlign: 'center' }}>
                         {g.tag}
                       </div>
                     </div>
@@ -11456,7 +11456,7 @@ export default function App() {
                 border: `1px solid ${effettiSonoriAttivi ? C.goldDark : C.border}`,
                 background: effettiSonoriAttivi ? C.goldDark : C.panelLight,
                 color: effettiSonoriAttivi ? '#ffffff' : C.inkDim,
-                fontWeight: 'bold', fontSize: 11.5, cursor: 'pointer',
+                fontWeight: 'bold', fontSize: 12, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 whiteSpace: 'nowrap', width: '100%', boxSizing: 'border-box',
                 transition: 'all 0.15s ease'
@@ -11479,7 +11479,7 @@ export default function App() {
                 border: `1px solid ${!mutoAudio ? C.goldDark : C.border}`,
                 background: !mutoAudio ? C.goldDark : C.panelLight,
                 color: !mutoAudio ? '#ffffff' : C.inkDim,
-                fontWeight: 'bold', fontSize: 11.5, cursor: 'pointer',
+                fontWeight: 'bold', fontSize: 12, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 whiteSpace: 'nowrap', width: '100%', boxSizing: 'border-box',
                 transition: 'all 0.15s ease'
@@ -11554,13 +11554,13 @@ export default function App() {
                   }}
                 >
                   <span style={{ fontSize: 13 }}>{sfx.icona}</span>
-                  <span style={{ fontSize: 10.5, whiteSpace: 'nowrap' }}>{sfx.label}</span>
+                  <span style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{sfx.label}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          <div style={{ fontSize: 10.5, color: C.inkDim, opacity: 0.8, textAlign: 'center' }}>
+          <div style={{ fontSize: 11, color: C.inkDim, opacity: 0.8, textAlign: 'center' }}>
             🔊 Suoni ambientali ed effetti procedurali · Web Audio API & Freesound CC0
           </div>
         </div>
@@ -11652,7 +11652,7 @@ export default function App() {
               minHeight: 32,
               maxHeight: 32,
               padding: 0,
-              fontSize: 14.5,
+              fontSize: 15,
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -11678,7 +11678,7 @@ export default function App() {
             );
 
             const stileEtichettaInline = {
-              fontSize: 10.5,
+              fontSize: 11,
               fontWeight: 800,
               letterSpacing: 0.6,
               textTransform: 'uppercase',
@@ -11710,9 +11710,9 @@ export default function App() {
                   {/* Sinistra su Desktop: Home standalone, non dentro la barra laterale */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, userSelect: 'none', flexShrink: 0, alignSelf: 'center' }}>
                     <span style={{ fontSize: 18, lineHeight: 1 }}>🎲</span>
-                    <span style={{ fontFamily: "var(--font-title, Georgia, 'Times New Roman', serif)", fontSize: 16.5, fontWeight: 800, color: 'var(--c-title)', letterSpacing: 0.5, whiteSpace: 'nowrap', transition: 'color 0.2s ease', display: 'inline-flex', alignItems: 'center', gap: 2 }}>
+                    <span style={{ fontFamily: "var(--font-title, Georgia, 'Times New Roman', serif)", fontSize: 16, fontWeight: 800, color: 'var(--c-title)', letterSpacing: 0.5, whiteSpace: 'nowrap', transition: 'color 0.2s ease', display: 'inline-flex', alignItems: 'center', gap: 2 }}>
                       Tavolo dei Dadi
-                      <span className="app-version" style={{ fontSize: 10.5, color: C.inkDim, opacity: 0.75, fontWeight: 600, fontVariantNumeric: 'tabular-nums', letterSpacing: 0.3, whiteSpace: 'nowrap', lineHeight: 1, transform: 'translateY(1px)' }}>
+                      <span className="app-version" style={{ fontSize: 11, color: C.inkDim, opacity: 0.75, fontWeight: 600, fontVariantNumeric: 'tabular-nums', letterSpacing: 0.3, whiteSpace: 'nowrap', lineHeight: 1, transform: 'translateY(1px)' }}>
                         v{APP_VERSION}
                       </span>
                     </span>
@@ -11904,7 +11904,7 @@ export default function App() {
                     <span style={{ fontSize: 16, lineHeight: 1 }}>🎲</span>
                     <span style={{ fontFamily: "var(--font-title, Georgia, 'Times New Roman', serif)", fontSize: 15, fontWeight: 800, color: 'var(--c-title)', letterSpacing: 0.4, whiteSpace: 'nowrap', transition: 'color 0.2s ease', display: 'inline-flex', alignItems: 'center', gap: 2 }}>
                       Tavolo dei Dadi
-                      <span className="app-version" style={{ fontSize: 10.5, color: C.inkDim, opacity: 0.7, fontWeight: 600, fontVariantNumeric: 'tabular-nums', letterSpacing: 0.2, whiteSpace: 'nowrap', lineHeight: 1, transform: 'translateY(1px)' }}>
+                      <span className="app-version" style={{ fontSize: 11, color: C.inkDim, opacity: 0.7, fontWeight: 600, fontVariantNumeric: 'tabular-nums', letterSpacing: 0.2, whiteSpace: 'nowrap', lineHeight: 1, transform: 'translateY(1px)' }}>
                         v{APP_VERSION}
                       </span>
                     </span>
@@ -12073,7 +12073,7 @@ export default function App() {
                         ? (lingua === 'en' ? 'ACTIVE POLYMORPH' : 'METAMORFOSI ATTIVA')
                         : (lingua === 'en' ? 'ACTIVE WILD SHAPE' : 'FORMA SELVATICA ATTIVA')}: {lingua === 'en' ? (formaAttiva.dati.nomeEn || formaAttiva.dati.nome) : formaAttiva.dati.nome}
                     </div>
-                    <div style={{ fontSize: 11.5, color: C.inkDim, fontWeight: 600 }}>
+                    <div style={{ fontSize: 12, color: C.inkDim, fontWeight: 600 }}>
                       {formaAttiva.dati.taglia} {formaAttiva.dati.tipo || 'bestia'} · GS {formaAttiva.dati.gs} · 🛡️ CA {formaAttiva.dati.ca} · 🐾 {formaAttiva.dati.velocita?.terra || 9}m
                       {formaAttiva.dati.velocita?.nuoto ? ` · 🏊 ${formaAttiva.dati.velocita.nuoto}m` : ''}
                       {formaAttiva.dati.velocita?.volo ? ` · 🦅 ${formaAttiva.dati.velocita.volo}m` : ''}
@@ -12094,7 +12094,7 @@ export default function App() {
                   </button>
                   <button
                     type="button"
-                    style={{ ...styles.button, background: C.panel, borderColor: C.goldDark, color: C.ink, fontWeight: 700, fontSize: 12.5, padding: '6px 14px', borderRadius: 8 }}
+                    style={{ ...styles.button, background: C.panel, borderColor: C.goldDark, color: C.ink, fontWeight: 700, fontSize: 13, padding: '6px 14px', borderRadius: 8 }}
                     onClick={() => {
                       aggiorna({
                         [campoForma]: { ...formaAttiva.dati, attiva: false }
@@ -12188,9 +12188,9 @@ export default function App() {
                       onClick={() => lanciaD20(`Prova di ${t('attr.' + car)}${sostituita ? ` (${formaAttiva.dati.nome})` : ''}`, mod, { tipoTiro: 'prova' })}
                       title={sostituita ? `Clicca per tirare Prova di ${t('attr.' + car)}: 1d20 ${conSegno(mod)}` : `Tua: non sostituita dalla forma. Clicca per tirare Prova di ${t('attr.' + car)}: 1d20 ${conSegno(mod)}`}
                     >
-                      <div style={{ fontSize: 10.5, fontWeight: 800, textTransform: 'uppercase', color: C.inkDim }}>{sigla} ({sostituita ? 'Forma' : 'Tua'}) 🎲</div>
+                      <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', color: C.inkDim }}>{sigla} ({sostituita ? 'Forma' : 'Tua'}) 🎲</div>
                       <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>
-                        {val} <span style={{ color: C.goldDark, fontSize: 12.5 }}>({conSegno(mod)})</span>
+                        {val} <span style={{ color: C.goldDark, fontSize: 13 }}>({conSegno(mod)})</span>
                       </div>
                     </div>
                   );
@@ -12201,12 +12201,12 @@ export default function App() {
               {((formaAttiva.dati.tratti && formaAttiva.dati.tratti.length > 0) || formaAttiva.dati.sensi) && (
                 <div style={{ marginBottom: 10, background: 'rgba(0,0,0,0.02)', padding: '6px 10px', borderRadius: 6, border: `1px dashed ${C.border}` }}>
                   {formaAttiva.dati.sensi && (
-                    <div style={{ fontSize: 11.5, color: C.inkDim, marginBottom: (formaAttiva.dati.tratti && formaAttiva.dati.tratti.length > 0) ? 4 : 0 }}>
+                    <div style={{ fontSize: 12, color: C.inkDim, marginBottom: (formaAttiva.dati.tratti && formaAttiva.dati.tratti.length > 0) ? 4 : 0 }}>
                       👁️ <strong>{lingua === 'en' ? 'Senses' : 'Sensi'}:</strong> {formaAttiva.dati.sensi}
                     </div>
                   )}
                   {formaAttiva.dati.tratti && formaAttiva.dati.tratti.map((tratto, tIdx) => (
-                    <div key={tIdx} style={{ fontSize: 11.5, color: C.ink, lineHeight: 1.35, marginTop: 2 }}>
+                    <div key={tIdx} style={{ fontSize: 12, color: C.ink, lineHeight: 1.35, marginTop: 2 }}>
                       ✨ <em>{typeof tratto === 'string' ? tratto : tratto.nome}</em>
                     </div>
                   ))}
@@ -12216,7 +12216,7 @@ export default function App() {
               {/* Azioni & Attacchi della Bestia */}
               {formaAttiva.dati.azioni && formaAttiva.dati.azioni.length > 0 && (
                 <div>
-                  <div style={{ fontSize: 11.5, fontWeight: 800, textTransform: 'uppercase', color: C.goldDark, marginBottom: 6 }}>
+                  <div style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', color: C.goldDark, marginBottom: 6 }}>
                     ⚔️ {lingua === 'en' ? 'Beast Attacks & Actions' : 'Azioni & Attacchi della Bestia'}
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -12226,7 +12226,7 @@ export default function App() {
                         <div
                           key={idx}
                           style={{
-                            fontSize: 12.5,
+                            fontSize: 13,
                             padding: '8px 10px',
                             background: C.panel,
                             border: `1px solid ${C.border}`,
@@ -12242,7 +12242,7 @@ export default function App() {
                               ⚔️ {az.nome}
                             </span>
                             {az.cd != null && (
-                              <span style={{ fontSize: 10.5, fontWeight: 700, padding: '2px 6px', background: 'rgba(214,169,15,0.18)', color: C.goldDark, borderRadius: 6, border: `1px solid ${C.gold}` }}>
+                              <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 6px', background: 'rgba(214,169,15,0.18)', color: C.goldDark, borderRadius: 6, border: `1px solid ${C.gold}` }}>
                                 🛡️ CD {az.cd}
                               </span>
                             )}
@@ -12259,7 +12259,7 @@ export default function App() {
                                   type="button"
                                   style={{
                                     ...styles.buttonPrimary,
-                                    fontSize: 11.5,
+                                    fontSize: 12,
                                     padding: '4px 10px',
                                     borderRadius: 6,
                                     fontWeight: 800,
@@ -12288,7 +12288,7 @@ export default function App() {
                                   type="button"
                                   style={{
                                     ...styles.button,
-                                    fontSize: 11.5,
+                                    fontSize: 12,
                                     padding: '4px 10px',
                                     borderRadius: 6,
                                     fontWeight: 800,
@@ -12393,7 +12393,7 @@ export default function App() {
                           {scheda.ispirazione ? '★' : '☆'}
                         </span>
                         <span style={{
-                          fontSize: 10.5, fontWeight: 700,
+                          fontSize: 11, fontWeight: 700,
                           color: scheda.ispirazione ? '#f0c43f' : '#ddd',
                           letterSpacing: 0.5,
                           textTransform: 'uppercase',
@@ -12409,7 +12409,7 @@ export default function App() {
                             alt={`${campoForma === 'metamorfosi' ? 'Metamorfosi' : 'Forma Selvatica'}: ${formaAttiva.dati.nome}`}
                             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                           />
-                          <div style={{ position: 'absolute', top: 6, right: 6, zIndex: 3, background: 'rgba(8, 28, 21, 0.92)', color: '#d8f3dc', border: '1px solid #52b788', borderRadius: 6, fontSize: 10.5, fontWeight: 800, padding: '2px 6px', textTransform: 'uppercase', letterSpacing: 0.5, boxShadow: '0 2px 6px rgba(0,0,0,0.4)' }}>
+                          <div style={{ position: 'absolute', top: 6, right: 6, zIndex: 3, background: 'rgba(8, 28, 21, 0.92)', color: '#d8f3dc', border: '1px solid #52b788', borderRadius: 6, fontSize: 11, fontWeight: 800, padding: '2px 6px', textTransform: 'uppercase', letterSpacing: 0.5, boxShadow: '0 2px 6px rgba(0,0,0,0.4)' }}>
                             {campoForma === 'metamorfosi' ? '🔮' : '🐾'} {campoForma === 'metamorfosi' ? (lingua === 'en' ? 'Polymorph' : 'Metamorfosi') : (lingua === 'en' ? 'Beast' : 'Bestia')}
                           </div>
                           <button
@@ -12417,7 +12417,7 @@ export default function App() {
                             style={{
                               position: 'absolute', top: 6, left: 6, zIndex: 3,
                               background: 'rgba(8, 28, 21, 0.9)', color: '#d8f3dc',
-                              border: '1px solid #52b788', borderRadius: 6, fontSize: 10.5,
+                              border: '1px solid #52b788', borderRadius: 6, fontSize: 11,
                               fontWeight: 800, padding: '2px 6px', cursor: 'pointer',
                               display: 'flex', alignItems: 'center', gap: 3,
                               boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
@@ -12448,7 +12448,7 @@ export default function App() {
                               alt={`Ritratto di ${scheda.nome}`}
                               style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                             />
-                            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.35)', color: '#fff', fontSize: 10.5, letterSpacing: 1, textAlign: 'center', padding: '2px 0' }}>{t("profilo.ritratto")}</div>
+                            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.35)', color: '#fff', fontSize: 11, letterSpacing: 1, textAlign: 'center', padding: '2px 0' }}>{t("profilo.ritratto")}</div>
                           </div>
                         )
                       )}
@@ -12626,7 +12626,7 @@ export default function App() {
                             : <Editable value={r.max} tipo="numero" width={30} onChange={(v) => modifica({ max: Math.max(0, v), attuali: Math.min(Math.max(0, v), r.attuali) })} />}
                           </span>
                           {automatica ? (
-                            <span style={{ ...styles.detail, fontSize: 10.5, whiteSpace: 'nowrap', marginLeft: 'auto' }} title={t('tip.quando_ricarica')}>↻ {r.reset === 'breve' ? t('res.breve') : t('res.lungo')}</span>
+                            <span style={{ ...styles.detail, fontSize: 11, whiteSpace: 'nowrap', marginLeft: 'auto' }} title={t('tip.quando_ricarica')}>↻ {r.reset === 'breve' ? t('res.breve') : t('res.lungo')}</span>
                           ) : (
                             <select
                               style={{ ...styles.inlineInput, fontSize: 11, padding: '1px 3px', width: 'auto', marginLeft: 'auto' }}
@@ -12770,7 +12770,7 @@ export default function App() {
                           </span>
                           <span
                             style={{
-                              fontSize: 10.5,
+                              fontSize: 11,
                               color: '#1b4332',
                               background: 'rgba(46,125,50,0.15)',
                               border: '1px solid #52b788',
@@ -12838,20 +12838,20 @@ export default function App() {
                         }}
                         title={t('profilo.pe_tooltip')}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11.5, fontWeight: 700, color: C.ink, whiteSpace: 'nowrap', gap: 4 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, fontWeight: 700, color: C.ink, whiteSpace: 'nowrap', gap: 4 }}>
                           <span>{Number(scheda.pe || 0).toLocaleString()}</span>
                           {(() => {
                             const livTotale = (Number(scheda.livello) || 1) + ((scheda.multiclasse || []).reduce((a, m) => a + (Number(m.livello) || 0), 0));
                             const infoPe = dettagliEsperienza(scheda.pe, livTotale);
                             if (infoPe.puoSalire) {
                               return (
-                                <span style={{ fontSize: 10.5, fontWeight: 700, color: '#10b981', background: 'rgba(16,185,129,0.12)', border: '1px solid #10b981', padding: '0 4px', borderRadius: 3 }}>
+                                <span style={{ fontSize: 11, fontWeight: 700, color: '#10b981', background: 'rgba(16,185,129,0.12)', border: '1px solid #10b981', padding: '0 4px', borderRadius: 3 }}>
                                   ✨ Up!
                                 </span>
                               );
                             }
                             return (
-                              <span style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 400 }}>
+                              <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 400 }}>
                                 {infoPe.percentuale}%
                               </span>
                             );
@@ -13014,7 +13014,7 @@ export default function App() {
                   >
                     🔄 {t('mc.applica')}
                   </button>
-                  <span style={{ ...styles.detail, fontSize: 10.5, opacity: 0.8 }}>
+                  <span style={{ ...styles.detail, fontSize: 11, opacity: 0.8 }}>
                     Aggiorna competenza, DV, slot e compila i privilegi di tutte le classi.
                   </span>
                 </div>
@@ -13058,7 +13058,7 @@ export default function App() {
                             </div>
                           )}
                           {/* Overlay cliccabile per modificare PF attuali */}
-                          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13.5, textShadow: '0 1px 3px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.8)', letterSpacing: 0.5, gap: 4 }}>
+                          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, textShadow: '0 1px 3px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.8)', letterSpacing: 0.5, gap: 4 }}>
                             <span style={{ color: '#fff', cursor: 'pointer' }}>
                               <Editable
                                 value={att}
@@ -13086,7 +13086,7 @@ export default function App() {
                                   }
                                 }}
                                 width={34}
-                                style={{ color: '#fff', fontWeight: 800, fontSize: 13.5, textShadow: '0 1px 3px rgba(0,0,0,0.9)', background: 'transparent', border: 'none' }}
+                                style={{ color: '#fff', fontWeight: 800, fontSize: 14, textShadow: '0 1px 3px rgba(0,0,0,0.9)', background: 'transparent', border: 'none' }}
                               />
                             </span>
                             <span style={{ color: '#fff' }}>/</span>
@@ -13116,7 +13116,7 @@ export default function App() {
                                   }
                                 }}
                                 width={34}
-                                style={{ color: '#fff', fontWeight: 800, fontSize: 13.5, textShadow: '0 1px 3px rgba(0,0,0,0.9)', background: 'transparent', border: 'none' }}
+                                style={{ color: '#fff', fontWeight: 800, fontSize: 14, textShadow: '0 1px 3px rgba(0,0,0,0.9)', background: 'transparent', border: 'none' }}
                               />
                               {!isTrasformato && <BadgePotere scheda={scheda} bersaglio="pf_massimi" unita="" />}
                               {!isTrasformato && <BadgeSfinimento scheda={scheda} bersaglio="pf_massimi" />}
@@ -13129,7 +13129,7 @@ export default function App() {
                     {/* PF Temporanei / Info PF Druido se in Forma Bestiale */}
                     {isTrasformato ? (
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, margin: '3px 0 4px' }}>
-                        <span style={{ fontSize: 10.5, color: C.inkDim, background: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: 6, border: `1px solid ${C.border}` }}>
+                        <span style={{ fontSize: 11, color: C.inkDim, background: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: 6, border: `1px solid ${C.border}` }}>
                           👤 {lingua === 'en' ? 'Humanoid HP (preserved)' : 'PF Umanoide (preservati)'}: <strong>{scheda.pfAttuali} / {scheda.pfMax}</strong>
                         </span>
                       </div>
@@ -13139,7 +13139,7 @@ export default function App() {
                           style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#42a5f5', background: 'rgba(66,165,245,0.12)', border: '1px solid rgba(66,165,245,0.45)', borderRadius: 10, padding: '1px 8px' }}
                           title={t('vital.temporanei')}
                         >
-                          🛡️ <span style={{ fontSize: 10.5, color: C.inkDim, letterSpacing: 0.4, textTransform: 'uppercase' }}>{t("vital.temporanei")}</span>
+                          🛡️ <span style={{ fontSize: 11, color: C.inkDim, letterSpacing: 0.4, textTransform: 'uppercase' }}>{t("vital.temporanei")}</span>
                           <Editable value={scheda.pfTemp} tipo="numero" onChange={(v) => aggiorna({ pfTemp: v })} width={24} style={{ fontSize: 12, fontWeight: 'bold', color: '#42a5f5' }} />
                         </span>
                       </div>
@@ -13245,7 +13245,7 @@ export default function App() {
                               </strong>
                               {' · '}{t('vital.spesi')}{' '}
                               <select
-                                style={{ ...styles.inlineInput, fontSize: 10.5, padding: '1px 3px' }}
+                                style={{ ...styles.inlineInput, fontSize: 11, padding: '1px 3px' }}
                                 value={Math.min(Math.max(0, spesiMapDV[g.facce] || 0), g.quantita)}
                                 onChange={(e) => aggiorna({ dadiVitaSpesi: { ...spesiMapDV, [g.facce]: Number(e.target.value) } })}
                                 title={t('vital.spesi_tooltip')}
@@ -13256,7 +13256,7 @@ export default function App() {
                               </select>
                               <span style={{ color: C.inkDim }}>/ {g.quantita}</span>
                               <button
-                                style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 10.5, color: C.green, borderColor: C.green }}
+                                style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 11, color: C.green, borderColor: C.green }}
                                 title={t('vital.usa_tooltip')}
                                 disabled={(spesiMapDV[g.facce] || 0) >= g.quantita}
                                 onClick={() => tiraDadoVita(g.facce)}
@@ -13283,7 +13283,7 @@ export default function App() {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>
                         {/* 3 sopra: Successi */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span style={{ fontSize: 12.5, fontWeight: 700, color: C.green, minWidth: 76, textAlign: 'right' }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: C.green, minWidth: 76, textAlign: 'right' }}>
                             ✔ {lingua === 'en' ? 'Successes' : 'Successi'}
                           </span>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -13325,7 +13325,7 @@ export default function App() {
 
                         {/* 3 sotto: Fallimenti */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span style={{ fontSize: 12.5, fontWeight: 700, color: C.red, minWidth: 76, textAlign: 'right' }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: C.red, minWidth: 76, textAlign: 'right' }}>
                             ✘ {lingua === 'en' ? 'Failures' : 'Fallimenti'}
                           </span>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -13378,7 +13378,7 @@ export default function App() {
                         </button>
                         {scheda.pfAttuali <= 0 && (
                           <button
-                            style={{ ...styles.buttonMini, fontSize: 11.5, color: C.red, borderColor: C.red, fontWeight: 700, padding: '3px 8px', borderRadius: 6, background: 'rgba(231,76,60,0.08)' }}
+                            style={{ ...styles.buttonMini, fontSize: 12, color: C.red, borderColor: C.red, fontWeight: 700, padding: '3px 8px', borderRadius: 6, background: 'rgba(231,76,60,0.08)' }}
                             onClick={tiroSalvezzaMorte}
                             disabled={rolling || (scheda.tsMorte?.successi || 0) >= 3 || (scheda.tsMorte?.fallimenti || 0) >= 3}
                             title="Tira 1d20 TS Morte"
@@ -13409,7 +13409,7 @@ export default function App() {
                       {caTotale(scheda)}
                       <BadgePotere scheda={scheda} bersaglio="ca" />
                       {bonusCopertura(scheda).ca > 0 && (
-                        <span style={{ fontSize: 10.5, color: '#2e9d4d', fontWeight: 800, marginLeft: 3 }} title={bonusCopertura(scheda).labelIt}>
+                        <span style={{ fontSize: 11, color: '#2e9d4d', fontWeight: 800, marginLeft: 3 }} title={bonusCopertura(scheda).labelIt}>
                           (+{bonusCopertura(scheda).ca})
                         </span>
                       )}
@@ -13417,7 +13417,7 @@ export default function App() {
                   )}
                 </div>
                 <select
-                  style={{ ...styles.inlineInput, fontSize: 10.5, padding: '1px 3px', maxWidth: '100%', marginTop: 2 }}
+                  style={{ ...styles.inlineInput, fontSize: 11, padding: '1px 3px', maxWidth: '100%', marginTop: 2 }}
                   value={scheda.armatura.tipo}
                   onChange={(e) => {
                     const tipo = e.target.value;
@@ -13435,7 +13435,7 @@ export default function App() {
                     return <option key={ta.key} value={ta.key} disabled={bloccato}>{t('armor.' + ta.key)}</option>;
                   })}
                 </select>
-                <div style={{ fontSize: 10.5, color: C.inkDim, display: 'flex', gap: 5, alignItems: 'center', justifyContent: 'center', marginTop: 4, flexWrap: 'wrap' }}>
+                <div style={{ fontSize: 11, color: C.inkDim, display: 'flex', gap: 5, alignItems: 'center', justifyContent: 'center', marginTop: 4, flexWrap: 'wrap' }}>
                   {(scheda.armatura.tipo === 'leggera' || scheda.armatura.tipo === 'media' || scheda.armatura.tipo === 'pesante') && (
                     <span title={`CA base dell'armatura. Esempi: ${ESEMPI_ARMATURA[scheda.armatura.tipo]}`}>base <Editable value={scheda.armatura.base} tipo="numero" width={24} onChange={(v) => aggiorna({ armatura: { ...scheda.armatura, base: Math.max(0, v) } })} /></span>
                   )}
@@ -13461,7 +13461,7 @@ export default function App() {
                 </div>
                 <div style={{ marginTop: 3, width: '100%' }}>
                   <select
-                    style={{ ...styles.inlineInput, fontSize: 10.5, padding: '1px 3px', width: '100%', maxWidth: '100%', color: (scheda.copertura && scheda.copertura !== 'nessuna') ? '#2e9d4d' : C.inkDim, fontWeight: (scheda.copertura && scheda.copertura !== 'nessuna') ? 700 : 400 }}
+                    style={{ ...styles.inlineInput, fontSize: 11, padding: '1px 3px', width: '100%', maxWidth: '100%', color: (scheda.copertura && scheda.copertura !== 'nessuna') ? '#2e9d4d' : C.inkDim, fontWeight: (scheda.copertura && scheda.copertura !== 'nessuna') ? 700 : 400 }}
                     value={scheda.copertura || 'nessuna'}
                     onChange={(e) => {
                       const v = e.target.value;
@@ -13479,7 +13479,7 @@ export default function App() {
                   </select>
                 </div>
                 {(!competenteInArmatura(scheda, scheda.armatura.tipo) || (scheda.armatura.scudo && !scheda.addestramento?.armature?.scudi)) && (
-                  <div style={{ fontSize: 10.5, color: C.red, marginTop: 3, lineHeight: 1.2 }} title={t('tip.senza_comp_armatura')}>
+                  <div style={{ fontSize: 11, color: C.red, marginTop: 3, lineHeight: 1.2 }} title={t('tip.senza_comp_armatura')}>
                     ⚠️ Non competente{!competenteInArmatura(scheda, scheda.armatura.tipo) ? ` (${scheda.armatura.tipo})` : ''}{scheda.armatura.scudo && !scheda.addestramento?.armature?.scudi ? ' (scudo)' : ''}
                   </div>
                 )}
@@ -13503,7 +13503,7 @@ export default function App() {
                   const bcAtteso = bonusCompetenzaDaLivello(livTot);
                   if (scheda.bonusCompetenza !== bcAtteso) {
                     return (
-                      <span className="tirabile" style={{ fontSize: 10.5, color: C.goldDark, cursor: 'pointer', marginTop: 1 }}
+                      <span className="tirabile" style={{ fontSize: 11, color: C.goldDark, cursor: 'pointer', marginTop: 1 }}
                         title={`Bonus corretto per liv. ${livTot}: ${conSegno(bcAtteso)}`}
                         onClick={() => aggiorna({ bonusCompetenza: bcAtteso })}>
                         auto {conSegno(bcAtteso)}
@@ -13542,7 +13542,7 @@ export default function App() {
                     {Object.entries(formaAttiva.dati.velocita || {})
                       .filter(([k]) => k !== 'terra')
                       .map(([k, v]) => (
-                        <span key={k} style={{ fontSize: 10.5, color: '#2e7d32', fontWeight: 700, marginLeft: 2 }} title={`${k}: ${v}m`}>
+                        <span key={k} style={{ fontSize: 11, color: '#2e7d32', fontWeight: 700, marginLeft: 2 }} title={`${k}: ${v}m`}>
                           {k === 'volo' ? '🦅' : k === 'nuoto' ? '🏊' : k === 'scalata' ? '🧗' : '⛏️'}{v}m
                         </span>
                       ))}
@@ -13550,7 +13550,7 @@ export default function App() {
                 ) : (
                   <div style={styles.vitalValue}>
                     <Editable value={scheda.velocita} tipo="numero" onChange={(v) => aggiorna({ velocita: v })} width={48} />
-                    <span style={{ fontSize: 17, color: C.inkDim, marginLeft: 2, fontWeight: 600 }}> m</span>
+                    <span style={{ fontSize: 18, color: C.inkDim, marginLeft: 2, fontWeight: 600 }}> m</span>
                     <BadgePotere scheda={scheda} bersaglio="velocita" />
                     <BadgeSfinimento scheda={scheda} bersaglio="velocita" />
                   </div>
@@ -13558,7 +13558,7 @@ export default function App() {
                 <div
                   onClick={() => setMostraModalMovimento(true)}
                   style={{
-                    fontSize: 10.5,
+                    fontSize: 11,
                     color: C.goldDark,
                     textAlign: 'center',
                     fontWeight: 600,
@@ -13577,7 +13577,7 @@ export default function App() {
                   title={lingua === 'en' ? 'Click to open Movement, Jump & Carrying Calculator' : 'Clicca per aprire il Calcolatore Salti, Movimento e Capacità Fisiche'}
                 >
                   <span>{t('vital.movimenti')}</span>
-                  <span style={{ fontSize: 10.5, opacity: 0.8 }}>▼</span>
+                  <span style={{ fontSize: 11, opacity: 0.8 }}>▼</span>
                 </div>
               </div>
             </div>
@@ -13590,7 +13590,7 @@ export default function App() {
                   <button style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 13 }} onClick={() => aggiorna({ sfinimento: Math.min(6, scheda.sfinimento + 1) })} title={t('tip.aumenta')}>+</button>
                 </div>
                 {scheda.sfinimento > 0 && (
-                  <div style={{ fontSize: 10.5, color: C.red }} title={versione === '2024' ? 'Regole 2024: −2 ai tiri di d20 per livello' : `Regole 2014: ${SFINIMENTO_2014[scheda.sfinimento]}`}>
+                  <div style={{ fontSize: 11, color: C.red }} title={versione === '2024' ? 'Regole 2024: −2 ai tiri di d20 per livello' : `Regole 2014: ${SFINIMENTO_2014[scheda.sfinimento]}`}>
                     {versione === '2024' ? `−${scheda.sfinimento * 2}` : SFINIMENTO_2014[scheda.sfinimento]}
                   </div>
                 )}
@@ -13607,7 +13607,7 @@ export default function App() {
                 <div style={styles.vitalLabel}>{t("vital.visione")}</div>
                 <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                   {isTrasformato && formaAttiva.dati.sensi ? (
-                    <div style={{ fontSize: 11.5, fontWeight: 700, color: '#2e7d32', textAlign: 'center', padding: '0 4px', lineHeight: 1.25 }} title={`Sensi della Bestia: ${formaAttiva.dati.sensi}`}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#2e7d32', textAlign: 'center', padding: '0 4px', lineHeight: 1.25 }} title={`Sensi della Bestia: ${formaAttiva.dati.sensi}`}>
                       🐾 {formaAttiva.dati.sensi}
                     </div>
                   ) : (
@@ -13656,7 +13656,7 @@ export default function App() {
                           border: `1px solid ${scheda.effettoTaglia === 'ingrandito' ? (C.green || '#2e7d32') : (C.red || '#c0392b')}`,
                           borderRadius: 6,
                           padding: '2px 7px',
-                          fontSize: 11.5,
+                          fontSize: 12,
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: 4,
@@ -13685,7 +13685,7 @@ export default function App() {
                             border: `1px solid ${col.border}`,
                             borderRadius: 6,
                             padding: '2px 7px',
-                            fontSize: 11.5,
+                            fontSize: 12,
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: 4,
@@ -13712,7 +13712,7 @@ export default function App() {
                         position: 'relative',
                         fontWeight: 700,
                         padding: '2px 6px',
-                        fontSize: 11.5,
+                        fontSize: 12,
                         display: 'inline-flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -13765,11 +13765,11 @@ export default function App() {
                     <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 3 }}>
                       <div
                         className="car-header-label"
-                        style={{ minWidth: 0, fontSize: 11.5, color: C.ink, letterSpacing: 0.2, fontWeight: 'bold', cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                        style={{ minWidth: 0, fontSize: 12, color: C.ink, letterSpacing: 0.2, fontWeight: 'bold', cursor: 'help', textDecoration: 'underline dotted', textUnderlineOffset: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                         title={t('tip.cosa_governa')}
                         onClick={() => setInfo({ titolo: t('attr.' + key), testo: t('spieg.' + key) })}
                       >{t('attr.' + key).toUpperCase()}</div>
-                      <div style={{ flexShrink: 0, fontSize: 14.5, fontWeight: 'bold', color: C.goldDark, display: 'flex', alignItems: 'center' }} title={t('tip.punteggio_car')}>
+                      <div style={{ flexShrink: 0, fontSize: 15, fontWeight: 'bold', color: C.goldDark, display: 'flex', alignItems: 'center' }} title={t('tip.punteggio_car')}>
                         <Editable
                           value={scheda.caratteristiche[key]}
                           tipo="numero"
@@ -13843,7 +13843,7 @@ export default function App() {
                         <strong style={{ width: 26, flexShrink: 0, textAlign: 'center' }}>{conSegno(bonusTS)}</strong>
                         <em className="skill-nome" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0, flex: 1 }}>{t('attr.tiro_salvezza')}</em>
                         {tsMancante && (
-                          <span style={{ marginLeft: 'auto', fontSize: 10.5, color: C.red, fontWeight: 700 }}>⚠️ Manca</span>
+                          <span style={{ marginLeft: 'auto', fontSize: 11, color: C.red, fontWeight: 700 }}>⚠️ Manca</span>
                         )}
                         {(() => {
                           const bonusOggettiTS = bonusTiriSalvezzaOggetti(scheda);
@@ -13860,7 +13860,7 @@ export default function App() {
                                   setFontePopover((v) => (v && v.tipo === 'ts' && v.key === key ? null : { tipo: 'ts', key, ...posizionePopover(r, window) }));
                                 }}
                                 title={t('inv.fonte_bonus_tip')}
-                                style={{ ...styles.buttonMini, fontSize: 10.5, padding: '0 5px', height: 18, lineHeight: '16px', color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.12)' }}
+                                style={{ ...styles.buttonMini, fontSize: 11, padding: '0 5px', height: 18, lineHeight: '16px', color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.12)' }}
                               >✨ +{bonusOggettiTS}</button>
                               {fontePopover?.tipo === 'ts' && fontePopover.key === key && createPortal(
                                 <div
@@ -13923,7 +13923,7 @@ export default function App() {
                           title={lingua === 'en' ? 'Click for 5e rules, DCs, and tool synergies' : 'Click per guida 5e, CD di riferimento e sinergie con strumenti'}
                         >{t('skill.' + a.key)}</span>
                         {abMancante && (
-                          <span style={{ marginLeft: 'auto', fontSize: 10.5, color: C.red, fontWeight: 700 }}>⚠️ Manca</span>
+                          <span style={{ marginLeft: 'auto', fontSize: 11, color: C.red, fontWeight: 700 }}>⚠️ Manca</span>
                         )}
                       </Rollable>
                     );
@@ -14151,7 +14151,7 @@ export default function App() {
 
                     {/* Riga Movimento Residuo (sempre visibile) */}
                     <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6, background: C.panel, padding: '6px 10px', borderRadius: 8, border: `1px solid ${C.border}` }}>
-                      <span style={{ fontSize: 11.5, fontWeight: 700, color: C.ink }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: C.ink }}>
                         🏃 {lingua === 'en' ? 'Move:' : 'Movimento:'}{' '}
                         <strong style={{ color: turno.movimentoRimanente > 0 ? '#2e9d4d' : C.red, fontSize: 13 }}>
                           {turno.movimentoRimanente}m
@@ -14162,7 +14162,7 @@ export default function App() {
                         <button
                           type="button"
                           onClick={() => setTurno({ movimentoUsato: Math.min(turno.movimentoMax, turno.movimentoUsato + 1.5) })}
-                          style={{ ...styles.buttonMini, fontSize: 10.5, padding: '1px 5px' }}
+                          style={{ ...styles.buttonMini, fontSize: 11, padding: '1px 5px' }}
                           title="-1.5m (1 quadretto)"
                         >
                           −1.5m
@@ -14170,7 +14170,7 @@ export default function App() {
                         <button
                           type="button"
                           onClick={() => setTurno({ movimentoUsato: Math.min(turno.movimentoMax, turno.movimentoUsato + 3) })}
-                          style={{ ...styles.buttonMini, fontSize: 10.5, padding: '1px 5px' }}
+                          style={{ ...styles.buttonMini, fontSize: 11, padding: '1px 5px' }}
                           title="-3m (2 quadretti)"
                         >
                           −3m
@@ -14179,7 +14179,7 @@ export default function App() {
                           <button
                             type="button"
                             onClick={() => setTurno({ movimentoUsato: 0 })}
-                            style={{ ...styles.buttonMini, fontSize: 10.5, padding: '1px 5px', color: C.inkDim }}
+                            style={{ ...styles.buttonMini, fontSize: 11, padding: '1px 5px', color: C.inkDim }}
                             title="Ripristina movimento intero"
                           >
                             ↺
@@ -14197,11 +14197,11 @@ export default function App() {
                         : (lingua === 'en' ? 'Click to expand' : 'Clicca per espandere')}
                     >
                       <span style={{ color: C.goldDark, fontSize: 12, fontWeight: 800 }}>{azioniAltreAperte ? '▾' : '▸'}</span>
-                      <span style={{ fontSize: 11.5, fontWeight: 700, color: C.inkDim }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: C.inkDim }}>
                         {lingua === 'en' ? 'More options (Tactics, Cover, Class Powers)' : 'Altre opzioni (Tattiche, Copertura, Poteri)'}
                       </span>
                       {azioniAvanzateAttive && !azioniAltreAperte && (
-                        <span style={{ fontSize: 10.5, fontWeight: 700, color: C.goldDark, background: 'rgba(201,162,39,0.18)', border: `1px solid ${C.gold}`, borderRadius: 999, padding: '1px 7px' }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: C.goldDark, background: 'rgba(201,162,39,0.18)', border: `1px solid ${C.gold}`, borderRadius: 999, padding: '1px 7px' }}>
                           {lingua === 'en' ? 'active' : 'attive'}
                         </span>
                       )}
@@ -14216,7 +14216,7 @@ export default function App() {
                             onClick={() => setTurno({ interazione: !turno.interazioneUsata })}
                             style={{
                               ...styles.buttonMini,
-                              fontSize: 10.5,
+                              fontSize: 11,
                               padding: '2px 6px',
                               fontWeight: turno.interazioneUsata ? 700 : 500,
                               background: turno.interazioneUsata ? 'rgba(239,68,68,0.08)' : 'transparent',
@@ -14232,7 +14232,7 @@ export default function App() {
                             onClick={() => applicaTattica('schivata')}
                             style={{
                               ...styles.buttonMini,
-                              fontSize: 10.5,
+                              fontSize: 11,
                               padding: '2px 6px',
                               background: turno.tatticaAttiva === 'schivata' ? 'rgba(201,162,39,0.2)' : 'transparent',
                               borderColor: turno.tatticaAttiva === 'schivata' ? C.goldDark : C.border,
@@ -14247,7 +14247,7 @@ export default function App() {
                             onClick={() => applicaTattica('disimpegno')}
                             style={{
                               ...styles.buttonMini,
-                              fontSize: 10.5,
+                              fontSize: 11,
                               padding: '2px 6px',
                               background: turno.tatticaAttiva === 'disimpegno' ? 'rgba(59,130,246,0.2)' : 'transparent',
                               borderColor: turno.tatticaAttiva === 'disimpegno' ? '#3b82f6' : C.border,
@@ -14262,7 +14262,7 @@ export default function App() {
                             onClick={() => applicaTattica('scatto')}
                             style={{
                               ...styles.buttonMini,
-                              fontSize: 10.5,
+                              fontSize: 11,
                               padding: '2px 6px',
                               background: turno.tatticaAttiva === 'scatto' ? 'rgba(16,185,129,0.2)' : 'transparent',
                               borderColor: turno.tatticaAttiva === 'scatto' ? '#10b981' : C.border,
@@ -14275,7 +14275,7 @@ export default function App() {
                           <button
                             type="button"
                             onClick={() => applicaTattica('nascondersi')}
-                            style={{ ...styles.buttonMini, fontSize: 10.5, padding: '2px 6px' }}
+                            style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 6px' }}
                             title={lingua === 'en' ? 'Hide action (Stealth check)' : 'Azione Nascondersi (prova rapida di Furtività)'}
                           >
                             🙈 {lingua === 'en' ? 'Hide' : 'Nasconditi'}
@@ -14283,7 +14283,7 @@ export default function App() {
                           <button
                             type="button"
                             onClick={() => applicaTattica('aiuto')}
-                            style={{ ...styles.buttonMini, fontSize: 10.5, padding: '2px 6px' }}
+                            style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 6px' }}
                             title={lingua === 'en' ? 'Help action (grants advantage to an ally)' : 'Azione Aiuto (concede vantaggio a un alleato)'}
                           >
                             🤝 {lingua === 'en' ? 'Help' : 'Aiuta'}
@@ -14319,7 +14319,7 @@ export default function App() {
                                   }}
                                   style={{
                                     ...styles.buttonMini,
-                                    fontSize: 10.5,
+                                    fontSize: 11,
                                     padding: '2px 7px',
                                     fontWeight: attivo ? 700 : 500,
                                     background: attivo ? (cop.ca >= 5 ? 'rgba(239,68,68,0.18)' : cop.ca >= 2 ? 'rgba(46,157,77,0.18)' : 'rgba(201,162,39,0.18)') : 'transparent',
@@ -14368,7 +14368,7 @@ export default function App() {
                                     }}
                                     style={{
                                       ...styles.buttonMini,
-                                      fontSize: 10.5,
+                                      fontSize: 11,
                                       padding: '2px 7px',
                                       fontWeight: scheda.applicaFurtivo ? 700 : 500,
                                       background: scheda.applicaFurtivo ? 'rgba(46,157,77,0.18)' : 'transparent',
@@ -14400,7 +14400,7 @@ export default function App() {
                                     }}
                                     style={{
                                       ...styles.buttonMini,
-                                      fontSize: 10.5,
+                                      fontSize: 11,
                                       padding: '2px 7px',
                                       fontWeight: scheda.inIra ? 700 : 500,
                                       background: scheda.inIra ? 'rgba(239,68,68,0.2)' : 'transparent',
@@ -14427,7 +14427,7 @@ export default function App() {
                                     }}
                                     style={{
                                       ...styles.buttonMini,
-                                      fontSize: 10.5,
+                                      fontSize: 11,
                                       padding: '2px 7px',
                                       fontWeight: scheda.smiteAttivo ? 700 : 500,
                                       background: scheda.smiteAttivo ? 'rgba(201,162,39,0.2)' : 'transparent',
@@ -14461,7 +14461,7 @@ export default function App() {
                                     }}
                                     style={{
                                       ...styles.buttonMini,
-                                      fontSize: 10.5,
+                                      fontSize: 11,
                                       padding: '2px 7px',
                                       fontWeight: 700,
                                       background: 'rgba(158,75,230,0.15)',
@@ -14487,7 +14487,7 @@ export default function App() {
                                   }}
                                   style={{
                                     ...styles.buttonMini,
-                                    fontSize: 10.5,
+                                    fontSize: 11,
                                     padding: '2px 7px',
                                     fontWeight: scheda.ispirazioneEroica ? 700 : 500,
                                     background: scheda.ispirazioneEroica ? 'rgba(234,179,8,0.2)' : 'transparent',
@@ -14716,7 +14716,7 @@ export default function App() {
                                     onClick={() => aggiorna({ reazioneUsata: !scheda.reazioneUsata })}
                                     style={{
                                       ...styles.buttonMini,
-                                      fontSize: 10.5,
+                                      fontSize: 11,
                                       padding: '1px 7px',
                                       fontWeight: 700,
                                       background: scheda.reazioneUsata ? 'rgba(239,68,68,0.12)' : 'rgba(46,157,77,0.12)',
@@ -14737,7 +14737,7 @@ export default function App() {
                                     onClick={() => setMostraModalReazioni(true)}
                                     style={{
                                       ...styles.buttonMini,
-                                      fontSize: 10.5,
+                                      fontSize: 11,
                                       padding: '1px 7px',
                                       borderColor: C.goldDark,
                                       color: C.goldDark,
@@ -14758,12 +14758,12 @@ export default function App() {
                           </div>
                         )}
                         {cat === 'Reazione' && arr.length === 0 ? (
-                          <div style={{ padding: '8px 12px', background: C.panelLight, border: `1px dashed ${C.border}`, borderRadius: 8, fontSize: 11.5, color: C.inkDim, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+                          <div style={{ padding: '8px 12px', background: C.panelLight, border: `1px dashed ${C.border}`, borderRadius: 8, fontSize: 12, color: C.inkDim, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
                             <span>⚡ {lingua === 'en' ? 'No reactions pinned to quick attacks.' : 'Nessuna reazione fissata negli attacchi rapidi (Attacco d\'Opportunità, Scudo, Schivata...).'}</span>
                             <button
                               type="button"
                               onClick={() => setMostraModalReazioni(true)}
-                              style={{ ...styles.buttonMini, fontSize: 10.5, color: C.goldDark, borderColor: C.goldDark }}
+                              style={{ ...styles.buttonMini, fontSize: 11, color: C.goldDark, borderColor: C.goldDark }}
                             >
                               {lingua === 'en' ? 'Open Reaction Hub' : 'Apri Hub Reazioni'}
                             </button>
@@ -15020,7 +15020,7 @@ export default function App() {
                                             }}
                                             style={{
                                               ...styles.buttonMini,
-                                              fontSize: 10.5,
+                                              fontSize: 11,
                                               padding: '1px 4px',
                                               fontWeight: 700,
                                               borderRadius: 4,
@@ -15055,7 +15055,7 @@ export default function App() {
                                       {hasReach && (
                                         <span
                                           style={{
-                                            fontSize: 10.5,
+                                            fontSize: 11,
                                             padding: '1px 5px',
                                             borderRadius: 4,
                                             background: 'rgba(59,130,246,0.12)',
@@ -15077,7 +15077,7 @@ export default function App() {
                                         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
                                           <span
                                             style={{
-                                              fontSize: 10.5,
+                                              fontSize: 11,
                                               padding: '1px 5px',
                                               borderRadius: 4,
                                               background: infoMunizioni.totale > 0 ? 'rgba(201,162,39,0.14)' : 'rgba(239,68,68,0.12)',
@@ -15100,7 +15100,7 @@ export default function App() {
                                               type="button"
                                               style={{
                                                 ...styles.buttonMini,
-                                                fontSize: 10.5,
+                                                fontSize: 11,
                                                 padding: '1px 4px',
                                                 height: 18,
                                                 minWidth: 20,
@@ -15135,12 +15135,12 @@ export default function App() {
                                         {cat === 'Reazione' && (a.innescoIt || a.effettoIt) ? (
                                           <>
                                             {a.innescoIt && (
-                                              <span style={{ fontSize: 10.5, padding: '1px 5px', borderRadius: 4, background: 'rgba(59,130,246,0.12)', border: '1px solid #3b82f6', color: '#2563eb', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3 }} title={lingua === 'en' ? 'Trigger' : 'Innesco'}>
+                                              <span style={{ fontSize: 11, padding: '1px 5px', borderRadius: 4, background: 'rgba(59,130,246,0.12)', border: '1px solid #3b82f6', color: '#2563eb', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3 }} title={lingua === 'en' ? 'Trigger' : 'Innesco'}>
                                                 🎯 {lingua === 'en' ? (a.innescoEn || a.innescoIt) : a.innescoIt}
                                               </span>
                                             )}
                                             {a.effettoIt && (
-                                              <span style={{ fontSize: 10.5, padding: '1px 5px', borderRadius: 4, background: 'rgba(123,79,176,0.12)', border: '1px solid #7b4fb0', color: '#7b4fb0', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3 }} title={lingua === 'en' ? 'Effect' : 'Effetto'}>
+                                              <span style={{ fontSize: 11, padding: '1px 5px', borderRadius: 4, background: 'rgba(123,79,176,0.12)', border: '1px solid #7b4fb0', color: '#7b4fb0', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3 }} title={lingua === 'en' ? 'Effect' : 'Effetto'}>
                                                 🛡️ {lingua === 'en' ? (a.effettoEn || a.effettoIt) : a.effettoIt}
                                               </span>
                                             )}
@@ -15148,7 +15148,7 @@ export default function App() {
                                         ) : categorieNota.map((c, ci) => (
                                           <span
                                             key={ci}
-                                            style={{ fontSize: 10.5, padding: '1px 5px', borderRadius: 4, background: `${c.colore}1f`, border: `1px solid ${c.colore}`, color: c.colore, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3, whiteSpace: 'nowrap' }}
+                                            style={{ fontSize: 11, padding: '1px 5px', borderRadius: 4, background: `${c.colore}1f`, border: `1px solid ${c.colore}`, color: c.colore, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3, whiteSpace: 'nowrap' }}
                                             title={c.etichetta}
                                           >
                                             {c.icona} {c.testo}
@@ -15173,7 +15173,7 @@ export default function App() {
                                           type="button"
                                           style={{
                                             ...styles.buttonMini,
-                                            fontSize: 10.5,
+                                            fontSize: 11,
                                             padding: '2px 7px',
                                             fontWeight: 700,
                                             background: scheda.reazioneUsata ? 'rgba(239,68,68,0.12)' : 'rgba(46,157,77,0.14)',
@@ -15301,7 +15301,7 @@ export default function App() {
                         </select>
                         <button
                           className="tirabile"
-                          style={{ ...styles.button, fontSize: 11.5, fontWeight: 700, padding: '3px 8px', width: '100%', lineHeight: 1.2 }}
+                          style={{ ...styles.button, fontSize: 12, fontWeight: 700, padding: '3px 8px', width: '100%', lineHeight: 1.2 }}
                           title={tsInfo.haIncantatoreDaGuerra ? `${t('conc.ts_tooltip')} (Vantaggio da Incantatore da Guerra)` : t('conc.ts_tooltip')}
                           onClick={() => {
                             if (tsInfo.haIncantatoreDaGuerra) {
@@ -15333,7 +15333,7 @@ export default function App() {
                           🎲 TS {conSegno(bonusCon)}
                         </button>
                         {attivo && (
-                          <button style={{ ...styles.buttonMini, position: 'absolute', top: 4, right: 4, fontSize: 10.5, padding: '0 5px', height: 20, color: C.red, background: C.panel }} title={t('conc.termina')} onClick={() => aggiorna({ concentrazione: '' })}>✕</button>
+                          <button style={{ ...styles.buttonMini, position: 'absolute', top: 4, right: 4, fontSize: 11, padding: '0 5px', height: 20, color: C.red, background: C.panel }} title={t('conc.termina')} onClick={() => aggiorna({ concentrazione: '' })}>✕</button>
                         )}
                       </div>
                       {modIncantatore !== null && (
@@ -15647,7 +15647,7 @@ export default function App() {
                         }
                       }}
                       title={t('spell.toggle_livelli_tip')}
-                      style={{ ...styles.buttonMini, padding: '5px 10px', fontSize: 11.5, whiteSpace: 'nowrap' }}
+                      style={{ ...styles.buttonMini, padding: '5px 10px', fontSize: 12, whiteSpace: 'nowrap' }}
                     >
                       {Array.from({ length: 10 }, (_, i) => i).every((l) => livelliIncChiusi[l]) ? t('spell.espandi_tutti_livelli') : t('spell.riduci_tutti_livelli')}
                     </button>
@@ -15870,12 +15870,12 @@ export default function App() {
                               </div>
                             )}
                             {isEccessoLiv && (
-                              <span style={{ fontSize: 10.5, fontWeight: 700, color: '#fff', background: '#ef4444', border: '1px solid #ef4444', borderRadius: 6, padding: '1px 6px' }}>
+                              <span style={{ fontSize: 11, fontWeight: 700, color: '#fff', background: '#ef4444', border: '1px solid #ef4444', borderRadius: 6, padding: '1px 6px' }}>
                                 🔴 {lingua === 'en' ? 'EXCESS' : 'IN ECCESSO'}
                               </span>
                             )}
                             {isMancanteLiv && (
-                              <span style={{ fontSize: 10.5, fontWeight: 700, color: '#2e9d4d', background: 'rgba(46,157,77,0.15)', border: '1px solid #2e9d4d', borderRadius: 6, padding: '1px 6px' }}>
+                              <span style={{ fontSize: 11, fontWeight: 700, color: '#2e9d4d', background: 'rgba(46,157,77,0.15)', border: '1px solid #2e9d4d', borderRadius: 6, padding: '1px 6px' }}>
                                 🟢 {lingua === 'en' ? 'SLOTS TO CHOOSE' : 'SCELTE DISPONIBILI'}
                               </span>
                             )}
@@ -15887,7 +15887,7 @@ export default function App() {
                             <span
                               onClick={(e) => e.stopPropagation()}
                               style={{
-                                fontSize: 12.5,
+                                fontSize: 13,
                                 color: incInEccesso ? '#ef4444' : (incMancanti ? '#2e9d4d' : ((classePreparata ? preparatiPieni : incantesimiPieno) ? C.goldDark : C.inkDim)),
                                 fontWeight: (incInEccesso || incMancanti) ? 700 : 'normal',
                                 display: 'inline-flex',
@@ -16005,7 +16005,7 @@ export default function App() {
                                   {isDuplicato && (
                                     <span
                                       style={{
-                                        fontSize: 10.5,
+                                        fontSize: 11,
                                         fontWeight: 700,
                                         color: '#fff',
                                         border: '1px solid #ef4444',
@@ -16026,7 +16026,7 @@ export default function App() {
                                   {isTroppoAlto && (
                                     <span
                                       style={{
-                                        fontSize: 10.5,
+                                        fontSize: 11,
                                         fontWeight: 700,
                                         color: '#fff',
                                         border: '1px solid #ef4444',
@@ -16047,7 +16047,7 @@ export default function App() {
                                   {isRowInEccesso && !isDuplicato && !isTroppoAlto && (
                                     <span
                                       style={{
-                                        fontSize: 10.5,
+                                        fontSize: 11,
                                         fontWeight: 700,
                                         color: '#fff',
                                         border: '1px solid #ef4444',
@@ -16068,7 +16068,7 @@ export default function App() {
                                   {isRowUnpreparedMancante && (
                                     <span
                                       style={{
-                                        fontSize: 10.5,
+                                        fontSize: 11,
                                         fontWeight: 700,
                                         color: '#2e9d4d',
                                         border: '1px solid #2e9d4d',
@@ -16089,7 +16089,7 @@ export default function App() {
                                   {scuola && (
                                     <span
                                       style={{
-                                        fontSize: 10.5,
+                                        fontSize: 11,
                                         fontWeight: 700,
                                         color: COLORE_SCUOLA[scuola.toLowerCase()] || C.goldDark,
                                         border: `1px solid ${COLORE_SCUOLA[scuola.toLowerCase()] || C.goldDark}77`,
@@ -16111,7 +16111,7 @@ export default function App() {
                                   {s.catalogo && (
                                     <span
                                       style={{
-                                        fontSize: 10.5,
+                                        fontSize: 11,
                                         fontWeight: 700,
                                         color: isRowCatalogoMancante ? '#2e9d4d' : C.goldDark,
                                         border: `1px solid ${isRowCatalogoMancante ? '#2e9d4d' : C.goldDark}`,
@@ -16126,7 +16126,7 @@ export default function App() {
                                   {s.bonus && (
                                     <span
                                       title={t('spell.bonus_badge_tooltip')}
-                                      style={{ fontSize: 10.5, fontWeight: 700, color: C.goldDark, border: `1px solid ${C.goldDark}`, borderRadius: 6, padding: '0 4px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}
+                                      style={{ fontSize: 11, fontWeight: 700, color: C.goldDark, border: `1px solid ${C.goldDark}`, borderRadius: 6, padding: '0 4px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}
                                       onClick={() => aggiorna({ incantesimiLista: scheda.incantesimiLista.map((x) => (x.id === s.id ? { ...x, bonus: false } : x)) })}
                                     >✦ {t('spell.bonus_badge')}</span>
                                   )}
@@ -16172,7 +16172,7 @@ export default function App() {
                                         }}
                                       >
                                         {isUltimoCritInc ? '⚔️' : '💥'} {danno}{tipoDanno ? ` ${tipoDanno}` : ''}
-                                        <span aria-hidden style={{ fontSize: 10.5, opacity: 0.6 }}>🎲</span>
+                                        <span aria-hidden style={{ fontSize: 11, opacity: 0.6 }}>🎲</span>
                                       </button>
                                     </div>
                                   )}
@@ -16180,7 +16180,7 @@ export default function App() {
                                     {/famiglio|evoca|spiriti|spirit|elementale|summon|conjure|destriero|steed|trova|omuncolo|guardiano/i.test(s.nome || '') && (
                                       <button
                                         type="button"
-                                        style={{ ...styles.buttonMini, padding: '2px 7px', fontSize: 10.5, fontWeight: 700, color: C.goldDark, borderColor: C.gold, background: 'rgba(201,162,39,0.12)' }}
+                                        style={{ ...styles.buttonMini, padding: '2px 7px', fontSize: 11, fontWeight: 700, color: C.goldDark, borderColor: C.gold, background: 'rgba(201,162,39,0.12)' }}
                                         title={lingua === 'en' ? 'Open the summon/companion catalog for this spell' : 'Apri il catalogo evocazioni/compagni per questo incantesimo'}
                                         onClick={() => {
                                           setFiltroCompagnoCat(/animal|bestie|beast/i.test(s.nome || '') ? 'bestie' : 'evocazioni');
@@ -16194,7 +16194,7 @@ export default function App() {
                                     {/metamorfosi|polymorph/i.test(s.nome || '') && (
                                       <button
                                         type="button"
-                                        style={{ ...styles.buttonMini, padding: '2px 7px', fontSize: 10.5, fontWeight: 700, color: C.goldDark, borderColor: C.gold, background: 'rgba(201,162,39,0.12)' }}
+                                        style={{ ...styles.buttonMini, padding: '2px 7px', fontSize: 11, fontWeight: 700, color: C.goldDark, borderColor: C.gold, background: 'rgba(201,162,39,0.12)' }}
                                         title={lingua === 'en' ? 'Open the polymorph catalog (choose the creature to become)' : 'Apri il catalogo Metamorfosi (scegli la creatura da assumere)'}
                                         onClick={() => setTabTrasformazione('metamorfosi')}
                                       >
@@ -16208,7 +16208,7 @@ export default function App() {
                                           style={{
                                             ...styles.buttonMini,
                                             padding: '2px 6px',
-                                            fontSize: 10.5,
+                                            fontSize: 11,
                                             fontWeight: 700,
                                             color: scheda.effettoTaglia === 'ingrandito' ? '#fff' : (C.green || '#2e7d32'),
                                             background: scheda.effettoTaglia === 'ingrandito' ? (C.green || '#2e7d32') : 'transparent',
@@ -16225,7 +16225,7 @@ export default function App() {
                                           style={{
                                             ...styles.buttonMini,
                                             padding: '2px 6px',
-                                            fontSize: 10.5,
+                                            fontSize: 11,
                                             fontWeight: 700,
                                             color: scheda.effettoTaglia === 'ridotto' ? '#fff' : (C.red || '#c0392b'),
                                             background: scheda.effettoTaglia === 'ridotto' ? (C.red || '#c0392b') : 'transparent',
@@ -16354,7 +16354,7 @@ export default function App() {
                         {maxTrucchetti != null ? (
                           <span
                             style={{
-                              fontSize: 12.5,
+                              fontSize: 13,
                               color: trucInEccesso ? '#ef4444' : (trucMancanti ? '#2e9d4d' : (trucchettiPieno ? C.goldDark : C.inkDim)),
                               fontWeight: (trucInEccesso || trucMancanti) ? 700 : 'normal',
                               display: 'inline-flex',
@@ -16489,7 +16489,7 @@ export default function App() {
                   <div style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', background: C.panelLight, display: 'flex', flexDirection: 'column', height: '100%', boxSizing: 'border-box' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                       <div style={{ ...styles.detail, fontWeight: 700 }}>✨ Opzioni Metamagia</div>
-                      <span style={{ fontSize: 10.5, color: C.inkDim }}>
+                      <span style={{ fontSize: 11, color: C.inkDim }}>
                         {((scheda.metamagie || '').split(',').map((s) => s.trim()).filter(Boolean)).length} {lingua === 'en' ? 'chosen' : 'scelte'}
                       </span>
                     </div>
@@ -16508,7 +16508,7 @@ export default function App() {
                       const scelte = (scheda.metamagie || '').split(',').map((s) => s.trim()).filter(Boolean);
                       if (!scelte.length) {
                         return (
-                          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.inkDim, fontSize: 11.5, fontStyle: 'italic', padding: '12px 0' }}>
+                          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.inkDim, fontSize: 12, fontStyle: 'italic', padding: '12px 0' }}>
                             {lingua === 'en' ? 'No Metamagic selected. Click ➕ to add.' : 'Nessuna metamagia selezionata. Clicca ➕ per aggiungerne.'}
                           </div>
                         );
@@ -16526,7 +16526,7 @@ export default function App() {
                                   border: `1px solid ${C.border}`,
                                   borderRadius: 6,
                                   padding: '5px 8px',
-                                  fontSize: 11.5,
+                                  fontSize: 12,
                                   cursor: spieg ? 'pointer' : 'default',
                                   display: 'flex',
                                   flexDirection: 'column',
@@ -16539,10 +16539,10 @@ export default function App() {
                               >
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                   <strong style={{ color: C.goldDark, fontSize: 12 }}>✨ {traduciDato(m)}</strong>
-                                  {spieg && <span style={{ fontSize: 10.5, color: C.inkDim }}>info ℹ️</span>}
+                                  {spieg && <span style={{ fontSize: 11, color: C.inkDim }}>info ℹ️</span>}
                                 </div>
                                 {spieg && (
-                                  <div style={{ fontSize: 10.5, color: C.inkDim, lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                                  <div style={{ fontSize: 11, color: C.inkDim, lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                                     {spieg.replace(/\*\*/g, '').replace(/\\n/g, ' ')}
                                   </div>
                                 )}
@@ -16600,7 +16600,7 @@ export default function App() {
                       {(() => {
                         if (!scelte.length) {
                           return (
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.inkDim, fontSize: 11.5, fontStyle: 'italic', padding: '12px 0' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.inkDim, fontSize: 12, fontStyle: 'italic', padding: '12px 0' }}>
                               {lingua === 'en' ? 'No Invocations selected. Click ➕ to add.' : 'Nessuna invocazione selezionata. Clicca ➕ per aggiungerne.'}
                             </div>
                           );
@@ -16618,7 +16618,7 @@ export default function App() {
                                     border: `1px solid ${C.border}`,
                                     borderRadius: 6,
                                     padding: '7px 10px',
-                                    fontSize: 11.5,
+                                    fontSize: 12,
                                     cursor: spieg ? 'pointer' : 'default',
                                     display: 'flex',
                                     flexDirection: 'column',
@@ -16631,10 +16631,10 @@ export default function App() {
                                 >
                                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <strong style={{ color: C.goldDark, fontSize: 12 }}>📜 {traduciDato(inv)}</strong>
-                                    {spieg && <span style={{ fontSize: 10.5, color: C.inkDim }}>info ℹ️</span>}
+                                    {spieg && <span style={{ fontSize: 11, color: C.inkDim }}>info ℹ️</span>}
                                   </div>
                                   {spieg && (
-                                    <div style={{ fontSize: 10.5, color: C.inkDim, lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                                    <div style={{ fontSize: 11, color: C.inkDim, lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                                       {spieg.replace(/\*\*/g, '').replace(/\\n/g, ' ')}
                                     </div>
                                   )}
@@ -16702,10 +16702,10 @@ export default function App() {
                           </div>
                         </div>
                         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                          <span style={{ fontSize: 11.5, fontWeight: 'bold', color: scelte.length > maxNote ? '#ef4444' : C.goldDark, background: C.panel, padding: '3px 8px', borderRadius: 6, border: `1px solid ${C.border}` }}>
+                          <span style={{ fontSize: 12, fontWeight: 'bold', color: scelte.length > maxNote ? '#ef4444' : C.goldDark, background: C.panel, padding: '3px 8px', borderRadius: 6, border: `1px solid ${C.border}` }}>
                             {scelte.length} / {maxNote} {lingua === 'en' ? 'known' : 'note'}
                           </span>
-                          <span style={{ fontSize: 11.5, fontWeight: 'bold', color: attive.length > maxAttivi ? '#ef4444' : '#10b981', background: C.panel, padding: '3px 8px', borderRadius: 6, border: `1px solid ${C.border}` }}>
+                          <span style={{ fontSize: 12, fontWeight: 'bold', color: attive.length > maxAttivi ? '#ef4444' : '#10b981', background: C.panel, padding: '3px 8px', borderRadius: 6, border: `1px solid ${C.border}` }}>
                             ⚡ {attive.length} / {maxAttivi} {lingua === 'en' ? 'active' : 'attivi'}
                           </span>
                         </div>
@@ -16726,7 +16726,7 @@ export default function App() {
                       {(() => {
                         if (!scelte.length) {
                           return (
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.inkDim, fontSize: 11.5, fontStyle: 'italic', padding: '12px 0' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.inkDim, fontSize: 12, fontStyle: 'italic', padding: '12px 0' }}>
                               {lingua === 'en' ? 'No Infusions learned. Click ➕ to add.' : 'Nessuna infusione appresa. Clicca ➕ per aggiungerne.'}
                             </div>
                           );
@@ -16748,7 +16748,7 @@ export default function App() {
                                     border: `1px solid ${eAttiva ? '#10b981' : C.border}`,
                                     borderRadius: 8,
                                     padding: '8px 10px',
-                                    fontSize: 11.5,
+                                    fontSize: 12,
                                     display: 'flex',
                                     flexDirection: 'column',
                                     gap: 6,
@@ -16764,14 +16764,14 @@ export default function App() {
                                       <strong style={{ color: eAttiva ? '#059669' : C.goldDark, fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                         ⚙️ {traduciDato(inf)}
                                       </strong>
-                                      {spieg && <span style={{ fontSize: 10.5, color: C.inkDim }}>ℹ️</span>}
+                                      {spieg && <span style={{ fontSize: 11, color: C.inkDim }}>ℹ️</span>}
                                     </div>
 
                                     <button
                                       onClick={() => toggleAttiva(inf)}
                                       style={{
                                         ...styles.buttonMini,
-                                        fontSize: 10.5,
+                                        fontSize: 11,
                                         padding: '2px 8px',
                                         background: eAttiva ? '#10b981' : 'transparent',
                                         color: eAttiva ? '#fff' : C.ink,
@@ -16786,7 +16786,7 @@ export default function App() {
                                   {/* Sezione assegnazione oggetto inventario se attiva */}
                                   {eAttiva && (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(0,0,0,0.03)', padding: '4px 6px', borderRadius: 4 }}>
-                                      <span style={{ fontSize: 10.5, color: C.inkDim, whiteSpace: 'nowrap' }}>
+                                      <span style={{ fontSize: 11, color: C.inkDim, whiteSpace: 'nowrap' }}>
                                         {lingua === 'en' ? 'Applied to:' : 'Applicata a:'}
                                       </span>
                                       {itemsInventario.length > 0 ? (
@@ -16815,7 +16815,7 @@ export default function App() {
                                   {spieg && (
                                     <div
                                       onClick={() => setInfo({ titolo: traduciDato(inf), testo: spieg })}
-                                      style={{ fontSize: 10.5, color: C.inkDim, lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', cursor: 'pointer' }}
+                                      style={{ fontSize: 11, color: C.inkDim, lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', cursor: 'pointer' }}
                                     >
                                       {spieg.replace(/\*\*/g, '').replace(/\\n/g, ' ')}
                                     </div>
@@ -16927,7 +16927,7 @@ export default function App() {
                                 </button>
                               ))
                             ) : (
-                              <div style={{ ...styles.detail, fontSize: 11.5, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 38 }}>
+                              <div style={{ ...styles.detail, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 38 }}>
                                 {t('priv.sub_nessuna')}
                               </div>
                             )}
@@ -17009,7 +17009,7 @@ export default function App() {
                     return (
                       <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: `2px solid ${C.border}`, paddingBottom: 8, marginBottom: 10 }}>
-                          <h2 style={{ fontSize: 17, margin: 0, color: tabTrasformazione === 'metamorfosi' ? '#7b4fb0' : '#3e7d32', fontWeight: 800 }}>
+                          <h2 style={{ fontSize: 18, margin: 0, color: tabTrasformazione === 'metamorfosi' ? '#7b4fb0' : '#3e7d32', fontWeight: 800 }}>
                             {tabTrasformazione === 'metamorfosi' ? '🔮' : '🐾'} {lingua === 'en' ? (tabTrasformazione === 'metamorfosi' ? 'Metamorphosis' : 'Wild Shape') : (tabTrasformazione === 'metamorfosi' ? 'Metamorfosi' : 'Forma Selvatica')}
                           </h2>
                           <button style={styles.buttonMini} onClick={() => setTabTrasformazione(null)} title={t('tip.chiudi')}>✕</button>
@@ -17026,7 +17026,7 @@ export default function App() {
                         {/* Scorciatoie Forme Preferite (Accesso Rapido) */}
                         {listaPref.length > 0 && (
                           <div style={{ marginBottom: 12, padding: '8px 10px', background: 'rgba(214,169,15,0.08)', borderRadius: 8, border: `1px solid ${C.gold}` }}>
-                            <div style={{ fontSize: 11.5, fontWeight: 700, color: C.goldDark, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
                               ⭐ {lingua === 'en' ? 'Favorite Wild Shapes (Quick Access)' : 'Forme Preferite (Accesso Rapido)'}
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: 6 }}>
@@ -17046,7 +17046,7 @@ export default function App() {
                                     boxShadow: '0 2px 5px rgba(214,169,15,0.25)',
                                   }}
                                 >
-                                  <div style={{ fontWeight: 700, fontSize: 12.5, color: C.ink, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <div style={{ fontWeight: 700, fontSize: 13, color: C.ink, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <span>{lingua === 'en' ? b.nomeEn : b.nome}</span>
                                     <button
                                       type="button"
@@ -17057,7 +17057,7 @@ export default function App() {
                                       ⭐
                                     </button>
                                   </div>
-                                  <div style={{ fontSize: 10.5, color: C.inkDim }}>
+                                  <div style={{ fontSize: 11, color: C.inkDim }}>
                                     🛡️ CA {b.ca} · ❤️ {b.pf} PF · GS {b.gs}
                                   </div>
                                 </div>
@@ -17121,7 +17121,7 @@ export default function App() {
                                       <div style={{ fontSize: 11, color: C.inkDim }}>
                                         🛡️ CA {b.ca} · ❤️ {b.pf} PF
                                       </div>
-                                      <div style={{ fontSize: 10.5, color: C.inkDim, opacity: 0.85 }}>
+                                      <div style={{ fontSize: 11, color: C.inkDim, opacity: 0.85 }}>
                                         {b.taglia} · {b.velocita.volo ? `🦅 ${b.velocita.volo}m` : b.velocita.nuoto ? `🏊 ${b.velocita.nuoto}m` : `🐾 ${b.velocita.terra}m`}
                                       </div>
                                     </div>
@@ -17214,7 +17214,7 @@ export default function App() {
                         <button
                           type="button"
                           onClick={() => setMostraModalAggiungiCompagno(true)}
-                          style={{ ...styles.buttonMini, fontSize: 11.5, padding: '3px 10px', color: C.goldDark, borderColor: C.gold, background: 'rgba(201,162,39,0.12)', fontWeight: 700 }}
+                          style={{ ...styles.buttonMini, fontSize: 12, padding: '3px 10px', color: C.goldDark, borderColor: C.gold, background: 'rgba(201,162,39,0.12)', fontWeight: 700 }}
                         >
                           ➕ {lingua === 'en' ? 'Summon / Add Companion' : 'Evoca / Aggiungi Compagno'}
                         </button>
@@ -17250,7 +17250,7 @@ export default function App() {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                   <span style={{ fontSize: 18 }}>🐾</span>
                                   <div>
-                                    <div style={{ fontWeight: 700, fontSize: 13.5, color: C.goldDark, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <div style={{ fontWeight: 700, fontSize: 14, color: C.goldDark, display: 'flex', alignItems: 'center', gap: 6 }}>
                                       <Editable
                                         value={all.nome}
                                         onChange={(v) => {
@@ -17261,7 +17261,7 @@ export default function App() {
                                         width={140}
                                       />
                                       {all.taglia && (
-                                        <span style={{ fontSize: 10.5, fontWeight: 500, color: C.inkDim, background: C.panel, padding: '1px 6px', borderRadius: 4, border: `1px solid ${C.border}` }}>
+                                        <span style={{ fontSize: 11, fontWeight: 500, color: C.inkDim, background: C.panel, padding: '1px 6px', borderRadius: 4, border: `1px solid ${C.border}` }}>
                                           {all.taglia}
                                         </span>
                                       )}
@@ -17273,7 +17273,7 @@ export default function App() {
                                 </div>
 
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                                  <span style={{ fontSize: 11.5, fontWeight: 700, color: C.ink, background: C.panel, padding: '3px 8px', borderRadius: 6, border: `1px solid ${C.border}` }}>
+                                  <span style={{ fontSize: 12, fontWeight: 700, color: C.ink, background: C.panel, padding: '3px 8px', borderRadius: 6, border: `1px solid ${C.border}` }}>
                                     🛡️ CA <Editable value={all.ca ?? 10} tipo="numero" width={24} onChange={(v) => {
                                       const lista = [...alleati];
                                       lista[idx] = { ...lista[idx], ca: v };
@@ -17289,7 +17289,7 @@ export default function App() {
                                     <button
                                       type="button"
                                       onClick={() => setBestiaDettaglio(creatureMatch)}
-                                      style={{ ...styles.buttonMini, fontSize: 10.5, padding: '2px 7px' }}
+                                      style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 7px' }}
                                       title={lingua === 'en' ? 'View complete statblock' : 'Vedi statblock completo'}
                                     >
                                       ℹ️ {lingua === 'en' ? 'Statblock' : 'Scheda'}
@@ -17306,7 +17306,7 @@ export default function App() {
                                         ca: all.ca ?? 10,
                                       });
                                     }}
-                                    style={{ ...styles.buttonMini, fontSize: 10.5, padding: '2px 7px', color: '#10b981', borderColor: '#10b981' }}
+                                    style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 7px', color: '#10b981', borderColor: '#10b981' }}
                                     title={lingua === 'en' ? 'Send to combat tracker' : 'Invia allo scontro'}
                                   >
                                     ⚔️ Combat
@@ -17314,7 +17314,7 @@ export default function App() {
                                   <button
                                     type="button"
                                     onClick={() => rimuoviAlleato(idx)}
-                                    style={{ ...styles.buttonMini, fontSize: 10.5, padding: '2px 6px', color: C.red, borderColor: C.red }}
+                                    style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 6px', color: C.red, borderColor: C.red }}
                                     title={lingua === 'en' ? 'Dismiss / Remove' : 'Congeda / Elimina'}
                                   >
                                     ✕
@@ -17324,7 +17324,7 @@ export default function App() {
 
                               {/* Barra Punti Ferita */}
                               <div style={{ background: C.panel, border: `1px solid ${C.border}`, borderRadius: 6, padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11.5 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12 }}>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                     <span style={{ fontWeight: 700, color: C.ink }}>❤️ PF:</span>
                                     <Editable value={pfAttuali} tipo="numero" width={32} onChange={(v) => {
@@ -17340,11 +17340,11 @@ export default function App() {
                                     }} />
                                   </div>
                                   <div style={{ display: 'flex', gap: 4 }}>
-                                    <button type="button" onClick={() => modificaPfAlleato(idx, -5)} style={{ ...styles.buttonMini, fontSize: 10.5, padding: '1px 5px', color: C.red }}>−5</button>
-                                    <button type="button" onClick={() => modificaPfAlleato(idx, -1)} style={{ ...styles.buttonMini, fontSize: 10.5, padding: '1px 5px', color: C.red }}>−1</button>
-                                    <button type="button" onClick={() => modificaPfAlleato(idx, 1)} style={{ ...styles.buttonMini, fontSize: 10.5, padding: '1px 5px', color: '#10b981' }}>+1</button>
-                                    <button type="button" onClick={() => modificaPfAlleato(idx, 5)} style={{ ...styles.buttonMini, fontSize: 10.5, padding: '1px 5px', color: '#10b981' }}>+5</button>
-                                    <button type="button" onClick={() => resetPfAlleato(idx)} style={{ ...styles.buttonMini, fontSize: 10.5, padding: '1px 6px', color: C.goldDark }} title="Ripristina PF Max">❤️ Max</button>
+                                    <button type="button" onClick={() => modificaPfAlleato(idx, -5)} style={{ ...styles.buttonMini, fontSize: 11, padding: '1px 5px', color: C.red }}>−5</button>
+                                    <button type="button" onClick={() => modificaPfAlleato(idx, -1)} style={{ ...styles.buttonMini, fontSize: 11, padding: '1px 5px', color: C.red }}>−1</button>
+                                    <button type="button" onClick={() => modificaPfAlleato(idx, 1)} style={{ ...styles.buttonMini, fontSize: 11, padding: '1px 5px', color: '#10b981' }}>+1</button>
+                                    <button type="button" onClick={() => modificaPfAlleato(idx, 5)} style={{ ...styles.buttonMini, fontSize: 11, padding: '1px 5px', color: '#10b981' }}>+5</button>
+                                    <button type="button" onClick={() => resetPfAlleato(idx)} style={{ ...styles.buttonMini, fontSize: 11, padding: '1px 6px', color: C.goldDark }} title="Ripristina PF Max">❤️ Max</button>
                                   </div>
                                 </div>
 
@@ -17375,12 +17375,12 @@ export default function App() {
                                         }}
                                       >
                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
-                                          <strong style={{ color: C.ink, fontSize: 11.5 }}>{az.nome}</strong>
+                                          <strong style={{ color: C.ink, fontSize: 12 }}>{az.nome}</strong>
                                           <div style={{ display: 'flex', gap: 4 }}>
                                             <button
                                               type="button"
                                               onClick={() => lanciaD20(`${all.nome}: ${az.nome}`, az.bonusAttacco || 0, { suono: 'tiro' })}
-                                              style={{ ...styles.buttonMini, fontSize: 10.5, padding: '2px 6px', color: C.goldDark, borderColor: C.goldDark }}
+                                              style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 6px', color: C.goldDark, borderColor: C.goldDark }}
                                               title={lingua === 'en' ? 'Roll attack' : 'Tiro per colpire'}
                                             >
                                               🎲 {conSegno(az.bonusAttacco || 0)}
@@ -17389,7 +17389,7 @@ export default function App() {
                                               <button
                                                 type="button"
                                                 onClick={() => tiraDanniPerAttacco({ id: az.id, nome: `${all.nome}: ${az.nome}`, danno: az.danno, tipoDanno: az.tipoDanno })}
-                                                style={{ ...styles.buttonMini, fontSize: 10.5, padding: '2px 6px', color: '#ef4444', borderColor: '#ef4444' }}
+                                                style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 6px', color: '#ef4444', borderColor: '#ef4444' }}
                                                 title={lingua === 'en' ? 'Roll damage' : 'Tiro danni'}
                                               >
                                                 💥 {az.danno}
@@ -17398,7 +17398,7 @@ export default function App() {
                                           </div>
                                         </div>
                                         {az.testoCompleto && az.testoCompleto !== az.nome && (
-                                          <div style={{ fontSize: 10.5, color: C.inkDim, lineHeight: 1.25 }}>
+                                          <div style={{ fontSize: 11, color: C.inkDim, lineHeight: 1.25 }}>
                                             {az.testoCompleto}
                                           </div>
                                         )}
@@ -17418,7 +17418,7 @@ export default function App() {
                                         key={trIdx}
                                         onClick={() => setInfo({ titolo: `${all.nome}: ${titoloTratto}`, testo: tr })}
                                         style={{
-                                          fontSize: 10.5,
+                                          fontSize: 11,
                                           background: 'rgba(201,162,39,0.08)',
                                           border: '1px solid rgba(201,162,39,0.3)',
                                           color: C.goldDark,
@@ -17442,9 +17442,9 @@ export default function App() {
 
                     {/* Catalogo Rapido Bestiario & Evocazioni per consultazione */}
                     <div style={{ marginTop: 4 }}>
-                      <div style={{ fontSize: 11.5, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span>📖 {lingua === 'en' ? 'Quick Bestiary & Summons Reference' : 'Catalogo Rapido Bestiario & Evocazioni'}</span>
-                        <span style={{ fontSize: 10.5, color: C.inkDim, fontWeight: 400 }}>{FAMIGLI.length + EVOCAZIONI.length} creature</span>
+                        <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 400 }}>{FAMIGLI.length + EVOCAZIONI.length} creature</span>
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: 6 }}>
                         {[...FAMIGLI, ...EVOCAZIONI].slice(0, 16).map((c) => (
@@ -17463,10 +17463,10 @@ export default function App() {
                               transition: 'border-color 0.15s ease',
                             }}
                           >
-                            <div style={{ fontWeight: 700, fontSize: 11.5, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <div style={{ fontWeight: 700, fontSize: 12, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {lingua === 'en' ? c.nomeEn : c.nome}
                             </div>
-                            <div style={{ fontSize: 10.5, color: C.inkDim }}>
+                            <div style={{ fontSize: 11, color: C.inkDim }}>
                               🛡️ CA {c.ca} · ❤️ {c.pf} PF
                             </div>
                           </div>
@@ -17532,7 +17532,7 @@ export default function App() {
                       placeholder={lingua === 'en' ? 'Search creature name...' : 'Cerca nome creatura...'}
                       value={cercaCompagnoText}
                       onChange={(e) => setCercaCompagnoText(e.target.value)}
-                      style={{ ...styles.inlineInput, width: '100%', padding: '6px 10px', fontSize: 12.5 }}
+                      style={{ ...styles.inlineInput, width: '100%', padding: '6px 10px', fontSize: 13 }}
                     />
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                       {[
@@ -17633,14 +17633,14 @@ export default function App() {
                                   }}
                                 >
                                   <div>
-                                    <div style={{ fontWeight: 700, fontSize: 12.5, color: C.ink }}>
+                                    <div style={{ fontWeight: 700, fontSize: 13, color: C.ink }}>
                                       {lingua === 'en' ? c.nomeEn : c.nome}
                                     </div>
                                     <div style={{ fontSize: 11, color: C.inkDim }}>
                                       🛡️ CA {c.ca} · ❤️ {pfCalc} PF {c.pfFormula ? `(${c.pfFormula})` : ''} · 👟 {typeof c.velocita === 'object' ? Object.entries(c.velocita).map(([k, v]) => `${k} ${v}m`).join(', ') : c.velocita}
                                     </div>
                                     {c.tipo && (
-                                      <div style={{ fontSize: 10.5, color: C.goldDark, marginTop: 1 }}>
+                                      <div style={{ fontSize: 11, color: C.goldDark, marginTop: 1 }}>
                                         {c.tipo}
                                       </div>
                                     )}
@@ -17873,7 +17873,7 @@ export default function App() {
                         <span style={{ fontWeight: 700 }}>⚖️ {t('inv.ingombro')}: <span style={{ color: colore }}>{pesoTot.toFixed(1)} / {cap.toFixed(0)} kg</span></span>
                         {stato !== 'ok' && <span style={{ color: colore, fontWeight: 700 }}>{t('inv.stato_' + stato)}</span>}
                       </div>
-                      <div style={{ ...styles.detail, marginTop: 2, fontSize: 10.5, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+                      <div style={{ ...styles.detail, marginTop: 2, fontSize: 11, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
                         <span>Taglia {tagliaAttiva} ×{moltiTaglia} · Spazio: {SPAZIO_TAGLIA_5E[tagliaAttiva]} · Spingi/trascina/solleva {spingiTrascina.toFixed(0)} kg (Lotta fino a: {LOTTA_MAX_TAGLIA_5E[tagliaAttiva]})</span>
                         <span>🛡️ Indossato: <strong>{pesoEquipTot.toFixed(1)} kg</strong> · 🎒 Zaino: <strong>{pesoZainoTot.toFixed(1)} kg</strong></span>
                       </div>
@@ -17893,7 +17893,7 @@ export default function App() {
                           value={filtroInventario}
                           onChange={(e) => setFiltroInventario(e.target.value)}
                           placeholder="🔍 Cerca nell'inventario..."
-                          style={{ ...styles.inlineInput, flex: 1, minWidth: 120, padding: '5px 8px', fontSize: 12.5 }}
+                          style={{ ...styles.inlineInput, flex: 1, minWidth: 120, padding: '5px 8px', fontSize: 13 }}
                         />
                         {filtroInventario && (
                           <button style={styles.buttonMini} onClick={() => setFiltroInventario('')}>✕</button>
@@ -17994,7 +17994,7 @@ export default function App() {
                             >
                               <span>{determinaIconaOggetto(itemNome)}</span>
                               <strong>{itemNome}</strong>
-                              <span style={{ fontSize: 10.5, color: C.inkDim }}>({pesoStimato(itemNome)} kg)</span>
+                              <span style={{ fontSize: 11, color: C.inkDim }}>({pesoStimato(itemNome)} kg)</span>
                             </button>
                           ))}
                         </div>
@@ -18145,7 +18145,7 @@ export default function App() {
                                           style={{
                                             ...styles.buttonMini,
                                             padding: '1px 7px',
-                                            fontSize: 10.5,
+                                            fontSize: 11,
                                             fontWeight: 700,
                                             display: 'inline-flex',
                                             alignItems: 'center',
@@ -18167,7 +18167,7 @@ export default function App() {
                                           style={{
                                             ...styles.buttonMini,
                                             padding: '1px 6px',
-                                            fontSize: 10.5,
+                                            fontSize: 11,
                                             fontWeight: 700,
                                             color: '#2e9d4d',
                                             borderColor: '#2e9d4d',
@@ -18184,7 +18184,7 @@ export default function App() {
                                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
                                       <button
                                         type="button"
-                                        style={{ ...styles.buttonMini, padding: '0 4px', fontSize: 10.5, height: 20, minWidth: 20, lineHeight: 1 }}
+                                        style={{ ...styles.buttonMini, padding: '0 4px', fontSize: 11, height: 20, minWidth: 20, lineHeight: 1 }}
                                         title={t('tip.diminuisci')}
                                         disabled={(Number(o.qta) || 0) <= 0}
                                         onClick={() => modInv(o.id, { qta: Math.max(0, (Number(o.qta) || 0) - 1) })}
@@ -18193,7 +18193,7 @@ export default function App() {
                                       <Editable value={o.qta} tipo="numero" width={26} onChange={(v) => modInv(o.id, { qta: Math.max(0, v) })} />
                                       <button
                                         type="button"
-                                        style={{ ...styles.buttonMini, padding: '0 4px', fontSize: 10.5, height: 20, minWidth: 20, lineHeight: 1 }}
+                                        style={{ ...styles.buttonMini, padding: '0 4px', fontSize: 11, height: 20, minWidth: 20, lineHeight: 1 }}
                                         title={t('tip.aumenta')}
                                         onClick={() => modInv(o.id, { qta: (Number(o.qta) || 0) + 1 })}
                                       >＋</button>
@@ -18281,7 +18281,7 @@ export default function App() {
                                           </span>
                                           <button
                                             type="button"
-                                            style={{ ...styles.buttonMini, fontSize: 10.5, padding: '2px 8px', color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.1)' }}
+                                            style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 8px', color: C.goldDark, borderColor: C.goldDark, background: 'rgba(201,162,39,0.1)' }}
                                             onClick={() => {
                                               const nuovoNome = prompt(t('inv.prompt_nome_sub'));
                                               if (nuovoNome && nuovoNome.trim()) {
@@ -18347,7 +18347,7 @@ export default function App() {
                                                       {sub.nome}
                                                     </span>
                                                     {sub.peso > 0 && (
-                                                      <span style={{ fontSize: 10.5, color: C.inkDim, whiteSpace: 'nowrap', marginLeft: 4 }}>
+                                                      <span style={{ fontSize: 11, color: C.inkDim, whiteSpace: 'nowrap', marginLeft: 4 }}>
                                                         ({((sub.peso || 0) * (sub.qta || 1)).toFixed(1)} kg)
                                                       </span>
                                                     )}
@@ -18360,7 +18360,7 @@ export default function App() {
                                                       title={t('tip.diminuisci')}
                                                       onClick={() => modSub({ qta: Math.max(0, (Number(sub.qta) || 1) - 1) })}
                                                     >−</button>
-                                                    <strong style={{ minWidth: 18, textAlign: 'center', fontSize: 11.5 }}>{sub.qta || 1}</strong>
+                                                    <strong style={{ minWidth: 18, textAlign: 'center', fontSize: 12 }}>{sub.qta || 1}</strong>
                                                     <button
                                                       type="button"
                                                       style={{ ...styles.buttonMini, padding: '0 5px', fontSize: 11, height: 22, minWidth: 22 }}
@@ -18401,13 +18401,13 @@ export default function App() {
                                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', fontSize: 12 }}>
                                         {mostraEffetto && (
                                           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                                            <span style={{ fontWeight: 700, color: C.goldDark, fontSize: 11.5 }}>
+                                            <span style={{ fontWeight: 700, color: C.goldDark, fontSize: 12 }}>
                                               ✨ {t('inv.effetto')}:
                                             </span>
                                             <select
                                               value={o.effettoMeccanico || ''}
                                               onChange={(e) => modInv(o.id, { effettoMeccanico: e.target.value, richiedeSintonia: !!e.target.value })}
-                                              style={{ ...styles.inlineInput, padding: '3px 6px', fontSize: 11.5, maxWidth: 260 }}
+                                              style={{ ...styles.inlineInput, padding: '3px 6px', fontSize: 12, maxWidth: 260 }}
                                             >
                                               <option value="">{EFFETTI_OGGETTO[0][lingua === 'it' ? 1 : 2]}</option>
                                               {EFFETTI_OGGETTO.slice(1).sort((a, b) => a[lingua === 'it' ? 1 : 2].localeCompare(b[lingua === 'it' ? 1 : 2], lingua)).map(([id, labelIt, labelEn]) => (
@@ -18431,7 +18431,7 @@ export default function App() {
 
                                         {mostraUtilizzi && (
                                           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                                            <span style={{ fontWeight: 700, color: C.goldDark, fontSize: 11.5 }}>
+                                            <span style={{ fontWeight: 700, color: C.goldDark, fontSize: 12 }}>
                                               ⚡ {t('inv.utilizzi')}:
                                             </span>
                                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
@@ -18477,7 +18477,7 @@ export default function App() {
                                             <select
                                               value={o.ricarica || 'manuale'}
                                               onChange={(e) => modInv(o.id, { ricarica: e.target.value })}
-                                              style={{ ...styles.inlineInput, padding: '3px 6px', fontSize: 11.5 }}
+                                              style={{ ...styles.inlineInput, padding: '3px 6px', fontSize: 12 }}
                                             >
                                               {['alba', 'breve', 'lungo', 'manuale'].sort((a, b) => t(`inv.${a}`).localeCompare(t(`inv.${b}`), 'it')).map((r) => (
                                                 <option key={r} value={r}>{t(`inv.${r}`)}</option>
@@ -18591,7 +18591,7 @@ export default function App() {
                         </datalist>
                         <button
                           type="button"
-                          style={{ ...styles.buttonPrimary, padding: '7px 16px', fontSize: 12.5, whiteSpace: 'nowrap', fontWeight: 700 }}
+                          style={{ ...styles.buttonPrimary, padding: '7px 16px', fontSize: 13, whiteSpace: 'nowrap', fontWeight: 700 }}
                           onClick={() => {
                             const q = nuovoOggettoTesto.trim();
                             if (q) {
@@ -18632,7 +18632,7 @@ export default function App() {
                               gap: 2,
                             }}
                           >
-                            <div style={{ padding: '4px 8px', fontSize: 10.5, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5, borderBottom: `1px solid ${C.border}` }}>
+                            <div style={{ padding: '4px 8px', fontSize: 11, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5, borderBottom: `1px solid ${C.border}` }}>
                               💡 {lingua === 'en' ? 'Click to add directly to inventory:' : 'Clicca per caricare direttamente nell’inventario:'}
                             </div>
                             {matches.map((itemNome) => {
@@ -18657,7 +18657,7 @@ export default function App() {
                                     border: 'none',
                                     background: 'transparent',
                                     color: C.ink,
-                                    fontSize: 12.5,
+                                    fontSize: 13,
                                     cursor: 'pointer',
                                     textAlign: 'left',
                                     transition: 'background 0.15s ease',
@@ -18805,7 +18805,7 @@ export default function App() {
                           {t("aspetto.background")}{scheda.background ? `: ${traduciDato(scheda.background)}` : ''}
                         </div>
                         {scheda.background && (
-                          <span style={{ fontSize: 11.5, fontWeight: 700, color: C.goldDark, background: 'rgba(201,162,39,0.15)', border: `1px solid ${C.gold}`, borderRadius: 6, padding: '2px 8px' }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, background: 'rgba(201,162,39,0.15)', border: `1px solid ${C.gold}`, borderRadius: 6, padding: '2px 8px' }}>
                             📜 {traduciDato(scheda.background)}
                           </span>
                         )}
@@ -18990,7 +18990,7 @@ export default function App() {
                     </div>
 
                     {(!scheda.alleati || scheda.alleati.length === 0) ? (
-                      <div style={{ ...styles.detail, fontSize: 11.5, color: C.inkDim, padding: '8px 10px', background: 'rgba(0,0,0,0.02)', borderRadius: 6, border: `1px dashed ${C.border}` }}>
+                      <div style={{ ...styles.detail, fontSize: 12, color: C.inkDim, padding: '8px 10px', background: 'rgba(0,0,0,0.02)', borderRadius: 6, border: `1px dashed ${C.border}` }}>
                         {t("aspetto.alleati_ph")}
                       </div>
                     ) : (
@@ -19133,11 +19133,11 @@ export default function App() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: 24, lineHeight: 1 }}>🧭</span>
                 <div>
-                  <h2 style={{ ...styles.title, margin: 0, fontSize: 17, letterSpacing: 0.3, color: C.ink }}>
+                  <h2 style={{ ...styles.title, margin: 0, fontSize: 18, letterSpacing: 0.3, color: C.ink }}>
                     {lingua === 'en' ? 'Menu & Game Tools' : 'Menu & Strumenti'}
                   </h2>
                   <div style={{ fontSize: 12, color: 'var(--c-title)', fontWeight: 800, fontFamily: "var(--font-title, Georgia, 'Times New Roman', serif)" }}>
-                    Tavolo dei Dadi <span style={{ fontSize: 10.5, color: C.inkDim, opacity: 0.75, fontWeight: 600 }}>v{APP_VERSION}</span>
+                    Tavolo dei Dadi <span style={{ fontSize: 11, color: C.inkDim, opacity: 0.75, fontWeight: 600 }}>v{APP_VERSION}</span>
                   </div>
                 </div>
               </div>
@@ -19153,7 +19153,7 @@ export default function App() {
 
             {/* Sezione 1: Scheda Personaggio */}
             <div>
-              <div style={{ fontSize: 11.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.6, color: C.goldDark, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.6, color: C.goldDark, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
                 <span>👤</span> <span>{lingua === 'en' ? 'Character Sheet' : 'Scheda Personaggio'}</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
@@ -19214,7 +19214,7 @@ export default function App() {
 
             {/* Sezione 2: Sistema & Dati */}
             <div>
-              <div style={{ fontSize: 11.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.6, color: C.goldDark, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.6, color: C.goldDark, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
                 <span>⚙️</span> <span>{lingua === 'en' ? 'System & Data' : 'Sistema & Dati'}</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
@@ -19304,7 +19304,7 @@ export default function App() {
 
             {/* Sezione 3: Sessione & Strumenti */}
             <div>
-              <div style={{ fontSize: 11.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.6, color: C.goldDark, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.6, color: C.goldDark, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
                 <span>🧭</span> <span>{lingua === 'en' ? 'Session & Tools' : 'Sessione & Strumenti'}</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
@@ -19501,7 +19501,7 @@ export default function App() {
                 </div>
                 <button
                   type="button"
-                  style={{ ...styles.button, background: C.gold, color: '#fff', fontSize: 12.5, fontWeight: 700, padding: '6px 14px', border: 'none', borderRadius: 6, display: 'flex', alignItems: 'center', gap: 6 }}
+                  style={{ ...styles.button, background: C.gold, color: '#fff', fontSize: 13, fontWeight: 700, padding: '6px 14px', border: 'none', borderRadius: 6, display: 'flex', alignItems: 'center', gap: 6 }}
                   onClick={() => tiraTuttoIspirazione(bgIspirazioneScelto)}
                 >
                   {t('aspetto.tira_tutto')} (d8, d6, d6, d6)
@@ -19540,7 +19540,7 @@ export default function App() {
                           <div
                             key={idx}
                             style={{
-                              fontSize: 11.5,
+                              fontSize: 12,
                               padding: '4px 6px',
                               borderRadius: 4,
                               cursor: 'pointer',
@@ -19587,7 +19587,7 @@ export default function App() {
                           <div
                             key={idx}
                             style={{
-                              fontSize: 11.5,
+                              fontSize: 12,
                               padding: '4px 6px',
                               borderRadius: 4,
                               cursor: 'pointer',
@@ -19634,7 +19634,7 @@ export default function App() {
                           <div
                             key={idx}
                             style={{
-                              fontSize: 11.5,
+                              fontSize: 12,
                               padding: '4px 6px',
                               borderRadius: 4,
                               cursor: 'pointer',
@@ -19681,7 +19681,7 @@ export default function App() {
                           <div
                             key={idx}
                             style={{
-                              fontSize: 11.5,
+                              fontSize: 12,
                               padding: '4px 6px',
                               borderRadius: 4,
                               cursor: 'pointer',
@@ -19758,7 +19758,7 @@ export default function App() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ fontSize: 28, lineHeight: 1 }}>📜</span>
                 <div>
-                  <h2 style={{ ...styles.title, margin: 0, fontSize: 19, letterSpacing: 0.5, color: C.ink }}>
+                  <h2 style={{ ...styles.title, margin: 0, fontSize: 20, letterSpacing: 0.5, color: C.ink }}>
                     {t('sez.diario')}
                   </h2>
                   <div style={{ ...styles.detail, fontSize: 12, color: C.goldDark, fontWeight: 700 }}>
@@ -19850,7 +19850,7 @@ export default function App() {
                     <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
                       <button
                         className="no-stampa"
-                        style={{ ...styles.buttonPrimary, padding: '6px 14px', fontSize: 12.5, display: 'flex', alignItems: 'center', gap: 6 }}
+                        style={{ ...styles.buttonPrimary, padding: '6px 14px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}
                         onClick={() => {
                           const newId = `d-${Date.now()}`;
                           aggiorna({
@@ -19865,7 +19865,7 @@ export default function App() {
                         <>
                           <button
                             className="no-stampa"
-                            style={{ ...styles.buttonMini, fontSize: 11.5, padding: '5px 10px' }}
+                            style={{ ...styles.buttonMini, fontSize: 12, padding: '5px 10px' }}
                             onClick={toggleTutteVoci}
                             title="Espandi o comprimi tutte le sessioni"
                           >
@@ -19873,7 +19873,7 @@ export default function App() {
                           </button>
                           <button
                             className="no-stampa"
-                            style={{ ...styles.buttonMini, fontSize: 11.5, padding: '5px 10px' }}
+                            style={{ ...styles.buttonMini, fontSize: 12, padding: '5px 10px' }}
                             onClick={copiaDiario}
                             title={t('diario.copia_tip')}
                           >
@@ -19881,7 +19881,7 @@ export default function App() {
                           </button>
                           <button
                             className="no-stampa"
-                            style={{ ...styles.buttonMini, fontSize: 11.5, padding: '5px 10px', color: C.goldDark, borderColor: C.goldDark }}
+                            style={{ ...styles.buttonMini, fontSize: 12, padding: '5px 10px', color: C.goldDark, borderColor: C.goldDark }}
                             onClick={scaricaDiario}
                             title={t('diario.scarica_md_tip')}
                           >
@@ -19915,7 +19915,7 @@ export default function App() {
                       <div style={{ fontWeight: 700, fontSize: 15, color: C.ink, marginBottom: 6 }}>
                         {lingua === 'en' ? 'Your Adventurer’s Journal is Empty' : 'Il Diario del tuo Avventuriero è Vuoto'}
                       </div>
-                      <div style={{ ...styles.detail, fontSize: 12.5, maxWidth: 420, margin: '0 auto 16px' }}>
+                      <div style={{ ...styles.detail, fontSize: 13, maxWidth: 420, margin: '0 auto 16px' }}>
                         {lingua === 'en'
                           ? 'Keep track of encounters, loot, NPC secrets, quests and travel notes during each gaming session.'
                           : 'Traccia incontri, bottini ottenuti, segreti dei PNG, missioni e luoghi esplorati durante ogni sessione al tavolo.'}
@@ -19933,7 +19933,7 @@ export default function App() {
                   )}
 
                   {qDiario && diarioFiltrato.length === 0 && (
-                    <div style={{ ...styles.detail, fontSize: 12.5, fontStyle: 'italic', textAlign: 'center', padding: '16px 0' }}>
+                    <div style={{ ...styles.detail, fontSize: 13, fontStyle: 'italic', textAlign: 'center', padding: '16px 0' }}>
                       {lingua === 'en' ? `No notes match "${filtroDiario}".` : `Nessuna nota corrisponde a "${filtroDiario}".`}
                     </div>
                   )}
@@ -19974,7 +19974,7 @@ export default function App() {
 
                             <span
                               style={{
-                                fontSize: 11.5,
+                                fontSize: 12,
                                 fontWeight: 800,
                                 color: C.goldDark,
                                 background: 'rgba(218, 165, 32, 0.15)',
@@ -19992,13 +19992,13 @@ export default function App() {
                                 type="date"
                                 value={v.data || ''}
                                 onChange={(e) => modificaVoce(v.id, { data: e.target.value })}
-                                style={{ ...styles.inlineInput, padding: '3px 6px', fontSize: 11.5, width: 115, borderRadius: 4 }}
+                                style={{ ...styles.inlineInput, padding: '3px 6px', fontSize: 12, width: 115, borderRadius: 4 }}
                               />
                               <input
                                 value={v.titolo || ''}
                                 placeholder={t('diario.titolo_ph')}
                                 onChange={(e) => modificaVoce(v.id, { titolo: e.target.value })}
-                                style={{ ...styles.inlineInput, flex: 1, minWidth: 100, padding: '4px 8px', fontSize: 13.5, fontWeight: 700, color: C.ink, borderRadius: 4 }}
+                                style={{ ...styles.inlineInput, flex: 1, minWidth: 100, padding: '4px 8px', fontSize: 14, fontWeight: 700, color: C.ink, borderRadius: 4 }}
                               />
                             </div>
 
@@ -20033,7 +20033,7 @@ export default function App() {
                             <div
                               onClick={() => setVociDiarioChiuse((prev) => ({ ...prev, [v.id]: false }))}
                               style={{
-                                fontSize: 12.5,
+                                fontSize: 13,
                                 color: C.inkDim,
                                 fontStyle: 'italic',
                                 cursor: 'pointer',
@@ -20051,7 +20051,7 @@ export default function App() {
                                 value={v.testo != null ? v.testo : TEMPLATE_DIARIO}
                                 placeholder={t('diario.testo_ph')}
                                 onChange={(nuovo) => modificaVoce(v.id, { testo: nuovo })}
-                                style={{ minHeight: 200, fontSize: 13.5, lineHeight: 1.55 }}
+                                style={{ minHeight: 200, fontSize: 14, lineHeight: 1.55 }}
                               />
                             </div>
                           )}
@@ -20172,7 +20172,7 @@ export default function App() {
                   <h2 style={{ ...styles.title, margin: 0, fontSize: 18, color: C.ink }}>
                     {t('roll.tavolo_dadi')}
                   </h2>
-                  <div style={{ ...styles.detail, fontSize: 11.5, color: C.inkDim }}>
+                  <div style={{ ...styles.detail, fontSize: 12, color: C.inkDim }}>
                     {lingua === 'en' ? 'Quick dice roller, advantage & custom rolls' : 'Lancio rapido dadi, vantaggio/svantaggio e formule'}
                   </div>
                 </div>
@@ -20339,7 +20339,7 @@ export default function App() {
                             {voce.critico && <span style={styles.badge(C.green)}>{t('log.critico')}</span>}
                             {voce.fumble && <span style={styles.badge(C.red)}>{t('log.fallimento')}</span>}
                           </div>
-                          <div style={{ ...styles.detail, fontSize: 10.5 }}>
+                          <div style={{ ...styles.detail, fontSize: 11 }}>
                             {ora}{voce.personaggio ? ` · ${voce.personaggio}` : ''}{voce.dettaglio ? ` · ${voce.dettaglio}` : ''}
                           </div>
                         </div>
@@ -20456,7 +20456,7 @@ export default function App() {
                       }
                       e.target.value = '';
                     }}
-                    style={{ ...styles.inlineInput, fontSize: 11.5, padding: '3px 6px', maxWidth: 125, height: 26, fontWeight: 700, background: 'rgba(46,139,87,0.1)', color: '#2e8b57', borderColor: '#2e8b57' }}
+                    style={{ ...styles.inlineInput, fontSize: 12, padding: '3px 6px', maxWidth: 125, height: 26, fontWeight: 700, background: 'rgba(46,139,87,0.1)', color: '#2e8b57', borderColor: '#2e8b57' }}
                     title="Aggiungi un alleato salvato nella scheda o creane uno nuovo"
                   >
                     <option value="">🛡️ ＋ {t('ct.alleato')}...</option>
@@ -20501,7 +20501,7 @@ export default function App() {
                     }
                     e.target.value = '';
                   }}
-                  style={{ ...styles.inlineInput, fontSize: 11.5, padding: '3px 6px', maxWidth: 120, height: 26, fontWeight: 600 }}
+                  style={{ ...styles.inlineInput, fontSize: 12, padding: '3px 6px', maxWidth: 120, height: 26, fontWeight: 600 }}
                   title={lingua === 'it' ? "Aggiungi un mostro o creatura dal bestiario allo scontro" : "Add a monster or creature from the bestiary to combat"}
                 >
                   <option value="">👹 + Mostro...</option>
@@ -20651,19 +20651,19 @@ export default function App() {
                       >
                         {/* Banner Ruolo / Turno Attivo / Prossimo Turno — animato */}
                         {inTurno ? (
-                          <div className="icona-campanello" style={{ background: 'var(--c-gold-dark)', color: '#ffffff', fontSize: 10.5, fontWeight: 800, textAlign: 'center', padding: '3px 6px', letterSpacing: 0.6, textTransform: 'uppercase' }}>
+                          <div className="icona-campanello" style={{ background: 'var(--c-gold-dark)', color: '#ffffff', fontSize: 11, fontWeight: 800, textAlign: 'center', padding: '3px 6px', letterSpacing: 0.6, textTransform: 'uppercase' }}>
                             {t('ct.in_turno')}
                           </div>
                         ) : prossimo ? (
-                          <div style={{ background: '#2b75cb', color: '#ffffff', fontSize: 10.5, fontWeight: 800, textAlign: 'center', padding: '2px 6px', letterSpacing: 0.5, textTransform: 'uppercase' }}>
+                          <div style={{ background: '#2b75cb', color: '#ffffff', fontSize: 11, fontWeight: 800, textAlign: 'center', padding: '2px 6px', letterSpacing: 0.5, textTransform: 'uppercase' }}>
                             {t('ct.prossimo_turno')}
                           </div>
                         ) : offset > 0 && roundRelativo > combat.round ? (
-                          <div style={{ background: 'rgba(0,0,0,0.06)', color: C.inkDim, fontSize: 10.5, fontWeight: 700, textAlign: 'center', padding: '2px 6px' }}>
+                          <div style={{ background: 'rgba(0,0,0,0.06)', color: C.inkDim, fontSize: 11, fontWeight: 700, textAlign: 'center', padding: '2px 6px' }}>
                             🔄 Round {roundRelativo} · {cb.tipo === 'pg' ? '👤 Personaggio' : cb.tipo === 'alleato' ? '🛡️ Alleato' : '⚔️ Nemico'}
                           </div>
                         ) : (
-                          <div style={{ background: colBg, color: col, fontSize: 10.5, fontWeight: 700, textAlign: 'center', padding: '2px 6px', textTransform: 'uppercase', letterSpacing: 0.4 }}>
+                          <div style={{ background: colBg, color: col, fontSize: 11, fontWeight: 700, textAlign: 'center', padding: '2px 6px', textTransform: 'uppercase', letterSpacing: 0.4 }}>
                             {cb.tipo === 'pg' ? '👤 Personaggio' : cb.tipo === 'alleato' ? '🛡️ Alleato' : '⚔️ Nemico'}
                           </div>
                         )}
@@ -20686,7 +20686,7 @@ export default function App() {
                               }}
                               title={t('ct.iniziativa')}
                             >
-                              <span style={{ fontSize: 10.5, fontWeight: 900, color: C.inkDim, lineHeight: 1, letterSpacing: 0.5 }}>INIZ</span>
+                              <span style={{ fontSize: 11, fontWeight: 900, color: C.inkDim, lineHeight: 1, letterSpacing: 0.5 }}>INIZ</span>
                               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
                                 <input
                                   type="text"
@@ -20764,7 +20764,7 @@ export default function App() {
                           </div>
 
                           {/* Riga 2: CA e Concentrazione */}
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11.5, color: C.inkDim, background: 'rgba(0,0,0,0.02)', padding: '2px 6px', borderRadius: 6 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12, color: C.inkDim, background: 'rgba(0,0,0,0.02)', padding: '2px 6px', borderRadius: 6 }}>
                             <span title={t("vital.ca")} style={{ fontWeight: 700, color: C.ink }}>
                               🛡️ CA <Editable value={cb.ca} tipo="numero" width={22} onChange={(v) => modCombat(cb.id, { ca: v })} />
                             </span>
@@ -20789,7 +20789,7 @@ export default function App() {
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
                               <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
-                                <strong style={{ fontSize: 17, color: morto ? C.red : pctVita > 50 ? C.green : pctVita > 25 ? C.goldDark : C.red }}>
+                                <strong style={{ fontSize: 18, color: morto ? C.red : pctVita > 50 ? C.green : pctVita > 25 ? C.goldDark : C.red }}>
                                   <Editable value={cb.pfAttuali} tipo="numero" width={32} onChange={(v) => modCombat(cb.id, { pfAttuali: Math.max(0, v) })} />
                                 </strong>
                                 <span style={{ color: C.inkDim, fontSize: 12 }}>/ <Editable value={cb.pfMax} tipo="numero" width={32} onChange={(v) => modCombat(cb.id, { pfMax: Math.max(1, v) })} /> PF</span>
@@ -20869,21 +20869,21 @@ export default function App() {
                               style={{ ...styles.inlineInput, width: 44, padding: '3px 4px', fontSize: 12, height: 24, textAlign: 'center' }}
                             />
                             <button
-                              style={{ ...styles.buttonMini, color: '#b03a2e', borderColor: '#b03a2e', padding: '2px 4px', fontWeight: 700, fontSize: 10.5, height: 24, flex: 1, whiteSpace: 'nowrap' }}
+                              style={{ ...styles.buttonMini, color: '#b03a2e', borderColor: '#b03a2e', padding: '2px 4px', fontWeight: 700, fontSize: 11, height: 24, flex: 1, whiteSpace: 'nowrap' }}
                               title={t('ct.danno')}
                               onClick={() => applica(-1)}
                             >
                               − Danno
                             </button>
                             <button
-                              style={{ ...styles.buttonMini, color: '#2e8b57', borderColor: '#2e8b57', padding: '2px 4px', fontWeight: 700, fontSize: 10.5, height: 24, flex: 1, whiteSpace: 'nowrap' }}
+                              style={{ ...styles.buttonMini, color: '#2e8b57', borderColor: '#2e8b57', padding: '2px 4px', fontWeight: 700, fontSize: 11, height: 24, flex: 1, whiteSpace: 'nowrap' }}
                               title={t('ct.cura')}
                               onClick={() => applica(1)}
                             >
                               ＋ Cura
                             </button>
                             <button
-                              style={{ ...styles.buttonMini, color: '#2b75cb', borderColor: '#2b75cb', padding: '2px 4px', fontWeight: 700, fontSize: 10.5, height: 24, flex: 1, whiteSpace: 'nowrap' }}
+                              style={{ ...styles.buttonMini, color: '#2b75cb', borderColor: '#2b75cb', padding: '2px 4px', fontWeight: 700, fontSize: 11, height: 24, flex: 1, whiteSpace: 'nowrap' }}
                               title="Imposta PF Temporanei"
                               onClick={() => {
                                 const v = Math.abs(parseInt(ctDmg[cb.id], 10) || 0);
@@ -20900,7 +20900,7 @@ export default function App() {
                           {/* TS Morte (se a 0 PF o PG) */}
                           {(morto || cb.tipo === 'pg') && (
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 11, background: 'rgba(0,0,0,0.02)', padding: '2px 4px', borderRadius: 4 }} title={t('vital.ts_morte')}>
-                              <span style={{ color: C.inkDim, fontSize: 10.5 }}>💀</span>
+                              <span style={{ color: C.inkDim, fontSize: 11 }}>💀</span>
                               {[1, 2, 3].map((i) => (
                                 <span key={`s${i}`} style={styles.pip(cb.tsMorte.successi >= i, C.green)} onClick={() => modCombat(cb.id, { tsMorte: { ...cb.tsMorte, successi: cb.tsMorte.successi >= i ? i - 1 : i } })} />
                               ))}
@@ -20917,7 +20917,7 @@ export default function App() {
                               <span
                                 key={cond}
                                 onClick={() => modCombat(cb.id, { condizioni: cb.condizioni.filter((x) => x !== cond) })}
-                                style={{ fontSize: 10.5, background: 'rgba(176,58,46,0.1)', color: C.red, border: `1px solid ${C.red}`, borderRadius: 4, padding: '0 4px', cursor: 'pointer', fontWeight: 600 }}
+                                style={{ fontSize: 11, background: 'rgba(176,58,46,0.1)', color: C.red, border: `1px solid ${C.red}`, borderRadius: 4, padding: '0 4px', cursor: 'pointer', fontWeight: 600 }}
                                 title={t('ct.rimuovi_cond')}
                               >
                                 {cond} ×
@@ -20926,7 +20926,7 @@ export default function App() {
                             <select
                               value=""
                               onChange={(e) => { if (e.target.value) modCombat(cb.id, { condizioni: [...cb.condizioni, e.target.value] }); }}
-                              style={{ ...styles.inlineInput, fontSize: 10.5, padding: '1px 3px', height: 20 }}
+                              style={{ ...styles.inlineInput, fontSize: 11, padding: '1px 3px', height: 20 }}
                             >
                               <option value="">＋ {t('ct.condizione')}</option>
                               {CONDIZIONI_5E.filter((c) => !cb.condizioni.includes(c)).sort((a, b) => traduciDato(a).localeCompare(traduciDato(b), lingua)).map((c) => (
@@ -20963,7 +20963,7 @@ export default function App() {
             boxShadow: '0 4px 18px rgba(0,0,0,0.35)',
             cursor: 'pointer',
             fontWeight: 800,
-            fontSize: 12.5,
+            fontSize: 13,
             letterSpacing: 0.3,
             transition: 'all 0.2s ease',
             userSelect: 'none',

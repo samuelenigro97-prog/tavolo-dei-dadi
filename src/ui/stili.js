@@ -1571,8 +1571,8 @@ tbody tr:hover {
 .campi-anagrafica select { max-width: 100%; font-size: 12px !important; font-family: inherit !important; font-weight: 600 !important; color: var(--c-ink) !important; padding: 1px 13px 1px 1px !important; height: 100% !important; line-height: 1.2; background-position: right 1px center !important; background-size: 7px !important; }
 .campi-anagrafica .campo-modulo-box { padding: 0 1px !important; min-height: 26px !important; height: 26px; display: flex; align-items: center; overflow: hidden; font-size: 12px; font-weight: 600 !important; color: var(--c-ink) !important; font-family: inherit !important; }
 .campi-anagrafica .campo-modulo-box * { font-size: inherit; font-family: inherit; font-weight: 600; }
-.campi-anagrafica .campo-modulo-box.testo-compatto, .campi-anagrafica .campo-modulo-box.testo-compatto * { font-size: 10.5px !important; letter-spacing: -0.2px; }
-.campi-anagrafica .campo-modulo-label { font-size: 10.5px !important; margin-top: 2px; font-weight: 700 !important; letter-spacing: 0.25px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.campi-anagrafica .campo-modulo-box.testo-compatto, .campi-anagrafica .campo-modulo-box.testo-compatto * { font-size: 11px !important; letter-spacing: -0.2px; }
+.campi-anagrafica .campo-modulo-label { font-size: 11px !important; margin-top: 2px; font-weight: 700 !important; letter-spacing: 0.25px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* Sottoclasse con più classi (multiclasse): una riga per classe, l'altezza fissa
     da campo singolo taglierebbe via le righe in più. */
 .campi-anagrafica .campo-modulo-box.sottoclasse-multi { height: auto !important; align-items: flex-start !important; overflow: visible !important; padding-top: 2px !important; padding-bottom: 2px !important; }
@@ -1916,7 +1916,7 @@ tbody tr:hover {
     content: attr(data-label);
     margin-right: 6px;
     color: var(--c-ink-dim);
-    font-size: 10.5px;
+    font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .4px;
@@ -1950,7 +1950,7 @@ tbody tr:hover {
   }
   .inventario-table .inventario-riga > td:nth-child(n+3):not(.inventario-azioni)::before {
     content: attr(data-label); margin-right: 5px; color: var(--c-ink-dim);
-    font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
     flex-shrink: 0;
   }
   .inventario-table .inventario-riga > .inventario-azioni button { min-width: 34px; min-height: 30px; }

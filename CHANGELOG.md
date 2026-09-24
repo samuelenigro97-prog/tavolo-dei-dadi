@@ -2,6 +2,25 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.21.0] – 2026-09-24
+
+### Corretto
+- **Talenti duplicati**: tre talenti comparivano due volte nell'elenco sotto
+  nomi diversi, per lo stesso identico effetto — "Vigile"/"Allerta" (Alert),
+  "Attaccante Selvaggio"/"Mente Rapida" (Savage Attacker), "Grande Maestro
+  d'Armi"/"Maestro delle Armi Grandi" (Great Weapon Master). Tenuto un nome
+  corretto e verificato per talento (confermati via fonti online), rimossa
+  la voce duplicata; aggiornati i suggerimenti per background e i tag di
+  provenienza (PHB 2014/2024) che puntavano alla voce tolta. L'automazione
+  del bonus Iniziativa di "Allerta" continua a funzionare.
+- Verificati tutti i tratti di specie (21 razze) contro il PHB 2024: nessuna
+  voce inventata trovata, "Passo Celere" (Elfo dei Boschi) è corretto.
+
+### Modificato
+- **Scala dei font consolidata**: da 24 taglie diverse (spesso a scaglioni
+  di mezzo pixel senza una vera gerarchia) a una decina di taglie fisse
+  (11/12/13/14/15/16/18/20 + poche taglie grandi per numeri in evidenza).
+
 ## [4.20.0] – 2026-09-23
 
 ### Corretto
