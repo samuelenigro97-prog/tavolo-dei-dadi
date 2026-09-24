@@ -5,6 +5,21 @@
 
 export const NOVITA = [
   {
+    versione: '4.23.0',
+    voci: {
+      it: [
+        'Fix leggibilità: il colore del testo secondario nel tema chiaro (e nei preset Mare/Montagna) era troppo chiaro rispetto alle linee guida di accessibilità; scurito leggermente.',
+        'Aggiunte etichette per screen reader ai bottoni "chiudi" e "rimuovi" che avevano solo un\'icona.',
+        'Verificati incantesimi, alias e privilegi di classe: nessun errore trovato oltre ai talenti già corretti.',
+      ],
+      en: [
+        'Readability fix: secondary text color in the light theme (and Sea/Mountain presets) was too light per accessibility guidelines; darkened slightly.',
+        'Added screen reader labels to icon-only "close" and "remove" buttons.',
+        'Verified spells, aliases and class features: no errors found beyond the feats already fixed.',
+      ],
+    },
+  },
+  {
     versione: '4.21.0',
     voci: {
       it: [

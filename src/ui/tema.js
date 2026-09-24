@@ -29,7 +29,7 @@ export const COLORE_DADO = {
 // Palette base del tema (chiaro/scuro): i preset qui sotto la sovrascrivono, e la
 // tinta per classe agisce sopra. NON rimuovere: è usata per costruire il tema.
 export const BASE_TEMA = {
-  chiaro: { bg: '#f4f1ea', panel: '#ffffff', panelLight: '#f7f4ee', border: '#ddd5c6', ink: '#2b2620', inkDim: '#8d8272', gold: '#b8860b', goldDark: '#8a6508', red: '#b03a2e', green: '#3e7d32', title: '#9e2b25' },
+  chiaro: { bg: '#f4f1ea', panel: '#ffffff', panelLight: '#f7f4ee', border: '#ddd5c6', ink: '#2b2620', inkDim: '#736858', gold: '#b8860b', goldDark: '#8a6508', red: '#b03a2e', green: '#3e7d32', title: '#9e2b25' },
   scuro: { bg: '#171310', panel: '#211b16', panelLight: '#2a231c', border: '#46392b', ink: '#e9dfcd', inkDim: '#a0937f', gold: '#c9a227', goldDark: '#dcb84f', red: '#d0685a', green: '#7fb069', title: '#de8f88' },
 };
 
@@ -83,7 +83,7 @@ export const PRESET_COLORI = [
   {
     id: 'mare', nome: '🌊 Mare', audio: 'mare',
     sfondo: 'radial-gradient(55% 60% at 0% 15%, rgba(30,150,170,0.15), transparent 62%), radial-gradient(55% 60% at 100% 85%, rgba(40,170,190,0.13), transparent 62%)',
-    chiaro: { bg: '#e8f5f4', panel: '#f4fcfb', panelLight: '#dcf0ee', border: '#96ccc8', ink: '#0e2c2a', inkDim: '#3e807a', gold: '#0e9088', goldDark: '#066660', title: '#066660' },
+    chiaro: { bg: '#e8f5f4', panel: '#f4fcfb', panelLight: '#dcf0ee', border: '#96ccc8', ink: '#0e2c2a', inkDim: '#347068', gold: '#0e9088', goldDark: '#066660', title: '#066660' },
     scuro:  { bg: '#06110f', panel: '#0d1c1a', panelLight: '#132724', border: '#1e4440', ink: '#c6ece6', inkDim: '#54a09a', gold: '#20b0a4', goldDark: '#50d0c4', title: '#50d0c4' },
   },
   {
@@ -95,7 +95,7 @@ export const PRESET_COLORI = [
   {
     id: 'montagna', nome: '⛰️ Montagna', audio: 'montagna',
     sfondo: 'radial-gradient(58% 58% at 0% 18%, rgba(112,132,150,0.18), transparent 62%), radial-gradient(58% 58% at 100% 82%, rgba(72,92,108,0.16), transparent 62%)',
-    chiaro: { bg: '#edf1f3', panel: '#f9fbfc', panelLight: '#e4eaee', border: '#aebdc7', ink: '#202b32', inkDim: '#647782', gold: '#657f8f', goldDark: '#405c6d', title: '#405c6d' },
+    chiaro: { bg: '#edf1f3', panel: '#f9fbfc', panelLight: '#e4eaee', border: '#aebdc7', ink: '#202b32', inkDim: '#5b6e79', gold: '#657f8f', goldDark: '#405c6d', title: '#405c6d' },
     scuro:  { bg: '#0c1217', panel: '#141d24', panelLight: '#1b2730', border: '#30414d', ink: '#d8e2e8', inkDim: '#7f96a4', gold: '#7899ad', goldDark: '#a2bed0', title: '#a2bed0' },
   },
   {

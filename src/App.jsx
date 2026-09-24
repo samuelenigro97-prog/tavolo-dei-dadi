@@ -248,6 +248,7 @@ function TendinaCompetenzaCustom({
                 type="button"
                 onClick={() => setAperto(false)}
                 style={{ ...styles.buttonMini, padding: '1px 5px', fontSize: 11, lineHeight: 1, width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                aria-label={t('tip.chiudi')}
               >✕</button>
             </div>
 
@@ -276,6 +277,7 @@ function TendinaCompetenzaCustom({
                       type="button"
                       onClick={() => setCerca('')}
                       style={{ position: 'absolute', right: 4, background: 'transparent', border: 0, color: C.inkDim, fontSize: 11, cursor: 'pointer', padding: 2 }}
+                      aria-label="Cancella ricerca"
                     >✕</button>
                   )}
                 </div>
@@ -1963,7 +1965,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.22.0';
+const APP_VERSION = '4.23.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3039,7 +3041,7 @@ function ArchivioDm({ url, onChiudi, onApri, onApriSolaLettura }) {
       <div style={{ ...styles.panel, maxWidth: 640, width: '100%', maxHeight: '88vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
           <strong style={{ color: C.goldDark, fontSize: 18 }}>🗂 Archivio PG</strong>
-          <button style={styles.buttonMini} onClick={onChiudi}>✕</button>
+          <button style={styles.buttonMini} onClick={onChiudi} title={t('tip.chiudi')} aria-label={t('tip.chiudi')}>✕</button>
         </div>
         <p style={{ ...styles.detail, marginTop: 0 }}>
           Le schede salvate dagli utenti. Clicca su <strong>Apri</strong> per visualizzarla nel tavolo in sola lettura (senza modificarla), oppure su <strong>Esporta</strong> per scaricare il file JSON.
@@ -6923,7 +6925,7 @@ export default function App() {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 }}>
               <strong style={{ color: C.goldDark, fontSize: 16 }}>{info.titolo}</strong>
-              <button style={styles.buttonMini} onClick={() => setInfo(null)} title={t('tip.chiudi')}>✕</button>
+              <button style={styles.buttonMini} onClick={() => setInfo(null)} title={t('tip.chiudi')} aria-label={t('tip.chiudi')}>✕</button>
             </div>
             <div 
               style={{ fontSize: 14, lineHeight: 1.5, color: C.ink, whiteSpace: 'pre-wrap', maxHeight: '70vh', overflowY: 'auto' }}
@@ -6962,7 +6964,7 @@ export default function App() {
                   {bestiaDettaglio.taglia} {bestiaDettaglio.tipo || 'bestia'}{bestiaDettaglio.gs != null ? ` · GS ${bestiaDettaglio.gs} (${bestiaDettaglio.gsNum * 200 || 10} PE)` : ''}
                 </div>
               </div>
-              <button style={styles.buttonMini} onClick={() => setBestiaDettaglio(null)} title={t('tip.chiudi')}>✕</button>
+              <button style={styles.buttonMini} onClick={() => setBestiaDettaglio(null)} title={t('tip.chiudi')} aria-label={t('tip.chiudi')}>✕</button>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 12, textAlign: 'center' }}>
@@ -7267,7 +7269,7 @@ export default function App() {
                   <strong style={{ color: C.goldDark, fontSize: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
                     ☕ {lingua === 'en' ? 'Short Rest (1 Hour)' : 'Riposo Breve (1 Ora)'}
                   </strong>
-                  <button style={styles.buttonMini} onClick={() => setModalRiposo(null)}>✕</button>
+                  <button style={styles.buttonMini} onClick={() => setModalRiposo(null)} title={t('tip.chiudi')} aria-label={t('tip.chiudi')}>✕</button>
                 </div>
 
                 <div style={{ fontSize: 12, color: C.ink, marginBottom: 12, lineHeight: 1.5 }}>
@@ -7371,7 +7373,7 @@ export default function App() {
                   <strong style={{ color: C.goldDark, fontSize: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
                     🌙 {lingua === 'en' ? 'Long Rest (8 Hours)' : 'Riposo Lungo (8 Ore)'}
                   </strong>
-                  <button style={styles.buttonMini} onClick={() => setModalRiposo(null)}>✕</button>
+                  <button style={styles.buttonMini} onClick={() => setModalRiposo(null)} title={t('tip.chiudi')} aria-label={t('tip.chiudi')}>✕</button>
                 </div>
 
                 <div style={{ fontSize: 12, color: C.ink, marginBottom: 14, lineHeight: 1.5 }}>
@@ -7542,7 +7544,7 @@ export default function App() {
             <div style={{ ...styles.panel, maxWidth: 420, width: '100%', maxHeight: '88vh', overflowY: 'auto' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                 <strong style={{ color: C.goldDark, fontSize: 18 }}>{s.nome || 'Incantesimo'}</strong>
-                <button style={styles.buttonMini} onClick={() => setDettaglioInc(null)} title={t('tip.chiudi')}>✕</button>
+                <button style={styles.buttonMini} onClick={() => setDettaglioInc(null)} title={t('tip.chiudi')} aria-label={t('tip.chiudi')}>✕</button>
               </div>
               <div style={{ ...styles.detail, marginBottom: 4 }}>{t('modal.modifica')} · {s.livello === 0 ? t('spell.trucchetto') : t('spell.inc_liv', { n: s.livello })}</div>
 
@@ -10356,7 +10358,7 @@ export default function App() {
               <strong style={{ color: C.goldDark, fontSize: 14, display: 'flex', alignItems: 'center', gap: 5 }}>
                 <span>📂</span> <span>{t('import_export.titolo')}</span>
               </strong>
-              <button style={styles.buttonMini} onClick={() => setMostraMenuEsporta(false)}>✕</button>
+              <button style={styles.buttonMini} onClick={() => setMostraMenuEsporta(false)} title={t('tip.chiudi')} aria-label={t('tip.chiudi')}>✕</button>
             </div>
 
             {/* SEZIONE 1: IMPORTA */}
@@ -10495,7 +10497,7 @@ export default function App() {
       {erroreImport && (
         <div style={{ maxWidth: 1080, margin: '8px auto 0', padding: '10px 12px', background: 'color-mix(in srgb, var(--c-panel) 94%, #c0392b)', border: `1px solid ${C.red}`, borderRadius: 8, color: C.red, fontSize: 13, lineHeight: 1.4, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
           <span style={{ flex: 1 }}>{erroreImport}</span>
-          <button style={{ ...styles.buttonMini, flexShrink: 0, padding: '2px 8px' }} onClick={() => setErroreImport('')}>✕</button>
+          <button style={{ ...styles.buttonMini, flexShrink: 0, padding: '2px 8px' }} onClick={() => setErroreImport('')} title={t('tip.chiudi')} aria-label={lingua === 'en' ? 'Dismiss error' : 'Chiudi errore'}>✕</button>
         </div>
       )}
 
@@ -10514,7 +10516,7 @@ export default function App() {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
               <strong style={{ color: C.goldDark, fontSize: 15, marginRight: 'auto' }}>🔔 {t('notifiche.titolo')}</strong>
-              <button style={{ ...styles.buttonMini, padding: '2px 7px' }} onClick={() => setMostraNotifiche(false)}>✕</button>
+              <button style={{ ...styles.buttonMini, padding: '2px 7px' }} onClick={() => setMostraNotifiche(false)} title={t('tip.chiudi')} aria-label={t('tip.chiudi')}>✕</button>
             </div>
 
             {/* SEZIONE 1: CONTROLLO E REGOLE DELLA SCHEDA */}
@@ -10541,6 +10543,7 @@ export default function App() {
                       style={{ ...styles.buttonMini, padding: '1px 6px', fontSize: 11, lineHeight: 1 }}
                       onClick={() => setNuvolettaCorrezioni(null)}
                       title={lingua === 'en' ? 'Close' : 'Chiudi'}
+                      aria-label={lingua === 'en' ? 'Close' : 'Chiudi'}
                     >✕</button>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
@@ -10755,6 +10758,7 @@ export default function App() {
               style={{ ...styles.buttonMini, padding: '1px 6px', fontSize: 11 }}
               onClick={() => setNuvolettaCorrezioni(null)}
               title={lingua === 'en' ? 'Close' : 'Chiudi'}
+              aria-label={lingua === 'en' ? 'Close' : 'Chiudi'}
             >✕</button>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 180, overflowY: 'auto' }}>
@@ -10928,7 +10932,7 @@ export default function App() {
             <div style={{ ...styles.panel, maxWidth: 460, width: '100%', maxHeight: '80vh', overflowY: 'auto' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                 <strong style={{ color: C.goldDark, fontSize: 16 }}>🕓 Versioni precedenti</strong>
-                <button style={styles.buttonMini} onClick={() => setMostraRipristino(false)}>✕</button>
+                <button style={styles.buttonMini} onClick={() => setMostraRipristino(false)} title={t('tip.chiudi')} aria-label={t('tip.chiudi')}>✕</button>
               </div>
               <p style={{ ...styles.detail, marginTop: 0 }}>
                 Ripristini automatici salvati su questo dispositivo (senza immagini). Utile per annullare
@@ -10971,7 +10975,7 @@ export default function App() {
           <div style={{ background: C.panel, border: `1px solid ${C.gold}`, borderRadius: 12, padding: '18px 20px', maxWidth: 480, width: '100%', maxHeight: '86vh', overflowY: 'auto', boxShadow: '0 10px 40px rgba(0,0,0,0.45)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <h2 style={{ ...styles.title, fontSize: 20, margin: 0 }}>⚖️ {t('legali.titolo')}</h2>
-              <button style={styles.buttonMini} onClick={() => setMostraNoteLegali(false)}>✕</button>
+              <button style={styles.buttonMini} onClick={() => setMostraNoteLegali(false)} title={t('tip.chiudi')} aria-label={t('tip.chiudi')}>✕</button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13, lineHeight: 1.5 }}>
@@ -11347,7 +11351,7 @@ export default function App() {
           <div style={{ background: C.panel, border: `1px solid ${C.gold}`, borderRadius: 12, padding: '18px 20px', maxWidth: 460, width: '100%', maxHeight: '86vh', overflowY: 'auto', boxShadow: '0 10px 40px rgba(0,0,0,0.45)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
               <h2 style={{ ...styles.title, fontSize: 20, margin: 0 }}>☕ {t('donazioni.titolo')}</h2>
-              <button style={styles.buttonMini} onClick={() => setMostraDonazioni(false)}>✕</button>
+              <button style={styles.buttonMini} onClick={() => setMostraDonazioni(false)} title={t('tip.chiudi')} aria-label={t('tip.chiudi')}>✕</button>
             </div>
             <p style={{ ...styles.detail, margin: '0 0 12px' }}>{t('donazioni.sottotitolo')}</p>
 
@@ -11421,6 +11425,7 @@ export default function App() {
             <button
               style={{ ...styles.btnMini }}
               onClick={() => setMostraPannelloAudio(false)}
+              aria-label="Chiudi pannello audio"
             >✕</button>
           </div>
           {/* Volume del sottofondo */}
@@ -12614,6 +12619,7 @@ export default function App() {
                                 testo: `${t('modal.elimina')} "${nomeVisualizzato || '?'}"?`,
                                 onConferma: () => aggiorna({ risorse: scheda.risorse.filter((x) => x.id !== r.id) }),
                               })}
+                              aria-label={t('tip.rimuovi_risorsa')}
                             >✕</button>
                           )}
                         </div>
@@ -13670,6 +13676,7 @@ export default function App() {
                           type="button"
                           style={{ background: 'transparent', border: 'none', color: '#c0392b', cursor: 'pointer', padding: 0, fontSize: 13, lineHeight: 1, fontWeight: 'bold' }}
                           title="Rimuovi effetto taglia"
+                          aria-label="Rimuovi effetto taglia"
                           onClick={() => aggiorna({ effettoTaglia: null })}
                         >✕</button>
                       </span>
@@ -13697,6 +13704,7 @@ export default function App() {
                             type="button"
                             style={{ background: 'transparent', border: 'none', color: '#c0392b', cursor: 'pointer', padding: 0, fontSize: 13, lineHeight: 1, fontWeight: 'bold' }}
                             title={t('tip.click_rimuovi')}
+                            aria-label={t('tip.click_rimuovi')}
                             onClick={() => aggiorna({ condizioni: scheda.condizioni.filter((x) => x !== c) })}
                           >✕</button>
                         </span>
@@ -15333,7 +15341,7 @@ export default function App() {
                           🎲 TS {conSegno(bonusCon)}
                         </button>
                         {attivo && (
-                          <button style={{ ...styles.buttonMini, position: 'absolute', top: 4, right: 4, fontSize: 11, padding: '0 5px', height: 20, color: C.red, background: C.panel }} title={t('conc.termina')} onClick={() => aggiorna({ concentrazione: '' })}>✕</button>
+                          <button style={{ ...styles.buttonMini, position: 'absolute', top: 4, right: 4, fontSize: 11, padding: '0 5px', height: 20, color: C.red, background: C.panel }} title={t('conc.termina')} aria-label={t('conc.termina')} onClick={() => aggiorna({ concentrazione: '' })}>✕</button>
                         )}
                       </div>
                       {modIncantatore !== null && (
@@ -17012,7 +17020,7 @@ export default function App() {
                           <h2 style={{ fontSize: 18, margin: 0, color: tabTrasformazione === 'metamorfosi' ? '#7b4fb0' : '#3e7d32', fontWeight: 800 }}>
                             {tabTrasformazione === 'metamorfosi' ? '🔮' : '🐾'} {lingua === 'en' ? (tabTrasformazione === 'metamorfosi' ? 'Metamorphosis' : 'Wild Shape') : (tabTrasformazione === 'metamorfosi' ? 'Metamorfosi' : 'Forma Selvatica')}
                           </h2>
-                          <button style={styles.buttonMini} onClick={() => setTabTrasformazione(null)} title={t('tip.chiudi')}>✕</button>
+                          <button style={styles.buttonMini} onClick={() => setTabTrasformazione(null)} title={t('tip.chiudi')} aria-label={t('tip.chiudi')}>✕</button>
                         </div>
                         <div style={{ ...styles.detail, fontSize: 12, marginBottom: 8, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
                           <span>
@@ -17896,7 +17904,7 @@ export default function App() {
                           style={{ ...styles.inlineInput, flex: 1, minWidth: 120, padding: '5px 8px', fontSize: 13 }}
                         />
                         {filtroInventario && (
-                          <button style={styles.buttonMini} onClick={() => setFiltroInventario('')}>✕</button>
+                          <button style={styles.buttonMini} onClick={() => setFiltroInventario('')} aria-label={lingua === 'en' ? 'Clear search' : 'Cancella ricerca'}>✕</button>
                         )}
                       </div>
 
@@ -19903,6 +19911,7 @@ export default function App() {
                             type="button"
                             onClick={() => setFiltroDiario('')}
                             style={{ position: 'absolute', right: 6, background: 'transparent', border: 0, color: C.inkDim, fontSize: 11, cursor: 'pointer', padding: 2 }}
+                            aria-label={lingua === 'en' ? 'Clear filter' : 'Cancella filtro'}
                           >✕</button>
                         )}
                       </div>
@@ -20372,7 +20381,7 @@ export default function App() {
             <button style={styles.buttonMini} onClick={() => setMappaScala((s) => Math.min(6, (s === 0 ? 1 : s) + 0.5))} title={t('mappa.ingrandisci')}>➕</button>
             <button style={styles.buttonMini} onClick={() => mappaRef.current?.click()} title={t('mappa.cambia_tip')}>🔁 {t('mappa.cambia')}</button>
             <button style={{ ...styles.buttonMini, color: C.red, borderColor: C.red }} onClick={() => { if (window.confirm(t('mappa.rimuovi_conferma'))) { setMappaCampagna(''); setMappaAperta(false); } }} title={t('mappa.rimuovi_tip')}>🗑 {t('mappa.rimuovi')}</button>
-            <button style={styles.buttonMini} onClick={() => setMappaAperta(false)} title={t('mappa.chiudi')}>✕</button>
+            <button style={styles.buttonMini} onClick={() => setMappaAperta(false)} title={t('mappa.chiudi')} aria-label={t('mappa.chiudi')}>✕</button>
           </div>
           {/* Vista adattata allo schermo (nessuno scroll); con “Ingrandisci” passa
               alla dimensione reale e diventa scorrevole in entrambe le direzioni. */}

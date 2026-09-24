@@ -2,6 +2,37 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.23.0] – 2026-09-24
+
+### Verificato
+- **Audit dati esteso a incantesimi, privilegi di classe e talenti Tasha/Xanathar**:
+  329 incantesimi e 226 alias controllati (nessun duplicato, nessun alias
+  rotto); privilegi di classe per livello (2014 e 2024) controllati per
+  ripetizioni sospette — quelle trovate sono tutte legittime (features che
+  scalano su più livelli, es. Indomito, Metamagia, Arcano Mistico). Non
+  esiste un catalogo di oggetti magici nell'app (sono testo libero
+  nell'inventario): niente da controllare lì.
+
+### Corretto
+- **Contrasto colori sotto la soglia WCAG AA**: nel tema chiaro base e in 2
+  preset ambientazione (Mare, Montagna), il colore del testo secondario
+  (`inkDim`, usato per etichette e note attenuate) aveva un contrasto sotto
+  4.5:1 sul pannello. Scurito leggermente nei 3 casi per rientrare nella
+  soglia, senza cambiare la palette generale.
+- **Bottoni con la sola icona senza nome per screen reader**: 25 bottoni
+  "chiudi" (✕) e alcuni bottoni di rimozione avevano un `title` (tooltip per
+  il mouse) ma nessun `aria-label` — uno screen reader legge il glifo
+  dell'emoji al posto del titolo. Aggiunto `aria-label` a tutti.
+- Confermati già presenti gli stili `:focus-visible` su bottoni/input/select
+  (contorno dorato visibile alla navigazione da tastiera): nessuna modifica
+  necessaria lì.
+
+### Nota
+- Una copertura completa `aria-label` su OGNI bottone a sola icona
+  dell'app (probabilmente 150+) resta lavoro più ampio, non fatto qui:
+  quello coperto in questo giro sono i pattern più diffusi e ad alto
+  traffico (chiudi modal, rimuovi, cancella filtro).
+
 ## [4.22.0] – 2026-09-24
 
 ### Sviluppo
