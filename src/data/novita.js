@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.34.0',
+    voci: {
+      it: [
+        'Tolta la matita per modificare la nota di un attacco/reazione quando i badge la riassumono già: Combattimento non ha campi da modificare a mano, i valori vengono dalle regole D&D.',
+      ],
+      en: [
+        'Removed the pencil to edit an attack/reaction note when badges already summarize it: Combat has no manually-editable fields, values come from D&D rules.',
+      ],
+    },
+  },
+  {
     versione: '4.33.0',
     voci: {
       it: [

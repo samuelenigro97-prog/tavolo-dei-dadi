@@ -1965,7 +1965,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.33.0';
+const APP_VERSION = '4.34.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -15142,8 +15142,8 @@ export default function App() {
                                       {(() => {
                                         // Se i badge già riassumono la nota (Reazione con Innesco/Effetto,
                                         // oppure Combattimento con categorie riconosciute), il testo libero
-                                        // ripeterebbe la stessa informazione per esteso: lo riduciamo a una
-                                        // sola matita cliccabile, restando comunque modificabile.
+                                        // ripeterebbe la stessa informazione per esteso: niente pencil,
+                                        // Combattimento non ha campi liberi modificabili a mano.
                                         const notaRidondante = cat === 'Reazione' ? Boolean(a.innescoIt || a.effettoIt) : categorieNota.length > 0;
                                         return (
                                       <span className="nota-dettagli" style={{ display: 'contents' }}>
@@ -15169,13 +15169,14 @@ export default function App() {
                                             {c.icona} {c.testo}
                                           </span>
                                         ))}
-                                        <Editable
-                                          value={a.note}
-                                          width={notaRidondante ? 20 : (hasReach || infoMunizioni.usaMunizioni || categorieNota.length > 0 ? 90 : 130)}
-                                          onChange={(v) => aggiornaAttacco({ note: v })}
-                                          title={notaRidondante ? (lingua === 'en' ? `Edit note: ${a.note}` : `Modifica nota: ${a.note}`) : (titoloRiga || a.note || t('tip.click_modifica'))}
-                                          soloIcona={notaRidondante}
-                                        />
+                                        {!notaRidondante && (
+                                          <Editable
+                                            value={a.note}
+                                            width={hasReach || infoMunizioni.usaMunizioni || categorieNota.length > 0 ? 90 : 130}
+                                            onChange={(v) => aggiornaAttacco({ note: v })}
+                                            title={titoloRiga || a.note || t('tip.click_modifica')}
+                                          />
+                                        )}
                                       </span>
                                         );
                                       })()}

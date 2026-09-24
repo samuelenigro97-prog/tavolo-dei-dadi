@@ -2,6 +2,16 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.34.0] – 2026-09-24
+
+### Rimosso
+- **Matita (✎) per modificare la nota di un attacco/reazione quando i badge
+  la riassumono già**: Combattimento non ha campi liberi modificabili a
+  mano per principio — i valori vengono dalle regole/manuali D&D, non da
+  testo scritto a mano (le uniche regole personalizzate ammesse vivono
+  nella sezione Poteri). Quando i badge riassumono già la nota, ora non
+  c'è più alcun modo per "modificarla" a testo libero.
+
 ## [4.33.0] – 2026-09-24
 
 ### Corretto

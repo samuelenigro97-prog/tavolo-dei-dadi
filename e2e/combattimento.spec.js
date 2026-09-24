@@ -18,12 +18,13 @@ test.describe('Combattimento', () => {
     await expect(nomiArma.filter({ hasText: /^\s*Bastone Ferrato\s*$/ })).toHaveCount(0);
   });
 
-  test('la nota di un attacco con badge riconosciuti mostra solo la matita, non il testo ripetuto', async ({ page }) => {
+  test('la nota di un attacco con badge riconosciuti non mostra il testo ripetuto né una matita per modificarla', async ({ page }) => {
     const riga = page.locator('tr.attacchi-riga').filter({ hasText: 'Randello Incantato' });
     await expect(riga.getByText('Magico con SAG (Randello/Bastone)')).toBeVisible();
     // Il testo completo della nota non deve comparire una seconda volta in chiaro.
     await expect(riga.getByText('1 min: usa SAG su randello/bastone, danno 1d8')).toHaveCount(0);
-    await expect(riga.locator('.nota-dettagli').getByText('✏️')).toBeVisible();
+    // Combattimento non ha campi liberi modificabili a mano: niente matita.
+    await expect(riga.locator('.nota-dettagli').getByText('✏️')).toHaveCount(0);
   });
 
   test('un\'arma senza categorie riconosciute mostra ancora il testo libero per intero', async ({ page }) => {
