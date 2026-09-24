@@ -2,6 +2,35 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.27.0] – 2026-09-24
+
+### Corretto
+- **Colore del badge "CD" incoerente in Combattimento**: nella colonna
+  Bonus Att., gli incantesimi a tiro salvezza mostravano "CD X" con il
+  colore dorato di classe (che per un Druido diventa verde) mentre la
+  colonna Note mostrava la stessa informazione ("Costituzione · CD 17") in
+  rosso fisso — la stessa CD appariva due volte con due colori diversi.
+  Ora entrambi usano lo stesso colore fisso (ambra), non tinto dalla classe.
+
+### Migliorato
+- **Palette unica per tipo di informazione**, condivisa da Combattimento e
+  Incantesimi: Gittata/Portata/Area sempre blu, Durata sempre viola, Tiro
+  Salvezza/CD sempre ambra, Danno sempre rosso, Proprietà (Trucchetto,
+  Magico, Versatile) sempre oro/marrone. In precedenza i badge di
+  Incantesimi erano tutti neutri (nessun colore) mentre quelli di
+  Combattimento usavano già dei colori, ma non condivisi.
+- **Colori attacco/danno uniformati** nelle card di Bestiario/Compagni
+  (Forma Selvatica, Evocazioni): bottone "Tiro per Colpire" sempre oro,
+  bottone "Danni" sempre rosso, come nelle righe di Incantesimi (prima
+  usavano tinte diverse tra loro: oro pieno, rosso Material, rosso Tailwind).
+- **Filtri rapidi di Incantesimi** (Tutti/Solo Preparati/Azione/Bonus/
+  Reazione/Concentrazione/Rituali) ora occupano tutta la larghezza
+  disponibile nella riga, invece di restare compressi a sinistra.
+- **Titoli delle sezioni principali più grandi** (Profilo, Combattimento,
+  Magia, Azioni, Equipaggiamento...): distinti visivamente dai titoli delle
+  sottosezioni interne (Trucchetti, Bonus, Reazione...), che restano più
+  piccoli.
+
 ## [4.26.0] – 2026-09-24
 
 ### Sviluppo

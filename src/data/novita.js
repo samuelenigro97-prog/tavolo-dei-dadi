@@ -5,6 +5,23 @@
 
 export const NOVITA = [
   {
+    versione: '4.27.0',
+    voci: {
+      it: [
+        'Colori standardizzati per tipo di informazione in Combattimento e Incantesimi: Gittata sempre blu, Durata viola, Tiro Salvezza/CD ambra, Danno rosso, Proprietà oro — stessa info, stesso colore ovunque.',
+        'Fix: il badge "CD" nella tabella Combattimento a volte appariva verde invece che coerente con la colonna Note (dipendeva dal colore della classe).',
+        'I filtri di Incantesimi (Tutti, Solo Preparati, Azione...) ora riempiono tutta la riga.',
+        'Titoli delle sezioni principali (Combattimento, Magia, Azioni...) più grandi e distinti dai sottotitoli.',
+      ],
+      en: [
+        'Standardized colors by information type in Combat and Spells: Range always blue, Duration purple, Saving Throw/DC amber, Damage red, Properties gold — same info, same color everywhere.',
+        'Fix: the "DC" badge in the Combat table sometimes appeared green instead of matching the Notes column (it depended on the class color).',
+        'Spell filters (All, Prepared only, Action...) now fill the whole row.',
+        'Main section titles (Combat, Spells, Actions...) are bigger and visually distinct from sub-section titles.',
+      ],
+    },
+  },
+  {
     versione: '4.24.0',
     voci: {
       it: [

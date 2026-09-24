@@ -8,7 +8,7 @@ import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI, ambientazioneCasuale, COLORE_
 import { styles, GLOBAL_CSS } from './ui/stili.js';
 import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, estraiVociLista, Sezione, CampoBloccato, formattaVoceConIcona } from './ui/componenti.jsx';
 import { SezionePoteri, BadgePotere } from './ui/PoteriSezione.jsx';
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma, estraiCategorieNota, esitoDannoPf0, iniziativaTotale, pfMassimiEffettivi, effettiSfinimento, trasformazioneAttiva } from './rules/scheda.js';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma, estraiCategorieNota, COLORE_CATEGORIA_INFO, esitoDannoPf0, iniziativaTotale, pfMassimiEffettivi, effettiSfinimento, trasformazioneAttiva } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON, WENDELL_JSON, LYRIAN_JSON } from './data/esempi.js';
 import { fixEquipaggiamentoVaelion, migrazioneRegoleVaelion, autoIdratazionePersonaggioPredefinito } from './data/migrazioniPersonaggi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
@@ -1965,7 +1965,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.26.0';
+const APP_VERSION = '4.27.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -7050,8 +7050,8 @@ export default function App() {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, flexWrap: 'wrap' }}>
                           <span style={{ fontWeight: 800, color: C.ink }}>⚔️ {az.nome}</span>
                           {az.cd != null && (
-                            <span style={{ fontSize: 11, fontWeight: 700, padding: '1px 5px', background: 'rgba(214,169,15,0.18)', color: C.goldDark, borderRadius: 4, border: `1px solid ${C.gold}` }}>
-                              🛡️ CD {az.cd}
+                            <span style={{ fontSize: 11, fontWeight: 700, padding: '1px 5px', background: `${COLORE_CATEGORIA_INFO.tiroSalvezza}1f`, color: COLORE_CATEGORIA_INFO.tiroSalvezza, borderRadius: 4, border: `1px solid ${COLORE_CATEGORIA_INFO.tiroSalvezza}` }}>
+                              🎲 CD {az.cd}
                             </span>
                           )}
                         </div>
@@ -7063,7 +7063,7 @@ export default function App() {
                             {az.bonus != null && (
                               <button
                                 type="button"
-                                style={{ ...styles.buttonPrimary, fontSize: 11, padding: '3px 8px', borderRadius: 4, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 3 }}
+                                style={{ ...styles.button, fontSize: 11, padding: '3px 8px', borderRadius: 4, fontWeight: 800, borderColor: C.gold, color: C.goldDark, background: 'rgba(201,162,39,0.12)', display: 'inline-flex', alignItems: 'center', gap: 3 }}
                                 onClick={() => {
                                   lanciaD20(`Attacco (${bestiaDettaglio.nome}): ${az.nome}`, az.bonus, {
                                     attacco: { nome: `${bestiaDettaglio.nome}: ${az.nome}`, danno: az.danno },
@@ -7078,7 +7078,7 @@ export default function App() {
                             {az.danno && (
                               <button
                                 type="button"
-                                style={{ ...styles.button, fontSize: 11, padding: '3px 8px', borderRadius: 4, fontWeight: 800, borderColor: '#d32f2f', color: '#d32f2f', background: C.panelLight, display: 'inline-flex', alignItems: 'center', gap: 3 }}
+                                style={{ ...styles.button, fontSize: 11, padding: '3px 8px', borderRadius: 4, fontWeight: 800, borderColor: C.red, color: C.red, background: 'transparent', display: 'inline-flex', alignItems: 'center', gap: 3 }}
                                 onClick={() => {
                                   lanciaDanniDiretti(`Danni (${bestiaDettaglio.nome}): ${az.nome}`, az.danno);
                                 }}
@@ -12058,7 +12058,7 @@ export default function App() {
           <span className="angolo-ornamento angolo-bl" aria-hidden="true" />
           <span className="angolo-ornamento angolo-br" aria-hidden="true" />
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', width: '100%', marginBottom: 10 }}>
-            <h2 style={{ ...styles.panelTitle, margin: 0, width: '100%', textAlign: 'center' }}>{t("profilo.titolo")}</h2>
+            <h2 style={{ ...styles.panelTitle, fontSize: 19, margin: 0, width: '100%', textAlign: 'center' }}>{t("profilo.titolo")}</h2>
           </div>
           {/* ===== BANNER FORMA BESTIALE ATTIVA (Regole Ufficiali 5e PHB) ===== */}
           {isTrasformato && (
@@ -12251,8 +12251,8 @@ export default function App() {
                               ⚔️ {az.nome}
                             </span>
                             {az.cd != null && (
-                              <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 6px', background: 'rgba(214,169,15,0.18)', color: C.goldDark, borderRadius: 6, border: `1px solid ${C.gold}` }}>
-                                🛡️ CD {az.cd}
+                              <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 6px', background: `${COLORE_CATEGORIA_INFO.tiroSalvezza}1f`, color: COLORE_CATEGORIA_INFO.tiroSalvezza, borderRadius: 6, border: `1px solid ${COLORE_CATEGORIA_INFO.tiroSalvezza}` }}>
+                                🎲 CD {az.cd}
                               </span>
                             )}
                           </div>
@@ -12267,11 +12267,14 @@ export default function App() {
                                 <button
                                   type="button"
                                   style={{
-                                    ...styles.buttonPrimary,
+                                    ...styles.button,
                                     fontSize: 12,
                                     padding: '4px 10px',
                                     borderRadius: 6,
                                     fontWeight: 800,
+                                    borderColor: C.gold,
+                                    color: C.goldDark,
+                                    background: 'rgba(201,162,39,0.12)',
                                     display: 'inline-flex',
                                     alignItems: 'center',
                                     gap: 4,
@@ -12301,9 +12304,9 @@ export default function App() {
                                     padding: '4px 10px',
                                     borderRadius: 6,
                                     fontWeight: 800,
-                                    borderColor: '#d32f2f',
-                                    color: '#d32f2f',
-                                    background: C.panelLight,
+                                    borderColor: C.red,
+                                    color: C.red,
+                                    background: 'transparent',
                                     display: 'inline-flex',
                                     alignItems: 'center',
                                     gap: 4,
@@ -14972,8 +14975,8 @@ export default function App() {
                                   </td>
                                   <td style={styles.td} className="attacchi-bonus" data-label={t('combat.col_bonus')}>
                                     {a.isTS ? (
-                                      <span style={{ ...styles.badge, background: 'rgba(201,162,39,0.15)', color: C.goldDark, border: `1px solid ${C.goldDark}`, padding: '2px 6px', fontWeight: 700 }} title="Tiro salvezza richiesto">
-                                        CD {a.cd}
+                                      <span style={{ ...styles.badge, background: `${COLORE_CATEGORIA_INFO.tiroSalvezza}1f`, color: COLORE_CATEGORIA_INFO.tiroSalvezza, border: `1px solid ${COLORE_CATEGORIA_INFO.tiroSalvezza}`, padding: '2px 6px', fontWeight: 700 }} title={`Tiro salvezza richiesto: CD ${a.cd} (dettagli nella colonna Note)`}>
+                                        🎲
                                       </span>
                                     ) : typeof a.bonus === 'string' && isNaN(Number(a.bonus)) ? (
                                       <span style={{ ...styles.badge, background: 'rgba(59,130,246,0.12)', color: '#2563eb', border: '1px solid #3b82f6', padding: '2px 6px', fontWeight: 700 }}>
@@ -15516,7 +15519,7 @@ export default function App() {
 
                 {/* Barra Filtri Rapidi di Combattimento (Pills a sinistra) + Tasti Azioni Vista (a destra sotto le classi) */}
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', flex: '1 1 auto' }}>
                     <button
                       type="button"
                       onClick={() => {
@@ -15534,6 +15537,9 @@ export default function App() {
                         fontSize: 12,
                         padding: '5px 12px',
                         borderRadius: 16,
+                        flex: '1 1 90px',
+                        justifyContent: 'center',
+                        display: 'inline-flex',
                         borderColor: (!filtroIncantesimo && !filtroLivelloInc && !filtroScuolaInc && (filtroClasseInc === (scheda.classe || '')) && !soloRitualiInc && !soloPreparatiInc && !soloConcInc && !filtroTempoInc) ? C.goldDark : C.border,
                         background: (!filtroIncantesimo && !filtroLivelloInc && !filtroScuolaInc && (filtroClasseInc === (scheda.classe || '')) && !soloRitualiInc && !soloPreparatiInc && !soloConcInc && !filtroTempoInc) ? 'rgba(200,140,20,0.18)' : 'transparent',
                         color: (!filtroIncantesimo && !filtroLivelloInc && !filtroScuolaInc && (filtroClasseInc === (scheda.classe || '')) && !soloRitualiInc && !soloPreparatiInc && !soloConcInc && !filtroTempoInc) ? C.goldDark : C.inkDim,
@@ -15551,6 +15557,9 @@ export default function App() {
                         fontSize: 12,
                         padding: '5px 12px',
                         borderRadius: 16,
+                        flex: '1 1 90px',
+                        justifyContent: 'center',
+                        display: 'inline-flex',
                         borderColor: soloPreparatiInc ? C.goldDark : C.border,
                         background: soloPreparatiInc ? 'rgba(200,140,20,0.22)' : 'transparent',
                         color: soloPreparatiInc ? C.goldDark : C.ink,
@@ -15568,6 +15577,9 @@ export default function App() {
                         fontSize: 12,
                         padding: '5px 12px',
                         borderRadius: 16,
+                        flex: '1 1 90px',
+                        justifyContent: 'center',
+                        display: 'inline-flex',
                         borderColor: filtroTempoInc === 'azione' ? '#2e9d4d' : C.border,
                         background: filtroTempoInc === 'azione' ? 'rgba(46,157,77,0.2)' : 'transparent',
                         color: filtroTempoInc === 'azione' ? '#2e9d4d' : C.ink,
@@ -15585,6 +15597,9 @@ export default function App() {
                         fontSize: 12,
                         padding: '5px 12px',
                         borderRadius: 16,
+                        flex: '1 1 90px',
+                        justifyContent: 'center',
+                        display: 'inline-flex',
                         borderColor: filtroTempoInc === 'bonus' ? '#d48806' : C.border,
                         background: filtroTempoInc === 'bonus' ? 'rgba(212,136,6,0.2)' : 'transparent',
                         color: filtroTempoInc === 'bonus' ? '#d48806' : C.ink,
@@ -15602,6 +15617,9 @@ export default function App() {
                         fontSize: 12,
                         padding: '5px 12px',
                         borderRadius: 16,
+                        flex: '1 1 90px',
+                        justifyContent: 'center',
+                        display: 'inline-flex',
                         borderColor: filtroTempoInc === 'reazione' ? '#1890ff' : C.border,
                         background: filtroTempoInc === 'reazione' ? 'rgba(24,144,255,0.2)' : 'transparent',
                         color: filtroTempoInc === 'reazione' ? '#1890ff' : C.ink,
@@ -15619,6 +15637,9 @@ export default function App() {
                         fontSize: 12,
                         padding: '5px 12px',
                         borderRadius: 16,
+                        flex: '1 1 90px',
+                        justifyContent: 'center',
+                        display: 'inline-flex',
                         borderColor: soloConcInc ? '#9e4be6' : C.border,
                         background: soloConcInc ? 'rgba(158,75,230,0.2)' : 'transparent',
                         color: soloConcInc ? '#9e4be6' : C.ink,
@@ -15636,6 +15657,9 @@ export default function App() {
                         fontSize: 12,
                         padding: '5px 12px',
                         borderRadius: 16,
+                        flex: '1 1 90px',
+                        justifyContent: 'center',
+                        display: 'inline-flex',
                         borderColor: soloRitualiInc ? C.goldDark : C.border,
                         background: soloRitualiInc ? 'rgba(200,140,20,0.18)' : 'transparent',
                         color: soloRitualiInc ? C.goldDark : C.ink,
@@ -15959,10 +15983,16 @@ export default function App() {
                               testoModal = (testoModal ? testoModal + '\n\n' : '') + `📝 ${lingua === 'en' ? 'Personal Notes' : 'Note personali'}: ${s.note}`;
                             }
 
-                            const chip = (icona, label, val) => val ? (
-                              <span key={label} style={{ fontSize: 11, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 4, padding: '1px 5px', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 3 }} title={`${label}: ${val}`}>
+                            const chip = (icona, label, val, colore) => val ? (
+                              <span
+                                key={label}
+                                style={colore
+                                  ? { fontSize: 11, background: `${colore}1f`, border: `1px solid ${colore}`, borderRadius: 4, padding: '1px 5px', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 3, color: colore, fontWeight: 700 }
+                                  : { fontSize: 11, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 4, padding: '1px 5px', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 3 }}
+                                title={`${label}: ${val}`}
+                              >
                                 <span>{icona}</span>
-                                <span style={{ color: C.inkDim }}>{val}</span>
+                                <span style={colore ? undefined : { color: C.inkDim }}>{val}</span>
                               </span>
                             ) : null;
 
@@ -16143,11 +16173,11 @@ export default function App() {
                                     >✦ {t('spell.bonus_badge')}</span>
                                   )}
                                   <div className="spell-chips" style={{ display: 'flex', flexWrap: 'nowrap', gap: 4, alignItems: 'center', overflowX: 'auto', flex: '1 1 auto', minWidth: 0 }}>
-                                    {chip('⏱', t('spell.chip_tempo'), tempoLabel)}
-                                    {chip('🎯', t('spell.chip_gittata'), gittata)}
-                                    {area && chip('📐', 'Area', area)}
+                                    {chip('⏱', t('spell.chip_tempo'), tempoLabel, COLORE_CATEGORIA_INFO.durata)}
+                                    {chip('🎯', t('spell.chip_gittata'), gittata, COLORE_CATEGORIA_INFO.gittata)}
+                                    {area && chip('📐', 'Area', area, COLORE_CATEGORIA_INFO.gittata)}
                                     {(danno || tipoDanno) && !parseEspressioneDado(danno) && (
-                                      chip('💥', 'Danno', [danno, tipoDanno].filter(Boolean).join(' '))
+                                      chip('💥', 'Danno', [danno, tipoDanno].filter(Boolean).join(' '), COLORE_CATEGORIA_INFO.danno)
                                     )}
                                     {note && chip('📝', t('spell.chip_note'), note)}
                                   </div>
@@ -17401,7 +17431,7 @@ export default function App() {
                                               <button
                                                 type="button"
                                                 onClick={() => tiraDanniPerAttacco({ id: az.id, nome: `${all.nome}: ${az.nome}`, danno: az.danno, tipoDanno: az.tipoDanno })}
-                                                style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 6px', color: '#ef4444', borderColor: '#ef4444' }}
+                                                style={{ ...styles.buttonMini, fontSize: 11, padding: '2px 6px', color: C.red, borderColor: C.red }}
                                                 title={lingua === 'en' ? 'Roll damage' : 'Tiro danni'}
                                               >
                                                 💥 {az.danno}
