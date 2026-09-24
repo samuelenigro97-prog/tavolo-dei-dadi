@@ -56,10 +56,13 @@ COME LEGGERE FANTASY GROUNDS (MOLTO IMPORTANTE):
   * In CLASS & LEVEL: se multiclasse (es. "Fighter 1 / Ranger 6 / Rogue 3"), classe="Guerriero", livello=1, e multiclasse=[{"classe":"Ranger","livello":6},{"classe":"Ladro","livello":3}].
 - Nelle tab ABILITIES / FEATS / TRAITS / POWERS:
   * Estrai tutti i privilegi di classe in "privilegi", i tratti razziali in "trattiSpecie", i talenti in "talenti", e le risorse con utilizzi limitati in "risorse".
+- Nella tab INVENTORY:
+  * Estrai OGNI oggetto come voce separata in "inventario" (non un unico blocco di testo): nome, quantità, peso, e la spunta "Equipped"/"Carried" per "equip". Gli oggetti con "Requires Attunement" → richiedeSintonia:true. Oggetti con usi limitati (es. "Charges: 3/3") → usiMax:3. Pozioni/pergamene/oggetti consumabili nello zaino → categoria "Consumabile".
 
 Rispondi SOLO con un oggetto JSON valido, senza testo prima o dopo, con questo schema:
 {
   "nome": "string (con iniziale Maiuscola per ogni parola, es. \\"Kairon\\", \\"Frost\\")",
+  "sesso": "maschio|femmina|altro — deducilo dal nome/pronomi se non esplicito, stringa vuota se davvero indeterminabile",
   "background": "string",
   "classe": "string",
   "sottoclasse": "string",
@@ -84,12 +87,12 @@ Rispondi SOLO con un oggetto JSON valido, senza testo prima o dopo, con questo s
   "attacchi": [ { "nome": "string", "bonus": number, "danno": "string — es. \\"2d6+3\\"; vuoto se assente", "tipoDanno": "string", "note": "string" } ],
   "incantatore": { "caratteristica": "forza|destrezza|costituzione|intelligenza|saggezza|carisma oppure vuoto se non incantatore" },
   "slotIncantesimo": { "1": number, "2": number, "3": number, "4": number, "5": number, "6": number, "7": number, "8": number, "9": number },
-  "incantesimiLista": [ { "livello": number, "nome": "string", "tempo": "string", "gittata": "string", "note": "string" } ],
+  "incantesimiLista": [ { "livello": number, "nome": "string", "tempo": "string — solo se diverso dal default dell'incantesimo, altrimenti vuoto", "gittata": "string — solo se diverso dal default, altrimenti vuoto", "note": "string", "preparato": "boolean — true se preparato/conosciuto e disponibile da lanciare", "conc": "boolean — richiede Concentrazione", "rituale": "boolean — lanciabile come rituale" } ],
   "privilegi": "string — privilegi/capacità di CLASSE in testo semplice",
   "trattiSpecie": "string — tratti della SPECIE, separati dai privilegi di classe",
   "talenti": "string",
-  "equipaggiamento": "string",
-  "sintonia": "string",
+  "inventario": [ { "nome": "string", "qta": number, "peso": "number — kg, stima ragionevole se non indicato sulla scheda", "equip": "boolean — indossato/impugnato/equipaggiato", "categoria": "string — es. Armatura, Arma, Scudo, Oggetto Magico, Consumabile, Strumenti, Focus", "usiMax": "number o null se senza utilizzi limitati", "ricarica": "alba|breve|lungo|manuale oppure stringa vuota", "richiedeSintonia": "boolean", "effetto": "string — effetto/proprietà di QUESTO oggetto (es. bonus magici), stringa vuota se un oggetto comune senza effetto" } ],
+  "sintonia": "string — nomi degli oggetti in sintonia, separati da virgola",
   "lingue": "string — es. \\"Comune, Elfico\\"",
   "aspetto": "string",
   "note": "string — storia e tratti caratteriali",
@@ -109,8 +112,9 @@ Regole:
 - "bonus" è il bonus per colpire; le voci senza bonus e danno (es. un focus) vanno omesse dagli attacchi.
 - "multiclasse": [] se monoclasse, altrimenti le classi secondarie da CLASS & LEVEL (es. "Fighter 1 / Ranger 6 / Rogue 3" → classe Fighter livello 1, multiclasse [{"classe":"Ranger","livello":6},{"classe":"Rogue","livello":3}]).
 - ATTENZIONE LIVELLO: "livello" è il livello della CLASSE PRINCIPALE, non il totale. Se la scheda mostra "Level 10" e "Fighter 1 / Ranger 6 / Rogue 3", allora livello=1 (totale 10), non 10. Se monoclassa con "Level 10", allora livello=10.
-- LINGUA OBBLIGATORIA: tutti i campi testuali (background, classe, sottoclasse, specie, allineamento, lingue, sensi, taglia) DEVONO essere in ITALIANO canonico, anche se l'immagine è in inglese. Traduci: Soldier→Soldato, Hermit→Eremita, Fighter→Guerriero, Rogue→Ladro, Ranger→Ranger, Half-Elf→Mezzelfo, Wood Elf→Elfo dei Boschi, High Elf→Elfo Alto, Darkvision 60 ft→Scurovisione 18 m, Common/Elvish→Comune/Elfico, ecc.
-- Se un dato non è presente, usa un default ragionevole (caratteristiche 10, livello 1, attacchi [], competenze false/0).`;
+- LINGUA OBBLIGATORIA: tutti i campi testuali (background, classe, sottoclasse, specie, allineamento, lingue, sensi, taglia, nomi in "inventario") DEVONO essere in ITALIANO canonico, anche se l'immagine è in inglese. Traduci: Soldier→Soldato, Hermit→Eremita, Fighter→Guerriero, Rogue→Ladro, Ranger→Ranger, Half-Elf→Mezzelfo, Wood Elf→Elfo dei Boschi, High Elf→Elfo Alto, Darkvision 60 ft→Scurovisione 18 m, Common/Elvish→Comune/Elfico, ecc.
+- "inventario" deve coprire OGNI oggetto della scheda (armi, armature, scudo, zaino, oggetti magici, monete escluse — quelle vanno in "denari"): non lasciare nulla fuori come testo generico. Un oggetto senza nome leggibile va omesso, non inventato.
+- Se un dato non è presente, usa un default ragionevole (caratteristiche 10, livello 1, attacchi [], inventario [], competenze false/0).`;
 
 function cors(origin) {
   return {

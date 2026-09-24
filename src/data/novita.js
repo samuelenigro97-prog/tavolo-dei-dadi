@@ -5,6 +5,17 @@
 
 export const NOVITA = [
   {
+    versione: '4.30.0',
+    voci: {
+      it: [
+        'Import da PDF più completo: ora estrae l\'inventario come oggetti singoli (non più un blocco di testo), il Sesso e i flag Concentrazione/Rituale degli incantesimi. Serve ripubblicare il Worker (vedi worker/LEGGIMI.md) perché il miglioramento sia attivo.',
+      ],
+      en: [
+        'More complete PDF import: it now extracts the inventory as individual items (not a single text block), Gender, and the Concentration/Ritual flags for spells. The Worker needs to be redeployed (see worker/LEGGIMI.md) for the improvement to take effect.',
+      ],
+    },
+  },
+  {
     versione: '4.29.0',
     voci: {
       it: [

@@ -2,6 +2,20 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.30.0] – 2026-09-24
+
+### Migliorato
+- **Import da PDF più completo**: il Worker ora chiede all'IA di estrarre
+  l'inventario come lista di oggetti strutturati (nome, quantità, peso,
+  equipaggiato, categoria, utilizzi, sintonia, effetto) invece di un unico
+  blocco di testo — dopo l'import la sezione Equipaggiamento è già pronta
+  invece di dover essere reinserita a mano. Estrae anche il campo "Sesso" e,
+  per ogni incantesimo, se è preparato/richiede concentrazione/è un rituale.
+  **Richiede un ridistribuzione manuale del Worker** (`worker/
+  transcribe-worker.js`) per chi lo ha già pubblicato — vedi `worker/
+  LEGGIMI.md`; l'app lato client supportava già questi dati, mancava solo
+  che il Worker li chiedesse.
+
 ## [4.29.0] – 2026-09-24
 
 ### Corretto
