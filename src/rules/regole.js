@@ -1596,6 +1596,10 @@ export function trovaReazioniDisponibili(scheda) {
       const isTS = /ts\s|tiro salvezza|save/i.test(desc) || Boolean(inc.isTS);
       const danno = inc.danno || matchDb?.danno || sp.danno || '';
       const tipoDanno = inc.tipoDanno || matchDb?.tipoDanno || sp.tipoDanno || '';
+      // Un "danno" in scheda non implica che QUESTA reazione tiri per colpire
+      // (es. Assorbire Elementi ha un danno bonus che si applica al TUO prossimo
+      // attacco, non è un tiro proprio): serve una frase esplicita di attacco.
+      const faAttaccoProprio = /tiro per colpire|attacco con incantesimo|spell attack|attack roll|compi un attacco|effettua un attacco/i.test(desc);
 
       addReazione({
         id: inc.id ? `spell-${inc.id}` : undefined,
@@ -1605,7 +1609,7 @@ export function trovaReazioniDisponibili(scheda) {
         isSpell: true,
         isTS,
         cd: isTS ? cdIncantesimi : undefined,
-        bonus: isTS ? undefined : (danno || /attacco/i.test(desc) ? bonusAttaccoMagico : (matchDb?.bonus || undefined)),
+        bonus: isTS ? undefined : (faAttaccoProprio ? bonusAttaccoMagico : (matchDb?.bonus || undefined)),
         danno,
         tipoDanno,
         innescoIt: matchDb?.innescoIt || (sp.tempo ? sp.tempo : 'Quando si verifica la condizione di innesco dell\'incantesimo.'),

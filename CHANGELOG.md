@@ -2,6 +2,28 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.29.0] – 2026-09-24
+
+### Corretto
+- **Contrasto dei badge viola/blu illeggibile in tema scuro**: la palette per
+  tipo di informazione introdotta in v4.27.0 usava un solo colore fisso per
+  chiaro e scuro — ok per blu/rosso/ambra/oro, ma il viola (Durata/Effetto)
+  era sotto la soglia di leggibilità su sfondo quasi-nero. Ora ogni colore
+  ha una variante chiara e una scura scelte per il contrasto giusto in
+  entrambi i temi.
+- **Innesco e Gittata non condividono più lo stesso blu**: sono due concetti
+  diversi (una condizione di innesco reazione contro una distanza/portata di
+  incantesimo) e ora hanno colori distinti; il "Tempo di lancio" (Azione/
+  Bonus/Reazione) aveva anche lui il colore di Durata per errore, ora è
+  un colore a parte.
+- **Reazioni senza attacco/danno reali non mostrano più "+0" o testo
+  fuori posto**: "Totem Spirituale (Falco)" (concede solo Vantaggio) e
+  "Assorbire Elementi" (il danno si applica al TUO prossimo attacco, non è
+  un tiro proprio) mostravano un bonus attacco fittizio e/o il testo
+  dell'effetto ripetuto nella colonna Danno. Corretta anche la causa nei
+  dati (un incantesimo-reazione con *qualsiasi* danno associato veniva
+  scambiato per un attacco).
+
 ## [4.28.0] – 2026-09-24
 
 ### Migliorato

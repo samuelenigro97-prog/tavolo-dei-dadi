@@ -5,6 +5,21 @@
 
 export const NOVITA = [
   {
+    versione: '4.29.0',
+    voci: {
+      it: [
+        'Fix: i badge viola (Durata/Effetto) in tema scuro erano quasi illeggibili — ogni colore ora ha una variante chiara e una scura pensate per il contrasto giusto.',
+        'Innesco e Gittata ora hanno colori diversi (prima condividevano lo stesso blu pur essendo due informazioni diverse); anche il Tempo di lancio ha un colore tutto suo.',
+        'Fix: "Totem Spirituale" e "Assorbire Elementi" in Reazioni non mostrano più un bonus attacco o un danno inventati quando non fanno davvero un tiro per colpire.',
+      ],
+      en: [
+        'Fix: purple badges (Duration/Effect) were nearly unreadable in dark theme — every color now has a light and a dark variant tuned for contrast.',
+        'Trigger and Range now have different colors (they used to share the same blue despite being different information); Casting Time also got its own color.',
+        'Fix: "Spirit Totem" and "Absorb Elements" in Reactions no longer show a made-up attack bonus or damage when they don\'t actually make an attack roll.',
+      ],
+    },
+  },
+  {
     versione: '4.28.0',
     voci: {
       it: [

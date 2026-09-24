@@ -485,23 +485,39 @@ export function analizzaMunizioniArma(attacco, inventario = [], armaDb = null) {
 /**
  * Palette unica per tipo di informazione, condivisa da Combattimento e
  * Incantesimi (badge/chip): stesso concetto → sempre stesso colore, in ogni
- * sezione. Colori fissi (non tinti dalla classe, a differenza di C.gold):
- * il tiro salvezza non deve mai sembrare "danno" o viceversa.
+ * sezione. Colori fissi (non tinti dalla classe, a differenza di C.gold) ma
+ * DIVERSI tra tema chiaro e scuro: un solo hex non può avere contrasto
+ * leggibile su sfondo bianco E su sfondo quasi-nero allo stesso tempo.
+ * Ogni categoria è concettualmente diversa dalle altre (es. Gittata ≠
+ * Innesco anche se entrambe "informative"): non condividere colori tra
+ * categorie diverse solo perché non compaiono mai nella stessa riga.
  */
 export const COLORE_CATEGORIA_INFO = {
-  gittata: '#3b82f6',      // 🎯 Gittata / Portata / Distanza / Area
-  durata: '#7b4fb0',       // ⏱️ Durata / Tempo di lancio
-  tiroSalvezza: '#f59e0b', // 🎲 Tiro Salvezza / CD
-  danno: '#ef4444',        // 💥 Danno
-  proprieta: '#b8860b',    // 🏷️ Proprietà (Trucchetto, Magico, Versatile, Maestria)
+  gittata:      { chiaro: '#1d4ed8', scuro: '#60a5fa' }, // 🎯 Gittata / Portata / Area
+  tempo:        { chiaro: '#15803d', scuro: '#4ade80' }, // ⏱️ Tempo di lancio (Azione/Bonus/Reazione)
+  durata:       { chiaro: '#6d28d9', scuro: '#c4b5fd' }, // ⏳ Durata
+  tiroSalvezza: { chiaro: '#b45309', scuro: '#fbbf24' }, // 🎲 Tiro Salvezza / CD
+  danno:        { chiaro: '#b91c1c', scuro: '#f87171' }, // 💥 Danno
+  proprieta:    { chiaro: '#a21caf', scuro: '#f0abfc' }, // 🏷️ Proprietà (Trucchetto, Magico, Versatile, Maestria)
+  innesco:      { chiaro: '#0f766e', scuro: '#5eead4' }, // 🎯 Innesco di una reazione ("Quando...")
+  effetto:      { chiaro: '#6d28d9', scuro: '#c4b5fd' }, // 🛡️ Effetto di una reazione (= colore Durata: non compaiono mai insieme)
 };
+
+/** Risolve il colore fisso di una categoria per il tema attivo (chiaro/scuro). */
+export function coloreCategoria(categoria, scuro) {
+  const coppia = COLORE_CATEGORIA_INFO[categoria];
+  if (!coppia) return scuro ? '#a0937f' : '#736858'; // fallback: inkDim
+  return scuro ? coppia.scuro : coppia.chiaro;
+}
 
 /**
  * Spezza il testo libero di "note" di un attacco/azione in categorie
  * riconoscibili (gittata, durata, tiro salvezza, proprietà) invece di un
  * unico blocco di testo. Non modifica né consuma la nota originale: è solo
  * un riassunto aggiuntivo per la tabella Combattimento — la nota completa
- * resta modificabile com'era prima.
+ * resta modificabile com'era prima. Ogni categoria porta la sua CHIAVE
+ * (non un colore risolto): sarà il chiamante a scegliere chiaro/scuro con
+ * coloreCategoria().
  */
 export function estraiCategorieNota(nota) {
   const testo = String(nota || '');
@@ -509,10 +525,10 @@ export function estraiCategorieNota(nota) {
   const categorie = [];
 
   const gittata = testo.match(/gittata\s+([^,·]+?)(?=,|·|$)/i) || testo.match(/\brange\s+([^,·]+?)(?=,|·|$)/i);
-  if (gittata) categorie.push({ icona: '🎯', etichetta: 'Gittata', testo: gittata[1].trim(), colore: COLORE_CATEGORIA_INFO.gittata });
+  if (gittata) categorie.push({ icona: '🎯', etichetta: 'Gittata', testo: gittata[1].trim(), categoria: 'gittata' });
 
   const durata = testo.match(/durata\s+([^,·]+?)(?=,|·|$)/i) || testo.match(/\bduration\s+([^,·]+?)(?=,|·|$)/i);
-  if (durata) categorie.push({ icona: '⏱️', etichetta: 'Durata', testo: durata[1].trim(), colore: COLORE_CATEGORIA_INFO.durata });
+  if (durata) categorie.push({ icona: '⏱️', etichetta: 'Durata', testo: durata[1].trim(), categoria: 'durata' });
 
   const ts = testo.match(/\b(?:TS|Saving Throw)\s+(\w+)/i);
   const cdMatch = testo.match(/\bCD\s*(\d+)/i);
@@ -521,12 +537,12 @@ export function estraiCategorieNota(nota) {
       icona: '🎲',
       etichetta: 'Tiro Salvezza',
       testo: [ts?.[1] || '', cdMatch ? `CD ${cdMatch[1]}` : ''].filter(Boolean).join(' · '),
-      colore: COLORE_CATEGORIA_INFO.tiroSalvezza,
+      categoria: 'tiroSalvezza',
     });
   }
 
   const proprieta = testo.match(/\b(Trucchetto|Cantrip|Magico[^,·]*|Versatile[^,·]*|Maestria:\s*[^,·]+)/i);
-  if (proprieta) categorie.push({ icona: '🏷️', etichetta: 'Proprietà', testo: proprieta[1].trim(), colore: COLORE_CATEGORIA_INFO.proprieta });
+  if (proprieta) categorie.push({ icona: '🏷️', etichetta: 'Proprietà', testo: proprieta[1].trim(), categoria: 'proprieta' });
 
   return categorie;
 }
