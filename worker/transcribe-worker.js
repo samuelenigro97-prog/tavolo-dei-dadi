@@ -12,7 +12,8 @@
  *  3) /room            → snapshot temporanei condivisi tramite codice (KV)
  *  4) /sync/<codice>   → sincronizzazione roster tra dispositivi senza token
  *       GET  /sync/<codice>  legge l'ultimo roster salvato con quel codice
- *       PUT  /sync/<codice>  salva/sovrascrive {roster, updatedAt} (180 giorni)
+ *       PUT  /sync/<codice>  salva/sovrascrive {roster, updatedAt[, baseUpdatedAt]} (180 giorni;
+ *                            con baseUpdatedAt diverso dal salvato → 409 SYNC_CONFLICT)
  *              il codice è generato SEMPRE lato client e fa da identità e da
  *              segreto insieme: nessun account, nessun token GitHub.
  *
@@ -288,6 +289,22 @@ export async function gestisciSync(request, env, headers, percorso) {
     const testo = JSON.stringify({ roster, updatedAt });
     if (new TextEncoder().encode(testo).length > MAX_SYNC_BYTES) {
       return new Response(JSON.stringify({ error: 'SYNC_TOO_LARGE' }), { status: 413, headers });
+    }
+    // Controllo di concorrenza (facoltativo, dalla v4.40.0 dell'app): il
+    // client dichiara la versione da cui partono le sue modifiche. Se nel
+    // frattempo un altro dispositivo ha salvato, rispondiamo 409 invece di
+    // sovrascrivere: sarà l'utente a decidere quale versione tenere.
+    const baseUpdatedAt = corpo?.baseUpdatedAt;
+    if (baseUpdatedAt !== undefined && baseUpdatedAt !== null) {
+      try {
+        const esistente = await env.SCHEDE.get(chiave);
+        if (esistente) {
+          const tsEsistente = Number(JSON.parse(esistente)?.updatedAt) || 0;
+          if (tsEsistente !== (Number(baseUpdatedAt) || 0)) {
+            return new Response(JSON.stringify({ error: 'SYNC_CONFLICT', updatedAt: tsEsistente }), { status: 409, headers });
+          }
+        }
+      } catch { /* dato esistente illeggibile: si prosegue come prima */ }
     }
     // Safety: non sovrascrivere un roster più grande con uno più piccolo se il timestamp non è più recente (evita cancellazioni accidentali)
     try {

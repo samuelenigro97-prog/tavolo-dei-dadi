@@ -31,19 +31,22 @@ async function leggiRisposta(res) {
     if (res.status === 404) throw new Error('SYNC_NOT_FOUND');
     if (res.status === 413) throw new Error('SYNC_TOO_LARGE');
     if (res.status === 429) throw new Error('SYNC_RATE_LIMITED');
+    if (res.status === 409 && dati?.error === 'SYNC_CONFLICT') throw new Error('SYNC_CONFLICT');
     throw new Error(dati?.error || 'SYNC_SERVICE_UNAVAILABLE');
   }
   return dati;
 }
 
-/** Salva (o sovrascrive) il roster sotto il codice indicato. */
-export async function salvaSync(baseUrl, codice, roster, updatedAt, fetchImpl = fetch) {
+/** Salva (o sovrascrive) il roster sotto il codice indicato.
+ *  Con opzioni.baseUpdatedAt il Worker rifiuta (SYNC_CONFLICT) se nel frattempo
+ *  un altro dispositivo ha salvato una versione diversa da quella di partenza. */
+export async function salvaSync(baseUrl, codice, roster, updatedAt, fetchImpl = fetch, opzioni = {}) {
   const pulito = normalizzaCodiceStanza(codice);
   if (pulito.length !== 10) throw new Error('SYNC_INVALID_CODE');
   const res = await fetchImpl(endpoint(baseUrl, `/sync/${encodeURIComponent(pulito)}`), {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ roster, updatedAt }),
+    body: JSON.stringify({ roster, updatedAt, ...(opzioni.baseUpdatedAt !== undefined ? { baseUpdatedAt: opzioni.baseUpdatedAt } : {}) }),
   });
   const dati = await leggiRisposta(res);
   return { updatedAt: dati?.updatedAt ?? updatedAt };
@@ -70,6 +73,8 @@ export function messaggioErroreSync(codice) {
     case 'SYNC_TOO_LARGE': return 'Il roster è troppo grande per la sincronizzazione (limite 4 MB, immagini comprese).';
     case 'SYNC_RATE_LIMITED': return 'Troppe richieste in poco tempo: riprova tra un minuto.';
     case 'SYNC_INVALID_CODE': return 'Codice non valido: deve avere 10 caratteri.';
+    case 'SYNC_CONFLICT': return 'Un altro dispositivo ha salvato una versione più recente: scegli quale versione tenere.';
+    case 'SYNC_OUTDATED': return 'Il servizio ha rifiutato il salvataggio perché la copia online è più recente.';
     case 'SYNC_INVALID_PAYLOAD': return 'Dati ricevuti dal server non validi.';
     case 'SYNC_SERVICE_UNAVAILABLE': return 'Servizio di sincronizzazione non raggiungibile: configura il Worker o riprova più tardi.';
     default: return `Errore imprevisto durante la sincronizzazione${codice && !String(codice).startsWith('SYNC_') ? `: ${String(codice).slice(0, 120)}` : ''}.`;
