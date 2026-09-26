@@ -1342,6 +1342,80 @@ export const SUBCLASS_PRIVILEGI = {
   }
 };
 
+// Privilegi di sottoclasse della 5.0 (PHB 2014) per le sottoclassi il cui
+// elenco differisce da quello 2024 in SUBCLASS_PRIVILEGI (privilegi rinominati,
+// spostati di livello o nuovi solo nel PHB 2024). Le sottoclassi non elencate
+// qui usano SUBCLASS_PRIVILEGI anche per la 5.0.
+export const SUBCLASS_PRIVILEGI_2014 = {
+  "Campione": {
+    "3": "Critico Migliorato",
+    "7": "Atleta Straordinario",
+    "10": "Stile di Combattimento Aggiuntivo",
+    "15": "Critico Superiore",
+    "18": "Sopravvissuto"
+  },
+  "Berserker": {
+    "3": "Frenesia",
+    "6": "Ira Incontenibile",
+    "10": "Presenza Intimidatoria",
+    "14": "Ritorsione"
+  },
+  "Cacciatore": {
+    "3": "Preda del Cacciatore",
+    "7": "Tattiche Difensive",
+    "11": "Attacco Multiplo",
+    "15": "Difesa Superiore del Cacciatore"
+  },
+  "Signore delle Bestie": {
+    "3": "Compagno del Ranger",
+    "7": "Addestramento Eccezionale",
+    "11": "Furia Bestiale",
+    "15": "Condividi Incantesimi"
+  },
+  "Assassino": {
+    "3": "Competenze Bonus\nAssassinare",
+    "9": "Maestro Infiltrato",
+    "13": "Impostore",
+    "17": "Colpo Letale"
+  },
+  "Collegio della Sapienza": {
+    "3": "Competenze Bonus\nParole Taglienti",
+    "6": "Segreti Magici Aggiuntivi",
+    "14": "Abilità Impareggiabile"
+  },
+  "Circolo della Terra": {
+    "2": "Trucchetto Bonus\nRecupero Naturale",
+    "3": "Incantesimi del Circolo",
+    "6": "Passo della Terra",
+    "10": "Interdizione della Natura",
+    "14": "Rifugio della Natura"
+  },
+  "Circolo della Luna": {
+    "2": "Forma Selvatica da Combattimento\nForme del Circolo",
+    "6": "Colpo Primordiale",
+    "10": "Forma Selvatica Elementale",
+    "14": "Mille Forme"
+  },
+  "Giuramento di Devozione": {
+    "3": "Incantesimi del Giuramento\nArma Consacrata\nScacciare l’Empio",
+    "7": "Aura di Devozione",
+    "15": "Purezza di Spirito",
+    "20": "Nube Sacra"
+  },
+  "Stregoneria Draconica": {
+    "1": "Antenato Draconico\nResilienza Draconica",
+    "6": "Affinità Elementale",
+    "14": "Ali di Drago",
+    "18": "Presenza Draconica"
+  },
+  "Stregoneria della Magia Selvaggia": {
+    "1": "Impulso di Magia Selvaggia\nOnde di Caos",
+    "6": "Piegare la Fortuna",
+    "14": "Caos Controllato",
+    "18": "Bombardamento Magico"
+  }
+};
+
 export const CARATT_INCANTATORE = {
   bardo: 'carisma', stregone: 'carisma', warlock: 'carisma', paladino: 'carisma',
   chierico: 'saggezza', druido: 'saggezza', ranger: 'saggezza',

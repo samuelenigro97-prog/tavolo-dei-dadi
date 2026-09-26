@@ -162,7 +162,8 @@ export function pfMassimiEffettivi(scheda) {
  */
 export function effettiSfinimento(scheda) {
   const livello = Math.max(0, Math.min(6, Number(scheda?.sfinimento) || 0));
-  const is2024 = scheda?.versione === '2024';
+  // Senza versione il PG segue le regole 2024 (stesso default del resto della scheda).
+  const is2024 = scheda?.versione !== '2014';
   return {
     livello,
     morto: livello >= 6,
@@ -593,3 +594,14 @@ export function esitoDannoPf0(pfMax, pfPrima, dannoReale, tsMortePrima) {
   return { pfDopo: 0, istantaneo: false, tsMorteDopo: null };
 }
 
+
+/**
+ * Dadi Vita recuperati con un riposo lungo, per edizione:
+ * - 5.0 (PHB 2014): metà dei Dadi Vita totali (minimo 1);
+ * - 5.5 (PHB 2024): tutti i Dadi Vita spesi.
+ * Senza versione vale la 2024 (stesso default del resto della scheda).
+ */
+export function dadiVitaRecuperatiRiposoLungo(livelloTotale, versione) {
+  const liv = Math.max(1, Math.floor(Number(livelloTotale) || 1));
+  return String(versione) === '2014' ? Math.max(1, Math.floor(liv / 2)) : liv;
+}

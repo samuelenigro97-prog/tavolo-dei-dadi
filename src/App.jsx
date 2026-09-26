@@ -8,7 +8,7 @@ import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI, ambientazioneCasuale, COLORE_
 import { styles, GLOBAL_CSS } from './ui/stili.js';
 import { Editable, Rollable, BadgeTiroColpire, BadgeTiroDanno, BadgeTiroSalvezza, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, estraiVociLista, Sezione, CampoBloccato, formattaVoceConIcona } from './ui/componenti.jsx';
 import { SezionePoteri, BadgePotere } from './ui/PoteriSezione.jsx';
-import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma, estraiCategorieNota, coloreCategoria, esitoDannoPf0, iniziativaTotale, pfMassimiEffettivi, effettiSfinimento, trasformazioneAttiva } from './rules/scheda.js';
+import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma, estraiCategorieNota, coloreCategoria, esitoDannoPf0, iniziativaTotale, pfMassimiEffettivi, effettiSfinimento, trasformazioneAttiva, dadiVitaRecuperatiRiposoLungo } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON, WENDELL_JSON, LYRIAN_JSON } from './data/esempi.js';
 import { fixEquipaggiamentoVaelion, migrazioneRegoleVaelion, autoIdratazionePersonaggioPredefinito } from './data/migrazioniPersonaggi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
@@ -563,13 +563,18 @@ function sottoclassiPerClasse(classe, manuali = null) {
 // Sono riassunti/etichette nostre: da verificare col proprio manuale.
 
 /** Privilegi della sottoclasse fino al livello dato (testo con a-capo), o null. */
-function privilegiSottoclasseFinoA(sottoclasse, livello) {
-  const t = SUBCLASS_PRIVILEGI[sottoclasse];
+function privilegiSottoclasseFinoA(sottoclasse, livello, versione) {
+  // Per la 5.0 (2014) una sottoclasse può avere una tabella propria quando i
+  // privilegi o i livelli cambiano (es. Campione: al 10° "Stile di
+  // Combattimento Aggiuntivo", non "Guerriero Eroico" della 2024).
+  const t = (String(versione) === '2014' && SUBCLASS_PRIVILEGI_2014[sottoclasse]) || SUBCLASS_PRIVILEGI[sottoclasse];
   if (!t) return null;
   const lv = Math.max(1, Math.floor(livello) || 1);
   const righe = [];
-  for (let L = 1; L <= lv; L++) if (t[L]) righe.push(t[L]);
-  return righe.join('\n');
+  for (let L = 1; L <= lv; L++) if (t[L]) righe.push(...String(t[L]).split('\n'));
+  // Alcune tabelle ripetono lo stesso privilegio a due livelli (2° nella 5.0,
+  // 3° nella 5.5): nell'elenco compare una volta sola.
+  return [...new Set(righe.map((r) => r.trim()).filter(Boolean))].join('\n');
 }
 
 // Caratteristica da incantatore per classe (chiave = primo alias in CLASSI).
@@ -1288,13 +1293,13 @@ function avatarSvgFallback(classe, specie, nome) {
 
 
 import { spiegaPrivilegio, spiegaIncantesimo, spiegaTratto, spiegaTalento, spiegaMetamagia, spiegaInvocazione, spiegaInfusione, setEdizioneAttuale, METAMAGIA_5E, TALENTI_5E, INVOCAZIONI_5E, INFUSIONI_ARTEFICE_5E, INCANTESIMI_NOMI as NOMI_SPIEG_INC } from './data/spiegazioni.js';
-import { INCANTESIMI_DB, ALIAS_INCANTESIMI, datiIncantesimo } from './data/incantesimi.js';
+import { INCANTESIMI_DB, ALIAS_INCANTESIMI, datiIncantesimo, valoreIncantesimoPerEdizione } from './data/incantesimi.js';
 
 const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(INCANTESIMI_DB)])).sort((a, b) => a.localeCompare(b, 'it'));
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SESSO_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E, DEFAULT_MANUALI, MANUALI_INFO, SOTTOCLASSI_FONTI, TALENTI_FONTI, INCANTESIMI_FONTI, talentiPerManuali, incantesimiPerManuali, fonteValida, PE_PER_LIVELLO } from './data/dati5e.js';
-import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
+import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, SUBCLASS_PRIVILEGI, SUBCLASS_PRIVILEGI_2014, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico, modalitaEffettiva } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, determinaIconaOggetto, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili, calcolaTurnoCombattimento, dettagliAbilita, calcolaTsConcentrazione, calcolaAttaccoFurtivo, calcolaIraBarbarica, calcolaPunizioneDivina, calcolaIspirazioneBardica, livelloDiClasse, categoriaDaTempoLancio, tempoLancioIncantesimo, gittataAttacco, categoriaAttaccoSalvato, isRandelloIncantato, caratteristicaTiroSalvezzaIncantesimo, dannoTrucchettoScalato, dannoBaseTrucchetto } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, determinaIconaOggetto, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili, calcolaTurnoCombattimento, dettagliAbilita, calcolaTsConcentrazione, calcolaAttaccoFurtivo, calcolaIraBarbarica, calcolaPunizioneDivina, calcolaIspirazioneBardica, livelloDiClasse, categoriaDaTempoLancio, tempoLancioIncantesimo, gittataAttacco, categoriaAttaccoSalvato, isRandelloIncantato, caratteristicaTiroSalvezzaIncantesimo, dannoTrucchettoScalato, dannoBaseTrucchetto, dannoCuraConModificatore } from './rules/regole.js';
 import { normalizzaPoteri, sincronizzaRisorsePoteri, bonusPotereBersaglio, modificatoriPoteriAttivi } from './rules/poteri.js';
 
 /**
@@ -4594,7 +4599,7 @@ export default function App() {
     s.versione = regoleVersione;
     // Privilegi ottenuti fino al livello iniziale, secondo l'edizione scelta.
     s.privilegi = privilegiClasseFinoA(classe, s.livello, regoleVersione);
-    s.privilegiSottoclasse = sottoclasse ? privilegiSottoclasseFinoA(sottoclasse, s.livello) : '';
+    s.privilegiSottoclasse = sottoclasse ? privilegiSottoclasseFinoA(sottoclasse, s.livello, regoleVersione) : '';
     // Bonus alle caratteristiche: dal background nella 5.5, dalla razza nella 5.0.
     if (regoleVersione === '2024') {
       const [piu2, piu1] = bonusCaratteristicheBackground(background, classe);
@@ -4703,7 +4708,7 @@ export default function App() {
         const priv = privilegiClasseFinoA(mc.classe, mc.livello, regoleVersione);
         if (priv) s.privilegi = [s.privilegi, `[${mc.classe}]`, priv].filter(Boolean).join('\n');
         if (mc.sottoclasse) {
-          const subPriv = privilegiSottoclasseFinoA(mc.sottoclasse, mc.livello);
+          const subPriv = privilegiSottoclasseFinoA(mc.sottoclasse, mc.livello, regoleVersione);
           if (subPriv) s.privilegiSottoclasse = [s.privilegiSottoclasse, subPriv].filter(Boolean).join('\n');
         }
       }
@@ -5472,7 +5477,7 @@ export default function App() {
   }
 
   /**
-   * Riposo lungo 5e: PF al massimo, slot recuperati, metà dei dadi vita,
+   * Riposo lungo 5e: PF al massimo, slot recuperati, dadi vita (metà nella 5.0, tutti nella 5.5),
    * risorse (breve e lungo) ricaricate, uno sfinimento in meno.
    */
   function riposoLungoEsegui() {
@@ -5481,7 +5486,8 @@ export default function App() {
         Object.entries(s.slotIncantesimo).map(([liv, v]) => [liv, { ...v, spesi: 0 }])
       );
       const livelloTotalePerRiposo = (s.livello || 1) + (Array.isArray(s.multiclasse) ? s.multiclasse.reduce((a, m) => a + (m?.livello || 0), 0) : 0);
-      let recuperoDadi = Math.max(1, Math.floor(livelloTotalePerRiposo / 2));
+      // 5.0: metà dei Dadi Vita; 5.5: tutti quelli spesi (secondo l'edizione del PG).
+      let recuperoDadi = dadiVitaRecuperatiRiposoLungo(livelloTotalePerRiposo, s.versione || regoleVersione || '2024');
       const gruppi = gruppiDadoVita(s.dadiVita);
       const spesiMap = dadiVitaSpesiNormalizzati(s);
       const nuovoSpesi = { ...spesiMap };
@@ -8241,7 +8247,7 @@ export default function App() {
 
               {subDaMostrare.length === 0 && <p style={styles.detail}>{t('priv.nessuno')}</p>}
               {subDaMostrare.map((item, idx) => {
-                const tab = SUBCLASS_PRIVILEGI[item.sottoclasse] || {};
+                const tab = (versione === '2014' && SUBCLASS_PRIVILEGI_2014[item.sottoclasse]) || SUBCLASS_PRIVILEGI[item.sottoclasse] || {};
                 const righe = [];
                 for (let L = 1; L <= 20; L++) if (tab[L]) righe.push({ L, feat: tab[L], futuro: L > item.livello });
                 return (
@@ -12829,7 +12835,7 @@ export default function App() {
                     <CampoModulo label={t("profilo.sottoclasse")} boxClassName={String(scheda.sottoclasse || '').length > 25 ? 'testo-compatto' : undefined}>
                       {campoSottoclasse(scheda.classe, scheda.livello, scheda.sottoclasse, (v) => {
                         const patch = { sottoclasse: v };
-                        const auto = privilegiSottoclasseFinoA(v, scheda.livello || 1);
+                        const auto = privilegiSottoclasseFinoA(v, scheda.livello || 1, versione);
                         if (auto) patch.privilegiSottoclasse = auto;
                         if (sottoclasseTerzoIncantatore(scheda.classe, v)) {
                           const slot = slotDaClasseLivello(scheda.classe, scheda.livello, v);
@@ -12925,7 +12931,7 @@ export default function App() {
                   }
                 }
                 if (m.sottoclasse) {
-                  const subPrivMc = privilegiSottoclasseFinoA(m.sottoclasse, m.livello || 1);
+                  const subPrivMc = privilegiSottoclasseFinoA(m.sottoclasse, m.livello || 1, versione);
                   if (subPrivMc) {
                     for (const r of subPrivMc.split('\n').map((x) => x.trim()).filter(Boolean)) {
                       if (!subEsistenti.includes(r)) subEsistenti.push(r);
@@ -14673,12 +14679,15 @@ export default function App() {
                     const d = dettagliIncantesimo(s.nome) || {};
                     const db = datiIncantesimo(s.nome) || {};
                     const desc = (s.note || '') + ' ' + (spiegaIncantesimo(s.nome) || '') + ' ' + (db.desc || '');
-                    let danno = s.danno || d.danno || db.danno || '';
+                    // Dadi per l'edizione del PG (un "2d8" 2024 salvato su un PG 5.0 mostra 1d8).
+                    let danno = valoreIncantesimoPerEdizione(s, 'danno', versione) || d.danno || '';
                     const modIncSp = caratteristicaIncantatore ? modificatore(punteggioCaratteristica(scheda, caratteristicaIncantatore)) : 0;
                     if ((s.livello === 0 || db.livello === 0) && danno) {
                       danno = dannoTrucchettoScalato(s.nome, danno, { livello: scheda.livello || 1, versione, modIncantatore: modIncSp });
                     }
-                    const tipoDanno = s.tipoDanno || d.tipoDanno || db.tipoDanno || '';
+                    const tipoDanno = valoreIncantesimoPerEdizione(s, 'tipoDanno', versione) || d.tipoDanno || '';
+                    // Le cure sommano il modificatore da incantatore (es. Parola di Guarigione 1d4+5).
+                    if (tipoDanno === 'Guarigione') danno = dannoCuraConModificatore(s.nome, danno, modIncSp);
                     const { isTS, isCura } = classificaIncantesimoCombattimento(s);
                     const tsMatch = desc.match(/ts\s+(destrezza|saggezza|costituzione|forza|intelligenza|carisma)/i);
                     const nomeTS = tsMatch ? ` (TS ${tsMatch[1].charAt(0).toUpperCase() + tsMatch[1].slice(1)})` : isTS ? ' (TS)' : '';
@@ -14693,10 +14702,10 @@ export default function App() {
                     // La gittata va in un campo a sé (diventa il primo chip della riga);
                     // la nota usa la virgola come separatore, come le note degli attacchi
                     // salvati, così estraiCategorieNota riconosce le singole parti.
-                    const gittata = s.gittata || d.gittata || db.gittata || '';
+                    const gittata = valoreIncantesimoPerEdizione(s, 'gittata', versione) || d.gittata || '';
                     const note = [isTS ? `CD ${cd}${nomeTS}` : isCura ? '' : 'Attacco Magico', s.note || ''].filter(Boolean).join(', ');
 
-                    const categoria = categoriaDaTempoLancio(s.tempo || db.tempo || d.tempo || '') || 'Azione';
+                    const categoria = categoriaDaTempoLancio(valoreIncantesimoPerEdizione(s, 'tempo', versione) || d.tempo || '') || 'Azione';
 
                     return {
                       id: `spell-${s.id}`,
@@ -14961,7 +14970,9 @@ export default function App() {
                               const categorieNotaTutte = estraiCategorieNota(a.note);
                               // Gittata e (per gli incantesimi a TS) la CD hanno già il loro badge:
                               // non ripeterli tra i chip della nota.
-                              const categorieNota = categorieNotaTutte.filter((c) => c.categoria !== 'gittata' && !(a.isTS && c.categoria === 'tiroSalvezza'));
+                              // La Maestria nelle armi esiste solo nella 5.5 (2024): una nota salvata
+                              // con "Maestria: …" su un PG 5.0 non diventa un chip.
+                              const categorieNota = categorieNotaTutte.filter((c) => c.categoria !== 'gittata' && !(a.isTS && c.categoria === 'tiroSalvezza') && !(versione === '2014' && /^maestria\s*:/i.test(String(c.testo || ''))));
                               const isTrucchetto = (spellInLista && spellInLista.livello === 0) || (spSpell && spSpell.livello === 0) || a.livello === 0;
                               const iconaReazione = a.isSpell ? (isTrucchetto ? '✨' : '🪄')
                                 : (a.tipo === 'tattica' || a.tipo === 'attacco') ? '⚔️'
@@ -16021,18 +16032,21 @@ export default function App() {
                           {spellsDaMostrare.map((s) => {
                             const d = datiIncantesimo(s.nome);
                             const spieg = spiegaIncantesimo(s.nome) || d?.desc || s.note || '';
-                            const tempoLabel = traduciDato(s.tempo || d?.tempo || '');
-                            const gittata = s.gittata || d?.gittata || '';
+                            // Tempo/gittata/danno per l'edizione del PG (vedi valoreIncantesimoPerEdizione).
+                            const tempoLabel = traduciDato(valoreIncantesimoPerEdizione(s, 'tempo', versione));
+                            const gittata = valoreIncantesimoPerEdizione(s, 'gittata', versione);
                             const scuola = s.scuola || d?.scuola || '';
                             const area = s.area || d?.area || '';
                             // Trucchetti: stesso danno di Combattimento (dannoTrucchettoScalato: livello,
                             // e per Randello Incantato dado per edizione + mod da incantatore).
-                            const dannoBaseInc = s.danno || d?.danno || '';
+                            const dannoBaseInc = valoreIncantesimoPerEdizione(s, 'danno', versione);
                             const isTrucchettoRiga = s.livello === 0 || d?.livello === 0;
+                            const tipoDanno = valoreIncantesimoPerEdizione(s, 'tipoDanno', versione);
                             const danno = isTrucchettoRiga && dannoBaseInc
                               ? dannoTrucchettoScalato(s.nome, dannoBaseInc, { livello: scheda.livello || 1, versione, modIncantatore: modIncantatore || 0 })
-                              : dannoBaseInc;
-                            const tipoDanno = s.tipoDanno || d?.tipoDanno || '';
+                              : tipoDanno === 'Guarigione'
+                                ? dannoCuraConModificatore(s.nome, dannoBaseInc, modIncantatore || 0)
+                                : dannoBaseInc;
                             const note = s.note || '';
                             // Incantesimo a tiro salvezza: badge della CD al posto del tiro per colpire.
                             const isTSInc = Boolean(danno) && tipoDanno !== 'Guarigione' && classificaIncantesimoCombattimento(s).isTS;
@@ -16264,7 +16278,8 @@ export default function App() {
                                       {modIncantatore !== null && isTSInc && (
                                         <BadgeTiroSalvezza cd={8 + scheda.bonusCompetenza + modIncantatore} caratteristica={caratteristicaTiroSalvezzaIncantesimo(s.nome, s.note)} colore={coloreCategoria('tiroSalvezza', notteAttiva)} />
                                       )}
-                                      {modIncantatore !== null && !isTSInc && (
+                                      {/* Una cura non ha tiro per colpire: solo il badge del tiro di cura. */}
+                                      {modIncantatore !== null && !isTSInc && tipoDanno !== 'Guarigione' && (
                                         <BadgeTiroColpire
                                           bonus={scheda.bonusCompetenza + modIncantatore}
                                           colore={coloreCategoria('attacco', notteAttiva)}
@@ -16673,7 +16688,7 @@ export default function App() {
               >
                 {(() => {
                   const lvWarlock = Number(scheda.livello) || 1;
-                  const maxInv = maxInvocazioniWarlock(lvWarlock, regoleVersione);
+                  const maxInv = maxInvocazioniWarlock(lvWarlock, versione);
                   const scelte = (scheda.invocazioni || '').split(',').map((s) => s.trim()).filter(Boolean);
                   return (
                     <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -17006,7 +17021,7 @@ export default function App() {
                                         const sub = e.target.value;
                                         if (!sub) return;
                                         if (c.isMain) {
-                                          aggiorna({ sottoclasse: sub, privilegiSottoclasse: privilegiSottoclasseFinoA(sub, c.livello) });
+                                          aggiorna({ sottoclasse: sub, privilegiSottoclasse: privilegiSottoclasseFinoA(sub, c.livello, versione) });
                                         } else {
                                           aggiorna({
                                             multiclasse: (scheda.multiclasse || []).map((m) => (m.classe === c.classe ? { ...m, sottoclasse: sub } : m)),

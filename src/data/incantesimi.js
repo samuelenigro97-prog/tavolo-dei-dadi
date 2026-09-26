@@ -585,7 +585,77 @@ export const ALIAS_INCANTESIMI = {
   'parola del potere uccidere': 'Parola del Potere Uccidere',
 };
 
-export function datiIncantesimo(nome) {
+// --- Varianti per edizione (5.0 = PHB 2014, 5.5 = PHB 2024) ---------------
+// INCANTESIMI_DB contiene una sola versione per incantesimo (storicamente un
+// misto: es. Cura Ferite 2d8 della 2024 accanto a Tocco Gelido 36m della 2014).
+// Per gli incantesimi le cui meccaniche cambiano davvero fra le edizioni, qui
+// ci sono i campi da sovrapporre per ciascuna: datiIncantesimo() li applica
+// in base all'edizione del PG attivo (setEdizioneIncantesimi, chiamata dalla
+// UI insieme a setEdizioneAttuale delle spiegazioni) o a quella passata.
+export const VARIANTI_EDIZIONE_INCANTESIMI = {
+  'Cura Ferite': {
+    '2014': { danno: '1d8', desc: 'Una creatura che tocchi recupera 1d8 + il tuo modificatore da incantatore PF (+1d8 per ogni slot oltre il 1°). Nessun effetto su non morti e costrutti.' },
+    '2024': { danno: '2d8', desc: 'Una creatura che tocchi recupera 2d8 + il tuo modificatore da incantatore PF (+2d8 per ogni slot oltre il 1°).' },
+  },
+  'Parola di Guarigione': {
+    '2014': { danno: '1d4', desc: 'Come azione bonus, una creatura visibile entro 18m recupera 1d4 + il tuo modificatore da incantatore PF (+1d4 per ogni slot oltre il 1°). Nessun effetto su non morti e costrutti.' },
+    '2024': { danno: '2d4', desc: 'Come azione bonus, una creatura visibile entro 18m recupera 2d4 + il tuo modificatore da incantatore PF (+2d4 per ogni slot oltre il 1°).' },
+  },
+  'Parola di Guarigione di Massa': {
+    '2014': { danno: '1d4', desc: 'Come azione bonus, fino a 6 creature visibili entro 18m recuperano 1d4 + il tuo modificatore da incantatore PF (+1d4 per ogni slot oltre il 3°).' },
+    '2024': { danno: '2d4', desc: 'Come azione bonus, fino a 6 creature visibili entro 18m recuperano 2d4 + il tuo modificatore da incantatore PF (+1d4 per ogni slot oltre il 3°).' },
+  },
+  'Cura Ferite di Massa': {
+    '2014': { danno: '3d8', desc: 'Fino a 6 creature in una sfera di 9m di raggio recuperano 3d8 + il tuo modificatore da incantatore PF (+1d8 per ogni slot oltre il 5°).' },
+    '2024': { danno: '5d8', desc: 'Fino a 6 creature in una sfera di 9m di raggio recuperano 5d8 + il tuo modificatore da incantatore PF (+1d8 per ogni slot oltre il 5°).' },
+  },
+  'Tocco Gelido': {
+    '2014': { gittata: '36m', danno: '1d8', desc: 'Attacco magico a distanza (36m): 1d8 necrotici; il bersaglio non può recuperare PF fino all\'inizio del tuo prossimo turno e, se non morto, ha svantaggio ai tiri per colpire contro di te.' },
+    '2024': { gittata: 'Tocco', danno: '1d10', desc: 'Attacco magico in mischia (tocco): 1d10 necrotici; il bersaglio non può recuperare PF fino alla fine del tuo prossimo turno.' },
+  },
+  'Produrre Fiamma': {
+    '2014': { tempo: '1 Azione', gittata: 'Sé stesso / 9m', desc: 'Una fiamma sulla mano fa luce per 10 minuti; puoi scagliarla (anche nello stesso turno del lancio) con un attacco magico a distanza entro 9m: 1d8 fuoco.' },
+    '2024': { tempo: 'Azione Bonus', gittata: 'Sé stesso / 18m', desc: 'Come azione bonus crei una fiamma sulla mano che fa luce per 10 minuti; con un\'azione Magia puoi scagliarla con un attacco magico a distanza entro 18m: 1d8 fuoco.' },
+  },
+  'Colpo Accurato': {
+    '2014': { gittata: '9m', danno: '', tipoDanno: '', conc: true, desc: 'Concentrazione (1 round): al tuo prossimo turno hai vantaggio al primo tiro per colpire contro il bersaglio. Non infligge danni.' },
+  },
+  'Arma Spirituale': {
+    '2014': { conc: false, desc: 'Crei un\'arma spettrale per 1 minuto (senza concentrazione): attacco magico in mischia per 1d8 + mod. da incantatore danni da forza; come azione bonus puoi muoverla e riattaccare.' },
+    '2024': { conc: true, desc: 'Crei un\'arma spettrale (concentrazione, 1 minuto): attacco magico in mischia per 1d8 + mod. da incantatore danni da forza; come azione bonus puoi muoverla e riattaccare.' },
+  },
+  'Marchio del Cacciatore': {
+    '2014': { tipoDanno: 'Variabile' },
+    '2024': { tipoDanno: 'Forza' },
+  },
+  'Sonno': {
+    '2014': { conc: false, desc: 'Tiri 5d8: il totale è il numero di PF di creature che questo incantesimo addormenta (dalla più debole) in una sfera di 6m entro 27m, per 1 minuto.' },
+    '2024': { conc: true, desc: 'Ogni creatura a tua scelta in una sfera di 1,5m entro 27m fa un TS su Saggezza: se fallisce è Incapacitata e poi Priva di sensi (concentrazione, 1 minuto).' },
+  },
+  'Guida': {
+    '2014': { desc: 'Tocchi una creatura consenziente (concentrazione, 1 minuto): una volta prima che finisca può aggiungere 1d4 a una prova di caratteristica a sua scelta, prima o dopo il tiro; poi l\'incantesimo termina.' },
+    '2024': { desc: 'Tocchi una creatura consenziente e scegli un\'abilità (concentrazione, 1 minuto): finché dura aggiunge 1d4 a ogni prova di caratteristica che usa quell\'abilità.' },
+  },
+  'Resistenza': {
+    '2014': { desc: 'Tocchi una creatura consenziente (concentrazione, 1 minuto): una volta prima che finisca può aggiungere 1d4 a un tiro salvezza a sua scelta; poi l\'incantesimo termina.' },
+    '2024': { desc: 'Tocchi una creatura consenziente e scegli un tipo di danno (concentrazione, 1 minuto): una volta per turno, quando subisce danni di quel tipo, li riduce di 1d4.' },
+  },
+  'Interdizione alle Lame': {
+    '2014': { conc: false, desc: 'Fino alla fine del tuo prossimo turno hai resistenza ai danni contundenti, perforanti e taglienti inflitti da attacchi con armi.' },
+    '2024': { conc: true, desc: 'Concentrazione, 1 minuto: chi effettua un tiro per colpire contro di te sottrae 1d4 al tiro.' },
+  },
+  'Randello Incantato': {
+    '2024': { desc: 'Come azione bonus, per 1 minuto usi la caratteristica da incantatore per tiri per colpire e danni con il randello o bastone ferrato impugnato; il dado di danno è d8 (d10 al 5°, d12 all\'11°, 2d6 al 17°) e puoi infliggere danni da forza.' },
+  },
+};
+
+let edizioneIncantesimi = '2024';
+/** Edizione delle regole usata da datiIncantesimo() quando non ne viene passata una. */
+export function setEdizioneIncantesimi(v) {
+  edizioneIncantesimi = String(v) === '2014' ? '2014' : '2024';
+}
+
+export function datiIncantesimo(nome, versione) {
   if (!nome) return null;
   const n = String(nome).trim().toLowerCase();
   const clean = n.replace(/\s*\(.*$/, '').trim();
@@ -595,7 +665,8 @@ export function datiIncantesimo(nome) {
   const key = Object.keys(INCANTESIMI_DB).find(k => k.toLowerCase() === targetName) ||
               Object.keys(INCANTESIMI_DB).find(k => k.toLowerCase() === clean);
   if (!key) return null;
-  const d = INCANTESIMI_DB[key];
+  const ed = versione === '2014' || versione === '2024' ? versione : edizioneIncantesimi;
+  const d = { ...INCANTESIMI_DB[key], ...(VARIANTI_EDIZIONE_INCANTESIMI[key]?.[ed] || {}) };
   return {
     nome: key,
     livello: d.livello ?? 0,
@@ -610,4 +681,30 @@ export function datiIncantesimo(nome) {
     rituale: !!d.rituale,
     desc: d.desc || '',
   };
+}
+
+/**
+ * Valore di un campo (danno, tempo, gittata…) di un incantesimo della lista
+ * del PG, secondo l'edizione. Il valore salvato nella voce ha la precedenza
+ * (è una scelta del giocatore), tranne quando coincide con il valore
+ * predefinito dell'ALTRA edizione per un incantesimo che cambia fra 2014 e
+ * 2024: in quel caso è quasi sempre un residuo del vecchio database misto
+ * (es. "Cura Ferite 2d8" salvato su un PG 5.0) e si mostra il valore giusto
+ * per l'edizione del PG. Il dato salvato non viene modificato.
+ */
+export function valoreIncantesimoPerEdizione(voce, campo, versione) {
+  const ed = versione === '2014' || versione === '2024' ? versione : edizioneIncantesimi;
+  const dati = datiIncantesimo(voce?.nome, ed);
+  const salvato = voce?.[campo];
+  const norm = (v) => String(v ?? '').replace(/\s+/g, '').toLowerCase();
+  if (salvato && dati) {
+    const varianti = VARIANTI_EDIZIONE_INCANTESIMI[dati.nome];
+    const altra = ed === '2014' ? '2024' : '2014';
+    const valAltra = varianti?.[altra]?.[campo];
+    const valQuesta = varianti?.[ed]?.[campo];
+    if (valAltra !== undefined && valQuesta !== undefined && norm(salvato) === norm(valAltra) && norm(valAltra) !== norm(valQuesta)) {
+      return valQuesta;
+    }
+  }
+  return salvato || dati?.[campo] || '';
 }

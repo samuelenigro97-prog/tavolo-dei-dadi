@@ -10,7 +10,7 @@ import { modificatore, conSegno, bonusCompetenzaDaLivello } from './dadi.js';
 import { punteggioCaratteristica, effettiSfinimento, trasformazioneAttiva, estraiCategorieNota } from './scheda.js';
 import { bonusPotereBersaglio } from './poteri.js';
 import { spiegaIncantesimo } from '../data/spiegazioni.js';
-import { INCANTESIMI_DB, datiIncantesimo } from '../data/incantesimi.js';
+import { INCANTESIMI_DB, datiIncantesimo, valoreIncantesimoPerEdizione } from '../data/incantesimi.js';
 import { ABILITA, CARATTERISTICHE } from '../data/caratteristiche.js';
 import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from '../data/condizioni.js';
 import { GUIDA_ABILITA_5E } from '../data/guidaAbilita5e.js';
@@ -539,7 +539,9 @@ export function categoriaDaTempoLancio(tempo) {
  */
 export function tempoLancioIncantesimo(nome, voceLista = null) {
   const pulito = String(nome || '').replace(/^✨\s*/, '').trim();
-  return voceLista?.tempo || datiIncantesimo(pulito)?.tempo || dettagliIncantesimo(pulito)?.tempo || '';
+  // Tempo per l'edizione attiva: un valore salvato dell'altra edizione (es.
+  // Produrre Fiamma "1 Azione" su un PG 5.5) non sposta la categoria.
+  return valoreIncantesimoPerEdizione({ ...(voceLista || {}), nome: pulito }, 'tempo') || dettagliIncantesimo(pulito)?.tempo || '';
 }
 
 /**
@@ -614,6 +616,26 @@ export function dannoBaseTrucchetto(nome, voceLista = null, dannoSalvato = '') {
  * - tutti gli altri: numero di dadi scalato col livello (1/2/3/4 al
  *   1°/5°/11°/17°, scalaDannoTrucchetto) sul danno di base.
  */
+// Incantesimi di cura che (in entrambe le edizioni) sommano il modificatore
+// da incantatore ai dadi: "Cura Ferite: 1d8 + mod." (5.0) / "2d8 + mod." (5.5).
+export const CURE_CON_MODIFICATORE = new Set([
+  'cura ferite', 'parola di guarigione', 'cura ferite di massa',
+  'parola di guarigione di massa', 'preghiera di guarigione',
+]);
+
+/**
+ * Tiro di cura completo: per le cure che sommano il modificatore da
+ * incantatore restituisce "dadi+mod" (es. "1d4+5"). Se il danno salvato
+ * contiene già un modificatore, o l'incantesimo non lo prevede, resta com'è.
+ */
+export function dannoCuraConModificatore(nome, danno, modIncantatore = 0) {
+  const d = String(danno || '').trim();
+  const chiave = String(datiIncantesimo(nome)?.nome || nome || '').trim().toLowerCase();
+  const mod = Number(modIncantatore) || 0;
+  if (!d || !mod || !CURE_CON_MODIFICATORE.has(chiave) || !/^\d*d\d+$/i.test(d)) return d;
+  return `${d}${mod > 0 ? '+' : ''}${mod}`;
+}
+
 export function dannoTrucchettoScalato(nome, dannoBase, { livello = 1, versione = '2024', modIncantatore = 0 } = {}) {
   if (isRandelloIncantato(nome)) return dannoRandelloIncantato(dadoRandelloIncantato(livello, versione), modIncantatore);
   return scalaDannoTrucchetto(dannoBase, livello, nome);
@@ -1128,7 +1150,8 @@ export function controlliScheda(scheda) {
 
   // --- Livello Minimo Sottoclasse ---
   if (scheda.classe && scheda.sottoclasse) {
-    const livMin = sottoclasseLivPer(scheda.classe, scheda.versione || '2024');
+    // Livello di sblocco della sottoclasse per l'edizione del PG (primo valore della tabella).
+    const livMin = sottoclasseLivPer(scheda.versione === '2014' ? '2014' : '2024')[chiaveClasse(scheda.classe)]?.[0] || 0;
     const livPg = Number(scheda.livello) || 1;
     if (livMin && livPg < livMin) {
       risultati.push({

@@ -1,5 +1,5 @@
 // Spiegazioni brevi per la "nuvoletta" informativa (privilegi, incantesimi, tratti).
-import { INCANTESIMI_DB, ALIAS_INCANTESIMI } from './incantesimi.js';
+import { INCANTESIMI_DB, ALIAS_INCANTESIMI, VARIANTI_EDIZIONE_INCANTESIMI, setEdizioneIncantesimi, datiIncantesimo } from './incantesimi.js';
 
 export const SPIEG_PRIVILEGI = {
   "Spirito Totemico": "Scegli uno spirito totemico (Orso: resistenza a tutti i danni tranne psichici; Aquila: scatto come azione bonus e svantaggio agli attacchi di opportunità; Lupo: vantaggio ai tuoi alleati in mischia contro i nemici entro 1,5m; Alce o Tigre per velocità o salti).",
@@ -1069,6 +1069,8 @@ function _en(mappaLc, chiave) {
 let edizioneAttuale = '2024';
 export function setEdizioneAttuale(v) {
   edizioneAttuale = String(v) === '2014' ? '2014' : '2024';
+  // Anche i dati meccanici degli incantesimi (dadi, tempo, gittata) seguono l'edizione.
+  setEdizioneIncantesimi(edizioneAttuale);
 }
 /** Se il testo è diviso per edizione, restituisce la parte dell'edizione attiva. */
 function _ed(testo) {
@@ -1418,7 +1420,15 @@ export function spiegaIncantesimo(nome) {
   const clean = searchName.replace(/\s*\(.*$/, '').trim();
   const alias = (ALIAS_INCANTESIMI && (ALIAS_INCANTESIMI[searchName] || ALIAS_INCANTESIMI[clean])) || null;
   const target = alias ? alias.toLowerCase() : searchName;
-  
+
+  // Incantesimi con meccaniche diverse fra 2014 e 2024: il testo italiano
+  // segue l'edizione del PG (es. Cura Ferite 1d8 nella 5.0, 2d8 nella 5.5).
+  if (linguaAttuale !== 'en') {
+    const dati = datiIncantesimo(n, edizioneAttuale);
+    const variante = dati && VARIANTI_EDIZIONE_INCANTESIMI[dati.nome]?.[edizioneAttuale];
+    if (variante?.desc) return (dati.livello > 0 ? `Liv. ${dati.livello} · ` : 'Liv. 0 · ') + variante.desc;
+  }
+
   if (SPIEG_INCANTESIMI_LC[searchName]) return _ed(_en(EN_INCANTESIMI_LC, searchName) || SPIEG_INCANTESIMI_LC[searchName]);
   if (SPIEG_INCANTESIMI_LC[clean]) return _ed(_en(EN_INCANTESIMI_LC, clean) || SPIEG_INCANTESIMI_LC[clean]);
   if (alias && SPIEG_INCANTESIMI_LC[target]) return _ed(_en(EN_INCANTESIMI_LC, target) || SPIEG_INCANTESIMI_LC[target]);

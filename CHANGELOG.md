@@ -59,6 +59,50 @@ Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 - `categoriaAttaccoSalvato` (pura, testata su tutti gli incantesimi "Azione
   Bonus" del database): un incantesimo ad azione bonus non compare mai in
   Azione, anche se salvato con `categoria: 'Azione'`.
+- **Regole per edizione del personaggio (5.0 = PHB 2014, 5.5 = PHB 2024)**
+  — audit completo; ogni PG usa le regole della propria edizione:
+  - **Incantesimi con varianti per edizione** (`VARIANTI_EDIZIONE_INCANTESIMI`
+    + `setEdizioneIncantesimi`, sincronizzata da `setEdizioneAttuale`): il
+    database mescolava le edizioni (Cura Ferite 2d8 della 2024 accanto a
+    Tocco Gelido 36m della 2014). Ora dadi, tempo, gittata, concentrazione
+    e testo seguono l'edizione del PG: Cura Ferite 1d8/2d8, Parola di
+    Guarigione 1d4/2d4, Parola di Guarigione di Massa 1d4/2d4, Cura Ferite
+    di Massa 3d8/5d8, Tocco Gelido 36m 1d8 / tocco 1d10, Produrre Fiamma
+    azione 9m / azione bonus 18m, Colpo Accurato (2014: vantaggio, niente
+    danni), Arma Spirituale e Interdizione alle Lame (concentrazione solo
+    2024), Marchio del Cacciatore (forza nella 2024), Sonno (5d8 PF / TS
+    Saggezza), Guida e Resistenza (effetto diverso; Guida è un'azione con
+    concentrazione in entrambe le edizioni), Randello Incantato. Anche il
+    Compendio applica le varianti.
+  - **Valori salvati dell'altra edizione** (`valoreIncantesimoPerEdizione`):
+    un valore salvato che coincide con quello dell'altra edizione (es.
+    "Cura Ferite 2d8" rimasto su un PG 5.0) viene mostrato con il valore
+    della propria edizione; un valore personalizzato resta. I dati salvati
+    non vengono modificati.
+  - **Cure + modificatore**: Cura Ferite, Parola di Guarigione (anche di
+    Massa), Cura Ferite di Massa e Preghiera di Guarigione sommano il
+    modificatore da incantatore al tiro (Vaelion: Parola di Guarigione
+    1d4+5, Cura Ferite 1d8+5) — `dannoCuraConModificatore`. Nella lista
+    incantesimi una cura non mostra più un tiro per colpire finto.
+  - **Riposo lungo**: recuperava sempre metà dei Dadi Vita; nella 5.5 si
+    recuperano tutti (`dadiVitaRecuperatiRiposoLungo`). Testi aggiornati.
+  - **Sfinimento**: senza `versione` il PG era trattato come 2014, mentre
+    il resto della scheda usa la 2024: ora il default è coerente.
+  - **Controllo sottoclasse**: il controllo "sottoclasse prima del livello
+    di sblocco" non scattava mai (argomenti sbagliati a
+    `sottoclasseLivPer`); ora usa il livello dell'edizione del PG (es.
+    Druido 2° nella 5.0, 3° nella 5.5).
+  - **Privilegi di sottoclasse 5.0** (`SUBCLASS_PRIVILEGI_2014`): la tabella
+    era solo 2024 anche per i PG 5.0 (es. Campione con "Guerriero Eroico"
+    al 10° invece di "Stile di Combattimento Aggiuntivo"). Aggiunte le
+    versioni 2014 di Campione, Berserker, Cacciatore, Signore delle Bestie,
+    Assassino, Collegio della Sapienza, Circolo della Terra/Luna,
+    Giuramento di Devozione, Stregoneria Draconica/Magia Selvaggia;
+    elenco senza doppioni (privilegi ripetuti al 2°/3° livello).
+  - **Invocazioni del Warlock**: il massimo usava le regole globali invece
+    dell'edizione del PG.
+  - **Maestria nelle armi** (solo 2024): una nota salvata "Maestria: …" su
+    un PG 5.0 non diventa più un chip in Combattimento.
 
 ### Cambiato
 - **Tiro per colpire e danni con gli stessi badge di Incantesimi**:

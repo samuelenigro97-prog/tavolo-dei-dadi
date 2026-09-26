@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { t, traduciDato } from '../i18n.js';
 import { C, COLORE_SCUOLA } from './tema.js';
 import { styles } from './stili.js';
-import { INCANTESIMI_DB } from '../data/incantesimi.js';
+import { INCANTESIMI_DB, VARIANTI_EDIZIONE_INCANTESIMI } from '../data/incantesimi.js';
 import { INCANTESIMI_XANATHAR } from '../dati/incantesimi-xanathar.js';
 import { INCANTESIMI_TASHA } from '../dati/incantesimi-tasha.js';
 import {
@@ -278,7 +278,7 @@ export function CompendioModal({
     // 1. Incantesimi
     const incMap = new Map();
     for (const [nome, d] of Object.entries(INCANTESIMI_DB || {})) {
-      incMap.set(nome.toLowerCase(), { nome, ...d });
+      incMap.set(nome.toLowerCase(), { nome, ...d, ...(VARIANTI_EDIZIONE_INCANTESIMI[nome]?.[is2024 ? '2024' : '2014'] || {}) });
     }
     for (const inc of (INCANTESIMI_XANATHAR || [])) {
       if (inc && inc.nome) {

@@ -140,4 +140,27 @@ test.describe('Combattimento', () => {
     const trucchetti = page.getByRole('heading', { name: 'Trucchetti', exact: true }).locator('xpath=ancestor::*[.//*[contains(@class, "badge-tiro-danno")]][1]');
     await expect(trucchetti.locator('.badge-tiro-danno').filter({ hasText: 'Contundente' }).first()).toContainText('1d10+5 Contundente');
   });
+  test('Vaelion (5.0): le cure usano i dadi 2014 + mod SAG (Parola di Guarigione 1d4+5, Cura Ferite 1d8+5)', async ({ page }) => {
+    const rigaBonus = page.locator('tr.attacchi-riga').filter({ hasText: 'Parola di Guarigione' });
+    await expect(rigaBonus.locator('.badge-tiro-danno')).toContainText('1d4+5');
+    // Lista incantesimi: il "2d8" salvato dal vecchio database non vince sull'edizione del PG.
+    await expect(page.locator('.badge-tiro-danno').filter({ hasText: /1d8\+5 Guarigione/ })).toHaveCount(1);
+    await expect(page.locator('.badge-tiro-danno').filter({ hasText: /2d8(\+\d+)? Guarigione/ })).toHaveCount(0);
+    // Una cura non ha tiro per colpire: nessun badge "🎯 +9" sulla riga di Cura Ferite.
+    const rigaCura = page.getByRole('button', { name: 'Cura Ferite', exact: true }).locator('xpath=ancestor::*[.//*[contains(@class, "badge-tiro-danno")]][1]');
+    await expect(rigaCura.locator('.badge-tiro-colpire')).toHaveCount(0);
+  });
+
+  test('con le regole 2024 Parola di Guarigione è 2d4 + mod', async ({ page }) => {
+    await page.evaluate(() => {
+      const k = 'scheda-interattiva:v1';
+      const r = JSON.parse(localStorage.getItem(k));
+      r.personaggi[r.attivo].nome = 'Druido di prova 2024';
+      r.personaggi[r.attivo].versione = '2024';
+      localStorage.setItem(k, JSON.stringify(r));
+    });
+    await apriScheda(page);
+    const rigaBonus = page.locator('tr.attacchi-riga').filter({ hasText: 'Parola di Guarigione' });
+    await expect(rigaBonus.locator('.badge-tiro-danno')).toContainText('2d4+5');
+  });
 });
