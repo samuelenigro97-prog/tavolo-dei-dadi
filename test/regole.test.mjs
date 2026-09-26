@@ -1288,3 +1288,31 @@ test('nessun incantesimo del database con tempo "Azione Bonus" viene classificat
   assert.ok(bonus.length > 10);
   for (const [nome] of bonus) assert.equal(categoriaAttaccoSalvato({ nome, isSpell: true, categoria: 'Azione' }, []), 'Bonus', nome);
 });
+
+// v4.38 (3): scalatura dei trucchetti con un'unica fonte di verità.
+test('dadoRandelloIncantato: 2014 d8 fisso; 2024 d8 → d10 (5°) → d12 (11°) → 2d6 (17°)', async () => {
+  const { dadoRandelloIncantato } = await import('../src/rules/regole.js');
+  for (const liv of [1, 5, 10, 11, 17, 20]) assert.equal(dadoRandelloIncantato(liv, '2014'), '1d8', `2014 liv ${liv}`);
+  const attesi = { 1: '1d8', 4: '1d8', 5: '1d10', 10: '1d10', 11: '1d12', 16: '1d12', 17: '2d6', 20: '2d6' };
+  for (const [liv, dado] of Object.entries(attesi)) assert.equal(dadoRandelloIncantato(Number(liv), '2024'), dado, `2024 liv ${liv}`);
+});
+
+test('dannoTrucchettoScalato: stessi valori per lista Trucchetti e Combattimento', async () => {
+  const { dannoTrucchettoScalato, dannoBaseTrucchetto } = await import('../src/rules/regole.js');
+  const opz = (livello, versione = '2014', modIncantatore = 5) => ({ livello, versione, modIncantatore });
+  // Frusta di Spine: 1d6 → 2d6 al 10° (e non cambia se il valore è già scalato)
+  assert.equal(dannoTrucchettoScalato('Frusta di Spine', '1d6', opz(10)), '2d6');
+  assert.equal(dannoTrucchettoScalato('Frusta di Spine', '2d6', opz(10)), '2d6');
+  assert.equal(dannoTrucchettoScalato('Frusta di Spine', '1d6', opz(4)), '1d6');
+  assert.equal(dannoTrucchettoScalato('Frusta di Spine', '1d6', opz(11)), '3d6');
+  assert.equal(dannoTrucchettoScalato('Frusta di Spine', '1d6', opz(17)), '4d6');
+  // Morsa del Gelo: il danno di base viene dai dati dell'incantesimo (1d6), non da un vecchio "2d8" salvato
+  assert.equal(dannoBaseTrucchetto('Morsa del Gelo', null, '2d8'), '1d6');
+  assert.equal(dannoTrucchettoScalato('Morsa del Gelo', dannoBaseTrucchetto('Morsa del Gelo', null, '2d8'), opz(10)), '2d6');
+  // Randello Incantato: dado per edizione/livello + mod da incantatore
+  assert.equal(dannoTrucchettoScalato('Randello Incantato', '1d8', opz(10, '2014')), '1d8+5');
+  assert.equal(dannoTrucchettoScalato('Randello Incantato', '1d8', opz(10, '2024')), '1d10+5');
+  assert.equal(dannoTrucchettoScalato('Randello Incantato', '1d8', opz(11, '2024', 4)), '1d12+4');
+  assert.equal(dannoTrucchettoScalato('Randello Incantato', '1d8', opz(17, '2024', 3)), '2d6+3');
+  assert.equal(dannoTrucchettoScalato('Randello Incantato', '1d8', opz(3, '2024', 0)), '1d8');
+});

@@ -114,4 +114,30 @@ test.describe('Combattimento', () => {
     const nomiAzione = await tabellaAzione.locator('tr.attacchi-riga .attacchi-nome').allInnerTexts();
     for (const n of nomiAzione) expect(n).not.toMatch(/Randello Incantato|Parola di Guarigione/);
   });
+
+  test('i trucchetti hanno lo stesso danno scalato col livello in Trucchetti e in Combattimento (Vaelion, 10°)', async ({ page }) => {
+    const trucchetti = page.getByRole('heading', { name: 'Trucchetti', exact: true }).locator('xpath=ancestor::*[.//*[contains(@class, "badge-tiro-danno")]][1]');
+    const riga = (nome) => page.locator('tr.attacchi-riga').filter({ hasText: nome });
+    await expect(riga('Frusta di Spine').locator('.badge-tiro-danno')).toContainText('2d6 Perforante');
+    await expect(trucchetti.locator('.badge-tiro-danno').filter({ hasText: 'Perforante' }).first()).toContainText('2d6 Perforante');
+    await expect(riga('Morsa del Gelo').locator('.badge-tiro-danno')).toContainText('2d6 Freddo');
+    await expect(trucchetti.locator('.badge-tiro-danno').filter({ hasText: 'Freddo' }).first()).toContainText('2d6 Freddo');
+  });
+
+  test('con le regole 2024 il dado di Randello Incantato scala (d10 al 10°) ovunque', async ({ page }) => {
+    await page.evaluate(() => {
+      const k = 'scheda-interattiva:v1';
+      const r = JSON.parse(localStorage.getItem(k));
+      // Vaelion è forzato a 2014 da migrazioneRegoleVaelion (per nome): per il test
+      // usiamo una copia con un altro nome e le regole 2024.
+      r.personaggi[r.attivo].nome = 'Druido di prova 2024';
+      r.personaggi[r.attivo].versione = '2024';
+      localStorage.setItem(k, JSON.stringify(r));
+    });
+    await apriScheda(page);
+    const rigaComb = page.locator('tr.attacchi-riga').filter({ hasText: 'Randello Incantato' });
+    await expect(rigaComb.locator('.badge-tiro-danno')).toContainText('1d10+5 Contundente');
+    const trucchetti = page.getByRole('heading', { name: 'Trucchetti', exact: true }).locator('xpath=ancestor::*[.//*[contains(@class, "badge-tiro-danno")]][1]');
+    await expect(trucchetti.locator('.badge-tiro-danno').filter({ hasText: 'Contundente' }).first()).toContainText('1d10+5 Contundente');
+  });
 });

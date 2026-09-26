@@ -42,6 +42,20 @@ Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
   usciva il chip "Magico): trascina 3m". `estraiCategorieNota` ora si ferma
   a parentesi/due punti/"•" (→ "Magico"), mantenendo interi "Magico con SAG
   (Randello/Bastone)", "Versatile (1d8)", "Versatile 1d8-3", "Maestria: …".
+- **Trucchetti scalati col livello anche nella lista Trucchetti**: la lista
+  mostrava il danno base (Frusta di Spine 1d6) mentre Combattimento lo
+  scalava (2d6 al 10°). Ora una sola funzione, `dannoTrucchettoScalato`,
+  calcola il danno di tutti i trucchetti in entrambe le sezioni (e nel tiro):
+  danno di base dalla voce della lista/dati dell'incantesimo
+  (`dannoBaseTrucchetto`, il valore salvato nell'attacco è solo un ripiego)
+  × 1/2/3/4 dadi al 1°/5°/11°/17°. Per Vaelion l'attacco salvato di Morsa del
+  Gelo passa da "2d8" (dado sbagliato) a "2d6", come i dati (1d6 freddo).
+- **Randello Incantato scala con le regole 2024**: `dadoRandelloIncantato`
+  segue l'edizione del personaggio — 5.0 (2014): d8 fisso, come i dati
+  dell'incantesimo nel repo; 5.5 (2024): d8 → d10 al 5° → d12 all'11° → 2d6
+  al 17° — sempre + modificatore da incantatore, uguale in Azioni Bonus e
+  Trucchetti. Vaelion è 5.0 (forzato da `migrazioneRegoleVaelion`), quindi
+  resta 1d8+5.
 - `categoriaAttaccoSalvato` (pura, testata su tutti gli incantesimi "Azione
   Bonus" del database): un incantesimo ad azione bonus non compare mai in
   Azione, anche se salvato con `categoria: 'Azione'`.

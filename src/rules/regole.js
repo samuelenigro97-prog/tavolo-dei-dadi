@@ -584,6 +584,42 @@ export function dannoRandelloIncantato(dannoBase, modIncantatore) {
 }
 
 /**
+ * Dado di danno di Randello Incantato per edizione e livello del personaggio.
+ * 2014 (PHB 2014 / dati dell'incantesimo nel repo): d8 fisso.
+ * 2024 (PHB 2024, "Cantrip Upgrade"): d8 → d10 al 5°, d12 all'11°, 2d6 al 17°.
+ */
+export function dadoRandelloIncantato(livello = 1, versione = '2024') {
+  if (versione === '2014') return '1d8';
+  const liv = Math.max(1, Math.min(20, Number(livello) || 1));
+  if (liv >= 17) return '2d6';
+  if (liv >= 11) return '1d12';
+  if (liv >= 5) return '1d10';
+  return '1d8';
+}
+
+/**
+ * Danno di base di un trucchetto: voce della lista del PG → database →
+ * descrizione → eventuale valore salvato nell'attacco (solo come ripiego).
+ */
+export function dannoBaseTrucchetto(nome, voceLista = null, dannoSalvato = '') {
+  const pulito = String(nome || '').replace(/^✨\s*/, '').trim();
+  return voceLista?.danno || datiIncantesimo(pulito)?.danno || dettagliIncantesimo(pulito)?.danno || dannoSalvato || '';
+}
+
+/**
+ * UNICA fonte di verità per il danno mostrato/tirato di un TRUCCHETTO, usata
+ * sia dalla lista Trucchetti sia da Combattimento/Azioni Bonus/Reazioni:
+ * - Randello Incantato: dado per edizione/livello (dadoRandelloIncantato) +
+ *   modificatore da incantatore;
+ * - tutti gli altri: numero di dadi scalato col livello (1/2/3/4 al
+ *   1°/5°/11°/17°, scalaDannoTrucchetto) sul danno di base.
+ */
+export function dannoTrucchettoScalato(nome, dannoBase, { livello = 1, versione = '2024', modIncantatore = 0 } = {}) {
+  if (isRandelloIncantato(nome)) return dannoRandelloIncantato(dadoRandelloIncantato(livello, versione), modIncantatore);
+  return scalaDannoTrucchetto(dannoBase, livello, nome);
+}
+
+/**
  * Caratteristica del tiro salvezza richiesto da un incantesimo (es.
  * "Costituzione"), letta da nota + spiegazione + descrizione del database.
  * Stringa vuota se non è indicata.
