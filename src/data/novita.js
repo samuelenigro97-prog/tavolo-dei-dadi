@@ -5,6 +5,21 @@
 
 export const NOVITA = [
   {
+    versione: '4.39.0',
+    voci: {
+      it: [
+        'Testi dell’interfaccia rivisti: stessi nomi per le stesse funzioni (Compendio, Combattimento, Avanzamento di livello, Backup e sincronizzazione, Avvisi e novità, Archivio del Master, Atmosfera), maiuscole solo a inizio frase, niente più "&" e maiuscolo gridato.',
+        'Messaggi, conferme e tooltip più chiari e sobri; corretti alcuni refusi (es. "Converti in MO", accenti mancanti) e la descrizione della stampa, ora "Scheda stampabile in formato A4".',
+        'Traduzione inglese allineata agli stessi termini.',
+      ],
+      en: [
+        'Interface text revised: the same names for the same features (Compendium, Combat, Level up, Backup & sync, Alerts & what\'s new, DM archive, Atmosphere), consistent capitalization, no more shouted all-caps labels.',
+        'Clearer, more consistent messages, confirmations and tooltips; fixed a few typos (e.g. "Convert to GP") and the print description, now "Printable A4 sheet".',
+        'Italian and English now use the same terminology.',
+      ],
+    },
+  },
+  {
     versione: '4.38.0',
     voci: {
       it: [

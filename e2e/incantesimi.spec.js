@@ -9,10 +9,10 @@ test.describe('Incantesimi', () => {
   });
 
   test('il 1° Livello mostra la frazione degli slot accanto al titolo', async ({ page }) => {
-    // Il testo è "1° Livello" nel DOM (l'aspetto MAIUSCOLO è solo CSS text-transform).
+    // Il testo è "1° livello" nel DOM (l'aspetto MAIUSCOLO è solo CSS text-transform).
     // .last() perché locator('div').filter({hasText}) include anche tutti gli antenati
     // (in document order arrivano prima): l'ultimo è il div più specifico, la riga stessa.
-    const riga1liv = page.locator('div').filter({ hasText: /1° Livello/ }).last();
+    const riga1liv = page.locator('div').filter({ hasText: /1° livello/i }).last();
     await expect(riga1liv).toBeVisible();
     await expect(riga1liv.getByText(/^\d+\/\d+$/)).toBeVisible();
   });
@@ -23,7 +23,7 @@ test.describe('Incantesimi', () => {
     await expect(page.getByText(/Preparati:/)).toBeVisible();
     // Il div più specifico che contiene SIA il titolo del livello SIA "Preparati" è
     // la riga di intestazione stessa (il cluster sinistro interno non contiene "Preparati").
-    const rigaLivello1 = page.locator('div').filter({ hasText: /1° Livello/ }).filter({ hasText: /Preparati/ }).last();
+    const rigaLivello1 = page.locator('div').filter({ hasText: /1° livello/i }).filter({ hasText: /Preparati/ }).last();
     await expect(rigaLivello1.getByText(/Preparati:/)).toBeVisible();
   });
 

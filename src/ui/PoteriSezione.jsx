@@ -92,7 +92,7 @@ function PotereCard({ potere, scheda, indice, totale, onApri, lingua }) {
         </strong>
         {!potere.attivo && (
           <span style={{ fontSize: 11, fontWeight: 700, color: C.inkDim, border: `1px solid ${C.border}`, borderRadius: 6, padding: '1px 6px' }}>
-            {lingua === 'en' ? 'OFF' : 'DISATTIVATO'}
+            {lingua === 'en' ? 'Off' : 'Disattivato'}
           </span>
         )}
       </div>

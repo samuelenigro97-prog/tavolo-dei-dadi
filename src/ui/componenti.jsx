@@ -234,7 +234,7 @@ export function Editable({ value, valoreModifica, onChange, onRoll, tipo = 'test
         textAlign: tipo === 'numero' ? 'center' : 'left',
         ...style,
       }}
-      title={title || (onRoll ? '1 click: modifica · tieni premuto o doppio click: tira' : '1 click: modifica')}
+      title={title || (onRoll ? 'Clic: modifica · tieni premuto o doppio clic: tira' : 'Clicca per modificare')}
       onPointerDown={onRoll ? pointerDown : undefined}
       onPointerUp={onRoll ? pointerUp : undefined}
       onPointerLeave={onRoll ? pointerAnnulla : undefined}
@@ -295,7 +295,7 @@ export function Rollable({ onRoll, children, style, title, as: Tag = 'span' }) {
         display: Tag === 'span' ? 'inline-block' : undefined,
         ...style,
       }}
-      title={title || 'Tieni premuto e rilascia (o doppio click): tira'}
+      title={title || 'Tieni premuto e rilascia (o doppio clic): tira'}
       onSelectStart={(e) => e.preventDefault()}
       onPointerDown={inizia}
       onPointerUp={rilascia}
