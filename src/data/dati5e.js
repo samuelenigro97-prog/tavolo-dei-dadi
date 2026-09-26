@@ -1408,6 +1408,12 @@ export const SUBCLASS_PRIVILEGI_2014 = {
     "14": "Ali di Drago",
     "18": "Presenza Draconica"
   },
+  "Invocatore": {
+    "2": "Invocatore Sapiente\nPlasmare Incantesimi",
+    "6": "Trucchetto Potente",
+    "10": "Invocazione Potente",
+    "14": "Saturazione Magica"
+  },
   "Stregoneria della Magia Selvaggia": {
     "1": "Impulso di Magia Selvaggia\nOnde di Caos",
     "6": "Piegare la Fortuna",
@@ -2217,25 +2223,42 @@ export const SPECIE_DATI = {
   Aasimar: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Resistenza Celestiale, Mani Guaritrici, Portatore di Luce, Rivelazione Celestiale' },
   Dragonide: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Arma a Soffio, Resistenza al Danno, Antenati Draconici, Volo Draconico' },
   Elfo: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Trance, Retaggio Fatato, Sensi Acuti' },
-  'Elfo Alto': { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Trance, Retaggio Fatato, Sensi Acuti, 1 Trucchetto da Mago, Lingua Extra, Addestramento nelle Armi Elfiche' },
-  'Elfo dei Boschi': { velocita: 10.5, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Trance, Retaggio Fatato, Sensi Acuti, Passo Celere, Maschera della Selva' },
-  'Elfo Oscuro (Drow)': { velocita: 9, sensi: 'Scurovisione 36 m', taglia: 'Media', tratti: 'Trance, Retaggio Fatato, Sensi Acuti, Sensibilità alla Luce Solare, Magia Drow, Addestramento nelle Armi Drow' },
+  'Elfo Alto': { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Trance, Retaggio Fatato, Sensi Acuti, Lignaggio Elfico (Elfo Alto)' },
+  'Elfo dei Boschi': { velocita: 10.5, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Trance, Retaggio Fatato, Sensi Acuti, Lignaggio Elfico (Elfo dei Boschi)' },
+  'Elfo Oscuro (Drow)': { velocita: 9, sensi: 'Scurovisione 36 m', taglia: 'Media', tratti: 'Trance, Retaggio Fatato, Sensi Acuti, Lignaggio Elfico (Drow)' },
   Gnomo: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Piccola', tratti: 'Astuzia Gnomesca' },
-  'Gnomo delle Foreste': { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Piccola', tratti: 'Astuzia Gnomesca, Illusionista Nato, Parlare con le Piccole Bestie' },
-  'Gnomo delle Rocce': { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Piccola', tratti: 'Astuzia Gnomesca, Conoscenza degli Artefatti, Inventore' },
+  'Gnomo delle Foreste': { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Piccola', tratti: 'Astuzia Gnomesca, Lignaggio Gnomesco (Gnomo delle Foreste)' },
+  'Gnomo delle Rocce': { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Piccola', tratti: 'Astuzia Gnomesca, Lignaggio Gnomesco (Gnomo delle Rocce)' },
   Goliath: { velocita: 10.5, sensi: '', taglia: 'Media', tratti: 'Retaggio dei Giganti, Corporatura Possente, Forma Grande' },
   Halfling: { velocita: 9, sensi: '', taglia: 'Piccola', tratti: 'Coraggioso, Agilità Halfling, Fortuna, Furtività Naturale' },
-  'Halfling Piedelesto': { velocita: 9, sensi: '', taglia: 'Piccola', tratti: 'Coraggioso, Agilità Halfling, Fortuna, Furtività Naturale' },
-  'Halfling Tozzo': { velocita: 9, sensi: '', taglia: 'Piccola', tratti: 'Coraggioso, Agilità Halfling, Fortuna, Resilienza Tozza' },
+  'Halfling Piedelesto': { velocita: 7.5, sensi: '', taglia: 'Piccola', tratti: 'Coraggioso, Agilità Halfling, Fortuna, Furtività Naturale' },
+  'Halfling Tozzo': { velocita: 7.5, sensi: '', taglia: 'Piccola', tratti: 'Coraggioso, Agilità Halfling, Fortuna, Resilienza Tozza' },
   Nano: { velocita: 9, sensi: 'Scurovisione 36 m', taglia: 'Media', tratti: 'Robustezza Nanica, Scalpellino, Resistenza al Veleno, Competenza negli Strumenti' },
-  'Nano delle Colline': { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Robustezza Nanica, Scalpellino, Resistenza al Veleno' },
-  'Nano delle Montagne': { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Robustezza Nanica, Scalpellino, Resistenza al Veleno, Addestramento nelle Armature Naniche' },
+  'Nano delle Colline': { velocita: 7.5, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Robustezza Nanica, Scalpellino, Resistenza al Veleno' },
+  'Nano delle Montagne': { velocita: 7.5, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Robustezza Nanica, Scalpellino, Resistenza al Veleno, Addestramento nelle Armature Naniche' },
   Orco: { velocita: 9, sensi: 'Scurovisione 36 m', taglia: 'Media', tratti: 'Scatto Adrenalinico, Resistenza Implacabile' },
   Mezzorco: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Minaccioso, Resistenza Implacabile, Attacchi Selvaggi' },
   Mezzelfo: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Retaggio Fatato, Versatilità nelle Abilità' },
   Tiefling: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Presenza Ultraterrena, Resistenza Infernale, Eredità Infernale' },
   Umano: { velocita: 9, sensi: '', taglia: 'Media', tratti: 'Pieno di Risorse, Abile, Versatile' },
 };
+// Differenze 5.0 (PHB 2014, "razze") rispetto a SPECIE_DATI (PHB 2024):
+// velocità (nani, gnomi e halfling 7,5 m nella 5.0), scurovisione e tratti
+// delle sottorazze. Si sovrappongono a SPECIE_DATI per i PG 5.0.
+export const SPECIE_DATI_2014 = {
+  Dragonide: { sensi: '', tratti: 'Ascendenza Draconica, Arma a Soffio, Resistenza al Danno' },
+  'Elfo Alto': { tratti: 'Trance, Retaggio Fatato, Sensi Acuti, 1 Trucchetto da Mago, Lingua Extra, Addestramento nelle Armi Elfiche' },
+  'Elfo dei Boschi': { tratti: 'Trance, Retaggio Fatato, Sensi Acuti, Passo Celere, Maschera della Selva, Addestramento nelle Armi Elfiche' },
+  'Elfo Oscuro (Drow)': { tratti: 'Trance, Retaggio Fatato, Sensi Acuti, Sensibilità alla Luce Solare, Magia Drow, Addestramento nelle Armi Drow' },
+  Gnomo: { velocita: 7.5 },
+  'Gnomo delle Foreste': { velocita: 7.5, tratti: 'Astuzia Gnomesca, Illusionista Nato, Parlare con le Piccole Bestie' },
+  'Gnomo delle Rocce': { velocita: 7.5, tratti: 'Astuzia Gnomesca, Conoscenza degli Artefatti, Inventore' },
+  Goliath: { velocita: 9, tratti: 'Atleta Naturale, Resistenza della Pietra, Corporatura Possente, Nato in Montagna' },
+  Halfling: { velocita: 7.5 },
+  Nano: { velocita: 7.5, sensi: 'Scurovisione 18 m' },
+  Orco: { sensi: 'Scurovisione 18 m' },
+};
+
 export const SFINIMENTO_2014 = [
   '',
   'Svantaggio alle prove di caratteristica',

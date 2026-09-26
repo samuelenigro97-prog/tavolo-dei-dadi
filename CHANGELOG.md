@@ -103,6 +103,36 @@ Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
     dell'edizione del PG.
   - **Maestria nelle armi** (solo 2024): una nota salvata "Maestria: …" su
     un PG 5.0 non diventa più un chip in Combattimento.
+  - **Specie/razze per edizione** (`SPECIE_DATI_2014`): velocità e tratti
+    automatici erano solo 2024 (o misti). Nella 5.0 nani, gnomi e halfling
+    hanno 7,5 m (le sottorazze solo 5.0 — Halfling Piedelesto/Tozzo, Nano
+    delle Colline/Montagne — ora 7,5 m sempre), il Dragonide non ha
+    scurovisione, l'Elfo Alto/dei Boschi/Drow mantiene i tratti 2014
+    (Addestramento nelle Armi Elfiche, trucchetto da mago…). Nella 5.5 gli
+    elfi e gli gnomi ricevono il **Lignaggio** (con spiegazione) invece dei
+    tratti 2014.
+  - **Privilegi della Scuola di Invocazione 5.0** (Trucchetto Potente al 6°).
+- **Personaggi forniti con l'app** (`src/data/esempi.js`), controllati uno a
+  uno con le regole della loro edizione:
+  - Vaelion: Randello e Bastone Ferrato usavano FOR 4 (+1, 1d4-3) ignorando
+    i Guanti della Forza Orchesca (FOR 19): ora +8, 1d4+4 / 1d6+4 (1d8+4);
+    attacco salvato di Morsa del Gelo 2d6 (era 2d8); competenza nei randelli.
+  - Wendell: Arco Corto 1d6+3 (era 1d8); tolto il contatore separato "Manto
+    di Ispirazione" (spende un uso di Ispirazione Bardica); Kit da Falsario
+    del Ciarlatano.
+  - Flyora (5.5): tratti dell'Elfo 2024 (niente Addestramento nelle Armi
+    Elfiche/trucchetto da mago 2014, sì Lignaggio Elfico); la spada corta
+    è un'arma da guerra senza competenza (+2, era +4); Metamagia e
+    privilegi della Magia Selvaggia nel posto giusto; edizione esplicita.
+  - Boddynock e Lyrian: edizione 5.0 esplicita (tratti Gnomo delle Rocce
+    2014, Lama Iettatrice e Forestiero esistono solo nella 5.0; senza
+    campo erano trattati come 5.5). Boddynock: +1 della Bacchetta della
+    Guerra Magica ai tiri con incantesimo, privilegi di sottoclasse
+    separati. Lyrian: "Colpo Ardente" (Paladino/Ranger) sostituito da
+    "Colpo Irato" della lista della Lama Iettatrice; giavellotto con la
+    Forza (+3, 1d6; non è accurato); privilegi di sottoclasse separati.
+  - Elevorn: aggiunti i privilegi mancanti (Lancio di Incantesimi,
+    Consapevolezza Primordiale, Attacco Extra, Maestria).
 
 ### Cambiato
 - **Tiro per colpire e danni con gli stessi badge di Incantesimi**:

@@ -957,12 +957,14 @@ function nomeCasuale(specie, sesso) {
 // Dati di specie (2024): velocità in metri, sensi, taglia, tratti principali.
 
 /** Dati di una specie a partire dal nome scelto (anche varianti tipo "Elfo Alto"). */
-function datiSpecieDi(specie) {
+function datiSpecieDi(specie, versione) {
   if (!specie) return null;
   const s = String(specie).toLowerCase();
   const k = Object.keys(SPECIE_DATI).find((x) => x.toLowerCase() === s) ||
             Object.keys(SPECIE_DATI).sort((a, b) => b.length - a.length).find((x) => s.includes(x.toLowerCase()));
-  return k ? { ...SPECIE_DATI[k], nome: k } : null;
+  // 5.0 (2014): velocità/sensi/tratti della razza secondo il PHB 2014.
+  const ed2014 = String(versione) === '2014' ? (SPECIE_DATI_2014[k] || {}) : {};
+  return k ? { ...SPECIE_DATI[k], ...ed2014, nome: k } : null;
 }
 
 /** Spezza i tratti di specie (stringa con virgole) in voci separate, tenendo
@@ -1297,7 +1299,7 @@ import { INCANTESIMI_DB, ALIAS_INCANTESIMI, datiIncantesimo, valoreIncantesimoPe
 
 const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(INCANTESIMI_DB)])).sort((a, b) => a.localeCompare(b, 'it'));
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SESSO_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E, DEFAULT_MANUALI, MANUALI_INFO, SOTTOCLASSI_FONTI, TALENTI_FONTI, INCANTESIMI_FONTI, talentiPerManuali, incantesimiPerManuali, fonteValida, PE_PER_LIVELLO } from './data/dati5e.js';
-import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, SUBCLASS_PRIVILEGI, SUBCLASS_PRIVILEGI_2014, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
+import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, SUBCLASS_PRIVILEGI, SUBCLASS_PRIVILEGI_2014, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, SPECIE_DATI_2014, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico, modalitaEffettiva } from './rules/dadi.js';
 import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, determinaIconaOggetto, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili, calcolaTurnoCombattimento, dettagliAbilita, calcolaTsConcentrazione, calcolaAttaccoFurtivo, calcolaIraBarbarica, calcolaPunizioneDivina, calcolaIspirazioneBardica, livelloDiClasse, categoriaDaTempoLancio, tempoLancioIncantesimo, gittataAttacco, categoriaAttaccoSalvato, isRandelloIncantato, caratteristicaTiroSalvezzaIncantesimo, dannoTrucchettoScalato, dannoBaseTrucchetto, dannoCuraConModificatore } from './rules/regole.js';
 import { normalizzaPoteri, sincronizzaRisorsePoteri, bonusPotereBersaglio, modificatoriPoteriAttivi } from './rules/poteri.js';
@@ -2312,7 +2314,7 @@ function loadState() {
         // se combaciano con la dotazione automatica della specie, li ri-spezzo in
         // voci separate (una chip per tratto) senza toccare gli inserimenti manuali.
         if (s.specie && typeof s.trattiSpecie === 'string' && !s.trattiSpecie.includes('\n')) {
-          const sp = datiSpecieDi(s.specie);
+          const sp = datiSpecieDi(s.specie, s.versione);
           if (sp && s.trattiSpecie.trim() === String(sp.tratti || '').trim()) {
             s.trattiSpecie = trattiSpecieTesto(sp.tratti);
           }
@@ -2330,7 +2332,7 @@ function loadState() {
             .trim();
         }
         if (!s.sensi && s.specie) {
-          const sp = datiSpecieDi(s.specie);
+          const sp = datiSpecieDi(s.specie, s.versione);
           if (sp?.sensi) s.sensi = sp.sensi;
         }
         // "Fissa" il massimo di trucchetti/incantesimi per le schede che ne
@@ -2761,7 +2763,7 @@ function normalizeImported(rawDati) {
     sensi: (() => {
       const s = str(dati.sensi).trim();
       if (s) return s;
-      const sp = datiSpecieDi(dati.specie);
+      const sp = datiSpecieDi(dati.specie, dati.versione);
       if (sp?.sensi) return sp.sensi;
       const tsRaw = str(dati.trattiSpecie || dati.tratti);
       const m = tsRaw.match(/(?:scurovisione|darkvision)[^\n,]*/i);
@@ -4572,7 +4574,7 @@ export default function App() {
     const slot = slotDaClasseLivello(classe, s.livello, sottoclasse);
     if (slot) s.slotIncantesimo = slot;
     // dati dalla specie: velocità, sensi, taglia, tratti
-    const sp = datiSpecieDi(specie);
+    const sp = datiSpecieDi(specie, regoleVersione);
     if (sp) { s.velocita = sp.velocita; s.sensi = sp.sensi; s.taglia = sp.taglia; s.trattiSpecie = trattiSpecieTesto(sp.tratti); }
     // caratteristiche secondo il metodo scelto:
     //  'auto'    → 4d6 assegnate per priorità di classe
@@ -9916,7 +9918,7 @@ export default function App() {
                 ))}
               </select>
               {bozzaCrea.specie && (() => {
-                const d = datiSpecieDi(bozzaCrea.specie);
+                const d = datiSpecieDi(bozzaCrea.specie, regoleVersione);
                 return (
                   <div style={{ background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 10px', marginBottom: 12, fontSize: 11, lineHeight: 1.5 }}>
                     {d && <div>🏃 {t('vital.movimento')} {d.velocita} m · 📏 {d.taglia}{d.sensi ? ` · 👁 ${d.sensi}` : ''}</div>}
@@ -12769,7 +12771,7 @@ export default function App() {
                       label={versione === "2024" ? t("profilo.specie") : t("profilo.razza")}
                       boxClassName={String(nomeSpeciePerSesso(scheda.specie, scheda.sesso, lingua) || '').length > 10 ? 'testo-compatto' : undefined}
                     >
-                      <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} formattaOpzione={(v) => nomeSpeciePerSesso(v, scheda.sesso, lingua)} onChange={(v) => { const sp = datiSpecieDi(v); aggiorna({ specie: v, ...(sp ? { velocita: sp.velocita, sensi: sp.sensi, taglia: sp.taglia, trattiSpecie: trattiSpecieTesto(sp.tratti) } : {}), ...abilitaConSpecie(v), ...ritrattoAuto(scheda.classe, v, scheda.nome) }); }} title={t('tip.scegli_specie')} />
+                      <CampoTendina value={scheda.specie} opzioni={SPECIE_5E} formattaOpzione={(v) => nomeSpeciePerSesso(v, scheda.sesso, lingua)} onChange={(v) => { const sp = datiSpecieDi(v, versione); aggiorna({ specie: v, ...(sp ? { velocita: sp.velocita, sensi: sp.sensi, taglia: sp.taglia, trattiSpecie: trattiSpecieTesto(sp.tratti) } : {}), ...abilitaConSpecie(v), ...ritrattoAuto(scheda.classe, v, scheda.nome) }); }} title={t('tip.scegli_specie')} />
                     </CampoModulo>
                     <CampoModulo label={t("profilo.taglia")}>
                       {tagliaEffettiva(scheda) !== (scheda.taglia || 'Media') ? (

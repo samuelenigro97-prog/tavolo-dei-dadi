@@ -1499,6 +1499,8 @@ export const SPIEG_TRATTI = {
   'Piedi veloci': 'La tua velocità base sul terreno è di 10,5 metri invece di 9.',
   'Passo Celere': 'La tua velocità base sul terreno è di 10,5 metri (35 ft).',
   'Maschera della selva': 'Puoi tentare di Nasconderti anche quando sei coperto soltanto da fogliame fitto, pioggia battente, neve, nebbia o altri fenomeni naturali.',
+  'Lignaggio Elfico': "(5.5) Il tuo lignaggio elfico ti dà un trucchetto e, al 3° e al 5° livello, un incantesimo sempre preparato che puoi lanciare una volta senza slot per riposo lungo. Elfo Alto: Prestidigitazione (sostituibile con un trucchetto da mago a ogni riposo lungo), Individuazione del Magico, Passo Velato. Elfo dei Boschi: velocità 10,5 m, Artificio Druidico, Passo Veloce, Passare senza Tracce. Drow: scurovisione 36 m, Luci Danzanti, Luminescenza, Oscurità.",
+  'Lignaggio Gnomesco': "(5.5) Gnomo delle Foreste: conosci Illusione Minore e hai sempre preparato Parlare con gli Animali (lanciabile senza slot un numero di volte pari al bonus di competenza). Gnomo delle Rocce: conosci Riparare e Prestidigitazione e puoi creare piccoli congegni meccanici.",
   'Maschera della Selva': 'Puoi tentare di Nasconderti anche quando sei coperto soltanto da fogliame fitto, pioggia battente, neve, nebbia o altri fenomeni naturali.',
   'Sensibilità alla luce solare': 'Alla luce del sole hai svantaggio ai tiri per colpire e alle prove di Percezione basate sulla vista.',
   'Magia Drow': 'Conosci il trucchetto Luce danzante. Al 3° livello puoi lanciare Fuoco fatuo e al 5° Oscurità, una volta ciascuno per riposo lungo. La caratteristica da incantatore è il Carisma.',
