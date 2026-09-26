@@ -19,7 +19,7 @@ import {
 } from '../data/dati5e.js';
 import { TALENTI_XANATHAR } from '../dati/talenti-xanathar.js';
 import { TALENTI_TASHA } from '../dati/talenti-tasha.js';
-import { EFFETTI_CONDIZIONI } from '../data/condizioni.js';
+import { effettiCondizione } from '../data/condizioni.js';
 import { BESTIE, FAMIGLI, EVOCAZIONI, MOSTRI_5E } from '../data/bestiario.js';
 import { GUIDA_ABILITA_5E } from '../data/guidaAbilita5e.js';
 import { TABELLE_BACKGROUND } from '../data/tabelleBackground.js';
@@ -485,7 +485,7 @@ export function CompendioModal({
 
     // 8. Condizioni
     for (const c of (CONDIZIONI_5E || [])) {
-      const effObj = EFFETTI_CONDIZIONI[c];
+      const effObj = effettiCondizione(c, is2024 ? '2024' : '2014');
       const desc = typeof effObj === 'string'
         ? effObj
         : (effObj?.[lingua] || effObj?.it || (Array.isArray(effObj) ? effObj.join(' · ') : ''));

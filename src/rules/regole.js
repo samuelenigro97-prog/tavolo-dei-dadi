@@ -12,7 +12,7 @@ import { bonusPotereBersaglio } from './poteri.js';
 import { spiegaIncantesimo } from '../data/spiegazioni.js';
 import { INCANTESIMI_DB, datiIncantesimo, valoreIncantesimoPerEdizione } from '../data/incantesimi.js';
 import { ABILITA, CARATTERISTICHE } from '../data/caratteristiche.js';
-import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from '../data/condizioni.js';
+import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI, effettiCondizione } from '../data/condizioni.js';
 import { GUIDA_ABILITA_5E } from '../data/guidaAbilita5e.js';
 
 /** Restituisce 'guerriero'/'ladro' se la scheda è un "terzo incantatore" (la
@@ -489,6 +489,23 @@ export function scalaDannoTrucchetto(danno, livello = 1, nome = '') {
  * datiIncantesimo() non riporta la descrizione (per non duplicare il testo),
  * quindi per riconoscere "tiro salvezza" nel testo serve spiegaIncantesimo().
  */
+/**
+ * Incantesimi con un danno ma SENZA un proprio tiro per colpire: il danno si
+ * aggiunge ai tuoi colpi (Assorbire Elementi, Marchio del Cacciatore,
+ * Maledizione) oppure colpisce in automatico (Dardo Incantato). Niente badge 🎯.
+ */
+export const INCANTESIMI_SENZA_TIRO_PER_COLPIRE = new Set([
+  'assorbire elementi', 'absorb elements',
+  'marchio del cacciatore', "hunter's mark", 'hunter’s mark',
+  'maledizione', 'hex',
+  'dardo incantato', 'magic missile',
+]);
+
+export function incantesimoSenzaTiroPerColpire(nome) {
+  const n = String(nome || '').replace(/^✨\s*/, '').replace(/\s*\(.*$/, '').trim().toLowerCase();
+  return INCANTESIMI_SENZA_TIRO_PER_COLPIRE.has(n);
+}
+
 export function classificaIncantesimoCombattimento(s) {
   const db = datiIncantesimo(s?.nome) || {};
   const tipoDanno = s?.tipoDanno || db.tipoDanno || '';
@@ -506,7 +523,7 @@ export function classificaIncantesimoCombattimento(s) {
   const haAttacco = /attacco|attack|mischia|distanza|tocco/i.test(desc) || Boolean(db.danno || d.danno);
   // TS con danni + attacchi con danni (o spell con danno es. Dardo Incantato, Randello Incantato)
   const mostraInCombattimento = Boolean(danno && (isTS || haAttacco || /dardo incantato|magic missile|randello incantato|shillelagh/i.test(s?.nome || '')));
-  return { mostraInCombattimento, isTS };
+  return { mostraInCombattimento, isTS, senzaTiroPerColpire: !isTS && incantesimoSenzaTiroPerColpire(s?.nome) };
 }
 
 /**
@@ -636,8 +653,26 @@ export function dannoCuraConModificatore(nome, danno, modIncantatore = 0) {
   return `${d}${mod > 0 ? '+' : ''}${mod}`;
 }
 
+/** Colpo Accurato (True Strike) — accetta anche gli alias inglesi/vecchi. */
+export function isColpoAccurato(nome) {
+  const n = String(nome || '').replace(/^✨\s*/, '').toLowerCase().trim();
+  return n === 'colpo accurato' || n === 'true strike' || n === 'colpo sicuro';
+}
+
+/**
+ * Danno EXTRA di Colpo Accurato, oltre a quello dell'arma.
+ * 5.5 (2024): nessun extra ai livelli 1-4; +1d6 radianti al 5°, 2d6 all'11°, 3d6 al 17°.
+ * 5.0 (2014): non infligge danni (dà solo vantaggio al prossimo attacco) → ''.
+ */
+export function dannoExtraColpoAccurato(livello = 1, versione = '2024') {
+  if (versione === '2014') return '';
+  const n = moltiplicatoreTrucchetto(livello) - 1;
+  return n > 0 ? `${n}d6` : '';
+}
+
 export function dannoTrucchettoScalato(nome, dannoBase, { livello = 1, versione = '2024', modIncantatore = 0 } = {}) {
   if (isRandelloIncantato(nome)) return dannoRandelloIncantato(dadoRandelloIncantato(livello, versione), modIncantatore);
+  if (isColpoAccurato(nome)) return dannoExtraColpoAccurato(livello, versione);
   return scalaDannoTrucchetto(dannoBase, livello, nome);
 }
 
@@ -1290,11 +1325,12 @@ export function slotVersoPunti(slotIncantesimo, punti, puntiMax, livello) {
  * (così si capisce da dove arriva lo svantaggio, e cosa resta se ne togli una).
  * Ordine stabile: quello di ETICHETTE_EFFETTI, non quello di inserimento.
  */
-export function riepilogoCondizioni(condizioni) {
+export function riepilogoCondizioni(condizioni, versione = '2024') {
   const attive = (Array.isArray(condizioni) ? condizioni : []).filter((c) => EFFETTI_CONDIZIONI[c]);
   const righe = [];
   for (const flag of Object.keys(ETICHETTE_EFFETTI)) {
-    const da = attive.filter((c) => EFFETTI_CONDIZIONI[c][flag]);
+    // Effetti secondo l'edizione del PG (es. Afferrato 5.5: svantaggio contro altri bersagli).
+    const da = attive.filter((c) => effettiCondizione(c, versione)?.[flag]);
     if (da.length) righe.push({ flag, da });
   }
   return righe;

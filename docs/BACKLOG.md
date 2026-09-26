@@ -237,6 +237,7 @@ riproducibili; non va riaperto soltanto per prudenza.
   - Confrontato con `Vaelion Leafwhisper NEW.pdf` e `Vaelion_Scheda_Background.pdf` in `I Segreti del Faerûn`.
   - Strutturato `public/Vaelion.json` con tutti i 13 oggetti (Corazza di Legnoferro CA 14, Scudo, Mantello della Protezione +1, Perla del Potere 1/1 reset lungo, Guanti della Forza Orchesca FOR 19, Borsa da Erborista, Borsa Conservante, pozioni e unguenti, sonaglio sacro di zucca).
   - Verificate le 3 sintonie attive (Mantello Prot., Perla del Potere, Guanti FOR).
+  - v4.38.0: `public/Vaelion.json` (e `public/Flyora.json`) rimossi: non erano usati dall'app ed erano superati; i personaggi di esempio aggiornati sono in `src/data/esempi.js`.
 
 ### Regole e automazioni D&D
 

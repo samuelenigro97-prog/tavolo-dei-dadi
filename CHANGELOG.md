@@ -133,6 +133,52 @@ Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
     Forza (+3, 1d6; non è accurato); privilegi di sottoclasse separati.
   - Elevorn: aggiunti i privilegi mancanti (Lancio di Incantesimi,
     Consapevolezza Primordiale, Attacco Extra, Maestria).
+- **Condizioni per edizione** (`effettiCondizione(nome, versione)` in
+  `condizioni.js`, usata da `riepilogoCondizioni` e dal Compendio): nella
+  5.5 Afferrato dà svantaggio agli attacchi contro chi non ti afferra e ti
+  permette di trascinare; Incapacitato toglie anche le azioni bonus, la
+  parola e dà svantaggio all'iniziativa (ereditato da Paralizzato,
+  Pietrificato, Privo di sensi e Stordito); Invisibile dà vantaggio
+  all'iniziativa; Stordito non azzera più la velocità. Nella 5.0 restano gli
+  effetti 2014. Nuovi effetti: vantaggio agli attacchi, niente azioni bonus,
+  concentrazione interrotta, vantaggio/svantaggio all'iniziativa. I chip
+  delle condizioni nella scheda mostrano nel tooltip gli effetti
+  dell'edizione del PG.
+- **Ranger 5.0: Sensi Primordiali (Consapevolezza Primordiale) costa uno
+  slot incantesimo**: non viene più creato il contatore "Sensi Primordiali"
+  (mod. SAG usi / riposo lungo) che non esiste nelle regole 2014; spiegazione
+  aggiornata (1 minuto per livello dello slot, 1,5 km / 9 km nel terreno
+  prescelto). Un contatore già salvato su una scheda non viene toccato: si
+  può eliminare a mano.
+- **Colpo Accurato 5.5**: il danno radiante extra parte dal 5° livello
+  (1d6, 2d6 all'11°, 3d6 al 17°); ai livelli 1-4 non c'è danno extra
+  (prima mostrava 1d6 dal 1° e 2d6 al 5°). Nella 5.0 non fa danni.
+- **Testi inglesi degli incantesimi per edizione**: Cura Ferite, Parola di
+  Guarigione (anche di Massa), Cura Ferite di Massa, Tocco Gelido, Produrre
+  Fiamma, Colpo Accurato, Arma Spirituale, Sonno, Guida, Resistenza,
+  Interdizione alle Lame e Randello Incantato hanno in inglese il testo
+  2014 o 2024 secondo l'edizione del PG (`EN_VARIANTI_INCANTESIMI`), come
+  già in italiano.
+- **Incantesimi senza tiro per colpire**: Assorbire Elementi (il danno va
+  sul tuo prossimo colpo in mischia), Marchio del Cacciatore, Maledizione e
+  Dardo Incantato (colpisce sempre) non mostrano più il badge 🎯 nella
+  lista Incantesimi né un bonus d'attacco in Combattimento.
+- **Tabelle delle sottoclassi separate 5.0/5.5**
+  (`tabellaPrivilegiSottoclasse`): le tabelle che mescolavano la riga 5.0
+  (1°/2° livello) con quella 5.5 (3° livello) mostrano solo quella giusta.
+  5.0: Domini (1°, 2°, 6°, 8°, 17°; Incantesimi del Dominio al 1°), Circoli
+  (2°), Scuole di magia (2°), Origini stregonesche e Patroni (1°) senza il
+  doppione del 3°. 5.5 (sottoclassi del Manuale 2024): solo dal 3°, e i
+  Domini senza l'8°. Le sottoclassi solo 5.0 restano complete anche su un
+  PG 5.5. Tabelle 2014 proprie per Collegio del Valore (Competenze Bonus),
+  Guerriero della Mano Aperta (11° Tranquillità; 5.5: Passo Lesto),
+  Guerriero dell'Ombra (11° Manto di Ombre, 17° Opportunista; 5.5: Passo
+  d'Ombra Migliorato / Manto di Ombre), Giuramento degli Antichi (Scacciare
+  l'Infedele solo 5.0) e Giuramento di Vendetta (Abiurare Nemico, 5.0).
+  Anche il riepilogo del passaggio di livello usa la tabella dell'edizione.
+- **Rimossi `public/Vaelion.json` e `public/Flyora.json`**: non erano usati
+  dall'app (nessun riferimento nel codice) ed erano superati dai personaggi
+  di esempio in `src/data/esempi.js`.
 
 ### Cambiato
 - **Tiro per colpire e danni con gli stessi badge di Incantesimi**:

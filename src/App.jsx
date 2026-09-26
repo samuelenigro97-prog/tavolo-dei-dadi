@@ -12,7 +12,7 @@ import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusC
 import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON, WENDELL_JSON, LYRIAN_JSON } from './data/esempi.js';
 import { fixEquipaggiamentoVaelion, migrazioneRegoleVaelion, autoIdratazionePersonaggioPredefinito } from './data/migrazioniPersonaggi.js';
 import { CARATTERISTICHE, ABILITA } from './data/caratteristiche.js';
-import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from './data/condizioni.js';
+import { effettiCondizione } from './data/condizioni.js';
 import { BESTIE, FAMIGLI, EVOCAZIONI, MOSTRI_5E, TUTTE_LE_CREATURE, bestieDisponibili, limitiFormaSelvatica, creatureDisponibiliMetamorfosi, limitiMetamorfosi, raggruppaPerGS } from './data/bestiario.js';
 import { novitaRecenti, ultimaVersioneNovita } from './data/novita.js';
 import { codificaScheda, decodificaScheda, preparaPerCondivisione, costruisciLink, payloadDaUrl, LIMITE_PAYLOAD } from './utils/condivisione.js';
@@ -567,7 +567,8 @@ function privilegiSottoclasseFinoA(sottoclasse, livello, versione) {
   // Per la 5.0 (2014) una sottoclasse può avere una tabella propria quando i
   // privilegi o i livelli cambiano (es. Campione: al 10° "Stile di
   // Combattimento Aggiuntivo", non "Guerriero Eroico" della 2024).
-  const t = (String(versione) === '2014' && SUBCLASS_PRIVILEGI_2014[sottoclasse]) || SUBCLASS_PRIVILEGI[sottoclasse];
+  // Le tabelle miste 5.0/5.5 vengono separate da tabellaPrivilegiSottoclasse.
+  const t = tabellaPrivilegiSottoclasse(sottoclasse, versione);
   if (!t) return null;
   const lv = Math.max(1, Math.floor(livello) || 1);
   const righe = [];
@@ -1299,7 +1300,7 @@ import { INCANTESIMI_DB, ALIAS_INCANTESIMI, datiIncantesimo, valoreIncantesimoPe
 
 const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(INCANTESIMI_DB)])).sort((a, b) => a.localeCompare(b, 'it'));
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SESSO_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E, DEFAULT_MANUALI, MANUALI_INFO, SOTTOCLASSI_FONTI, TALENTI_FONTI, INCANTESIMI_FONTI, talentiPerManuali, incantesimiPerManuali, fonteValida, PE_PER_LIVELLO } from './data/dati5e.js';
-import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, SUBCLASS_PRIVILEGI, SUBCLASS_PRIVILEGI_2014, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, SPECIE_DATI_2014, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
+import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, tabellaPrivilegiSottoclasse, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, SPECIE_DATI_2014, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico, modalitaEffettiva } from './rules/dadi.js';
 import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, determinaIconaOggetto, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili, calcolaTurnoCombattimento, dettagliAbilita, calcolaTsConcentrazione, calcolaAttaccoFurtivo, calcolaIraBarbarica, calcolaPunizioneDivina, calcolaIspirazioneBardica, livelloDiClasse, categoriaDaTempoLancio, tempoLancioIncantesimo, gittataAttacco, categoriaAttaccoSalvato, isRandelloIncantato, caratteristicaTiroSalvezzaIncantesimo, dannoTrucchettoScalato, dannoBaseTrucchetto, dannoCuraConModificatore } from './rules/regole.js';
 import { normalizzaPoteri, sincronizzaRisorsePoteri, bonusPotereBersaglio, modificatoriPoteriAttivi } from './rules/poteri.js';
@@ -1776,10 +1777,12 @@ function risorseAutoClasse(classe, livello, caratteristiche, versione = '2024') 
         ...(L >= 3 ? [mk('Incanalare Divinità', v24 ? (L >= 11 ? 3 : 2) : (L >= 18 ? 2 : 1), 'lungo')] : []),
       ];
     case 'ranger':
-      // 2024: Marchio del Cacciatore (Hunter's Mark) senza slot; 2014: Sensi Primordiali / Nemico Prescelto
+      // 2024: Marchio del Cacciatore (Hunter's Mark) senza slot.
+      // 2014: Consapevolezza Primordiale (Sensi Primordiali) NON ha usi propri: costa uno slot
+      // incantesimo, quindi nessun contatore automatico (quelli già salvati non vengono toccati).
       return v24
         ? [mk('Marchio del Cacciatore', L >= 17 ? 6 : L >= 13 ? 5 : L >= 9 ? 4 : L >= 5 ? 3 : 2, 'lungo')]
-        : (L >= 3 ? [mk('Sensi Primordiali', Math.max(1, modCar(caratteristiche?.saggezza)), 'lungo')] : []);
+        : [];
     case 'ladro':
       return L >= 20 ? [mk('Colpo di Fortuna', 1, 'breve')] : [];
     case 'warlock':
@@ -1900,7 +1903,7 @@ const SPIEG_RISORSE = {
 
   // Ranger
   'Marchio del Cacciatore': 'Azione bonus: marchi magicamente una creatura entro 27 m come tua preda. Infliggi 1d6 danni da forza extra a ogni colpo e hai vantaggio a rintracciarla con Percezione e Sopravvivenza. Nella 2024 hai usi gratuiti senza spendere slot; si ricarica con un riposo lungo.',
-  'Sensi Primordiali': 'Come azione spendi la tua connessione naturale per percepire se aberrazioni, celestiali, draghi, elementali, folletti, immondi o non morti sono presenti entro 1,5 km (o 9 km nel terreno prescelto). Si ricarica con un riposo lungo.',
+  'Sensi Primordiali': 'Consapevolezza Primordiale (5.0): come azione spendi uno slot incantesimo da ranger; per 1 minuto per livello dello slot percepisci se aberrazioni, celestiali, draghi, elementali, folletti, immondi o non morti sono presenti entro 1,5 km (9 km nel terreno prescelto). Non ha usi propri: consuma solo lo slot.',
   'Nemico Prescelto': 'Hai vantaggio alle prove di Sopravvivenza per tracciare i tuoi nemici prescelti e a quelle di Intelligenza per ricordare nozioni su di essi, oltre a conoscerne la lingua.',
 
   // Ladro
@@ -8249,7 +8252,7 @@ export default function App() {
 
               {subDaMostrare.length === 0 && <p style={styles.detail}>{t('priv.nessuno')}</p>}
               {subDaMostrare.map((item, idx) => {
-                const tab = (versione === '2014' && SUBCLASS_PRIVILEGI_2014[item.sottoclasse]) || SUBCLASS_PRIVILEGI[item.sottoclasse] || {};
+                const tab = tabellaPrivilegiSottoclasse(item.sottoclasse, versione) || {};
                 const righe = [];
                 for (let L = 1; L <= 20; L++) if (tab[L]) righe.push({ L, feat: tab[L], futuro: L > item.livello });
                 return (
@@ -9233,7 +9236,7 @@ export default function App() {
         const scelteSub = sottoclassiPerClasse(targetClasse, manualiAttivi);
         const mostraSceltaSub = targetLivelloNuovo === livelloSceltaSottoclasse(targetClasse, versione) && scelteSub.length > 0;
         const subSel = mostraSceltaSub ? (levelUpBozza.sottoclasse || '') : (isSecMc ? (secMcObj?.sottoclasse || '') : (scheda.sottoclasse || ''));
-        const subTab = SUBCLASS_PRIVILEGI[subSel];
+        const subTab = tabellaPrivilegiSottoclasse(subSel, versione);
         const attualiSub = (scheda.privilegiSottoclasse || '');
         const subPrivNuovi = subTab && subTab[targetLivelloNuovo]
           ? subTab[targetLivelloNuovo].split('\n').filter((r) => r.trim() && !attualiSub.includes(r.trim())).join('\n')
@@ -13728,9 +13731,13 @@ export default function App() {
                     {scheda.condizioni.map((c) => {
                       const col = COLORI_CONDIZIONI[c] || { bg: 'rgba(0,0,0,0.04)', border: C.border, text: C.ink };
                       const ico = ICONE_CONDIZIONI[c] || '⚠️';
+                      // Effetti della condizione secondo l'edizione del PG (5.0 / 5.5).
+                      const effCond = effettiCondizione(c, versione);
                       return (
                         <span
                           key={c}
+                          className="chip-condizione"
+                          title={effCond ? `${traduciDato(c)} (${versione === '2014' ? '5.0' : '5.5'}): ${effCond[lingua] || effCond.it}` : undefined}
                           style={{
                             background: col.bg,
                             border: `1px solid ${col.border}`,
@@ -14650,9 +14657,12 @@ export default function App() {
                       } else {
                         // Incantesimo a tiro salvezza (es. Morsa del Gelo): niente tiro per
                         // colpire, solo la CD (calcolata, non quella scritta nella nota).
-                        const { isTS } = classificaIncantesimoCombattimento({ ...(voce || {}), nome: nomePulito });
+                        const { isTS, senzaTiroPerColpire } = classificaIncantesimoCombattimento({ ...(voce || {}), nome: nomePulito });
                         if (isTS) {
                           att = { ...att, isTS: true, cd: 8 + bonusCompComb + modIncComb, caratteristicaTS: caratteristicaTiroSalvezzaIncantesimo(nomePulito, att.note) };
+                        } else if (senzaTiroPerColpire) {
+                          // Niente tiro per colpire proprio (es. Assorbire Elementi): nessun badge 🎯.
+                          att = { ...att, bonus: null };
                         }
                       }
                     }
@@ -14690,14 +14700,15 @@ export default function App() {
                     const tipoDanno = valoreIncantesimoPerEdizione(s, 'tipoDanno', versione) || d.tipoDanno || '';
                     // Le cure sommano il modificatore da incantatore (es. Parola di Guarigione 1d4+5).
                     if (tipoDanno === 'Guarigione') danno = dannoCuraConModificatore(s.nome, danno, modIncSp);
-                    const { isTS, isCura } = classificaIncantesimoCombattimento(s);
+                    const { isTS, isCura, senzaTiroPerColpire } = classificaIncantesimoCombattimento(s);
                     const tsMatch = desc.match(/ts\s+(destrezza|saggezza|costituzione|forza|intelligenza|carisma)/i);
                     const nomeTS = tsMatch ? ` (TS ${tsMatch[1].charAt(0).toUpperCase() + tsMatch[1].slice(1)})` : isTS ? ' (TS)' : '';
                     
                     const modInc = caratteristicaIncantatore ? modificatore(punteggioCaratteristica(scheda, caratteristicaIncantatore)) : 0;
                     const bonusComp = scheda.bonusCompetenza || 2;
                     // Una cura non ha tiro per colpire: niente bonus (la cella resta vuota).
-                    const bonus = isCura ? null : isTS ? 0 : bonusComp + modInc;
+                    // Idem per chi non tira per colpire (Assorbire Elementi, Dardo Incantato…).
+                    const bonus = isCura || senzaTiroPerColpire ? null : isTS ? 0 : bonusComp + modInc;
                     const cd = 8 + bonusComp + modInc;
                     // Il danno dei trucchetti (Randello Incantato compreso) è già completo.
                     const dannoFormatted = danno;
@@ -14705,7 +14716,7 @@ export default function App() {
                     // la nota usa la virgola come separatore, come le note degli attacchi
                     // salvati, così estraiCategorieNota riconosce le singole parti.
                     const gittata = valoreIncantesimoPerEdizione(s, 'gittata', versione) || d.gittata || '';
-                    const note = [isTS ? `CD ${cd}${nomeTS}` : isCura ? '' : 'Attacco Magico', s.note || ''].filter(Boolean).join(', ');
+                    const note = [isTS ? `CD ${cd}${nomeTS}` : isCura || senzaTiroPerColpire ? '' : 'Attacco Magico', s.note || ''].filter(Boolean).join(', ');
 
                     const categoria = categoriaDaTempoLancio(valoreIncantesimoPerEdizione(s, 'tempo', versione) || d.tempo || '') || 'Azione';
 
@@ -16051,7 +16062,10 @@ export default function App() {
                                 : dannoBaseInc;
                             const note = s.note || '';
                             // Incantesimo a tiro salvezza: badge della CD al posto del tiro per colpire.
-                            const isTSInc = Boolean(danno) && tipoDanno !== 'Guarigione' && classificaIncantesimoCombattimento(s).isTS;
+                            const classeInc = classificaIncantesimoCombattimento(s);
+                            const isTSInc = Boolean(danno) && tipoDanno !== 'Guarigione' && classeInc.isTS;
+                            // Assorbire Elementi, Marchio del Cacciatore, Dardo Incantato…: nessun tiro per colpire.
+                            const senzaTiroInc = Boolean(classeInc.senzaTiroPerColpire);
 
                             const nomeNorm = String(s.nome || '').trim().toLowerCase();
                             const isDuplicato = !s.catalogo && (conteggiNomi[nomeNorm] || 0) > 1;
@@ -16281,7 +16295,7 @@ export default function App() {
                                         <BadgeTiroSalvezza cd={8 + scheda.bonusCompetenza + modIncantatore} caratteristica={caratteristicaTiroSalvezzaIncantesimo(s.nome, s.note)} colore={coloreCategoria('tiroSalvezza', notteAttiva)} />
                                       )}
                                       {/* Una cura non ha tiro per colpire: solo il badge del tiro di cura. */}
-                                      {modIncantatore !== null && !isTSInc && tipoDanno !== 'Guarigione' && (
+                                      {modIncantatore !== null && !isTSInc && !senzaTiroInc && tipoDanno !== 'Guarigione' && (
                                         <BadgeTiroColpire
                                           bonus={scheda.bonusCompetenza + modIncantatore}
                                           colore={coloreCategoria('attacco', notteAttiva)}

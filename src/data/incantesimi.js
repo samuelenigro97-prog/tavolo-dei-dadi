@@ -619,6 +619,7 @@ export const VARIANTI_EDIZIONE_INCANTESIMI = {
   },
   'Colpo Accurato': {
     '2014': { gittata: '9m', danno: '', tipoDanno: '', conc: true, desc: 'Concentrazione (1 round): al tuo prossimo turno hai vantaggio al primo tiro per colpire contro il bersaglio. Non infligge danni.' },
+    '2024': { desc: 'Attacco con l\'arma usando la caratteristica da incantatore per tiro e danni (il danno può essere radiante). Nessun danno extra ai livelli 1-4; dal 5° livello +1d6 radianti extra (2d6 all\'11°, 3d6 al 17°).' },
   },
   'Arma Spirituale': {
     '2014': { conc: false, desc: 'Crei un\'arma spettrale per 1 minuto (senza concentrazione): attacco magico in mischia per 1d8 + mod. da incantatore danni da forza; come azione bonus puoi muoverla e riattaccare.' },

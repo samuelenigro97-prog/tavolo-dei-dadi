@@ -151,6 +151,12 @@ test.describe('Combattimento', () => {
     await expect(rigaCura.locator('.badge-tiro-colpire')).toHaveCount(0);
   });
 
+  test('Assorbire Elementi (danno sul prossimo colpo in mischia) non ha il badge del tiro per colpire', async ({ page }) => {
+    const riga = page.getByRole('button', { name: 'Assorbire Elementi', exact: true }).locator('xpath=ancestor::*[.//*[contains(@class, "badge-tiro-danno")]][1]');
+    await expect(riga.locator('.badge-tiro-danno')).toHaveCount(1);
+    await expect(riga.locator('.badge-tiro-colpire')).toHaveCount(0);
+  });
+
   test('con le regole 2024 Parola di Guarigione è 2d4 + mod', async ({ page }) => {
     await page.evaluate(() => {
       const k = 'scheda-interattiva:v1';

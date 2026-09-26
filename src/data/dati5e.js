@@ -978,7 +978,7 @@ export const SUBCLASS_PRIVILEGI = {
   "Guerriero della Mano Aperta": {
     "3": "Tecnica della Mano Aperta",
     "6": "Integrità del Corpo",
-    "11": "Passo Lesto\nTranquillità",
+    "11": "Passo Lesto",
     "17": "Palmo Tremante"
   },
   "Guerriero della Misericordia": {
@@ -1002,14 +1002,14 @@ export const SUBCLASS_PRIVILEGI = {
   "Guerriero dell’Ombra": {
     "3": "Arti dell’Ombra",
     "6": "Passo d’Ombra",
-    "11": "Passo d’Ombra Migliorato\nInvisibilità nell’Ombra",
-    "17": "Manto di Ombre\nOpportunista"
+    "11": "Passo d’Ombra Migliorato",
+    "17": "Manto di Ombre"
   },
   "Guerriero dell'Ombra": {
     "3": "Arti dell’Ombra",
     "6": "Passo d’Ombra",
-    "11": "Passo d’Ombra Migliorato\nInvisibilità nell’Ombra",
-    "17": "Manto di Ombre\nOpportunista"
+    "11": "Passo d’Ombra Migliorato",
+    "17": "Manto di Ombre"
   },
   "Via del Sé Astrale": {
     "3": "Braccia del Sé Astrale",
@@ -1066,7 +1066,7 @@ export const SUBCLASS_PRIVILEGI = {
     "20": "Leggenda Vivente"
   },
   "Giuramento degli Antichi": {
-    "3": "Furia della Natura\nIncantesimi del Giuramento\nScacciare l’Infedele",
+    "3": "Furia della Natura\nIncantesimi del Giuramento",
     "7": "Aura Guardiana",
     "15": "Sentinella Imperitura",
     "20": "Campione degli Antichi"
@@ -1347,6 +1347,41 @@ export const SUBCLASS_PRIVILEGI = {
 // spostati di livello o nuovi solo nel PHB 2024). Le sottoclassi non elencate
 // qui usano SUBCLASS_PRIVILEGI anche per la 5.0.
 export const SUBCLASS_PRIVILEGI_2014 = {
+  "Collegio del Valore": {
+    "3": "Competenze Bonus\nIspirazione in Combattimento",
+    "6": "Attacco Extra",
+    "14": "Magia da Combattimento"
+  },
+  "Guerriero della Mano Aperta": {
+    "3": "Tecnica della Mano Aperta",
+    "6": "Integrità del Corpo",
+    "11": "Tranquillità",
+    "17": "Palmo Tremante"
+  },
+  "Guerriero dell’Ombra": {
+    "3": "Arti dell’Ombra",
+    "6": "Passo d’Ombra",
+    "11": "Manto di Ombre",
+    "17": "Opportunista"
+  },
+  "Guerriero dell'Ombra": {
+    "3": "Arti dell’Ombra",
+    "6": "Passo d’Ombra",
+    "11": "Manto di Ombre",
+    "17": "Opportunista"
+  },
+  "Giuramento degli Antichi": {
+    "3": "Furia della Natura\nIncantesimi del Giuramento\nScacciare l’Infedele",
+    "7": "Aura Guardiana",
+    "15": "Sentinella Imperitura",
+    "20": "Campione degli Antichi"
+  },
+  "Giuramento di Vendetta": {
+    "3": "Abiurare Nemico\nVoto di Inimicizia\nIncantesimi del Giuramento",
+    "7": "Vendetta Implacabile",
+    "15": "Anima Vendicativa",
+    "20": "Angelo Vendicatore"
+  },
   "Campione": {
     "3": "Critico Migliorato",
     "7": "Atleta Straordinario",
@@ -1421,6 +1456,55 @@ export const SUBCLASS_PRIVILEGI_2014 = {
     "18": "Bombardamento Magico"
   }
 };
+
+// Sottoclassi del Manuale del Giocatore 2024 le cui tabelle in
+// SUBCLASS_PRIVILEGI mescolano la riga 5.0 (1°/2° livello) con quella 5.5
+// (3° livello): nella 5.5 valgono solo le righe dal 3° in su.
+const SOTTOCLASSI_PHB_2024_MISTE = new Set([
+  'Dominio della Vita', 'Dominio della Luce', 'Dominio dell’Inganno', "Dominio dell'Inganno", 'Dominio della Guerra',
+  'Circolo della Terra', 'Circolo della Luna', 'Circolo delle Stelle',
+  'Abiuratore', 'Divinatore', 'Invocatore', 'Illusionista',
+  'Stregoneria Aberrante', 'Mente Aberrante', 'Stregoneria Meccanica', "Anima dell'Orologio",
+  'Stregoneria Draconica', 'Stregoneria della Magia Selvaggia',
+  'Patrono Signore Fatato', 'Patrono Celestiale', 'Il Celestiale', 'Patrono Immondo', 'Patrono Grande Antico',
+]);
+
+const righeTabella = (v) => String(v || '').split('\n').map((r) => r.trim()).filter(Boolean);
+
+/**
+ * Tabella dei privilegi di una sottoclasse per l'edizione indicata
+ * ({ livello: "Privilegio\nPrivilegio" }), o null se sconosciuta.
+ * - 5.0 (2014): tabella propria in SUBCLASS_PRIVILEGI_2014 se esiste; altrimenti,
+ *   per le tabelle miste (righe al 1°/2° e al 3°), la riga del 3° è il doppione
+ *   5.5 e viene tolta; gli "Incantesimi del …" che comparivano solo lì passano
+ *   alla prima riga (nella 5.0 si ottengono insieme alla sottoclasse).
+ * - 5.5 (2024): per le sottoclassi del Manuale 2024 con tabella mista valgono
+ *   solo le righe dal 3° livello (i Domini perdono anche l'8°: Colpo Divino /
+ *   Incantesimi Potenti sono privilegi di classe nella 5.5). Le sottoclassi
+ *   solo 5.0 (legacy) restano come sono.
+ */
+export function tabellaPrivilegiSottoclasse(sottoclasse, versione = '2024') {
+  const is2014 = String(versione) === '2014';
+  if (is2014 && SUBCLASS_PRIVILEGI_2014[sottoclasse]) return SUBCLASS_PRIVILEGI_2014[sottoclasse];
+  const base = SUBCLASS_PRIVILEGI[sottoclasse];
+  if (!base) return null;
+  const mista = Boolean(base[3] && (base[1] || base[2]));
+  if (!mista) return base;
+  const out = { ...base };
+  if (is2014) {
+    const primo = base[1] ? 1 : 2;
+    const prima = righeTabella(base[1]).concat(righeTabella(base[2]));
+    const spostati = righeTabella(base[3]).filter((r) => /^Incantesimi (del|della|dei|delle|dello|dell’|dell')/i.test(r) && !prima.includes(r));
+    if (spostati.length) out[primo] = [...righeTabella(base[primo]), ...spostati].join('\n');
+    delete out[3];
+    return out;
+  }
+  if (!SOTTOCLASSI_PHB_2024_MISTE.has(sottoclasse)) return base;
+  delete out[1];
+  delete out[2];
+  if (/^Dominio /.test(sottoclasse)) delete out[8];
+  return out;
+}
 
 export const CARATT_INCANTATORE = {
   bardo: 'carisma', stregone: 'carisma', warlock: 'carisma', paladino: 'carisma',

@@ -171,6 +171,7 @@ export const SPIEG_PRIVILEGI = {
   "Esplosione del Sole Solare": "Come azione crei una sfera di luce radiosa di 6m di raggio entro 45m che infligge 2d6 danni radiosi (o più spendendo punti ki extra).",
   "Scudo Solare": "Come azione bonus puoi emanare un'aura luminosa: quando una creatura entro 1,5m ti colpisce con un attacco in mischia, subisce danni radiosi pari a 5 + mod. Saggezza.",
   "Scacciare l’Empio": "Come azione mostri il simbolo sacro: ogni immondo o non morto entro 9m deve superare un TS Saggezza o fuggire terrorizzato per 1 minuto.",
+  "Abiurare Nemico": "Incanalare Divinità (5.0, Giuramento di Vendetta): come azione presenti il simbolo sacro contro una creatura entro 18m; deve superare un TS Saggezza o è spaventata per 1 minuto (velocità 0; immondi e non morti hanno svantaggio al TS). Se lo supera, velocità dimezzata per 1 minuto.",
   "Scacciare l’Infedele": "Come azione mostri il simbolo sacro: ogni folletto o immondo entro 9m deve superare un TS Saggezza o fuggire terrorizzato per 1 minuto.",
   "Purezza di Spirito": "Sei costantemente sotto gli effetti di Protezione dal Bene e dal Male contro aberrazioni, celestiali, elementali, folletti, immondi e non morti.",
   "Santo della Luce": "Come azione diventi un avatar di luce splendente per 1 minuto: emani luce solare di 9m che infligge danni radiosi ai nemici e hai vantaggio ai TS.",
@@ -473,7 +474,7 @@ export const SPIEG_PRIVILEGI = {
   'Nemico prescelto': 'Conosci a fondo certi tipi di creatura: vantaggio a tracciarle e ricordarne informazioni.',
   'Esploratore provetto': 'Sei abile nel viaggio, orientamento e sopravvivenza.',
   'Esploratore naturale': "Ti muovi e sopravvivi con maestria nei territori a te familiari.",
-  'Consapevolezza primordiale': "Spendi uno slot per percepire certi tipi di creatura nell'area.",
+  'Consapevolezza primordiale': "Come azione spendi uno slot incantesimo da ranger: per 1 minuto per livello dello slot percepisci se aberrazioni, celestiali, draghi, elementali, folletti, immondi o non morti sono entro 1,5 km (9 km nel terreno prescelto). Nessun contatore di usi.",
   'Vagabondo': 'Aumenti velocità, scalata e salto.',
   'Instancabile': 'Riduci lo sfinimento e recuperi PF temporanei.',
   'Cacciatore implacabile': 'Il tuo Marchio del Cacciatore si mantiene meglio (meno concentrazione).',
@@ -892,7 +893,7 @@ export const SPIEG_PRIVILEGI = {
   'Colpo di Fortuna': 'Privilegio supremo del Ladro (20° livello): se manchi un attacco o fallisci una prova di caratteristica, trasformi il mancamento in un colpo a segno o il d20 in un 20 naturale. Si ricarica con un riposo breve o lungo.',
   'Indomito': 'Puoi ritirare un tiro salvezza fallito (+ livello da Guerriero nella versione 2024). Usi per riposo lungo: 1 al 9°, 2 al 13°, 3 al 17°.',
   'Marchio del Cacciatore': 'Azione bonus: marchi un nemico entro 27 m come tua preda; infliggi 1d6 danni da forza extra ogni volta che lo colpisci e hai vantaggio alle prove per rintracciarlo. Nella 2024 hai usi gratuiti senza spendere slot incantesimo.',
-  'Sensi Primordiali': 'Come azione spendi la tua connessione naturale per percepire la presenza di creature planari o sovrannaturali (aberrazioni, celestiali, draghi, elementali, folletti, immondi, non morti) entro 1,5 km. Si ricarica con un riposo lungo.',
+  'Sensi Primordiali': 'Consapevolezza Primordiale (5.0): come azione spendi uno slot incantesimo da ranger; per 1 minuto per livello dello slot percepisci se aberrazioni, celestiali, draghi, elementali, folletti, immondi o non morti sono presenti entro 1,5 km (9 km nel terreno prescelto). Non ha usi propri: consuma solo lo slot.',
   'Nemico Prescelto': 'Ottieni vantaggio alle prove di Saggezza (Sopravvivenza) per tracciare i tuoi nemici prescelti e alle prove di Intelligenza per ricordare nozioni su di essi, oltre a conoscerne la lingua.',
   'Senso del Divino': 'Come azione individui la presenza di celestiali, immondi e non morti entro 18 m non protetti da copertura totale fino alla fine del tuo prossimo turno. Usi = 1 + mod. Carisma; si ricarica con un riposo lungo.',
   'Intervento Divino': 'Come azione implori l’intervento della tua divinità tirando 1d100: se il risultato è pari o inferiore al tuo livello (automatico al 20°), la divinità compie un prodigio o replica un incantesimo divino. Si ricarica con un riposo lungo.',
@@ -1048,7 +1049,7 @@ const _lcMap = (obj) => { const m = {}; for (const k in obj) m[k.toLowerCase()] 
 // Quando la lingua è "en" si cerca prima qui; se la voce non è ancora tradotta
 // si ricade sul testo italiano, così non compaiono mai buchi.
 import { linguaAttuale } from '../i18n.js';
-import { EN_METAMAGIA, EN_TALENTI, EN_TRATTI, EN_PRIVILEGI, EN_INCANTESIMI, EN_PRIVILEGI_CLASSE, EN_INVOCAZIONI, EN_INFUSIONI } from './spiegazioni.en.js';
+import { EN_METAMAGIA, EN_TALENTI, EN_TRATTI, EN_PRIVILEGI, EN_INCANTESIMI, EN_PRIVILEGI_CLASSE, EN_INVOCAZIONI, EN_INFUSIONI, EN_VARIANTI_INCANTESIMI } from './spiegazioni.en.js';
 const EN_METAMAGIA_LC = _lcMap(EN_METAMAGIA);
 const EN_TALENTI_LC = _lcMap(EN_TALENTI);
 const EN_TRATTI_LC = _lcMap(EN_TRATTI);
@@ -1132,7 +1133,7 @@ const SPIEG_INCANTESIMI = {
   'Colpo Irato': 'Liv. 1 · Il prossimo colpo infligge +1d6 necrotici e spaventa il bersaglio (TS Saggezza). Concentrazione, 1 min.',
   'Colpo Marchiante': 'Liv. 2 · Il prossimo colpo infligge +2d6 radianti e rende il bersaglio visibile (non può occultarsi). Concentrazione, 1 min. +1d6 per slot.',
   'Colpo Sconvolgente': 'Liv. 4 · Il prossimo colpo infligge +4d6 psichici, dà svantaggio a tiri per colpire e TS, e impedisce reazioni (TS Saggezza). Concentrazione, 1 min.',
-  'Colpo Accurato': 'Liv. 0 · Attacco con arma usando la caratteristica da incantatore per tiro e danni; infligge 1d6 radianti extra a 5/11/17.',
+  'Colpo Accurato': 'Liv. 0 · Attacco con arma usando la caratteristica da incantatore per tiro e danni; dal 5° livello infligge 1d6 radianti extra (2d6 all’11°, 3d6 al 17°), prima nessun extra.',
   'Colpo Tonante': 'Liv. 1 · Il prossimo colpo infligge +2d6 tuono e può spingere via 3 m (TS Forza). Concentrazione, 1 min.',
   'Comando': "Liv. 1 · Un ordine di una parola (avvicinati, lascia, fuggi…) che il bersaglio esegue (TS Saggezza). Gittata 18 m.",
   'Comprendere Linguaggi': "Liv. 1 · Capisci ogni lingua parlata e leggi quelle scritte che tocchi. Rituale, 1 ora.",
@@ -1423,10 +1424,16 @@ export function spiegaIncantesimo(nome) {
 
   // Incantesimi con meccaniche diverse fra 2014 e 2024: il testo italiano
   // segue l'edizione del PG (es. Cura Ferite 1d8 nella 5.0, 2d8 nella 5.5).
-  if (linguaAttuale !== 'en') {
+  // Anche in inglese: testo per edizione da EN_VARIANTI_INCANTESIMI.
+  {
     const dati = datiIncantesimo(n, edizioneAttuale);
-    const variante = dati && VARIANTI_EDIZIONE_INCANTESIMI[dati.nome]?.[edizioneAttuale];
-    if (variante?.desc) return (dati.livello > 0 ? `Liv. ${dati.livello} · ` : 'Liv. 0 · ') + variante.desc;
+    if (linguaAttuale === 'en') {
+      const testoEn = dati && EN_VARIANTI_INCANTESIMI[dati.nome]?.[edizioneAttuale];
+      if (testoEn) return `Lv. ${dati.livello || 0} · ${testoEn}`;
+    } else {
+      const variante = dati && VARIANTI_EDIZIONE_INCANTESIMI[dati.nome]?.[edizioneAttuale];
+      if (variante?.desc) return (dati.livello > 0 ? `Liv. ${dati.livello} · ` : 'Liv. 0 · ') + variante.desc;
+    }
   }
 
   if (SPIEG_INCANTESIMI_LC[searchName]) return _ed(_en(EN_INCANTESIMI_LC, searchName) || SPIEG_INCANTESIMI_LC[searchName]);
