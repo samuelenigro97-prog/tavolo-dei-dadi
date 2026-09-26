@@ -335,6 +335,7 @@ export const EN_PRIVILEGI = {
   "Esplosione del Sole Solare": "Create a 20 ft radiant sphere within 150 ft dealing 2d6+ radiant damage.",
   "Scudo Solare": "Radiant aura dealing 5 + Wisdom radiant damage to creatures hitting you in melee.",
   "Scacciare l’Empio": "Turn fiends and undead within 30 ft on a failed Wisdom saving throw for 1 minute.",
+  "Abiurare Nemico": "Channel Divinity (2014, Oath of Vengeance): as an action, present your holy symbol at a creature within 60 ft; on a failed Wisdom save it is frightened for 1 minute (speed 0; fiends and undead save with disadvantage). On a success its speed is halved for 1 minute.",
   "Scacciare l’Infedele": "Turn fey and fiends within 30 ft on a failed Wisdom saving throw for 1 minute.",
   "Purezza di Spirito": "Permanent Protection from Evil and Good against aberrations, celestials, elementals, fey, fiends, and undead.",
   "Santo della Luce": "Transform into an avatar of light for 1 minute: 30 ft sunlight dealing radiant damage to foes and advantage on saves.",
@@ -493,7 +494,7 @@ export const EN_INCANTESIMI = {
   'Colpo Irato': 'Lv. 1 · Your next hit deals +1d6 necrotic and frightens the target (Wisdom save). Concentration, 1 min.',
   'Colpo Marchiante': 'Lv. 2 · Your next hit deals +2d6 radiant and makes the target visible (cannot turn invisible). Concentration, 1 min. +1d6 per slot.',
   'Colpo Sconvolgente': 'Lv. 4 · Your next hit deals +4d6 psychic, gives disadvantage on attacks/saves and prevents reactions (Wisdom save). Concentration, 1 min.',
-  'Colpo Accurato': 'Lv. 0 · Weapon attack using spellcasting ability modifier for attack and damage; deals +1d6 extra radiant damage at 5/11/17.',
+  'Colpo Accurato': 'Lv. 0 · Weapon attack using spellcasting ability modifier for attack and damage; from level 5 it deals +1d6 extra radiant damage (2d6 at 11, 3d6 at 17); no extra damage before level 5.',
   'Colpo Tonante': 'Lv. 1 · Your next hit deals +2d6 thunder and can push the target 3 m away (Strength save). Concentration, 1 min.',
   'Comando': 'Lv. 1 · A one-word order (approach, drop, flee…) that the target obeys (Wisdom save). Range 18 m.',
   'Comprendere Linguaggi': 'Lv. 1 · You understand any spoken language and read written ones you touch. Ritual, 1 hour.',
@@ -654,7 +655,7 @@ export const EN_INCANTESIMI = {
   'Spruzzo Acido': 'Lv. 0 · A bubble of acid on 1-2 nearby targets (range 18 m): 1d6 acid (increases at 5/11/17).',
   'Spruzzo Velenoso': 'Lv. 0 · A toxic puff at a target within 3 m: 1d12 poison (Constitution save; increases at 5/11/17).',
   'Stabilizzare': 'You stabilise a dying creature at 0 HP within 9 m (instantaneous).',
-  'Stregoneria Esplosiva': 'Lv. 1 · Ranged spell attack (range 36 m): 2d8 + 1d6 damage (type based on the d8). If both d8s match, the bolt leaps to another target. +1d6 per slot.',
+  'Stregoneria Esplosiva': 'Lv. 0 · Sorcerous Burst: ranged spell attack (36 m), 1d8 damage of a type you choose (acid, cold, fire, lightning, poison, psychic, thunder); each 8 lets you roll another d8 (up to your spellcasting modifier in extra dice). 2d8 at 5, 3d8 at 11, 4d8 at 17.',
   'Stretta Folgorante': 'Lv. 0 · Melee spell attack (touch range): 1d8 lightning and no reactions until its next turn (increases at 5/11/17).',
   'Suggestione': 'Lv. 2 · You suggest a reasonable course of action (range 9 m; Wisdom save) that the target follows. Concentration, up to 8 hours.',
   'Sussurri Dissonanti': 'Lv. 1 · Painful whispers (range 18 m): 3d6 psychic and the target flees from you (Wisdom save for half and no fleeing). +1d6 per slot.',
@@ -820,7 +821,7 @@ export const EN_PRIVILEGI_CLASSE = {
   'Maestro Occulto': 'Warlock capstone (20th level - Eldritch Master): you spend 1 minute supplicating your patron to regain all expended Pact Magic spell slots. Recharges on a Long Rest.',
   'Colpo di Fortuna': 'Rogue capstone (20th level - Stroke of Luck): if your attack misses or you fail an ability check, you turn the miss into a hit or treat the d20 as a 20. Recharges on a Short or Long Rest.',
   'Marchio del Cacciatore': 'Bonus Action: magically mark a target within 27 m to deal +1d6 force damage on every hit and gain advantage to track it. In 2024 you gain free uses without spending spell slots.',
-  'Sensi Primordiali': 'As an action, sense the presence of planar/aberrant creatures within 1.5 km (or 9 km in favoured terrain). Recharges on a Long Rest.',
+  'Sensi Primordiali': 'Primeval Awareness (2014): as an action, expend one ranger spell slot; for 1 minute per slot level you sense whether aberrations, celestials, dragons, elementals, fey, fiends or undead are within 1 mile (6 miles in favored terrain). It has no uses of its own: it only costs the slot.',
   'Nemico Prescelto': 'Gain advantage on Survival checks to track favoured enemies and Intelligence checks to recall information about them.',
   'Senso del Divino': 'As an action, detect the location of celestials, fiends, and undead within 18 m. Uses = 1 + Cha modifier; recharges on a Long Rest.',
   'Intervento Divino': 'As an action, call upon your deity with a d100 roll: if you roll equal to or below your level, your deity intervenes with divine aid or duplicates a spell. Recharges on a Long Rest.',
@@ -1575,4 +1576,62 @@ export const EN_INFUSIONI = {
   'Amuleto della Salute': "Prerequisite: 14th level · Item: an amulet.\nSets the wearer's Constitution score to 19.",
   'Anello di Protezione': "Prerequisite: 14th level · Item: a ring.\nGrants a +1 bonus to AC and all saving throws.",
   'Cintura della Forza del Gigante': "Prerequisite: 14th level · Item: a belt.\nSets the wearer's Strength score to 21 (Hill Giant).",
+};
+
+// Spells whose rules differ between editions: the English text follows the
+// character's edition (5.0 = 2014, 5.5 = 2024), like the Italian variants in
+// VARIANTI_EDIZIONE_INCANTESIMI (incantesimi.js).
+export const EN_VARIANTI_INCANTESIMI = {
+  'Cura Ferite': {
+    '2014': 'A creature you touch regains 1d8 + your spellcasting modifier HP (+1d8 per slot level above 1st).',
+    '2024': 'A creature you touch regains 2d8 + your spellcasting modifier HP (+2d8 per slot level above 1st).',
+  },
+  'Parola di Guarigione': {
+    '2014': 'As a bonus action, a creature you can see within 18 m regains 1d4 + your spellcasting modifier HP (+1d4 per slot level above 1st).',
+    '2024': 'As a bonus action, a creature you can see within 18 m regains 2d4 + your spellcasting modifier HP (+2d4 per slot level above 1st).',
+  },
+  'Parola di Guarigione di Massa': {
+    '2014': 'As a bonus action, up to 6 creatures you can see within 18 m regain 1d4 + your spellcasting modifier HP (+1d4 per slot level above 3rd).',
+    '2024': 'As a bonus action, up to 6 creatures you can see within 18 m regain 2d4 + your spellcasting modifier HP (+1d4 per slot level above 3rd).',
+  },
+  'Cura Ferite di Massa': {
+    '2014': 'Up to 6 creatures in a 9 m radius sphere regain 3d8 + your spellcasting modifier HP (+1d8 per slot level above 5th).',
+    '2024': 'Up to 6 creatures in a 9 m radius sphere regain 5d8 + your spellcasting modifier HP (+1d8 per slot level above 5th).',
+  },
+  'Tocco Gelido': {
+    '2014': 'Ranged spell attack (36 m): 1d8 necrotic; the target can\'t regain HP until the start of your next turn and, if undead, has disadvantage on attack rolls against you. Increases at 5/11/17.',
+    '2024': 'Melee spell attack (touch): 1d10 necrotic; the target can\'t regain HP until the end of your next turn. Increases at 5/11/17.',
+  },
+  'Produrre Fiamma': {
+    '2014': 'A flame in your hand sheds light for 10 minutes; you can hurl it (even on the turn you cast it) with a ranged spell attack within 9 m: 1d8 fire. Increases at 5/11/17.',
+    '2024': 'As a bonus action you create a flame in your hand that sheds light for 10 minutes; with a Magic action you can hurl it with a ranged spell attack within 18 m: 1d8 fire. Increases at 5/11/17.',
+  },
+  'Colpo Accurato': {
+    '2014': 'Concentration (1 round): on your next turn you have advantage on your first attack roll against the target. It deals no damage.',
+    '2024': 'Weapon attack using your spellcasting ability for the attack and damage rolls (the damage can be radiant). No extra damage at levels 1-4; from level 5 it deals +1d6 extra radiant damage (2d6 at 11, 3d6 at 17).',
+  },
+  'Arma Spirituale': {
+    '2014': 'You create a spectral weapon for 1 minute (no concentration): melee spell attack for 1d8 + spellcasting modifier force damage; as a bonus action you can move it and attack again.',
+    '2024': 'You create a spectral weapon (concentration, 1 minute): melee spell attack for 1d8 + spellcasting modifier force damage; as a bonus action you can move it and attack again.',
+  },
+  'Sonno': {
+    '2014': 'Roll 5d8: the total is how many HP of creatures this spell puts to sleep (weakest first) in a 6 m sphere within 27 m, for 1 minute.',
+    '2024': 'Each creature of your choice in a 1.5 m sphere within 27 m makes a Wisdom saving throw: on a failure it is Incapacitated and then Unconscious (concentration, 1 minute).',
+  },
+  'Guida': {
+    '2014': 'You touch a willing creature (concentration, 1 minute): once before it ends it can add 1d4 to one ability check of its choice, before or after the roll; then the spell ends.',
+    '2024': 'You touch a willing creature and choose a skill (concentration, 1 minute): while it lasts it adds 1d4 to every ability check using that skill.',
+  },
+  'Resistenza': {
+    '2014': 'You touch a willing creature (concentration, 1 minute): once before it ends it can add 1d4 to one saving throw of its choice; then the spell ends.',
+    '2024': 'You touch a willing creature and choose a damage type (concentration, 1 minute): once per turn, when it takes damage of that type, it reduces the damage by 1d4.',
+  },
+  'Interdizione alle Lame': {
+    '2014': 'Until the end of your next turn you have resistance to bludgeoning, piercing and slashing damage from weapon attacks (no concentration).',
+    '2024': 'Concentration, 1 minute: whenever a creature makes an attack roll against you, it subtracts 1d4 from the roll.',
+  },
+  'Randello Incantato': {
+    '2014': 'Bonus action, 1 minute: the club or quarterstaff you hold uses your spellcasting ability for attack and damage rolls, its damage die becomes 1d8 and it counts as magical.',
+    '2024': 'Bonus action, 1 minute: the club or quarterstaff you hold uses your spellcasting ability for attack and damage rolls; its damage becomes 1d8 force or its normal type, and the die grows with level (1d10 at 5, 1d12 at 11, 2d6 at 17).',
+  },
 };

@@ -978,7 +978,7 @@ export const SUBCLASS_PRIVILEGI = {
   "Guerriero della Mano Aperta": {
     "3": "Tecnica della Mano Aperta",
     "6": "Integrità del Corpo",
-    "11": "Passo Lesto\nTranquillità",
+    "11": "Passo Lesto",
     "17": "Palmo Tremante"
   },
   "Guerriero della Misericordia": {
@@ -1002,14 +1002,14 @@ export const SUBCLASS_PRIVILEGI = {
   "Guerriero dell’Ombra": {
     "3": "Arti dell’Ombra",
     "6": "Passo d’Ombra",
-    "11": "Passo d’Ombra Migliorato\nInvisibilità nell’Ombra",
-    "17": "Manto di Ombre\nOpportunista"
+    "11": "Passo d’Ombra Migliorato",
+    "17": "Manto di Ombre"
   },
   "Guerriero dell'Ombra": {
     "3": "Arti dell’Ombra",
     "6": "Passo d’Ombra",
-    "11": "Passo d’Ombra Migliorato\nInvisibilità nell’Ombra",
-    "17": "Manto di Ombre\nOpportunista"
+    "11": "Passo d’Ombra Migliorato",
+    "17": "Manto di Ombre"
   },
   "Via del Sé Astrale": {
     "3": "Braccia del Sé Astrale",
@@ -1066,7 +1066,7 @@ export const SUBCLASS_PRIVILEGI = {
     "20": "Leggenda Vivente"
   },
   "Giuramento degli Antichi": {
-    "3": "Furia della Natura\nIncantesimi del Giuramento\nScacciare l’Infedele",
+    "3": "Furia della Natura\nIncantesimi del Giuramento",
     "7": "Aura Guardiana",
     "15": "Sentinella Imperitura",
     "20": "Campione degli Antichi"
@@ -1342,6 +1342,170 @@ export const SUBCLASS_PRIVILEGI = {
   }
 };
 
+// Privilegi di sottoclasse della 5.0 (PHB 2014) per le sottoclassi il cui
+// elenco differisce da quello 2024 in SUBCLASS_PRIVILEGI (privilegi rinominati,
+// spostati di livello o nuovi solo nel PHB 2024). Le sottoclassi non elencate
+// qui usano SUBCLASS_PRIVILEGI anche per la 5.0.
+export const SUBCLASS_PRIVILEGI_2014 = {
+  "Collegio del Valore": {
+    "3": "Competenze Bonus\nIspirazione in Combattimento",
+    "6": "Attacco Extra",
+    "14": "Magia da Combattimento"
+  },
+  "Guerriero della Mano Aperta": {
+    "3": "Tecnica della Mano Aperta",
+    "6": "Integrità del Corpo",
+    "11": "Tranquillità",
+    "17": "Palmo Tremante"
+  },
+  "Guerriero dell’Ombra": {
+    "3": "Arti dell’Ombra",
+    "6": "Passo d’Ombra",
+    "11": "Manto di Ombre",
+    "17": "Opportunista"
+  },
+  "Guerriero dell'Ombra": {
+    "3": "Arti dell’Ombra",
+    "6": "Passo d’Ombra",
+    "11": "Manto di Ombre",
+    "17": "Opportunista"
+  },
+  "Giuramento degli Antichi": {
+    "3": "Furia della Natura\nIncantesimi del Giuramento\nScacciare l’Infedele",
+    "7": "Aura Guardiana",
+    "15": "Sentinella Imperitura",
+    "20": "Campione degli Antichi"
+  },
+  "Giuramento di Vendetta": {
+    "3": "Abiurare Nemico\nVoto di Inimicizia\nIncantesimi del Giuramento",
+    "7": "Vendetta Implacabile",
+    "15": "Anima Vendicativa",
+    "20": "Angelo Vendicatore"
+  },
+  "Campione": {
+    "3": "Critico Migliorato",
+    "7": "Atleta Straordinario",
+    "10": "Stile di Combattimento Aggiuntivo",
+    "15": "Critico Superiore",
+    "18": "Sopravvissuto"
+  },
+  "Berserker": {
+    "3": "Frenesia",
+    "6": "Ira Incontenibile",
+    "10": "Presenza Intimidatoria",
+    "14": "Ritorsione"
+  },
+  "Cacciatore": {
+    "3": "Preda del Cacciatore",
+    "7": "Tattiche Difensive",
+    "11": "Attacco Multiplo",
+    "15": "Difesa Superiore del Cacciatore"
+  },
+  "Signore delle Bestie": {
+    "3": "Compagno del Ranger",
+    "7": "Addestramento Eccezionale",
+    "11": "Furia Bestiale",
+    "15": "Condividi Incantesimi"
+  },
+  "Assassino": {
+    "3": "Competenze Bonus\nAssassinare",
+    "9": "Maestro Infiltrato",
+    "13": "Impostore",
+    "17": "Colpo Letale"
+  },
+  "Collegio della Sapienza": {
+    "3": "Competenze Bonus\nParole Taglienti",
+    "6": "Segreti Magici Aggiuntivi",
+    "14": "Abilità Impareggiabile"
+  },
+  "Circolo della Terra": {
+    "2": "Trucchetto Bonus\nRecupero Naturale",
+    "3": "Incantesimi del Circolo",
+    "6": "Passo della Terra",
+    "10": "Interdizione della Natura",
+    "14": "Rifugio della Natura"
+  },
+  "Circolo della Luna": {
+    "2": "Forma Selvatica da Combattimento\nForme del Circolo",
+    "6": "Colpo Primordiale",
+    "10": "Forma Selvatica Elementale",
+    "14": "Mille Forme"
+  },
+  "Giuramento di Devozione": {
+    "3": "Incantesimi del Giuramento\nArma Consacrata\nScacciare l’Empio",
+    "7": "Aura di Devozione",
+    "15": "Purezza di Spirito",
+    "20": "Nube Sacra"
+  },
+  "Stregoneria Draconica": {
+    "1": "Antenato Draconico\nResilienza Draconica",
+    "6": "Affinità Elementale",
+    "14": "Ali di Drago",
+    "18": "Presenza Draconica"
+  },
+  "Invocatore": {
+    "2": "Invocatore Sapiente\nPlasmare Incantesimi",
+    "6": "Trucchetto Potente",
+    "10": "Invocazione Potente",
+    "14": "Saturazione Magica"
+  },
+  "Stregoneria della Magia Selvaggia": {
+    "1": "Impulso di Magia Selvaggia\nOnde di Caos",
+    "6": "Piegare la Fortuna",
+    "14": "Caos Controllato",
+    "18": "Bombardamento Magico"
+  }
+};
+
+// Sottoclassi del Manuale del Giocatore 2024 le cui tabelle in
+// SUBCLASS_PRIVILEGI mescolano la riga 5.0 (1°/2° livello) con quella 5.5
+// (3° livello): nella 5.5 valgono solo le righe dal 3° in su.
+const SOTTOCLASSI_PHB_2024_MISTE = new Set([
+  'Dominio della Vita', 'Dominio della Luce', 'Dominio dell’Inganno', "Dominio dell'Inganno", 'Dominio della Guerra',
+  'Circolo della Terra', 'Circolo della Luna', 'Circolo delle Stelle',
+  'Abiuratore', 'Divinatore', 'Invocatore', 'Illusionista',
+  'Stregoneria Aberrante', 'Mente Aberrante', 'Stregoneria Meccanica', "Anima dell'Orologio",
+  'Stregoneria Draconica', 'Stregoneria della Magia Selvaggia',
+  'Patrono Signore Fatato', 'Patrono Celestiale', 'Il Celestiale', 'Patrono Immondo', 'Patrono Grande Antico',
+]);
+
+const righeTabella = (v) => String(v || '').split('\n').map((r) => r.trim()).filter(Boolean);
+
+/**
+ * Tabella dei privilegi di una sottoclasse per l'edizione indicata
+ * ({ livello: "Privilegio\nPrivilegio" }), o null se sconosciuta.
+ * - 5.0 (2014): tabella propria in SUBCLASS_PRIVILEGI_2014 se esiste; altrimenti,
+ *   per le tabelle miste (righe al 1°/2° e al 3°), la riga del 3° è il doppione
+ *   5.5 e viene tolta; gli "Incantesimi del …" che comparivano solo lì passano
+ *   alla prima riga (nella 5.0 si ottengono insieme alla sottoclasse).
+ * - 5.5 (2024): per le sottoclassi del Manuale 2024 con tabella mista valgono
+ *   solo le righe dal 3° livello (i Domini perdono anche l'8°: Colpo Divino /
+ *   Incantesimi Potenti sono privilegi di classe nella 5.5). Le sottoclassi
+ *   solo 5.0 (legacy) restano come sono.
+ */
+export function tabellaPrivilegiSottoclasse(sottoclasse, versione = '2024') {
+  const is2014 = String(versione) === '2014';
+  if (is2014 && SUBCLASS_PRIVILEGI_2014[sottoclasse]) return SUBCLASS_PRIVILEGI_2014[sottoclasse];
+  const base = SUBCLASS_PRIVILEGI[sottoclasse];
+  if (!base) return null;
+  const mista = Boolean(base[3] && (base[1] || base[2]));
+  if (!mista) return base;
+  const out = { ...base };
+  if (is2014) {
+    const primo = base[1] ? 1 : 2;
+    const prima = righeTabella(base[1]).concat(righeTabella(base[2]));
+    const spostati = righeTabella(base[3]).filter((r) => /^Incantesimi (del|della|dei|delle|dello|dell’|dell')/i.test(r) && !prima.includes(r));
+    if (spostati.length) out[primo] = [...righeTabella(base[primo]), ...spostati].join('\n');
+    delete out[3];
+    return out;
+  }
+  if (!SOTTOCLASSI_PHB_2024_MISTE.has(sottoclasse)) return base;
+  delete out[1];
+  delete out[2];
+  if (/^Dominio /.test(sottoclasse)) delete out[8];
+  return out;
+}
+
 export const CARATT_INCANTATORE = {
   bardo: 'carisma', stregone: 'carisma', warlock: 'carisma', paladino: 'carisma',
   chierico: 'saggezza', druido: 'saggezza', ranger: 'saggezza',
@@ -1392,8 +1556,9 @@ export const PRIORITA_CARATT = {
 export const DADO_VITA_CLASSE = {
   barbaro: 12,
   guerriero: 10, paladino: 10, ranger: 10,
-  bardo: 8, chierico: 8, druido: 8, ladro: 8, monaco: 8, stregone: 8, warlock: 8, artefice: 8,
-  mago: 6,
+  bardo: 8, chierico: 8, druido: 8, ladro: 8, monaco: 8, warlock: 8, artefice: 8,
+  // Stregone: d6 sia nella 5.0 sia nella 5.5 (prima era d8 per errore).
+  mago: 6, stregone: 6,
 };
 export const BACKGROUND_TALENTO_ORIGINE_2024 = {
   'Accolito': 'Iniziato alla Magia',
@@ -2143,25 +2308,42 @@ export const SPECIE_DATI = {
   Aasimar: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Resistenza Celestiale, Mani Guaritrici, Portatore di Luce, Rivelazione Celestiale' },
   Dragonide: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Arma a Soffio, Resistenza al Danno, Antenati Draconici, Volo Draconico' },
   Elfo: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Trance, Retaggio Fatato, Sensi Acuti' },
-  'Elfo Alto': { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Trance, Retaggio Fatato, Sensi Acuti, 1 Trucchetto da Mago, Lingua Extra, Addestramento nelle Armi Elfiche' },
-  'Elfo dei Boschi': { velocita: 10.5, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Trance, Retaggio Fatato, Sensi Acuti, Passo Celere, Maschera della Selva' },
-  'Elfo Oscuro (Drow)': { velocita: 9, sensi: 'Scurovisione 36 m', taglia: 'Media', tratti: 'Trance, Retaggio Fatato, Sensi Acuti, Sensibilità alla Luce Solare, Magia Drow, Addestramento nelle Armi Drow' },
+  'Elfo Alto': { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Trance, Retaggio Fatato, Sensi Acuti, Lignaggio Elfico (Elfo Alto)' },
+  'Elfo dei Boschi': { velocita: 10.5, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Trance, Retaggio Fatato, Sensi Acuti, Lignaggio Elfico (Elfo dei Boschi)' },
+  'Elfo Oscuro (Drow)': { velocita: 9, sensi: 'Scurovisione 36 m', taglia: 'Media', tratti: 'Trance, Retaggio Fatato, Sensi Acuti, Lignaggio Elfico (Drow)' },
   Gnomo: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Piccola', tratti: 'Astuzia Gnomesca' },
-  'Gnomo delle Foreste': { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Piccola', tratti: 'Astuzia Gnomesca, Illusionista Nato, Parlare con le Piccole Bestie' },
-  'Gnomo delle Rocce': { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Piccola', tratti: 'Astuzia Gnomesca, Conoscenza degli Artefatti, Inventore' },
+  'Gnomo delle Foreste': { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Piccola', tratti: 'Astuzia Gnomesca, Lignaggio Gnomesco (Gnomo delle Foreste)' },
+  'Gnomo delle Rocce': { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Piccola', tratti: 'Astuzia Gnomesca, Lignaggio Gnomesco (Gnomo delle Rocce)' },
   Goliath: { velocita: 10.5, sensi: '', taglia: 'Media', tratti: 'Retaggio dei Giganti, Corporatura Possente, Forma Grande' },
   Halfling: { velocita: 9, sensi: '', taglia: 'Piccola', tratti: 'Coraggioso, Agilità Halfling, Fortuna, Furtività Naturale' },
-  'Halfling Piedelesto': { velocita: 9, sensi: '', taglia: 'Piccola', tratti: 'Coraggioso, Agilità Halfling, Fortuna, Furtività Naturale' },
-  'Halfling Tozzo': { velocita: 9, sensi: '', taglia: 'Piccola', tratti: 'Coraggioso, Agilità Halfling, Fortuna, Resilienza Tozza' },
+  'Halfling Piedelesto': { velocita: 7.5, sensi: '', taglia: 'Piccola', tratti: 'Coraggioso, Agilità Halfling, Fortuna, Furtività Naturale' },
+  'Halfling Tozzo': { velocita: 7.5, sensi: '', taglia: 'Piccola', tratti: 'Coraggioso, Agilità Halfling, Fortuna, Resilienza Tozza' },
   Nano: { velocita: 9, sensi: 'Scurovisione 36 m', taglia: 'Media', tratti: 'Robustezza Nanica, Scalpellino, Resistenza al Veleno, Competenza negli Strumenti' },
-  'Nano delle Colline': { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Robustezza Nanica, Scalpellino, Resistenza al Veleno' },
-  'Nano delle Montagne': { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Robustezza Nanica, Scalpellino, Resistenza al Veleno, Addestramento nelle Armature Naniche' },
+  'Nano delle Colline': { velocita: 7.5, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Robustezza Nanica, Scalpellino, Resistenza al Veleno' },
+  'Nano delle Montagne': { velocita: 7.5, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Robustezza Nanica, Scalpellino, Resistenza al Veleno, Addestramento nelle Armature Naniche' },
   Orco: { velocita: 9, sensi: 'Scurovisione 36 m', taglia: 'Media', tratti: 'Scatto Adrenalinico, Resistenza Implacabile' },
   Mezzorco: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Minaccioso, Resistenza Implacabile, Attacchi Selvaggi' },
   Mezzelfo: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Retaggio Fatato, Versatilità nelle Abilità' },
   Tiefling: { velocita: 9, sensi: 'Scurovisione 18 m', taglia: 'Media', tratti: 'Presenza Ultraterrena, Resistenza Infernale, Eredità Infernale' },
   Umano: { velocita: 9, sensi: '', taglia: 'Media', tratti: 'Pieno di Risorse, Abile, Versatile' },
 };
+// Differenze 5.0 (PHB 2014, "razze") rispetto a SPECIE_DATI (PHB 2024):
+// velocità (nani, gnomi e halfling 7,5 m nella 5.0), scurovisione e tratti
+// delle sottorazze. Si sovrappongono a SPECIE_DATI per i PG 5.0.
+export const SPECIE_DATI_2014 = {
+  Dragonide: { sensi: '', tratti: 'Ascendenza Draconica, Arma a Soffio, Resistenza al Danno' },
+  'Elfo Alto': { tratti: 'Trance, Retaggio Fatato, Sensi Acuti, 1 Trucchetto da Mago, Lingua Extra, Addestramento nelle Armi Elfiche' },
+  'Elfo dei Boschi': { tratti: 'Trance, Retaggio Fatato, Sensi Acuti, Passo Celere, Maschera della Selva, Addestramento nelle Armi Elfiche' },
+  'Elfo Oscuro (Drow)': { tratti: 'Trance, Retaggio Fatato, Sensi Acuti, Sensibilità alla Luce Solare, Magia Drow, Addestramento nelle Armi Drow' },
+  Gnomo: { velocita: 7.5 },
+  'Gnomo delle Foreste': { velocita: 7.5, tratti: 'Astuzia Gnomesca, Illusionista Nato, Parlare con le Piccole Bestie' },
+  'Gnomo delle Rocce': { velocita: 7.5, tratti: 'Astuzia Gnomesca, Conoscenza degli Artefatti, Inventore' },
+  Goliath: { velocita: 9, tratti: 'Atleta Naturale, Resistenza della Pietra, Corporatura Possente, Nato in Montagna' },
+  Halfling: { velocita: 7.5 },
+  Nano: { velocita: 7.5, sensi: 'Scurovisione 18 m' },
+  Orco: { sensi: 'Scurovisione 18 m' },
+};
+
 export const SFINIMENTO_2014 = [
   '',
   'Svantaggio alle prove di caratteristica',

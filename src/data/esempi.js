@@ -1,6 +1,7 @@
 // Personaggi d'esempio pronti all'uso (solo dati, nessuna logica).
 
 export const FLYORA_JSON = {
+  versione: '2024',
   nome: 'Flyora delle Acque Nere',
   classe: 'Stregone',
   sottoclasse: 'Stregoneria della Magia Selvaggia',
@@ -38,7 +39,8 @@ export const FLYORA_JSON = {
   condizioni: [],
   concentrazione: '',
   attacchi: [
-    { id: 1, nome: 'Spada', categoria: 'Azione', bonus: 4, danno: '1d6+2', tipoDanno: 'Perforante', note: 'Accurata, Leggera' },
+    // Spada corta: arma da guerra, lo Stregone 5.5 non è competente (l'Addestramento nelle Armi Elfiche è solo 5.0).
+    { id: 1, nome: 'Spada Corta', categoria: 'Azione', bonus: 2, danno: '1d6+2', tipoDanno: 'Perforante', note: 'Accurata, Leggera (non competente)' },
     { id: 2, nome: 'Pugnale x2', categoria: 'Azione', bonus: 4, danno: '1d4+2', tipoDanno: 'Perforante', note: '6/18m Accurata, Leggera, Lancio' },
     { id: 3, nome: 'Bastone Ferrato (1 mano)', categoria: 'Azione', bonus: 3, danno: '1d6+1', tipoDanno: 'Contundente', note: 'Versatile' },
     { id: 4, nome: 'Bastone Ferrato (2 mani)', categoria: 'Azione', bonus: 3, danno: '1d8+1', tipoDanno: 'Contundente', note: 'Versatile' }
@@ -75,10 +77,12 @@ export const FLYORA_JSON = {
     { id: 2, nome: 'Stregoneria Innata', max: 2, attuali: 2, ricarica: 'Lungo' },
     { id: 3, nome: 'Borsa del Guaritore', max: 10, attuali: 10, ricarica: 'Nessuno' }
   ],
-  privilegi: "Stregoneria Innata\nFonte di Magia\nOnde di Caos",
-  privilegiSottoclasse: "",
+  privilegi: "Stregoneria Innata\nFonte di Magia\nMetamagia",
+  privilegiSottoclasse: "Impulso di Magia Selvaggia\nOnde di Caos",
   metamagie: "Incantesimo Celato, Incantesimo Preciso",
-  trattiSpecie: "Retaggio Fatato\nSensi Acuti\nTrance\n1 Trucchetto da Mago\nAddestramento nelle Armi Elfiche",
+  // Elfo 5.5: niente Addestramento nelle Armi Elfiche né trucchetto da mago a scelta;
+  // il Lignaggio Elfico (Elfo Alto) dà Prestidigitazione e, dal 3°, Individuazione del Magico.
+  trattiSpecie: "Retaggio Fatato\nSensi Acuti\nTrance\nLignaggio Elfico (Elfo Alto)",
   talenti: "Incantatore da Guerra\nGuaritore",
   equipaggiamento: "Focus Arcano (Cristallo)\nBorsa da erborista\nGiaciglio\nLibro (filosofia)\nDotazione da avventuriero\nAbiti da viaggiatore",
   lingue: "Comune, Elfico, Sottocomune",
@@ -88,6 +92,7 @@ export const FLYORA_JSON = {
 
 // Esempio pronto all'uso: Gnomo Mago.
 export const ESEMPIO_GNOMO = {
+  versione: '2014',
   nome: 'Boddynock Folgorio',
   background: 'Sapiente',
   classe: 'Mago',
@@ -111,8 +116,9 @@ export const ESEMPIO_GNOMO = {
   // Sapiente (bg) → arcano, storia (●); Mago (classe) → indagare, religione (★)
   abilita: { arcano: 1, storia: 1, indagare: 2, religione: 2 },
   attacchi: [
-    { id: 1, nome: 'Dardo di Fuoco', bonus: 9, danno: '2d10', tipoDanno: 'Fuoco', note: 'Trucchetto, 36m' },
-    { id: 2, nome: 'Raggio di Gelo', bonus: 9, danno: '2d8', tipoDanno: 'Freddo', note: 'Trucchetto, 18m, -3m velocità' },
+    // +1 della Bacchetta della Guerra Magica (in sintonia) ai tiri per colpire con incantesimo.
+    { id: 1, nome: 'Dardo di Fuoco', bonus: 10, danno: '2d10', tipoDanno: 'Fuoco', note: 'Trucchetto, 36m' },
+    { id: 2, nome: 'Raggio di Gelo', bonus: 10, danno: '2d8', tipoDanno: 'Freddo', note: 'Trucchetto, 18m, -3m velocità' },
     { id: 3, nome: 'Pugnale', bonus: 6, danno: '1d4+2', tipoDanno: 'Perforante', note: 'Accurata, Leggera, Lancio 6/18m' },
   ],
   incantatore: { caratteristica: 'intelligenza' },
@@ -137,8 +143,8 @@ export const ESEMPIO_GNOMO = {
     { livello: 4, nome: 'Invisibilità Superiore', tempo: 'AZ', gittata: 'contatto', note: 'Concentrazione' },
     { livello: 5, nome: 'Cono di Freddo', tempo: 'AZ', gittata: 'cono 18m', note: '8d8, TS COS' },
   ],
-  privilegi: "Recupero Arcano\nPlasmare Incantesimi\nIncantesimo Potenziato",
-  privilegiSottoclasse: "",
+  privilegi: "Lancio di Incantesimi\nRecupero Arcano",
+  privilegiSottoclasse: "Invocatore Sapiente\nPlasmare Incantesimi\nTrucchetto Potente\nInvocazione Potente",
   trattiSpecie: "Astuzia Gnomesca\nConoscenza degli Artefatti\nInventore",
   talenti: 'Adepto Elementale (fuoco): i tuoi incantesimi ignorano la resistenza al fuoco; gli 1 sui dadi di danno da fuoco contano come 2.',
   equipaggiamento: 'Libro degli incantesimi, bacchetta (focus arcano), dotazione da studioso, pozione di guarigione x2',
@@ -233,10 +239,10 @@ export const VAELION_JSON = {
       pesante: false,
       scudi: true
     },
-    armi: "Bastoni ferrati, dardi, falcetti, giavellotti, lance, mazze, pugnali, fionde, scimitarre, spade corte, spade lunghe, archi corti, archi lunghi (Semplici)",
+    armi: "Bastoni ferrati, randelli, dardi, falcetti, giavellotti, lance, mazze, pugnali, fionde, scimitarre, spade corte, spade lunghe, archi corti, archi lunghi (Semplici)",
     strumenti: "Borsa da Erborista"
   },
-  competenzeExtra: "Armature leggere, medie (non metalliche), scudi; Bastoni ferrati, dardi, falcetti, giavellotti, lance, mazze, pugnali, fionde, scimitarre; Spade corte, spade lunghe, archi corti, archi lunghi; Borsa da erborista",
+  competenzeExtra: "Armature leggere, medie (non metalliche), scudi; Bastoni ferrati, randelli, dardi, falcetti, giavellotti, lance, mazze, pugnali, fionde, scimitarre; Spade corte, spade lunghe, archi corti, archi lunghi; Borsa da erborista",
   lingue: "Comune, Sottocomune, Druidico, Silvano, Bestie, Folletti, Elfico",
   attacchi: [
     {
@@ -254,20 +260,20 @@ export const VAELION_JSON = {
       nome: "Randello",
       caratteristica: "forza",
       competenza: true,
-      danno: "1d4-3",
+      danno: "1d4+4",
       tipoDanno: "Contundente",
-      bonus: 1,
-      note: "Arma semplice (Leggera)"
+      bonus: 8,
+      note: "Arma semplice (Leggera), FOR 19 dai Guanti della Forza Orchesca"
     },
     {
       id: "v-a2",
       nome: "Bastone Ferrato",
       caratteristica: "forza",
       competenza: true,
-      danno: "1d6-3",
+      danno: "1d6+4",
       tipoDanno: "Contundente",
-      bonus: 1,
-      note: "Arma semplice (Versatile 1d8-3)"
+      bonus: 8,
+      note: "Arma semplice (Versatile 1d8+4), FOR 19 dai Guanti della Forza Orchesca"
     },
     {
       id: "v-a3",
@@ -284,7 +290,7 @@ export const VAELION_JSON = {
       nome: "Morsa del Gelo",
       caratteristica: "saggezza",
       competenza: true,
-      danno: "2d8",
+      danno: "2d6",
       tipoDanno: "Freddo",
       bonus: 9,
       note: "Trucchetto (TS Costituzione CD 17): svantaggio prox attacco, gittata 18m"
@@ -433,7 +439,7 @@ export const ELEVORN_JSON = {
   incantesimiLista: [],
   maxTrucchetti: 0,
   maxIncantesimi: 4,
-  privilegi: "Stile di Combattimento\nRecuperare Energie\nNemico Prescelto\nEsploratore Naturale\nAttacco Furtivo\nGergo Ladresco\nAzione Scaltra",
+  privilegi: "Stile di Combattimento\nRecuperare Energie\nNemico Prescelto\nEsploratore Naturale\nLancio di Incantesimi\nConsapevolezza Primordiale\nAttacco Extra\nAttacco Furtivo\nMaestria\nGergo Ladresco\nAzione Scaltra",
   privilegiSottoclasse: "",
   trattiSpecie: "Retaggio Fatato\nVersatilità nelle Abilità",
   talenti: "",
@@ -519,7 +525,7 @@ export const WENDELL_JSON = {
       nome: "Arco Corto",
       categoria: "Azione",
       bonus: 6,
-      danno: "1d8+3",
+      danno: "1d6+3",
       tipoDanno: "Perforante",
       note: "Gittata 24/96m, a due mani, 20 frecce"
     }
@@ -572,7 +578,6 @@ export const WENDELL_JSON = {
   ],
   risorse: [
     { id: "auto-ispirazione-bardica", nome: "Ispirazione Bardica (d8)", attuali: 4, max: 4, reset: "breve" },
-    { id: "auto-manto-ispirazione", nome: "Manto di Ispirazione (8 PF temp)", attuali: 4, max: 4, reset: "breve" },
     { id: "auto-manto-maesta", nome: "Manto di Maestà (Comando gratis)", attuali: 1, max: 1, reset: "lungo" },
     { id: "auto-esibizione-estasiante", nome: "Esibizione Estasiante", attuali: 1, max: 1, reset: "breve" }
   ],
@@ -588,7 +593,7 @@ export const WENDELL_JSON = {
   addestramento: {
     armature: { leggera: true, media: false, pesante: false, scudi: false },
     armi: "Semplici, Balestre a mano, Spade corte, Spade lunghe, Stocchi",
-    strumenti: "Liuto, Flauto di Pan, Tamburo, Strumenti da Camuffamento"
+    strumenti: "Liuto, Flauto di Pan, Tamburo, Strumenti da Camuffamento, Kit da Falsario"
   },
   lingue: "Comune, Halfling, Sottocomune",
   aspetto: "Età: 20 anni | Altezza: 1,00 m | Peso: 20 kg | Occhi: Scuri | Carnagione: Chiara | Capelli: Bianchi",
@@ -598,6 +603,7 @@ export const WENDELL_JSON = {
 };
 
 export const LYRIAN_JSON = {
+  versione: '2014',
   nome: 'Lyrian Faenor "Mezzafaccia"',
   sesso: 'maschio',
   background: 'Forestiero',
@@ -654,7 +660,7 @@ export const LYRIAN_JSON = {
     { id: 'att-stocco', nome: 'Stocco', categoria: 'Azione', bonus: 7, danno: '1d8+4', tipoDanno: 'Perforante', note: 'Accurata, Destrezza. +3 Danni con Maledizione della Lama' },
     { id: 'att-arco-lungo', nome: 'Arco Lungo', categoria: 'Azione', bonus: 7, danno: '1d8+4', tipoDanno: 'Perforante', note: 'Munizioni (45/180m), Due Mani. +3 Danni con Maledizione della Lama' },
     { id: 'att-deflagrazione', nome: 'Deflagrazione Occulta', categoria: 'Azione', bonus: 6, danno: '1d10', tipoDanno: 'Forza', note: 'Trucchetto (gittata 36m), 2 raggi da 1d10 forza ciascuno' },
-    { id: 'att-giavellotto', nome: 'Giavellotto / Dardo ad Asta', categoria: 'Azione', bonus: 7, danno: '1d6+4', tipoDanno: 'Perforante', note: 'Lancio (9/36m)' }
+    { id: 'att-giavellotto', nome: 'Giavellotto / Dardo ad Asta', categoria: 'Azione', bonus: 3, danno: '1d6', tipoDanno: 'Perforante', note: 'Lancio (9/36m), usa la Forza (non accurata)' }
   ],
   incantatore: { caratteristica: 'carisma', cdExtra: 0, attaccoExtra: 0 },
   slotIncantesimo: {
@@ -672,7 +678,7 @@ export const LYRIAN_JSON = {
     { id: 'ly-inc-01', nome: 'Deflagrazione Occulta', livello: 0, preparato: true },
     { id: 'ly-inc-02', nome: 'Prestidigitazione', livello: 0, preparato: true },
     { id: 'ly-inc-11', nome: 'Scudo', livello: 1, preparato: true },
-    { id: 'ly-inc-12', nome: 'Colpo Ardente', livello: 1, preparato: true, conc: true }
+    { id: 'ly-inc-12', nome: 'Colpo Irato', livello: 1, preparato: true, conc: true }
   ],
   maxTrucchetti: 2,
   maxIncantesimi: 2,
@@ -700,9 +706,9 @@ export const LYRIAN_JSON = {
   legami: "Porta una profonda cicatrice che gli ricorda costantemente il suo legame indissolubile con la Lama Iettatrice.",
   difetti: "Diffida ciecamente di chi veste armature lucenti e predica verità assolute nei grandi templi delle città.",
   trattiSpecie: "Sensi Acuti\nRetaggio Fatato\nTrance\nPasso Celere\nMaschera della Selva\nAddestramento nelle Armi Elfiche",
-  privilegi: "Stile di Combattimento\nRecuperare Energie\nAzione Impetuosa\nCritico Migliorato\nMaledizione della Lama Iettatrice\nGuerriero Hexblade\nMagia del Patto",
-  privilegiSottoclasse: "",
-  note: "ANAGRAFICA & ASPETTO:\n• Nome: Lyrian Faenor detto \"Mezzafaccia\"\n• Sesso: M | Specie: Elfo dei Boschi | Taglia: Media\n• Classe: Guerriero 4 (Campione) / Warlock 1 (Lama Iettatrice)\n• Background: Forestiero | Allineamento: Neutrale\n• Iniziativa: +4 | Velocità: 10,5 m | CA: 18\n• Caratteristiche: FOR 10 (+0), DES 18 (+4), COS 15 (+2), INT 12 (+1), SAG 13 (+1), CAR 16 (+3)\n• Competenze TS: FOR (+3), COS (+5)\n• Abilità: Atletica (+3), Intimidire (+3), Percezione (+4), Sopravvivenza (+4)\n• Linguaggi: Comune, Elfico, Silvano\n• Strumenti: Flauto di Pan",
+  privilegi: "Stile di Combattimento\nRecuperare Energie\nAzione Impetuosa\nMagia del Patto",
+  privilegiSottoclasse: "Critico Migliorato\nMaledizione della Lama Iettatrice\nGuerriero Hexblade",
+  note: "ANAGRAFICA & ASPETTO:\n• Nome: Lyrian Faenor detto \"Mezzafaccia\"\n• Sesso: M | Specie: Elfo dei Boschi | Taglia: Media\n• Classe: Guerriero 4 (Campione) / Warlock 1 (Lama Iettatrice)\n• Background: Forestiero | Allineamento: Neutrale\n• Iniziativa: +4 | Velocità: 10,5 m | CA: 18\n• Caratteristiche: FOR 10 (+0), DES 18 (+4), COS 15 (+2), INT 12 (+1), SAG 13 (+1), CAR 16 (+3)\n• Competenze TS: FOR (+3), COS (+5)\n• Abilità: Atletica (+3), Intimidire (+6), Percezione (+4), Sopravvivenza (+4)\n• Linguaggi: Comune, Elfico, Silvano\n• Strumenti: Flauto di Pan",
   addestramento: {
     armature: { leggera: true, media: true, pesante: true, scudi: true },
     armi: 'Semplici e da Guerra',

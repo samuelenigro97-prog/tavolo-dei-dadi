@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { t, traduciDato } from '../i18n.js';
 import { C, COLORE_SCUOLA } from './tema.js';
 import { styles } from './stili.js';
-import { INCANTESIMI_DB } from '../data/incantesimi.js';
+import { INCANTESIMI_DB, VARIANTI_EDIZIONE_INCANTESIMI } from '../data/incantesimi.js';
 import { INCANTESIMI_XANATHAR } from '../dati/incantesimi-xanathar.js';
 import { INCANTESIMI_TASHA } from '../dati/incantesimi-tasha.js';
 import {
@@ -19,7 +19,7 @@ import {
 } from '../data/dati5e.js';
 import { TALENTI_XANATHAR } from '../dati/talenti-xanathar.js';
 import { TALENTI_TASHA } from '../dati/talenti-tasha.js';
-import { EFFETTI_CONDIZIONI } from '../data/condizioni.js';
+import { effettiCondizione } from '../data/condizioni.js';
 import { BESTIE, FAMIGLI, EVOCAZIONI, MOSTRI_5E } from '../data/bestiario.js';
 import { GUIDA_ABILITA_5E } from '../data/guidaAbilita5e.js';
 import { TABELLE_BACKGROUND } from '../data/tabelleBackground.js';
@@ -278,7 +278,7 @@ export function CompendioModal({
     // 1. Incantesimi
     const incMap = new Map();
     for (const [nome, d] of Object.entries(INCANTESIMI_DB || {})) {
-      incMap.set(nome.toLowerCase(), { nome, ...d });
+      incMap.set(nome.toLowerCase(), { nome, ...d, ...(VARIANTI_EDIZIONE_INCANTESIMI[nome]?.[is2024 ? '2024' : '2014'] || {}) });
     }
     for (const inc of (INCANTESIMI_XANATHAR || [])) {
       if (inc && inc.nome) {
@@ -485,7 +485,7 @@ export function CompendioModal({
 
     // 8. Condizioni
     for (const c of (CONDIZIONI_5E || [])) {
-      const effObj = EFFETTI_CONDIZIONI[c];
+      const effObj = effettiCondizione(c, is2024 ? '2024' : '2014');
       const desc = typeof effObj === 'string'
         ? effObj
         : (effObj?.[lingua] || effObj?.it || (Array.isArray(effObj) ? effObj.join(' · ') : ''));

@@ -5,6 +5,35 @@
 
 export const NOVITA = [
   {
+    versione: '4.38.0',
+    voci: {
+      it: [
+        'Azioni Bonus si riempie da sola: trucchetti e incantesimi con tempo di lancio "Azione Bonus" (es. Randello Incantato, Parola di Guarigione) compaiono lì e non più in Combattimento.',
+        'In Combattimento, Azioni Bonus e Reazioni la gittata (Tocco, 9m, 18m…) è sempre il primo chip dopo il nome, e tiro per colpire e danni usano gli stessi badge di Trucchetti/Incantesimi.',
+        'Velocità mostra direttamente il totale (con i Poteri) in blu, senza il piccolo "+3m" sotto.',
+        'Randello Incantato ha lo stesso danno ovunque (1d8 + modificatore da incantatore); gli incantesimi a tiro salvezza (es. Morsa del Gelo) mostrano solo la CD, senza tiro per colpire; chip delle proprietà ripuliti (es. "Magico").',
+        'La lista Trucchetti mostra il danno scalato col livello, uguale a Combattimento (es. Frusta di Spine 2d6 al 10°); con le regole 5.5 (2024) il dado di Randello Incantato cresce (d10 al 5°, d12 all\'11°, 2d6 al 17°).',
+        'Regole per edizione: ogni personaggio usa le regole della sua edizione (5.0 = 2014, 5.5 = 2024). Cure con i dadi giusti (Cura Ferite 1d8 nella 5.0, 2d8 nella 5.5) e con il modificatore da incantatore sommato; Tocco Gelido, Produrre Fiamma, Colpo Accurato, Sonno, Guida, Resistenza e altri seguono l\'edizione; riposo lungo con tutti i Dadi Vita nella 5.5; privilegi di sottoclasse 5.0 corretti (es. Campione).',
+        'Specie per edizione (nella 5.0 nani, gnomi e halfling hanno 7,5 m; gli elfi 5.5 hanno il Lignaggio Elfico) e personaggi d\'esempio ricontrollati: attacchi di Vaelion con i Guanti della Forza Orchesca, arco corto di Wendell 1d6, tratti 2024 di Flyora, incantesimo di Lyrian dalla lista giusta.',
+        'Altre regole per edizione: condizioni 5.0/5.5 (Afferrato, Incapacitato, Invisibile, Stordito…, con gli effetti nel tooltip dei chip), Sensi Primordiali del Ranger 5.0 costa uno slot (niente contatore), Colpo Accurato 5.5 fa danni extra solo dal 5° livello, testi inglesi degli incantesimi per edizione, tabelle delle sottoclassi 5.0/5.5 separate.',
+        'Assorbire Elementi, Marchio del Cacciatore, Maledizione e Dardo Incantato non mostrano più un tiro per colpire che non fanno.',
+        'Stregone con dado vita d6 (era d8) e Stregoneria Esplosiva come trucchetto da 1d8 (prima aveva i dati di Onda di Caos).',
+      ],
+      en: [
+        'Bonus Actions fills itself: cantrips and spells with a "Bonus Action" casting time (e.g. Shillelagh, Healing Word) appear there instead of in Combat.',
+        'In Combat, Bonus Actions and Reactions the range (Touch, 9m, 18m…) is always the first chip after the name, and attack/damage rolls use the same badges as Cantrips/Spells.',
+        'Speed now shows the total (including Powers) directly in blue, without the small "+3m" below.',
+        'Shillelagh has the same damage everywhere (1d8 + spellcasting modifier); saving-throw spells (e.g. Frostbite) show only the save DC, no attack roll; property chips cleaned up (e.g. "Magic").',
+        'The Cantrips list shows level-scaled damage, the same as Combat (e.g. Thorn Whip 2d6 at level 10); with 5.5 (2024) rules the Shillelagh die grows (d10 at 5th, d12 at 11th, 2d6 at 17th).',
+        'Rules by edition: every character uses its own edition\'s rules (5.0 = 2014, 5.5 = 2024). Healing spells roll the right dice (Cure Wounds 1d8 in 5.0, 2d8 in 5.5) plus the spellcasting modifier; Chill Touch, Produce Flame, True Strike, Sleep, Guidance, Resistance and others follow the edition; a long rest restores all Hit Dice in 5.5; 5.0 subclass features fixed (e.g. Champion).',
+        'Species by edition (in 5.0 dwarves, gnomes and halflings move 7.5 m; 5.5 elves get Elven Lineage) and the sample characters re-checked: Vaelion\'s attacks with the Gauntlets of Ogre Power, Wendell\'s shortbow 1d6, Flyora\'s 2024 traits, Lyrian\'s spell from the right list.',
+        'More rules by edition: 5.0/5.5 conditions (Grappled, Incapacitated, Invisible, Stunned…, with the effects in the chip tooltip), the 5.0 Ranger\'s Primeval Awareness costs a spell slot (no counter), 5.5 True Strike deals extra damage only from level 5, English spell texts by edition, separate 5.0/5.5 subclass tables.',
+        'Absorb Elements, Hunter\'s Mark, Hex and Magic Missile no longer show an attack roll they don\'t make.',
+        'Sorcerers use a d6 hit die (was d8) and Sorcerous Burst is a 1d8 cantrip (it had Chaos Bolt\'s data).',
+      ],
+    },
+  },
+  {
     versione: '4.37.0',
     voci: {
       it: [

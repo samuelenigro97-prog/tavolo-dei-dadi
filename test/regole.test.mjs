@@ -1202,3 +1202,117 @@ test('meccaniche e potenziamenti di classe 5e (Furtivo, Ira, Smite, Ispirazione)
 
 
 
+
+// v4.38: sezione di Combattimento dal tempo di lancio, gittata come primo chip.
+test('categoriaDaTempoLancio: riconosce Azione Bonus/Reazione/Azione con varianti di maiuscole, spazi e abbreviazioni', async () => {
+  const { categoriaDaTempoLancio } = await import('../src/rules/regole.js');
+  for (const t of ['Azione Bonus', 'azione bonus', '1 Azione Bonus', '1 azione bonus', '  1   Azione   Bonus ', 'AZ BONUS', '1 bonus', 'Bonus Action']) {
+    assert.equal(categoriaDaTempoLancio(t), 'Bonus', t);
+  }
+  for (const t of ['Reazione', 'REAZ', '1 reazione', 'Reaction']) assert.equal(categoriaDaTempoLancio(t), 'Reazione', t);
+  for (const t of ['1 Azione', 'AZ', '1 azione', '1 Azione / 8 ore', 'Action']) assert.equal(categoriaDaTempoLancio(t), 'Azione', t);
+  for (const t of ['', null, undefined, '1 min', '10 min', '1 ora']) assert.equal(categoriaDaTempoLancio(t), null, String(t));
+});
+
+test('tempoLancioIncantesimo: la voce della lista del PG vince, poi il database', async () => {
+  const { tempoLancioIncantesimo, categoriaDaTempoLancio } = await import('../src/rules/regole.js');
+  assert.equal(categoriaDaTempoLancio(tempoLancioIncantesimo('Randello Incantato')), 'Bonus');
+  assert.equal(categoriaDaTempoLancio(tempoLancioIncantesimo('Parola di Guarigione')), 'Bonus');
+  assert.equal(categoriaDaTempoLancio(tempoLancioIncantesimo('Frusta di Spine')), 'Azione');
+  assert.equal(tempoLancioIncantesimo('Frusta di Spine', { tempo: 'Azione Bonus' }), 'Azione Bonus');
+});
+
+test('classificaIncantesimoCombattimento: una cura con tiro è segnalata (per Azioni Bonus) ma non è un attacco', () => {
+  const r = classificaIncantesimoCombattimento({ nome: 'Parola di Guarigione' });
+  assert.equal(r.mostraInCombattimento, false);
+  assert.equal(r.isCura, true);
+  assert.equal(r.haTiroCura, true);
+});
+
+test('gittataAttacco: campo esplicito → nota → dati incantesimo → gittata dell\'arma', async () => {
+  const { gittataAttacco } = await import('../src/rules/regole.js');
+  assert.equal(gittataAttacco({ nome: 'X', gittata: '12m' }), '12m');
+  assert.equal(gittataAttacco({ nome: 'Randello Incantato', isSpell: true, note: 'Magico con SAG, gittata Tocco, durata 1 min' }), 'Tocco');
+  // Inaridire: la nota ha solo la CD, la gittata viene dai dati dell'incantesimo.
+  assert.equal(gittataAttacco({ nome: 'Inaridire', isSpell: true, note: 'CD 17 (TS Costituzione)' }), '9m');
+  assert.equal(gittataAttacco({ nome: 'Morsa del Gelo', isSpell: true }, { gittata: '18m' }), '18m');
+  assert.equal(gittataAttacco({ nome: 'Arco lungo' }, null, { note: 'Munizioni, Pesante, Due mani (45/180 m)' }), '45/180m');
+  assert.equal(gittataAttacco({ nome: 'Clava' }, null, { note: 'Leggera' }), '');
+});
+
+test('calcolaMovimentoESalti: il totale della Velocità mostrato nella scheda include i Poteri (10,5 + 3 = 13,5)', () => {
+  const scheda = { velocita: 10.5, caratteristiche: { forza: 10 }, poteri: [{ id: 'p', nome: 'Patrono', attivo: true, contatori: [], modificatori: [{ bersaglio: 'velocita', valore: 3, fonte: 'Maschera' }] }] };
+  assert.equal(calcolaMovimentoESalti(scheda).velBase, 13.5);
+});
+
+test('calcolaTurnoCombattimento: il movimento del turno usa la Velocità totale (con i Poteri)', () => {
+  const pg = { velocita: 10.5, caratteristiche: { forza: 10 }, poteri: [{ id: 'p', nome: 'Patrono', attivo: true, contatori: [], modificatori: [{ bersaglio: 'velocita', valore: 3, fonte: 'Maschera' }] }] };
+  const t = calcolaTurnoCombattimento(pg, {});
+  assert.equal(t.velBase, 13.5);
+  assert.equal(t.movimentoMax, 13.5);
+  assert.equal(calcolaTurnoCombattimento(pg, { tatticaAttiva: 'scatto' }).movimentoMax, 27);
+});
+
+// v4.38 (2): Randello Incantato, incantesimi a TS, nessun duplicato Azione/Azione Bonus.
+test('dannoRandelloIncantato: dado dell\'incantesimo + mod da incantatore, ignorando un +K vecchio', async () => {
+  const { dannoRandelloIncantato, isRandelloIncantato } = await import('../src/rules/regole.js');
+  assert.equal(dannoRandelloIncantato('1d8', 5), '1d8+5');
+  assert.equal(dannoRandelloIncantato('1d8+3', 5), '1d8+5');
+  assert.equal(dannoRandelloIncantato('1d8', 0), '1d8');
+  assert.equal(dannoRandelloIncantato('1d8', -1), '1d8-1');
+  assert.equal(dannoRandelloIncantato('', 4), '1d8+4');
+  assert.ok(isRandelloIncantato('Randello Incantato') && isRandelloIncantato('Shillelagh') && !isRandelloIncantato('Randello'));
+});
+
+test('caratteristicaTiroSalvezzaIncantesimo: legge la caratteristica del TS', async () => {
+  const { caratteristicaTiroSalvezzaIncantesimo } = await import('../src/rules/regole.js');
+  assert.equal(caratteristicaTiroSalvezzaIncantesimo('Morsa del Gelo', 'Trucchetto (TS Costituzione CD 17)'), 'Costituzione');
+  assert.equal(caratteristicaTiroSalvezzaIncantesimo('Inaridire'), 'Costituzione');
+});
+
+test('categoriaAttaccoSalvato: un incantesimo ad azione bonus salvato come "Azione" va comunque in Azioni Bonus', async () => {
+  const { categoriaAttaccoSalvato } = await import('../src/rules/regole.js');
+  const lista = [{ nome: 'Randello Incantato', livello: 0, tempo: 'Azione Bonus' }, { nome: 'Parola di Guarigione', livello: 1, tempo: '1 azione bonus' }];
+  assert.equal(categoriaAttaccoSalvato({ nome: 'Randello Incantato', isSpell: true, categoria: 'Azione' }, lista), 'Bonus');
+  assert.equal(categoriaAttaccoSalvato({ nome: '✨ Randello Incantato (Shillelagh)', isSpell: true }, []), 'Bonus');
+  assert.equal(categoriaAttaccoSalvato({ nome: 'Parola di Guarigione', isSpell: true, categoria: 'Azione' }, lista), 'Bonus');
+  assert.equal(categoriaAttaccoSalvato({ nome: 'Frusta di Spine', isSpell: true, categoria: 'Bonus' }, []), 'Azione');
+  assert.equal(categoriaAttaccoSalvato({ nome: 'Spada lunga', categoria: 'Azione' }, []), 'Azione');
+  assert.equal(categoriaAttaccoSalvato({ nome: 'Spada lunga' }, []), 'Azione');
+});
+
+test('nessun incantesimo del database con tempo "Azione Bonus" viene classificato in Azione', async () => {
+  const { categoriaAttaccoSalvato } = await import('../src/rules/regole.js');
+  const { INCANTESIMI_DB } = await import('../src/data/incantesimi.js');
+  const bonus = Object.entries(INCANTESIMI_DB).filter(([, d]) => /bonus/i.test(d.tempo || ''));
+  assert.ok(bonus.length > 10);
+  for (const [nome] of bonus) assert.equal(categoriaAttaccoSalvato({ nome, isSpell: true, categoria: 'Azione' }, []), 'Bonus', nome);
+});
+
+// v4.38 (3): scalatura dei trucchetti con un'unica fonte di verità.
+test('dadoRandelloIncantato: 2014 d8 fisso; 2024 d8 → d10 (5°) → d12 (11°) → 2d6 (17°)', async () => {
+  const { dadoRandelloIncantato } = await import('../src/rules/regole.js');
+  for (const liv of [1, 5, 10, 11, 17, 20]) assert.equal(dadoRandelloIncantato(liv, '2014'), '1d8', `2014 liv ${liv}`);
+  const attesi = { 1: '1d8', 4: '1d8', 5: '1d10', 10: '1d10', 11: '1d12', 16: '1d12', 17: '2d6', 20: '2d6' };
+  for (const [liv, dado] of Object.entries(attesi)) assert.equal(dadoRandelloIncantato(Number(liv), '2024'), dado, `2024 liv ${liv}`);
+});
+
+test('dannoTrucchettoScalato: stessi valori per lista Trucchetti e Combattimento', async () => {
+  const { dannoTrucchettoScalato, dannoBaseTrucchetto } = await import('../src/rules/regole.js');
+  const opz = (livello, versione = '2014', modIncantatore = 5) => ({ livello, versione, modIncantatore });
+  // Frusta di Spine: 1d6 → 2d6 al 10° (e non cambia se il valore è già scalato)
+  assert.equal(dannoTrucchettoScalato('Frusta di Spine', '1d6', opz(10)), '2d6');
+  assert.equal(dannoTrucchettoScalato('Frusta di Spine', '2d6', opz(10)), '2d6');
+  assert.equal(dannoTrucchettoScalato('Frusta di Spine', '1d6', opz(4)), '1d6');
+  assert.equal(dannoTrucchettoScalato('Frusta di Spine', '1d6', opz(11)), '3d6');
+  assert.equal(dannoTrucchettoScalato('Frusta di Spine', '1d6', opz(17)), '4d6');
+  // Morsa del Gelo: il danno di base viene dai dati dell'incantesimo (1d6), non da un vecchio "2d8" salvato
+  assert.equal(dannoBaseTrucchetto('Morsa del Gelo', null, '2d8'), '1d6');
+  assert.equal(dannoTrucchettoScalato('Morsa del Gelo', dannoBaseTrucchetto('Morsa del Gelo', null, '2d8'), opz(10)), '2d6');
+  // Randello Incantato: dado per edizione/livello + mod da incantatore
+  assert.equal(dannoTrucchettoScalato('Randello Incantato', '1d8', opz(10, '2014')), '1d8+5');
+  assert.equal(dannoTrucchettoScalato('Randello Incantato', '1d8', opz(10, '2024')), '1d10+5');
+  assert.equal(dannoTrucchettoScalato('Randello Incantato', '1d8', opz(11, '2024', 4)), '1d12+4');
+  assert.equal(dannoTrucchettoScalato('Randello Incantato', '1d8', opz(17, '2024', 3)), '2d6+3');
+  assert.equal(dannoTrucchettoScalato('Randello Incantato', '1d8', opz(3, '2024', 0)), '1d8');
+});

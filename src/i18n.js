@@ -191,7 +191,7 @@ export const DIZIONARIO = {
     'vital.cura': 'Recupera punti ferita',
     'vital.max_pf_tooltip': 'I Punti Ferita massimi si modificano dal Level Up.',
     'vital.riposo_breve_tip': 'Riposo Breve: recupera risorse, incantesimi Warlock e permette di spendere Dadi Vita',
-    'vital.riposo_lungo_tip': 'Riposo Lungo: recupera tutti i PF, metà dei Dadi Vita, slot incantesimo e risorse',
+    'vital.riposo_lungo_tip': 'Riposo Lungo: recupera tutti i PF, metà dei Dadi Vita (5.0) o tutti (5.5), slot incantesimo e risorse',
     'vital.temp_chiudi': ')',
     
     // Sezioni Scheda
@@ -288,7 +288,7 @@ export const DIZIONARIO = {
     'vital.dadi_vita_tooltip': 'Tieni premuto e rilascia: spendi un dado vita per curarti. Il numero di dadi è pari al livello.',
     'vital.dado_tipo_tooltip': 'Tipo di dado vita: fisso dalla classe (d6 mago/stregone, d8 la maggior parte, d10 guerriero/paladino/ranger, d12 barbaro)',
     'vital.spesi': 'Spesi:',
-    'vital.spesi_tooltip': 'Dadi vita spesi: scegli quanti ne hai usati (ne recuperi metà a ogni riposo lungo)',
+    'vital.spesi_tooltip': 'Dadi vita spesi: scegli quanti ne hai usati (al riposo lungo ne recuperi metà nella 5.0, tutti nella 5.5)',
     'vital.usa': 'Usa',
     'vital.usa_tooltip': 'Usa un dado vita: tira 1 dado + mod. Costituzione e recupera quei PF',
     'vital.riposo_breve': 'Breve',
@@ -535,7 +535,7 @@ export const DIZIONARIO = {
     'log.fallimento': '💀 FALLIMENTO',
     'log.nota_ph': 'Nota (facoltativa)…',
     'log.elimina_tooltip': 'Elimina questa voce',
-    'rest.lungo_conferma': 'Riposo lungo: PF al massimo, slot incantesimo recuperati, meta dei dadi vita, risorse ricaricate, concentrazione annullata e uno sfinimento in meno. Procedere?',
+    'rest.lungo_conferma': 'Riposo lungo: PF al massimo, slot incantesimo recuperati, metà dei dadi vita (5.0) o tutti (5.5), risorse ricaricate, concentrazione annullata e uno sfinimento in meno. Procedere?',
     'rest.breve_conferma': 'Riposo breve: ricarica le risorse a riposo breve e spendi un dado vita per curarti. Procedere?',
     'rest.lungo_fatto': 'PF al massimo, slot e risorse recuperati',
     'rest.breve_fatto': 'risorse brevi ricaricate + dado vita',
@@ -1064,7 +1064,7 @@ export const DIZIONARIO = {
     'vital.cura': 'Heal HP',
     'vital.max_pf_tooltip': 'Max HP is modified on Level Up.',
     'vital.riposo_breve_tip': 'Short Rest: recover resources, Warlock spells and spend Hit Dice',
-    'vital.riposo_lungo_tip': 'Long Rest: recover all HP, half Hit Dice, spell slots and resources',
+    'vital.riposo_lungo_tip': 'Long Rest: recover all HP, half your Hit Dice (5.0) or all of them (5.5), spell slots and resources',
     'vital.temp_chiudi': ')',
 
     // Sezioni Scheda
@@ -1161,7 +1161,7 @@ export const DIZIONARIO = {
     'vital.dadi_vita_tooltip': 'Press and hold, then release: spend a Hit Die to heal. The number of dice equals your level.',
     'vital.dado_tipo_tooltip': 'Hit Die type: fixed by class (d6 wizard/sorcerer, d8 most, d10 fighter/paladin/ranger, d12 barbarian)',
     'vital.spesi': 'Spent:',
-    'vital.spesi_tooltip': 'Hit Dice spent: pick how many you have used (you recover half on each long rest)',
+    'vital.spesi_tooltip': 'Hit Dice spent: pick how many you have used (a long rest recovers half in 5.0, all of them in 5.5)',
     'vital.usa': 'Use',
     'vital.usa_tooltip': 'Use a Hit Die: roll 1 die + Constitution mod. and recover those HP',
     'vital.riposo_breve': 'Short',
@@ -1408,7 +1408,7 @@ export const DIZIONARIO = {
     'log.fallimento': '💀 FUMBLE',
     'log.nota_ph': 'Note (optional)…',
     'log.elimina_tooltip': 'Delete this entry',
-    'rest.lungo_conferma': 'Long rest: full HP, spell slots recovered, half your Hit Dice, resources recharged, concentration ended and one less exhaustion. Proceed?',
+    'rest.lungo_conferma': 'Long rest: full HP, spell slots recovered, half your Hit Dice (5.0) or all of them (5.5), resources recharged, concentration ended and one less exhaustion. Proceed?',
     'rest.breve_conferma': 'Short rest: recharge short-rest resources and spend a Hit Die to heal. Proceed?',
     'rest.lungo_fatto': 'Full HP, slots and resources recovered',
     'rest.breve_fatto': 'short-rest resources recharged + Hit Die',
@@ -1886,7 +1886,7 @@ const DATI_EN = {
   'Mantello della Protezione': 'Cloak of Protection', 'Perla del Potere': 'Pearl of Power',
   'Pozione di Respirare sott’Acqua': 'Potion of Water Breathing', 'Pozione di Invisibilità': 'Potion of Invisibility', 'Antitossina': 'Antitoxin',
   // Reazioni & Incantesimi di Reazione
-  'Controincantesimo': 'Counterspell', 'Caduta Morbida': 'Feather Fall', 'Assorbire Elementi': 'Absorb Elements',
+  'Controincantesimo': 'Counterspell', 'Caduta Morbida': 'Feather Fall', 'Assorbire Elementi': 'Absorb Elements', 'Stregoneria Esplosiva': 'Sorcerous Burst', 'Onda di Caos': 'Chaos Bolt',
   'Parola di Ritorno': 'Word of Recall', 'Rappresaglia Infernale': 'Hellish Rebuke',
   'Attacco di Opportunità': 'Opportunity Attack', 'Schivata Prodigiosa': 'Uncanny Dodge', 'Deviare Proiettili': 'Deflect Missiles',
   'Parata': 'Parry', 'Intercettare': 'Interception', 'Protezione': 'Protection', 'Sentinella': 'Sentinel',

@@ -2,6 +2,197 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.38.0] – 2026-09-26
+
+### Corretto
+- **Azioni Bonus vuota anche con incantesimi ad azione bonus**: un
+  incantesimo salvato tra gli attacchi (es. Randello Incantato) finiva
+  sempre in Combattimento, perché la sezione veniva dal campo `categoria`
+  (che l'import imposta ad "Azione" di default) invece che dal tempo di
+  lancio. Ora la sezione di ogni incantesimo viene dal suo **tempo di
+  lancio** (voce della lista → database → descrizione), riconosciuto in
+  modo tollerante (`categoriaDaTempoLancio`: maiuscole, spazi, accenti,
+  "1 Azione Bonus", "AZ BONUS", "Bonus Action", "REAZ"…). Randello
+  Incantato non è più duplicato in Combattimento.
+- **Cure ad azione bonus**: le cure con un tiro (es. Parola di Guarigione
+  2d4) compaiono in Azioni Bonus, senza un bonus per colpire finto. In
+  Combattimento (Azione) le cure restano fuori come prima.
+- **Gittata sempre primo chip**: in Combattimento, Azioni Bonus e Reazioni
+  la gittata/portata (🎯 Tocco, 9m, 18m, gittata delle armi a distanza) è
+  sempre il primo chip dopo il nome, anche quando la nota non la scrive
+  (es. Inaridire mostrava solo la CD). Rimosso il chip "📏 3m" di portata
+  che compariva per errore su Frusta di Spine (la portata è delle armi).
+- **Velocità**: il riquadro mostrava la velocità base (10,5m) con un
+  piccolo "+3m" sotto. Ora mostra il **totale vero** (base + Poteri, con lo
+  Sfinimento applicato: 13,5m) in **blu** quando è modificato, con il
+  dettaglio nel tooltip; 1 click modifica sempre la velocità base. Anche
+  il movimento del turno (sezione Azioni) usa ora il totale.
+- **Randello Incantato: stesso danno ovunque**: in Combattimento c'era
+  "1d8+5" (valore salvato a mano) e in Trucchetti "1d8". Ora entrambi usano
+  un'unica fonte di verità, `dannoRandelloIncantato`: dado dai dati
+  dell'incantesimo + modificatore della caratteristica da incantatore (5e:
+  Shillelagh usa la caratteristica da incantatore per attacco E danni), con
+  attacco = competenza + mod. Un "+K" salvato vecchio viene ignorato.
+- **Incantesimi a tiro salvezza senza tiro per colpire**: l'attacco salvato
+  di Morsa del Gelo mostrava "+9" per colpire. Ora ogni incantesimo a TS
+  (salvato o dalla lista, anche in Trucchetti/Incantesimi) mostra solo il
+  badge della CD (🎲 Costituzione · CD 17, calcolata `8 + competenza + mod`),
+  che sostituisce anche il chip CD ripetuto nella nota.
+- **Chip proprietà pulito**: da "Trucchetto (Attacco Magico): trascina 3m"
+  usciva il chip "Magico): trascina 3m". `estraiCategorieNota` ora si ferma
+  a parentesi/due punti/"•" (→ "Magico"), mantenendo interi "Magico con SAG
+  (Randello/Bastone)", "Versatile (1d8)", "Versatile 1d8-3", "Maestria: …".
+- **Trucchetti scalati col livello anche nella lista Trucchetti**: la lista
+  mostrava il danno base (Frusta di Spine 1d6) mentre Combattimento lo
+  scalava (2d6 al 10°). Ora una sola funzione, `dannoTrucchettoScalato`,
+  calcola il danno di tutti i trucchetti in entrambe le sezioni (e nel tiro):
+  danno di base dalla voce della lista/dati dell'incantesimo
+  (`dannoBaseTrucchetto`, il valore salvato nell'attacco è solo un ripiego)
+  × 1/2/3/4 dadi al 1°/5°/11°/17°. Per Vaelion l'attacco salvato di Morsa del
+  Gelo passa da "2d8" (dado sbagliato) a "2d6", come i dati (1d6 freddo).
+- **Randello Incantato scala con le regole 2024**: `dadoRandelloIncantato`
+  segue l'edizione del personaggio — 5.0 (2014): d8 fisso, come i dati
+  dell'incantesimo nel repo; 5.5 (2024): d8 → d10 al 5° → d12 all'11° → 2d6
+  al 17° — sempre + modificatore da incantatore, uguale in Azioni Bonus e
+  Trucchetti. Vaelion è 5.0 (forzato da `migrazioneRegoleVaelion`), quindi
+  resta 1d8+5.
+- `categoriaAttaccoSalvato` (pura, testata su tutti gli incantesimi "Azione
+  Bonus" del database): un incantesimo ad azione bonus non compare mai in
+  Azione, anche se salvato con `categoria: 'Azione'`.
+- **Regole per edizione del personaggio (5.0 = PHB 2014, 5.5 = PHB 2024)**
+  — audit completo; ogni PG usa le regole della propria edizione:
+  - **Incantesimi con varianti per edizione** (`VARIANTI_EDIZIONE_INCANTESIMI`
+    + `setEdizioneIncantesimi`, sincronizzata da `setEdizioneAttuale`): il
+    database mescolava le edizioni (Cura Ferite 2d8 della 2024 accanto a
+    Tocco Gelido 36m della 2014). Ora dadi, tempo, gittata, concentrazione
+    e testo seguono l'edizione del PG: Cura Ferite 1d8/2d8, Parola di
+    Guarigione 1d4/2d4, Parola di Guarigione di Massa 1d4/2d4, Cura Ferite
+    di Massa 3d8/5d8, Tocco Gelido 36m 1d8 / tocco 1d10, Produrre Fiamma
+    azione 9m / azione bonus 18m, Colpo Accurato (2014: vantaggio, niente
+    danni), Arma Spirituale e Interdizione alle Lame (concentrazione solo
+    2024), Marchio del Cacciatore (forza nella 2024), Sonno (5d8 PF / TS
+    Saggezza), Guida e Resistenza (effetto diverso; Guida è un'azione con
+    concentrazione in entrambe le edizioni), Randello Incantato. Anche il
+    Compendio applica le varianti.
+  - **Valori salvati dell'altra edizione** (`valoreIncantesimoPerEdizione`):
+    un valore salvato che coincide con quello dell'altra edizione (es.
+    "Cura Ferite 2d8" rimasto su un PG 5.0) viene mostrato con il valore
+    della propria edizione; un valore personalizzato resta. I dati salvati
+    non vengono modificati.
+  - **Cure + modificatore**: Cura Ferite, Parola di Guarigione (anche di
+    Massa), Cura Ferite di Massa e Preghiera di Guarigione sommano il
+    modificatore da incantatore al tiro (Vaelion: Parola di Guarigione
+    1d4+5, Cura Ferite 1d8+5) — `dannoCuraConModificatore`. Nella lista
+    incantesimi una cura non mostra più un tiro per colpire finto.
+  - **Riposo lungo**: recuperava sempre metà dei Dadi Vita; nella 5.5 si
+    recuperano tutti (`dadiVitaRecuperatiRiposoLungo`). Testi aggiornati.
+  - **Sfinimento**: senza `versione` il PG era trattato come 2014, mentre
+    il resto della scheda usa la 2024: ora il default è coerente.
+  - **Controllo sottoclasse**: il controllo "sottoclasse prima del livello
+    di sblocco" non scattava mai (argomenti sbagliati a
+    `sottoclasseLivPer`); ora usa il livello dell'edizione del PG (es.
+    Druido 2° nella 5.0, 3° nella 5.5).
+  - **Privilegi di sottoclasse 5.0** (`SUBCLASS_PRIVILEGI_2014`): la tabella
+    era solo 2024 anche per i PG 5.0 (es. Campione con "Guerriero Eroico"
+    al 10° invece di "Stile di Combattimento Aggiuntivo"). Aggiunte le
+    versioni 2014 di Campione, Berserker, Cacciatore, Signore delle Bestie,
+    Assassino, Collegio della Sapienza, Circolo della Terra/Luna,
+    Giuramento di Devozione, Stregoneria Draconica/Magia Selvaggia;
+    elenco senza doppioni (privilegi ripetuti al 2°/3° livello).
+  - **Invocazioni del Warlock**: il massimo usava le regole globali invece
+    dell'edizione del PG.
+  - **Maestria nelle armi** (solo 2024): una nota salvata "Maestria: …" su
+    un PG 5.0 non diventa più un chip in Combattimento.
+  - **Specie/razze per edizione** (`SPECIE_DATI_2014`): velocità e tratti
+    automatici erano solo 2024 (o misti). Nella 5.0 nani, gnomi e halfling
+    hanno 7,5 m (le sottorazze solo 5.0 — Halfling Piedelesto/Tozzo, Nano
+    delle Colline/Montagne — ora 7,5 m sempre), il Dragonide non ha
+    scurovisione, l'Elfo Alto/dei Boschi/Drow mantiene i tratti 2014
+    (Addestramento nelle Armi Elfiche, trucchetto da mago…). Nella 5.5 gli
+    elfi e gli gnomi ricevono il **Lignaggio** (con spiegazione) invece dei
+    tratti 2014.
+  - **Privilegi della Scuola di Invocazione 5.0** (Trucchetto Potente al 6°).
+- **Personaggi forniti con l'app** (`src/data/esempi.js`), controllati uno a
+  uno con le regole della loro edizione:
+  - Vaelion: Randello e Bastone Ferrato usavano FOR 4 (+1, 1d4-3) ignorando
+    i Guanti della Forza Orchesca (FOR 19): ora +8, 1d4+4 / 1d6+4 (1d8+4);
+    attacco salvato di Morsa del Gelo 2d6 (era 2d8); competenza nei randelli.
+  - Wendell: Arco Corto 1d6+3 (era 1d8); tolto il contatore separato "Manto
+    di Ispirazione" (spende un uso di Ispirazione Bardica); Kit da Falsario
+    del Ciarlatano.
+  - Flyora (5.5): tratti dell'Elfo 2024 (niente Addestramento nelle Armi
+    Elfiche/trucchetto da mago 2014, sì Lignaggio Elfico); la spada corta
+    è un'arma da guerra senza competenza (+2, era +4); Metamagia e
+    privilegi della Magia Selvaggia nel posto giusto; edizione esplicita.
+  - Boddynock e Lyrian: edizione 5.0 esplicita (tratti Gnomo delle Rocce
+    2014, Lama Iettatrice e Forestiero esistono solo nella 5.0; senza
+    campo erano trattati come 5.5). Boddynock: +1 della Bacchetta della
+    Guerra Magica ai tiri con incantesimo, privilegi di sottoclasse
+    separati. Lyrian: "Colpo Ardente" (Paladino/Ranger) sostituito da
+    "Colpo Irato" della lista della Lama Iettatrice; giavellotto con la
+    Forza (+3, 1d6; non è accurato); privilegi di sottoclasse separati.
+  - Elevorn: aggiunti i privilegi mancanti (Lancio di Incantesimi,
+    Consapevolezza Primordiale, Attacco Extra, Maestria).
+- **Condizioni per edizione** (`effettiCondizione(nome, versione)` in
+  `condizioni.js`, usata da `riepilogoCondizioni` e dal Compendio): nella
+  5.5 Afferrato dà svantaggio agli attacchi contro chi non ti afferra e ti
+  permette di trascinare; Incapacitato toglie anche le azioni bonus, la
+  parola e dà svantaggio all'iniziativa (ereditato da Paralizzato,
+  Pietrificato, Privo di sensi e Stordito); Invisibile dà vantaggio
+  all'iniziativa; Stordito non azzera più la velocità. Nella 5.0 restano gli
+  effetti 2014. Nuovi effetti: vantaggio agli attacchi, niente azioni bonus,
+  concentrazione interrotta, vantaggio/svantaggio all'iniziativa. I chip
+  delle condizioni nella scheda mostrano nel tooltip gli effetti
+  dell'edizione del PG.
+- **Ranger 5.0: Sensi Primordiali (Consapevolezza Primordiale) costa uno
+  slot incantesimo**: non viene più creato il contatore "Sensi Primordiali"
+  (mod. SAG usi / riposo lungo) che non esiste nelle regole 2014; spiegazione
+  aggiornata (1 minuto per livello dello slot, 1,5 km / 9 km nel terreno
+  prescelto). Un contatore già salvato su una scheda non viene toccato: si
+  può eliminare a mano.
+- **Colpo Accurato 5.5**: il danno radiante extra parte dal 5° livello
+  (1d6, 2d6 all'11°, 3d6 al 17°); ai livelli 1-4 non c'è danno extra
+  (prima mostrava 1d6 dal 1° e 2d6 al 5°). Nella 5.0 non fa danni.
+- **Testi inglesi degli incantesimi per edizione**: Cura Ferite, Parola di
+  Guarigione (anche di Massa), Cura Ferite di Massa, Tocco Gelido, Produrre
+  Fiamma, Colpo Accurato, Arma Spirituale, Sonno, Guida, Resistenza,
+  Interdizione alle Lame e Randello Incantato hanno in inglese il testo
+  2014 o 2024 secondo l'edizione del PG (`EN_VARIANTI_INCANTESIMI`), come
+  già in italiano.
+- **Incantesimi senza tiro per colpire**: Assorbire Elementi (il danno va
+  sul tuo prossimo colpo in mischia), Marchio del Cacciatore, Maledizione e
+  Dardo Incantato (colpisce sempre) non mostrano più il badge 🎯 nella
+  lista Incantesimi né un bonus d'attacco in Combattimento.
+- **Tabelle delle sottoclassi separate 5.0/5.5**
+  (`tabellaPrivilegiSottoclasse`): le tabelle che mescolavano la riga 5.0
+  (1°/2° livello) con quella 5.5 (3° livello) mostrano solo quella giusta.
+  5.0: Domini (1°, 2°, 6°, 8°, 17°; Incantesimi del Dominio al 1°), Circoli
+  (2°), Scuole di magia (2°), Origini stregonesche e Patroni (1°) senza il
+  doppione del 3°. 5.5 (sottoclassi del Manuale 2024): solo dal 3°, e i
+  Domini senza l'8°. Le sottoclassi solo 5.0 restano complete anche su un
+  PG 5.5. Tabelle 2014 proprie per Collegio del Valore (Competenze Bonus),
+  Guerriero della Mano Aperta (11° Tranquillità; 5.5: Passo Lesto),
+  Guerriero dell'Ombra (11° Manto di Ombre, 17° Opportunista; 5.5: Passo
+  d'Ombra Migliorato / Manto di Ombre), Giuramento degli Antichi (Scacciare
+  l'Infedele solo 5.0) e Giuramento di Vendetta (Abiurare Nemico, 5.0).
+  Anche il riepilogo del passaggio di livello usa la tabella dell'edizione.
+- **Stregone con dado vita d6**: `DADO_VITA_CLASSE` dava d8 allo Stregone
+  (d6 sia nella 5.0 sia nella 5.5); i dadi vita, ricalcolati a ogni
+  caricamento, tornavano sempre 4d8 per Flyora.
+- **Stregoneria Esplosiva è il trucchetto 1d8 (Sorcerous Burst, 5.5)**: nel
+  database c'erano i dati di Onda di Caos (1° livello, 2d8+1d6); ora è un
+  trucchetto da 1d8 (36m, tipo a scelta, ogni 8 fa tirare un d8 in più) che
+  scala a 2d8/3d8/4d8 al 5°/11°/17°. Onda di Caos resta com'era.
+- **Rimossi `public/Vaelion.json` e `public/Flyora.json`**: non erano usati
+  dall'app (nessun riferimento nel codice) ed erano superati dai personaggi
+  di esempio in `src/data/esempi.js`.
+
+### Cambiato
+- **Tiro per colpire e danni con gli stessi badge di Incantesimi**:
+  Combattimento, Azioni Bonus e Reazioni usano ora le stesse "pillole" di
+  Trucchetti/Incantesimi (🎯 +9 giallo fisso, 💥 1d6 Perforante 🎲 rosso),
+  componenti condivisi `BadgeTiroColpire`/`BadgeTiroDanno`. 1 click = tiro.
+
 ## [4.37.0] – 2026-09-24
 
 ### Cambiato

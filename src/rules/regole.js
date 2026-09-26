@@ -7,12 +7,12 @@ import { CLASSI, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, SLOT_FULL_CASTER, SLOT
   TS_CLASSE, COMPETENZE_CLASSE, COMPETENZE_SPECIE, BACKGROUND_COMPETENZE,
   MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, PE_PER_LIVELLO, REAZIONI_5E, ARMI_5E, ARMATURE_5E } from '../data/dati5e.js';
 import { modificatore, conSegno, bonusCompetenzaDaLivello } from './dadi.js';
-import { punteggioCaratteristica, effettiSfinimento, trasformazioneAttiva } from './scheda.js';
+import { punteggioCaratteristica, effettiSfinimento, trasformazioneAttiva, estraiCategorieNota } from './scheda.js';
 import { bonusPotereBersaglio } from './poteri.js';
 import { spiegaIncantesimo } from '../data/spiegazioni.js';
-import { INCANTESIMI_DB, datiIncantesimo } from '../data/incantesimi.js';
+import { INCANTESIMI_DB, datiIncantesimo, valoreIncantesimoPerEdizione } from '../data/incantesimi.js';
 import { ABILITA, CARATTERISTICHE } from '../data/caratteristiche.js';
-import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI } from '../data/condizioni.js';
+import { EFFETTI_CONDIZIONI, ETICHETTE_EFFETTI, effettiCondizione } from '../data/condizioni.js';
 import { GUIDA_ABILITA_5E } from '../data/guidaAbilita5e.js';
 
 /** Restituisce 'guerriero'/'ladro' se la scheda è un "terzo incantatore" (la
@@ -489,18 +489,218 @@ export function scalaDannoTrucchetto(danno, livello = 1, nome = '') {
  * datiIncantesimo() non riporta la descrizione (per non duplicare il testo),
  * quindi per riconoscere "tiro salvezza" nel testo serve spiegaIncantesimo().
  */
+/**
+ * Incantesimi con un danno ma SENZA un proprio tiro per colpire: il danno si
+ * aggiunge ai tuoi colpi (Assorbire Elementi, Marchio del Cacciatore,
+ * Maledizione) oppure colpisce in automatico (Dardo Incantato). Niente badge 🎯.
+ */
+export const INCANTESIMI_SENZA_TIRO_PER_COLPIRE = new Set([
+  'assorbire elementi', 'absorb elements',
+  'marchio del cacciatore', "hunter's mark", 'hunter’s mark',
+  'maledizione', 'hex',
+  'dardo incantato', 'magic missile',
+]);
+
+export function incantesimoSenzaTiroPerColpire(nome) {
+  const n = String(nome || '').replace(/^✨\s*/, '').replace(/\s*\(.*$/, '').trim().toLowerCase();
+  return INCANTESIMI_SENZA_TIRO_PER_COLPIRE.has(n);
+}
+
 export function classificaIncantesimoCombattimento(s) {
   const db = datiIncantesimo(s?.nome) || {};
   const tipoDanno = s?.tipoDanno || db.tipoDanno || '';
-  if (tipoDanno === 'Guarigione') return { mostraInCombattimento: false, isTS: false };
   const d = dettagliIncantesimo(s?.nome) || {};
+  // Cura: non è un attacco (niente bonus per colpire finto) e non va nella
+  // sezione Azione; `isCura` + `haTiroCura` servono però ad Azioni Bonus,
+  // dove una cura con tiro (es. Parola di Guarigione 2d4) resta utile.
+  if (tipoDanno === 'Guarigione') {
+    const dannoCura = s?.danno || d.danno || db.danno || '';
+    return { mostraInCombattimento: false, isTS: false, isCura: true, haTiroCura: Boolean(dannoCura) };
+  }
   const desc = (s?.note || '') + ' ' + (spiegaIncantesimo(s?.nome) || '') + ' ' + (db.desc || '');
   const danno = s?.danno || d.danno || db.danno || '';
   const isTS = /ts (\w+)|tiro salvezza|saving throw/i.test(desc);
   const haAttacco = /attacco|attack|mischia|distanza|tocco/i.test(desc) || Boolean(db.danno || d.danno);
   // TS con danni + attacchi con danni (o spell con danno es. Dardo Incantato, Randello Incantato)
   const mostraInCombattimento = Boolean(danno && (isTS || haAttacco || /dardo incantato|magic missile|randello incantato|shillelagh/i.test(s?.nome || '')));
-  return { mostraInCombattimento, isTS };
+  return { mostraInCombattimento, isTS, senzaTiroPerColpire: !isTS && incantesimoSenzaTiroPerColpire(s?.nome) };
+}
+
+/**
+ * Sezione di Combattimento (Azione / Azioni Bonus / Reazioni) a partire dal
+ * TEMPO DI LANCIO di un incantesimo, tollerante alle varianti che compaiono
+ * nei dati e nelle schede importate: maiuscole/minuscole, spazi multipli,
+ * accenti, abbreviazioni ("AZ BONUS", "REAZ", "1 bonus") e forme inglesi
+ * ("Bonus Action", "Reaction"). Restituisce null se il testo non indica
+ * nessuna delle tre (es. "1 min", "10 min", "1 ora": incantesimi fuori
+ * combattimento).
+ */
+export function categoriaDaTempoLancio(tempo) {
+  const t = String(tempo || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!t) return null;
+  if (/\bbonus\b/.test(t)) return 'Bonus';
+  if (/\breaz|\breaction\b/.test(t)) return 'Reazione';
+  if (/\baz\b|\bazione\b|\baction\b/.test(t)) return 'Azione';
+  return null;
+}
+
+/**
+ * Tempo di lancio "vero" di un incantesimo: prima quello scritto sulla voce
+ * della lista incantesimi del PG (se c'è), poi quello del database, infine
+ * quello dedotto dalla descrizione (dettagliIncantesimo).
+ */
+export function tempoLancioIncantesimo(nome, voceLista = null) {
+  const pulito = String(nome || '').replace(/^✨\s*/, '').trim();
+  // Tempo per l'edizione attiva: un valore salvato dell'altra edizione (es.
+  // Produrre Fiamma "1 Azione" su un PG 5.5) non sposta la categoria.
+  return valoreIncantesimoPerEdizione({ ...(voceLista || {}), nome: pulito }, 'tempo') || dettagliIncantesimo(pulito)?.tempo || '';
+}
+
+/**
+ * Gittata/portata da mostrare come PRIMO chip di una riga di Combattimento.
+ * Ordine: campo esplicito `gittata` dell'attacco → "gittata ..." scritta
+ * nella nota → (incantesimi) voce della lista / database / descrizione →
+ * (armi a distanza o da lancio) la gittata "(6/18 m)" nelle note dell'arma.
+ * Stringa vuota se non si ricava nulla (es. arma da mischia senza portata).
+ */
+export function gittataAttacco(attacco, voceLista = null, armaDb = null) {
+  if (!attacco) return '';
+  if (attacco.gittata) return String(attacco.gittata).trim();
+  const daNota = estraiCategorieNota(attacco.note).find((c) => c.categoria === 'gittata');
+  if (daNota?.testo) return daNota.testo;
+  if (attacco.isSpell) {
+    const pulito = String(attacco.nome || '').replace(/^✨\s*/, '').trim();
+    return String(voceLista?.gittata || datiIncantesimo(pulito)?.gittata || dettagliIncantesimo(pulito)?.gittata || '').trim();
+  }
+  const m = String(armaDb?.note || '').match(/\((\d+(?:[.,]\d+)?\s*\/\s*\d+(?:[.,]\d+)?\s*m)\)/i);
+  return m ? m[1].replace(/\s+/g, '') : '';
+}
+
+/** Il nome indica Randello Incantato (Shillelagh), anche nelle varianti storiche. */
+export function isRandelloIncantato(nome) {
+  return /randello incantato|shillelagh|bastone incantato/i.test(String(nome || ''));
+}
+
+/**
+ * Danno di Randello Incantato (Shillelagh), UNICA fonte di verità usata sia
+ * dalla lista Trucchetti sia da Combattimento/Azioni Bonus: il dado
+ * dell'arma incantata (1d8 dai dati dell'incantesimo) + il modificatore
+ * della caratteristica da incantatore (5e: l'incantesimo usa la
+ * caratteristica da incantatore al posto della Forza per attacco e danni).
+ * Un eventuale "+K" già scritto nel dado di partenza viene ignorato, così un
+ * valore salvato vecchio (es. "1d8+5" con SAG cambiata) non resta indietro.
+ */
+export function dannoRandelloIncantato(dannoBase, modIncantatore) {
+  const m = String(dannoBase || '').trim().match(/^(\d*d\d+)/i);
+  const dado = m ? m[1] : '1d8';
+  const mod = Number(modIncantatore) || 0;
+  return mod ? `${dado}${mod > 0 ? '+' : ''}${mod}` : dado;
+}
+
+/**
+ * Dado di danno di Randello Incantato per edizione e livello del personaggio.
+ * 2014 (PHB 2014 / dati dell'incantesimo nel repo): d8 fisso.
+ * 2024 (PHB 2024, "Cantrip Upgrade"): d8 → d10 al 5°, d12 all'11°, 2d6 al 17°.
+ */
+export function dadoRandelloIncantato(livello = 1, versione = '2024') {
+  if (versione === '2014') return '1d8';
+  const liv = Math.max(1, Math.min(20, Number(livello) || 1));
+  if (liv >= 17) return '2d6';
+  if (liv >= 11) return '1d12';
+  if (liv >= 5) return '1d10';
+  return '1d8';
+}
+
+/**
+ * Danno di base di un trucchetto: voce della lista del PG → database →
+ * descrizione → eventuale valore salvato nell'attacco (solo come ripiego).
+ */
+export function dannoBaseTrucchetto(nome, voceLista = null, dannoSalvato = '') {
+  const pulito = String(nome || '').replace(/^✨\s*/, '').trim();
+  return voceLista?.danno || datiIncantesimo(pulito)?.danno || dettagliIncantesimo(pulito)?.danno || dannoSalvato || '';
+}
+
+/**
+ * UNICA fonte di verità per il danno mostrato/tirato di un TRUCCHETTO, usata
+ * sia dalla lista Trucchetti sia da Combattimento/Azioni Bonus/Reazioni:
+ * - Randello Incantato: dado per edizione/livello (dadoRandelloIncantato) +
+ *   modificatore da incantatore;
+ * - tutti gli altri: numero di dadi scalato col livello (1/2/3/4 al
+ *   1°/5°/11°/17°, scalaDannoTrucchetto) sul danno di base.
+ */
+// Incantesimi di cura che (in entrambe le edizioni) sommano il modificatore
+// da incantatore ai dadi: "Cura Ferite: 1d8 + mod." (5.0) / "2d8 + mod." (5.5).
+export const CURE_CON_MODIFICATORE = new Set([
+  'cura ferite', 'parola di guarigione', 'cura ferite di massa',
+  'parola di guarigione di massa', 'preghiera di guarigione',
+]);
+
+/**
+ * Tiro di cura completo: per le cure che sommano il modificatore da
+ * incantatore restituisce "dadi+mod" (es. "1d4+5"). Se il danno salvato
+ * contiene già un modificatore, o l'incantesimo non lo prevede, resta com'è.
+ */
+export function dannoCuraConModificatore(nome, danno, modIncantatore = 0) {
+  const d = String(danno || '').trim();
+  const chiave = String(datiIncantesimo(nome)?.nome || nome || '').trim().toLowerCase();
+  const mod = Number(modIncantatore) || 0;
+  if (!d || !mod || !CURE_CON_MODIFICATORE.has(chiave) || !/^\d*d\d+$/i.test(d)) return d;
+  return `${d}${mod > 0 ? '+' : ''}${mod}`;
+}
+
+/** Colpo Accurato (True Strike) — accetta anche gli alias inglesi/vecchi. */
+export function isColpoAccurato(nome) {
+  const n = String(nome || '').replace(/^✨\s*/, '').toLowerCase().trim();
+  return n === 'colpo accurato' || n === 'true strike' || n === 'colpo sicuro';
+}
+
+/**
+ * Danno EXTRA di Colpo Accurato, oltre a quello dell'arma.
+ * 5.5 (2024): nessun extra ai livelli 1-4; +1d6 radianti al 5°, 2d6 all'11°, 3d6 al 17°.
+ * 5.0 (2014): non infligge danni (dà solo vantaggio al prossimo attacco) → ''.
+ */
+export function dannoExtraColpoAccurato(livello = 1, versione = '2024') {
+  if (versione === '2014') return '';
+  const n = moltiplicatoreTrucchetto(livello) - 1;
+  return n > 0 ? `${n}d6` : '';
+}
+
+export function dannoTrucchettoScalato(nome, dannoBase, { livello = 1, versione = '2024', modIncantatore = 0 } = {}) {
+  if (isRandelloIncantato(nome)) return dannoRandelloIncantato(dadoRandelloIncantato(livello, versione), modIncantatore);
+  if (isColpoAccurato(nome)) return dannoExtraColpoAccurato(livello, versione);
+  return scalaDannoTrucchetto(dannoBase, livello, nome);
+}
+
+/**
+ * Caratteristica del tiro salvezza richiesto da un incantesimo (es.
+ * "Costituzione"), letta da nota + spiegazione + descrizione del database.
+ * Stringa vuota se non è indicata.
+ */
+export function caratteristicaTiroSalvezzaIncantesimo(nome, note = '') {
+  const db = datiIncantesimo(nome) || {};
+  const testo = `${note || ''} ${spiegaIncantesimo(nome) || ''} ${db.desc || ''}`;
+  const m = testo.match(/\b(?:ts|tiro salvezza)(?:\s+(?:su|di))?\s+(forza|destrezza|costituzione|intelligenza|saggezza|carisma)/i);
+  return m ? m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase() : '';
+}
+
+/**
+ * Sezione di Combattimento ('Azione' | 'Bonus' | 'Reazione') di un attacco
+ * SALVATO: per un incantesimo vince sempre il tempo di lancio (voce della
+ * lista del PG → database → descrizione), così un incantesimo ad azione
+ * bonus non finisce mai in Azione anche se il campo `categoria` dice
+ * 'Azione' (default dell'import). Per armi/altro resta `categoria`.
+ */
+export function categoriaAttaccoSalvato(attacco, incantesimiLista = []) {
+  const catSalvata = ['Azione', 'Bonus', 'Reazione'].includes(attacco?.categoria) ? attacco.categoria : 'Azione';
+  if (!attacco?.isSpell) return catSalvata;
+  const nomePulito = String(attacco.nome || '').replace(/^✨\s*/, '').replace(/\s*\((shillelagh|bastone incantato)\)/gi, '').trim();
+  const voce = (incantesimiLista || []).find((s) => String(s?.nome || '').trim().toLowerCase() === nomePulito.toLowerCase());
+  return categoriaDaTempoLancio(tempoLancioIncantesimo(nomePulito, voce)) || catSalvata;
 }
 
 export function pesoStimato(nome) {
@@ -985,7 +1185,8 @@ export function controlliScheda(scheda) {
 
   // --- Livello Minimo Sottoclasse ---
   if (scheda.classe && scheda.sottoclasse) {
-    const livMin = sottoclasseLivPer(scheda.classe, scheda.versione || '2024');
+    // Livello di sblocco della sottoclasse per l'edizione del PG (primo valore della tabella).
+    const livMin = sottoclasseLivPer(scheda.versione === '2014' ? '2014' : '2024')[chiaveClasse(scheda.classe)]?.[0] || 0;
     const livPg = Number(scheda.livello) || 1;
     if (livMin && livPg < livMin) {
       risultati.push({
@@ -1124,11 +1325,12 @@ export function slotVersoPunti(slotIncantesimo, punti, puntiMax, livello) {
  * (così si capisce da dove arriva lo svantaggio, e cosa resta se ne togli una).
  * Ordine stabile: quello di ETICHETTE_EFFETTI, non quello di inserimento.
  */
-export function riepilogoCondizioni(condizioni) {
+export function riepilogoCondizioni(condizioni, versione = '2024') {
   const attive = (Array.isArray(condizioni) ? condizioni : []).filter((c) => EFFETTI_CONDIZIONI[c]);
   const righe = [];
   for (const flag of Object.keys(ETICHETTE_EFFETTI)) {
-    const da = attive.filter((c) => EFFETTI_CONDIZIONI[c][flag]);
+    // Effetti secondo l'edizione del PG (es. Afferrato 5.5: svantaggio contro altri bersagli).
+    const da = attive.filter((c) => effettiCondizione(c, versione)?.[flag]);
     if (da.length) righe.push({ flag, da });
   }
   return righe;
@@ -1992,7 +2194,11 @@ export function trovaReazioniDisponibili(scheda) {
  * - Tattiche difensive/offensive attive (Schivata, Disimpegno, Scatto, ecc.)
  */
 export function calcolaTurnoCombattimento(scheda, turnoAzioni = {}) {
-  const velBase = Math.max(0, Number(scheda?.formaBestiale?.attiva ? (scheda.formaBestiale.velocita?.terra ?? 9) : (scheda?.velocita ?? 9)));
+  // Senza Forma Selvatica: stessa velocità TOTALE mostrata nel riquadro
+  // Velocità (base + Poteri, Sfinimento applicato), non solo la base scritta.
+  const velBase = scheda?.formaBestiale?.attiva
+    ? Math.max(0, Number(scheda.formaBestiale.velocita?.terra ?? 9))
+    : calcolaMovimentoESalti(scheda || {}).velBase;
   const haScatto = turnoAzioni.tatticaAttiva === 'scatto' || turnoAzioni.scattoAttivo;
   const moltiplicatore = haScatto ? 2 : 1;
   const movimentoMax = Number((velBase * moltiplicatore).toFixed(1));

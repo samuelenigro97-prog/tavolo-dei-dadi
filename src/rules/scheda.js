@@ -162,7 +162,8 @@ export function pfMassimiEffettivi(scheda) {
  */
 export function effettiSfinimento(scheda) {
   const livello = Math.max(0, Math.min(6, Number(scheda?.sfinimento) || 0));
-  const is2024 = scheda?.versione === '2024';
+  // Senza versione il PG segue le regole 2024 (stesso default del resto della scheda).
+  const is2024 = scheda?.versione !== '2014';
   return {
     livello,
     morto: livello >= 6,
@@ -501,7 +502,8 @@ export const COLORE_CATEGORIA_INFO = {
   proprieta:    { chiaro: '#a21caf', scuro: '#f0abfc' }, // 🏷️ Proprietà (Trucchetto, Magico, Versatile, Maestria)
   innesco:      { chiaro: '#0f766e', scuro: '#5eead4' }, // 🎯 Innesco di una reazione ("Quando...")
   effetto:      { chiaro: '#6d28d9', scuro: '#c4b5fd' }, // 🛡️ Effetto di una reazione (= colore Durata: non compaiono mai insieme)
-  attacco:      { chiaro: '#a16207', scuro: '#fde047' }, // 🎲 Tiro per colpire — giallo fisso, NON tinto dal colore di classe (a differenza di C.gold/C.goldDark)
+  attacco:      { chiaro: '#a16207', scuro: '#fde047' },
+  modificato:   { chiaro: '#2563eb', scuro: '#93c5fd' }, // 🔵 Valore modificato da Poteri/Sfinimento (es. totale Velocità) // 🎲 Tiro per colpire — giallo fisso, NON tinto dal colore di classe (a differenza di C.gold/C.goldDark)
 };
 
 /** Risolve il colore fisso di una categoria per il tema attivo (chiaro/scuro). */
@@ -544,7 +546,11 @@ export function estraiCategorieNota(nota) {
 
   // "Trucchetto" non è più un badge: la riga lo mostra già con l'icona ✨
   // iniziale (contro 🪄 degli incantesimi con slot), sarebbe un'informazione duplicata.
-  const proprieta = testo.match(/\b(Magico[^,·]*|Versatile[^,·]*|Maestria:\s*[^,·]+)/i);
+  // Il testo della proprietà si ferma a virgola/punto medio/"•"/due punti e
+  // a parentesi non bilanciate: "Trucchetto (Attacco Magico): trascina 3m"
+  // dà "Magico", non "Magico): trascina 3m"; "Magico con SAG (Randello/Bastone)"
+  // e "Versatile (1d8)" restano interi (parentesi complete).
+  const proprieta = testo.match(/\b(Magico(?:\s+con\s+[A-Za-zÀ-ÿ]+(?:\s*\([^()]*\))?)?|Versatile(?:\s*\([^()]*\)|\s+\d*d\d+(?:\s*[+-]\s*\d+)?)?|Maestria:\s*[^,·•:()]+(?:\([^()]*\))?)/i);
   if (proprieta) categorie.push({ icona: '🏷️', etichetta: 'Proprietà', testo: proprieta[1].trim(), categoria: 'proprieta' });
 
   return categorie;
@@ -588,3 +594,14 @@ export function esitoDannoPf0(pfMax, pfPrima, dannoReale, tsMortePrima) {
   return { pfDopo: 0, istantaneo: false, tsMorteDopo: null };
 }
 
+
+/**
+ * Dadi Vita recuperati con un riposo lungo, per edizione:
+ * - 5.0 (PHB 2014): metà dei Dadi Vita totali (minimo 1);
+ * - 5.5 (PHB 2024): tutti i Dadi Vita spesi.
+ * Senza versione vale la 2024 (stesso default del resto della scheda).
+ */
+export function dadiVitaRecuperatiRiposoLungo(livelloTotale, versione) {
+  const liv = Math.max(1, Math.floor(Number(livelloTotale) || 1));
+  return String(versione) === '2014' ? Math.max(1, Math.floor(liv / 2)) : liv;
+}

@@ -5,6 +5,7 @@ import { t, traduciDato } from '../i18n';
 import { C } from './tema.js';
 import { styles } from './stili.js';
 import { formattaTitoloVoce } from '../rules/scheda.js';
+import { conSegno } from '../rules/dadi.js';
 
 export const ICONE_5E = {
   // Danni / Resistenze
@@ -118,7 +119,10 @@ function ordinaAlfabeticamente(opzioni, etichetta = traduciDato) {
  * definito, il click viene ritardato per distinguere il doppio click,
  * che invece lancia il tiro.
  */
-export function Editable({ value, onChange, onRoll, tipo = 'testo', width, style, title, soloIcona }) {
+// `valoreModifica` (facoltativo): valore con cui si apre l'editor quando è
+// diverso da quello mostrato (es. Velocità: mostra il totale con i Poteri,
+// ma si modifica la velocità base).
+export function Editable({ value, valoreModifica, onChange, onRoll, tipo = 'testo', width, style, title, soloIcona }) {
   const [editing, setEditing] = useState(false);
   const [bozza, setBozza] = useState('');
   const [carica, setCarica] = useState(false);
@@ -133,7 +137,7 @@ export function Editable({ value, onChange, onRoll, tipo = 'testo', width, style
   }, []);
 
   function apriEditor() {
-    setBozza(String(value ?? ''));
+    setBozza(String((valoreModifica !== undefined ? valoreModifica : value) ?? ''));
     setEditing(true);
   }
 
@@ -737,5 +741,104 @@ export function CampoBloccato({ valore, title, style }) {
     >
       {valore}
     </div>
+  );
+}
+
+/**
+ * Badge "pillola" del TIRO PER COLPIRE (🎯 +9), lo stesso usato nelle righe
+ * di Trucchetti/Incantesimi e — dalla 4.38 — anche in Combattimento, Azioni
+ * Bonus e Reazioni. 1 click = tiro. Il colore arriva dal chiamante
+ * (coloreCategoria('attacco', notte): giallo fisso, non tinto dalla classe).
+ */
+export function BadgeTiroColpire({ bonus, colore, onRoll, disabled = false, title }) {
+  return (
+    <button
+      type="button"
+      className="tirabile badge-tiro badge-tiro-colpire"
+      style={{
+        ...styles.buttonMini,
+        padding: '2px 6px',
+        fontSize: 11,
+        fontWeight: 700,
+        color: colore,
+        borderColor: colore,
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 2,
+        whiteSpace: 'nowrap',
+        opacity: disabled ? 0.4 : 1,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+      }}
+      title={title}
+      disabled={disabled}
+      onClick={() => { if (!disabled) onRoll?.(); }}
+    >
+      🎯 {conSegno(Number(bonus) || 0)}
+    </button>
+  );
+}
+
+/**
+ * Badge "pillola" del TIRO DEI DANNI (💥 1d6 Perforante 🎲), condiviso tra
+ * Trucchetti/Incantesimi e Combattimento/Azioni Bonus/Reazioni. Con
+ * `critico` diventa pieno (sfondo oro) con ⚔️: il prossimo tiro raddoppia i dadi.
+ */
+export function BadgeTiroDanno({ danno, tipoDanno, critico = false, onRoll, disabled = false, title }) {
+  return (
+    <button
+      type="button"
+      className="tirabile badge-tiro badge-tiro-danno"
+      style={{
+        ...styles.buttonMini,
+        padding: '2px 6px',
+        fontSize: 11,
+        fontWeight: 700,
+        color: critico ? '#fff' : C.red,
+        borderColor: critico ? C.goldDark : C.red,
+        background: critico ? C.goldDark : 'transparent',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 2,
+        whiteSpace: 'nowrap',
+        opacity: disabled ? 0.4 : 1,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+      }}
+      title={title}
+      disabled={disabled}
+      onClick={() => { if (!disabled) onRoll?.(); }}
+    >
+      {critico ? '⚔️' : '💥'} {danno}{tipoDanno ? ` ${tipoDanno}` : ''}
+      <span aria-hidden style={{ fontSize: 11, opacity: 0.6 }}>🎲</span>
+    </button>
+  );
+}
+
+/**
+ * Badge "pillola" della CD di un incantesimo a TIRO SALVEZZA (🎲 Costituzione
+ * · CD 17): lo tira il bersaglio, non chi lancia, quindi non è cliccabile e
+ * prende il posto del tiro per colpire (che per questi incantesimi non esiste).
+ */
+export function BadgeTiroSalvezza({ cd, caratteristica, colore, title }) {
+  return (
+    <span
+      className="badge-tiro badge-tiro-salvezza"
+      style={{
+        ...styles.buttonMini,
+        padding: '2px 6px',
+        fontSize: 11,
+        fontWeight: 700,
+        color: colore,
+        borderColor: colore,
+        background: `${colore}1f`,
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 2,
+        whiteSpace: 'nowrap',
+        cursor: 'help',
+      }}
+      title={title || `Tiro salvezza${caratteristica ? ` su ${caratteristica}` : ''}: CD ${cd}`}
+    >
+      🎲 {caratteristica ? `${caratteristica} · ` : ''}CD {cd}
+    </span>
   );
 }
