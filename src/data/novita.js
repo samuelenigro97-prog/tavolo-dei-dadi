@@ -17,6 +17,7 @@ export const NOVITA = [
         'Specie per edizione (nella 5.0 nani, gnomi e halfling hanno 7,5 m; gli elfi 5.5 hanno il Lignaggio Elfico) e personaggi d\'esempio ricontrollati: attacchi di Vaelion con i Guanti della Forza Orchesca, arco corto di Wendell 1d6, tratti 2024 di Flyora, incantesimo di Lyrian dalla lista giusta.',
         'Altre regole per edizione: condizioni 5.0/5.5 (Afferrato, Incapacitato, Invisibile, Stordito…, con gli effetti nel tooltip dei chip), Sensi Primordiali del Ranger 5.0 costa uno slot (niente contatore), Colpo Accurato 5.5 fa danni extra solo dal 5° livello, testi inglesi degli incantesimi per edizione, tabelle delle sottoclassi 5.0/5.5 separate.',
         'Assorbire Elementi, Marchio del Cacciatore, Maledizione e Dardo Incantato non mostrano più un tiro per colpire che non fanno.',
+        'Stregone con dado vita d6 (era d8) e Stregoneria Esplosiva come trucchetto da 1d8 (prima aveva i dati di Onda di Caos).',
       ],
       en: [
         'Bonus Actions fills itself: cantrips and spells with a "Bonus Action" casting time (e.g. Shillelagh, Healing Word) appear there instead of in Combat.',
@@ -28,6 +29,7 @@ export const NOVITA = [
         'Species by edition (in 5.0 dwarves, gnomes and halflings move 7.5 m; 5.5 elves get Elven Lineage) and the sample characters re-checked: Vaelion\'s attacks with the Gauntlets of Ogre Power, Wendell\'s shortbow 1d6, Flyora\'s 2024 traits, Lyrian\'s spell from the right list.',
         'More rules by edition: 5.0/5.5 conditions (Grappled, Incapacitated, Invisible, Stunned…, with the effects in the chip tooltip), the 5.0 Ranger\'s Primeval Awareness costs a spell slot (no counter), 5.5 True Strike deals extra damage only from level 5, English spell texts by edition, separate 5.0/5.5 subclass tables.',
         'Absorb Elements, Hunter\'s Mark, Hex and Magic Missile no longer show an attack roll they don\'t make.',
+        'Sorcerers use a d6 hit die (was d8) and Sorcerous Burst is a 1d8 cantrip (it had Chaos Bolt\'s data).',
       ],
     },
   },

@@ -1886,7 +1886,7 @@ const DATI_EN = {
   'Mantello della Protezione': 'Cloak of Protection', 'Perla del Potere': 'Pearl of Power',
   'Pozione di Respirare sott’Acqua': 'Potion of Water Breathing', 'Pozione di Invisibilità': 'Potion of Invisibility', 'Antitossina': 'Antitoxin',
   // Reazioni & Incantesimi di Reazione
-  'Controincantesimo': 'Counterspell', 'Caduta Morbida': 'Feather Fall', 'Assorbire Elementi': 'Absorb Elements',
+  'Controincantesimo': 'Counterspell', 'Caduta Morbida': 'Feather Fall', 'Assorbire Elementi': 'Absorb Elements', 'Stregoneria Esplosiva': 'Sorcerous Burst', 'Onda di Caos': 'Chaos Bolt',
   'Parola di Ritorno': 'Word of Recall', 'Rappresaglia Infernale': 'Hellish Rebuke',
   'Attacco di Opportunità': 'Opportunity Attack', 'Schivata Prodigiosa': 'Uncanny Dodge', 'Deviare Proiettili': 'Deflect Missiles',
   'Parata': 'Parry', 'Intercettare': 'Interception', 'Protezione': 'Protection', 'Sentinella': 'Sentinel',

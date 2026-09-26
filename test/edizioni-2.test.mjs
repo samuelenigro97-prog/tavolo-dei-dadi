@@ -126,3 +126,16 @@ test('public/Vaelion.json e public/Flyora.json (non usati) sono stati rimossi', 
   assert.ok(!existsSync(join(process.cwd(), 'public/Vaelion.json')));
   assert.ok(!existsSync(join(process.cwd(), 'public/Flyora.json')));
 });
+
+test('Stregone: dado vita d6; Stregoneria Esplosiva è il trucchetto 1d8 (Onda di Caos è il 1° livello 2d8+1d6)', async () => {
+  const { DADO_VITA_CLASSE } = await import('../src/data/dati5e.js');
+  const { INCANTESIMI_DB } = await import('../src/data/incantesimi.js');
+  assert.equal(DADO_VITA_CLASSE.stregone, 6);
+  assert.equal(DADO_VITA_CLASSE.mago, 6);
+  assert.equal(INCANTESIMI_DB['Stregoneria Esplosiva'].livello, 0);
+  assert.equal(INCANTESIMI_DB['Stregoneria Esplosiva'].danno, '1d8');
+  assert.equal(dannoTrucchettoScalato('Stregoneria Esplosiva', '1d8', { livello: 4, versione: '2024' }), '1d8');
+  assert.equal(dannoTrucchettoScalato('Stregoneria Esplosiva', '1d8', { livello: 5, versione: '2024' }), '2d8');
+  assert.equal(INCANTESIMI_DB['Onda di Caos'].livello, 1);
+  assert.equal(INCANTESIMI_DB['Onda di Caos'].danno, '2d8+1d6');
+});

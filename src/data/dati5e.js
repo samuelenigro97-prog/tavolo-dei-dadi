@@ -1556,8 +1556,9 @@ export const PRIORITA_CARATT = {
 export const DADO_VITA_CLASSE = {
   barbaro: 12,
   guerriero: 10, paladino: 10, ranger: 10,
-  bardo: 8, chierico: 8, druido: 8, ladro: 8, monaco: 8, stregone: 8, warlock: 8, artefice: 8,
-  mago: 6,
+  bardo: 8, chierico: 8, druido: 8, ladro: 8, monaco: 8, warlock: 8, artefice: 8,
+  // Stregone: d6 sia nella 5.0 sia nella 5.5 (prima era d8 per errore).
+  mago: 6, stregone: 6,
 };
 export const BACKGROUND_TALENTO_ORIGINE_2024 = {
   'Accolito': 'Iniziato alla Magia',

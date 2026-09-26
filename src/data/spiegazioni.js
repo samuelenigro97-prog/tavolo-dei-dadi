@@ -1293,7 +1293,7 @@ const SPIEG_INCANTESIMI = {
   'Spruzzo Acido': "Liv. 0 · Una bolla d'acido su 1-2 bersagli vicini (gittata 18 m): 1d6 acido (aumenta a 5/11/17).",
   'Spruzzo Velenoso': 'Liv. 0 · Un soffio tossico su un bersaglio entro 3 m: 1d12 veleno (TS Costituzione; aumenta a 5/11/17).',
   'Stabilizzare': 'Stabilizzi una creatura morente a 0 PF entro 9 m (istantaneo).',
-  'Stregoneria Esplosiva': 'Liv. 1 · Attacco a distanza (36m): 2d8 + 1d6 (tipo determinato dal d8). Se i due d8 sono uguali, rimbalza su un altro bersaglio. +1d6 per slot.',
+  'Stregoneria Esplosiva': 'Liv. 0 · Attacco magico a distanza (36m): 1d8 danni di un tipo a scelta (acido, freddo, fuoco, fulmine, veleno, psichico, tuono); ogni 8 fa tirare un d8 in più (massimo mod. da incantatore dadi extra). 2d8 al 5°, 3d8 all’11°, 4d8 al 17°.',
   'Stretta Folgorante': 'Liv. 0 · Attacco magico in mischia (gittata tocco): 1d8 fulmine e niente reazioni fino al suo prossimo turno (aumenta a 5/11/17).',
   'Suggestione': "Liv. 2 · Suggerisci un corso d'azione ragionevole (gittata 9 m; TS Saggezza) che il bersaglio segue. Concentrazione, fino a 8 ore.",
   'Sussurri Dissonanti': 'Liv. 1 · Sussurri dolorosi (gittata 18 m): 3d6 psichici e il bersaglio fugge da te (TS Saggezza per metà, niente fuga). +1d6 per slot.',

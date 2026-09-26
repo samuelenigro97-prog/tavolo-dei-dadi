@@ -655,7 +655,7 @@ export const EN_INCANTESIMI = {
   'Spruzzo Acido': 'Lv. 0 · A bubble of acid on 1-2 nearby targets (range 18 m): 1d6 acid (increases at 5/11/17).',
   'Spruzzo Velenoso': 'Lv. 0 · A toxic puff at a target within 3 m: 1d12 poison (Constitution save; increases at 5/11/17).',
   'Stabilizzare': 'You stabilise a dying creature at 0 HP within 9 m (instantaneous).',
-  'Stregoneria Esplosiva': 'Lv. 1 · Ranged spell attack (range 36 m): 2d8 + 1d6 damage (type based on the d8). If both d8s match, the bolt leaps to another target. +1d6 per slot.',
+  'Stregoneria Esplosiva': 'Lv. 0 · Sorcerous Burst: ranged spell attack (36 m), 1d8 damage of a type you choose (acid, cold, fire, lightning, poison, psychic, thunder); each 8 lets you roll another d8 (up to your spellcasting modifier in extra dice). 2d8 at 5, 3d8 at 11, 4d8 at 17.',
   'Stretta Folgorante': 'Lv. 0 · Melee spell attack (touch range): 1d8 lightning and no reactions until its next turn (increases at 5/11/17).',
   'Suggestione': 'Lv. 2 · You suggest a reasonable course of action (range 9 m; Wisdom save) that the target follows. Concentration, up to 8 hours.',
   'Sussurri Dissonanti': 'Lv. 1 · Painful whispers (range 18 m): 3d6 psychic and the target flees from you (Wisdom save for half and no fleeing). +1d6 per slot.',

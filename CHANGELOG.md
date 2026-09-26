@@ -176,6 +176,13 @@ Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
   d'Ombra Migliorato / Manto di Ombre), Giuramento degli Antichi (Scacciare
   l'Infedele solo 5.0) e Giuramento di Vendetta (Abiurare Nemico, 5.0).
   Anche il riepilogo del passaggio di livello usa la tabella dell'edizione.
+- **Stregone con dado vita d6**: `DADO_VITA_CLASSE` dava d8 allo Stregone
+  (d6 sia nella 5.0 sia nella 5.5); i dadi vita, ricalcolati a ogni
+  caricamento, tornavano sempre 4d8 per Flyora.
+- **Stregoneria Esplosiva è il trucchetto 1d8 (Sorcerous Burst, 5.5)**: nel
+  database c'erano i dati di Onda di Caos (1° livello, 2d8+1d6); ora è un
+  trucchetto da 1d8 (36m, tipo a scelta, ogni 8 fa tirare un d8 in più) che
+  scala a 2d8/3d8/4d8 al 5°/11°/17°. Onda di Caos resta com'era.
 - **Rimossi `public/Vaelion.json` e `public/Flyora.json`**: non erano usati
   dall'app (nessun riferimento nel codice) ed erano superati dai personaggi
   di esempio in `src/data/esempi.js`.
