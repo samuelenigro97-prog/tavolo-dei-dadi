@@ -376,7 +376,7 @@ function TendinaCategorieArmi({ valoreArmi, onImpostaCategoria }) {
 
   return (
     <TendinaCompetenzaCustom
-      label={t('train.categorie_armi') || 'CATEGORIE ARMI'}
+      label={t('train.categorie_armi') || 'Categorie di armi'}
       anteprima={anteprima}
       voci={opzioni}
       onToggle={(id) => {
@@ -1975,7 +1975,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.38.0';
+const APP_VERSION = '4.39.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -2986,7 +2986,7 @@ function ArchivioDm({ url, onChiudi, onApri, onApriSolaLettura }) {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(dlUrl);
-      setStato(`Scheda "${formattaNomePg(normalized.nome || s.nome)}" esportata con successo!`);
+      setStato(`Scheda "${formattaNomePg(normalized.nome || s.nome)}" esportata.`);
       setTimeout(() => setStato(''), 4000);
     } catch (e) {
       setStato(`Errore esportazione: ${e.message}`);
@@ -2995,7 +2995,7 @@ function ArchivioDm({ url, onChiudi, onApri, onApriSolaLettura }) {
 
   const eliminaCopia = async (s) => {
     const nomeFmt = formattaNomePg(s.nome) || 'questa scheda';
-    if (!window.confirm(`Vuoi rimuovere definitivamente "${nomeFmt}" (${quando(s.aggiornato)}) dall'Archivio PG?`)) return;
+    if (!window.confirm(`Eliminare "${nomeFmt}" (${quando(s.aggiornato)}) dall'Archivio del Master? L'operazione non può essere annullata.`)) return;
     setStato('carico');
     try {
       const r = await fetch(`${base}/pg/${encodeURIComponent(s.id)}?key=${encodeURIComponent(chiave)}`, {
@@ -3052,11 +3052,11 @@ function ArchivioDm({ url, onChiudi, onApri, onApriSolaLettura }) {
     >
       <div style={{ ...styles.panel, maxWidth: 640, width: '100%', maxHeight: '88vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-          <strong style={{ color: C.goldDark, fontSize: 18 }}>🗂 Archivio PG</strong>
+          <strong style={{ color: C.goldDark, fontSize: 18 }}>🗂 Archivio del Master</strong>
           <button style={styles.buttonMini} onClick={onChiudi} title={t('tip.chiudi')} aria-label={t('tip.chiudi')}>✕</button>
         </div>
         <p style={{ ...styles.detail, marginTop: 0 }}>
-          Le schede salvate dagli utenti. Clicca su <strong>Apri</strong> per visualizzarla nel tavolo in sola lettura (senza modificarla), oppure su <strong>Esporta</strong> per scaricare il file JSON.
+          Le schede inviate dai giocatori. Clicca su <strong>Apri</strong> per consultarne una in sola lettura oppure su <strong>Esporta</strong> per scaricarne il file JSON.
         </p>
         <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
           <input
@@ -3136,7 +3136,7 @@ function ArchivioDm({ url, onChiudi, onApri, onApriSolaLettura }) {
                           <button
                             style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, padding: '3px 6px' }}
                             onClick={() => eliminaCopia(s)}
-                            title="Elimina definitivamente questa copia dall'Archivio PG"
+                            title="Elimina definitivamente questa copia dall'Archivio del Master"
                           >
                             🗑️
                           </button>
@@ -5319,7 +5319,7 @@ export default function App() {
           : 'arma';
     const etichettaPresa = attacco?.aDueMani ? (lingua === 'en' ? ' (Two-Handed)' : ' (2 Mani)') : '';
     conAnimazione(() => {
-      setDanni({ etichetta: `${critico ? '⚔ Danni CRITICI' : 'Danni'}: ${nome}${etichettaPresa}${notaExtra}`, ...esito, critico });
+      setDanni({ etichetta: `${critico ? '⚔ Danni critici' : 'Danni'}: ${nome}${etichettaPresa}${notaExtra}`, ...esito, critico });
       registra({ etichetta: `${critico ? '⚔ CRITICO ' : ''}${t('log.danni')}: ${nome}${etichettaPresa}${notaExtra}`, tipo: 'danni', totale: esito.totale, dettaglio: esito.dettaglio, critico });
     }, esito.totale, maxFacce || 20, false, suonoDanno);
   }
@@ -5805,7 +5805,7 @@ export default function App() {
     aRoster.click();
     URL.revokeObjectURL(urlRoster);
     segnaBackupFatto();
-    setSyncCodiceStatus({ text: `✅ Archivio completo (${ids.length} personaggi) esportato con successo!`, type: 'success' });
+    setSyncCodiceStatus({ text: `✅ Backup esportato (${ids.length} personaggi).`, type: 'success' });
   }
 
   /** Ripristina l'archivio locale da un file JSON (supporta backup multipli o singoli). */
@@ -5833,7 +5833,7 @@ export default function App() {
             });
             return { attivo: ultimo, personaggi: base };
           });
-          setSyncCodiceStatus({ text: `✅ Ripristinati ${lista.length} personaggi nell'archivio!`, type: 'success' });
+          setSyncCodiceStatus({ text: `✅ Ripristinati ${lista.length} personaggi.`, type: 'success' });
           segnaBackupFatto();
           return;
         }
@@ -5845,7 +5845,7 @@ export default function App() {
         const base = (r?.personaggi && Object.keys(r.personaggi).length > 0) ? { ...r.personaggi } : {};
         return { attivo: id, personaggi: { ...base, [id]: norm } };
       });
-      setSyncCodiceStatus({ text: `✅ Personaggio "${formattaNomePg(norm.nome) || 'PG'}" importato con successo!`, type: 'success' });
+      setSyncCodiceStatus({ text: `✅ Personaggio "${formattaNomePg(norm.nome) || 'PG'}" importato.`, type: 'success' });
       segnaBackupFatto();
     } catch (e) {
       setSyncCodiceStatus({ text: `File JSON non valido: ${e.message}`, type: 'error' });
@@ -6136,7 +6136,7 @@ export default function App() {
 
   async function salvaSuCloud(silenzioso = false) {
     if (!tokenSyncRef.current) {
-      if (!silenzioso) setCloudStatus({ text: 'Inserisci il GitHub Token per salvare.', type: 'error' });
+      if (!silenzioso) setCloudStatus({ text: 'Inserisci il token di accesso GitHub per attivare la sincronizzazione.', type: 'error' });
       return;
     }
     // Accoda una sola scrittura aggiornata se arriva una modifica mentre il
@@ -6149,7 +6149,7 @@ export default function App() {
     syncInCorsoRef.current = true;
     try {
       setSincronizzando(true);
-      if (!silenzioso) setCloudStatus({ text: 'Salvataggio in corso...', type: 'info' });
+      if (!silenzioso) setCloudStatus({ text: 'Salvataggio in corso…', type: 'info' });
       const quando = Date.now();
       // Le immagini vivono in IndexedDB per non saturare localStorage. Prima
       // del cloud le riagganciamo esplicitamente: così ritratto e mappa seguono
@@ -6168,7 +6168,7 @@ export default function App() {
           headers: { 'Authorization': `token ${tokenSyncRef.current}`, 'Accept': 'application/vnd.github.v3+json' },
         }).catch(() => null);
         if (!resAttuale || !resAttuale.ok) {
-          if (!silenzioso) setCloudStatus({ text: 'Rete non raggiungibile: salvataggio rimandato per non rischiare di sovrascrivere dati più recenti.', type: 'error' });
+          if (!silenzioso) setCloudStatus({ text: 'Connessione assente: la sincronizzazione è rimandata per non sovrascrivere dati più recenti.', type: 'error' });
           return;
         }
         const outAttuale = await resAttuale.json();
@@ -6257,13 +6257,13 @@ export default function App() {
   async function attivaBackupAuto() {
     const token = githubToken.trim();
     if (!token) {
-      setCloudStatus({ text: 'Prima crea e incolla il token GitHub qui sopra.', type: 'error' });
+      setCloudStatus({ text: 'Crea il token di accesso GitHub e incollalo nel campo qui sopra.', type: 'error' });
       return;
     }
     if (!gistSyncRef.current) {
       try {
         setSincronizzando(true);
-        setCloudStatus({ text: 'Controllo backup esistenti...', type: 'info' });
+        setCloudStatus({ text: 'Ricerca di backup esistenti…', type: 'info' });
         const res = await fetchConTimeout('https://api.github.com/gists', {
           headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' },
         });
@@ -6271,13 +6271,13 @@ export default function App() {
           const lista = await res.json();
           const esistente = lista.find((g) => g.files && g.files['roster_tavolo_dei_dadi.json']);
           if (esistente) {
-            const usaEsistente = window.confirm('Trovato un backup già esistente su questo account GitHub, creato con un altro dispositivo.\n\nVuoi caricarlo su questo dispositivo invece di crearne uno nuovo e vuoto?');
+            const usaEsistente = window.confirm('Su questo account GitHub esiste già un backup, creato da un altro dispositivo.\n\nVuoi caricarlo su questo dispositivo invece di crearne uno nuovo e vuoto?');
             if (usaEsistente) {
               gistSyncRef.current = esistente.id;
               setGistId(esistente.id);
               localStorage.setItem('scheda-interattiva:gist-id', esistente.id);
               await caricaGistById(esistente.id, token);
-              setCloudStatus({ text: '✅ Backup esistente caricato e sincronizzato!', type: 'success' });
+              setCloudStatus({ text: '✅ Backup esistente caricato e sincronizzato.', type: 'success' });
               setAutoSync(true);
               localStorage.setItem('scheda-interattiva:auto-sync', 'on');
               return;
@@ -6338,12 +6338,12 @@ export default function App() {
           const conImmaginiLocali = await caricaImmaginiRoster(caricato).catch(() => caricato);
           setRoster(preservaImmaginiSeMancanti(conImmaginiLocali, rosterSyncRef.current));
           localStorage.setItem('scheda-interattiva:sync-ts', String(cloudTs));
-          setCloudStatus({ text: '☁️ Personaggi caricati dal cloud', type: 'success' });
+          setCloudStatus({ text: '☁️ Personaggi caricati dal servizio online', type: 'success' });
         }
       } catch {
         // Offline, GitHub lento o IndexedDB bloccato: il roster locale resta
         // già disponibile e l'overlay deve sempre scomparire.
-        setCloudStatus({ text: 'Cloud non raggiungibile: uso i personaggi salvati sul dispositivo.', type: 'error' });
+        setCloudStatus({ text: 'Servizio online non raggiungibile: vengono usati i personaggi salvati sul dispositivo.', type: 'error' });
       }
       finally { setCaricandoCloud(false); }
     })();
@@ -6352,14 +6352,14 @@ export default function App() {
 
   async function caricaDaCloud() {
     if (!githubToken || !gistId) {
-      setCloudStatus({ text: 'Inserisci Token e Gist ID per caricare.', type: 'error' });
+      setCloudStatus({ text: 'Inserisci il token di accesso e l’ID del Gist per caricare i personaggi.', type: 'error' });
       return;
     }
     try {
       setCaricandoCloud(true);
-      setCloudStatus({ text: 'Caricamento in corso...', type: 'info' });
+      setCloudStatus({ text: 'Caricamento in corso…', type: 'info' });
       await caricaGistById(gistId, githubToken);
-      setCloudStatus({ text: '✅ Roster caricato e sincronizzato!', type: 'success' });
+      setCloudStatus({ text: '✅ Personaggi caricati e sincronizzati.', type: 'success' });
     } catch (err) {
       setCloudStatus({ text: err.message, type: 'error' });
     } finally {
@@ -6378,7 +6378,7 @@ export default function App() {
     syncCodiceInCorsoRef.current = true;
     try {
       setSincronizzando(true);
-      if (!silenzioso) setSyncCodiceStatus({ text: 'Salvataggio in corso...', type: 'info' });
+      if (!silenzioso) setSyncCodiceStatus({ text: 'Salvataggio in corso…', type: 'info' });
       const quando = Date.now();
       const rosterCloud = await caricaImmaginiRoster(rosterSyncRef.current).catch(() => rosterSyncRef.current);
       let rosterDaInviare = rosterCloud;
@@ -6391,7 +6391,7 @@ export default function App() {
         // scrivere alla cieca rischierebbe di cancellare un'immagine più
         // recente salvata da un altro dispositivo con lo stesso codice.
         if (errAttuale.message !== 'SYNC_NOT_FOUND') {
-          if (!silenzioso) setSyncCodiceStatus({ text: 'Rete non raggiungibile: salvataggio rimandato per non rischiare di sovrascrivere dati più recenti.', type: 'error' });
+          if (!silenzioso) setSyncCodiceStatus({ text: 'Connessione assente: la sincronizzazione è rimandata per non sovrascrivere dati più recenti.', type: 'error' });
           return;
         }
       }
@@ -6522,9 +6522,9 @@ export default function App() {
     }
     try {
       setCaricandoCloud(true);
-      setSyncCodiceStatus({ text: 'Caricamento in corso...', type: 'info' });
+      setSyncCodiceStatus({ text: 'Caricamento in corso…', type: 'info' });
       await caricaDaCodiceSyncPer(codiceSyncRef.current);
-      setSyncCodiceStatus({ text: '✅ Roster caricato e sincronizzato!', type: 'success' });
+      setSyncCodiceStatus({ text: '✅ Personaggi caricati e sincronizzati.', type: 'success' });
     } catch (err) {
       setSyncCodiceStatus({ text: messaggioErroreSync(err.message), type: 'error' });
     } finally {
@@ -6554,7 +6554,7 @@ export default function App() {
     }
     try {
       setCaricandoCloud(true);
-      setSyncCodiceStatus({ text: 'Caricamento in corso...', type: 'info' });
+      setSyncCodiceStatus({ text: 'Caricamento in corso…', type: 'info' });
       await caricaDaCodiceSyncPer(pulito);
       codiceSyncRef.current = pulito;
       setCodiceSync(pulito);
@@ -6562,7 +6562,7 @@ export default function App() {
       setAutoSyncCodice(true);
       localStorage.setItem('scheda-interattiva:auto-sync-codice', 'on');
       setCodiceSyncInput('');
-      setSyncCodiceStatus({ text: '✅ Roster caricato e sincronizzato!', type: 'success' });
+      setSyncCodiceStatus({ text: '✅ Personaggi caricati e sincronizzati.', type: 'success' });
     } catch (err) {
       setSyncCodiceStatus({ text: messaggioErroreSync(err.message), type: 'error' });
     } finally {
@@ -7040,7 +7040,7 @@ export default function App() {
             {bestiaDettaglio.azioni && bestiaDettaglio.azioni.length > 0 && (
               <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 8, marginTop: 8 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: C.goldDark, marginBottom: 6 }}>
-                  ⚔️ {lingua === 'en' ? 'Actions & Attacks' : 'Azioni & Attacchi'}
+                  ⚔️ {lingua === 'en' ? 'Actions and attacks' : 'Azioni e attacchi'}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {bestiaDettaglio.azioni.map((azRaw, idx) => {
@@ -7225,7 +7225,7 @@ export default function App() {
                   }}
                   title={metamorfosiEsaurita
                     ? (lingua === 'en' ? 'No Metamorphosis uses left' : 'Nessun utilizzo di Metamorfosi rimasto')
-                    : (lingua === 'en' ? 'Polymorph (Metamorphosis): replaces ALL characteristics, including mental ones' : 'Metamorfosi: sostituisce TUTTE le caratteristiche, incluse quelle mentali')}
+                    : (lingua === 'en' ? 'Polymorph: replaces all ability scores, including mental ones' : 'Metamorfosi: sostituisce tutte le caratteristiche, incluse quelle mentali')}
                 >
                   🔮 {lingua === 'en' ? `Metamorphosis (${bestiaDettaglio.pf} HP)` : `Metamorfosi (${bestiaDettaglio.pf} PF)`}
                 </button>
@@ -7409,7 +7409,7 @@ export default function App() {
                     {scheda.sfinimento > 0 && (
                       <li>😮‍💨 <strong>{lingua === 'en' ? 'Exhaustion:' : 'Sfinimento:'}</strong> {lingua === 'en' ? `reduced by 1 (from ${scheda.sfinimento} to ${scheda.sfinimento - 1})` : `ridotto di 1 livello (da ${scheda.sfinimento} a ${scheda.sfinimento - 1})`}</li>
                     )}
-                    <li>🧹 <strong>{lingua === 'en' ? 'Death Saves & Temp HP:' : 'Tiri Salvezza Morte & PF Temp:'}</strong> {lingua === 'en' ? 'reset to 0' : 'azzerati'}</li>
+                    <li>🧹 <strong>{lingua === 'en' ? 'Death saves and temp HP:' : 'TS contro morte e PF temporanei:'}</strong> {lingua === 'en' ? 'reset to 0' : 'azzerati'}</li>
                   </ul>
                 </div>
 
@@ -7535,8 +7535,8 @@ export default function App() {
                   </div>
                   <div style={{ fontSize: 16, fontWeight: 800, marginTop: 6, color: esito.passa ? '#2e9d4d' : C.red }}>
                     {esito.passa
-                      ? `✅ ${lingua === 'en' ? 'Concentration Maintained!' : 'Concentrazione Mantenuta!'}`
-                      : `❌ ${lingua === 'en' ? 'Concentration Lost!' : 'Concentrazione Persa!'}`}
+                      ? `✅ ${lingua === 'en' ? 'Concentration maintained' : 'Concentrazione mantenuta'}`
+                      : `❌ ${lingua === 'en' ? 'Concentration lost' : 'Concentrazione persa'}`}
                   </div>
                 </div>
               )}
@@ -7766,12 +7766,12 @@ export default function App() {
               onClick={() => { setMostraModalManuali(true); }}
             >
               <span>📚</span>
-              <span>{lingua === 'it' ? `Manuali & Fonti (${Object.values(manualiAttivi).filter(Boolean).length} attivi)` : `Sourcebooks & Rules (${Object.values(manualiAttivi).filter(Boolean).length} active)`}</span>
+              <span>{lingua === 'it' ? `Manuali e fonti (${Object.values(manualiAttivi).filter(Boolean).length} attivi)` : `Sourcebooks (${Object.values(manualiAttivi).filter(Boolean).length} active)`}</span>
             </button>
 
             {/* Specchio tasti header globali nello stesso identico ordine, con le stesse etichette e icone */}
             <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
-              <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>⚡ Azioni Rapide</div>
+              <div style={{ ...styles.detail, marginBottom: 8, fontWeight: 700 }}>⚡ {lingua === 'en' ? 'Quick actions' : 'Azioni rapide'}</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
                 <button
                   style={{ ...styles.button, width: '100%', minHeight: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
@@ -7818,36 +7818,36 @@ export default function App() {
                     transition: 'all 0.25s ease',
                   }}
                   onClick={() => { setMostraMenu(false); setTimeout(() => { setCloudStatus({ text: '', type: '' }); setMostraCloud(true); }, 50); }}
-                  title={isCloudAttivo ? (lingua === 'en' ? 'Cloud Backup ACTIVE' : 'Backup Cloud ATTIVO') : (lingua === 'en' ? 'Cloud Backup NOT ACTIVE' : 'Backup Cloud NON ATTIVO')}
+                  title={isCloudAttivo ? (lingua === 'en' ? 'Sync is on' : 'Sincronizzazione attiva') : (lingua === 'en' ? 'Sync is off' : 'Sincronizzazione non attiva')}
                 >
                   <span style={{ fontSize: 16 }}>☁️</span>
-                  <span>{lingua === 'en' ? 'Cloud Synchronization' : 'Sincronizzazione Cloud'}</span>
+                  <span>{lingua === 'en' ? 'Backup & sync' : 'Backup e sincronizzazione'}</span>
                 </button>
                 <div style={{ gridColumn: 'span 2', marginTop: 4 }}>
                   <div style={{ fontSize: 11, color: C.inkDim, marginBottom: 4, fontWeight: 600 }}>
-                    🎭 {lingua === 'en' ? 'Class Frames & Themes' : 'Cornici & Temi di Classe'}
+                    🎭 {lingua === 'en' ? 'Section frames' : 'Cornici delle sezioni'}
                   </div>
                   <select
                     value={temaCornici}
                     onChange={(e) => setTemaCornici(e.target.value)}
                     style={{ ...styles.inlineInput, width: '100%', height: 32, padding: '4px 8px', borderRadius: 6, background: C.panel, color: C.ink, fontSize: 12, border: `1px solid ${C.border}` }}
-                    title={lingua === 'en' ? 'Choose custom class section borders style' : 'Scegli lo stile delle cornici e dei bordi delle sezioni'}
+                    title={lingua === 'en' ? 'Choose the style of the section frames' : 'Scegli lo stile delle cornici delle sezioni'}
                   >
-                    <option value="auto">✨ {lingua === 'en' ? `Auto (Active: ${scheda.classe || 'Default'})` : `Automatico (in base al PG: ${scheda.classe || 'Default'})`}</option>
-                    <option value="druido">🌿 Druido (Rami & Foglie)</option>
-                    <option value="mago">🔮 Mago (Rune Arcanee & Stelle)</option>
-                    <option value="guerriero">⚔️ Guerriero (Piastre Rivettate)</option>
-                    <option value="ladro">🗡️ Ladro (Lame & Ombra)</option>
-                    <option value="chierico">☀️ Chierico (Reliquiario & Luce)</option>
-                    <option value="paladino">🛡️ Paladino (Scudo Araldico)</option>
-                    <option value="bardo">🎵 Bardo (Volute Barocche & Note)</option>
-                    <option value="barbaro">🪓 Barbaro (Artigli & Zanne)</option>
-                    <option value="ranger">🏹 Ranger (Frecce & Nodi Silvestri)</option>
-                    <option value="stregone">⚡ Stregone (Mana & Fulmini)</option>
-                    <option value="warlock">👁️ Warlock (Spire Eldritch & Occhi)</option>
-                    <option value="monaco">☯️ Monaco (Cerchio Zen & Giada)</option>
-                    <option value="artefice">⚙️ Artefice (Ingranaggi & Ottone)</option>
-                    <option value="disattivato">🔒 {lingua === 'en' ? 'Classic Minimal (No frames)' : 'Classico Minimal (Senza cornici)'}</option>
+                    <option value="auto">✨ {lingua === 'en' ? `Automatic (character class: ${scheda.classe || 'default'})` : `Automatiche (classe del personaggio: ${scheda.classe || 'predefinita'})`}</option>
+                    <option value="druido">🌿 Druido (rami e foglie)</option>
+                    <option value="mago">🔮 Mago (rune arcane e stelle)</option>
+                    <option value="guerriero">⚔️ Guerriero (piastre rivettate)</option>
+                    <option value="ladro">🗡️ Ladro (lame e ombre)</option>
+                    <option value="chierico">☀️ Chierico (reliquiario e luce)</option>
+                    <option value="paladino">🛡️ Paladino (scudo araldico)</option>
+                    <option value="bardo">🎵 Bardo (volute barocche e note)</option>
+                    <option value="barbaro">🪓 Barbaro (artigli e zanne)</option>
+                    <option value="ranger">🏹 Ranger (frecce e nodi silvestri)</option>
+                    <option value="stregone">⚡ Stregone (energia arcana e fulmini)</option>
+                    <option value="warlock">👁️ Warlock (spirali occulte e occhi)</option>
+                    <option value="monaco">☯️ Monaco (cerchio zen e giada)</option>
+                    <option value="artefice">⚙️ Artefice (ingranaggi e ottone)</option>
+                    <option value="disattivato">🔒 {lingua === 'en' ? 'No frames' : 'Nessuna cornice'}</option>
                   </select>
                 </div>
               </div>
@@ -7988,7 +7988,7 @@ export default function App() {
                 }}
                 onClick={() => { setTabBackup('locale'); setSyncCodiceStatus({ text: '', type: '' }); }}
               >
-                📱 Locale
+                📱 Su questo dispositivo
               </button>
               <button
                 type="button"
@@ -8012,15 +8012,15 @@ export default function App() {
             {tabBackup === 'locale' ? (
               <div style={{ padding: 12, borderRadius: 8, background: 'rgba(0,0,0,0.04)', border: `1px solid ${C.border}`, marginBottom: 16 }}>
                 <div style={{ ...styles.detail, fontWeight: 'bold', fontSize: 13, marginBottom: 4, color: C.ink }}>
-                  📱 Backup Locale su File JSON
+                  📱 Backup su file
                 </div>
                 <p style={{ ...styles.detail, fontSize: 12, marginTop: 0, marginBottom: 12, lineHeight: 1.5 }}>
-                  Scarica l'intero archivio di tutti i personaggi salvati su questo dispositivo in un unico file JSON, oppure ripristina un backup precedente.
+                  Esporta in un unico file JSON tutti i personaggi salvati su questo dispositivo, oppure ripristina un backup precedente.
                 </p>
 
                 <div style={{ background: 'rgba(201,162,39,0.08)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 12, color: C.ink, fontWeight: 600 }}>
-                    📦 Personaggi nel tuo archivio:
+                    📦 Personaggi salvati:
                   </span>
                   <strong style={{ color: C.goldDark, fontSize: 14 }}>
                     {Object.keys(roster.personaggi || {}).length}
@@ -8033,7 +8033,7 @@ export default function App() {
                     style={{ ...styles.buttonPrimary, width: '100%', padding: '9px 12px', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
                     onClick={esportaBackupCompleto}
                   >
-                    📦 Scarica Archivio Completo (JSON)
+                    📦 Esporta backup (JSON)
                   </button>
 
                   <button
@@ -8041,7 +8041,7 @@ export default function App() {
                     style={{ ...styles.button, width: '100%', padding: '9px 12px', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
                     onClick={() => ripristinaArchivioRef.current?.click()}
                   >
-                    📥 Ripristina Archivio da File
+                    📥 Ripristina backup…
                   </button>
                   <input
                     ref={ripristinaArchivioRef}
@@ -8075,7 +8075,7 @@ export default function App() {
                     alignItems: 'center',
                     gap: 4,
                   }}>
-                    {sincronizzando ? '🟠 Sincronizzazione...' : isCloudAttivo ? '🟢 Backup Attivo' : isCloudConfigurato ? '🟠 In attesa' : '🔴 Non attivo'}
+                    {sincronizzando ? '🟠 Sincronizzazione…' : isCloudAttivo ? '🟢 Attiva' : isCloudConfigurato ? '🟠 In attesa' : '🔴 Non attiva'}
                   </span>
                 </div>
                 {codiceSync && autoSyncCodice ? (
@@ -8314,7 +8314,7 @@ export default function App() {
             etichetta: `⭐ Punti Esperienza`,
             tipo: 'pe',
             totale: num,
-            dettaglio: `Guadagnati +${num.toLocaleString()} P.E. (Totale: ${nuovoTotale.toLocaleString()} P.E.)`,
+            dettaglio: `Guadagnati +${num.toLocaleString()} PE (Totale: ${nuovoTotale.toLocaleString()} PE)`,
           });
         };
 
@@ -8353,7 +8353,7 @@ export default function App() {
               {/* Header */}
               <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <strong style={{ fontSize: 15, color: C.goldDark, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span>⭐</span> {lingua === 'en' ? 'Experience Points (XP Tracker)' : 'Tracciatore Punti Esperienza (P.E.)'}
+                  <span>⭐</span> {lingua === 'en' ? 'Experience Points (XP Tracker)' : 'Tracciatore Punti Esperienza (PE)'}
                 </strong>
                 <button
                   type="button"
@@ -8392,10 +8392,10 @@ export default function App() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700 }}>
                       <span style={{ color: C.ink }}>
-                        {Number(scheda.pe || 0).toLocaleString()} P.E.
+                        {Number(scheda.pe || 0).toLocaleString()} PE
                       </span>
                       <span style={{ color: infoPe.puoSalire ? '#10b981' : C.goldDark }}>
-                        {infoPe.percentuale}% {livTotale < 20 ? `(${infoPe.peGuadagnatiNelLivello.toLocaleString()} / ${infoPe.peNecessariDelta.toLocaleString()} P.E.)` : ''}
+                        {infoPe.percentuale}% {livTotale < 20 ? `(${infoPe.peGuadagnatiNelLivello.toLocaleString()} / ${infoPe.peNecessariDelta.toLocaleString()} PE)` : ''}
                       </span>
                     </div>
                     <div style={{ height: 10, width: '100%', background: 'rgba(0,0,0,0.08)', borderRadius: 5, overflow: 'hidden' }}>
@@ -8413,16 +8413,16 @@ export default function App() {
                   {/* Informazioni Dettagliate — allineata con Livello Attuale */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 12, color: C.inkDim, background: C.panel, padding: '8px 10px', borderRadius: 6, border: `1px solid ${C.border}`, textAlign: 'center' }}>
                     <div>
-                      {lingua === 'en' ? 'Threshold for current level:' : 'Soglia livello attuale:'} <strong>{infoPe.peMinLivello.toLocaleString()} P.E.</strong>
+                      {lingua === 'en' ? 'Threshold for current level:' : 'Soglia livello attuale:'} <strong>{infoPe.peMinLivello.toLocaleString()} PE</strong>
                     </div>
                     <div>
-                      {lingua === 'en' ? 'Threshold for next level:' : 'Soglia prossimo livello:'} <strong>{livTotale >= 20 ? '—' : `${infoPe.peProssimoLivello.toLocaleString()} P.E.`}</strong>
+                      {lingua === 'en' ? 'Threshold for next level:' : 'Soglia del prossimo livello:'} <strong>{livTotale >= 20 ? '—' : `${infoPe.peProssimoLivello.toLocaleString()} PE`}</strong>
                     </div>
                     <div>
-                      {lingua === 'en' ? 'XP Remaining to Level Up:' : 'P.E. mancanti al passaggio:'} <strong style={{ color: infoPe.puoSalire ? '#10b981' : C.ink }}>{infoPe.puoSalire ? (lingua === 'en' ? 'Ready to Level Up!' : 'Pronto per il Level Up!') : `${infoPe.peMancanti.toLocaleString()} P.E.`}</strong>
+                      {lingua === 'en' ? 'XP to next level:' : 'PE mancanti al prossimo livello:'} <strong style={{ color: infoPe.puoSalire ? '#10b981' : C.ink }}>{infoPe.puoSalire ? (lingua === 'en' ? 'Ready to level up' : 'Puoi salire di livello') : `${infoPe.peMancanti.toLocaleString()} PE`}</strong>
                     </div>
                     <div>
-                      {lingua === 'en' ? 'Theoretical Level by XP:' : 'Livello teorico da P.E.:'} <strong>Liv. {infoPe.livelloTeorico}</strong>
+                      {lingua === 'en' ? 'Theoretical Level by XP:' : 'Livello teorico da PE:'} <strong>Liv. {infoPe.livelloTeorico}</strong>
                     </div>
                   </div>
 
@@ -8449,7 +8449,7 @@ export default function App() {
                         boxShadow: '0 4px 12px rgba(16,185,129,0.3)',
                       }}
                     >
-                      ✨ {lingua === 'en' ? 'Ready to Level Up! Open Level Up Guide' : 'Pronto al Passaggio! Apri Avanzamento di Livello'}
+                      ✨ {lingua === 'en' ? 'Ready to level up: open the level-up guide' : 'Puoi salire di livello: apri l’avanzamento'}
                     </button>
                   )}
                 </div>
@@ -8464,7 +8464,7 @@ export default function App() {
                   <div style={{ display: 'flex', gap: 6 }}>
                     <input
                       type="number"
-                      placeholder={lingua === 'en' ? 'Amount of XP to add (e.g. 450)...' : 'Quantità P.E. da aggiungere (es. 450)...'}
+                      placeholder={lingua === 'en' ? 'Amount of XP to add (e.g. 450)...' : 'Quantità PE da aggiungere (es. 450)...'}
                       value={inputAggiungiPe}
                       onChange={(e) => setInputAggiungiPe(e.target.value)}
                       onKeyDown={(e) => {
@@ -8509,7 +8509,7 @@ export default function App() {
                           fontWeight: 600,
                         }}
                       >
-                        +{val.toLocaleString()} P.E.
+                        +{val.toLocaleString()} PE
                       </button>
                     ))}
                   </div>
@@ -8517,7 +8517,7 @@ export default function App() {
 
                 {/* Modifica Manuale P.E. Totali */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: C.panelLight, borderRadius: 8, border: `1px solid ${C.border}`, fontSize: 12 }}>
-                  <span style={{ color: C.inkDim }}>{lingua === 'en' ? 'Set Total XP manually:' : 'Imposta P.E. totali a mano:'}</span>
+                  <span style={{ color: C.inkDim }}>{lingua === 'en' ? 'Set Total XP manually:' : 'Imposta PE totali a mano:'}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <Editable
                       value={Math.max(0, Number(scheda.pe) || 0)}
@@ -8526,21 +8526,21 @@ export default function App() {
                       style={{ textAlign: 'right', fontWeight: 700 }}
                       onChange={(v) => aggiorna({ pe: Math.max(0, v) })}
                     />
-                    <span style={{ color: C.inkDim }}>P.E.</span>
+                    <span style={{ color: C.inkDim }}>PE</span>
                   </div>
                 </div>
 
                 {/* Tabella Ufficiale Soglie D&D 5e */}
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 6 }}>
-                    {lingua === 'en' ? `Official XP Progression Table (${versione === '2024' ? '5.5' : '5e'})` : `Tabella Ufficiale Soglie P.E. (${versione === '2024' ? '5.5' : '5e'})`}
+                    {lingua === 'en' ? `Official XP Progression Table (${versione === '2024' ? '5.5' : '5e'})` : `Tabella Ufficiale Soglie PE (${versione === '2024' ? '5.5' : '5e'})`}
                   </div>
                   <div style={{ maxHeight: 180, overflowY: 'auto', border: `1px solid ${C.border}`, borderRadius: 6 }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, textAlign: 'left' }}>
                       <thead>
                         <tr style={{ background: C.panelLight, borderBottom: `1px solid ${C.border}`, color: C.inkDim }}>
                           <th style={{ padding: '4px 8px' }}>{t('profilo.livello')}</th>
-                          <th style={{ padding: '4px 8px' }}>{lingua === 'en' ? 'Min XP' : 'P.E. Minimi'}</th>
+                          <th style={{ padding: '4px 8px' }}>{lingua === 'en' ? 'Min XP' : 'PE Minimi'}</th>
                           <th style={{ padding: '4px 8px' }}>{lingua === 'en' ? 'Prof. Bonus' : 'Bonus Comp.'}</th>
                           <th style={{ padding: '4px 8px' }}>{lingua === 'en' ? 'Status' : 'Stato'}</th>
                         </tr>
@@ -8565,7 +8565,7 @@ export default function App() {
                                 {isAttuale ? '👉 ' : ''}Livello {l}
                               </td>
                               <td style={{ padding: '4px 8px', color: C.ink }}>
-                                {soglia.toLocaleString()} P.E.
+                                {soglia.toLocaleString()} PE
                               </td>
                               <td style={{ padding: '4px 8px', color: C.inkDim }}>
                                 {conSegno(bc)}
@@ -8631,7 +8631,7 @@ export default function App() {
               {/* Header */}
               <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <strong style={{ fontSize: 15, color: C.goldDark }}>
-                  {lingua === 'en' ? `Movement, Jumps & Physical Capacity (${(scheda?.versione || '2024') === '2024' ? '5.5' : '5e'})` : `Movimento, Salti & Capacità Fisiche (${(scheda?.versione || '2024') === '2024' ? '5.5' : '5e'})`}
+                  {lingua === 'en' ? `Movement, jumping and carrying (${(scheda?.versione || '2024') === '2024' ? '5.5' : '5e'})` : `Movimento, salti e capacità fisiche (${(scheda?.versione || '2024') === '2024' ? '5.5' : '5e'})`}
                 </strong>
                 <button
                   type="button"
@@ -8648,7 +8648,7 @@ export default function App() {
                 {/* 1. Modalità di Movimento */}
                 <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                    {lingua === 'en' ? 'Movement Modes per Round' : 'Velocità & Modalità di Movimento'}
+                    {lingua === 'en' ? 'Movement modes per round' : 'Velocità e tipi di movimento'}
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 8 }}>
                     <div style={{ background: C.panel, padding: '8px 10px', borderRadius: 6, border: `1px solid ${C.border}` }}>
@@ -8725,7 +8725,7 @@ export default function App() {
                 {/* 3. Capacità Fisiche: Sollevamento & Trascinamento */}
                 <div style={{ background: C.panelLight, border: `1px solid ${C.border}`, borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span>{lingua === 'en' ? 'Lifting & Dragging Capacity' : 'Sollevamento & Spinta / Trascinamento'}</span>
+                    <span>{lingua === 'en' ? 'Lifting and dragging' : 'Sollevare, spingere e trascinare'}</span>
                     {mov.haCorporaturaPossente && (
                       <span style={{ fontSize: 11, color: '#10b981', background: 'rgba(16,185,129,0.12)', border: '1px solid #10b981', padding: '1px 5px', borderRadius: 4, fontWeight: 700 }}>
                         ✨ {lingua === 'en' ? 'Powerful Build ×2' : 'Corporatura Possente ×2'}
@@ -8819,7 +8819,7 @@ export default function App() {
               <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: C.panelLight }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <strong style={{ fontSize: 15, color: C.goldDark }}>
-                    {lingua === 'en' ? `Reactions & In-Combat Triggers (${versione === '2024' ? '5.5' : '5e'})` : `Reazioni & Inneschi di Combattimento (${versione === '2024' ? '5.5' : '5e'})`}
+                    {lingua === 'en' ? `Reactions and combat triggers (${versione === '2024' ? '5.5' : '5e'})` : `Reazioni e inneschi in combattimento (${versione === '2024' ? '5.5' : '5e'})`}
                   </strong>
                 </div>
                 <button
@@ -8838,8 +8838,8 @@ export default function App() {
                   <div>
                     <strong style={{ fontSize: 13, color: reazioneUsata ? C.red : '#2e9d4d' }}>
                       {reazioneUsata
-                        ? (lingua === 'en' ? 'Reaction USED this round' : 'Reazione USATA in questo round')
-                        : (lingua === 'en' ? 'Reaction AVAILABLE' : 'Reazione DISPONIBILE')}
+                        ? (lingua === 'en' ? 'Reaction used this round' : 'Reazione già usata in questo round')
+                        : (lingua === 'en' ? 'Reaction available' : 'Reazione disponibile')}
                     </strong>
                     <div style={{ fontSize: 11, color: C.inkDim }}>
                       {lingua === 'en' ? 'Max 1 reaction per round. Resets at start of your turn.' : 'Massimo 1 reazione per round. Si ripristina all\'inizio del tuo turno.'}
@@ -9499,7 +9499,7 @@ export default function App() {
 
                 {/* Dadi Vita Formula Totale */}
                 <div style={rigaCambio}>
-                  <span>{t('levelup.dadi_vita')} (Totali)</span>
+                  <span>{t('levelup.dadi_vita')} {lingua === 'it' ? '(totale)' : '(total)'}</span>
                   <strong>{calcolaFormulaDadiVita(scheda.classe, isNewMc || isSecMc ? Math.max(1, num(scheda.livello, 1)) : targetLivelloNuovo, classiNuove.slice(1))}</strong>
                 </div>
 
@@ -9591,7 +9591,7 @@ export default function App() {
                   {/* Intestazione Sezione */}
                   <div style={{ fontWeight: 700, marginBottom: 8, color: C.goldDark, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span>✨</span>
-                    <span>{lingua === 'it' ? 'Incantesimi & Slot Magici' : 'Spells & Spell Slots'}</span>
+                    <span>{lingua === 'it' ? 'Incantesimi e slot' : 'Spells and spell slots'}</span>
                   </div>
 
                   {/* Banner Sblocco Nuovo Livello Incantesimo */}
@@ -9613,8 +9613,8 @@ export default function App() {
                         </div>
                         <div style={{ color: C.inkDim, fontSize: 12, marginTop: 1 }}>
                           {lingua === 'it'
-                            ? `Ora hai accesso agli incantesimi di ${nuovoLivInc}° cerchio.`
-                            : `You now have access to ${nuovoLivInc}${nuovoLivInc === 1 ? 'st' : nuovoLivInc === 2 ? 'nd' : nuovoLivInc === 3 ? 'rd' : 'th'} level spells.`}
+                            ? `Ora puoi imparare o preparare incantesimi di ${nuovoLivInc}° livello.`
+                            : `You can now learn or prepare ${nuovoLivInc}${nuovoLivInc === 1 ? 'st' : nuovoLivInc === 2 ? 'nd' : nuovoLivInc === 3 ? 'rd' : 'th'} level spells.`}
                         </div>
                       </div>
                     </div>
@@ -9624,7 +9624,7 @@ export default function App() {
                   {slotNuovi && Object.keys(slotNuovi).filter((l) => slotNuovi[l]?.totale > 0).length > 0 && (
                     <div style={{ marginBottom: (trucchettiDaScegliere > 0 || nuoviIncantesimi > 0) ? 10 : 0 }}>
                       <div style={{ fontSize: 12, color: C.inkDim, marginBottom: 6, fontWeight: 600 }}>
-                        {lingua === 'it' ? 'Disponibilità Slot Incantesimo:' : 'Spell Slot Availability:'}
+                        {lingua === 'it' ? 'Slot incantesimo disponibili:' : 'Available spell slots:'}
                       </div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                         {Object.keys(slotNuovi)
@@ -9658,7 +9658,7 @@ export default function App() {
                                 <span>{tot} {tot === 1 ? 'slot' : 'slot'}</span>
                                 {isNuovoLiv && (
                                   <span style={{ fontSize: 11, background: '#2e9d4d', color: '#fff', padding: '1px 5px', borderRadius: 4, fontWeight: 800 }}>
-                                    {lingua === 'it' ? 'NUOVO' : 'NEW'}
+                                    {lingua === 'it' ? 'Nuovo' : 'New'}
                                   </span>
                                 )}
                                 {isAumentato && (
@@ -9686,7 +9686,7 @@ export default function App() {
                     }}>
                       <div style={{ fontSize: 12, fontWeight: 700, color: C.ink, display: 'flex', alignItems: 'center', gap: 5 }}>
                         <span>📖</span>
-                        <span>{lingua === 'it' ? 'Da imparare / preparare:' : 'To learn / prepare:'}</span>
+                        <span>{lingua === 'it' ? 'Da imparare o preparare:' : 'To learn or prepare:'}</span>
                       </div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 2 }}>
                         {nuoviIncantesimi > 0 && (
@@ -10403,7 +10403,7 @@ export default function App() {
               onClick={() => {
                 setMostraMenuEsporta(false);
                 setTimeout(() => {
-                  const txt = prompt(lingua === 'en' ? 'Paste character JSON text or shared link:' : 'Incolla qui il testo JSON della scheda o il link condiviso:');
+                  const txt = prompt(lingua === 'en' ? 'Paste the sheet text (JSON) or a share link:' : 'Incolla il testo della scheda (JSON) o un link di condivisione:');
                   if (txt && txt.trim()) {
                     try {
                       let str = txt.trim();
@@ -10415,7 +10415,7 @@ export default function App() {
                             if (dati) {
                               const normalizzata = normalizeImported(dati);
                               aggiorna(normalizzata);
-                              setInfo({ titolo: '✅ Importazione completata', testo: `Scheda "${normalizzata.nome || 'Personaggio'}" importata con successo dal link!` });
+                              setInfo({ titolo: '✅ Importazione completata', testo: `Scheda "${normalizzata.nome || 'Personaggio'}" importata dal link.` });
                             }
                           });
                           return;
@@ -10424,9 +10424,9 @@ export default function App() {
                       const obj = JSON.parse(str);
                       const normalizzata = normalizeImported(obj);
                       aggiorna(normalizzata);
-                      setInfo({ titolo: '✅ Importazione completata', testo: `Scheda "${normalizzata.nome || 'Personaggio'}" importata con successo dal testo!` });
+                      setInfo({ titolo: '✅ Importazione completata', testo: `Scheda "${normalizzata.nome || 'Personaggio'}" importata dal testo.` });
                     } catch (err) {
-                      setInfo({ titolo: '❌ Errore importazione', testo: 'Il testo incollato non è un JSON valido o il link non contiene una scheda valida.' });
+                      setInfo({ titolo: '❌ Importazione non riuscita', testo: 'Il testo incollato non è un JSON valido o il link non contiene una scheda valida.' });
                     }
                   }
                 }, 50);
@@ -11035,7 +11035,7 @@ export default function App() {
                 <span style={{ fontSize: 24 }}>📚</span>
                 <div>
                   <h2 style={{ ...styles.title, margin: 0, fontSize: 18, lineHeight: 1.2 }}>
-                    {lingua === 'it' ? 'Manuali & Fonti di Regole' : 'Sourcebooks & Rulesets'}
+                    {lingua === 'it' ? 'Manuali e fonti' : 'Sourcebooks'}
                   </h2>
                   <div style={{ ...styles.detail, fontSize: 12, color: C.inkDim, marginTop: 2 }}>
                     {lingua === 'it' ? 'Attiva o disattiva i manuali di gioco per personalizzare classi e opzioni.' : 'Enable or disable rule sourcebooks to customize classes and options.'}
@@ -11143,7 +11143,7 @@ export default function App() {
                         transition: 'all 0.15s ease',
                       }}
                     >
-                      {attivo ? (lingua === 'it' ? '✓ ATTIVO' : '✓ ACTIVE') : (lingua === 'it' ? 'DISATTIVO' : 'INACTIVE')}
+                      {attivo ? (lingua === 'it' ? '✓ Attivo' : '✓ Active') : (lingua === 'it' ? 'Non attivo' : 'Inactive')}
                     </button>
                   </div>
                 );
@@ -11157,7 +11157,7 @@ export default function App() {
                 style={{ ...styles.buttonPrimary, padding: '8px 18px', fontSize: 13 }}
                 onClick={() => setMostraModalManuali(false)}
               >
-                {lingua === 'it' ? 'Salva e Chiudi' : 'Save & Close'}
+                {lingua === 'it' ? 'Salva e chiudi' : 'Save and close'}
               </button>
             </div>
           </div>
@@ -11495,7 +11495,7 @@ export default function App() {
                 }
                 setMutoAudio((m) => !m);
               }}
-              title={mutoAudio ? 'Audio in muto · click per riattivare tutto' : 'Muta rapidamente tutto l’audio (sottofondo + effetti)'}
+              title={mutoAudio ? (lingua === 'en' ? 'Audio muted · click to unmute' : 'Audio disattivato · clicca per riattivarlo') : (lingua === 'en' ? 'Mute all audio (ambience and effects)' : 'Disattiva tutto l’audio (sottofondo ed effetti)')}
               style={{
                 padding: '6px 4px', minHeight: 32, borderRadius: 6,
                 border: `1px solid ${!mutoAudio ? C.goldDark : C.border}`,
@@ -11622,7 +11622,7 @@ export default function App() {
               <span style={{ fontSize: 20 }}>🔒</span>
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontWeight: 800, fontSize: 13, textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>
-                  {lingua === 'en' ? 'PG Archive: Read-Only Character Sheet' : 'Archivio PG: Scheda in Sola Lettura'}
+                  {lingua === 'en' ? 'DM archive: read-only sheet' : 'Archivio del Master: scheda in sola lettura'}
                 </div>
                 <div style={{ fontSize: 11, opacity: 0.95, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {formattaNomePg(scheda.nome) || 'Personaggio'} · {lingua === 'en' ? 'No changes will be saved' : 'Consultazione sicura · nessuna modifica al cloud o al roster'}
@@ -11634,7 +11634,7 @@ export default function App() {
                 style={{ ...styles.buttonMini, background: 'rgba(255,255,255,0.2)', color: '#ffffff', borderColor: 'rgba(255,255,255,0.45)', padding: '4px 8px', fontSize: 11, fontWeight: 700 }}
                 onClick={() => setMostraArchivioDm(true)}
               >
-                🗂 {lingua === 'en' ? 'PG Archive' : 'Archivio PG'}
+                🗂 {lingua === 'en' ? 'DM archive' : 'Archivio del Master'}
               </button>
               <button
                 style={{ ...styles.buttonMini, background: '#c62828', color: '#ffffff', borderColor: '#e53935', padding: '4px 10px', fontSize: 11, fontWeight: 800 }}
@@ -11822,14 +11822,14 @@ export default function App() {
                           position: 'relative',
                           ...(daNotificare ? { color: C.goldDark, borderColor: C.goldDark } : {}),
                         }}
-                        title={daNotificare ? (nuovaVersione ? 'Nuova versione di Tavolo dei Dadi disponibile!' : (controlliAttivi.length > 0 ? `${controlliAttivi.length} avvisi sulla scheda` : t('notifiche.novita_presenti'))) : t('notifiche.titolo')}
+                        title={daNotificare ? (nuovaVersione ? (lingua === 'en' ? 'A new version is available' : 'È disponibile una nuova versione') : (controlliAttivi.length > 0 ? (lingua === 'en' ? `${controlliAttivi.length} sheet alerts` : `${controlliAttivi.length} avvisi sulla scheda`) : t('notifiche.novita_presenti'))) : t('notifiche.titolo')}
                         onClick={apriNotifiche}
                       >
                         <span className={daNotificare ? 'icona-campanello' : ''}>🔔</span>
                       </button>
                       <button
                         style={btnAzione}
-                        title={lingua === 'it' ? 'Cambia in inglese' : 'Switch to Italian'}
+                        title={lingua === 'it' ? 'Lingua: italiano (passa all’inglese)' : 'Language: English (switch to Italian)'}
                         onClick={() => setLingua((l) => (l === 'it' ? 'en' : 'it'))}
                       >
                         {lingua === 'it' ? '🇮🇹' : '🇬🇧'}
@@ -11866,12 +11866,12 @@ export default function App() {
                         }}
                         title={
                           sincronizzando
-                            ? (lingua === 'en' ? 'Cloud: synchronizing...' : 'Cloud: sincronizzazione in corso...')
+                            ? (lingua === 'en' ? 'Sync in progress…' : 'Sincronizzazione in corso…')
                             : isCloudAttivo
-                              ? (lingua === 'en' ? `Cloud backup ACTIVE · Last sync: ${ultimoSyncCodice || ultimoSync || 'recent'}` : `Backup cloud ATTIVO · Ultimo: ${ultimoSyncCodice || ultimoSync || 'recente'}`)
+                              ? (lingua === 'en' ? `Sync is on · last sync: ${ultimoSyncCodice || ultimoSync || 'recent'}` : `Sincronizzazione attiva · ultima: ${ultimoSyncCodice || ultimoSync || 'recente'}`)
                               : isCloudConfigurato
-                                ? (lingua === 'en' ? 'Cloud configured (auto-sync paused)' : 'Cloud configurato (salvataggio automatico in pausa)')
-                                : (lingua === 'en' ? 'Cloud backup NOT ACTIVE: click to configure' : 'Backup cloud NON ATTIVO: clicca per configurare')
+                                ? (lingua === 'en' ? 'Sync configured (automatic saving paused)' : 'Sincronizzazione configurata (salvataggio automatico in pausa)')
+                                : (lingua === 'en' ? 'Sync is off: click to set it up' : 'Sincronizzazione non attiva: clicca per configurarla')
                         }
                         onClick={() => { setCloudStatus({ text: '', type: '' }); setSyncCodiceStatus({ text: '', type: '' }); setMostraCloud(true); }}
                       >
@@ -12092,8 +12092,8 @@ export default function App() {
                   <div>
                     <div style={{ fontSize: 16, fontWeight: 800, color: C.green || '#3e7d32', letterSpacing: 0.3 }}>
                       {campoForma === 'metamorfosi'
-                        ? (lingua === 'en' ? 'ACTIVE POLYMORPH' : 'METAMORFOSI ATTIVA')
-                        : (lingua === 'en' ? 'ACTIVE WILD SHAPE' : 'FORMA SELVATICA ATTIVA')}: {lingua === 'en' ? (formaAttiva.dati.nomeEn || formaAttiva.dati.nome) : formaAttiva.dati.nome}
+                        ? (lingua === 'en' ? 'Polymorph active' : 'Metamorfosi attiva')
+                        : (lingua === 'en' ? 'Wild Shape active' : 'Forma Selvatica attiva')}: {lingua === 'en' ? (formaAttiva.dati.nomeEn || formaAttiva.dati.nome) : formaAttiva.dati.nome}
                     </div>
                     <div style={{ fontSize: 12, color: C.inkDim, fontWeight: 600 }}>
                       {formaAttiva.dati.taglia} {formaAttiva.dati.tipo || 'bestia'} · GS {formaAttiva.dati.gs} · 🛡️ CA {formaAttiva.dati.ca} · 🐾 {formaAttiva.dati.velocita?.terra || 9}m
@@ -12239,7 +12239,7 @@ export default function App() {
               {formaAttiva.dati.azioni && formaAttiva.dati.azioni.length > 0 && (
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', color: C.goldDark, marginBottom: 6 }}>
-                    ⚔️ {lingua === 'en' ? 'Beast Attacks & Actions' : 'Azioni & Attacchi della Bestia'}
+                    ⚔️ {lingua === 'en' ? 'Beast actions and attacks' : 'Azioni e attacchi della bestia'}
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {formaAttiva.dati.azioni.map((azRaw, idx) => {
@@ -12375,7 +12375,7 @@ export default function App() {
                         border: isTrasformato ? '2.5px solid #52b788' : `2px solid ${coloreClasse(scheda.classe) ? C.gold : C.border}`,
                         cursor: 'pointer', position: 'relative',
                       }}
-                      title={isTrasformato ? `🐾 ${formaAttiva.dati.nome}: Click per cambiare illustrazione o caricare immagine` : (scheda.ritratto ? 'Click: cambia immagine' : 'Click: carica l’immagine del personaggio')}
+                      title={isTrasformato ? `🐾 ${formaAttiva.dati.nome}: clicca per cambiare illustrazione o caricare un'immagine` : (scheda.ritratto ? 'Clic: cambia immagine' : 'Clic: carica l’immagine del personaggio')}
                       onClick={() => {
                         if (isTrasformato) {
                           setMostraModalRitrattoBestia(true);
@@ -13302,7 +13302,7 @@ export default function App() {
                   {/* Sezione Inferiore: Tiri Morte / Death Saves — perfettamente centrata e ben dimensionata */}
                   <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '4px 0' }}>
                     <div style={{ ...styles.vitalLabel, position: 'static', margin: 0, marginBottom: 6, fontSize: 13, fontWeight: 800, letterSpacing: 1 }}>
-                      💀 {lingua === 'en' ? 'DEATH SAVES' : 'TIRI MORTE'}
+                      💀 {lingua === 'en' ? 'Death saves' : 'TS contro morte'}
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
@@ -13590,7 +13590,7 @@ export default function App() {
                     else if (sfin.velocitaDimezzata) fonti.push(lingua === 'en' ? 'Exhaustion: halved' : 'Sfinimento: dimezzata');
                     else if (sfin.penalitaVelocita) fonti.push(`−${sfin.penalitaVelocita}m (${lingua === 'en' ? 'Exhaustion' : 'Sfinimento'})`);
                     const titolo = modificata
-                      ? `${lingua === 'en' ? 'Total' : 'Totale'} ${totale}m = ${lingua === 'en' ? 'base' : 'base'} ${base}m ${fonti.join(', ')} · ${lingua === 'en' ? '1 click: edit base speed' : '1 click: modifica la velocità base'}`
+                      ? `${lingua === 'en' ? 'Total' : 'Totale'} ${totale}m = ${lingua === 'en' ? 'base' : 'base'} ${base}m ${fonti.join(', ')} · ${lingua === 'en' ? 'click: edit base speed' : 'clic: modifica la velocità base'}`
                       : undefined;
                     return (
                       <div style={styles.vitalValue} className={modificata ? 'velocita-modificata' : undefined} title={titolo}>
@@ -13627,7 +13627,7 @@ export default function App() {
                     gap: 3,
                     transition: 'background 0.15s ease',
                   }}
-                  title={lingua === 'en' ? 'Click to open Movement, Jump & Carrying Calculator' : 'Clicca per aprire il Calcolatore Salti, Movimento e Capacità Fisiche'}
+                  title={lingua === 'en' ? 'Click to open the movement, jumping and carrying calculator' : 'Clicca per aprire il calcolatore di movimento, salti e capacità fisiche'}
                 >
                   <span>{t('vital.movimenti')}</span>
                   <span style={{ fontSize: 11, opacity: 0.8 }}>▼</span>
@@ -13886,7 +13886,7 @@ export default function App() {
                           background: tsMancante ? 'rgba(231,76,60,0.12)' : 'transparent',
                           padding: tsMancante ? '2px 4px' : styles.skillRow(true).padding,
                         }}
-                        title={tsMancante ? `⚠️ ${tsMancante.testo} (Click per tirare, click sul pallino per impostare)` : `Tieni premuto e rilascia: tiro salvezza di ${t('attr.' + key)} · click sul pallino: competenza`}
+                        title={tsMancante ? `⚠️ ${tsMancante.testo} (clicca per tirare, clicca sul pallino per impostare)` : `Tieni premuto e rilascia: tiro salvezza di ${t('attr.' + key)} · click sul pallino: competenza`}
                         onRoll={() => lanciaD20(`Tiro salvezza: ${t('attr.' + key)}`, bonusTS, { tipoTiro: 'salvezza' })}
                       >
                         <span
@@ -13957,7 +13957,7 @@ export default function App() {
                           background: abMancante ? 'rgba(231,76,60,0.12)' : 'transparent',
                           padding: abMancante ? '2px 4px' : styles.skillRow(true).padding,
                         }}
-                        title={abMancante ? `⚠️ ${abMancante.testo} (Click per tirare, click sul pallino per impostare)` : `Tieni premuto e rilascia: prova di ${t('skill.' + a.key)} · click sul pallino: niente → competenza (●) → competenza di classe/razza (★) → Maestria/Expertise, doppia competenza (✦)`}
+                        title={abMancante ? `⚠️ ${abMancante.testo} (clicca per tirare, clicca sul pallino per impostare)` : `Tieni premuto e rilascia: prova di ${t('skill.' + a.key)} · click sul pallino: niente → competenza (●) → competenza di classe/razza (★) → Maestria/Expertise, doppia competenza (✦)`}
                         onRoll={() => lanciaD20(`${t('skill.' + a.key)}`, bonus, { tipoTiro: 'prova' })}
                       >
                         <span
@@ -13979,7 +13979,7 @@ export default function App() {
                             e.stopPropagation();
                             setModalAbilitaGuida(a.key);
                           }}
-                          title={lingua === 'en' ? 'Click for 5e rules, DCs, and tool synergies' : 'Click per guida 5e, CD di riferimento e sinergie con strumenti'}
+                          title={lingua === 'en' ? 'Click for 5e rules, reference DCs and tool synergies' : 'Clicca per regole 5e, CD di riferimento e sinergie con gli strumenti'}
                         >{t('skill.' + a.key)}</span>
                         {abMancante && (
                           <span style={{ marginLeft: 'auto', fontSize: 11, color: C.red, fontWeight: 700 }}>⚠️ Manca</span>
@@ -14410,7 +14410,7 @@ export default function App() {
                               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                 <span style={{ fontSize: 13 }}>⚡</span>
                                 <strong style={{ fontSize: 11, color: C.goldDark }}>
-                                  {lingua === 'en' ? 'Class Powers & Boosters:' : 'Potenziamenti di Classe:'}
+                                  {lingua === 'en' ? 'Class boosts:' : 'Potenziamenti di classe:'}
                                 </strong>
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
@@ -14469,7 +14469,7 @@ export default function App() {
                                     }}
                                     title={lingua === 'en' ? `Rage (+${ira.bonusDanni} STR melee damage, physical resistances)` : `Ira Barbarica (+${ira.bonusDanni} danni mischia FOR, resistenze contundente/perforante/tagliente)`}
                                   >
-                                    🔥 {lingua === 'en' ? 'Rage' : 'Ira'} (+{ira.bonusDanni}) {scheda.inIra ? '🔥 ATTIVA' : `(${Math.max(0, ira.utilizziMax - (scheda.ireUsate || 0))}/${ira.utilizziMax})`}
+                                    🔥 {lingua === 'en' ? 'Rage' : 'Ira'} (+{ira.bonusDanni}) {scheda.inIra ? '🔥 attiva' : `(${Math.max(0, ira.utilizziMax - (scheda.ireUsate || 0))}/${ira.utilizziMax})`}
                                   </button>
                                 )}
 
@@ -14496,7 +14496,7 @@ export default function App() {
                                     }}
                                     title={lingua === 'en' ? 'Divine Smite (+2d8 radiant, +1d8/slot)' : 'Punizione Divina (+2d8 radiosi, scala con lo slot)'}
                                   >
-                                    ✨ Smite {scheda.smiteAttivo ? '● ATTIVO' : '○'}
+                                    ✨ Smite {scheda.smiteAttivo ? '● attivo' : '○'}
                                   </button>
                                 )}
 
@@ -14556,7 +14556,7 @@ export default function App() {
                                   }}
                                   title={lingua === 'en' ? 'Heroic Inspiration (reroll any d20)' : 'Ispirazione Eroica (ritira qualsiasi d20 prima o dopo il risultato)'}
                                 >
-                                  ⭐ {lingua === 'en' ? 'Heroic' : 'Eroica'} {scheda.ispirazioneEroica ? '✨ DISPONIBILE' : '○'}
+                                  ⭐ {lingua === 'en' ? 'Heroic' : 'Eroica'} {scheda.ispirazioneEroica ? '✨ disponibile' : '○'}
                                 </button>
                               </div>
                             </div>
@@ -14851,10 +14851,10 @@ export default function App() {
                                       gap: 4,
                                       cursor: 'pointer',
                                     }}
-                                    title={lingua === 'en' ? 'View all available reactions & triggers' : 'Visualizza tutti gli inneschi e le reazioni disponibili'}
+                                    title={lingua === 'en' ? 'View all available reactions and triggers' : 'Visualizza tutti gli inneschi e le reazioni disponibili'}
                                   >
                                     <span>⚡</span>
-                                    <span>{lingua === 'en' ? 'Triggers & Reactions' : 'Inneschi & Reazioni'}</span>
+                                    <span>{lingua === 'en' ? 'Triggers and reactions' : 'Inneschi e reazioni'}</span>
                                   </button>
                                 </>
                               )}
@@ -15060,7 +15060,7 @@ export default function App() {
                                           <option value="">{cat === 'Bonus' ? '⚡' : '⚔️'}</option>
                                           {cat === 'Bonus' ? (
                                             <>
-                                              <optgroup label={lingua === 'en' ? 'Bonus Actions & Weapons' : 'Azioni Bonus & Armi'}>
+                                              <optgroup label={lingua === 'en' ? 'Bonus actions and weapons' : 'Azioni bonus e armi'}>
                                                 {AZIONI_BONUS_5E.filter((x) => x.tipo === 'combattimento' || x.tipo === 'talento' || x.tipo === 'privilegio').map((b) => <option key={b.nome} value={b.nome} title={b.note || spiegaPrivilegio(b.nome)}>⚔️ {traduciDato(b.nome)}</option>)}
                                               </optgroup>
                                               <optgroup label={lingua === 'en' ? 'Bonus Action Spells' : 'Incantesimi Azione Bonus'}>
@@ -15109,7 +15109,7 @@ export default function App() {
                                           tipoDanno={a.tipoDanno}
                                           critico={!!isUltimoCrit}
                                           disabled={castBloccato}
-                                          title={castBloccato ? 'Equipaggia un focus per lanciare questo incantesimo' : isUltimoCrit ? `⚔️ Tira i danni CRITICI raddoppiati (${a.danno} ×2)` : `Tira i danni (${a.danno})`}
+                                          title={castBloccato ? 'Equipaggia un focus per lanciare questo incantesimo' : isUltimoCrit ? `⚔️ Tira i danni del critico (${a.danno} ×2)` : `Tira i danni (${a.danno})`}
                                           onRoll={() => {
                                             tiraDanniPerAttacco(a, !!isUltimoCrit);
                                             setUltimoAttaccoCritico(null);
@@ -15199,7 +15199,7 @@ export default function App() {
                                             }}
                                             title={infoMunizioni.totale > 0
                                               ? (lingua === 'en' ? `${infoMunizioni.totale} ${infoMunizioni.nomeMunizione} in inventory` : `${infoMunizioni.totale} ${infoMunizioni.nomeMunizione} disponibili nello zaino`)
-                                              : (lingua === 'en' ? `Out of ammunition! (0 in inventory)` : `Munizioni esaurite! (0 nello zaino)`)}
+                                              : (lingua === 'en' ? `Out of ammunition (0 in inventory)` : `Munizioni esaurite (0 nell'inventario)`)}
                                           >
                                             🏹 {infoMunizioni.totale} {infoMunizioni.totale === 0 ? (lingua === 'en' ? 'empty' : 'esaurite') : ''}
                                           </span>
@@ -15295,7 +15295,7 @@ export default function App() {
                                             alignItems: 'center',
                                             gap: 3,
                                           }}
-                                          title={scheda.reazioneUsata ? (lingua === 'en' ? 'Reaction USED this round. Click to restore.' : 'Reazione USATA in questo round. Clicca per ripristinare.') : (lingua === 'en' ? `Use ${a.nome} as reaction for this round` : `Usa ${a.nome} come reazione per questo round`)}
+                                          title={scheda.reazioneUsata ? (lingua === 'en' ? 'Reaction used this round. Click to restore it.' : 'Reazione già usata in questo round. Clicca per ripristinare.') : (lingua === 'en' ? `Use ${a.nome} as reaction for this round` : `Usa ${a.nome} come reazione per questo round`)}
                                           onClick={() => {
                                             const nuovoStato = !scheda.reazioneUsata;
                                             aggiorna({ reazioneUsata: nuovoStato });
@@ -15517,7 +15517,7 @@ export default function App() {
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
                       <span style={{ fontSize: 13, fontWeight: 800, color: haErroriGravi ? '#ef4444' : '#2e9d4d', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                         {haErroriGravi ? '🔴' : '🟢'}
-                        {lingua === 'en' ? 'Spell Sheet Alignment Guide' : 'Guida Allineamento Incantesimi & Trucchetti'}
+                        {lingua === 'en' ? 'Spell list check' : 'Verifica di incantesimi e trucchetti'}
                       </span>
                       {classePreparata && incInEccesso && (
                         <button
@@ -15862,8 +15862,8 @@ export default function App() {
                         <span>🟢</span>
                         <span>
                           {lingua === 'en'
-                            ? `${numMancanti} cantrip${numMancanti > 1 ? 's' : ''} to choose: pick ${numMancanti > 1 ? 'them' : 'it'} in Level Up`
-                            : `${numMancanti} trucchett${numMancanti > 1 ? 'i' : 'o'} da scegliere: si scelgono nel Level Up`}
+                            ? `${numMancanti} cantrip${numMancanti > 1 ? 's' : ''} to choose: pick ${numMancanti > 1 ? 'them' : 'it'} when you level up`
+                            : `${numMancanti} trucchett${numMancanti > 1 ? 'i' : 'o'} da scegliere durante l’avanzamento di livello`}
                         </span>
                       </div>
                     );
@@ -16002,12 +16002,12 @@ export default function App() {
                             )}
                             {isEccessoLiv && (
                               <span style={{ fontSize: 11, fontWeight: 700, color: '#fff', background: '#ef4444', border: '1px solid #ef4444', borderRadius: 6, padding: '1px 6px' }}>
-                                🔴 {lingua === 'en' ? 'EXCESS' : 'IN ECCESSO'}
+                                🔴 {lingua === 'en' ? 'Over the limit' : 'Oltre il limite'}
                               </span>
                             )}
                             {isMancanteLiv && (
                               <span style={{ fontSize: 11, fontWeight: 700, color: '#2e9d4d', background: 'rgba(46,157,77,0.15)', border: '1px solid #2e9d4d', borderRadius: 6, padding: '1px 6px' }}>
-                                🟢 {lingua === 'en' ? 'SLOTS TO CHOOSE' : 'SCELTE DISPONIBILI'}
+                                🟢 {lingua === 'en' ? 'Choices available' : 'Scelte disponibili'}
                               </span>
                             )}
                           </div>
@@ -16307,7 +16307,7 @@ export default function App() {
                                         danno={danno}
                                         tipoDanno={tipoDanno}
                                         critico={!!isUltimoCritInc}
-                                        title={isUltimoCritInc ? `⚔️ Critico attivo: tira danni CRITICI raddoppiati (${danno} ×2)` : t('tip.tira_danno_inc')}
+                                        title={isUltimoCritInc ? `⚔️ Critico attivo: tira i danni del critico (${danno} ×2)` : t('tip.tira_danno_inc')}
                                         onRoll={() => {
                                           tiraDanniPerAttacco({ id: s.id, nome: s.nome, danno, tipoDanno, isSpell: true }, !!isUltimoCritInc);
                                           setUltimoAttaccoCritico(null);
@@ -16711,7 +16711,7 @@ export default function App() {
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
                         <div>
                           <div style={{ ...styles.detail, fontWeight: 700, fontSize: 13, color: C.goldDark }}>
-                            🔮 {lingua === 'en' ? 'Pact Invocations' : 'Suppliche & Invocazioni del Patto'}
+                            🔮 {lingua === 'en' ? 'Eldritch Invocations' : 'Suppliche occulte'}
                           </div>
                           <div style={{ ...styles.detail, fontSize: 11, color: C.inkDim }}>
                             {lingua === 'en'
@@ -16830,7 +16830,7 @@ export default function App() {
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
                         <div>
                           <div style={{ ...styles.detail, fontWeight: 700, fontSize: 13, color: C.goldDark }}>
-                            ⚙️ {lingua === 'en' ? 'Infused Items & Formulas' : 'Formule & Oggetti Infusi'}
+                            ⚙️ {lingua === 'en' ? 'Infusions and infused items' : 'Infusioni e oggetti infusi'}
                           </div>
                           <div style={{ ...styles.detail, fontSize: 11, color: C.inkDim }}>
                             {lvArtefice < 2
@@ -16973,7 +16973,7 @@ export default function App() {
 
             {/* Sezione Unificata: Privilegi di Classe, Sottoclasse, Tratti di Specie e Talenti (prima di Forma Bestiale e Famigli) */}
             <Sezione
-              titolo={lingua === 'en' ? 'Features, Traits & Feats' : 'Privilegi, Tratti & Talenti'}
+              titolo={lingua === 'en' ? 'Features, traits and feats' : 'Privilegi, tratti e talenti'}
               {...apertoProps('privilegi', true)}
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -17279,7 +17279,7 @@ export default function App() {
 
             {/* Sezione Compagni, Famigli ed Evocazioni Integrata */}
             <Sezione
-              titolo={lingua === 'en' ? 'Companions, Familiars & Summons' : 'Compagni, Famigli & Evocazioni'}
+              titolo={lingua === 'en' ? 'Companions, familiars and summons' : 'Compagni, famigli ed evocazioni'}
               {...apertoProps('famigliEvocazioni', Boolean(
                 (Array.isArray(scheda.alleati) && scheda.alleati.length > 0) ||
                 (/warlock/i.test(scheda.classe || '') && /catena|chain/i.test(scheda.sottoclasse || '')) ||
@@ -17496,7 +17496,7 @@ export default function App() {
                               {all.azioni && all.azioni.length > 0 && (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                                   <div style={{ fontSize: 11, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                                    ⚔️ {lingua === 'en' ? 'Actions & Attacks' : 'Azioni & Attacchi'}:
+                                    ⚔️ {lingua === 'en' ? 'Actions and attacks' : 'Azioni e attacchi'}:
                                   </div>
                                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 6 }}>
                                     {all.azioni.map((az, azIdx) => (
@@ -17582,7 +17582,7 @@ export default function App() {
                     {/* Catalogo Rapido Bestiario & Evocazioni per consultazione */}
                     <div style={{ marginTop: 4 }}>
                       <div style={{ fontSize: 12, fontWeight: 700, color: C.goldDark, textTransform: 'uppercase', marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span>📖 {lingua === 'en' ? 'Quick Bestiary & Summons Reference' : 'Catalogo Rapido Bestiario & Evocazioni'}</span>
+                        <span>📖 {lingua === 'en' ? 'Bestiary and summons catalog' : 'Catalogo di bestie ed evocazioni'}</span>
                         <span style={{ fontSize: 11, color: C.inkDim, fontWeight: 400 }}>{FAMIGLI.length + EVOCAZIONI.length} creature</span>
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: 6 }}>
@@ -18072,7 +18072,7 @@ export default function App() {
                       <div style={{ display: 'flex', gap: 5, overflowX: 'auto', alignItems: 'center' }}>
                         {[
                           ['tutti', '🗂️ ' + (lingua === 'en' ? 'All Types' : 'Tutti i tipi')],
-                          ['armi_armature', '⚔️ ' + (lingua === 'en' ? 'Weapons & Armor' : 'Armi & Armature')],
+                          ['armi_armature', '⚔️ ' + (lingua === 'en' ? 'Weapons and armor' : 'Armi e armature')],
                           ['pozioni', '🧪 ' + (lingua === 'en' ? 'Potions' : 'Pozioni')],
                           ['magici', '✨ ' + (lingua === 'en' ? 'Magic' : 'Magici')],
                           ['attrezzi', '🔧 ' + (lingua === 'en' ? 'Tools' : 'Attrezzi')],
@@ -18670,7 +18670,7 @@ export default function App() {
                                                   modInv(o.id, { usi: Math.max(0, curUsi - 1) });
                                                   alert(lingua === 'en'
                                                     ? `Pearl of Power used: recovered 1 spell slot of level ${livDaRecuperare}!`
-                                                    : `Perla del Potere utilizzata: recuperato 1 slot incantesimo di ${livDaRecuperare}° livello!`);
+                                                    : `Perla del Potere usata: recuperato 1 slot incantesimo di ${livDaRecuperare}° livello.`);
                                                 }}
                                               >
                                                 🔮 {lingua === 'en' ? 'Recover Slot (1-3)' : 'Recupera Slot (1°-3°)'}
@@ -19289,7 +19289,7 @@ export default function App() {
                 <span style={{ fontSize: 24, lineHeight: 1 }}>🧭</span>
                 <div>
                   <h2 style={{ ...styles.title, margin: 0, fontSize: 18, letterSpacing: 0.3, color: C.ink }}>
-                    {lingua === 'en' ? 'Menu & Game Tools' : 'Menu & Strumenti'}
+                    {lingua === 'en' ? 'Menu and tools' : 'Menu e strumenti'}
                   </h2>
                   <div style={{ fontSize: 12, color: 'var(--c-title)', fontWeight: 800, fontFamily: "var(--font-title, Georgia, 'Times New Roman', serif)" }}>
                     Tavolo dei Dadi <span style={{ fontSize: 11, color: C.inkDim, opacity: 0.75, fontWeight: 600 }}>v{APP_VERSION}</span>
@@ -19370,7 +19370,7 @@ export default function App() {
             {/* Sezione 2: Sistema & Dati */}
             <div>
               <div style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.6, color: C.goldDark, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span>⚙️</span> <span>{lingua === 'en' ? 'System & Data' : 'Sistema & Dati'}</span>
+                <span>⚙️</span> <span>{lingua === 'en' ? 'System and data' : 'Sistema e dati'}</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
                 <button
@@ -19451,7 +19451,7 @@ export default function App() {
                 >
                   <span style={{ fontSize: 16 }}>☁️</span>
                   <span>
-                    {lingua === 'en' ? 'Cloud Sync' : 'Salvataggio Cloud'}
+                    {lingua === 'en' ? 'Backup & sync' : 'Backup e sincronizzazione'}
                   </span>
                 </button>
               </div>
@@ -19460,7 +19460,7 @@ export default function App() {
             {/* Sezione 3: Sessione & Strumenti */}
             <div>
               <div style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.6, color: C.goldDark, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span>🧭</span> <span>{lingua === 'en' ? 'Session & Tools' : 'Sessione & Strumenti'}</span>
+                <span>🧭</span> <span>{lingua === 'en' ? 'Session and tools' : 'Sessione e strumenti'}</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
                 <button
@@ -19549,7 +19549,7 @@ export default function App() {
                   }}
                 >
                   <span style={{ fontSize: 16 }}>⚔️</span>
-                  <span>{lingua === 'en' ? 'Combat Tracker' : 'Combattimento'}</span>
+                  <span>{lingua === 'en' ? 'Combat' : 'Combattimento'}</span>
                 </button>
               </div>
             </div>
@@ -19945,13 +19945,13 @@ export default function App() {
               const copiaDiario = () => {
                 const testo = diario.map((v, i) => `=== Sessione ${diario.length - i}: ${v.titolo || 'Senza titolo'} (${v.data || 'Nessuna data'}) ===\n\n${v.testo || ''}\n`).join('\n---\n\n');
                 navigator.clipboard?.writeText(testo);
-                alert(lingua === 'en' ? 'Journal copied to clipboard!' : 'Diario copiato negli appunti!');
+                alert(lingua === 'en' ? 'Journal copied to the clipboard.' : 'Diario copiato negli appunti.');
               };
 
               const copiaVoce = (v) => {
                 const testo = `Sessione: ${v.titolo || 'Senza titolo'} (${v.data || 'Nessuna data'})\n\n${v.testo || ''}`;
                 navigator.clipboard?.writeText(testo);
-                alert(lingua === 'en' ? 'Session copied to clipboard!' : 'Sessione copiata negli appunti!');
+                alert(lingua === 'en' ? 'Session copied to the clipboard.' : 'Sessione copiata negli appunti.');
               };
 
               const scaricaDiario = () => {
@@ -19981,7 +19981,7 @@ export default function App() {
                 '',
                 '💡 Indizio: ',
                 '',
-                '⚔️ Scontro: ',
+                '⚔️ Combattimento: ',
                 '',
                 '💰 Bottino: ',
                 '',
@@ -20329,7 +20329,7 @@ export default function App() {
                     {t('roll.tavolo_dadi')}
                   </h2>
                   <div style={{ ...styles.detail, fontSize: 12, color: C.inkDim }}>
-                    {lingua === 'en' ? 'Quick dice roller, advantage & custom rolls' : 'Lancio rapido dadi, vantaggio/svantaggio e formule'}
+                    {lingua === 'en' ? 'Quick rolls, advantage and custom formulas' : 'Tiri rapidi, vantaggio/svantaggio e formule'}
                   </div>
                 </div>
               </div>
@@ -20712,9 +20712,9 @@ export default function App() {
                 </button>
                 <button
                   style={{ ...styles.buttonMini, color: C.red, borderColor: C.red, whiteSpace: 'nowrap', padding: '3px 8px' }}
-                  title="Applica un danno ad area (Es. Palla di Fuoco) a tutti i nemici presenti nel Combat Tracker"
+                  title="Applica danni ad area (es. Palla di Fuoco) a tutti i nemici del combattimento"
                   onClick={() => {
-                    const dmg = parseInt(window.prompt("Inserisci i danni ad area da applicare a TUTTI i nemici:"), 10);
+                    const dmg = parseInt(window.prompt("Danni ad area da applicare a tutti i nemici:"), 10);
                     if (dmg > 0) {
                       setCombat((c) => ({
                         ...c,

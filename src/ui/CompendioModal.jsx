@@ -139,25 +139,25 @@ const REGOLE_5E = [
   },
   {
     nome: 'Riposo Breve (Short Rest)',
-    sottoTipo: 'Riposo & Guarigione',
+    sottoTipo: 'Riposo e guarigione',
     descIt: 'Un periodo di riposo di almeno 1 ora durante il quale il personaggio non fa nulla di faticoso tranne mangiare, bere e medicare le ferite. Può spendere uno o più Dadi Vita per curarsi: tira il dado e aggiunge il mod. Costituzione per ogni dado speso.',
     descEn: 'A period of downtime at least 1 hour long. Spend one or more Hit Dice to regain HP (Hit Die roll + Con modifier per die).',
   },
   {
     nome: 'Riposo Lungo (Long Rest)',
-    sottoTipo: 'Riposo & Guarigione',
+    sottoTipo: 'Riposo e guarigione',
     descIt: 'Un periodo di riposo di almeno 8 ore (almeno 6 ore di sonno). Al termine recuperi tutti i PF persi, metà dei Dadi Vita massimi spesi (minimo 1), tutti gli slot incantesimo e le risorse di classe ricaricabili a riposo lungo.',
     descEn: 'A period of extended downtime at least 8 hours long (at least 6 hours of sleep). Regain all lost HP, half your max Hit Dice (min 1), all spell slots, and long-rest class features.',
   },
   {
     nome: 'Tiri Salvezza contro Morte (Death Saves)',
-    sottoTipo: 'Salute & Sopravvivenza',
+    sottoTipo: 'Salute e sopravvivenza',
     descIt: 'A 0 PF all\'inizio di ogni turno tiri 1d20: 10 o più è 1 successo, 9 o meno è 1 fallimento. Con 3 successi ti stabilizzi; con 3 fallimenti muori. Un 20 naturale ti rianima con 1 PF; un 1 naturale conta come 2 fallimenti. Subire danni a 0 PF infligge 1 fallimento (2 se colpo critico).',
     descEn: 'At 0 HP at turn start, roll 1d20: 10+ is a success, 9 or lower is a failure. 3 successes stabilize; 3 failures result in death. Natural 20 restores 1 HP immediately; natural 1 counts as 2 failures. Taking damage at 0 HP causes 1 failure (2 for a critical hit).',
   },
   {
-    nome: 'Morte Istantanea & Danni Massicci',
-    sottoTipo: 'Salute & Sopravvivenza',
+    nome: 'Morte istantanea e danni massicci',
+    sottoTipo: 'Salute e sopravvivenza',
     descIt: 'Quando i danni ti portano a 0 PF e i danni residui superano o eguagliano i tuoi PF massimi, muori all\'istante senza effettuare tiri salvezza contro morte.',
     descEn: 'When damage reduces you to 0 HP and remaining damage equals or exceeds your hit point maximum, you die instantly.',
   },
@@ -174,7 +174,7 @@ const REGOLE_5E = [
     descEn: 'Moving through difficult terrain (rubble, ice, swamp, steep stairs, dense undergrowth) costs 1 extra foot of speed for each foot moved.',
   },
   {
-    nome: 'Caduta & Danni da Caduta',
+    nome: 'Caduta e danni da caduta',
     sottoTipo: 'Regola Ambientale',
     descIt: 'Una creatura subisce 1d6 danni contundenti per ogni 3 metri di caduta (fino a un massimo di 20d6) e cade prona all\'atterraggio a meno che non eviti tutti i danni.',
     descEn: 'A creature takes 1d6 bludgeoning damage for every 10 feet fallen (up to a max of 20d6) and lands prone unless it avoids taking damage from the fall.',
@@ -748,7 +748,7 @@ export function CompendioModal({
               </div>
               <div style={{ fontSize: 11, color: C.inkDim, marginTop: 1 }}>
                 {lingua === 'en'
-                  ? `Quick rules & database lookup for D&D ${String(versione) === '2014' ? '5.0' : '5.5'} (Cmd+K / Ctrl+K)`
+                  ? `Quick rules and database lookup for D&D ${String(versione) === '2014' ? '5.0' : '5.5'} (Cmd+K / Ctrl+K)`
                   : `Ricerca rapida e compendio per D&D ${String(versione) === '2014' ? '5.0' : '5.5'} (Cmd+K / Ctrl+K)`}
               </div>
             </div>

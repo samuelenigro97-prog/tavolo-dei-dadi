@@ -2,6 +2,52 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.39.0] – 2026-09-26
+
+### Modificato
+- **Testi dell'interfaccia più professionali (prima parte della
+  proposta di revisione dei testi)**: revisione di menu, impostazioni,
+  pulsanti, finestre, toast, stati vuoti e tooltip, in italiano e in
+  inglese. La terminologia di regolamento D&D resta invariata (inclusa
+  "Razza" per le schede 5.0).
+  - **Glossario unico**: Compendio (era "Ricerca Rapida"), Combattimento
+    (era "Scontro"/"Combat Tracker"), Avanzamento di livello / Sali di
+    livello (era "Level Up"/"Passaggio di Livello"), Backup e
+    sincronizzazione (era "Sincronizzazione Cloud"/"Backup automatico"),
+    Esporta backup / Ripristina backup (erano "Esporta tutto", "Backup
+    Completo (Tutti i PG)", "Scarica Archivio Completo"), Cronologia
+    versioni (era "Versioni"), Archivio del Master (era "Archivio PG"),
+    Avvisi e novità (era "Bacheca & Notifiche"), Atmosfera (era
+    "Ambientazione"), Sessione condivisa / codice (era "Stanza
+    temporanea"), I miei personaggi, Personaggio casuale, sezione
+    Incantesimi (era "Magia") e Aspetto e storia (era "Background"). In
+    inglese DM al posto di GM, "DM archive" al posto di "PG Archive".
+  - **Maiuscole solo a inizio frase** (Title Case all'inglese rimosso:
+    "Salva Scheda", "Media Fissa", "Tira Ora"…), niente maiuscolo gridato
+    ("📥 IMPORTA", "👉 IN TURNO", "Tira danni RADDOPPIATI", "Backup Cloud
+    NON ATTIVO"…), "e" al posto di "&", "…" al posto di "...".
+  - **Tono sobrio**: niente frasi colloquiali ("Tre gesti e sei operativo",
+    "Ho capito, cominciamo" → "Inizia", "Un attimo di pazienza", "Offrimi
+    un caffè") né punti esclamativi nei messaggi; errori e toast della
+    sincronizzazione riscritti; abbreviazioni sciolte dove c'è spazio
+    ("Percezione passiva", "Bonus di competenza", "PE" al posto di "P.E.").
+  - **Refusi e correzioni**: "Converti in MR/MA" → "Converti in MO";
+    accenti mancanti ("ed è contrassegnato", "metà dei danni… se
+    superiore"); inglese "Increase / Feat", "let us start", "Movements",
+    "Overloaded" corretti; l'onboarding ora descrive il gesto principale
+    (tieni premuto per tirare).
+  - **Nessuna affermazione "ufficiale"**: la stampa è ora "Scheda
+    stampabile in formato A4" (prima "Scheda ufficiale cartacea" e "formato
+    scheda ufficiale D&D").
+  - Numeri: 355 chiavi i18n modificate (314 valori IT, 302 EN su 823
+    chiavi) e circa 150 stringhe inline in `App.jsx`, `PoteriSezione.jsx`,
+    `componenti.jsx`, `CompendioModal.jsx`, `dati5e.js`.
+  - Non inclusi (PR successive): riorganizzazione di barra/menu e
+    spostamento delle stringhe inline in i18n; riscrittura delle Novità
+    passate.
+- Test e2e aggiornati ai nuovi testi (pulsante "Inizia", "1° livello",
+  "Compagni, famigli ed evocazioni").
+
 ## [4.38.0] – 2026-09-26
 
 ### Corretto

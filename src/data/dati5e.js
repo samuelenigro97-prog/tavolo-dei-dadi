@@ -2437,8 +2437,8 @@ export const MANUALI_INFO = {
     codice: 'FTD & MM',
     icona: '🐉',
     colore: '#ef4444',
-    descrizione: 'Evocazione Spirito Draconico, catalogo mostri completo per il Combat Tracker e creature avanzate.',
-    descrizioneEn: 'Summon Draconic Spirit, full classic monsters catalog for Combat Tracker, and expanded creatures.',
+    descrizione: 'Evocazione Spirito Draconico, catalogo mostri completo per il tracker del combattimento e creature avanzate.',
+    descrizioneEn: 'Summon Draconic Spirit, full classic monster catalog for the combat tracker, and expanded creatures.',
   },
 };
 

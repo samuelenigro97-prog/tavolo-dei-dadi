@@ -4,7 +4,7 @@
 export async function apriScheda(page) {
   await page.goto('/');
   await page.waitForTimeout(600);
-  const benvenuto = page.getByText('Ho capito, cominciamo');
+  const benvenuto = page.getByRole('button', { name: 'Inizia', exact: true });
   if (await benvenuto.count()) {
     await benvenuto.click();
     await page.waitForTimeout(200);

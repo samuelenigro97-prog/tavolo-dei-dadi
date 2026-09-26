@@ -12,7 +12,7 @@ test.describe('Sezioni: angoli decorati', () => {
   });
 
   test('gli angoli restano nell\'ordine giusto (top sopra, bottom sotto) quando la sezione è chiusa', async ({ page }) => {
-    const dettaglio = page.locator('details.sezione').filter({ hasText: 'Compagni, Famigli & Evocazioni' });
+    const dettaglio = page.locator('details.sezione').filter({ hasText: 'Compagni, famigli ed evocazioni' });
     await dettaglio.locator('summary').click();
     await expect(dettaglio).not.toHaveAttribute('open');
 
@@ -32,7 +32,7 @@ test.describe('Sezioni: angoli decorati', () => {
   });
 
   test('gli angoli sono visibili (non display:none) a sezione chiusa', async ({ page }) => {
-    const dettaglio = page.locator('details.sezione').filter({ hasText: 'Compagni, Famigli & Evocazioni' });
+    const dettaglio = page.locator('details.sezione').filter({ hasText: 'Compagni, famigli ed evocazioni' });
     await dettaglio.locator('summary').click();
 
     const displays = await dettaglio.evaluate((d) => {
