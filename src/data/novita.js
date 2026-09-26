@@ -5,6 +5,21 @@
 
 export const NOVITA = [
   {
+    versione: '4.38.0',
+    voci: {
+      it: [
+        'Azioni Bonus si riempie da sola: trucchetti e incantesimi con tempo di lancio "Azione Bonus" (es. Randello Incantato, Parola di Guarigione) compaiono lì e non più in Combattimento.',
+        'In Combattimento, Azioni Bonus e Reazioni la gittata (Tocco, 9m, 18m…) è sempre il primo chip dopo il nome, e tiro per colpire e danni usano gli stessi badge di Trucchetti/Incantesimi.',
+        'Velocità mostra direttamente il totale (con i Poteri) in blu, senza il piccolo "+3m" sotto.',
+      ],
+      en: [
+        'Bonus Actions fills itself: cantrips and spells with a "Bonus Action" casting time (e.g. Shillelagh, Healing Word) appear there instead of in Combat.',
+        'In Combat, Bonus Actions and Reactions the range (Touch, 9m, 18m…) is always the first chip after the name, and attack/damage rolls use the same badges as Cantrips/Spells.',
+        'Speed now shows the total (including Powers) directly in blue, without the small "+3m" below.',
+      ],
+    },
+  },
+  {
     versione: '4.37.0',
     voci: {
       it: [

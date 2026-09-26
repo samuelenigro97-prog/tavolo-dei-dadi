@@ -43,4 +43,45 @@ test.describe('Combattimento', () => {
     const posReazioni = await titoloReazioni.boundingBox();
     expect(posBonus.y).toBeLessThan(posReazioni.y);
   });
+
+  test('gli incantesimi con tempo di lancio "Azione Bonus" stanno in Azioni Bonus, non in Combattimento', async ({ page }) => {
+    const tabellaAzione = page.locator('table.attacchi-table').first();
+    const sezioneBonus = page.getByRole('heading', { name: 'Azioni Bonus' }).locator('xpath=ancestor::div[.//table][1]');
+    // Randello Incantato (trucchetto, Azione Bonus) e Parola di Guarigione (cura con tiro, Azione Bonus)
+    await expect(sezioneBonus.locator('tr.attacchi-riga').filter({ hasText: 'Randello Incantato' })).toHaveCount(1);
+    await expect(sezioneBonus.locator('tr.attacchi-riga').filter({ hasText: 'Parola di Guarigione' })).toHaveCount(1);
+    await expect(tabellaAzione.locator('tr.attacchi-riga').filter({ hasText: 'Randello Incantato' })).toHaveCount(0);
+    await expect(tabellaAzione.locator('tr.attacchi-riga').filter({ hasText: 'Frusta di Spine' })).toHaveCount(1);
+    // Nessun duplicato in tutta la pagina Combattimento.
+    await expect(page.locator('tr.attacchi-riga').filter({ hasText: 'Randello Incantato' })).toHaveCount(1);
+    // Il messaggio "vuota" non compare più.
+    await expect(page.getByText(/Nessun attacco\/incantesimo ad azione bonus/)).toHaveCount(0);
+  });
+
+  test('la gittata è sempre il primo chip dopo il nome (anche per Inaridire, che ha solo la CD nella nota)', async ({ page }) => {
+    const primoChip = (nome) => page.locator('tr.attacchi-riga').filter({ hasText: nome }).locator('.attacchi-note span').first();
+    await expect(primoChip('Inaridire')).toHaveText(/🎯\s*9m/);
+    await expect(primoChip('Randello Incantato')).toHaveText(/🎯\s*Tocco/);
+    await expect(primoChip('Morsa del Gelo')).toHaveText(/🎯\s*18m/);
+    await expect(primoChip('Parola di Guarigione')).toHaveText(/🎯\s*18m/);
+  });
+
+  test('tiro per colpire e danni usano gli stessi badge di Trucchetti/Incantesimi', async ({ page }) => {
+    const riga = page.locator('tr.attacchi-riga').filter({ hasText: 'Frusta di Spine' });
+    await expect(riga.locator('.badge-tiro-colpire')).toHaveText(/🎯\s*\+9/);
+    await expect(riga.locator('.badge-tiro-danno')).toContainText('Perforante');
+    // Anche le Reazioni: Attacco di Opportunità.
+    const reaz = page.locator('tr.attacchi-riga').filter({ hasText: 'Attacco di Opportunità' });
+    await expect(reaz.locator('.badge-tiro-colpire')).toHaveCount(1);
+    await expect(reaz.locator('.badge-tiro-danno')).toHaveCount(1);
+  });
+
+  test('Velocità mostra il totale con i Poteri in blu, senza il "+3m" sotto', async ({ page }) => {
+    const box = page.locator('.velocita-modificata');
+    await expect(box).toHaveCount(1);
+    await expect(box).toContainText('13.5');
+    await expect(box).not.toContainText('+3m');
+    const colore = await box.locator('span').first().evaluate((e) => getComputedStyle(e).color);
+    expect(colore).toBe('rgb(37, 99, 235)');
+  });
 });

@@ -501,7 +501,8 @@ export const COLORE_CATEGORIA_INFO = {
   proprieta:    { chiaro: '#a21caf', scuro: '#f0abfc' }, // 🏷️ Proprietà (Trucchetto, Magico, Versatile, Maestria)
   innesco:      { chiaro: '#0f766e', scuro: '#5eead4' }, // 🎯 Innesco di una reazione ("Quando...")
   effetto:      { chiaro: '#6d28d9', scuro: '#c4b5fd' }, // 🛡️ Effetto di una reazione (= colore Durata: non compaiono mai insieme)
-  attacco:      { chiaro: '#a16207', scuro: '#fde047' }, // 🎲 Tiro per colpire — giallo fisso, NON tinto dal colore di classe (a differenza di C.gold/C.goldDark)
+  attacco:      { chiaro: '#a16207', scuro: '#fde047' },
+  modificato:   { chiaro: '#2563eb', scuro: '#93c5fd' }, // 🔵 Valore modificato da Poteri/Sfinimento (es. totale Velocità) // 🎲 Tiro per colpire — giallo fisso, NON tinto dal colore di classe (a differenza di C.gold/C.goldDark)
 };
 
 /** Risolve il colore fisso di una categoria per il tema attivo (chiaro/scuro). */

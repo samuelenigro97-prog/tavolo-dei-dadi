@@ -7,7 +7,7 @@ import { CLASSI, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, SLOT_FULL_CASTER, SLOT
   TS_CLASSE, COMPETENZE_CLASSE, COMPETENZE_SPECIE, BACKGROUND_COMPETENZE,
   MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, PE_PER_LIVELLO, REAZIONI_5E, ARMI_5E, ARMATURE_5E } from '../data/dati5e.js';
 import { modificatore, conSegno, bonusCompetenzaDaLivello } from './dadi.js';
-import { punteggioCaratteristica, effettiSfinimento, trasformazioneAttiva } from './scheda.js';
+import { punteggioCaratteristica, effettiSfinimento, trasformazioneAttiva, estraiCategorieNota } from './scheda.js';
 import { bonusPotereBersaglio } from './poteri.js';
 import { spiegaIncantesimo } from '../data/spiegazioni.js';
 import { INCANTESIMI_DB, datiIncantesimo } from '../data/incantesimi.js';
@@ -492,8 +492,14 @@ export function scalaDannoTrucchetto(danno, livello = 1, nome = '') {
 export function classificaIncantesimoCombattimento(s) {
   const db = datiIncantesimo(s?.nome) || {};
   const tipoDanno = s?.tipoDanno || db.tipoDanno || '';
-  if (tipoDanno === 'Guarigione') return { mostraInCombattimento: false, isTS: false };
   const d = dettagliIncantesimo(s?.nome) || {};
+  // Cura: non è un attacco (niente bonus per colpire finto) e non va nella
+  // sezione Azione; `isCura` + `haTiroCura` servono però ad Azioni Bonus,
+  // dove una cura con tiro (es. Parola di Guarigione 2d4) resta utile.
+  if (tipoDanno === 'Guarigione') {
+    const dannoCura = s?.danno || d.danno || db.danno || '';
+    return { mostraInCombattimento: false, isTS: false, isCura: true, haTiroCura: Boolean(dannoCura) };
+  }
   const desc = (s?.note || '') + ' ' + (spiegaIncantesimo(s?.nome) || '') + ' ' + (db.desc || '');
   const danno = s?.danno || d.danno || db.danno || '';
   const isTS = /ts (\w+)|tiro salvezza|saving throw/i.test(desc);
@@ -501,6 +507,59 @@ export function classificaIncantesimoCombattimento(s) {
   // TS con danni + attacchi con danni (o spell con danno es. Dardo Incantato, Randello Incantato)
   const mostraInCombattimento = Boolean(danno && (isTS || haAttacco || /dardo incantato|magic missile|randello incantato|shillelagh/i.test(s?.nome || '')));
   return { mostraInCombattimento, isTS };
+}
+
+/**
+ * Sezione di Combattimento (Azione / Azioni Bonus / Reazioni) a partire dal
+ * TEMPO DI LANCIO di un incantesimo, tollerante alle varianti che compaiono
+ * nei dati e nelle schede importate: maiuscole/minuscole, spazi multipli,
+ * accenti, abbreviazioni ("AZ BONUS", "REAZ", "1 bonus") e forme inglesi
+ * ("Bonus Action", "Reaction"). Restituisce null se il testo non indica
+ * nessuna delle tre (es. "1 min", "10 min", "1 ora": incantesimi fuori
+ * combattimento).
+ */
+export function categoriaDaTempoLancio(tempo) {
+  const t = String(tempo || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!t) return null;
+  if (/\bbonus\b/.test(t)) return 'Bonus';
+  if (/\breaz|\breaction\b/.test(t)) return 'Reazione';
+  if (/\baz\b|\bazione\b|\baction\b/.test(t)) return 'Azione';
+  return null;
+}
+
+/**
+ * Tempo di lancio "vero" di un incantesimo: prima quello scritto sulla voce
+ * della lista incantesimi del PG (se c'è), poi quello del database, infine
+ * quello dedotto dalla descrizione (dettagliIncantesimo).
+ */
+export function tempoLancioIncantesimo(nome, voceLista = null) {
+  const pulito = String(nome || '').replace(/^✨\s*/, '').trim();
+  return voceLista?.tempo || datiIncantesimo(pulito)?.tempo || dettagliIncantesimo(pulito)?.tempo || '';
+}
+
+/**
+ * Gittata/portata da mostrare come PRIMO chip di una riga di Combattimento.
+ * Ordine: campo esplicito `gittata` dell'attacco → "gittata ..." scritta
+ * nella nota → (incantesimi) voce della lista / database / descrizione →
+ * (armi a distanza o da lancio) la gittata "(6/18 m)" nelle note dell'arma.
+ * Stringa vuota se non si ricava nulla (es. arma da mischia senza portata).
+ */
+export function gittataAttacco(attacco, voceLista = null, armaDb = null) {
+  if (!attacco) return '';
+  if (attacco.gittata) return String(attacco.gittata).trim();
+  const daNota = estraiCategorieNota(attacco.note).find((c) => c.categoria === 'gittata');
+  if (daNota?.testo) return daNota.testo;
+  if (attacco.isSpell) {
+    const pulito = String(attacco.nome || '').replace(/^✨\s*/, '').trim();
+    return String(voceLista?.gittata || datiIncantesimo(pulito)?.gittata || dettagliIncantesimo(pulito)?.gittata || '').trim();
+  }
+  const m = String(armaDb?.note || '').match(/\((\d+(?:[.,]\d+)?\s*\/\s*\d+(?:[.,]\d+)?\s*m)\)/i);
+  return m ? m[1].replace(/\s+/g, '') : '';
 }
 
 export function pesoStimato(nome) {
@@ -1992,7 +2051,11 @@ export function trovaReazioniDisponibili(scheda) {
  * - Tattiche difensive/offensive attive (Schivata, Disimpegno, Scatto, ecc.)
  */
 export function calcolaTurnoCombattimento(scheda, turnoAzioni = {}) {
-  const velBase = Math.max(0, Number(scheda?.formaBestiale?.attiva ? (scheda.formaBestiale.velocita?.terra ?? 9) : (scheda?.velocita ?? 9)));
+  // Senza Forma Selvatica: stessa velocità TOTALE mostrata nel riquadro
+  // Velocità (base + Poteri, Sfinimento applicato), non solo la base scritta.
+  const velBase = scheda?.formaBestiale?.attiva
+    ? Math.max(0, Number(scheda.formaBestiale.velocita?.terra ?? 9))
+    : calcolaMovimentoESalti(scheda || {}).velBase;
   const haScatto = turnoAzioni.tatticaAttiva === 'scatto' || turnoAzioni.scattoAttivo;
   const moltiplicatore = haScatto ? 2 : 1;
   const movimentoMax = Number((velBase * moltiplicatore).toFixed(1));

@@ -2,6 +2,38 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.38.0] – 2026-09-26
+
+### Corretto
+- **Azioni Bonus vuota anche con incantesimi ad azione bonus**: un
+  incantesimo salvato tra gli attacchi (es. Randello Incantato) finiva
+  sempre in Combattimento, perché la sezione veniva dal campo `categoria`
+  (che l'import imposta ad "Azione" di default) invece che dal tempo di
+  lancio. Ora la sezione di ogni incantesimo viene dal suo **tempo di
+  lancio** (voce della lista → database → descrizione), riconosciuto in
+  modo tollerante (`categoriaDaTempoLancio`: maiuscole, spazi, accenti,
+  "1 Azione Bonus", "AZ BONUS", "Bonus Action", "REAZ"…). Randello
+  Incantato non è più duplicato in Combattimento.
+- **Cure ad azione bonus**: le cure con un tiro (es. Parola di Guarigione
+  2d4) compaiono in Azioni Bonus, senza un bonus per colpire finto. In
+  Combattimento (Azione) le cure restano fuori come prima.
+- **Gittata sempre primo chip**: in Combattimento, Azioni Bonus e Reazioni
+  la gittata/portata (🎯 Tocco, 9m, 18m, gittata delle armi a distanza) è
+  sempre il primo chip dopo il nome, anche quando la nota non la scrive
+  (es. Inaridire mostrava solo la CD). Rimosso il chip "📏 3m" di portata
+  che compariva per errore su Frusta di Spine (la portata è delle armi).
+- **Velocità**: il riquadro mostrava la velocità base (10,5m) con un
+  piccolo "+3m" sotto. Ora mostra il **totale vero** (base + Poteri, con lo
+  Sfinimento applicato: 13,5m) in **blu** quando è modificato, con il
+  dettaglio nel tooltip; 1 click modifica sempre la velocità base. Anche
+  il movimento del turno (sezione Azioni) usa ora il totale.
+
+### Cambiato
+- **Tiro per colpire e danni con gli stessi badge di Incantesimi**:
+  Combattimento, Azioni Bonus e Reazioni usano ora le stesse "pillole" di
+  Trucchetti/Incantesimi (🎯 +9 giallo fisso, 💥 1d6 Perforante 🎲 rosso),
+  componenti condivisi `BadgeTiroColpire`/`BadgeTiroDanno`. 1 click = tiro.
+
 ## [4.37.0] – 2026-09-24
 
 ### Cambiato

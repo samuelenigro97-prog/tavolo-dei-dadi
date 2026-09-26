@@ -6,7 +6,7 @@ import { t, setLinguaAttuale, DIZIONARIO, traduciDato, linguaAttuale } from './i
 import { avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro, sbloccaAudio, precaricaSfx } from './utils/audioAmbiente';
 import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI, ambientazioneCasuale, COLORE_SCUOLA } from './ui/tema.js';
 import { styles, GLOBAL_CSS } from './ui/stili.js';
-import { Editable, Rollable, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, estraiVociLista, Sezione, CampoBloccato, formattaVoceConIcona } from './ui/componenti.jsx';
+import { Editable, Rollable, BadgeTiroColpire, BadgeTiroDanno, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, estraiVociLista, Sezione, CampoBloccato, formattaVoceConIcona } from './ui/componenti.jsx';
 import { SezionePoteri, BadgePotere } from './ui/PoteriSezione.jsx';
 import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma, estraiCategorieNota, coloreCategoria, esitoDannoPf0, iniziativaTotale, pfMassimiEffettivi, effettiSfinimento, trasformazioneAttiva } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON, WENDELL_JSON, LYRIAN_JSON } from './data/esempi.js';
@@ -1294,8 +1294,8 @@ const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(I
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SESSO_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E, DEFAULT_MANUALI, MANUALI_INFO, SOTTOCLASSI_FONTI, TALENTI_FONTI, INCANTESIMI_FONTI, talentiPerManuali, incantesimiPerManuali, fonteValida, PE_PER_LIVELLO } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico, modalitaEffettiva } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, determinaIconaOggetto, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili, calcolaTurnoCombattimento, dettagliAbilita, calcolaTsConcentrazione, calcolaAttaccoFurtivo, calcolaIraBarbarica, calcolaPunizioneDivina, calcolaIspirazioneBardica, livelloDiClasse } from './rules/regole.js';
-import { normalizzaPoteri, sincronizzaRisorsePoteri, bonusPotereBersaglio } from './rules/poteri.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, determinaIconaOggetto, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili, calcolaTurnoCombattimento, dettagliAbilita, calcolaTsConcentrazione, calcolaAttaccoFurtivo, calcolaIraBarbarica, calcolaPunizioneDivina, calcolaIspirazioneBardica, livelloDiClasse, categoriaDaTempoLancio, tempoLancioIncantesimo, gittataAttacco } from './rules/regole.js';
+import { normalizzaPoteri, sincronizzaRisorsePoteri, bonusPotereBersaglio, modificatoriPoteriAttivi } from './rules/poteri.js';
 
 /**
  * Ricava tempo/gittata/note di un incantesimo dalla sua descrizione (le meccaniche
@@ -1965,7 +1965,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.37.0';
+const APP_VERSION = '4.38.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -13563,12 +13563,39 @@ export default function App() {
                       ))}
                   </div>
                 ) : (
-                  <div style={styles.vitalValue}>
-                    <Editable value={scheda.velocita} tipo="numero" onChange={(v) => aggiorna({ velocita: v })} width={48} />
-                    <span style={{ fontSize: 18, color: C.inkDim, marginLeft: 2, fontWeight: 600 }}> m</span>
-                    <BadgePotere scheda={scheda} bersaglio="velocita" />
-                    <BadgeSfinimento scheda={scheda} bersaglio="velocita" />
-                  </div>
+                  (() => {
+                    // Il numero mostrato è il TOTALE vero (base + Poteri, con lo Sfinimento
+                    // applicato: stesso calcolo del Calcolatore Movimenti). Se differisce
+                    // dalla base è in BLU, senza il piccolo "+3m" sotto; il dettaglio
+                    // resta nel tooltip. 1 click modifica sempre la velocità BASE.
+                    const base = Number(scheda.velocita) || 0;
+                    const totale = calcolaMovimentoESalti(scheda).velBase;
+                    const modificata = totale !== base;
+                    const fonti = modificatoriPoteriAttivi(scheda)
+                      .filter((m) => m.bersaglio === 'velocita' && Number(m.valore))
+                      .map((m) => `${conSegno(Number(m.valore))}m (${m.fonte})`);
+                    const sfin = effettiSfinimento(scheda);
+                    if (sfin.velocitaZero) fonti.push(lingua === 'en' ? 'Exhaustion: speed 0' : 'Sfinimento: velocità 0');
+                    else if (sfin.velocitaDimezzata) fonti.push(lingua === 'en' ? 'Exhaustion: halved' : 'Sfinimento: dimezzata');
+                    else if (sfin.penalitaVelocita) fonti.push(`−${sfin.penalitaVelocita}m (${lingua === 'en' ? 'Exhaustion' : 'Sfinimento'})`);
+                    const titolo = modificata
+                      ? `${lingua === 'en' ? 'Total' : 'Totale'} ${totale}m = ${lingua === 'en' ? 'base' : 'base'} ${base}m ${fonti.join(', ')} · ${lingua === 'en' ? '1 click: edit base speed' : '1 click: modifica la velocità base'}`
+                      : undefined;
+                    return (
+                      <div style={styles.vitalValue} className={modificata ? 'velocita-modificata' : undefined} title={titolo}>
+                        <Editable
+                          value={totale}
+                          valoreModifica={base}
+                          tipo="numero"
+                          onChange={(v) => aggiorna({ velocita: v })}
+                          width={48}
+                          title={titolo}
+                          style={modificata ? { color: coloreCategoria('modificato', notteAttiva) } : undefined}
+                        />
+                        <span style={{ fontSize: 18, color: modificata ? coloreCategoria('modificato', notteAttiva) : C.inkDim, marginLeft: 2, fontWeight: 600 }}> m</span>
+                      </div>
+                    );
+                  })()
                 )}
                 <div
                   onClick={() => setMostraModalMovimento(true)}
@@ -14585,6 +14612,16 @@ export default function App() {
                   const attacchiSalvati = (scheda.attacchi || []).map((a) => {
                     const isSpell = isAttaccoIncantesimo(a);
                     let att = isSpell && !a.isSpell ? { ...a, isSpell: true } : a;
+                    if (att.isSpell) {
+                      // La sezione (Azione / Azioni Bonus / Reazioni) di un incantesimo
+                      // salvato tra gli attacchi viene dal suo TEMPO DI LANCIO, non dal
+                      // campo `categoria` (che l'import imposta a 'Azione' di default):
+                      // es. Randello Incantato e Parola di Guarigione sono Azione Bonus.
+                      const nomePulito = String(att.nome || '').replace(/^✨\s*/, '').replace(/\s*\((shillelagh|bastone incantato)\)/gi, '').trim();
+                      const voce = (scheda.incantesimiLista || []).find((s) => (s.nome || '').trim().toLowerCase() === nomePulito.toLowerCase());
+                      const catTempo = categoriaDaTempoLancio(tempoLancioIncantesimo(nomePulito, voce));
+                      if (catTempo && catTempo !== att.categoria) att = { ...att, categoria: catTempo };
+                    }
                     if (att.isSpell && att.danno) {
                       const dbS = datiIncantesimo(att.nome);
                       if (dbS?.livello === 0 || att.livello === 0) {
@@ -14607,7 +14644,11 @@ export default function App() {
 
                     const cleanS = normalizzaNomeAttacco(s.nome);
                     if (nomiSalvati.has(cleanS)) return false;
-                    return classificaIncantesimoCombattimento(s).mostraInCombattimento;
+                    const classe = classificaIncantesimoCombattimento(s);
+                    if (classe.mostraInCombattimento) return true;
+                    // Le cure con un tiro (es. Parola di Guarigione 2d4) compaiono solo
+                    // in Azioni Bonus: in Azione resterebbero "attacchi" finti.
+                    return Boolean(classe.isCura && classe.haTiroCura && categoriaDaTempoLancio(tempoLancioIncantesimo(s.nome, s)) === 'Bonus');
                   }).map((s) => {
                     const d = dettagliIncantesimo(s.nome) || {};
                     const db = datiIncantesimo(s.nome) || {};
@@ -14617,22 +14658,24 @@ export default function App() {
                       danno = scalaDannoTrucchetto(danno, scheda.livello || 1, s.nome);
                     }
                     const tipoDanno = s.tipoDanno || d.tipoDanno || db.tipoDanno || '';
-                    const { isTS } = classificaIncantesimoCombattimento(s);
+                    const { isTS, isCura } = classificaIncantesimoCombattimento(s);
                     const tsMatch = desc.match(/ts\s+(destrezza|saggezza|costituzione|forza|intelligenza|carisma)/i);
                     const nomeTS = tsMatch ? ` (TS ${tsMatch[1].charAt(0).toUpperCase() + tsMatch[1].slice(1)})` : isTS ? ' (TS)' : '';
                     
                     const modInc = caratteristicaIncantatore ? modificatore(punteggioCaratteristica(scheda, caratteristicaIncantatore)) : 0;
                     const bonusComp = scheda.bonusCompetenza || 2;
-                    const bonus = isTS ? 0 : bonusComp + modInc;
+                    // Una cura non ha tiro per colpire: niente bonus (la cella resta vuota).
+                    const bonus = isCura ? null : isTS ? 0 : bonusComp + modInc;
                     const cd = 8 + bonusComp + modInc;
                     const isShillelagh = /randello incantato|shillelagh/i.test(s.nome);
                     const dannoFormatted = isShillelagh ? `${danno}${conSegno(modInc)}` : danno;
-                    const note = (isTS ? `CD ${cd}${nomeTS}` : `Attacco Magico`) + (s.gittata || d.gittata || db.gittata ? ` • ${s.gittata || d.gittata || db.gittata}` : '') + (s.note ? ` • ${s.note}` : '');
+                    // La gittata va in un campo a sé (diventa il primo chip della riga);
+                    // la nota usa la virgola come separatore, come le note degli attacchi
+                    // salvati, così estraiCategorieNota riconosce le singole parti.
+                    const gittata = s.gittata || d.gittata || db.gittata || '';
+                    const note = [isTS ? `CD ${cd}${nomeTS}` : isCura ? '' : 'Attacco Magico', s.note || ''].filter(Boolean).join(', ');
 
-                    let categoria = 'Azione';
-                    const tempo = (s.tempo || d.tempo || db.tempo || '').toUpperCase();
-                    if (tempo.includes('BONUS')) categoria = 'Bonus';
-                    else if (tempo.includes('REAZ')) categoria = 'Reazione';
+                    const categoria = categoriaDaTempoLancio(s.tempo || db.tempo || d.tempo || '') || 'Azione';
 
                     return {
                       id: `spell-${s.id}`,
@@ -14645,6 +14688,7 @@ export default function App() {
                       bonus,
                       danno: dannoFormatted,
                       tipoDanno,
+                      gittata,
                       note
                     };
                   });
@@ -14880,11 +14924,20 @@ export default function App() {
                               }
                               
                               const titoloRiga = spiegazioneEffetto ? `${cleanNome}: ${spiegazioneEffetto}` : undefined;
-                              const categorieNota = estraiCategorieNota(a.note);
                               const armaDb = !a.isSpell ? trovaArma(a.nome) : null;
-                              const { isVersatile, dado1M, dado2M, hasReach } = analizzaArmaVersatileEPortata(a, armaDb);
+                              const infoArma = analizzaArmaVersatileEPortata(a, armaDb);
+                              const { isVersatile, dado1M, dado2M } = infoArma;
+                              // La "Portata 3m" è una proprietà delle ARMI: su un incantesimo il
+                              // nome (es. "Frusta di Spine") non deve far comparire un chip 📏 3m.
+                              const hasReach = !a.isSpell && infoArma.hasReach;
                               const infoMunizioni = !a.isSpell ? analizzaMunizioniArma(a, scheda.inventario, armaDb) : { usaMunizioni: false };
                               const spellInLista = (scheda.incantesimiLista || []).find((x) => x.id === a.idIncantesimo || (x.nome && x.nome.toLowerCase() === cleanNome.toLowerCase()));
+                              // Gittata/portata: SEMPRE il primo chip dopo il nome (prima di durata,
+                              // proprietà, CD...), anche quando la nota non la scrive (es. Inaridire).
+                              // Per le reazioni automatiche con Innesco/Effetto non si inventa nulla.
+                              const gittataRiga = cat === 'Reazione' && (a.innescoIt || a.effettoIt) ? '' : gittataAttacco(a, spellInLista, armaDb);
+                              const categorieNotaTutte = estraiCategorieNota(a.note);
+                              const categorieNota = categorieNotaTutte.filter((c) => c.categoria !== 'gittata');
                               const isTrucchetto = (spellInLista && spellInLista.livello === 0) || (spSpell && spSpell.livello === 0) || a.livello === 0;
                               const iconaReazione = a.isSpell ? (isTrucchetto ? '✨' : '🪄')
                                 : (a.tipo === 'tattica' || a.tipo === 'attacco') ? '⚔️'
@@ -14990,50 +15043,30 @@ export default function App() {
                                         {a.bonus}
                                       </span>
                                     ) : (
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                        <button
-                                          style={{ ...styles.buttonMini, padding: '1px 6px', opacity: castBloccato ? 0.4 : 1, cursor: castBloccato ? 'not-allowed' : 'pointer', color: coloreCategoria('attacco', notteAttiva), borderColor: coloreCategoria('attacco', notteAttiva) }}
-                                          title={castBloccato ? 'Equipaggia un focus per lanciare questo incantesimo' : `Tira per colpire con ${a.nome}`}
-                                          disabled={castBloccato}
-                                          onClick={() => { if (!castBloccato) tiraColpoArma(a); }}
-                                        >🎲</button>
-                                        <Editable
-                                          value={conSegno(a.bonus)}
-                                          width={44}
-                                          onChange={(v) => aggiornaAttacco({ bonus: Number(String(v).replace('+', '')) || 0 })}
-                                          onRoll={castBloccato ? undefined : () => tiraColpoArma(a)}
-                                          title={titoloRiga}
-                                          style={{ color: coloreCategoria('attacco', notteAttiva), fontWeight: 700 }}
-                                        />
-                                      </div>
+                                      // Stesso badge "pillola" di Trucchetti/Incantesimi (🎯 +9): 1 click = tiro.
+                                      <BadgeTiroColpire
+                                        bonus={a.bonus}
+                                        colore={coloreCategoria('attacco', notteAttiva)}
+                                        disabled={castBloccato}
+                                        title={castBloccato ? 'Equipaggia un focus per lanciare questo incantesimo' : `Tira per colpire con ${a.nome}`}
+                                        onRoll={() => tiraColpoArma(a)}
+                                      />
                                     )}
                                   </td>
                                   <td style={{ ...styles.td, color: dannoValido ? undefined : C.red }} className="attacchi-danno" data-label={t('combat.col_danno')}>
                                     {a.danno ? (
                                       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
-                                        <button
-                                          style={{ ...styles.buttonMini, padding: '1px 6px', opacity: castBloccato ? 0.4 : 1, cursor: castBloccato ? 'not-allowed' : 'pointer', color: C.red, borderColor: C.red, background: 'transparent', ...(isUltimoCrit ? { background: C.goldDark, color: '#fff', borderColor: C.goldDark, fontWeight: 700 } : {}) }}
-                                          title={castBloccato ? 'Equipaggia un focus per lanciare questo incantesimo' : isUltimoCrit ? `⚔️ Tira i danni CRITICI raddoppiati (${a.danno} ×2)` : `Tira i danni (${a.danno})`}
+                                        {/* Stesso badge "pillola" di Trucchetti/Incantesimi (💥 1d6 Perforante 🎲). */}
+                                        <BadgeTiroDanno
+                                          danno={a.danno}
+                                          tipoDanno={a.tipoDanno}
+                                          critico={!!isUltimoCrit}
                                           disabled={castBloccato}
-                                          onClick={() => {
-                                            if (!castBloccato) {
-                                              tiraDanniPerAttacco(a, !!isUltimoCrit);
-                                              setUltimoAttaccoCritico(null);
-                                            }
-                                          }}
-                                        >
-                                          {isUltimoCrit ? '⚔️' : '🎲'}
-                                        </button>
-                                        <Editable
-                                          value={a.danno}
-                                          width={isVersatile ? 55 : 65}
-                                          onChange={(v) => aggiornaAttacco({ danno: v })}
-                                          onRoll={castBloccato ? undefined : () => {
+                                          title={castBloccato ? 'Equipaggia un focus per lanciare questo incantesimo' : isUltimoCrit ? `⚔️ Tira i danni CRITICI raddoppiati (${a.danno} ×2)` : `Tira i danni (${a.danno})`}
+                                          onRoll={() => {
                                             tiraDanniPerAttacco(a, !!isUltimoCrit);
                                             setUltimoAttaccoCritico(null);
                                           }}
-                                          title={isUltimoCrit ? `⚔️ Critico attivo: doppio click per tirare i danni CRITICI (${a.danno} ×2)` : (titoloRiga || t('tip.click_mod_danni'))}
-                                          style={{ color: C.red, fontWeight: 700 }}
                                         />
                                         {isVersatile && (
                                           <button
@@ -15061,7 +15094,6 @@ export default function App() {
                                             {a.aDueMani ? `🙌 2M` : `✋ 1M`}
                                           </button>
                                         )}
-                                        <Editable value={a.tipoDanno} width={75} onChange={(v) => aggiornaAttacco({ tipoDanno: v })} title={titoloRiga} />
                                       </div>
                                     ) : cat === 'Reazione' ? null : (
                                       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
@@ -15072,6 +15104,15 @@ export default function App() {
                                   </td>
                                   <td style={styles.td} className="attacchi-note" data-label={t('combat.col_note')}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                                      {gittataRiga && (
+                                        <span
+                                          className="chip-gittata"
+                                          style={{ fontSize: 11, padding: '1px 5px', borderRadius: 4, background: `${coloreCategoria('gittata', notteAttiva)}1f`, border: `1px solid ${coloreCategoria('gittata', notteAttiva)}`, color: coloreCategoria('gittata', notteAttiva), fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3, whiteSpace: 'nowrap', flexShrink: 0 }}
+                                          title={lingua === 'en' ? `Range: ${gittataRiga}` : `Gittata: ${gittataRiga}`}
+                                        >
+                                          🎯 {gittataRiga}
+                                        </span>
+                                      )}
                                       {hasReach && (
                                         <span
                                           style={{
@@ -15149,7 +15190,8 @@ export default function App() {
                                         // oppure Combattimento con categorie riconosciute), il testo libero
                                         // ripeterebbe la stessa informazione per esteso: niente pencil,
                                         // Combattimento non ha campi liberi modificabili a mano.
-                                        const notaRidondante = cat === 'Reazione' ? Boolean(a.innescoIt || a.effettoIt) : categorieNota.length > 0;
+                                        // (Un incantesimo senza nota, es. una cura, non mostra un "—" vuoto.)
+                                        const notaRidondante = cat === 'Reazione' ? Boolean(a.innescoIt || a.effettoIt) : (categorieNotaTutte.length > 0 || (a.isSpell && !String(a.note || '').trim()));
                                         return (
                                       <span className="nota-dettagli" style={{ display: 'contents' }}>
                                         {cat === 'Reazione' && (a.innescoIt || a.effettoIt) ? (
@@ -15177,7 +15219,7 @@ export default function App() {
                                         {!notaRidondante && (
                                           <Editable
                                             value={a.note}
-                                            width={hasReach || infoMunizioni.usaMunizioni || categorieNota.length > 0 ? 90 : 130}
+                                            width={gittataRiga || hasReach || infoMunizioni.usaMunizioni || categorieNota.length > 0 ? 90 : 130}
                                             onChange={(v) => aggiornaAttacco({ note: v })}
                                             title={titoloRiga || a.note || t('tip.click_modifica')}
                                           />
@@ -16189,38 +16231,23 @@ export default function App() {
                                   {parseEspressioneDado(danno) && (
                                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
                                       {modIncantatore !== null && (
-                                        <button
-                                          className="tirabile"
-                                          style={{ ...styles.buttonMini, padding: '2px 6px', fontSize: 11, fontWeight: 700, color: coloreCategoria('attacco', notteAttiva), borderColor: coloreCategoria('attacco', notteAttiva), display: 'inline-flex', alignItems: 'center', gap: 2 }}
+                                        <BadgeTiroColpire
+                                          bonus={scheda.bonusCompetenza + modIncantatore}
+                                          colore={coloreCategoria('attacco', notteAttiva)}
                                           title={t('spell.tira_attacco')}
-                                          onClick={() => lanciaD20(`${t('spell.attacco_inc')}: ${s.nome}`, scheda.bonusCompetenza + modIncantatore, { magia: true, attacco: { id: s.id, nome: s.nome, danno, tipoDanno, isSpell: true }, tipoTiro: 'attacco' })}
-                                        >
-                                          🎯 {conSegno(scheda.bonusCompetenza + modIncantatore)}
-                                        </button>
+                                          onRoll={() => lanciaD20(`${t('spell.attacco_inc')}: ${s.nome}`, scheda.bonusCompetenza + modIncantatore, { magia: true, attacco: { id: s.id, nome: s.nome, danno, tipoDanno, isSpell: true }, tipoTiro: 'attacco' })}
+                                        />
                                       )}
-                                      <button
-                                        className="tirabile"
-                                        style={{
-                                          ...styles.buttonMini,
-                                          padding: '2px 6px',
-                                          fontSize: 11,
-                                          fontWeight: 700,
-                                          color: isUltimoCritInc ? '#fff' : C.red,
-                                          borderColor: isUltimoCritInc ? C.goldDark : C.red,
-                                          background: isUltimoCritInc ? C.goldDark : 'transparent',
-                                          display: 'inline-flex',
-                                          alignItems: 'center',
-                                          gap: 2
-                                        }}
+                                      <BadgeTiroDanno
+                                        danno={danno}
+                                        tipoDanno={tipoDanno}
+                                        critico={!!isUltimoCritInc}
                                         title={isUltimoCritInc ? `⚔️ Critico attivo: tira danni CRITICI raddoppiati (${danno} ×2)` : t('tip.tira_danno_inc')}
-                                        onClick={() => {
+                                        onRoll={() => {
                                           tiraDanniPerAttacco({ id: s.id, nome: s.nome, danno, tipoDanno, isSpell: true }, !!isUltimoCritInc);
                                           setUltimoAttaccoCritico(null);
                                         }}
-                                      >
-                                        {isUltimoCritInc ? '⚔️' : '💥'} {danno}{tipoDanno ? ` ${tipoDanno}` : ''}
-                                        <span aria-hidden style={{ fontSize: 11, opacity: 0.6 }}>🎲</span>
-                                      </button>
+                                      />
                                     </div>
                                   )}
                                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0, marginLeft: 'auto' }}>

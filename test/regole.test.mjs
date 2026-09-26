@@ -1202,3 +1202,53 @@ test('meccaniche e potenziamenti di classe 5e (Furtivo, Ira, Smite, Ispirazione)
 
 
 
+
+// v4.38: sezione di Combattimento dal tempo di lancio, gittata come primo chip.
+test('categoriaDaTempoLancio: riconosce Azione Bonus/Reazione/Azione con varianti di maiuscole, spazi e abbreviazioni', async () => {
+  const { categoriaDaTempoLancio } = await import('../src/rules/regole.js');
+  for (const t of ['Azione Bonus', 'azione bonus', '1 Azione Bonus', '1 azione bonus', '  1   Azione   Bonus ', 'AZ BONUS', '1 bonus', 'Bonus Action']) {
+    assert.equal(categoriaDaTempoLancio(t), 'Bonus', t);
+  }
+  for (const t of ['Reazione', 'REAZ', '1 reazione', 'Reaction']) assert.equal(categoriaDaTempoLancio(t), 'Reazione', t);
+  for (const t of ['1 Azione', 'AZ', '1 azione', '1 Azione / 8 ore', 'Action']) assert.equal(categoriaDaTempoLancio(t), 'Azione', t);
+  for (const t of ['', null, undefined, '1 min', '10 min', '1 ora']) assert.equal(categoriaDaTempoLancio(t), null, String(t));
+});
+
+test('tempoLancioIncantesimo: la voce della lista del PG vince, poi il database', async () => {
+  const { tempoLancioIncantesimo, categoriaDaTempoLancio } = await import('../src/rules/regole.js');
+  assert.equal(categoriaDaTempoLancio(tempoLancioIncantesimo('Randello Incantato')), 'Bonus');
+  assert.equal(categoriaDaTempoLancio(tempoLancioIncantesimo('Parola di Guarigione')), 'Bonus');
+  assert.equal(categoriaDaTempoLancio(tempoLancioIncantesimo('Frusta di Spine')), 'Azione');
+  assert.equal(tempoLancioIncantesimo('Frusta di Spine', { tempo: 'Azione Bonus' }), 'Azione Bonus');
+});
+
+test('classificaIncantesimoCombattimento: una cura con tiro è segnalata (per Azioni Bonus) ma non è un attacco', () => {
+  const r = classificaIncantesimoCombattimento({ nome: 'Parola di Guarigione' });
+  assert.equal(r.mostraInCombattimento, false);
+  assert.equal(r.isCura, true);
+  assert.equal(r.haTiroCura, true);
+});
+
+test('gittataAttacco: campo esplicito → nota → dati incantesimo → gittata dell\'arma', async () => {
+  const { gittataAttacco } = await import('../src/rules/regole.js');
+  assert.equal(gittataAttacco({ nome: 'X', gittata: '12m' }), '12m');
+  assert.equal(gittataAttacco({ nome: 'Randello Incantato', isSpell: true, note: 'Magico con SAG, gittata Tocco, durata 1 min' }), 'Tocco');
+  // Inaridire: la nota ha solo la CD, la gittata viene dai dati dell'incantesimo.
+  assert.equal(gittataAttacco({ nome: 'Inaridire', isSpell: true, note: 'CD 17 (TS Costituzione)' }), '9m');
+  assert.equal(gittataAttacco({ nome: 'Morsa del Gelo', isSpell: true }, { gittata: '18m' }), '18m');
+  assert.equal(gittataAttacco({ nome: 'Arco lungo' }, null, { note: 'Munizioni, Pesante, Due mani (45/180 m)' }), '45/180m');
+  assert.equal(gittataAttacco({ nome: 'Clava' }, null, { note: 'Leggera' }), '');
+});
+
+test('calcolaMovimentoESalti: il totale della Velocità mostrato nella scheda include i Poteri (10,5 + 3 = 13,5)', () => {
+  const scheda = { velocita: 10.5, caratteristiche: { forza: 10 }, poteri: [{ id: 'p', nome: 'Patrono', attivo: true, contatori: [], modificatori: [{ bersaglio: 'velocita', valore: 3, fonte: 'Maschera' }] }] };
+  assert.equal(calcolaMovimentoESalti(scheda).velBase, 13.5);
+});
+
+test('calcolaTurnoCombattimento: il movimento del turno usa la Velocità totale (con i Poteri)', () => {
+  const pg = { velocita: 10.5, caratteristiche: { forza: 10 }, poteri: [{ id: 'p', nome: 'Patrono', attivo: true, contatori: [], modificatori: [{ bersaglio: 'velocita', valore: 3, fonte: 'Maschera' }] }] };
+  const t = calcolaTurnoCombattimento(pg, {});
+  assert.equal(t.velBase, 13.5);
+  assert.equal(t.movimentoMax, 13.5);
+  assert.equal(calcolaTurnoCombattimento(pg, { tatticaAttiva: 'scatto' }).movimentoMax, 27);
+});
