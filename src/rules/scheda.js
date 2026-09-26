@@ -545,7 +545,11 @@ export function estraiCategorieNota(nota) {
 
   // "Trucchetto" non è più un badge: la riga lo mostra già con l'icona ✨
   // iniziale (contro 🪄 degli incantesimi con slot), sarebbe un'informazione duplicata.
-  const proprieta = testo.match(/\b(Magico[^,·]*|Versatile[^,·]*|Maestria:\s*[^,·]+)/i);
+  // Il testo della proprietà si ferma a virgola/punto medio/"•"/due punti e
+  // a parentesi non bilanciate: "Trucchetto (Attacco Magico): trascina 3m"
+  // dà "Magico", non "Magico): trascina 3m"; "Magico con SAG (Randello/Bastone)"
+  // e "Versatile (1d8)" restano interi (parentesi complete).
+  const proprieta = testo.match(/\b(Magico(?:\s+con\s+[A-Za-zÀ-ÿ]+(?:\s*\([^()]*\))?)?|Versatile(?:\s*\([^()]*\)|\s+\d*d\d+(?:\s*[+-]\s*\d+)?)?|Maestria:\s*[^,·•:()]+(?:\([^()]*\))?)/i);
   if (proprieta) categorie.push({ icona: '🏷️', etichetta: 'Proprietà', testo: proprieta[1].trim(), categoria: 'proprieta' });
 
   return categorie;

@@ -6,7 +6,7 @@ import { t, setLinguaAttuale, DIZIONARIO, traduciDato, linguaAttuale } from './i
 import { avviaAmbiente, fermaAmbiente, setVolumeAmbiente, eseguiEffettoSonoro, sbloccaAudio, precaricaSfx } from './utils/audioAmbiente';
 import { C, COLORE_DADO, BASE_TEMA, PRESET_COLORI, ambientazioneCasuale, COLORE_SCUOLA } from './ui/tema.js';
 import { styles, GLOBAL_CSS } from './ui/stili.js';
-import { Editable, Rollable, BadgeTiroColpire, BadgeTiroDanno, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, estraiVociLista, Sezione, CampoBloccato, formattaVoceConIcona } from './ui/componenti.jsx';
+import { Editable, Rollable, BadgeTiroColpire, BadgeTiroDanno, BadgeTiroSalvezza, CampoModulo, CampoConTendina, CampoTendina, AreaTesto, ListaQuadratini, estraiVociLista, Sezione, CampoBloccato, formattaVoceConIcona } from './ui/componenti.jsx';
 import { SezionePoteri, BadgePotere } from './ui/PoteriSezione.jsx';
 import { caTotale, competenteInArmatura, bonusAbilita, bonusTiroSalvezza, bonusClasseArmaturaOggetti, bonusTiriSalvezzaOggetti, oggettiConEffettoAttivo, punteggioCaratteristica, formattaNomePg, formattaTitoloVoce, tagliaEffettiva, parseAzioneBestia, MOLTIPLICATORI_TAGLIA, SPAZIO_TAGLIA_5E, LOTTA_MAX_TAGLIA_5E, bonusCopertura, TIPI_COPERTURA_5E, analizzaArmaVersatileEPortata, alternaImpugnaturaVersatile, analizzaMunizioniArma, estraiCategorieNota, coloreCategoria, esitoDannoPf0, iniziativaTotale, pfMassimiEffettivi, effettiSfinimento, trasformazioneAttiva } from './rules/scheda.js';
 import { FLYORA_JSON, ESEMPIO_GNOMO, VAELION_JSON, ELEVORN_JSON, WENDELL_JSON, LYRIAN_JSON } from './data/esempi.js';
@@ -1294,7 +1294,7 @@ const INCANTESIMI_NOMI = Array.from(new Set([...NOMI_SPIEG_INC, ...Object.keys(I
 import { NOMI_CLASSI, BACKGROUND_5E, TAGLIE_5E, ALLINEAMENTI_5E, SESSO_5E, SOTTOCLASSI_5E, INCANTESIMI_CLASSE, TRUCCHETTI_NOTI, INC_MAX_2024, INC_MAX_2014_NOTI, SLOT_FULL_CASTER, SLOT_MEZZO_CASTER, CLASSI_FULL_CASTER, CLASSI_MEZZO_CASTER, DANNI_5E, SENSI_5E, CONDIZIONI_5E, PESI_OGGETTI, NOMI_OGGETTI, PESO_ARMATURA_TIPO, LINGUE_5E, ARMI_5E, STRUMENTI_5E, REAZIONI_5E, AZIONI_BONUS_5E, GRUPPI_ARMI_5E, GRUPPI_STRUMENTI_5E, GRUPPI_LINGUE_5E, DEFAULT_MANUALI, MANUALI_INFO, SOTTOCLASSI_FONTI, TALENTI_FONTI, INCANTESIMI_FONTI, talentiPerManuali, incantesimiPerManuali, fonteValida, PE_PER_LIVELLO } from './data/dati5e.js';
 import { BACKGROUND_COMPETENZE, BACKGROUND_TALENTO_ORIGINE_2024, SPECIE_5E, SUBCLASS_PRIVILEGI, CARATT_INCANTATORE, PRIORITA_CARATT, DADO_VITA_CLASSE, BACKGROUND_CARATT, TS_CLASSE, ADDESTRAMENTO_CLASSE, COMPETENZE_CLASSE, PRIVILEGI_CLASSE_L1, PRIVILEGI_CLASSE_L1_2014, PRIVILEGI_CLASSE_LIV, PRIVILEGI_CLASSE_LIV_2014, ASI_LIV, SOTTOCLASSE_LIV, SOTTOCLASSE_LIV_2014, COMPETENZE_SPECIE, NOMI_SPECIE, NOMI_SPECIE_GENERE, COGNOMI_SPECIE, NOMI_GENERICI, SPECIE_DATI, BONUS_CARATT_SPECIE_2014, SFINIMENTO_2014, BASE_ARMATURA_DEFAULT, ESEMPI_ARMATURA } from './data/dati5e.js';
 import { modificatore, conSegno, tiraDado, parseEspressioneDado, FACCE_DADO_VITA, facceDadoVita, esprDadiVita, gruppiDadoVita, bonusCompetenzaDaLivello, tiraDanni, tiraD20, capacitaCarico, modalitaEffettiva } from './rules/dadi.js';
-import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, determinaIconaOggetto, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili, calcolaTurnoCombattimento, dettagliAbilita, calcolaTsConcentrazione, calcolaAttaccoFurtivo, calcolaIraBarbarica, calcolaPunizioneDivina, calcolaIspirazioneBardica, livelloDiClasse, categoriaDaTempoLancio, tempoLancioIncantesimo, gittataAttacco } from './rules/regole.js';
+import { trucchettiMax, incantesimiMaxAuto, sottoclasseLivPer, chiaveClasse, privilegiClasseLivello, privilegiClasseFinoA, asiAlLivello, slotDaClasseLivello, livelloIncantatoreCombinato, slotMulticlasse, coloreClasse, dettagliIncantesimo, classificaIncantesimoCombattimento, scalaDannoTrucchetto, moltiplicatoreTrucchetto, incantesimiInizialiPerLivello, classePreparaIncantesimi, catalogoIncantesimiPreparabili, caratteristicaIncantatoreEffettiva, pesoStimato, pesoArmatura, determinaIconaOggetto, CONTENUTO_DOTAZIONI_5E, trovaContenutoDotazione, eContenitore, ottieniContenutoItem, sottoclasseTerzoIncantatore, incantesimiTerzoCasterLivello, listeIncantesimiTerzoCaster, controlliScheda, risorseDopoRiposo, COSTO_SLOT_IN_PUNTI, LIVELLI_CONVERTIBILI, puntiVersoSlot, slotVersoPunti, riepilogoCondizioni, MULTICLASSE_REQUISITI_5E, MULTICLASSE_COMPETENZE_5E, dettagliProgressioneLivello, maxInvocazioniWarlock, maxInfusioniNote, maxOggettiInfusi, calcolaPfCompagno, parseAzioniCompagno, dettagliEsperienza, analizzaPozione, calcolaMovimentoESalti, trovaReazioniDisponibili, calcolaTurnoCombattimento, dettagliAbilita, calcolaTsConcentrazione, calcolaAttaccoFurtivo, calcolaIraBarbarica, calcolaPunizioneDivina, calcolaIspirazioneBardica, livelloDiClasse, categoriaDaTempoLancio, tempoLancioIncantesimo, gittataAttacco, categoriaAttaccoSalvato, isRandelloIncantato, dannoRandelloIncantato, caratteristicaTiroSalvezzaIncantesimo } from './rules/regole.js';
 import { normalizzaPoteri, sincronizzaRisorsePoteri, bonusPotereBersaglio, modificatoriPoteriAttivi } from './rules/poteri.js';
 
 /**
@@ -14609,6 +14609,10 @@ export default function App() {
                     return false;
                   };
 
+                  // Modificatore da incantatore e competenza: stessi valori per CD, tiro per
+                  // colpire e danno di Randello Incantato in tutte le righe di Combattimento.
+                  const modIncComb = caratteristicaIncantatore ? modificatore(punteggioCaratteristica(scheda, caratteristicaIncantatore)) : 0;
+                  const bonusCompComb = scheda.bonusCompetenza || 2;
                   const attacchiSalvati = (scheda.attacchi || []).map((a) => {
                     const isSpell = isAttaccoIncantesimo(a);
                     let att = isSpell && !a.isSpell ? { ...a, isSpell: true } : a;
@@ -14617,15 +14621,30 @@ export default function App() {
                       // salvato tra gli attacchi viene dal suo TEMPO DI LANCIO, non dal
                       // campo `categoria` (che l'import imposta a 'Azione' di default):
                       // es. Randello Incantato e Parola di Guarigione sono Azione Bonus.
-                      const nomePulito = String(att.nome || '').replace(/^✨\s*/, '').replace(/\s*\((shillelagh|bastone incantato)\)/gi, '').trim();
-                      const voce = (scheda.incantesimiLista || []).find((s) => (s.nome || '').trim().toLowerCase() === nomePulito.toLowerCase());
-                      const catTempo = categoriaDaTempoLancio(tempoLancioIncantesimo(nomePulito, voce));
-                      if (catTempo && catTempo !== att.categoria) att = { ...att, categoria: catTempo };
+                      const catTempo = categoriaAttaccoSalvato(att, scheda.incantesimiLista);
+                      if (catTempo !== att.categoria) att = { ...att, categoria: catTempo };
                     }
                     if (att.isSpell && att.danno) {
                       const dbS = datiIncantesimo(att.nome);
                       if (dbS?.livello === 0 || att.livello === 0) {
                         att = { ...att, danno: scalaDannoTrucchetto(att.danno, scheda.livello || 1, att.nome) };
+                      }
+                    }
+                    if (att.isSpell) {
+                      const nomePulito = String(att.nome || '').replace(/^✨\s*/, '').replace(/\s*\((shillelagh|bastone incantato)\)/gi, '').trim();
+                      if (isRandelloIncantato(nomePulito)) {
+                        // Unica fonte di verità (come nella lista Trucchetti): dado
+                        // dell'incantesimo + mod da incantatore; attacco = competenza + mod.
+                        const dbR = datiIncantesimo(nomePulito) || {};
+                        att = { ...att, danno: dannoRandelloIncantato(dbR.danno || '1d8', modIncComb), bonus: bonusCompComb + modIncComb };
+                      } else {
+                        // Incantesimo a tiro salvezza (es. Morsa del Gelo): niente tiro per
+                        // colpire, solo la CD (calcolata, non quella scritta nella nota).
+                        const voce = (scheda.incantesimiLista || []).find((x) => (x.nome || '').trim().toLowerCase() === nomePulito.toLowerCase());
+                        const { isTS } = classificaIncantesimoCombattimento({ ...(voce || {}), nome: nomePulito });
+                        if (isTS) {
+                          att = { ...att, isTS: true, cd: 8 + bonusCompComb + modIncComb, caratteristicaTS: caratteristicaTiroSalvezzaIncantesimo(nomePulito, att.note) };
+                        }
                       }
                     }
                     return att;
@@ -14668,7 +14687,7 @@ export default function App() {
                     const bonus = isCura ? null : isTS ? 0 : bonusComp + modInc;
                     const cd = 8 + bonusComp + modInc;
                     const isShillelagh = /randello incantato|shillelagh/i.test(s.nome);
-                    const dannoFormatted = isShillelagh ? `${danno}${conSegno(modInc)}` : danno;
+                    const dannoFormatted = isShillelagh ? dannoRandelloIncantato(danno, modInc) : danno;
                     // La gittata va in un campo a sé (diventa il primo chip della riga);
                     // la nota usa la virgola come separatore, come le note degli attacchi
                     // salvati, così estraiCategorieNota riconosce le singole parti.
@@ -14683,6 +14702,7 @@ export default function App() {
                       isSpell: true,
                       isTS,
                       cd,
+                      caratteristicaTS: isTS ? caratteristicaTiroSalvezzaIncantesimo(s.nome, s.note) : '',
                       nome: `${s.nome}`,
                       categoria,
                       bonus,
@@ -14937,7 +14957,9 @@ export default function App() {
                               // Per le reazioni automatiche con Innesco/Effetto non si inventa nulla.
                               const gittataRiga = cat === 'Reazione' && (a.innescoIt || a.effettoIt) ? '' : gittataAttacco(a, spellInLista, armaDb);
                               const categorieNotaTutte = estraiCategorieNota(a.note);
-                              const categorieNota = categorieNotaTutte.filter((c) => c.categoria !== 'gittata');
+                              // Gittata e (per gli incantesimi a TS) la CD hanno già il loro badge:
+                              // non ripeterli tra i chip della nota.
+                              const categorieNota = categorieNotaTutte.filter((c) => c.categoria !== 'gittata' && !(a.isTS && c.categoria === 'tiroSalvezza'));
                               const isTrucchetto = (spellInLista && spellInLista.livello === 0) || (spSpell && spSpell.livello === 0) || a.livello === 0;
                               const iconaReazione = a.isSpell ? (isTrucchetto ? '✨' : '🪄')
                                 : (a.tipo === 'tattica' || a.tipo === 'attacco') ? '⚔️'
@@ -15035,9 +15057,8 @@ export default function App() {
                                   </td>
                                   <td style={styles.td} className="attacchi-bonus" data-label={t('combat.col_bonus')}>
                                     {a.isTS ? (
-                                      <span style={{ ...styles.badge, background: `${coloreCategoria('tiroSalvezza', notteAttiva)}1f`, color: coloreCategoria('tiroSalvezza', notteAttiva), border: `1px solid ${coloreCategoria('tiroSalvezza', notteAttiva)}`, padding: '2px 6px', fontWeight: 700 }} title={`Tiro salvezza richiesto: CD ${a.cd} (dettagli nella colonna Note)`}>
-                                        🎲
-                                      </span>
+                                      // Incantesimo a tiro salvezza: solo la CD, mai un tiro per colpire.
+                                      <BadgeTiroSalvezza cd={a.cd} caratteristica={a.caratteristicaTS} colore={coloreCategoria('tiroSalvezza', notteAttiva)} />
                                     ) : a.bonus === undefined || a.bonus === null ? null : typeof a.bonus === 'string' && isNaN(Number(a.bonus)) ? (
                                       <span style={{ ...styles.badge, background: 'rgba(59,130,246,0.12)', color: '#2563eb', border: '1px solid #3b82f6', padding: '2px 6px', fontWeight: 700 }}>
                                         {a.bonus}
@@ -16002,9 +16023,13 @@ export default function App() {
                             const gittata = s.gittata || d?.gittata || '';
                             const scuola = s.scuola || d?.scuola || '';
                             const area = s.area || d?.area || '';
-                            const danno = s.danno || d?.danno || '';
+                            // Randello Incantato: stesso danno di Combattimento (dado + mod da incantatore).
+                            const dannoBaseInc = s.danno || d?.danno || '';
+                            const danno = isRandelloIncantato(s.nome) && dannoBaseInc ? dannoRandelloIncantato(dannoBaseInc, modIncantatore) : dannoBaseInc;
                             const tipoDanno = s.tipoDanno || d?.tipoDanno || '';
                             const note = s.note || '';
+                            // Incantesimo a tiro salvezza: badge della CD al posto del tiro per colpire.
+                            const isTSInc = Boolean(danno) && tipoDanno !== 'Guarigione' && classificaIncantesimoCombattimento(s).isTS;
 
                             const nomeNorm = String(s.nome || '').trim().toLowerCase();
                             const isDuplicato = !s.catalogo && (conteggiNomi[nomeNorm] || 0) > 1;
@@ -16230,7 +16255,10 @@ export default function App() {
                                   </div>
                                   {parseEspressioneDado(danno) && (
                                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-                                      {modIncantatore !== null && (
+                                      {modIncantatore !== null && isTSInc && (
+                                        <BadgeTiroSalvezza cd={8 + scheda.bonusCompetenza + modIncantatore} caratteristica={caratteristicaTiroSalvezzaIncantesimo(s.nome, s.note)} colore={coloreCategoria('tiroSalvezza', notteAttiva)} />
+                                      )}
+                                      {modIncantatore !== null && !isTSInc && (
                                         <BadgeTiroColpire
                                           bonus={scheda.bonusCompetenza + modIncantatore}
                                           colore={coloreCategoria('attacco', notteAttiva)}

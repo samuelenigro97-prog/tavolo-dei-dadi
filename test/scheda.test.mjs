@@ -818,3 +818,12 @@ test('esitoDannoPf0: fallimento automatico e morte istantanea per danno a PF 0',
   assert.equal(r.tsMorteDopo, null);
 });
 
+
+test('estraiCategorieNota: la proprietà si ferma alla parentesi/due punti (niente "Magico): trascina 3m")', () => {
+  const testi = (n) => estraiCategorieNota(n).filter((c) => c.categoria === 'proprieta').map((c) => c.testo);
+  assert.deepEqual(testi('Trucchetto (Attacco Magico): trascina 3m, gittata 9m'), ['Magico']);
+  assert.deepEqual(testi('Magico con SAG (Randello/Bastone), gittata Tocco, durata 1 min'), ['Magico con SAG (Randello/Bastone)']);
+  assert.deepEqual(testi('Arma semplice (Versatile 1d8-3)'), ['Versatile 1d8-3']);
+  assert.deepEqual(testi('Versatile (1d10)'), ['Versatile (1d10)']);
+  assert.deepEqual(testi('Maestria: Atterrare (Topple)'), ['Maestria: Atterrare (Topple)']);
+});

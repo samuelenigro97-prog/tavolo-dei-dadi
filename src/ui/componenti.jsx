@@ -812,3 +812,33 @@ export function BadgeTiroDanno({ danno, tipoDanno, critico = false, onRoll, disa
     </button>
   );
 }
+
+/**
+ * Badge "pillola" della CD di un incantesimo a TIRO SALVEZZA (🎲 Costituzione
+ * · CD 17): lo tira il bersaglio, non chi lancia, quindi non è cliccabile e
+ * prende il posto del tiro per colpire (che per questi incantesimi non esiste).
+ */
+export function BadgeTiroSalvezza({ cd, caratteristica, colore, title }) {
+  return (
+    <span
+      className="badge-tiro badge-tiro-salvezza"
+      style={{
+        ...styles.buttonMini,
+        padding: '2px 6px',
+        fontSize: 11,
+        fontWeight: 700,
+        color: colore,
+        borderColor: colore,
+        background: `${colore}1f`,
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 2,
+        whiteSpace: 'nowrap',
+        cursor: 'help',
+      }}
+      title={title || `Tiro salvezza${caratteristica ? ` su ${caratteristica}` : ''}: CD ${cd}`}
+    >
+      🎲 {caratteristica ? `${caratteristica} · ` : ''}CD {cd}
+    </span>
+  );
+}

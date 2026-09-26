@@ -27,6 +27,24 @@ Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
   Sfinimento applicato: 13,5m) in **blu** quando è modificato, con il
   dettaglio nel tooltip; 1 click modifica sempre la velocità base. Anche
   il movimento del turno (sezione Azioni) usa ora il totale.
+- **Randello Incantato: stesso danno ovunque**: in Combattimento c'era
+  "1d8+5" (valore salvato a mano) e in Trucchetti "1d8". Ora entrambi usano
+  un'unica fonte di verità, `dannoRandelloIncantato`: dado dai dati
+  dell'incantesimo + modificatore della caratteristica da incantatore (5e:
+  Shillelagh usa la caratteristica da incantatore per attacco E danni), con
+  attacco = competenza + mod. Un "+K" salvato vecchio viene ignorato.
+- **Incantesimi a tiro salvezza senza tiro per colpire**: l'attacco salvato
+  di Morsa del Gelo mostrava "+9" per colpire. Ora ogni incantesimo a TS
+  (salvato o dalla lista, anche in Trucchetti/Incantesimi) mostra solo il
+  badge della CD (🎲 Costituzione · CD 17, calcolata `8 + competenza + mod`),
+  che sostituisce anche il chip CD ripetuto nella nota.
+- **Chip proprietà pulito**: da "Trucchetto (Attacco Magico): trascina 3m"
+  usciva il chip "Magico): trascina 3m". `estraiCategorieNota` ora si ferma
+  a parentesi/due punti/"•" (→ "Magico"), mantenendo interi "Magico con SAG
+  (Randello/Bastone)", "Versatile (1d8)", "Versatile 1d8-3", "Maestria: …".
+- `categoriaAttaccoSalvato` (pura, testata su tutti gli incantesimi "Azione
+  Bonus" del database): un incantesimo ad azione bonus non compare mai in
+  Azione, anche se salvato con `categoria: 'Azione'`.
 
 ### Cambiato
 - **Tiro per colpire e danni con gli stessi badge di Incantesimi**:

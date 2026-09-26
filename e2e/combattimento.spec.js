@@ -84,4 +84,34 @@ test.describe('Combattimento', () => {
     const colore = await box.locator('span').first().evaluate((e) => getComputedStyle(e).color);
     expect(colore).toBe('rgb(37, 99, 235)');
   });
+
+  test('Randello Incantato ha lo stesso danno (1d8 + mod SAG) in Azioni Bonus e in Trucchetti', async ({ page }) => {
+    const rigaComb = page.locator('tr.attacchi-riga').filter({ hasText: 'Randello Incantato' });
+    await expect(rigaComb.locator('.badge-tiro-danno')).toContainText('1d8+5 Contundente');
+    await expect(rigaComb.locator('.badge-tiro-colpire')).toHaveText(/\+9/);
+    const trucchetti = page.getByRole('heading', { name: 'Trucchetti', exact: true }).locator('xpath=ancestor::*[.//*[contains(@class, "badge-tiro-danno")]][1]');
+    await expect(trucchetti.locator('.badge-tiro-danno').filter({ hasText: 'Contundente' }).first()).toContainText('1d8+5 Contundente');
+  });
+
+  test('un incantesimo a tiro salvezza (Morsa del Gelo) mostra solo la CD, nessun tiro per colpire', async ({ page }) => {
+    for (const nome of ['Morsa del Gelo', 'Inaridire']) {
+      const riga = page.locator('tr.attacchi-riga').filter({ hasText: nome });
+      await expect(riga.locator('.badge-tiro-colpire')).toHaveCount(0);
+      await expect(riga.locator('.badge-tiro-salvezza')).toHaveText(/Costituzione · CD 17/);
+      // la CD non è ripetuta tra i chip della nota
+      await expect(riga.locator('.attacchi-note').getByText(/CD 17/)).toHaveCount(0);
+    }
+  });
+
+  test('il chip proprietà di Frusta di Spine è pulito ("Magico")', async ({ page }) => {
+    const riga = page.locator('tr.attacchi-riga').filter({ hasText: 'Frusta di Spine' });
+    await expect(riga.locator('.attacchi-note')).not.toContainText('):');
+    await expect(riga.locator('.attacchi-note span[title="Proprietà"]')).toHaveText(/^🏷️\s*Magico$/);
+  });
+
+  test('nessun incantesimo ad azione bonus compare nella tabella Azione', async ({ page }) => {
+    const tabellaAzione = page.locator('table.attacchi-table').first();
+    const nomiAzione = await tabellaAzione.locator('tr.attacchi-riga .attacchi-nome').allInnerTexts();
+    for (const n of nomiAzione) expect(n).not.toMatch(/Randello Incantato|Parola di Guarigione/);
+  });
 });

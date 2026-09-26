@@ -562,6 +562,54 @@ export function gittataAttacco(attacco, voceLista = null, armaDb = null) {
   return m ? m[1].replace(/\s+/g, '') : '';
 }
 
+/** Il nome indica Randello Incantato (Shillelagh), anche nelle varianti storiche. */
+export function isRandelloIncantato(nome) {
+  return /randello incantato|shillelagh|bastone incantato/i.test(String(nome || ''));
+}
+
+/**
+ * Danno di Randello Incantato (Shillelagh), UNICA fonte di verità usata sia
+ * dalla lista Trucchetti sia da Combattimento/Azioni Bonus: il dado
+ * dell'arma incantata (1d8 dai dati dell'incantesimo) + il modificatore
+ * della caratteristica da incantatore (5e: l'incantesimo usa la
+ * caratteristica da incantatore al posto della Forza per attacco e danni).
+ * Un eventuale "+K" già scritto nel dado di partenza viene ignorato, così un
+ * valore salvato vecchio (es. "1d8+5" con SAG cambiata) non resta indietro.
+ */
+export function dannoRandelloIncantato(dannoBase, modIncantatore) {
+  const m = String(dannoBase || '').trim().match(/^(\d*d\d+)/i);
+  const dado = m ? m[1] : '1d8';
+  const mod = Number(modIncantatore) || 0;
+  return mod ? `${dado}${mod > 0 ? '+' : ''}${mod}` : dado;
+}
+
+/**
+ * Caratteristica del tiro salvezza richiesto da un incantesimo (es.
+ * "Costituzione"), letta da nota + spiegazione + descrizione del database.
+ * Stringa vuota se non è indicata.
+ */
+export function caratteristicaTiroSalvezzaIncantesimo(nome, note = '') {
+  const db = datiIncantesimo(nome) || {};
+  const testo = `${note || ''} ${spiegaIncantesimo(nome) || ''} ${db.desc || ''}`;
+  const m = testo.match(/\b(?:ts|tiro salvezza)(?:\s+(?:su|di))?\s+(forza|destrezza|costituzione|intelligenza|saggezza|carisma)/i);
+  return m ? m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase() : '';
+}
+
+/**
+ * Sezione di Combattimento ('Azione' | 'Bonus' | 'Reazione') di un attacco
+ * SALVATO: per un incantesimo vince sempre il tempo di lancio (voce della
+ * lista del PG → database → descrizione), così un incantesimo ad azione
+ * bonus non finisce mai in Azione anche se il campo `categoria` dice
+ * 'Azione' (default dell'import). Per armi/altro resta `categoria`.
+ */
+export function categoriaAttaccoSalvato(attacco, incantesimiLista = []) {
+  const catSalvata = ['Azione', 'Bonus', 'Reazione'].includes(attacco?.categoria) ? attacco.categoria : 'Azione';
+  if (!attacco?.isSpell) return catSalvata;
+  const nomePulito = String(attacco.nome || '').replace(/^✨\s*/, '').replace(/\s*\((shillelagh|bastone incantato)\)/gi, '').trim();
+  const voce = (incantesimiLista || []).find((s) => String(s?.nome || '').trim().toLowerCase() === nomePulito.toLowerCase());
+  return categoriaDaTempoLancio(tempoLancioIncantesimo(nomePulito, voce)) || catSalvata;
+}
+
 export function pesoStimato(nome) {
   if (!nome) return 0;
   if (PESI_OGGETTI[nome] != null) return PESI_OGGETTI[nome];

@@ -1252,3 +1252,39 @@ test('calcolaTurnoCombattimento: il movimento del turno usa la Velocità totale 
   assert.equal(t.movimentoMax, 13.5);
   assert.equal(calcolaTurnoCombattimento(pg, { tatticaAttiva: 'scatto' }).movimentoMax, 27);
 });
+
+// v4.38 (2): Randello Incantato, incantesimi a TS, nessun duplicato Azione/Azione Bonus.
+test('dannoRandelloIncantato: dado dell\'incantesimo + mod da incantatore, ignorando un +K vecchio', async () => {
+  const { dannoRandelloIncantato, isRandelloIncantato } = await import('../src/rules/regole.js');
+  assert.equal(dannoRandelloIncantato('1d8', 5), '1d8+5');
+  assert.equal(dannoRandelloIncantato('1d8+3', 5), '1d8+5');
+  assert.equal(dannoRandelloIncantato('1d8', 0), '1d8');
+  assert.equal(dannoRandelloIncantato('1d8', -1), '1d8-1');
+  assert.equal(dannoRandelloIncantato('', 4), '1d8+4');
+  assert.ok(isRandelloIncantato('Randello Incantato') && isRandelloIncantato('Shillelagh') && !isRandelloIncantato('Randello'));
+});
+
+test('caratteristicaTiroSalvezzaIncantesimo: legge la caratteristica del TS', async () => {
+  const { caratteristicaTiroSalvezzaIncantesimo } = await import('../src/rules/regole.js');
+  assert.equal(caratteristicaTiroSalvezzaIncantesimo('Morsa del Gelo', 'Trucchetto (TS Costituzione CD 17)'), 'Costituzione');
+  assert.equal(caratteristicaTiroSalvezzaIncantesimo('Inaridire'), 'Costituzione');
+});
+
+test('categoriaAttaccoSalvato: un incantesimo ad azione bonus salvato come "Azione" va comunque in Azioni Bonus', async () => {
+  const { categoriaAttaccoSalvato } = await import('../src/rules/regole.js');
+  const lista = [{ nome: 'Randello Incantato', livello: 0, tempo: 'Azione Bonus' }, { nome: 'Parola di Guarigione', livello: 1, tempo: '1 azione bonus' }];
+  assert.equal(categoriaAttaccoSalvato({ nome: 'Randello Incantato', isSpell: true, categoria: 'Azione' }, lista), 'Bonus');
+  assert.equal(categoriaAttaccoSalvato({ nome: '✨ Randello Incantato (Shillelagh)', isSpell: true }, []), 'Bonus');
+  assert.equal(categoriaAttaccoSalvato({ nome: 'Parola di Guarigione', isSpell: true, categoria: 'Azione' }, lista), 'Bonus');
+  assert.equal(categoriaAttaccoSalvato({ nome: 'Frusta di Spine', isSpell: true, categoria: 'Bonus' }, []), 'Azione');
+  assert.equal(categoriaAttaccoSalvato({ nome: 'Spada lunga', categoria: 'Azione' }, []), 'Azione');
+  assert.equal(categoriaAttaccoSalvato({ nome: 'Spada lunga' }, []), 'Azione');
+});
+
+test('nessun incantesimo del database con tempo "Azione Bonus" viene classificato in Azione', async () => {
+  const { categoriaAttaccoSalvato } = await import('../src/rules/regole.js');
+  const { INCANTESIMI_DB } = await import('../src/data/incantesimi.js');
+  const bonus = Object.entries(INCANTESIMI_DB).filter(([, d]) => /bonus/i.test(d.tempo || ''));
+  assert.ok(bonus.length > 10);
+  for (const [nome] of bonus) assert.equal(categoriaAttaccoSalvato({ nome, isSpell: true, categoria: 'Azione' }, []), 'Bonus', nome);
+});
