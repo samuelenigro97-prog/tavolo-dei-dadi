@@ -5,6 +5,21 @@
 
 export const NOVITA = [
   {
+    versione: '4.40.0',
+    voci: {
+      it: [
+        'Sincronizzazione più sicura: se un altro dispositivo ha salvato i personaggi online dopo di te, l’app non sovrascrive più la sua versione. Se qui non hai modifiche carica da sola quella più recente, altrimenti ti chiede quale versione tenere.',
+        'Nella finestra di scelta puoi caricare la versione online (la tua resta in Cronologia versioni), mantenere la tua dopo una conferma, oppure scaricare entrambe come backup.',
+        'All’apertura dell’app e quando ci torni sopra, i personaggi online vengono controllati prima di salvare. Senza connessione non viene salvato nulla online finché la connessione non torna.',
+      ],
+      en: [
+        'Safer sync: if another device saved your characters online after you, the app no longer overwrites that version. If you have no changes here it loads the newer one automatically, otherwise it asks which version to keep.',
+        'In the choice window you can load the online version (yours stays in Version history), keep yours after a confirmation, or download both as a backup.',
+        'When you open the app or return to it, the online characters are checked before saving. Without a connection nothing is saved online until you are back online.',
+      ],
+    },
+  },
+  {
     versione: '4.39.0',
     voci: {
       it: [

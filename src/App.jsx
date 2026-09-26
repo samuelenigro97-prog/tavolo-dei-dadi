@@ -19,6 +19,7 @@ import { codificaScheda, decodificaScheda, preparaPerCondivisione, costruisciLin
 import { creaStanza, apriStanza, normalizzaCodiceStanza, formattaCodiceStanza, DURATA_STANZA_ORE } from './utils/stanze.js';
 import { generaCodiceSync, normalizzaCodiceSync, formattaCodiceSync, salvaSync, caricaSync, messaggioErroreSync } from './utils/sync.js';
 import { posizionePopover, stilePopover } from './utils/popover.js';
+import { improntaRoster, decidiSync, riepilogoConflitto, leggiBaseSync, salvaBaseSync, revisioneGist } from './utils/conflittiSync.js';
 import { salvaJson, rosterSenzaImmagini, riagganciaImmagini, salvaImmaginiRoster, caricaImmaginiRoster, rimuoviImmaginePersonaggio, preservaImmaginiSeMancanti } from './utils/persistenza.js';
 import { datiTabelleBackground, TABELLE_BACKGROUND } from './data/tabelleBackground.js';
 import { CompendioModal } from './ui/CompendioModal.jsx';
@@ -1975,7 +1976,7 @@ const COMP_ARMI_5E = ['Armi semplici', 'Armi da guerra', ...ARMI_5E.map((w) => w
 
 const STORAGE_KEY = 'scheda-interattiva:v1';
 const STORAGE_KEY_LEGACY = 'tavolo-dei-dadi:scheda:v1';
-const APP_VERSION = '4.39.0';
+const APP_VERSION = '4.40.0';
 
 /**
  * Archivio schede del DM (Cloudflare Worker + KV, vedi worker/LEGGIMI.md).
@@ -3873,7 +3874,15 @@ export default function App() {
   const syncCodicePendenteRef = useRef(false);
   codiceSyncRef.current = codiceSync;
 
-  const isCloudAttivo = Boolean((githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice));
+  // Conflitto di sincronizzazione in attesa di una scelta dell'utente.
+  const [conflittoSync, setConflittoSync] = useState(null);
+  const conflittoPausaRef = useRef({ gist: false, codice: false });
+  const autoSyncRef = useRef(autoSync);
+  const autoSyncCodiceRef = useRef(autoSyncCodice);
+  autoSyncRef.current = autoSync;
+  autoSyncCodiceRef.current = autoSyncCodice;
+
+  const isCloudAttivo = Boolean(((githubToken && gistId && autoSync) || (codiceSync && autoSyncCodice)) && !conflittoSync);
   const isCloudConfigurato = Boolean((githubToken && gistId) || codiceSync);
   const statoColoreCloud = sincronizzando
     ? '#f59e0b'
@@ -6111,6 +6120,74 @@ export default function App() {
 
 
 
+  // --- Protezione dai conflitti (v4.40.0) ---
+  // Ogni canale ricorda la versione online da cui partono le modifiche locali
+  // (la "base"). Prima di inviare si rilegge la copia online: se un altro
+  // dispositivo l'ha cambiata, non si sovrascrive mai in silenzio.
+  const CANALI_SYNC = {
+    gist: { base: 'scheda-interattiva:sync-base', ts: 'scheda-interattiva:sync-ts' },
+    codice: { base: 'scheda-interattiva:sync-codice-base', ts: 'scheda-interattiva:sync-codice-ts' },
+  };
+  function leggiBaseCanale(canale) {
+    return leggiBaseSync(localStorage, CANALI_SYNC[canale].base, CANALI_SYNC[canale].ts);
+  }
+  function salvaBaseCanale(canale, base) {
+    salvaBaseSync(localStorage, CANALI_SYNC[canale].base, base, CANALI_SYNC[canale].ts);
+  }
+  /** Roster online normalizzato come lo userebbe questa app (per confronti e caricamento). */
+  function normalizzaRosterRemoto(parsed) {
+    const caricato = { attivo: parsed?.attivo || '', personaggi: {} };
+    for (const id in (parsed?.personaggi || {})) {
+      if (parsed.personaggi[id]) caricato.personaggi[id] = normalizeImported(parsed.personaggi[id]);
+    }
+    if (!caricato.attivo || !caricato.personaggi[caricato.attivo]) caricato.attivo = Object.keys(caricato.personaggi)[0] || '';
+    return caricato;
+  }
+  /** Sostituisce il roster locale con la versione online e ne fa la nuova base.
+   *  Prima salva una copia locale in Cronologia versioni, per sicurezza. */
+  async function applicaRosterRemoto(canale, remoto, atteso = null) {
+    salvaSnapshot(rosterSyncRef.current);
+    const conImmaginiLocali = await caricaImmaginiRoster(remoto.roster).catch(() => remoto.roster);
+    // Caricamento automatico: se nel frattempo l'utente ha modificato qualcosa
+    // non si sostituisce nulla (lo gestirà il prossimo controllo come conflitto).
+    if (atteso && rosterSyncRef.current !== atteso) return false;
+    const finale = preservaImmaginiSeMancanti(conImmaginiLocali, rosterSyncRef.current);
+    salvaBaseCanale(canale, { rev: remoto.rev, ts: remoto.ts, hash: improntaRoster(remoto.roster) });
+    rosterSyncRef.current = finale;
+    setRoster(finale);
+    return true;
+  }
+  function apriConflitto(canale, remoto) {
+    conflittoPausaRef.current[canale] = true;
+    setConflittoSync({ canale, remoto, riepilogo: riepilogoConflitto(rosterSyncRef.current, remoto.roster), aperto: true, conferma: false });
+  }
+  /** Applica la decisione presa da decidiSync() quando NON si deve inviare.
+   *  Restituisce true se l'invio va annullato. */
+  async function gestisciDecisione(canale, decisione, remoto, silenzioso, setStato, rosterValutato) {
+    if (decisione.azione === 'invia') return false;
+    if (decisione.azione === 'niente') {
+      if (!silenzioso) setStato({ text: t('conflitto.gia_allineato'), type: 'success' });
+      return true;
+    }
+    if (decisione.azione === 'allineato') {
+      salvaBaseCanale(canale, { rev: remoto.rev, ts: remoto.ts, hash: improntaRoster(rosterValutato) });
+      if (!silenzioso) setStato({ text: t('conflitto.gia_allineato'), type: 'success' });
+      return true;
+    }
+    if (decisione.azione === 'carica') {
+      if (!(await applicaRosterRemoto(canale, remoto, rosterValutato))) {
+        apriConflitto(canale, remoto);
+        setStato({ text: t('conflitto.in_pausa'), type: 'error' });
+        return true;
+      }
+      setStato({ text: t('conflitto.caricata_recente'), type: 'success' });
+      return true;
+    }
+    apriConflitto(canale, remoto);
+    setStato({ text: t('conflitto.in_pausa'), type: 'error' });
+    return true;
+  }
+
   // --- Cloud Sync (GitHub Gist) ---
 
   async function leggiContenutoFileGist(file, token) {
@@ -6121,7 +6198,7 @@ export default function App() {
     if (file.raw_url) {
       try {
         const headers = token ? { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3.raw' } : {};
-        const res = await fetch(file.raw_url, { headers });
+        const res = await fetchConTimeout(file.raw_url, { headers });
         if (res.ok) {
           const text = await res.text();
           return JSON.parse(text);
@@ -6134,9 +6211,23 @@ export default function App() {
     return null;
   }
 
-  async function salvaSuCloud(silenzioso = false) {
+  /**
+   * Sincronizza col Gist. Non scrive mai alla cieca: rilegge la copia online,
+   * la confronta con la base di questo dispositivo (decidiSync) e, se un altro
+   * dispositivo ha salvato nel frattempo, carica la versione online (se qui non
+   * è cambiato nulla) oppure apre la finestra di conflitto.
+   *  opzioni.forza      → l'utente ha scelto "mantieni la mia": sovrascrive
+   *  opzioni.soloLettura → controlla e carica, ma non invia (auto-sync spento)
+   */
+  async function salvaSuCloud(silenzioso = false, opzioni = {}) {
+    const { forza = false, soloLettura = false } = opzioni;
     if (!tokenSyncRef.current) {
       if (!silenzioso) setCloudStatus({ text: 'Inserisci il token di accesso GitHub per attivare la sincronizzazione.', type: 'error' });
+      return;
+    }
+    // Conflitto aperto: niente invii automatici finché l'utente non sceglie.
+    if (conflittoPausaRef.current.gist && !forza) {
+      if (!silenzioso) setConflittoSync((c) => (c ? { ...c, aperto: true } : c));
       return;
     }
     // Accoda una sola scrittura aggiornata se arriva una modifica mentre il
@@ -6151,21 +6242,16 @@ export default function App() {
       setSincronizzando(true);
       if (!silenzioso) setCloudStatus({ text: 'Salvataggio in corso…', type: 'info' });
       const quando = Date.now();
-      // Le immagini vivono in IndexedDB per non saturare localStorage. Prima
-      // del cloud le riagganciamo esplicitamente: così ritratto e mappa seguono
-      // davvero il personaggio anche su un altro dispositivo.
-      const rosterCloud = await caricaImmaginiRoster(rosterSyncRef.current).catch(() => rosterSyncRef.current);
+      const rosterLocale = rosterSyncRef.current;
       let nuovoId = gistSyncRef.current;
-      let rosterDaInviare = rosterCloud;
+      let remoto = null;
+      let parsedAttuale = null;
       if (nuovoId) {
-        // Non lasciare che il push di un dispositivo senza l'immagine più
-        // recente (appena caricata da un altro dispositivo, non ancora
-        // scaricata qui) cancelli quella già presente sul cloud: se non
-        // riusciamo a leggere lo stato attuale per fare il confronto, meglio
-        // rimandare il salvataggio (ci riprova il prossimo cambiamento) che
-        // scrivere alla cieca e rischiare di cancellare un'immagine.
-        const resAttuale = await fetch(`https://api.github.com/gists/${nuovoId}`, {
+        // Prima di scrivere serve SEMPRE lo stato online: se non riusciamo a
+        // leggerlo (offline, GitHub lento) si rimanda, non si scrive alla cieca.
+        const resAttuale = await fetchConTimeout(`https://api.github.com/gists/${nuovoId}`, {
           headers: { 'Authorization': `token ${tokenSyncRef.current}`, 'Accept': 'application/vnd.github.v3+json' },
+          cache: 'no-store',
         }).catch(() => null);
         if (!resAttuale || !resAttuale.ok) {
           if (!silenzioso) setCloudStatus({ text: 'Connessione assente: la sincronizzazione è rimandata per non sovrascrivere dati più recenti.', type: 'error' });
@@ -6174,15 +6260,33 @@ export default function App() {
         const outAttuale = await resAttuale.json();
         const fileAttuale = outAttuale.files?.['roster_tavolo_dei_dadi.json'];
         if (fileAttuale) {
-          const parsedAttuale = await leggiContenutoFileGist(fileAttuale, tokenSyncRef.current);
-          if (parsedAttuale) {
-            rosterDaInviare = preservaImmaginiSeMancanti(rosterCloud, parsedAttuale);
+          parsedAttuale = await leggiContenutoFileGist(fileAttuale, tokenSyncRef.current);
+          if (fileAttuale && !parsedAttuale) {
+            // File presente ma illeggibile (troncato, rete a metà): non rischiare.
+            if (!silenzioso) setCloudStatus({ text: 'Connessione assente: la sincronizzazione è rimandata per non sovrascrivere dati più recenti.', type: 'error' });
+            return;
           }
         }
+        if (parsedAttuale?.personaggi) {
+          remoto = { rev: revisioneGist(outAttuale), ts: Number(parsedAttuale._updatedAt) || 0, roster: normalizzaRosterRemoto(parsedAttuale) };
+        }
       }
+      if (!forza) {
+        const decisione = decidiSync({ base: leggiBaseCanale('gist'), remoto, locale: rosterLocale });
+        if (await gestisciDecisione('gist', decisione, remoto, silenzioso, setCloudStatus, rosterLocale)) return;
+        if (soloLettura) return;
+      }
+      // Le immagini vivono in IndexedDB per non saturare localStorage. Prima
+      // del cloud le riagganciamo esplicitamente: così ritratto e mappa seguono
+      // davvero il personaggio anche su un altro dispositivo.
+      const rosterCloud = await caricaImmaginiRoster(rosterLocale).catch(() => rosterLocale);
+      // Non lasciare che il push di un dispositivo senza l'immagine più recente
+      // cancelli quella già presente sul cloud.
+      const rosterDaInviare = parsedAttuale ? preservaImmaginiSeMancanti(rosterCloud, parsedAttuale) : rosterCloud;
       const dati = JSON.stringify({ ...rosterDaInviare, _updatedAt: quando }, null, 2);
       const corpo = { files: { 'roster_tavolo_dei_dadi.json': { content: dati } } };
 
+      let outScrittura = null;
       if (nuovoId) {
         const res = await fetch(`https://api.github.com/gists/${nuovoId}`, {
           method: 'PATCH',
@@ -6190,6 +6294,7 @@ export default function App() {
           body: JSON.stringify(corpo),
         });
         if (!res.ok) throw new Error('Errore aggiornamento Gist. Token o ID non validi.');
+        outScrittura = await res.json().catch(() => null);
       } else {
         const res = await fetch(`https://api.github.com/gists`, {
           method: 'POST',
@@ -6197,16 +6302,18 @@ export default function App() {
           body: JSON.stringify({ description: 'Salvataggio Cloud - Tavolo dei Dadi', public: false, ...corpo }),
         });
         if (!res.ok) throw new Error('Errore creazione Gist. Token non valido.');
-        const out = await res.json();
-        nuovoId = out.id;
-        gistSyncRef.current = out.id;
-        setGistId(out.id);
-        localStorage.setItem('scheda-interattiva:gist-id', out.id);
+        outScrittura = await res.json();
+        nuovoId = outScrittura.id;
+        gistSyncRef.current = outScrittura.id;
+        setGistId(outScrittura.id);
+        localStorage.setItem('scheda-interattiva:gist-id', outScrittura.id);
       }
+      // La nuova base è la versione appena scritta. Se la revisione non è
+      // leggibile resta vuota: il prossimo controllo userà il timestamp.
+      salvaBaseCanale('gist', { rev: revisioneGist(outScrittura), ts: quando, hash: improntaRoster(rosterLocale) });
       const orario = new Date(quando).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
       setUltimoSync(orario);
       localStorage.setItem('scheda-interattiva:ultimo-sync', orario);
-      localStorage.setItem('scheda-interattiva:sync-ts', String(quando));
       segnaBackupFatto(); // il sync sul cloud conta come backup: azzera il promemoria
       setCloudStatus({ text: `✅ Sincronizzato · ${orario}`, type: 'success' });
       return nuovoId;
@@ -6216,7 +6323,7 @@ export default function App() {
       syncInCorsoRef.current = false;
       if (syncPendenteRef.current) {
         syncPendenteRef.current = false;
-        setTimeout(() => salvaSuCloud(true), 0);
+        setTimeout(() => salvaSuCloud(true, { soloLettura: !autoSyncRef.current }), 0);
       } else {
         setSincronizzando(false);
       }
@@ -6228,6 +6335,7 @@ export default function App() {
   async function caricaGistById(id, tokenUsato) {
     const res = await fetchConTimeout(`https://api.github.com/gists/${id}`, {
       headers: { 'Authorization': `token ${tokenUsato}`, 'Accept': 'application/vnd.github.v3+json' },
+      cache: 'no-store',
     });
     if (!res.ok) throw new Error('Errore caricamento. Token o ID non validi.');
     const out = await res.json();
@@ -6235,17 +6343,10 @@ export default function App() {
     if (!file) throw new Error('Il file "roster_tavolo_dei_dadi.json" non è presente nel Gist.');
     const parsed = await leggiContenutoFileGist(file, tokenUsato);
     if (!parsed || !parsed.personaggi) throw new Error('Contenuto del backup GitHub non valido o danneggiato.');
-    const loadedRoster = { attivo: parsed.attivo, personaggi: {} };
-    for (const pid in parsed.personaggi) loadedRoster.personaggi[pid] = normalizeImported(parsed.personaggi[pid]);
-    if (!loadedRoster.attivo || !loadedRoster.personaggi[loadedRoster.attivo]) {
-      loadedRoster.attivo = Object.keys(loadedRoster.personaggi)[0] || '';
-    }
-    const conImmaginiLocali = await caricaImmaginiRoster(loadedRoster).catch(() => loadedRoster);
-    // Se il cloud non porta un'immagine per un personaggio già presente qui
-    // (bug di sincronizzazione, upload non ancora arrivato, dato troppo grande...),
-    // non cancellare quella già visibile su questo dispositivo.
-    setRoster(preservaImmaginiSeMancanti(conImmaginiLocali, rosterSyncRef.current));
-    if (parsed._updatedAt) localStorage.setItem('scheda-interattiva:sync-ts', String(parsed._updatedAt));
+    // Il caricamento esplicito vince sempre: chiude un eventuale conflitto aperto.
+    conflittoPausaRef.current.gist = false;
+    setConflittoSync((c) => (c?.canale === 'gist' ? null : c));
+    await applicaRosterRemoto('gist', { rev: revisioneGist(out), ts: Number(parsed._updatedAt) || 0, roster: normalizzaRosterRemoto(parsed) });
   }
 
   /** Attiva il backup automatico: abilita l'auto-sync e fa subito il primo salvataggio
@@ -6307,8 +6408,11 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roster, autoSync, githubToken, gistId]);
 
-  // Auto-caricamento all'avvio: se il cloud è configurato e contiene una copia
-  // più recente di quella locale, la carica da sola (vera sincronia tra device).
+  // Avvio: PRIMA si legge la copia online, poi eventualmente si invia.
+  // salvaSuCloud tiene il "lucchetto" per tutta la verifica, quindi gli
+  // auto-salvataggi scattati nel frattempo (es. immagini caricate da
+  // IndexedDB) aspettano e poi rifanno il controllo: un dispositivo con dati
+  // vecchi non può più spingerli online prima di aver visto quelli nuovi.
   const autoCaricato = useRef(false);
   useEffect(() => {
     if (autoCaricato.current) return;
@@ -6317,29 +6421,7 @@ export default function App() {
     (async () => {
       try {
         setCaricandoCloud(true);
-        const res = await fetchConTimeout(`https://api.github.com/gists/${gistId}`, {
-          headers: { 'Authorization': `token ${githubToken}`, 'Accept': 'application/vnd.github.v3+json' },
-        });
-        if (!res.ok) return;
-        const out = await res.json();
-        const file = out.files?.['roster_tavolo_dei_dadi.json'];
-        if (!file) return;
-        const parsed = await leggiContenutoFileGist(file, githubToken);
-        if (!parsed || !parsed.personaggi) return;
-        const cloudTs = Number(parsed._updatedAt) || 0;
-        const localTs = Number(localStorage.getItem('scheda-interattiva:sync-ts')) || 0;
-        if (cloudTs <= localTs) return; // il locale è già aggiornato quanto il cloud
-        const caricato = { attivo: parsed.attivo, personaggi: {} };
-        for (const id in parsed.personaggi) caricato.personaggi[id] = normalizeImported(parsed.personaggi[id]);
-        if (!caricato.attivo || !caricato.personaggi[caricato.attivo]) caricato.attivo = Object.keys(caricato.personaggi)[0] || '';
-        if (Object.keys(caricato.personaggi).length) {
-          // Se il cloud non contiene ancora un'immagine, conserva quella già
-          // archiviata sul dispositivo invece di cancellarla durante il merge.
-          const conImmaginiLocali = await caricaImmaginiRoster(caricato).catch(() => caricato);
-          setRoster(preservaImmaginiSeMancanti(conImmaginiLocali, rosterSyncRef.current));
-          localStorage.setItem('scheda-interattiva:sync-ts', String(cloudTs));
-          setCloudStatus({ text: '☁️ Personaggi caricati dal servizio online', type: 'success' });
-        }
+        await salvaSuCloud(true, { soloLettura: !autoSync });
       } catch {
         // Offline, GitHub lento o IndexedDB bloccato: il roster locale resta
         // già disponibile e l'overlay deve sempre scomparire.
@@ -6369,8 +6451,17 @@ export default function App() {
 
   // --- Sincronizzazione tramite codice (senza token GitHub) ---
 
-  async function salvaSuCodiceSync(silenzioso = false) {
+  /** Stessa logica di salvaSuCloud per la sincronizzazione a codice (Worker):
+   *  rilegge, confronta con la base, invia solo se nessun altro ha salvato nel
+   *  frattempo. In più passa baseUpdatedAt al Worker, che rifiuta (409) se la
+   *  copia online è cambiata tra la lettura e la scrittura. */
+  async function salvaSuCodiceSync(silenzioso = false, opzioni = {}) {
+    const { forza = false, soloLettura = false } = opzioni;
     if (!codiceSyncRef.current) return;
+    if (conflittoPausaRef.current.codice && !forza) {
+      if (!silenzioso) setConflittoSync((c) => (c ? { ...c, aperto: true } : c));
+      return;
+    }
     if (syncCodiceInCorsoRef.current) {
       syncCodicePendenteRef.current = true;
       return;
@@ -6380,26 +6471,45 @@ export default function App() {
       setSincronizzando(true);
       if (!silenzioso) setSyncCodiceStatus({ text: 'Salvataggio in corso…', type: 'info' });
       const quando = Date.now();
-      const rosterCloud = await caricaImmaginiRoster(rosterSyncRef.current).catch(() => rosterSyncRef.current);
-      let rosterDaInviare = rosterCloud;
+      const rosterLocale = rosterSyncRef.current;
+      let remoto = null;
+      let rosterRemotoGrezzo = null;
       try {
         const attuale = await caricaSync(URL_STANZE, codiceSyncRef.current);
-        rosterDaInviare = preservaImmaginiSeMancanti(rosterCloud, attuale.roster);
+        rosterRemotoGrezzo = attuale.roster;
+        remoto = { rev: String(attuale.updatedAt || ''), ts: attuale.updatedAt, roster: normalizzaRosterRemoto(attuale.roster) };
       } catch (errAttuale) {
         // "Codice non ancora popolato" è l'unico caso in cui è sicuro procedere
         // senza il confronto: per qualsiasi altro errore (rete, rate limit...)
-        // scrivere alla cieca rischierebbe di cancellare un'immagine più
-        // recente salvata da un altro dispositivo con lo stesso codice.
+        // scrivere alla cieca rischierebbe di sovrascrivere dati più recenti.
         if (errAttuale.message !== 'SYNC_NOT_FOUND') {
           if (!silenzioso) setSyncCodiceStatus({ text: 'Connessione assente: la sincronizzazione è rimandata per non sovrascrivere dati più recenti.', type: 'error' });
           return;
         }
       }
-      await salvaSync(URL_STANZE, codiceSyncRef.current, rosterDaInviare, quando);
+      if (!forza) {
+        const decisione = decidiSync({ base: leggiBaseCanale('codice'), remoto, locale: rosterLocale });
+        if (await gestisciDecisione('codice', decisione, remoto, silenzioso, setSyncCodiceStatus, rosterLocale)) return;
+        if (soloLettura) return;
+      }
+      const rosterCloud = await caricaImmaginiRoster(rosterLocale).catch(() => rosterLocale);
+      const rosterDaInviare = rosterRemotoGrezzo ? preservaImmaginiSeMancanti(rosterCloud, rosterRemotoGrezzo) : rosterCloud;
+      try {
+        await salvaSync(URL_STANZE, codiceSyncRef.current, rosterDaInviare, quando, fetch, remoto ? { baseUpdatedAt: remoto.ts } : {});
+      } catch (errScrittura) {
+        if (errScrittura.message === 'SYNC_CONFLICT') {
+          // Un altro dispositivo ha salvato proprio adesso: rileggi e chiedi.
+          const ora = await caricaSync(URL_STANZE, codiceSyncRef.current);
+          apriConflitto('codice', { rev: String(ora.updatedAt || ''), ts: ora.updatedAt, roster: normalizzaRosterRemoto(ora.roster) });
+          setSyncCodiceStatus({ text: t('conflitto.in_pausa'), type: 'error' });
+          return;
+        }
+        throw errScrittura;
+      }
+      salvaBaseCanale('codice', { rev: String(quando), ts: quando, hash: improntaRoster(rosterLocale) });
       const orario = new Date(quando).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
       setUltimoSyncCodice(orario);
       localStorage.setItem('scheda-interattiva:ultimo-sync-codice', orario);
-      localStorage.setItem('scheda-interattiva:sync-codice-ts', String(quando));
       segnaBackupFatto();
       setSyncCodiceStatus({ text: `✅ Sincronizzato · ${orario}`, type: 'success' });
     } catch (err) {
@@ -6411,7 +6521,7 @@ export default function App() {
       syncCodiceInCorsoRef.current = false;
       if (syncCodicePendenteRef.current) {
         syncCodicePendenteRef.current = false;
-        setTimeout(() => salvaSuCodiceSync(true), 0);
+        setTimeout(() => salvaSuCodiceSync(true, { soloLettura: !autoSyncCodiceRef.current }), 0);
       }
     }
   }
@@ -6510,8 +6620,13 @@ export default function App() {
           : Object.keys(personaggi)[0] || '';
       return { attivo, personaggi };
     })();
+    // Nuova base = copia online appena letta. Se il merge ha tenuto personaggi
+    // presenti solo qui, il roster risulta "modificato" e verrà inviato.
+    conflittoPausaRef.current.codice = false;
+    setConflittoSync((c) => (c?.canale === 'codice' ? null : c));
+    salvaSnapshot(rosterSyncRef.current);
+    salvaBaseCanale('codice', { rev: String(updatedAt || ''), ts: updatedAt, hash: improntaRoster(caricato) });
     setRoster(merged);
-    if (updatedAt) localStorage.setItem('scheda-interattiva:sync-codice-ts', String(updatedAt));
     return updatedAt;
   }
 
@@ -6589,7 +6704,7 @@ export default function App() {
   useEffect(() => {
     if (mostraCloud) {
       if (codiceSyncRef.current && (autoSyncCodice || codiceSync)) {
-        salvaSuCodiceSync(true);
+        salvaSuCodiceSync(true, { soloLettura: !autoSyncCodice });
       } else if (githubToken && gistId && autoSync) {
         salvaSuCloud(true);
       }
@@ -6597,9 +6712,9 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mostraCloud]);
 
-  // Auto-caricamento all'avvio se un codice è già attivo su questo dispositivo
-  // e il cloud ha una copia più recente di quella locale (stessa logica del
-  // caricamento automatico col token, ma sulla chiave "sync-codice-ts").
+  // Avvio con un codice attivo: prima si legge la copia online (caricandola
+  // se qui non ci sono modifiche, o chiedendo in caso di conflitto), poi si
+  // invia solo se serve. Stessa logica del backup GitHub.
   const autoCaricatoCodice = useRef(false);
   useEffect(() => {
     if (autoCaricatoCodice.current) return;
@@ -6608,18 +6723,7 @@ export default function App() {
     (async () => {
       try {
         setCaricandoCloud(true);
-        const { roster: rosterRicevuto, updatedAt } = await caricaSync(URL_STANZE, codiceSync);
-        const localTs = Number(localStorage.getItem('scheda-interattiva:sync-codice-ts')) || 0;
-        if (updatedAt <= localTs) return;
-        const caricato = { attivo: rosterRicevuto.attivo, personaggi: {} };
-        for (const id in (rosterRicevuto.personaggi || {})) caricato.personaggi[id] = normalizeImported(rosterRicevuto.personaggi[id]);
-        if (!caricato.attivo || !caricato.personaggi[caricato.attivo]) caricato.attivo = Object.keys(caricato.personaggi)[0] || '';
-        if (Object.keys(caricato.personaggi).length) {
-          const conImmaginiLocali = await caricaImmaginiRoster(caricato).catch(() => caricato);
-          setRoster(preservaImmaginiSeMancanti(conImmaginiLocali, rosterSyncRef.current));
-          localStorage.setItem('scheda-interattiva:sync-codice-ts', String(updatedAt));
-          setSyncCodiceStatus({ text: '☁️ Personaggi caricati dal codice di sincronizzazione', type: 'success' });
-        }
+        await salvaSuCodiceSync(true, { soloLettura: !autoSyncCodice });
       } catch {
         // Offline o codice non più valido: il roster locale resta comunque disponibile.
       } finally {
@@ -6628,6 +6732,78 @@ export default function App() {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Ritorno sull'app (scheda di nuovo visibile, finestra a fuoco, connessione
+  // tornata): ricontrolla la copia online. È il caso tipico del dispositivo
+  // rimasto aperto per ore: vede subito le modifiche fatte altrove invece di
+  // sovrascriverle alla prima modifica. Al massimo un controllo ogni 30 s.
+  const verificaRitornoRef = useRef(null);
+  verificaRitornoRef.current = () => {
+    if (tokenSyncRef.current && gistSyncRef.current) salvaSuCloud(true, { soloLettura: !autoSyncRef.current });
+    if (codiceSyncRef.current) salvaSuCodiceSync(true, { soloLettura: !autoSyncCodiceRef.current });
+  };
+  useEffect(() => {
+    let ultimo = Date.now();
+    const verifica = (e) => {
+      if (document.visibilityState === 'hidden') return;
+      if (e?.type !== 'online' && Date.now() - ultimo < 30000) return;
+      ultimo = Date.now();
+      verificaRitornoRef.current?.();
+    };
+    document.addEventListener('visibilitychange', verifica);
+    window.addEventListener('focus', verifica);
+    window.addEventListener('online', verifica);
+    return () => {
+      document.removeEventListener('visibilitychange', verifica);
+      window.removeEventListener('focus', verifica);
+      window.removeEventListener('online', verifica);
+    };
+  }, []);
+
+  // --- Finestra di conflitto: azioni ---
+  function scaricaRosterJson(r, etichetta) {
+    const ids = Object.keys(r?.personaggi || {});
+    const quando = new Date();
+    const dataStr = `${quando.toISOString().slice(0, 10)}-${String(quando.getHours()).padStart(2, '0')}${String(quando.getMinutes()).padStart(2, '0')}`;
+    const blob = new Blob([JSON.stringify({ tipo: 'tavolo-dei-dadi-roster', app: 'Tavolo dei Dadi', versione: APP_VERSION, data: quando.toISOString(), personaggi: ids.length, roster: r }, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tavolo-dei-dadi-${etichetta}-${dataStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  function setStatoCanale(canale, stato) {
+    if (canale === 'gist') setCloudStatus(stato); else setSyncCodiceStatus(stato);
+  }
+  async function conflittoCaricaOnline() {
+    const c = conflittoSync;
+    if (!c) return;
+    await applicaRosterRemoto(c.canale, c.remoto);
+    conflittoPausaRef.current[c.canale] = false;
+    setConflittoSync(null);
+    setStatoCanale(c.canale, { text: t('conflitto.caricata_online'), type: 'success' });
+  }
+  function conflittoMantieniMia() {
+    const c = conflittoSync;
+    if (!c) return;
+    conflittoPausaRef.current[c.canale] = false;
+    setConflittoSync(null);
+    if (c.canale === 'gist') salvaSuCloud(false, { forza: true });
+    else salvaSuCodiceSync(false, { forza: true });
+  }
+  function conflittoScaricaEntrambe() {
+    const c = conflittoSync;
+    if (!c) return;
+    scaricaRosterJson(rosterSyncRef.current, 'questo-dispositivo');
+    setTimeout(() => scaricaRosterJson(c.remoto.roster, 'versione-online'), 400);
+    segnaBackupFatto();
+  }
+  function conflittoDecidiDopo() {
+    setConflittoSync((c) => (c ? { ...c, aperto: false, conferma: false } : c));
+  }
 
   const critico = tiro?.naturale === 20;
   const fallimento = tiro?.naturale === 1;
@@ -7687,6 +7863,57 @@ export default function App() {
         </div>
       )}
 
+      {conflittoSync?.aperto && (() => {
+        const c = conflittoSync;
+        const r = c.riepilogo || {};
+        const locale = lingua === 'en' ? 'en-GB' : 'it-IT';
+        const quandoOnline = c.remoto?.ts ? new Date(c.remoto.ts).toLocaleString(locale, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+        const elenco = (nomi) => (nomi.length > 6 ? `${nomi.slice(0, 6).join(', ')} +${nomi.length - 6}` : nomi.join(', '));
+        const riga = { display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 13, padding: '4px 0' };
+        return (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="conflitto-sync-titolo"
+            data-testid="conflitto-sync"
+            style={{ position: 'fixed', inset: 0, zIndex: 3100, padding: 16, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <div style={{ ...styles.panel, maxWidth: 480, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
+              <h2 id="conflitto-sync-titolo" style={{ ...styles.title, fontSize: 20, marginTop: 0, marginBottom: 8, color: 'var(--c-title)' }}>{t('conflitto.titolo')}</h2>
+              <p style={{ ...styles.detail, fontSize: 13, lineHeight: 1.5, marginTop: 0 }}>{t('conflitto.spiegazione')}</p>
+              <div style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 12px', margin: '12px 0', background: 'rgba(0,0,0,0.03)' }}>
+                <div style={{ ...styles.detail, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
+                  {c.canale === 'gist' ? t('conflitto.canale_gist') : t('conflitto.canale_codice')}
+                </div>
+                <div style={riga}><span>{t('conflitto.versione_online')}</span><strong>{t('conflitto.n_personaggi', { n: r.nOnline ?? 0 })}{quandoOnline ? ` · ${quandoOnline}` : ''}</strong></div>
+                <div style={riga}><span>{t('conflitto.versione_locale')}</span><strong>{t('conflitto.n_personaggi', { n: r.nQui ?? 0 })}</strong></div>
+                {r.soloOnline?.length > 0 && <div style={{ ...styles.detail, fontSize: 12, marginTop: 4 }}>{t('conflitto.solo_online')}: <strong>{elenco(r.soloOnline)}</strong></div>}
+                {r.soloQui?.length > 0 && <div style={{ ...styles.detail, fontSize: 12, marginTop: 4 }}>{t('conflitto.solo_qui')}: <strong>{elenco(r.soloQui)}</strong></div>}
+                {r.diversi?.length > 0 && <div style={{ ...styles.detail, fontSize: 12, marginTop: 4 }}>{t('conflitto.diversi')}: <strong>{elenco(r.diversi)}</strong></div>}
+              </div>
+              {!c.conferma ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <button type="button" style={{ ...styles.buttonPrimary, width: '100%', padding: '10px 12px' }} onClick={conflittoCaricaOnline}>{t('conflitto.carica_online')}</button>
+                  <div style={{ ...styles.detail, fontSize: 11, marginTop: -4, marginBottom: 4 }}>{t('conflitto.carica_online_nota')}</div>
+                  <button type="button" style={{ ...styles.button, width: '100%', padding: '10px 12px' }} onClick={() => setConflittoSync((x) => ({ ...x, conferma: true }))}>{t('conflitto.mantieni_mia')}</button>
+                  <button type="button" style={{ ...styles.button, width: '100%', padding: '10px 12px' }} onClick={conflittoScaricaEntrambe}>{t('conflitto.scarica_entrambe')}</button>
+                  <button type="button" style={{ ...styles.buttonMini, alignSelf: 'center', marginTop: 4, background: 'transparent', border: 'none', textDecoration: 'underline', color: C.inkDim }} onClick={conflittoDecidiDopo}>{t('conflitto.decidi_dopo')}</button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div role="alert" style={{ fontSize: 13, lineHeight: 1.5, padding: '8px 12px', borderRadius: 8, border: '1px solid #ef4444', background: 'rgba(239,68,68,0.08)', color: C.ink }}>
+                    {t('conflitto.conferma_testo')}
+                  </div>
+                  <button type="button" style={{ ...styles.button, width: '100%', padding: '10px 12px', background: '#b91c1c', borderColor: '#b91c1c', color: '#fff', fontWeight: 700 }} onClick={conflittoMantieniMia}>{t('conflitto.conferma_si')}</button>
+                  <button type="button" style={{ ...styles.button, width: '100%', padding: '10px 12px' }} onClick={conflittoScaricaEntrambe}>{t('conflitto.scarica_entrambe')}</button>
+                  <button type="button" style={{ ...styles.button, width: '100%', padding: '10px 12px' }} onClick={() => setConflittoSync((x) => ({ ...x, conferma: false }))}>{t('conflitto.annulla')}</button>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
       {mostraMenu && (
         <div
           style={{
@@ -7970,6 +8197,12 @@ export default function App() {
         >
           <div style={{ ...styles.panel, maxWidth: 460, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
             <h1 style={{ ...styles.title, textAlign: 'center', marginBottom: 12 }}>{t('cloud.backup_titolo')}</h1>
+            {conflittoSync && !conflittoSync.aperto && (
+              <div role="status" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '8px 12px', marginBottom: 12, borderRadius: 8, border: '1px solid #f59e0b', background: 'rgba(245,158,11,0.12)', fontSize: 13 }}>
+                <span>{t('conflitto.banner')}</span>
+                <button type="button" style={{ ...styles.buttonMini, whiteSpace: 'nowrap' }} onClick={() => setConflittoSync((c) => (c ? { ...c, aperto: true } : c))}>{t('conflitto.risolvi')}</button>
+              </div>
+            )}
 
             {/* Selettore Modalità: 📱 Locale vs ☁️ Online */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 14, background: 'rgba(0,0,0,0.06)', padding: 3, borderRadius: 8 }}>
@@ -8075,7 +8308,7 @@ export default function App() {
                     alignItems: 'center',
                     gap: 4,
                   }}>
-                    {sincronizzando ? '🟠 Sincronizzazione…' : isCloudAttivo ? '🟢 Attiva' : isCloudConfigurato ? '🟠 In attesa' : '🔴 Non attiva'}
+                    {sincronizzando ? '🟠 Sincronizzazione…' : conflittoSync ? '🟠 In pausa' : isCloudAttivo ? '🟢 Attiva' : isCloudConfigurato ? '🟠 In attesa' : '🔴 Non attiva'}
                   </span>
                 </div>
                 {codiceSync && autoSyncCodice ? (
@@ -11867,6 +12100,8 @@ export default function App() {
                         title={
                           sincronizzando
                             ? (lingua === 'en' ? 'Sync in progress…' : 'Sincronizzazione in corso…')
+                            : conflittoSync
+                              ? t('conflitto.banner')
                             : isCloudAttivo
                               ? (lingua === 'en' ? `Sync is on · last sync: ${ultimoSyncCodice || ultimoSync || 'recent'}` : `Sincronizzazione attiva · ultima: ${ultimoSyncCodice || ultimoSync || 'recente'}`)
                               : isCloudConfigurato

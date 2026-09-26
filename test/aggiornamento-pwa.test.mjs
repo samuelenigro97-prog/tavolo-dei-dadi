@@ -23,7 +23,8 @@ test('aggiornamento PWA: Safari non può restare bloccato su Aggiornamento', () 
 
 test('avvio: cloud e IndexedDB non possono bloccare indefinitamente la scheda', () => {
   assert.match(app, /function fetchConTimeout/);
-  assert.match(app, /fetchConTimeout\(`https:\/\/api\.github\.com\/gists\/\$\{gistId\}`/);
+  // Dalla v4.40.0 l'avvio passa da salvaSuCloud (lettura prima di ogni invio).
+  assert.match(app, /fetchConTimeout\(`https:\/\/api\.github\.com\/gists\/\$\{nuovoId\}`/);
   assert.match(persistenza, /richiesta\.onblocked/);
   assert.match(persistenza, /IndexedDB non risponde/);
 });

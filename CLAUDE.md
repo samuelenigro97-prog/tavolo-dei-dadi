@@ -46,8 +46,13 @@ oraria. Chiaro/Scuro forzano il modo.
     (changelog in-app), `esempi.js`, `migrazioniPersonaggi.js`.
   - `src/dati/` — contenuti delle espansioni Tasha/Xanathar (talenti,
     sottoclassi, incantesimi, tratti opzionali).
-  - `src/utils/` — `persistenza.js`, `sync.js`, `stanze.js`,
-    `condivisione.js`, `audioAmbiente.js`, `popover.js`.
+  - `src/utils/` — `persistenza.js`, `sync.js`, `conflittiSync.js`,
+    `stanze.js`, `condivisione.js`, `audioAmbiente.js`, `popover.js`.
+    **Sincronizzazione (Gist e codice)**: non scrivere mai online senza
+    passare da `decidiSync()` (`conflittiSync.js`): prima si rilegge la copia
+    online e la si confronta con la "base" del dispositivo; un invio che
+    salta questo controllo può riportare online dati vecchi (incidente del
+    26/09/2026, vedi CHANGELOG 4.40.0).
   - `src/i18n.js` — dizionario IT/EN (`t()`, funzione a livello di modulo,
     chiamabile ovunque; la variabile di stato `lingua` invece vive dentro
     `App` e **non** è automaticamente visibile nei componenti definiti fuori

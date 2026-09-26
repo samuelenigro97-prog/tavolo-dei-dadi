@@ -2,6 +2,45 @@
 
 Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## [4.40.0] – 2026-09-26
+
+### Corretto
+- **La sincronizzazione non sovrascrive più in silenzio una versione online
+  più recente.** Il 26/09 un dispositivo con dati locali vecchi ha rimandato
+  online (16:06-16:07) un roster superato, annullando correzioni e
+  ricreando/cancellando personaggi. Causa: prima di scrivere l'app rileggeva
+  la copia online solo per preservare le immagini, senza chiedersi se fosse
+  più recente; all'avvio l'auto-salvataggio (es. dopo il caricamento delle
+  immagini da IndexedDB) poteva partire prima del caricamento dal cloud, e una
+  scheda rimasta aperta per ore non ricontrollava mai il cloud.
+
+### Aggiunto
+- **Rilevamento dei conflitti** (`src/utils/conflittiSync.js`), per il backup
+  su GitHub (Gist) e per il codice di sincronizzazione (Worker):
+  - ogni dispositivo ricorda la "base", cioè la versione online da cui partono
+    le sue modifiche (revisione del Gist o `updatedAt` del Worker, più
+    un'impronta del roster locale in quel momento);
+  - prima di ogni invio rilegge la copia online: se nessun altro l'ha
+    cambiata invia; se è cambiata e qui non ci sono modifiche la carica da
+    sola; se è cambiata e ci sono modifiche anche qui **non invia** e apre la
+    finestra "Versione online più recente" con: *Carica la versione online*
+    (la versione locale resta in Cronologia versioni), *Mantieni la mia
+    versione* (con conferma esplicita), *Scarica entrambe le versioni*,
+    *Decidi più tardi* (sincronizzazione in pausa, segnalata nel pannello e
+    nell'icona della barra);
+  - all'avvio si legge sempre prima la copia online e gli auto-salvataggi
+    aspettano la fine della verifica; al ritorno sull'app (scheda visibile,
+    finestra a fuoco, connessione tornata) si ricontrolla (max 1 volta ogni
+    30 s);
+  - offline o con risposta illeggibile non si scrive mai: si riprova dopo;
+  - niente più revisioni inutili del Gist quando il roster non è cambiato.
+- **Worker `/sync`**: il PUT accetta `baseUpdatedAt` e risponde `409
+  SYNC_CONFLICT` se la copia salvata è cambiata nel frattempo (compatibile con
+  le versioni precedenti dell'app; va ridistribuito il Worker per attivarlo).
+- Test: `test/conflitti-sync.test.mjs` (scenario del 26/09 riprodotto passo
+  passo, migrazione dalla v4.39, Worker) ed `e2e/sync-conflitto.spec.js`
+  (Gist e codice simulati).
+
 ## [4.39.0] – 2026-09-26
 
 ### Modificato
